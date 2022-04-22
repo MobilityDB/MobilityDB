@@ -139,7 +139,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Round the bounds of a float range to a number of decimal places</para>
+					<para><link linkend="time_tscale"><varname>tscale</varname></link>: Scale the time value to an interval</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time value with the intervals</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatrange_round"><varname>round</varname></link>: Round the bounds of a float range to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -246,6 +254,20 @@
 
 				<listitem>
 					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: Is the first time value not before the second one?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Distance Operators</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Get the smallest distance ever in an interval</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="smallest_distance_secs"><varname>|=|</varname></link>: Get the smallest distance ever in number of seconds</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -378,7 +400,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_setPrecision"><varname>setPrecision</varname></link>: Round the value or the coordinates of the bounding box to a number of decimal places</para>
+					<para><link linkend="box_round"><varname>round</varname></link>: Round the value or the coordinates of the bounding box to a number of decimal places</para>
 				</listitem>
 
 			</itemizedlist>
@@ -672,6 +694,14 @@
 
 				<listitem>
 					<para><link linkend="maxValue"><varname>maxValue</varname></link>: Get the maximum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minInstant"><varname>minInstant</varname></link>: Get the instant with the minimum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="maxInstant"><varname>maxInstant</varname></link>: Get the instant with the maximum value</para>
 				</listitem>
 
 				<listitem>
@@ -1279,7 +1309,7 @@
 				<title>Manipulation Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Round the coordinate values to a number of decimal places</para>
+						<para><link linkend="tpoint_round"><varname>round</varname></link>: Round the coordinate values to a number of decimal places</para>
 					</listitem>
 
 					<listitem>
@@ -1371,6 +1401,28 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Similarity Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Get the discrete Fréchet distance between two temporal values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Get the correspondence pairs between two temporal values with respect to the discrete Fréchet distance</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Get the Dynamic Time Warp distance between two temporal values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Get the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2>
@@ -1569,7 +1621,7 @@
 				<title>Modification Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_setPrecision"><varname>setPrecision</varname></link>: Set the precision of the position(s) of the network point or the network segment to the number of decimal places</para>
+						<para><link linkend="npoint_round"><varname>round</varname></link>: Round the position(s) of the network point or the network segment to the number of decimal places</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1666,7 +1718,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_setPrecision"><varname>setPrecision</varname></link>: Set the precision of the fraction of the temporal network point to the number of decimal places</para>
+						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Round the fraction of the temporal network point to the number of decimal places</para>
 					</listitem>
 
 					<listitem>

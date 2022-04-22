@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,160 +28,77 @@
  *****************************************************************************/
 
 /**
- * tnpoint_selfuncs.c
- * Functions for selectivity estimation of operators on temporal network points
- *
- *  These functions are only stubs, they need to be written TODO
+ * @file tnpoint_selfuncs.c
+ * @brief Functions for selectivity estimation of operators on temporal network
+ * points.
  */
 
 #include "npoint/tnpoint_selfuncs.h"
 
-/*
- *  Selectivity functions for temporal types operators.  These are bogus --
- *  unless we know the actual key distribution in the index, we can't make
- *  a good prediction of the selectivity of these operators.
- *
- *  Note: the values used here may look unreasonably small.  Perhaps they
- *  are.  For now, we want to make sure that the optimizer will make use
- *  of a geometric index if one is available, so the selectivity had better
- *  be fairly small.
- *
- *  In general, GiST needs to search multiple subtrees in order to guarantee
- *  that all occurrences of the same key have been found.  Because of this,
- *  the estimated cost for scanning the index ought to be higher than the
- *  output selectivity would indicate.  gistcostestimate(), over in selfuncs.c,
- *  ought to be adjusted accordingly --- but until we can generate somewhat
- *  realistic numbers here, it hardly matters...
- */
+/* MobilityDB */
+#include "general/temporal.h"
+#include "general/temporal_selfuncs.h"
+#include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************/
 
-/*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
- * contains (@>), contained (<@), and, same (~=). These operators depend on
- * volume. Contains and contained are tighter contraints than overlaps, so
- * the former should produce lower estimates than the latter. Similarly,
- * equals is a tighter constrain tha contains and contained.
- */
-
-PG_FUNCTION_INFO_V1(tnpoint_overlaps_sel);
 /**
- * Estimate the selectivity value of the overlap operator for temporal
- * network points
+ * Get the enum value associated to the operator
  */
-PGDLLEXPORT Datum
-tnpoint_overlaps_sel(PG_FUNCTION_ARGS)
+bool
+tnpoint_cachedop(Oid operid, CachedOp *cachedOp)
 {
-  PG_RETURN_FLOAT8(0.005);
+  for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
+  {
+    if (operid == oper_oid((CachedOp) i, T_GEOMETRY, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_NPOINT, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_STBOX, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_GEOMETRY) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_NPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_STBOX) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TNPOINT))
+      {
+        *cachedOp = (CachedOp) i;
+        return true;
+      }
+  }
+  return false;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_overlaps_joinsel);
+/*****************************************************************************
+ * Restriction selectivity
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_sel);
 /**
- * Estimate the join selectivity value of the overlap operator for temporal
- * network points
+ * Estimate the restriction selectivity of the operators for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_overlaps_joinsel(PG_FUNCTION_ARGS)
+Tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(0.005);
+  return temporal_sel_ext(fcinfo, TNPOINTTYPE);
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_contains_sel);
+/*****************************************************************************
+ * Join selectivity
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 /**
- * Estimate the selectivity value of the contains operator for temporal
- * network points
+ * Estimate the join selectivity of the operators for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_contains_sel(PG_FUNCTION_ARGS)
+Tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(0.002);
-}
-
-PG_FUNCTION_INFO_V1(tnpoint_contains_joinsel);
-/**
- * Estimate the join selectivity value of the contains operator for temporal
- * network points
- */
-PGDLLEXPORT Datum
-tnpoint_contains_joinsel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.002);
-}
-
-PG_FUNCTION_INFO_V1(tnpoint_same_sel);
-/**
- * Estimate the selectivity value of the same operator for temporal
- * network points
- */
-PGDLLEXPORT Datum
-tnpoint_same_sel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.001);
-}
-
-PG_FUNCTION_INFO_V1(tnpoint_same_joinsel);
-/**
- * Estimate the join selectivity value of the same operator for temporal
- * network points
- */
-PGDLLEXPORT Datum
-tnpoint_same_joinsel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.001);
-}
-
-PG_FUNCTION_INFO_V1(tnpoint_adjacent_sel);
-/**
- * Estimate the selectivity value of the adjacent operator for temporal
- * network points
- */
-PGDLLEXPORT Datum
-tnpoint_adjacent_sel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.001);
-}
-
-PG_FUNCTION_INFO_V1(tnpoint_adjacent_joinsel);
-/**
- * Estimate the join selectivity value of the adjacent operator for temporal
- * network points
- */
-PGDLLEXPORT Datum
-tnpoint_adjacent_joinsel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.001);
-}
-
-/*****************************************************************************/
-
-/*
- * Selectivity for operators for relative position box operators, i.e.,
- * left (<<), overleft (&<), right (>>), overright (&>),
- * below (<<|), overbelow (&<|), above (|>>), overabove (|&>),
- * front (<</), overfront (&</), back (/>>), overfront (/&>),
- * before (<<#), overbefore (&<#), after (#>>), overafter (#&>).
- */
-
-PG_FUNCTION_INFO_V1(tnpoint_position_sel);
-/**
- * Estimate the selectivity value of the relative position operators for
- * temporal network points
- */
-PGDLLEXPORT Datum
-tnpoint_position_sel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.001);
-}
-
-PG_FUNCTION_INFO_V1(tnpoint_position_joinsel);
-/**
- * Estimate the join selectivity value of the relative position operators for
- * temporal network points
- */
-PGDLLEXPORT Datum
-tnpoint_position_joinsel(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_FLOAT8(0.001);
+  return temporal_joinsel_ext(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************/

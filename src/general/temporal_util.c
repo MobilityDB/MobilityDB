@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,11 +29,12 @@
 
 /**
  * @file temporal_util.c
- * Miscellaneous utility functions for temporal types.
+ * @brief General utility functions for temporal types.
  */
 
 #include "general/temporal_util.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <catalog/pg_collation.h>
 #include <fmgr.h>
@@ -42,15 +42,12 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
 #include "general/doublen.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************
@@ -58,339 +55,256 @@
  *****************************************************************************/
 
 /**
- * Returns true if the Oid is a EXTERNAL temporal type
+ * Return true if the temporal type is an EXTERNAL temporal type
  *
  * @note Function used in particular in the indexes
  */
 bool
-temporal_type(Oid temptypid)
+temporal_type(CachedType temptype)
 {
-  if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
-    temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
-    temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) || 
-    temptypid == type_oid(T_TNPOINT))
+  if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
+    temptype == T_TTEXT || temptype == T_TGEOMPOINT ||
+    temptype == T_TGEOGPOINT || temptype == T_TNPOINT)
     return true;
   return false;
 }
 
 /**
- * Ensures that the Oid is a base type supported by MobilityDB
+ * Ensures that the base type is supported by MobilityDB
  */
 void
-ensure_temporal_base_type(Oid basetypid)
+ensure_temporal_type(CachedType temptype)
 {
-  if (basetypid != BOOLOID && basetypid != INT4OID &&
-    basetypid != FLOAT8OID && basetypid != TEXTOID &&
-    basetypid != type_oid(T_DOUBLE2) && basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4) &&
-    basetypid != type_oid(T_GEOMETRY) && basetypid != type_oid(T_GEOGRAPHY) &&
-    basetypid != type_oid(T_NPOINT))
-    elog(ERROR, "unknown base type: %d", basetypid);
+  if (! temporal_type(temptype))
+    elog(ERROR, "unknown temporal type: %d", temptype);
   return;
 }
 
 /**
- * Returns true if the Oid corresponds to a continuous base type
+ * Ensures that the base type is supported by MobilityDB
+ */
+void
+ensure_temporal_basetype(CachedType basetype)
+{
+  if (basetype != T_BOOL && basetype != T_INT4 &&
+    basetype != T_FLOAT8 && basetype != T_TEXT &&
+    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 &&
+    basetype != T_DOUBLE4 && basetype != T_GEOMETRY &&
+    basetype != T_GEOGRAPHY && basetype != T_NPOINT)
+    elog(ERROR, "unknown temporal base type: %d", basetype);
+  return;
+}
+
+/**
+ * Return true if the temporal type is continuous
  */
 bool
-base_type_continuous(Oid basetypid)
+temptype_continuous(CachedType temptype)
 {
-  if (basetypid == FLOAT8OID || basetypid == type_oid(T_DOUBLE2) ||
-    basetypid == type_oid(T_DOUBLE3) || basetypid == type_oid(T_DOUBLE4) ||
-    basetypid == type_oid(T_GEOGRAPHY) || basetypid == type_oid(T_GEOMETRY) ||
-    basetypid == type_oid(T_NPOINT))
+  if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
+    temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
+    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
+    temptype == T_TNPOINT)
     return true;
   return false;
 }
 
 /**
- * Ensures that the Oid is an internal or external base type that is continuous
+ * Ensures that the temporal type is continuous
  */
 void
-ensure_base_type_continuous(Temporal *temp)
+ensure_temptype_continuous(CachedType temptype)
 {
-  if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-    elog(ERROR, "unknown continuous base type: %d", temp->basetypid);
+  if (! temptype_continuous(temptype))
+    elog(ERROR, "unknown continuous temporal type: %d", temptype);
   return;
 }
 
 /**
- * Returns true if the values of the type are passed by value.
+ * Return true if the values of the type are passed by value.
  *
  * This function is called only for the base types of the temporal types
  * To avoid a call of the slow function get_typbyval (which makes a lookup
  * call), the known base types are explicitly enumerated.
  */
 bool
-base_type_byvalue(Oid basetypid)
+basetype_byvalue(CachedType basetype)
 {
-  ensure_temporal_base_type(basetypid);
-  if (basetypid == BOOLOID || basetypid == INT4OID || basetypid == FLOAT8OID)
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Returns the length of type
+ * Return the length of type
  *
  * This function is called only for the base types of the temporal types
  * passed by reference. To avoid a call of the slow function get_typlen
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 int16
-base_type_length(Oid basetypid)
+basetype_length(CachedType basetype)
 {
-  ensure_temporal_base_type(basetypid);
-  if (basetypid == type_oid(T_DOUBLE2))
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_DOUBLE2)
     return 16;
-  if (basetypid == type_oid(T_DOUBLE3))
+  if (basetype == T_DOUBLE3)
     return 24;
-  if (basetypid == type_oid(T_DOUBLE4))
+  if (basetype == T_DOUBLE4)
     return 32;
-  if (basetypid == TEXTOID)
+  if (basetype == T_TEXT)
     return -1;
-  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return -1;
-  if (basetypid == type_oid(T_NPOINT))
+  if (basetype == T_NPOINT)
     return 16;
-  elog(ERROR, "unknown base_type_length function for base type: %d", basetypid);
+  elog(ERROR, "unknown basetype_length function for base type: %d", basetype);
 }
 
+
 /**
- * Returns true if the Oid is a alpha base type (i.e., those whose bounding
- * box is a period) supported by MobilityDB
+ * Return true if the type is a temporal alpha type (i.e., those whose
+ * bounding box is a period) supported by MobilityDB
  */
 bool
-talpha_base_type(Oid basetypid)
+talpha_type(CachedType temptype)
 {
-  if (basetypid == BOOLOID || basetypid == TEXTOID)
+  if (temptype == T_TBOOL || temptype == T_TTEXT)
     return true;
   return false;
 }
 
 /**
- * Returns true if the Oid is a temporal number type
- *
- * @note Function used in particular in the indexes
+ * Return true if the type is a temporal number type
  */
 bool
-tnumber_type(Oid temptypid)
+tnumber_type(CachedType temptype)
 {
-  if (temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT))
+  if (temptype == T_TINT || temptype == T_TFLOAT)
     return true;
   return false;
 }
 
 /**
- * Test whether the Oid is a number base type supported by MobilityDB
- */
-bool
-tnumber_base_type(Oid basetypid)
-{
-  if (basetypid == INT4OID || basetypid == FLOAT8OID)
-    return true;
-  return false;
-}
-
-/**
- * Returns true if the Oid is a number base type supported by MobilityDB
+ * Return true if the type is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_base_type(Oid basetypid)
+ensure_tnumber_type(CachedType temptype)
 {
-  if (! tnumber_base_type(basetypid))
-    elog(ERROR, "unknown number base type: %d", basetypid);
+  if (! tnumber_type(temptype))
+    elog(ERROR, "unknown temporal number type: %d", temptype);
   return;
 }
 
 /**
- * Returns true if the Oid is a temporal number type
- *
- * @note Function used in particular in the indexes
+ * Test whether the type is a number base type supported by MobilityDB
  */
 bool
-tnumber_range_type(Oid rangetypid)
+tnumber_basetype(CachedType basetype)
 {
-  if (rangetypid == type_oid(T_INTRANGE) || rangetypid == type_oid(T_FLOATRANGE))
+  if (basetype == T_INT4 || basetype == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Ensures that the Oid is a range type
+ * Return true if the type is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_range_type(Oid rangetypid)
+ensure_tnumber_basetype(CachedType basetype)
 {
-  if (! tnumber_range_type(rangetypid))
-    elog(ERROR, "unknown number range type: %d", rangetypid);
+  if (! tnumber_basetype(basetype))
+    elog(ERROR, "unknown number base type: %d", basetype);
   return;
 }
 
 /**
- * Returns true if the Oid is a spatiotemporal type
+ * Return true if the type is a range number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_rangetype(CachedType rangetype)
+{
+  if (rangetype == T_INTRANGE || rangetype == T_FLOATRANGE)
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the type is a range type
+ */
+void
+ensure_tnumber_rangetype(CachedType rangetype)
+{
+  if (! tnumber_rangetype(rangetype))
+    elog(ERROR, "unknown number range type: %d", rangetype);
+  return;
+}
+
+/**
+ * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBOX. Therefore it is
  * used for the indexes and selectivity functions
  */
 bool
-tspatial_type(Oid temptypid)
+tspatial_type(CachedType temptype)
 {
-  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) ||
-    temptypid == type_oid(T_TNPOINT))
+  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
+    temptype == T_TNPOINT)
     return true;
   return false;
 }
 
 /**
- * Returns true if the Oid is a spatiotemporal type
+ * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBOX
  */
 bool
-tspatial_base_type(Oid basetypid)
+tspatial_basetype(CachedType basetype)
 {
-  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY) ||
-    basetypid == type_oid(T_NPOINT))
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY ||
+    basetype == T_NPOINT)
     return true;
   return false;
 }
 
 /**
- * Returns true if the Oid is a point base type supported by MobilityDB
+ * Return true if the type is a point base type supported by MobilityDB
  */
 bool
-tgeo_base_type(Oid basetypid)
+tgeo_basetype(CachedType basetype)
 {
-  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return true;
   return false;
 }
 
 /**
- * Ensures that the Oid is a point base type supported by MobilityDB
+ * Return true if the type is a temporal point type supported by MobilityDB
+ */
+bool
+tgeo_type(CachedType temptype)
+{
+  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT)
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the type is a point base type supported by MobilityDB
  */
 void
-ensure_tgeo_base_type(Oid basetypid)
+ensure_tgeo_type(CachedType temptype)
 {
-  if (! tgeo_base_type(basetypid))
-    elog(ERROR, "unknown geospatial base type: %d", basetypid);
+  if (! tgeo_type(temptype))
+    elog(ERROR, "unknown geospatial temporal type: %d", temptype);
   return;
-}
-
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-type_has_precomputed_trajectory(Oid basetypid)
-{
-  if (tgeo_base_type(basetypid))
-    return true;
-  return false;
-}
-
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-base_type_without_bbox(Oid basetypid)
-{
-  if (basetypid == type_oid(T_DOUBLE2) || basetypid == type_oid(T_DOUBLE3) ||
-      basetypid == type_oid(T_DOUBLE4))
-    return true;
-  return false;
-}
-
-
-/**
- * Returns the size of the bounding box
- */
-size_t
-temporal_bbox_size(Oid basetypid)
-{
-  if (talpha_base_type(basetypid))
-    return sizeof(Period);
-  if (tnumber_base_type(basetypid))
-    return sizeof(TBOX);
-  if (tspatial_base_type(basetypid))
-    return sizeof(STBOX);
-  /* Types without bounding box, such as tdoubleN, must be explicity stated */
-  if (base_type_without_bbox(basetypid))
-    return 0;
-  elog(ERROR, "unknown temporal_bbox_size function for base type: %d", basetypid);
-}
-
-/*****************************************************************************
- * Oid functions
- *****************************************************************************/
-
-/**
- * Returns the Oid of the range type corresponding to the Oid of the
- * base type
- */
-Oid
-range_oid_from_base(Oid basetypid)
-{
-  ensure_tnumber_base_type(basetypid);
-  if (basetypid == INT4OID)
-    return type_oid(T_INTRANGE);
-  if (basetypid == FLOAT8OID)
-    return type_oid(T_FLOATRANGE);
-  elog(ERROR, "unknown range type for base type: %d", basetypid);
-}
-
-/**
- * Returns the Oid of the temporal type corresponding to the Oid of the
- * base type
- */
-Oid
-temporal_oid_from_base(Oid basetypid)
-{
-  ensure_temporal_base_type(basetypid);
-  if (basetypid == BOOLOID)
-    return type_oid(T_TBOOL);
-  if (basetypid == INT4OID)
-    return type_oid(T_TINT);
-  if (basetypid == FLOAT8OID)
-    return type_oid(T_TFLOAT);
-  if (basetypid == TEXTOID)
-    return type_oid(T_TTEXT);
-  if (basetypid == type_oid(T_GEOMETRY))
-    return type_oid(T_TGEOMPOINT);
-  if (basetypid == type_oid(T_GEOGRAPHY))
-    return type_oid(T_TGEOGPOINT);
-  if (basetypid == type_oid(T_NPOINT))
-    return type_oid(T_TNPOINT);
-  elog(ERROR, "unknown temporal type for base type: %d", basetypid);
-}
-
-/**
- * Returns the Oid of the base type corresponding to the Oid of the
- * temporal type
- */
-Oid
-base_oid_from_temporal(Oid temptypid)
-{
-  assert(temporal_type(temptypid));
-  if (temptypid == type_oid(T_TBOOL))
-    return BOOLOID;
-  if (temptypid == type_oid(T_TINT))
-    return INT4OID;
-  if (temptypid == type_oid(T_TFLOAT))
-    return FLOAT8OID;
-  if (temptypid == type_oid(T_TTEXT))
-    return TEXTOID;
-  if (temptypid == type_oid(T_TGEOMPOINT))
-    return type_oid(T_GEOMETRY);
-  if (temptypid == type_oid(T_TGEOGPOINT))
-    return type_oid(T_GEOGRAPHY);
-  if (temptypid == type_oid(T_TNPOINT))
-    return type_oid(T_NPOINT);
-  elog(ERROR, "unknown base type for temporal type: %d", temptypid);
 }
 
 /*****************************************************************************
@@ -400,59 +314,60 @@ base_oid_from_temporal(Oid temptypid)
 /* Version of the functions where the types of both arguments is equal */
 
 /**
- * Returns true if the two values are equal
+ * Return true if the two values are equal
  */
 bool
-datum_eq(Datum l, Datum r, Oid type)
+datum_eq(Datum l, Datum r, CachedType type)
 {
   return datum_eq2(l, r, type, type);
 }
 
 /**
- * Returns true if the two values are different
+ * Return true if the two values are different
  */
 bool
-datum_ne(Datum l, Datum r, Oid type)
+datum_ne(Datum l, Datum r, CachedType type)
 {
   return !datum_eq2(l, r, type, type);
 }
 
 /**
- * Returns true if the first value is less than the second one
+ * Return true if the first value is less than the second one
  */
 bool
-datum_lt(Datum l, Datum r, Oid type)
+datum_lt(Datum l, Datum r, CachedType type)
 {
   return datum_lt2(l, r, type, type);
 }
 
 /**
- * Returns true if the first value is less than or equal to the second one
+ * Return true if the first value is less than or equal to the second one
  */
 bool
-datum_le(Datum l, Datum r, Oid type)
+datum_le(Datum l, Datum r, CachedType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(l, r, type, type);
 }
 
 /**
- * Returns true if the first value is greater than the second one
+ * Return true if the first value is greater than the second one
  */
 bool
-datum_gt(Datum l, Datum r, Oid type)
+datum_gt(Datum l, Datum r, CachedType type)
 {
   return datum_lt2(r, l, type, type);
 }
 
+#if 0 /* Not used */
 /**
- * Returns true if the first value is greater than or equal to the second one
- * This function is currently not used
+ * Return true if the first value is greater than or equal to the second one
+ */
 bool
-datum_ge(Datum l, Datum r, Oid type)
+datum_ge(Datum l, Datum r, CachedType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
 }
-*/
+#endif
 
 /*****************************************************************************/
 
@@ -462,113 +377,107 @@ datum_ge(Datum l, Datum r, Oid type)
  */
 
 /**
- * Returns true if the two values are equal even if their type is not the same
+ * Return true if the two values are equal even if their type is not the same
  * (base type dispatch function)
  */
 bool
-datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
+datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
-  ensure_temporal_base_type(typel);
+  ensure_temporal_basetype(typel);
   if (typel != typer)
-    ensure_temporal_base_type(typer);
-  if ((typel == BOOLOID && typer == BOOLOID) ||
-    (typel == INT4OID && typer == INT4OID))
+    ensure_temporal_basetype(typer);
+  if ((typel == T_BOOL && typer == T_BOOL) ||
+    (typel == T_INT4 && typer == T_INT4))
     return l == r;
-  if (typel == FLOAT8OID && typer == FLOAT8OID)
-    return l == r;
-    // return FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == INT4OID && typer == FLOAT8OID)
-    return (double) DatumGetInt32(l) == DatumGetFloat8(r);
-    // return FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
-  if (typel == FLOAT8OID && typer == INT4OID)
-    return DatumGetFloat8(l) == (double) DatumGetInt32(r);
-    // return FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == TEXTOID && typer == TEXTOID)
+  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+    return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
+  if (typel == T_INT4 && typer == T_FLOAT8)
+    return MOBDB_FP_EQ((double) DatumGetInt32(l), DatumGetFloat8(r));
+  if (typel == T_FLOAT8 && typer == T_INT4)
+    return MOBDB_FP_EQ(DatumGetFloat8(l), (double) DatumGetInt32(r));
+  if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-  if (typel == type_oid(T_DOUBLE2) && typel == typer)
+  if (typel == T_DOUBLE2 && typel == typer)
     return double2_eq(DatumGetDouble2P(l), DatumGetDouble2P(r));
-  if (typel == type_oid(T_DOUBLE3) && typel == typer)
+  if (typel == T_DOUBLE3 && typel == typer)
     return double3_eq(DatumGetDouble3P(l), DatumGetDouble3P(r));
-  if (typel == type_oid(T_DOUBLE4) && typel == typer)
+  if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
-  if (typel == type_oid(T_GEOMETRY) && typel == typer)
+  if (typel == T_GEOMETRY && typel == typer)
     //  return DatumGetBool(call_function2(lwgeom_eq, l, r));
     return datum_point_eq(l, r);
-  if (typel == type_oid(T_GEOGRAPHY) && typel == typer)
+  if (typel == T_GEOGRAPHY && typel == typer)
     //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
-  if (typel == type_oid(T_NPOINT) && typel == typer)
-    return npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+  if (typel == T_NPOINT && typel == typer)
+    return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
 }
 
 /**
- * Returns true if the two values are different
+ * Return true if the two values are different
  */
 bool
-datum_ne2(Datum l, Datum r, Oid typel, Oid typer)
+datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return !datum_eq2(l, r, typel, typer);
 }
 
 /**
- * Returns true if the first value is less than the second one
+ * Return true if the first value is less than the second one
  * (base type dispatch function)
  */
 bool
-datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
+datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
-  ensure_temporal_base_type(typel);
+  ensure_temporal_basetype(typel);
   if (typel != typer)
-    ensure_temporal_base_type(typer);
-  if (typel == BOOLOID && typer == BOOLOID)
+    ensure_temporal_basetype(typer);
+  if (typel == T_BOOL && typer == T_BOOL)
     return DatumGetBool(l) < DatumGetBool(r);
-  if (typel == INT4OID && typer == INT4OID)
+  if (typel == T_INT4 && typer == T_INT4)
     return DatumGetInt32(l) < DatumGetInt32(r);
-  if (typel == INT4OID && typer == FLOAT8OID)
-    return (double) DatumGetInt32(l) < DatumGetFloat8(r);
-    // return FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
-  if (typel == FLOAT8OID && typer == INT4OID)
-    return DatumGetFloat8(l) < (double) DatumGetInt32(r);
-    // return FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == FLOAT8OID && typer == FLOAT8OID)
-    return DatumGetFloat8(l) < DatumGetFloat8(r);
-    // return FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == TEXTOID && typer == TEXTOID)
+  if (typel == T_INT4 && typer == T_FLOAT8)
+    return MOBDB_FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
+  if (typel == T_FLOAT8 && typer == T_INT4)
+    return MOBDB_FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
+  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+    return MOBDB_FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
+  if (typel == T_TEXT && typel == typer)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-  if (typel == type_oid(T_GEOMETRY) && typel == typer)
+  if (typel == T_GEOMETRY && typel == typer)
     return DatumGetBool(call_function2(lwgeom_lt, l, r));
-  if (typel == type_oid(T_GEOGRAPHY) && typel == typer)
+  if (typel == T_GEOGRAPHY && typel == typer)
     return DatumGetBool(call_function2(geography_lt, l, r));
-  if (typel == type_oid(T_NPOINT) && typel == typer)
-    return npoint_lt_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+  if (typel == T_NPOINT && typel == typer)
+    return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
   elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
 }
 
 
 /**
- * Returns true if the first value is less than or equal to the second one
+ * Return true if the first value is less than or equal to the second one
  */
 bool
-datum_le2(Datum l, Datum r, Oid typel, Oid typer)
+datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
 }
 
 /**
- * Returns true if the first value is greater than the second one
+ * Return true if the first value is greater than the second one
  */
 bool
-datum_gt2(Datum l, Datum r, Oid typel, Oid typer)
+datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return datum_lt2(r, l, typer, typel);
 }
 
 /**
- * Returns true if the first value is greater than or equal to the second one
+ * Return true if the first value is greater than or equal to the second one
  */
 bool
-datum_ge2(Datum l, Datum r, Oid typel, Oid typer)
+datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return datum_eq2(l, r, typel, typer) || datum_gt2(l, r, typel, typer);
 }
@@ -576,55 +485,55 @@ datum_ge2(Datum l, Datum r, Oid typel, Oid typer)
 /*****************************************************************************/
 
 /**
- * Returns a Datum true if the two values are equal
+ * Return a Datum true if the two values are equal
  */
 Datum
-datum2_eq2(Datum l, Datum r, Oid typel, Oid typer)
+datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return BoolGetDatum(datum_eq2(l, r, typel, typer));
 }
 
 /**
- * Returns a Datum true if the two values are different
+ * Return a Datum true if the two values are different
  */
 Datum
-datum2_ne2(Datum l, Datum r, Oid typel, Oid typer)
+datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return BoolGetDatum(datum_ne2(l, r, typel, typer));
 }
 
 /**
- * Returns a Datum true if the first value is less than the second one
+ * Return a Datum true if the first value is less than the second one
  */
 Datum
-datum2_lt2(Datum l, Datum r, Oid typel, Oid typer)
+datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return BoolGetDatum(datum_lt2(l, r, typel, typer));
 }
 
 /**
- * Returns a Datum true if the first value is less than or equal to the second one
+ * Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
-datum2_le2(Datum l, Datum r, Oid typel, Oid typer)
+datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return BoolGetDatum(datum_le2(l, r, typel, typer));
 }
 
 /**
- * Returns a Datum true if the first value is greater than the second one
+ * Return a Datum true if the first value is greater than the second one
  */
 Datum
-datum2_gt2(Datum l, Datum r, Oid typel, Oid typer)
+datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return BoolGetDatum(datum_gt2(l, r, typel, typer));
 }
 
 /**
- * Returns a Datum true if the first value is greater than or equal to the second one
+ * Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
-datum2_ge2(Datum l, Datum r, Oid typel, Oid typer)
+datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   return BoolGetDatum(datum_ge2(l, r, typel, typer));
 }
@@ -648,13 +557,13 @@ double_pad(size_t size)
  * Copy a Datum if it is passed by reference
  */
 Datum
-datum_copy(Datum value, Oid type)
+datum_copy(Datum value, CachedType basetype)
 {
   /* For types passed by value */
-  if (base_type_byvalue(type))
+  if (basetype_byvalue(basetype))
     return value;
   /* For types passed by reference */
-  int typlen = base_type_length(type);
+  int typlen = basetype_length(basetype);
   size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
@@ -665,14 +574,44 @@ datum_copy(Datum value, Oid type)
  * Convert a number to a double
  */
 double
-datum_double(Datum d, Oid basetypid)
+datum_double(Datum d, CachedType basetype)
 {
-  ensure_tnumber_base_type(basetypid);
-  if (basetypid == INT4OID)
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
     return (double)(DatumGetInt32(d));
-  else if (basetypid == FLOAT8OID)
+  else /* basetype == T_FLOAT8 */
     return DatumGetFloat8(d);
-  elog(ERROR, "unknown datum_double function for base type: %d", basetypid);
+}
+
+/**
+ * Convert the value of temporal number instant to a double
+ */
+double
+tnumberinst_double(const TInstant *inst)
+{
+  ensure_tnumber_type(inst->temptype);
+  Datum d = tinstant_value(inst);
+  if (inst->temptype == T_TINT)
+    return (double)(DatumGetInt32(d));
+  else /* inst->temptype == T_TFLOAT */
+    return DatumGetFloat8(d);
+}
+
+/**
+ * Convert a C string into a text value
+ *
+ * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
+ * @note Function taken from PostGIS file lwgeom_in_geojson.c
+ */
+
+text *
+cstring2text(const char *cstring)
+{
+  size_t len = strlen(cstring);
+  text *result = (text *) palloc(len + VARHDRSZ);
+  SET_VARSIZE(result, len + VARHDRSZ);
+  memcpy(VARDATA(result), cstring, len);
+  return result;
 }
 
 /**
@@ -699,26 +638,26 @@ text2cstring(const text *textptr)
  * Call input function of the base type
  */
 Datum
-call_input(Oid type, char *str)
+call_input(Oid typid, char *str)
 {
   Oid infunc;
-  Oid basetype;
+  Oid basetypid;
   FmgrInfo infuncinfo;
-  getTypeInputInfo(type, &infunc, &basetype);
+  getTypeInputInfo(typid, &infunc, &basetypid);
   fmgr_info(infunc, &infuncinfo);
-  return InputFunctionCall(&infuncinfo, str, basetype, -1);
+  return InputFunctionCall(&infuncinfo, str, basetypid, -1);
 }
 
 /**
  * Call output function of the base type
  */
 char *
-call_output(Oid type, Datum value)
+call_output(Oid typid, Datum value)
 {
   Oid outfunc;
   bool isvarlena;
   FmgrInfo outfuncinfo;
-  getTypeOutputInfo(type, &outfunc, &isvarlena);
+  getTypeOutputInfo(typid, &outfunc, &isvarlena);
   fmgr_info(outfunc, &outfuncinfo);
   return OutputFunctionCall(&outfuncinfo, value);
 }
@@ -727,12 +666,12 @@ call_output(Oid type, Datum value)
  * Call send function of the base type
  */
 bytea *
-call_send(Oid type, Datum value)
+call_send(Oid typid, Datum value)
 {
   Oid sendfunc;
   bool isvarlena;
   FmgrInfo sendfuncinfo;
-  getTypeBinaryOutputInfo(type, &sendfunc, &isvarlena);
+  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
   fmgr_info(sendfunc, &sendfuncinfo);
   return SendFunctionCall(&sendfuncinfo, value);
 }
@@ -741,14 +680,14 @@ call_send(Oid type, Datum value)
  * Call receive function of the base type
  */
 Datum
-call_recv(Oid type, StringInfo buf)
+call_recv(Oid typid, StringInfo buf)
 {
   Oid recvfunc;
-  Oid basetype;
+  Oid basetypid;
   FmgrInfo recvfuncinfo;
-  getTypeBinaryInputInfo(type, &recvfunc, &basetype);
+  getTypeBinaryInputInfo(typid, &recvfunc, &basetypid);
   fmgr_info(recvfunc, &recvfuncinfo);
-  return ReceiveFunctionCall(&recvfuncinfo, buf, basetype, -1);
+  return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
 }
 
 /**
@@ -892,13 +831,13 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 
 #if POSTGRESQL_VERSION_NUMBER < 120000
 Datum
-CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
+CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
   Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
   FunctionCallInfoData fcinfo;
   Datum    result;
 
-  InitFunctionCallInfoData(fcinfo, flinfo, 3, collation, NULL, NULL);
+  InitFunctionCallInfoData(fcinfo, flinfo, 3, collid, NULL, NULL);
 
   fcinfo.arg[0] = arg1;
   fcinfo.arg[1] = arg2;
@@ -920,13 +859,13 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
 #else
 /* PgSQL 12+ still lacks 3-argument version of these functions */
 Datum
-CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
+CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
   Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
     LOCAL_FCINFO(fcinfo, 4);
     Datum       result;
 
-    InitFunctionCallInfoData(*fcinfo, flinfo, 3, collation, NULL, NULL);
+    InitFunctionCallInfoData(*fcinfo, flinfo, 3, collid, NULL, NULL);
 
     fcinfo->args[0].value = arg1;
     fcinfo->args[0].isnull = false;
@@ -948,211 +887,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
 #endif
 
 /*****************************************************************************
- * Array functions
- *****************************************************************************/
-
-/**
- * Free a C array of pointers
- */
-void
-pfree_array(void **array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(array[i]);
-  pfree(array);
-  return;
-}
-
-/**
- * Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
-  pfree(array);
-  return;
-}
-
-/**
- * Returns the string resulting from assembling the array of strings.
- * The function frees the memory of the input strings after finishing.
- */
-char *
-stringarr_to_string(char **strings, int count, int outlen,
-  char *prefix, char open, char close)
-{
-  char *result = palloc(strlen(prefix) + outlen + 3);
-  result[outlen] = '\0';
-  size_t pos = 0;
-  strcpy(result, prefix);
-  pos += strlen(prefix);
-  result[pos++] = open;
-  for (int i = 0; i < count; i++)
-  {
-    strcpy(result + pos, strings[i]);
-    pos += strlen(strings[i]);
-    result[pos++] = ',';
-    result[pos++] = ' ';
-    pfree(strings[i]);
-  }
-  result[pos - 2] = close;
-  result[pos - 1] = '\0';
-  pfree(strings);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing datums
- */
-Datum *
-datumarr_extract(ArrayType *array, int *count)
-{
-  bool byval;
-  int16 typlen;
-  char align;
-  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
-  Datum *result;
-  deconstruct_array(array, array->elemtype, typlen, byval, align,
-    &result, NULL, count);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing timestamps
- */
-TimestampTz *
-timestamparr_extract(ArrayType *array, int *count)
-{
-  return (TimestampTz *) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing periods
- */
-Period **
-periodarr_extract(ArrayType *array, int *count)
-{
-  return (Period **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing ranges
- */
-RangeType **
-rangearr_extract(ArrayType *array, int *count)
-{
-  return (RangeType **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing temporal values
- */
-Temporal **
-temporalarr_extract(ArrayType *array, int *count)
-{
-  Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd',
-    (Datum **) &result, NULL, count);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Convert a C array of datums into a PostgreSQL array
- */
-ArrayType *
-datumarr_to_array(Datum *values, int count, Oid type)
-{
-  int16 elmlen;
-  bool elmbyval;
-  char elmalign;
-  assert(count > 0);
-  get_typlenbyvalalign(type, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, type, elmlen, elmbyval, elmalign);
-  return result;
-}
-
-/**
- * Convert a C array of timestamps into a PostgreSQL array
- */
-ArrayType *
-timestamparr_to_array(const TimestampTz *times, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID, 8,
-    true, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of periods into a PostgreSQL array
- */
-ArrayType *
-periodarr_to_array(const Period **periods, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) periods, count,
-    type_oid(T_PERIOD), sizeof(Period), false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of ranges into a PostgreSQL array
- */
-ArrayType *
-rangearr_to_array(RangeType **ranges, int count, Oid type)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) ranges, count, type, -1,
-    false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of text values into a PostgreSQL array
- */
-ArrayType *
-textarr_to_array(text **textarr, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
-    false, 'i');
-  return result;
-}
-
-/**
- * Convert a C array of temporal values into a PostgreSQL array
- */
-ArrayType *
-temporalarr_to_array(const Temporal **temporalarr, int count)
-{
-  assert(count > 0);
-  Oid type = temporal_oid_from_base(temporalarr[0]->basetypid);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1,
-    false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of spatiotemporal boxes into a PostgreSQL array
- */
-ArrayType *
-stboxarr_to_array(STBOX *boxarr, int count)
-{
-  assert(count > 0);
-  STBOX **boxes = palloc(sizeof(STBOX *) * count);
-  for (int i = 0; i < count; i++)
-    boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
-  pfree(boxes);
-  return result;
-}
-
-/*****************************************************************************
  * Sort functions
  *****************************************************************************/
 
@@ -1160,11 +894,11 @@ stboxarr_to_array(STBOX *boxarr, int count)
  * Comparator function for datums
  */
 static int
-datum_sort_cmp(const Datum *l, const Datum *r, const Oid *type)
+datum_sort_cmp(const Datum *l, const Datum *r, const CachedType *type)
 {
   Datum x = *l;
   Datum y = *r;
-  Oid t = *type;
+  CachedType t = *type;
   if (datum_eq(x, y, t))
     return 0;
   else if (datum_lt(x, y, t))
@@ -1190,7 +924,7 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 static int
 period_sort_cmp(const Period **l, const Period **r)
 {
-  return period_cmp_internal(*l, *r);
+  return period_cmp(*l, *r);
 }
 
 /**
@@ -1199,20 +933,15 @@ period_sort_cmp(const Period **l, const Period **r)
 static int
 range_sort_cmp(const RangeType **l, const RangeType **r)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  return DatumGetInt32(call_function2(range_cmp, RangeTypeGetDatum(*l),
-    RangeTypeGetDatum(*r)));
-#else
   return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
     RangeTypePGetDatum(*r)));
-#endif
 }
 
 /**
  * Comparator function for temporal instants
  */
 static int
-tinstantarr_sort_cmp(const TInstant **l, const TInstant **r)
+tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
 {
   return timestamp_cmp_internal((*l)->t, (*r)->t);
 }
@@ -1221,11 +950,11 @@ tinstantarr_sort_cmp(const TInstant **l, const TInstant **r)
  * Comparator function for temporal sequences
  */
 static int
-tsequencearr_sort_cmp(TSequence **l, TSequence **r)
+tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Period lp = (*l)->period;
   Period rp = (*r)->period;
-  return period_cmp_internal(&lp, &rp);
+  return period_cmp(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -1234,7 +963,7 @@ tsequencearr_sort_cmp(TSequence **l, TSequence **r)
  * Sort function for datums
  */
 void
-datumarr_sort(Datum *values, int count, Oid type)
+datumarr_sort(Datum *values, int count, CachedType type)
 {
   qsort_arg(values, (size_t) count, sizeof(Datum),
     (qsort_arg_comparator) &datum_sort_cmp, &type);
@@ -1250,27 +979,26 @@ timestamparr_sort(TimestampTz *times, int count)
     (qsort_comparator) &timestamp_sort_cmp);
 }
 
+#if 0 /* Not used */
 /**
  * Sort function for double2
- * This function is currently not used
+ */
 void
 double2arr_sort(double2 *doubles, int count)
 {
-  qsort(doubles, count, sizeof(double2),
-    (qsort_comparator) &double2_cmp);
+  qsort(doubles, count, sizeof(double2), (qsort_comparator) &double2_cmp);
 }
-*/
 
 /**
  * Sort function for double3
- * This function is currently not used
+ */
 void
 double3arr_sort(double3 *triples, int count)
 {
   qsort(triples, count, sizeof(double3),
     (qsort_comparator) &double3_cmp);
 }
-*/
+#endif
 
 /**
  * Sort function for periods
@@ -1296,20 +1024,20 @@ rangearr_sort(RangeType **ranges, int count)
  * Sort function for temporal instants
  */
 void
-tinstantarr_sort(TInstant **instants, int count)
+tinstarr_sort(TInstant **instants, int count)
 {
   qsort(instants, (size_t) count, sizeof(TInstant *),
-    (qsort_comparator) &tinstantarr_sort_cmp);
+    (qsort_comparator) &tinstarr_sort_cmp);
 }
 
 /**
  * Sort function for temporal sequences
  */
 void
-tsequencearr_sort(TSequence **sequences, int count)
+tseqarr_sort(TSequence **sequences, int count)
 {
   qsort(sequences, (size_t) count, sizeof(TSequence *),
-    (qsort_comparator) &tsequencearr_sort_cmp);
+    (qsort_comparator) &tseqarr_sort_cmp);
 }
 
 /*****************************************************************************
@@ -1321,7 +1049,7 @@ tsequencearr_sort(TSequence **sequences, int count)
  * Remove duplicates from an array of datums
  */
 int
-datumarr_remove_duplicates(Datum *values, int count, Oid type)
+datumarr_remove_duplicates(Datum *values, int count, CachedType type)
 {
   assert (count > 0);
   int newcount = 0;
@@ -1349,7 +1077,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
  * Remove duplicates from an array of temporal instants
  */
 int
-tinstantarr_remove_duplicates(const TInstant **instants, int count)
+tinstarr_remove_duplicates(const TInstant **instants, int count)
 {
   assert(count != 0);
   int newcount = 0;
@@ -1391,96 +1119,96 @@ text_cmp(text *arg1, text *arg2, Oid collid)
  *****************************************************************************/
 
 /**
- * Returns the addition of the two numbers
+ * Return the addition of the two numbers
  */
 Datum
-datum_add(Datum l, Datum r, Oid typel, Oid typer)
+datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   Datum result = 0;
-  if (typel == INT4OID)
+  if (typel == T_INT4)
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
   }
-  else /* typel == FLOAT8OID */
+  else /* typel == T_FLOAT8 */
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
   }
   return result;
 }
 
 /**
- * Returns the subtraction of the two numbers
+ * Return the subtraction of the two numbers
  */
 Datum
-datum_sub(Datum l, Datum r, Oid typel, Oid typer)
+datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   Datum result = 0;
-  if (typel == INT4OID)
+  if (typel == T_INT4)
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
   }
-  else /* typel == FLOAT8OID */
+  else /* typel == T_FLOAT8 */
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
   }
   return result;
 }
 
 /**
- * Returns the multiplication of the two numbers
+ * Return the multiplication of the two numbers
  */
 Datum
-datum_mult(Datum l, Datum r, Oid typel, Oid typer)
+datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   Datum result = 0;
-  if (typel == INT4OID)
+  if (typel == T_INT4)
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
   }
-  else /* typel == FLOAT8OID */
+  else /* typel == T_FLOAT8 */
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
   }
   return result;
 }
 
 /**
- * Returns the division of the two numbers
+ * Return the division of the two numbers
  */
 Datum
-datum_div(Datum l, Datum r, Oid typel, Oid typer)
+datum_div(Datum l, Datum r, CachedType typel, CachedType typer)
 {
-  Datum result = 0;
-  if (typel == INT4OID)
+  Datum result;
+  if (typel == T_INT4)
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
   }
-  else /* typel == FLOAT8OID */
+  else /* typel == T_FLOAT8 */
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
-    else /* typer == FLOAT8OID */
+    else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
   }
   return result;
@@ -1608,5 +1336,248 @@ hypot4d(double x, double y, double z, double m)
   mx = m / x;
   return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Oid functions
+ *****************************************************************************/
+
+/**
+ * Return the Oid of the range type corresponding to the base type
+ */
+Oid
+basetype_rangeoid(CachedType basetype)
+{
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
+    return type_oid(T_INTRANGE);
+  if (basetype == T_FLOAT8)
+    return type_oid(T_FLOATRANGE);
+  elog(ERROR, "unknown range type for base type: %d", basetype);
+}
+
+/*****************************************************************************
+ * Array functions
+ *****************************************************************************/
+
+/**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
+ * Free a C array of Datum pointers
+ */
+void
+pfree_datumarr(Datum *array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(DatumGetPointer(array[i]));
+  pfree(array);
+  return;
+}
+
+/**
+ * Return the string resulting from assembling the array of strings.
+ * The function frees the memory of the input strings after finishing.
+ */
+char *
+stringarr_to_string(char **strings, int count, int outlen,
+  char *prefix, char open, char close)
+{
+  char *result = palloc(strlen(prefix) + outlen + 3);
+  result[outlen] = '\0';
+  size_t pos = 0;
+  strcpy(result, prefix);
+  pos += strlen(prefix);
+  result[pos++] = open;
+  for (int i = 0; i < count; i++)
+  {
+    strcpy(result + pos, strings[i]);
+    pos += strlen(strings[i]);
+    result[pos++] = ',';
+    result[pos++] = ' ';
+    pfree(strings[i]);
+  }
+  result[pos - 2] = close;
+  result[pos - 1] = '\0';
+  pfree(strings);
+  return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing datums
+ * If array elements are pass-by-ref data type, the returned Datums will
+ * be pointers into the array object.
+ */
+Datum *
+datumarr_extract(ArrayType *array, int *count)
+{
+  bool byval;
+  int16 typlen;
+  char align;
+  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
+  Datum *result;
+  deconstruct_array(array, array->elemtype, typlen, byval, align,
+    &result, NULL, count);
+  return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing timestamps
+ */
+TimestampTz *
+timestamparr_extract(ArrayType *array, int *count)
+{
+  return (TimestampTz *) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing periods
+ */
+Period **
+periodarr_extract(ArrayType *array, int *count)
+{
+  return (Period **) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing ranges
+ */
+RangeType **
+rangearr_extract(ArrayType *array, int *count)
+{
+  return (RangeType **) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing temporal values
+ */
+Temporal **
+temporalarr_extract(ArrayType *array, int *count)
+{
+  Temporal **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd',
+    (Datum **) &result, NULL, count);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Convert a C array of datums into a PostgreSQL array.
+ * Note that the values will be copied into the object even if pass-by-ref type
+ */
+ArrayType *
+datumarr_to_array(Datum *values, int count, CachedType type)
+{
+  int16 elmlen;
+  bool elmbyval;
+  char elmalign;
+  assert(count > 0);
+  Oid typid = type_oid(type);
+  get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
+  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
+    elmalign);
+  return result;
+}
+
+/**
+ * Convert a C array of timestamps into a PostgreSQL array
+ */
+ArrayType *
+timestamparr_to_array(const TimestampTz *times, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
+    8, true, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of periods into a PostgreSQL array
+ */
+ArrayType *
+periodarr_to_array(const Period **periods, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array((Datum *) periods, count,
+    type_oid(T_PERIOD), sizeof(Period), false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of ranges into a PostgreSQL array
+ */
+ArrayType *
+rangearr_to_array(RangeType **ranges, int count, CachedType type)
+{
+  assert(count > 0);
+  Oid typid = type_oid(type);
+  ArrayType *result = construct_array((Datum *) ranges, count, typid, -1,
+    false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of text values into a PostgreSQL array
+ */
+ArrayType *
+strarr_to_textarray(char **strarr, int count)
+{
+  assert(count > 0);
+  text **textarr = (text **) palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    textarr[i] = cstring_to_text(strarr[i]);
+  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
+    false, 'i');
+  pfree_array((void **)textarr, count);
+  return result;
+}
+
+/**
+ * Convert a C array of temporal values into a PostgreSQL array
+ */
+ArrayType *
+temporalarr_to_array(const Temporal **temporalarr, int count)
+{
+  assert(count > 0);
+  Oid temptypid = type_oid(temporalarr[0]->temptype);
+  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
+    -1, false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of spatiotemporal boxes into a PostgreSQL array
+ */
+ArrayType *
+stboxarr_to_array(STBOX *boxarr, int count)
+{
+  assert(count > 0);
+  STBOX **boxes = palloc(sizeof(STBOX *) * count);
+  for (int i = 0; i < count; i++)
+    boxes[i] = &boxarr[i];
+  ArrayType *result = construct_array((Datum *) boxes, count,
+    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
+  pfree(boxes);
+  return result;
+}
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

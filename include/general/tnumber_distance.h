@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,30 +35,32 @@
 #ifndef __TNUMBER_DISTANCE_H__
 #define __TNUMBER_DISTANCE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <float.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/tempcache.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
 /* Distance functions */
 
-extern Datum distance_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum distance_tnumber_base(PG_FUNCTION_ARGS);
-extern Datum distance_tnumber_tnumber(PG_FUNCTION_ARGS);
+extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value,
+  CachedType valuetype, CachedType restype);
+extern Temporal *distance_tnumber_tnumber(const Temporal *temp1,
+  const Temporal *temp2, CachedType restype);
+
+extern Datum number_distance(Datum l, Datum r, CachedType typel,
+  CachedType typer);
 
 /* Nearest approach distance */
 
-extern Datum NAD_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum NAD_tnumber_base(PG_FUNCTION_ARGS);
-extern Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern double NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern double nad_tnumber_number(const Temporal *temp, Datum value,
+  CachedType basetype);
+extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern double nad_tnumber_tbox(const Temporal *temp, const TBOX *box);
 
 // NAI and shortestline functions are not yet implemented
 // Are they useful ?

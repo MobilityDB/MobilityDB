@@ -1,13 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,11 +29,13 @@
 
 /**
  * @file temporal_tile.c
- * Bucket and tile functions for temporal types.
- * The time bucket functions are inspired from TimescaleDB.
+ * @brief Bucket and tile functions for temporal types.
+ *
+ * @note The time bucket functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
 #include <float.h>
@@ -44,12 +45,12 @@
 #endif
 #include <utils/builtins.h>
 #include <utils/datetime.h>
-
+/* MobilityDB */
 #include "general/temporal_tile.h"
 #include "general/tempcache.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal.h"
 #include "general/temporal_util.h"
@@ -66,12 +67,12 @@
  * @param[in] offset Origin of the buckets
  */
 static int
-int_bucket_internal(int value, int size, int offset)
+int_bucket(int value, int size, int offset)
 {
   assert(size > 0);
   if (offset != 0)
   {
-    /* 
+    /*
      * We need to ensure that the value is in range _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
@@ -111,12 +112,12 @@ int_bucket_internal(int value, int size, int offset)
  * @param[in] offset Origin of the buckets
  */
 double
-float_bucket_internal(double value, double size, double offset)
+float_bucket(double value, double size, double offset)
 {
   assert(size > 0.0);
   if (offset != 0)
   {
-    /* 
+    /*
      * We need to ensure that the value is in range _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
@@ -143,33 +144,34 @@ float_bucket_internal(double value, double size, double offset)
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] offset Origin of the buckets
- * @param[in] type Oid of the data type of the arguments
+ * @param[in] basetype Data type of the arguments
  */
 static Datum
-number_bucket_internal(Datum value, Datum size, Datum offset, Oid type)
+number_bucket(Datum value, Datum size, Datum offset,
+  CachedType basetype)
 {
-  ensure_tnumber_base_type(type);
-  if (type == INT4OID)
-    return Int32GetDatum(int_bucket_internal(DatumGetInt32(value),
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
+    return Int32GetDatum(int_bucket(DatumGetInt32(value),
       DatumGetInt32(size), DatumGetInt32(offset)));
-  else /* type == FLOAT8OID */
-    return Float8GetDatum(float_bucket_internal(DatumGetFloat8(value),
+  else /* basetype == T_FLOAT8 */
+    return Float8GetDatum(float_bucket(DatumGetFloat8(value),
       DatumGetFloat8(size), DatumGetFloat8(offset)));
 }
 
-PG_FUNCTION_INFO_V1(number_bucket);
+PG_FUNCTION_INFO_V1(Number_bucket);
 /**
  * Return the initial value of the bucket in which an integer value falls.
  */
 PGDLLEXPORT Datum
-number_bucket(PG_FUNCTION_ARGS)
+Number_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
-  Oid type = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  ensure_positive_datum(size, type);
-  Datum result = number_bucket_internal(value, size, origin, type);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  ensure_positive_datum(size, basetype);
+  Datum result = number_bucket(value, size, origin, basetype);
   PG_RETURN_DATUM(result);
 }
 
@@ -182,17 +184,16 @@ number_bucket(PG_FUNCTION_ARGS)
  *
  * @param[in] timestamp Input timestamp
  * @param[in] size Size of the time buckets in PostgreSQL time units
- * @param[in] torigin Origin of the buckets
+ * @param[in] offset Origin of the buckets
  */
 TimestampTz
-timestamptz_bucket_internal(TimestampTz timestamp, int64 size,
+timestamptz_bucket(TimestampTz timestamp, int64 size,
   TimestampTz offset)
 {
-  // NEW VERSION
   assert(size > 0);
   if (offset != 0)
   {
-    /* 
+    /*
      * We need to ensure that the timestamp is in range _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * time is at least the minimum time value value (DT_NOBEGIN) and when
@@ -225,7 +226,7 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 size,
 }
 
 /**
- * Returns the interval in the same representation as Postgres timestamps.
+ * Return the interval in the same representation as Postgres timestamps.
  */
 int64
 get_interval_units(Interval *interval)
@@ -233,12 +234,12 @@ get_interval_units(Interval *interval)
   return interval->time + (interval->day * USECS_PER_DAY);
 }
 
-PG_FUNCTION_INFO_V1(timestamptz_bucket);
+PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.
  */
 PGDLLEXPORT Datum
-timestamptz_bucket(PG_FUNCTION_ARGS)
+Timestamptz_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz timestamp = PG_GETARG_TIMESTAMPTZ(0);
   if (TIMESTAMP_NOT_FINITE(timestamp))
@@ -247,7 +248,7 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
   ensure_valid_duration(duration);
   int64 tunits = get_interval_units(duration);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz result = timestamptz_bucket_internal(timestamp, tunits, origin);
+  TimestampTz result = timestamptz_bucket(timestamp, tunits, origin);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
@@ -260,14 +261,14 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
  *
  * @param[in] value Start value of the bucket
  * @param[in] size Size of the buckets
- * @param[in] type Oid of the data type of the arguments
+ * @param[in] basetype Type of the arguments
  */
 static RangeType *
-range_bucket_get(Datum value, Datum size, Oid type)
+range_bucket_get(Datum value, Datum size, CachedType basetype)
 {
   Datum lower = value;
-  Datum upper = datum_add(value, size, type, type);
-  return range_make(lower, upper, true, false, type);
+  Datum upper = datum_add(value, size, basetype, basetype);
+  return range_make(lower, upper, true, false, basetype);
 }
 
 /**
@@ -291,14 +292,14 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
   state->done = false;
   state->i = 1;
   state->temp = temp;
-  state->basetypid = (r->rangetypid == type_oid(T_INTRANGE)) ? 
-    INT4OID : FLOAT8OID;
+  state->basetype = (r->rangetypid == type_oid(T_INTRANGE)) ?
+    T_INT4 : T_FLOAT8;
   state->size = size;
   state->origin = origin;
   Datum lower = lower_datum(r);
   Datum upper = upper_datum(r);
-  state->minvalue = number_bucket_internal(lower, size, origin, state->basetypid);
-  state->maxvalue = number_bucket_internal(upper, size, origin, state->basetypid);
+  state->minvalue = number_bucket(lower, size, origin, state->basetype);
+  state->maxvalue = number_bucket(upper, size, origin, state->basetype);
   state->value = state->minvalue;
   return state;
 }
@@ -315,20 +316,21 @@ range_bucket_state_next(RangeBucketState *state)
     return;
   /* Move to the next bucket */
   state->i++;
-  state->value = datum_add(state->value, state->size, state->basetypid,
-    state->basetypid);
-  if (datum_gt(state->value, state->maxvalue, state->basetypid))
+  state->value = datum_add(state->value, state->size, state->basetype,
+    state->basetype);
+  if (datum_gt(state->value, state->maxvalue, state->basetype))
     state->done = true;
   return;
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(range_bucket_list);
+PG_FUNCTION_INFO_V1(Range_bucket_list);
 /**
  * Generate a range bucket list.
  */
-Datum range_bucket_list(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Range_bucket_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   RangeBucketState *state;
@@ -341,28 +343,26 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    RangeType *bounds = PG_GETARG_RANGE(0);
-#else
     RangeType *bounds = PG_GETARG_RANGE_P(0);
-#endif
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    Oid type = get_fn_expr_argtype(fcinfo->flinfo, 1);
+    CachedType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
     ensure_positive_datum(size, type);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = range_bucket_state_make(NULL, bounds, size, origin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(bounds, 0);
   }
 
   /* Stuff done on every call of the function */
@@ -371,13 +371,20 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all buckets */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store index */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
   tuple_arr[1] = PointerGetDatum(range_bucket_get(state->value, state->size,
-    state->basetypid));
+    state->basetype));
   /* Advance state */
   range_bucket_state_next(state);
   /* Form tuple and return */
@@ -388,18 +395,19 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(range_bucket);
+PG_FUNCTION_INFO_V1(Range_bucket);
 /**
  * Generate an integer or float range bucket in a bucket list for ranges.
 */
-Datum range_bucket(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Range_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
-  Oid type = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  CachedType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   ensure_positive_datum(size, type);
   Datum origin = PG_GETARG_DATUM(2);
-  Datum value_bucket = number_bucket_internal(value, size, origin, type);
+  Datum value_bucket = number_bucket(value, size, origin, type);
   RangeType *result = range_bucket_get(value_bucket, size, type);
   PG_RETURN_POINTER(result);
 }
@@ -413,10 +421,9 @@ Datum range_bucket(PG_FUNCTION_ARGS)
  *
  * @param[in] t Start timestamp of the bucket
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
- * @param[in] torigin Origin of the buckets
  */
 static Period *
-period_bucket_get(TimestampTz t, int64 tunits, TimestampTz torigin)
+period_bucket_get(TimestampTz t, int64 tunits)
 {
   TimestampTz lower = t;
   TimestampTz upper = lower + tunits;
@@ -443,8 +450,8 @@ period_bucket_state_make(Period *p, int64 tunits, TimestampTz torigin)
   state->i = 1;
   state->tunits = tunits;
   state->torigin = torigin;
-  state->mint = timestamptz_bucket_internal(p->lower, tunits, torigin);
-  state->maxt = timestamptz_bucket_internal(p->upper, tunits, torigin);
+  state->mint = timestamptz_bucket(p->lower, tunits, torigin);
+  state->maxt = timestamptz_bucket(p->upper, tunits, torigin);
   state->t = state->mint;
   return state;
 }
@@ -469,11 +476,12 @@ period_bucket_state_next(PeriodBucketState *state)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_bucket_list);
+PG_FUNCTION_INFO_V1(Period_bucket_list);
 /**
  * Generate a period bucket list.
  */
-Datum period_bucket_list(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Period_bucket_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   PeriodBucketState *state;
@@ -486,7 +494,7 @@ Datum period_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Period *bounds = PG_GETARG_PERIOD(0);
+    Period *bounds = PG_GETARG_PERIOD_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
 
@@ -512,13 +520,18 @@ Datum period_bucket_list(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all buckets */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
-
+  }
   /* Store bucket time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
-  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->t, state->tunits,
-    state->torigin));
+  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->t, state->tunits));
   /* Advance state */
   period_bucket_state_next(state);
   /* Form tuple and return */
@@ -529,19 +542,20 @@ Datum period_bucket_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_bucket);
+PG_FUNCTION_INFO_V1(Period_bucket);
 /**
  * Generate a bucket in a bucket list for periods.
 */
-Datum period_bucket(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Period_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(duration);
   int64 tunits = get_interval_units(duration);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz time_bucket = timestamptz_bucket_internal(t, tunits, torigin);
-  Period *result = period_bucket_get(time_bucket, tunits, torigin);
+  TimestampTz time_bucket = timestamptz_bucket(t, tunits, torigin);
+  Period *result = period_bucket_get(time_bucket, tunits);
   PG_RETURN_POINTER(result);
 }
 
@@ -607,8 +621,8 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
 {
   TInstant **result = palloc(sizeof(TInstant *));
   TimestampTz *times = palloc(sizeof(TimestampTz));
-  result[0] = (TInstant *) inst;
-  times[0] = timestamptz_bucket_internal(inst->t, tunits, torigin);
+  result[0] = tinstant_copy(inst);
+  times[0] = timestamptz_bucket(inst->t, tunits, torigin);
   *buckets = times;
   *newcount = 1;
   return result;
@@ -620,14 +634,14 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * Split a temporal value into an array of fragments according to time buckets.
  *
  * @param[in] ti Temporal value
- * @param[in] start,end Start and end timestamps of the buckets
+ * @param[in] start Start timestamp of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a fragment
  * @param[out] newcount Number of values in the output array
  */
 static TInstantSet **
-tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end,
+tinstantset_time_split(const TInstantSet *ti, TimestampTz start,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   TInstantSet **result = palloc(sizeof(TInstantSet *) * count);
@@ -674,18 +688,18 @@ tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end
 /**
  * Split a temporal value into an array of fragments according to period buckets.
  *
- * @param[out] result Output array of fragments of the temporal value
- * @param[out] times Output array of bucket lower bounds
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
+ * @param[out] result Output array of fragments of the temporal value
+ * @param[out] times Output array of bucket lower bounds
  *
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int
-tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *seq,
-  TimestampTz start, TimestampTz end, int64 tunits, int count)
+tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
+  int64 tunits, int count, TSequence **result, TimestampTz *times)
 {
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
@@ -724,14 +738,14 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
       if (instants[k - 1]->t < upper)
       {
         if (linear)
-          tofree[l] = tsequence_at_timestamp1(instants[k - 1], inst, linear,
+          tofree[l] = tsegment_at_timestamp(instants[k - 1], inst, linear,
             upper);
         else
         {
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value(instants[k - 1]);
-          tofree[l] = tinstant_make(value, upper, seq->basetypid);
+          tofree[l] = tinstant_make(value, upper, seq->temptype);
         }
         instants[k++] = tofree[l++];
       }
@@ -744,7 +758,7 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
       upper += tunits;
       /* The second condition is needed for filtering unnecesary buckets for the
        * sequences composing a sequence set */
-      if (lower >= end || ! contains_period_timestamp_internal(&seq->period, lower))
+      if (lower >= end || ! contains_period_timestamp(&seq->period, lower))
         break;
       /* Reuse the end value of the previous bucket for the beginning of the bucket */
       if (lower < inst->t)
@@ -779,8 +793,8 @@ tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
 {
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  *newcount = tsequence_time_split1(result, times, seq, start, end, tunits,
-    count);
+  *newcount = tsequence_time_split1(seq, start, end, tunits, count,
+    result, times);
   *buckets = times;
   return result;
 }
@@ -807,7 +821,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       count, buckets, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
     for (int i = 0; i < *newcount; i++)
-      result[i] = tsequence_to_tsequenceset(sequences[i]);
+      result[i] = tsequence_tsequenceset(sequences[i]);
     pfree_array((void **) sequences, *newcount);
     return result;
   }
@@ -821,7 +835,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
   TSequence **fragments = palloc(sizeof(TSequence *) * (ts->count * count));
   /* Sequences for the buckets of the sequence set */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
-  /* Variable used to adjust the start timestamp passed to the 
+  /* Variable used to adjust the start timestamp passed to the
    * tsequence_time_split1 function in the loop */
   TimestampTz lower = start;
   int k = 0, /* Number of accumulated fragments of the current time bucket */
@@ -843,8 +857,8 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       upper += tunits;
     }
     /* Number of time buckets of the current sequence */
-    int l = tsequence_time_split1(sequences, &times[m], seq, lower, end,
-      tunits, count); 
+    int l = tsequence_time_split1(seq, lower, end, tunits, count,
+      sequences, &times[m]);
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
     {
@@ -860,12 +874,12 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       }
       else
       {
-        result[m++] = tsequence_to_tsequenceset(sequences[0]);
+        result[m++] = tsequence_tsequenceset(sequences[0]);
         pfree(sequences[0]);
       }
       for (int j = 1; j < l - 1; j++)
       {
-        result[m++] = tsequence_to_tsequenceset(sequences[j]);
+        result[m++] = tsequence_tsequenceset(sequences[j]);
         pfree(sequences[j]);
       }
     }
@@ -891,8 +905,8 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
 /*****************************************************************************/
 
 /**
- * Split a temporal value into fragments with respect to period buckets
- * (dispatch function).
+ * @ingroup libmeos_temporal_tiling
+ * @brief Split a temporal value into fragments with respect to period buckets
  *
  * @param[in] temp Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
@@ -903,7 +917,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
  * @param[out] newcount Number of values in the output array
  */
 Temporal **
-temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
+temporal_time_split(Temporal *temp, TimestampTz start, TimestampTz end,
   int64 tunits, TimestampTz torigin, int count, TimestampTz **buckets,
   int *newcount)
 {
@@ -917,7 +931,7 @@ temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
       tunits, torigin, buckets, newcount);
   else if (temp->subtype == INSTANTSET)
     fragments = (Temporal **) tinstantset_time_split((const TInstantSet *) temp,
-      start, end, tunits, count, buckets, newcount);
+      start, tunits, count, buckets, newcount);
   else if (temp->subtype == SEQUENCE)
     fragments = (Temporal **) tsequence_time_split((const TSequence *) temp,
       start, end, tunits, count, buckets, newcount);
@@ -927,11 +941,12 @@ temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
   return fragments;
 }
 
-PG_FUNCTION_INFO_V1(temporal_time_split);
+PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
  * Split a temporal value into fragments with respect to period buckets.
  */
-Datum temporal_time_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Temporal_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   TimeSplitState *state;
@@ -944,7 +959,7 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
 
@@ -959,19 +974,19 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the bounds */
     Period p;
-    temporal_period(&p, temp);
+    temporal_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
-    TimestampTz start_bucket = timestamptz_bucket_internal(start_time, tunits,
+    TimestampTz start_bucket = timestamptz_bucket(start_time, tunits,
       torigin);
     /* We need to add tunits to obtain the end timestamp of the last bucket */
-    TimestampTz end_bucket = timestamptz_bucket_internal(end_time, tunits,
+    TimestampTz end_bucket = timestamptz_bucket(end_time, tunits,
       torigin) + tunits;
     int count = (int) (((int64) end_bucket - (int64) start_bucket) / tunits);
     /* Split the temporal value */
     TimestampTz *buckets;
     int newcount;
-    Temporal **fragments = temporal_time_split_internal(temp, start_bucket,
+    Temporal **fragments = temporal_time_split(temp, start_bucket,
       end_bucket, tunits, torigin, count, &buckets, &newcount);
     assert(newcount > 0);
 
@@ -981,6 +996,7 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(temp, 0);
   }
 
   /* Stuff done on every call of the function */
@@ -989,7 +1005,16 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've output all the fragments */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    for (int i = 0; i < state->count; i++)
+      pfree(state->fragments[i]);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store timestamp and split */
   tuple_arr[0] = TimestampTzGetDatum(state->buckets[state->i]);
@@ -1049,13 +1074,13 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   state->tunits = tunits;
   if (xsize)
   {
-    state->box.xmin = float_bucket_internal(box->xmin, xsize, xorigin);
-    state->box.xmax = float_bucket_internal(box->xmax, xsize, xorigin);
+    state->box.xmin = float_bucket(box->xmin, xsize, xorigin);
+    state->box.xmax = float_bucket(box->xmax, xsize, xorigin);
   }
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
-    state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+    state->box.tmin = timestamptz_bucket(box->tmin, tunits, torigin);
+    state->box.tmax = timestamptz_bucket(box->tmax, tunits, torigin);
   }
   state->value = state->box.xmin;
   state->t = state->box.tmin;
@@ -1090,11 +1115,12 @@ tbox_tile_state_next(TboxGridState *state)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_multidim_grid);
+PG_FUNCTION_INFO_V1(Tbox_multidim_grid);
 /**
  * Generate a multidimensional grid for temporal numbers.
  */
-Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tbox_multidim_grid(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   TboxGridState *state;
@@ -1116,7 +1142,7 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Ensure parameter validity */
     ensure_has_X_tbox(bounds);
     ensure_has_T_tbox(bounds);
-    ensure_positive_datum(Float8GetDatum(xsize), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
 
@@ -1138,7 +1164,14 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all tiles */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store tile value and time */
   tuple_arr[0] = Int32GetDatum(state->i);
@@ -1155,23 +1188,24 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_multidim_tile);
+PG_FUNCTION_INFO_V1(Tbox_multidim_tile);
 /**
  * Generate a tile in a multidimensional grid for temporal numbers.
 */
-Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tbox_multidim_tile(PG_FUNCTION_ARGS)
 {
   double value = PG_GETARG_FLOAT8(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   double xsize = PG_GETARG_FLOAT8(2);
-  ensure_positive_datum(Float8GetDatum(xsize), FLOAT8OID);
+  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
   Interval *duration = PG_GETARG_INTERVAL_P(3);
   ensure_valid_duration(duration);
   int64 tunits = get_interval_units(duration);
   double xorigin = PG_GETARG_FLOAT8(4);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
-  double value_bucket = float_bucket_internal(value, xsize, xorigin);
-  TimestampTz time_bucket = timestamptz_bucket_internal(t, tunits, torigin);
+  double value_bucket = float_bucket(value, xsize, xorigin);
+  TimestampTz time_bucket = timestamptz_bucket(t, tunits, torigin);
   TBOX *result = tbox_tile_get(value_bucket, time_bucket, xsize, tunits);
   PG_RETURN_POINTER(result);
 }
@@ -1229,16 +1263,16 @@ value_split_state_next(ValueSplitState *state)
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
- * @param[in] type Oid of the data type of the arguments
+ * @param[in] type Type of the arguments
  */
 static int
-bucket_position(Datum value, Datum size, Datum origin, Oid type)
+bucket_position(Datum value, Datum size, Datum origin, CachedType type)
 {
-  ensure_tnumber_base_type(type);
-  if (type == INT4OID)
+  ensure_tnumber_basetype(type);
+  if (type == T_INT4)
     return (DatumGetInt32(value) - DatumGetInt32(origin)) /
       DatumGetInt32(size);
-  else /* type == FLOAT8OID */
+  else /* type == T_FLOAT8 */
     return (int) floor( (DatumGetFloat8(value) - DatumGetFloat8(origin)) /
       DatumGetFloat8(size) );
 }
@@ -1259,11 +1293,11 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Datum **buckets, int *newcount)
 {
   Datum value = tinstant_value(inst);
-  Oid basetypid = inst->basetypid;
+  CachedType basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
-  result[0] = (TInstant *) inst;
-  values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
+  result[0] = tinstant_copy(inst);
+  values[0] = number_bucket(value, size, start_bucket, basetype);
   *buckets = values;
   *newcount = 1;
   return result;
@@ -1285,7 +1319,7 @@ static TInstantSet **
 tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  Oid basetypid = ti->basetypid;
+  CachedType basetype = temptype_basetype(ti->temptype);
   TInstantSet **result;
   Datum *values, value, bucket_value;
 
@@ -1296,7 +1330,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
     values = palloc(sizeof(Datum));
     result[0] = tinstantset_copy(ti);
     value = tinstant_value(tinstantset_inst_n(ti, 0));
-    values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
+    values[0] = number_bucket(value, size, start_bucket, basetype);
     *buckets = values;
     *newcount = 1;
     return result;
@@ -1310,8 +1344,8 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     value = tinstant_value(inst);
-    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
-    int bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
+    bucket_value = number_bucket(value, size, start_bucket, basetype);
+    int bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     int inst_no = numinsts[bucket_no]++;
     instants[bucket_no * ti->count + inst_no] = inst;
   }
@@ -1327,7 +1361,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
       result[k] = tinstantset_make(&instants[i * ti->count], numinsts[i], MERGE_NO);
       values[k++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, basetypid, basetypid);
+    bucket_value = datum_add(bucket_value, size, basetype, basetype);
   }
   pfree(instants);
   pfree(numinsts);
@@ -1355,7 +1389,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  Oid basetypid = seq->basetypid;
+  CachedType basetype = temptype_basetype(seq->temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
 
@@ -1363,8 +1397,8 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   if (seq->count == 1)
   {
     value = tinstant_value(tsequence_inst_n(seq, 0));
-    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
-    bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
+    bucket_value = number_bucket(value, size, start_bucket, basetype);
+    bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tsequence_copy(seq);
     return;
@@ -1378,8 +1412,8 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   {
     inst1 = tsequence_inst_n(seq, i - 1);
     value = tinstant_value(inst1);
-    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
-    bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
+    bucket_value = number_bucket(value, size, start_bucket, basetype);
+    bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no]++;
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     bool lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
@@ -1388,7 +1422,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     int k = 1;
     if (i < seq->count)
     {
-      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, basetypid);
+      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, seq->temptype);
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
@@ -1402,8 +1436,8 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   {
     inst1 = tsequence_inst_n(seq, seq->count - 1);
     value = tinstant_value(inst1);
-    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
-    bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
+    bucket_value = number_bucket(value, size, start_bucket, basetype);
+    bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tsequence_make(&inst1, 1,
       true, true, STEP, NORMALIZE);
@@ -1431,7 +1465,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  Oid basetypid = seq->basetypid;
+  CachedType basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
 
@@ -1439,8 +1473,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   if (seq->count == 1)
   {
     value1 = tinstant_value(tsequence_inst_n(seq, 0));
-    bucket_value1 = number_bucket_internal(value1, size, start_bucket, basetypid);
-    bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetypid);
+    bucket_value1 = number_bucket(value1, size, start_bucket, basetype);
+    bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no1]++;
     result[bucket_no1 * numcols + seq_no] = tsequence_copy(seq);
     return;
@@ -1451,19 +1485,19 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   int l = 0;   /* counter for the instants to free */
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   value1 = tinstant_value(inst1);
-  bucket_value1 = number_bucket_internal(value1, size, start_bucket, basetypid);
-  bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetypid);
+  bucket_value1 = number_bucket(value1, size, start_bucket, basetype);
+  bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetype);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
-    Datum bucket_value2 = number_bucket_internal(value2, size, start_bucket, basetypid);
-    int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, basetypid);
+    Datum bucket_value2 = number_bucket(value2, size, start_bucket, basetype);
+    int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, basetype);
     /* Take into account on whether the segment is increasing or decreasing */
     Datum min_value, max_value;
     int first_bucket, last_bucket, first, last;
     bool lower_inc1, upper_inc1, lower_inc_def, upper_inc_def;
-    bool incr = datum_lt(value1, value2, basetypid);
+    bool incr = datum_lt(value1, value2, basetype);
     if (incr)
     {
       min_value = value1;
@@ -1490,50 +1524,45 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       lower_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
       upper_inc1 = (i == 1) ? seq->period.lower_inc : true;
     }
-    if (datum_eq(min_value, max_value, basetypid))
+    if (datum_eq(min_value, max_value, basetype))
     {
       lower_inc1 = upper_inc1 = true;
     }
-    RangeType *segrange = range_make(min_value, max_value, lower_inc1, upper_inc1, basetypid);
+    RangeType *segrange = range_make(min_value, max_value, lower_inc1, upper_inc1, basetype);
     TInstant *bounds[2];
     bounds[first] = incr ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = incr ? bucket_value1 : bucket_value2;
-    Datum bucket_upper = datum_add(bucket_lower, size, basetypid, basetypid);
+    Datum bucket_upper = datum_add(bucket_lower, size, basetype, basetype);
     for (int j = first_bucket; j <= last_bucket; j++)
     {
       /* Choose between interpolate or take one of the segment ends */
-      if (datum_lt(min_value, bucket_upper, basetypid) &&
-        datum_lt(bucket_upper, max_value, basetypid))
+      if (datum_lt(min_value, bucket_upper, basetype) &&
+        datum_lt(bucket_upper, max_value, basetype))
       {
         TimestampTz t;
         /* To reduce the roundoff errors we may take the bound instead of
          * projecting the value to the timestamp */
         Datum projvalue;
-        tlinearseq_intersection_value(inst1, inst2, bucket_upper, basetypid,
+        tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetype,
           &projvalue, &t);
         tofree[l++] = bounds[last] =  RANGE_ROUNDOFF ?
-          tinstant_make(bucket_upper, t, basetypid) :
-          tinstant_make(projvalue, t, basetypid);
+          tinstant_make(bucket_upper, t, seq->temptype) :
+          tinstant_make(projvalue, t, seq->temptype);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
       /* Determine the bounds of the resulting sequence */
       if (j == first_bucket || j == last_bucket)
       {
-        RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, basetypid);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-        RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
-          PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
-#else
+        RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, basetype);
         RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
           PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
-#endif
         if (incr)
         {
           lower_inc1 = lower_inc(intersect);
           upper_inc1 = upper_inc(intersect);
         }
-        else 
+        else
         {
           lower_inc1 = upper_inc(intersect);
           upper_inc1 = lower_inc(intersect);
@@ -1553,11 +1582,11 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         break;
       seq_no = numseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true, 
+        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
-      bucket_upper = datum_add(bucket_upper, size, basetypid, basetypid);
+      bucket_upper = datum_add(bucket_upper, size, basetype, basetype);
     }
     pfree(segrange);
     inst1 = inst2;
@@ -1585,15 +1614,15 @@ static TSequenceSet **
 tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  Oid basetypid = seq->basetypid;
+  CachedType basetype = temptype_basetype(seq->temptype);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     TSequenceSet **result = palloc(sizeof(TSequenceSet *));
     Datum *values = palloc(sizeof(Datum));
-    result[0] = tsequence_to_tsequenceset(seq);
+    result[0] = tsequence_tsequenceset(seq);
     Datum value = tinstant_value(tsequence_inst_n(seq, 0));
-    values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
+    values[0] = number_bucket(value, size, start_bucket, basetype);
     *buckets = values;
     *newcount = 1;
     return result;
@@ -1622,7 +1651,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
         numseqs[i], NORMALIZE);
       values[k++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, basetypid, basetypid);
+    bucket_value = datum_add(bucket_value, size, basetype, basetype);
   }
   pfree(sequences);
   pfree(numseqs);
@@ -1652,7 +1681,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
       count, buckets, newcount);
 
   /* General case */
-  Oid basetypid = ts->basetypid;
+  CachedType basetype = temptype_basetype(ts->temptype);
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ts->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
@@ -1679,7 +1708,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
         numseqs[i], NORMALIZE);
       values[k++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, basetypid, basetypid);
+    bucket_value = datum_add(bucket_value, size, basetype, basetype);
   }
   pfree(bucketseqs);
   pfree(numseqs);
@@ -1691,7 +1720,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
 /*****************************************************************************/
 
 Temporal **
-tnumber_value_split_internal(Temporal *temp, Datum start_bucket, Datum size,
+tnumber_value_split(Temporal *temp, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   assert(count > 0);
@@ -1713,11 +1742,12 @@ tnumber_value_split_internal(Temporal *temp, Datum start_bucket, Datum size,
   return fragments;
 }
 
-PG_FUNCTION_INFO_V1(tnumber_value_split);
+PG_FUNCTION_INFO_V1(Tnumber_value_split);
 /**
  * Split a temporal value into fragments with respect to period buckets.
  */
-Datum tnumber_value_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tnumber_value_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   ValueSplitState *state;
@@ -1730,13 +1760,13 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    Oid basetypid = temp->basetypid;
-    ensure_positive_datum(size, basetypid);
+    CachedType basetype = temptype_basetype(temp->temptype);
+    ensure_positive_datum(size, basetype);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
@@ -1744,13 +1774,13 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    RangeType *range = tnumber_value_range_internal((const Temporal *) temp);
+    RangeType *range = tnumber_range((const Temporal *) temp);
     Datum start_value = lower_datum(range);
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(upper_datum(range), size, basetypid, basetypid);
-    Datum start_bucket = number_bucket_internal(start_value, size, origin, basetypid);
-    Datum end_bucket = number_bucket_internal(end_value, size, origin, basetypid);
-    int count = (basetypid == INT4OID) ?
+    Datum end_value = datum_add(upper_datum(range), size, basetype, basetype);
+    Datum start_bucket = number_bucket(start_value, size, origin, basetype);
+    Datum end_bucket = number_bucket(end_value, size, origin, basetype);
+    int count = (basetype == T_INT4) ?
       (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) /
         DatumGetInt32(size) :
       floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
@@ -1759,7 +1789,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     /* Split the temporal value */
     Datum *buckets;
     int newcount;
-    Temporal **fragments = tnumber_value_split_internal(temp, start_bucket, size,
+    Temporal **fragments = tnumber_value_split(temp, start_bucket, size,
       count, &buckets, &newcount);
     assert(newcount > 0);
 
@@ -1769,6 +1799,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(temp, 0);
   }
 
   /* Stuff done on every call of the function */
@@ -1777,7 +1808,16 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've output all the fragments */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    for (int i = 0; i < state->count; i++)
+      pfree(state->fragments[i]);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store timestamp and split */
   tuple_arr[0] = state->buckets[state->i];
@@ -1837,11 +1877,12 @@ value_time_split_state_next(ValueTimeSplitState *state)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_value_time_split);
+PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
  * Split a temporal value into fragments with respect to period tiles.
  */
-Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tnumber_value_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   ValueTimeSplitState *state;
@@ -1854,15 +1895,15 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Datum size = PG_GETARG_DATUM(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     Datum origin = PG_GETARG_DATUM(3);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
     /* Ensure parameter validity */
-    Oid basetypid = temp->basetypid;
-    ensure_positive_datum(size, basetypid);
+    CachedType basetype = temptype_basetype(temp->temptype);
+    ensure_positive_datum(size, basetype);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
 
@@ -1872,25 +1913,25 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    RangeType *range = tnumber_value_range_internal((const Temporal *) temp);
+    RangeType *range = tnumber_range((const Temporal *) temp);
     Datum start_value = lower_datum(range);
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(upper_datum(range), size, basetypid, basetypid);
-    Datum start_bucket = number_bucket_internal(start_value, size, origin, basetypid);
-    Datum end_bucket = number_bucket_internal(end_value, size, origin, basetypid);
-    int value_count = (basetypid == INT4OID) ?
+    Datum end_value = datum_add(upper_datum(range), size, basetype, basetype);
+    Datum start_bucket = number_bucket(start_value, size, origin, basetype);
+    Datum end_bucket = number_bucket(end_value, size, origin, basetype);
+    int value_count = (basetype == T_INT4) ?
       (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) / DatumGetInt32(size) :
       floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) / DatumGetFloat8(size));
 
     /* Compute the time bounds */
     Period p;
-    temporal_period(&p, temp);
+    temporal_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
-    TimestampTz start_time_bucket = timestamptz_bucket_internal(start_time,
+    TimestampTz start_time_bucket = timestamptz_bucket(start_time,
       tunits, torigin);
     /* We need to add tunits to obtain the end timestamp of the last bucket */
-    TimestampTz end_time_bucket = timestamptz_bucket_internal(end_time, tunits,
+    TimestampTz end_time_bucket = timestamptz_bucket(end_time, tunits,
       torigin) + tunits;
     int time_count = (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
 
@@ -1903,16 +1944,16 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     Temporal **fragments = palloc(sizeof(Temporal *) * count);
     int k = 0;
     Datum lower_value = start_bucket;
-    while (datum_lt(lower_value, end_bucket, basetypid))
+    while (datum_lt(lower_value, end_bucket, basetype))
     {
-      Datum upper_value = datum_add(lower_value, size, basetypid, basetypid);
-      range = range_make(lower_value, upper_value, true, false, basetypid);
-      Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
+      Datum upper_value = datum_add(lower_value, size, basetype, basetype);
+      range = range_make(lower_value, upper_value, true, false, basetype);
+      Temporal *atrange = tnumber_restrict_range(temp, range, REST_AT);
       if (atrange != NULL)
       {
         int num_time_splits;
         TimestampTz *times;
-        Temporal **time_splits = temporal_time_split_internal(atrange,
+        Temporal **time_splits = temporal_time_split(atrange,
           start_time_bucket, end_time_bucket, tunits, torigin, time_count, &times,
           &num_time_splits);
         for (int i = 0; i < num_time_splits; i++)
@@ -1937,6 +1978,7 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(temp, 0);
   }
 
   /* stuff done on every call of the function */
@@ -1945,7 +1987,16 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've output all the fragments */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    for (int i = 0; i < state->count; i++)
+      pfree(state->fragments[i]);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store value, timestamp, and split */
   tuple_arr[0] = state->value_buckets[state->i];

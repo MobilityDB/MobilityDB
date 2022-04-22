@@ -1,36 +1,35 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
- *@file time_analyze.c
- * Functions for gathering statistics from time type columns
+ * @file time_analyze.c
+ * @brief Functions for gathering statistics from time type columns.
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.
  * For a period type column, histograms of lower and upper bounds, and
@@ -45,18 +44,20 @@
  */
 #include "general/time_analyze.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
+#include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/tempcache.h"
 
-static void timetype_compute_stats(CachedType type, VacAttrStats *stats,
-  AnalyzeAttrFetchFunc fetchfunc, int samplerows);
+static void timetype_compute_stats(VacAttrStats *stats,
+  AnalyzeAttrFetchFunc fetchfunc, int samplerows, CachedType type);
 static void period_compute_stats(VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void timestampset_compute_stats(VacAttrStats *stats,
@@ -96,10 +97,8 @@ void
 period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   PeriodBound *lowers, PeriodBound *uppers, float8 *lengths)
 {
-  int num_hist,
-    num_bins = stats->attr->attstattarget;
-  Datum *bound_hist_values;
-  Datum *length_hist_values;
+  int num_hist, num_bins = stats->attr->attstattarget;
+  Datum *bound_hist_values, *length_hist_values;
   MemoryContext old_cxt;
 
   /* Must copy the target values into anl_context */
@@ -238,8 +237,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] samplerows Number of sample rows
  */
 static void
-timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
-  AnalyzeAttrFetchFunc fetchfunc, int samplerows)
+timetype_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, CachedType timetype)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *lengths;
@@ -274,20 +273,20 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
       timetype == T_PERIODSET);
     if (timetype == T_PERIOD)
     {
-      period = DatumGetPeriod(value);
+      period = DatumGetPeriodP(value);
       /* Adjust the size */
       total_width += sizeof(Period);
     }
     else if (timetype == T_TIMESTAMPSET)
     {
-      TimestampSet *ts= DatumGetTimestampSet(value);
+      TimestampSet *ts= DatumGetTimestampSetP(value);
       period = timestampset_bbox_ptr(ts);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
     else
     {
-      PeriodSet *ps= DatumGetPeriodSet(value);
+      PeriodSet *ps= DatumGetPeriodSetP(value);
       period = periodset_bbox_ptr(ps);
       /* Adjust the size */
       total_width += VARSIZE(ps);
@@ -341,18 +340,18 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
  */
 static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
-  timetype_compute_stats(T_PERIOD, stats, fetchfunc, samplerows);
+  timetype_compute_stats(stats, fetchfunc, samplerows, T_PERIOD);
   return;
 }
 
-PG_FUNCTION_INFO_V1(period_analyze);
+PG_FUNCTION_INFO_V1(Period_analyze);
 /**
  *  Compute statistics for period columns
  */
 PGDLLEXPORT Datum
-period_analyze(PG_FUNCTION_ARGS)
+Period_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;
@@ -377,18 +376,18 @@ period_analyze(PG_FUNCTION_ARGS)
  */
 static void
 timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
-  timetype_compute_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows);
+  timetype_compute_stats(stats, fetchfunc, samplerows, T_TIMESTAMPSET);
   return;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_analyze);
+PG_FUNCTION_INFO_V1(Timestampset_analyze);
 /**
  * Compute statistics for timestamp set columns
  */
 PGDLLEXPORT Datum
-timestampset_analyze(PG_FUNCTION_ARGS)
+Timestampset_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;
@@ -413,18 +412,18 @@ timestampset_analyze(PG_FUNCTION_ARGS)
  */
 static void
 periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
-  timetype_compute_stats(T_PERIODSET, stats, fetchfunc, samplerows);
+  timetype_compute_stats(stats, fetchfunc, samplerows, T_PERIODSET);
   return;
 }
 
-PG_FUNCTION_INFO_V1(periodset_analyze);
+PG_FUNCTION_INFO_V1(Periodset_analyze);
 /**
  * Compute statistics for period set columns
  */
 PGDLLEXPORT Datum
-periodset_analyze(PG_FUNCTION_ARGS)
+Periodset_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;

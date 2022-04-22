@@ -1,0 +1,70 @@
+ANALYZE tbl_tint_big;
+ANALYZE
+ANALYZE tbl_tfloat_big;
+ANALYZE
+CREATE INDEX tbl_tint_big_quadtree_idx ON tbl_tint_big USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tfloat_big_quadtree_idx ON tbl_tfloat_big USING SPGIST(temp);
+CREATE INDEX
+SELECT temp |=| intrange '[90,100]'::tbox FROM tbl_tint_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+SELECT temp |=| tint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tint_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| floatrange '[100,100]'::tbox AS distance FROM tbl_tfloat_big ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+  round   
+----------
+ 0.000000
+ 0.000000
+ 0.000000
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tfloat '[1.5@2001-06-01, 2.5@2001-07-01]' AS distance FROM tbl_tfloat_big ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+  round   
+----------
+ 0.000000
+ 0.000000
+ 0.000000
+(3 rows)
+
+DROP INDEX tbl_tint_big_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tfloat_big_quadtree_idx;
+DROP INDEX
+CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat_seq(5.0, p) AS temp FROM tbl_period_big;
+SELECT 12500
+CREATE INDEX tbl_tfloat_big_allthesame_spgist_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tfloat_big_allthesame;
+ANALYZE
+SELECT COUNT(*) FROM tbl_tfloat_big_allthesame WHERE temp && 5.0;
+ count 
+-------
+ 12380
+(1 row)
+
+SELECT k FROM tbl_tfloat_big_allthesame ORDER BY temp |=| 5.0, k LIMIT 3;
+  k  
+-----
+ 121
+ 122
+ 123
+(3 rows)
+
+DROP TABLE tbl_tfloat_big_allthesame;
+DROP TABLE

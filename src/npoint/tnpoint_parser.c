@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,11 +29,12 @@
 
 /**
  * @file tnpoint_parser.c
- * Functions for parsing static network types.
+ * @brief Functions for parsing static network types.
  */
 
 #include "npoint/tnpoint_parser.h"
 
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_parser.h"
 #include "npoint/tnpoint.h"
@@ -43,9 +43,10 @@
 /*****************************************************************************/
 
 /**
- * Parse a network point value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a network point value from the buffer.
  */
-npoint *
+Npoint *
 npoint_parse(char **str)
 {
   p_whitespace(str);
@@ -79,14 +80,15 @@ npoint_parse(char **str)
 }
 
 /**
- * Parse a network segment value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a network segment value from the buffer.
  */
-nsegment *
+Nsegment *
 nsegment_parse(char **str)
 {
   p_whitespace(str);
 
-  if (strncasecmp(*str,"NSEGMENT",8) != 0)
+  if (strncasecmp(*str, "NSEGMENT", 8) != 0)
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse network segment")));
 

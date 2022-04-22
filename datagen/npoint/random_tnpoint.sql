@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation FOR any purpose, without fee, and without a written
@@ -39,7 +38,7 @@
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random fraction between in the range [0,1] 
+ * Generate a random fraction between in the range [0,1]
  */
 CREATE OR REPLACE FUNCTION random_fraction()
   RETURNS float AS $$
@@ -134,7 +133,7 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  */
 CREATE OR REPLACE FUNCTION random_tnpoint_instset(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int
+  lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int,
   maxcard int)
   RETURNS tnpoint AS $$
 DECLARE
@@ -149,7 +148,7 @@ BEGIN
     result[i] = tnpoint_inst(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpointi(result);
+  RETURN tnpoint_instset(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -173,7 +172,7 @@ FROM generate_series(1,10) k;
  *    sequence set value and in this case the start timestamp is already fixed
  */
 CREATE OR REPLACE FUNCTION random_tnpoint_seq(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int, 
+  lowtime timestamptz, hightime timestamptz, maxminutes int,
   mincard int, maxcard int,
   linear bool DEFAULT true, fixstart bool DEFAULT false)
   RETURNS tnpoint AS $$
@@ -204,9 +203,9 @@ BEGIN
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeompoint_inst(getValue(result[card - 1]], tsarr[card]);
+    result[card] = tnpoint_inst(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tgeompoint_inst(npoint(rid, random()), tsarr[card]);
+    result[card] = tnpoint_inst(npoint(rid, random()), tsarr[card]);
   END IF;
   RETURN tnpoint_seq(result, lower_inc, upper_inc, linear);
 END;
@@ -232,7 +231,7 @@ FROM generate_series (1, 15) AS k;
  * @param[in] linear True when the sequence set has linear interpolation
  */
 CREATE OR REPLACE FUNCTION random_tnpoint_seqset(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int, 
+  lowtime timestamptz, hightime timestamptz, maxminutes int,
   mincardseq int, maxcardseq int, mincard int, maxcard int,
   linear bool DEFAULT true)
   RETURNS tnpoint AS $$
@@ -270,7 +269,7 @@ BEGIN
     instants = NULL;
     t1 = t1 + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpoints(result);
+  RETURN tnpoint_seqset(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

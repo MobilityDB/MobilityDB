@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,13 +35,14 @@
 #ifndef __TPOINT_H__
 #define __TPOINT_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "general/temporal.h"
-
+/* PostGIS */
 #include <liblwgeom.h>
-#include "stbox.h"
+/* MobilityDB */
+#include "general/temporal.h"
+#include "point/stbox.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:
@@ -98,42 +102,35 @@
 #define MOBDB_WKB_SRIDFLAG         0x40
 #define MOBDB_WKB_LINEAR_INTERP    0x80
 
-/*****************************************************************************
- * Miscellaneous functions defined in TemporalPoint.c
- *****************************************************************************/
+/*****************************************************************************/
+
+/* General functions */
 
 extern void temporalgeom_init();
-#if POSTGIS_VERSION_NUMBER >= 30000
 extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
-#endif
 
 /* Input/output functions */
 
-extern Datum tpoint_in(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_typmod_in(PG_FUNCTION_ARGS);
-extern Datum tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
-extern Datum tpoint_typmod_out(PG_FUNCTION_ARGS);
-extern Datum tpoint_enforce_typmod(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
-extern Datum tpointinst_constructor(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
-extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
+extern STBOX *tpoint_stbox(const Temporal *temp);
 
-/* Ever/always comparison operators */
+/* Expand functions */
 
-extern Datum tpoint_values(PG_FUNCTION_ARGS);
-extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
+extern STBOX *geo_expand_spatial(const GSERIALIZED *gs, double d);
+extern STBOX *tpoint_expand_spatial(const Temporal *temp, double d);
 
 /* Temporal comparisons */
 
-extern Datum teq_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum teq_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tne_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tne_tpoint_geo(PG_FUNCTION_ARGS);
+extern Temporal *tcomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert);
+
+/* Alias for the tpoint_trajectory function */
+
 
 /*****************************************************************************/
 

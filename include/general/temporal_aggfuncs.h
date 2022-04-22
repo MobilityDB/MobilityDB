@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,12 +35,13 @@
 #ifndef __TEMPORAL_AGGFUNCS_H__
 #define __TEMPORAL_AGGFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "skiplist.h"
-#include "temporal.h"
-#include "temporal_util.h"
+/* MobilityDB */
+#include "general/skiplist.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************/
 
@@ -56,46 +56,21 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-extern void ensure_same_temp_subtype_skiplist(SkipList *state, int16 subtype,
-  Temporal *temp);
-extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  TSequence *seq, datum_func2 func, bool interpoint);
-extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
-  SkipList *state2, datum_func2 func, bool crossings);
+/* Generic aggregation functions */
+
+extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
+  TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
+extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
+  TSequence **sequences2, int count2, Datum (*func)(Datum, Datum),
+  bool crossings, int *newcount);
+extern void ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp);
+extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo,
+  SkipList *state, TSequence *seq, datum_func2 func, bool interpoint);
+extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo,
+  SkipList *state1, SkipList *state2, datum_func2 func, bool crossings);
 
 /*****************************************************************************/
 
-extern Datum temporal_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_extent_combinefn(PG_FUNCTION_ARGS);
-extern Datum tnumber_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum tnumber_extent_combinefn(PG_FUNCTION_ARGS);
-
-extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
-extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);
-extern Datum tbool_tor_transfn(PG_FUNCTION_ARGS);
-extern Datum tbool_tor_combinefn(PG_FUNCTION_ARGS);
-extern Datum tint_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum tint_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum tint_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum tint_tmax_combinefn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmax_combinefn(PG_FUNCTION_ARGS);
-extern Datum tint_tsum_transfn(PG_FUNCTION_ARGS);
-extern Datum tint_tsum_combinefn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tsum_transfn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
-extern Datum temporal_tcount_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_tcount_combinefn(PG_FUNCTION_ARGS);
-extern Datum tnumber_tavg_transfn(PG_FUNCTION_ARGS);
-extern Datum tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
-extern Datum temporal_tagg_finalfn(PG_FUNCTION_ARGS);
-extern Datum tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmax_combinefn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

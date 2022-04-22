@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -42,9 +41,12 @@
 #ifndef __TIMETYPES_H__
 #define __TIMETYPES_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <access/stratnum.h>
 #include <utils/timestamp.h>
+
+/*****************************************************************************/
 
 /**
  * Structure to represent periods
@@ -93,20 +95,20 @@ typedef struct
  * fmgr macros for time types
  */
 
-#define DatumGetTimestampSet(X)    ((TimestampSet *) DatumGetPointer(X))
-#define TimestampSetGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_TIMESTAMPSET(X)  DatumGetTimestampSet(PG_GETARG_POINTER(X))
-#define PG_RETURN_TIMESTAMPSET(X)  PG_RETURN_POINTER(X)
+#define DatumGetTimestampSetP(X)     ((TimestampSet *) PG_DETOAST_DATUM(X))
+#define TimestampSetPGetDatum(X)     PointerGetDatum(X)
+#define PG_GETARG_TIMESTAMPSET_P(X)  ((TimestampSet *) PG_GETARG_VARLENA_P(X))
+#define PG_RETURN_TIMESTAMPSET_P(X)  PG_RETURN_POINTER(X)
 
-#define DatumGetPeriod(X)          ((Period *) DatumGetPointer(X))
-#define PeriodGetDatum(X)          PointerGetDatum(X)
-#define PG_GETARG_PERIOD(X)        DatumGetPeriod(PG_GETARG_POINTER(X))
-#define PG_RETURN_PERIOD(X)        PG_RETURN_POINTER(X)
+#define DatumGetPeriodP(X)           ((Period *) DatumGetPointer(X))
+#define PeriodPGetDatum(X)           PointerGetDatum(X)
+#define PG_GETARG_PERIOD_P(X)        DatumGetPeriodP(PG_GETARG_POINTER(X))
+#define PG_RETURN_PERIOD_P(X)        PG_RETURN_POINTER(X)
 
-#define DatumGetPeriodSet(X)       ((PeriodSet *) DatumGetPointer(X))
-#define PeriodSetGetDatum(X)       PointerGetDatum(X)
-#define PG_GETARG_PERIODSET(X)     DatumGetPeriodSet(PG_GETARG_POINTER(X))
-#define PG_RETURN_PERIODSET(X)     PG_RETURN_POINTER(X)
+#define DatumGetPeriodSetP(X)        ((PeriodSet *) PG_DETOAST_DATUM(X))
+#define PeriodSetPGetDatum(X)        PointerGetDatum(X)
+#define PG_GETARG_PERIODSET_P(X)     ((PeriodSet *) PG_GETARG_VARLENA_P(X))
+#define PG_RETURN_PERIODSET_P(X)     PG_RETURN_POINTER(X)
 
 /*****************************************************************************/
 

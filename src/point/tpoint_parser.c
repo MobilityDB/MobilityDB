@@ -1,40 +1,40 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
  * @file tpoint_parser.c
- * Functions for parsing temporal points.
+ * @brief Functions for parsing temporal points.
  */
 
 #include "point/tpoint_parser.h"
 
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
@@ -46,14 +46,15 @@
 /*****************************************************************************/
 
 /**
- * Parse a spatiotemporal box value from the buffer
+ * @ingroup libmeos_box_input_output
+ * @brief Parse a spatiotemporal box value from the buffer.
  */
 STBOX *
 stbox_parse(char **str)
 {
-  double xmin, xmax, ymin, ymax,
-    zmin = 0, zmax = 0; /* make Codacy quiet */
-  TimestampTz tmin, tmax;
+  /* make compiler quiet */
+  double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
+  TimestampTz tmin = 0, tmax = 0;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
   int srid = 0;
   bool hassrid = false;
@@ -214,22 +215,24 @@ stbox_parse(char **str)
 /*****************************************************************************/
 
 /**
- * Parse a temporal point value of instant type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of instant type from the buffer.
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TInstant *
-tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid)
+TInstant *
+tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
+  int *tpoint_srid)
 {
   p_whitespace(str);
   /* The next instruction will throw an exception if it fails */
-  Datum geo = basetype_parse(str, basetype);
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
+  Datum geo = basetype_parse(str, temptype_basetypid(temptype));
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
@@ -250,20 +253,21 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   TInstant *result = make ?
-    tinstant_make(PointerGetDatum(gs), t, basetype) : NULL;
+    tinstant_make(PointerGetDatum(gs), t, temptype) : NULL;
   pfree(gs);
   return result;
 }
 
 /**
- * Parse a temporal point value of instant set type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of instant set type from the buffer.
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] temptype Temporal type
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TInstantSet *
-tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
+TInstantSet *
+tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -272,12 +276,12 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
 
   /* First parsing */
   char *bak = *str;
-  tpointinst_parse(str, basetype, false, false, tpoint_srid);
+  tpointinst_parse(str, temptype, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tpointinst_parse(str, basetype, false, false, tpoint_srid);
+    tpointinst_parse(str, temptype, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -290,25 +294,27 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    instants[i] = tpointinst_parse(str, basetype, false, true, tpoint_srid);
+    instants[i] = tpointinst_parse(str, temptype, false, true, tpoint_srid);
   }
   p_cbrace(str);
   return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
 /**
- * Parse a temporal point value of sequence type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of sequence type from the buffer.
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
- * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] temptype Temporal type
+ * @param[in] linear True when the interpolation is linear
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
  * @param[in] tpoint_srid SRID of the temporal point
 */
-static TSequence *
-tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int *tpoint_srid)
+TSequence *
+tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
+  bool make, int *tpoint_srid)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -321,12 +327,12 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
 
   /* First parsing */
   char *bak = *str;
-  tpointinst_parse(str, basetype, false, false, tpoint_srid);
+  tpointinst_parse(str, temptype, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tpointinst_parse(str, basetype, false, false, tpoint_srid);
+    tpointinst_parse(str, temptype, false, false, tpoint_srid);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -345,7 +351,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    instants[i] = tpointinst_parse(str, basetype, false, true, tpoint_srid);
+    instants[i] = tpointinst_parse(str, temptype, false, true, tpoint_srid);
   }
   p_cbracket(str);
   p_cparen(str);
@@ -354,15 +360,17 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
 }
 
 /**
- * Parse a temporal point value of sequence set type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of sequence set type from the buffer.
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
- * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] temptype Temporal type
+ * @param[in] linear True when the interpolation is linear
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TSequenceSet *
-tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
+TSequenceSet *
+tpointseqset_parse(char **str, CachedType temptype, bool linear,
+  int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -371,12 +379,12 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 
   /* First parsing */
   char *bak = *str;
-  tpointseq_parse(str, basetype, linear, false, false, tpoint_srid);
+  tpointseq_parse(str, temptype, linear, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tpointseq_parse(str, basetype, linear, false, false, tpoint_srid);
+    tpointseq_parse(str, temptype, linear, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -389,7 +397,7 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tpointseq_parse(str, basetype, linear, false, true,
+    sequences[i] = tpointseq_parse(str, temptype, linear, false, true,
       tpoint_srid);
   }
   p_cbrace(str);
@@ -397,20 +405,21 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 }
 
 /**
- * Parse a temporal point value from the buffer (dispatch function)
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value from the buffer.
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] temptype Temporal type
  */
 Temporal *
-tpoint_parse(char **str, Oid basetype)
+tpoint_parse(char **str, Oid temptype)
 {
   int tpoint_srid = 0;
   p_whitespace(str);
-  
-  /* Starts with "SRID=". The SRID specification must be gobbled for all 
+
+  /* Starts with "SRID=". The SRID specification must be gobbled for all
    * types excepted TInstant. We cannot use the atoi() function
-   * because this requires a string terminated by '\0' and we cannot 
+   * because this requires a string terminated by '\0' and we cannot
    * modify the string in case it must be passed to the tpointinst_parse
    * function. */
   char *bak = *str;
@@ -432,11 +441,11 @@ tpoint_parse(char **str, Oid basetype)
   }
   /* We cannot ensure that the SRID is geodetic for geography since
    * the srid_is_latlong function is not exported by PostGIS
-  if (basetype == type_oid(T_GEOGRAPHY))
+  if (temptype == T_TGEOGPOINT))
     srid_is_latlong(fcinfo, tpoint_srid);
    */
 
-  bool linear = base_type_continuous(basetype);
+  bool linear = temptype_continuous(temptype);
   /* Starts with "Interp=Stepwise" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
@@ -450,11 +459,11 @@ tpoint_parse(char **str, Oid basetype)
   {
     /* Pass the SRID specification */
     *str = bak;
-    result = (Temporal *) tpointinst_parse(str, basetype, true, true,
+    result = (Temporal *) tpointinst_parse(str, temptype, true, true,
       &tpoint_srid);
   }
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tpointseq_parse(str, basetype, linear, true, true,
+    result = (Temporal *) tpointseq_parse(str, temptype, linear, true, true,
       &tpoint_srid);
   else if (**str == '{')
   {
@@ -464,13 +473,13 @@ tpoint_parse(char **str, Oid basetype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *) tpointseqset_parse(str, basetype, linear,
+      result = (Temporal *) tpointseqset_parse(str, temptype, linear,
         &tpoint_srid);
     }
     else
     {
       *str = bak;
-      result = (Temporal *) tpointinstset_parse(str, basetype, &tpoint_srid);
+      result = (Temporal *) tpointinstset_parse(str, temptype, &tpoint_srid);
     }
   }
   return result;

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,28 +29,29 @@
 
 /**
  * @file rangetypes_ext.c
- * Extended operators for range types.
+ * @brief Extended operators for range types.
  *
  * These operators have been submitted as a PR to PostgreSQL.
  */
 
 #include "general/rangetypes_ext.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
- * Generic range functions
+ * Generic functions
  *****************************************************************************/
 
 /**
- * Returns the string representation of the range value, used for debugging
+ * Return the string representation of the range value, used for debugging
  */
 #ifdef DEBUG_BUILD
 const char *
@@ -62,7 +62,7 @@ range_to_string(const RangeType *range)
 #endif
 
 /**
- * Returns the lower bound of the range value
+ * Return the lower bound of the range value
  */
 Datum
 lower_datum(const RangeType *range)
@@ -71,7 +71,7 @@ lower_datum(const RangeType *range)
 }
 
 /**
- * Returns the upper bound of the range value
+ * Return the upper bound of the range value
  */
 Datum
 upper_datum(const RangeType *range)
@@ -84,7 +84,7 @@ upper_datum(const RangeType *range)
 }
 
 /**
- * Returns true if the lower bound of the range value is inclusive
+ * Return true if the lower bound of the range value is inclusive
  */
 bool
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -97,7 +97,7 @@ lower_inc(const RangeType *range)
 }
 
 /**
- * Returns true if the upper bound of the range value is inclusive
+ * Return true if the upper bound of the range value is inclusive
  */
 bool
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -118,7 +118,7 @@ upper_inc(const RangeType *range)
 void
 range_bounds(const RangeType *range, double *xmin, double *xmax)
 {
-  ensure_tnumber_range_type(range->rangetypid);
+  ensure_tnumber_rangetype(oid_type(range->rangetypid));
   if (range->rangetypid == type_oid(T_INTRANGE))
   {
     *xmin = (double)(DatumGetInt32(lower_datum(range)));
@@ -135,20 +135,20 @@ range_bounds(const RangeType *range, double *xmin, double *xmax)
  * Construct a range value from given arguments
  */
 RangeType *
-range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
+range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
+  CachedType basetype)
 {
   Oid rangetypid = 0;
-  assert (basetypid == INT4OID || basetypid == FLOAT8OID ||
-    basetypid == TIMESTAMPTZOID);
-  if (basetypid == INT4OID)
+  assert (basetype == T_INT4 || basetype == T_FLOAT8 ||
+    basetype == T_TIMESTAMPTZ);
+  if (basetype == T_INT4)
     rangetypid = type_oid(T_INTRANGE);
-  else if (basetypid == FLOAT8OID)
+  else if (basetype == T_FLOAT8)
     rangetypid = type_oid(T_FLOATRANGE);
-  else
+  else /* basetype == T_TIMESTAMPTZ */
     rangetypid = type_oid(T_TSTZRANGE);
 
   TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
-
   RangeBound lower;
   RangeBound upper;
   lower.val = from;
@@ -159,7 +159,6 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
   upper.infinite = false;
   upper.inclusive = upper_inc;
   upper.lower = false;
-
   return make_range(typcache, &lower, &upper, false);
 }
 
@@ -176,7 +175,7 @@ range_copy(const RangeType *range)
 
 #if POSTGRESQL_VERSION_NUMBER < 140000
 /**
- * Returns the union of the range values. If strict is true, it is an error
+ * Return the union of the range values. If strict is true, it is an error
  * that the two input ranges are not adjacent or overlapping.
  *
  * @note Function copied verbatim from rangetypes.c since it is static.
@@ -271,11 +270,11 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
  *****************************************************************************/
 
 /**
- * Returns true if the range value and the element satisfy the function
+ * Return true if the range value and the element satisfy the function
  */
-Datum
+static Datum
 range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
-  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
   TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   RangeBound lower_bound, upper_bound;
@@ -288,34 +287,26 @@ range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
 }
 
 /**
- * Returns true if the range value and the element satisfy the function
+ * Return true if the range value and the element satisfy the function
  */
-Datum
+static Datum
 range_func_elem(FunctionCallInfo fcinfo,
-  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   Datum val = PG_GETARG_DATUM(1);
   PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
 /**
- * Returns true if the element and the range value satisfy the function
+ * Return true if the element and the range value satisfy the function
  */
-PGDLLEXPORT Datum
+static Datum
 elem_func_range(FunctionCallInfo fcinfo,
-  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
   Datum val = PG_GETARG_DATUM(0);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(1);
-#else
   RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
   PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
@@ -328,11 +319,7 @@ PG_FUNCTION_INFO_V1(intrange_canonical);
 PGDLLEXPORT Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   TypeCacheEntry *typcache;
   RangeBound lower_bound;
   RangeBound upper_bound;
@@ -340,11 +327,7 @@ intrange_canonical(PG_FUNCTION_ARGS)
   typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
   if (empty)
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    PG_RETURN_RANGE(range);
-#else
     PG_RETURN_RANGE_P(range);
-#endif
   if (!lower_bound.infinite && !lower_bound.inclusive)
   {
     lower_bound.val = DirectFunctionCall2(int4pl, lower_bound.val, Int32GetDatum(1));
@@ -355,22 +338,19 @@ intrange_canonical(PG_FUNCTION_ARGS)
     upper_bound.val = DirectFunctionCall2(int4pl, upper_bound.val, Int32GetDatum(1));
     upper_bound.inclusive = false;
   }
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  PG_RETURN_RANGE(range_serialize(typcache, &lower_bound, &upper_bound, false));
-#else
   PG_RETURN_RANGE_P(range_serialize(typcache, &lower_bound, &upper_bound, false));
-#endif
 }
 
 /*****************************************************************************/
 
 /**
- * Returns true if the range value is strictly to the left of the value
+ * Return true if the range value is strictly to the left of the value
  * (internal function)
  */
-bool
-range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+static bool
+range_left_elem_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
 {
   if (!upper_bound.infinite)
   {
@@ -384,12 +364,13 @@ range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 }
 
 /**
- * Returns true if the range value does not extend to the right of the value
+ * Return true if the range value does not extend to the right of the value
  * (internal function)
  */
-bool
-range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+static bool
+range_overleft_elem_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
 {
   if (!upper_bound.infinite)
   {
@@ -401,12 +382,12 @@ range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 }
 
 /**
- * Returns true if the range value is strictly to the right of the value
+ * Return true if the range value is strictly to the right of the value
  * (internal function)
  */
-bool
+static bool
 range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+  RangeBound upper_bound __attribute__((unused)), Datum val)
 {
   if (!lower_bound.infinite)
   {
@@ -420,12 +401,12 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 }
 
 /**
- * Returns true if the range value does not extend to the left of the value
+ * Return true if the range value does not extend to the left of the value
  * (internal function)
  */
-bool
+static bool
 range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+  RangeBound upper_bound __attribute__((unused)), Datum val)
 {
   if (!lower_bound.infinite)
   {
@@ -437,10 +418,10 @@ range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 }
 
 /**
- * Returns true if the range value and the value are adjacent
+ * Return true if the range value and the value are adjacent
  * (internal function)
  */
-bool
+static bool
 range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   RangeBound upper_bound, Datum val)
 {
@@ -459,67 +440,14 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   return (isadj || bounds_adjacent(typcache, elembound, lower_bound));
 }
 
-/******************************************************************************/
-
-PG_FUNCTION_INFO_V1(range_left_elem);
 /**
- * Returns true if the range value is strictly to the left of the value
- */
-PGDLLEXPORT Datum
-range_left_elem(PG_FUNCTION_ARGS)
-{
-  return range_func_elem(fcinfo, &range_left_elem_internal);
-}
-
-PG_FUNCTION_INFO_V1(range_overleft_elem);
-/**
- * Returns true if the range value does not extend to the right of the value
- */
-PGDLLEXPORT Datum
-range_overleft_elem(PG_FUNCTION_ARGS)
-{
-  return range_func_elem(fcinfo, &range_overleft_elem_internal);
-}
-
-PG_FUNCTION_INFO_V1(range_right_elem);
-/**
- * Returns true if the range value is strictly to the right of the value
- */
-PGDLLEXPORT Datum
-range_right_elem(PG_FUNCTION_ARGS)
-{
-  return range_func_elem(fcinfo, &range_right_elem_internal);
-}
-
-PG_FUNCTION_INFO_V1(range_overright_elem);
-/**
- * Returns true if the range value does not extend to the left of the value
- */
-PGDLLEXPORT Datum
-range_overright_elem(PG_FUNCTION_ARGS)
-{
-  return range_func_elem(fcinfo, &range_overright_elem_internal);
-}
-
-PG_FUNCTION_INFO_V1(range_adjacent_elem);
-/**
- * Returns true if the range value and the value are adjacent
- */
-PGDLLEXPORT Datum
-range_adjacent_elem(PG_FUNCTION_ARGS)
-{
-  return range_func_elem(fcinfo, &range_adjacent_elem_internal);
-}
-
-/******************************************************************************/
-
-/**
- * Returns true if the value does not extend to the right of the range value
+ * Return true if the value does not extend to the right of the range value
  * (internal function)
  */
-bool
-elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+static bool
+elem_overleft_range_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
 {
   if (!upper_bound.infinite)
   {
@@ -531,12 +459,12 @@ elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 }
 
 /**
- * Returns true if the value does not extend to the left of the range value
+ * Return true if the value does not extend to the left of the range value
  * (internal function)
  */
-bool
+static bool
 elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+  RangeBound upper_bound __attribute__((unused)), Datum val)
 {
   if (!lower_bound.infinite)
   {
@@ -549,9 +477,61 @@ elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 
 /******************************************************************************/
 
+PG_FUNCTION_INFO_V1(range_left_elem);
+/**
+ * Return true if the range value is strictly to the left of the value
+ */
+PGDLLEXPORT Datum
+range_left_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_left_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_overleft_elem);
+/**
+ * Return true if the range value does not extend to the right of the value
+ */
+PGDLLEXPORT Datum
+range_overleft_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_overleft_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_right_elem);
+/**
+ * Return true if the range value is strictly to the right of the value
+ */
+PGDLLEXPORT Datum
+range_right_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_right_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_overright_elem);
+/**
+ * Return true if the range value does not extend to the left of the value
+ */
+PGDLLEXPORT Datum
+range_overright_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_overright_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_adjacent_elem);
+/**
+ * Return true if the range value and the value are adjacent
+ */
+PGDLLEXPORT Datum
+range_adjacent_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_adjacent_elem_internal);
+}
+
+/******************************************************************************/
+
 PG_FUNCTION_INFO_V1(elem_left_range);
 /**
- * Returns true if the value is strictly to the left of the range value
+ * Return true if the value is strictly to the left of the range value
  */
 PGDLLEXPORT Datum
 elem_left_range(PG_FUNCTION_ARGS)
@@ -561,7 +541,7 @@ elem_left_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(elem_overleft_range);
 /**
- * Returns true if the value does not extend to the right of the range value
+ * Return true if the value does not extend to the right of the range value
  */
 PGDLLEXPORT Datum
 elem_overleft_range(PG_FUNCTION_ARGS)
@@ -571,7 +551,7 @@ elem_overleft_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(elem_right_range);
 /**
- * Returns true if the value is strictly to the right of the range value
+ * Return true if the value is strictly to the right of the range value
  */
 PGDLLEXPORT Datum
 elem_right_range(PG_FUNCTION_ARGS)
@@ -581,7 +561,7 @@ elem_right_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(elem_overright_range);
 /**
- * Returns true if the value does not extend to the left of the range value
+ * Return true if the value does not extend to the left of the range value
  */
 PGDLLEXPORT Datum
 elem_overright_range(PG_FUNCTION_ARGS)
@@ -591,7 +571,7 @@ elem_overright_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(elem_adjacent_range);
 /**
- * Returns true if the value and the range value are adjacent
+ * Return true if the value and the range value are adjacent
  */
 PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
@@ -601,18 +581,14 @@ elem_adjacent_range(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
-PG_FUNCTION_INFO_V1(floatrange_set_precision);
+PG_FUNCTION_INFO_V1(floatrange_round);
 /**
  * Set the precision of the float range to the number of decimal places
  */
 PGDLLEXPORT Datum
-floatrange_set_precision(PG_FUNCTION_ARGS)
+floatrange_round(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   Datum size = PG_GETARG_DATUM(1);
   RangeBound lower, upper;
   lower.lower = true;
@@ -624,7 +600,7 @@ floatrange_set_precision(PG_FUNCTION_ARGS)
   {
     lower.val = lower_datum(range);
     if (DatumGetFloat8(lower.val) != -1 * get_float8_infinity())
-      lower.val = datum_round(lower.val, size);
+      lower.val = datum_round_float(lower.val, size);
     lower.infinite = false;
   }
   else
@@ -633,7 +609,7 @@ floatrange_set_precision(PG_FUNCTION_ARGS)
   {
     upper.val = upper_datum(range);
     if (DatumGetFloat8(upper.val) != get_float8_infinity())
-      upper.val = datum_round(upper.val, size);
+      upper.val = datum_round_float(upper.val, size);
     upper.infinite = false;
   }
   else
@@ -655,13 +631,8 @@ PG_FUNCTION_INFO_V1(range_extent_transfn);
 PGDLLEXPORT Datum
 range_extent_transfn(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
-  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
-#else
   RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
   RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
-#endif
   RangeType *result;
 
   /* Can't do anything with null inputs */
@@ -689,24 +660,17 @@ PG_FUNCTION_INFO_V1(range_extent_combinefn);
 PGDLLEXPORT Datum
 range_extent_combinefn(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
-  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
-#else
   RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
   RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
-#endif
-
   if (!r2 && !r1)
     PG_RETURN_NULL();
   if (r1 && !r2)
     PG_RETURN_POINTER(r1);
   if (r2 && !r1)
     PG_RETURN_POINTER(r2);
-
-  TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
   /* Non-strict union */
-  RangeType *result = range_union_internal(typcache, r1, r2, false); 
+  RangeType *result = range_union_internal(typcache, r1, r2, false);
   PG_RETURN_POINTER(result);
 }
 

@@ -74,6 +74,10 @@
 		</listitem>
 
 		<listitem>
+			<para><varname>geompoint</varname> represents the type <varname>geometry</varname> restricted to a point.</para>
+		</listitem>
+
+		<listitem>
 			<para><varname>point</varname> represents the types <varname>geometry</varname> or <varname>geography</varname> restricted to a point.</para>
 		</listitem>
 
@@ -250,6 +254,10 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 			<listitem>
 				<para>Another set of functions for sequence set values have a single argument, which is an array of values of the corresponding sequence values. For sequence values with continuous base type, the interpolation of the resulting temporal value depends on the interpolation of the composing sequences. An error is raised if the sequences composing the array have different interpolation.</para>
 			</listitem>
+
+			<listitem>
+				<para>Finally, another set of functions for sequence set values have as first argument an array of values of the corresponding instant values, and two arguments stating a maximum distance and a maximum time interval such that a gap is introduced between composing sequences of the result whenever two consecutive input instants have a distance or a time gap greater than these values. For temporal points the distance is specified in units of the underlying SRID. These two gaps arguments are optional and if they are not given, a zero value is assumed, which is not taken into account for determining the gaps. In addition, the functions for sequence values with continuous base type have an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.</para>
+			</listitem>
 		</itemizedlist>
 
 		<para>We give next the constructor functions for the various subtypes.</para>
@@ -317,10 +325,13 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
 				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
+				<para><varname>tdisc_seqset_gaps(ttype_inst[],maxdist=0.0,maxt='0 minutes'): tdisc_seqset</varname></para>
+				<para><varname>tcont_seqset_gaps(ttype_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
+				<para><varname>  tcont_seqset</varname></para>
 				<programlisting xml:space="preserve">
 SELECT ttext_seqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
-SELECT tgeogpoint_seqset('Point(0 0)', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}',
-  false);
+SELECT tgeogpoint_seqset('Point(0 0)', '{[2001-01-01, 2001-01-02],
+  [2001-01-03, 2001-01-04]}', false);
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
 SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
@@ -342,6 +353,14 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  Input sequences must have the same interpolation
+SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
+  '5@2000-01-05'], 1, '1 day');
+-- {[1@2000-01-01], [3@2000-01-02, 4@2000-01-03], [5@2000-01-05]}
+SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
+  'Point(2 2)@2000-01-02', 'Point(3 2)@2000-01-03', 'Point(3 2)@2000-01-05'],
+  true, 1, '1 day'));
+-- {[POINT(1 1)@2000-01-01], [POINT(2 2)@2000-01-02, POINT(3 2)@2000-01-03],
+  [POINT(3 2)@2000-01-05]}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -629,6 +648,28 @@ SELECT maxValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-
 </programlisting>
 			</listitem>
 
+			<listitem id="minInstant">
+				<indexterm><primary><varname>minInstant</varname></primary></indexterm>
+				<para>Get the instant with the minimum value</para>
+				<para><varname>minInstant(torder): base</varname></para>
+				<para>The function does not take into account whether the bounds are inclusive or not. If several instants have the minimum value, the first one is returned.</para>
+				<programlisting xml:space="preserve">
+SELECT minInstant(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+-- 1@2012-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="maxInstant">
+				<indexterm><primary><varname>maxInstant</varname></primary></indexterm>
+				<para>Get the instant with the maximum value</para>
+				<para><varname>maxInstant(torder): base</varname></para>
+				<para>The function does not take into account whether the bounds are inclusive or not. If several instants have the maximum value, the first one is returned.</para>
+				<programlisting xml:space="preserve">
+SELECT maxInstant(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
+-- 5@2012-01-05
+</programlisting>
+			</listitem>
+
 			<listitem id="valueRange">
 				<indexterm><primary><varname>valueRange</varname></primary></indexterm>
 				<para>Get the value range</para>
@@ -885,63 +926,6 @@ SELECT segments(tfloat '{[1@2012-01-01, 3@2012-01-02, 2@2012-01-03],
 </programlisting>
 			</listitem>
 
-			<listitem id="shift">
-				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Shift the timespan of the temporal value by an interval</para>
-				<para><varname>shift(ttype,interval): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- "{1@2001-01-02, 2@2001-01-04, 1@2001-01-06}"
-SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
--- "[1@2001-01-02, 2@2001-01-04]"
-SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
-  [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
--- "{[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
-  [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="tscale">
-				<indexterm><primary><varname>tscale</varname></primary></indexterm>
-				<para>Scale the time span of the temporal value to an interval. If the time span of the temporal value is zero (for example, for a temporal instant), the result is the temporal value. The given interval must be strictly greater than zero.</para>
-				<para><varname>tscale(ttype,interval): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT tscale(tint '1@2001-01-01', '1 day');
--- "1@2001-01-01"
-SELECT tscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- "{1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}"
-SELECT tscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
--- "[1@2001-01-01, 2@2001-01-02]"
-SELECT asText(tscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
--- "{[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
-  POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
-  POINT(1 1)@2001-01-02 00:00:00+01]}"
-SELECT tscale(tint '1@2001-01-01', '-1 day');
--- ERROR:  The duration must be a positive interval: -1 days
-</programlisting>
-			</listitem>
-
-			<listitem id="shiftTscale">
-				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Shift and scale the time span of the temporal value to the two intervals. This function combines in a single step the functions <link linkend="shift"><varname>shift</varname></link> and <link linkend="tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale(ttype,interval,interval): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
--- "1@2001-01-02"
-SELECT shiftTscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day', '1 day');
--- "{1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}"
-SELECT shiftTscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
--- "[1@2001-01-02, 2@2001-01-03]"
-SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}',
-  '1 day', '1 day'));
--- "{[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,
-  POINT(1 1)@2001-01-02 12:00:00+01], [POINT(2 2) @2001-01-02 18:00:00+01,
-  POINT(1 1)@2001-01-03 00:00:00+01]}"
-</programlisting>
-			</listitem>
-
 			<listitem id="intersectsTimestamp">
 				<indexterm><primary><varname>intersectsTimestamp</varname></primary></indexterm>
 				<para>Does the temporal value intersect the timestamp?</para>
@@ -1102,10 +1086,67 @@ SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}'
 -- "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]"
 </programlisting>
 			</listitem>
+
+			<listitem id="shift">
+				<indexterm><primary><varname>shift</varname></primary></indexterm>
+				<para>Shift the timespan of the temporal value by an interval</para>
+				<para><varname>shift(ttype,interval): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+-- "{1@2001-01-02, 2@2001-01-04, 1@2001-01-06}"
+SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+-- "[1@2001-01-02, 2@2001-01-04]"
+SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
+  [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
+-- "{[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
+  [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]}"
+</programlisting>
+			</listitem>
+
+			<listitem id="tscale">
+				<indexterm><primary><varname>tscale</varname></primary></indexterm>
+				<para>Scale the time span of the temporal value to an interval. If the time span of the temporal value is zero (for example, for a temporal instant), the result is the temporal value. The given interval must be strictly greater than zero.</para>
+				<para><varname>tscale(ttype,interval): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tscale(tint '1@2001-01-01', '1 day');
+-- "1@2001-01-01"
+SELECT tscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+-- "{1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}"
+SELECT tscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+-- "[1@2001-01-01, 2@2001-01-02]"
+SELECT asText(tscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
+-- "{[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
+  POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
+  POINT(1 1)@2001-01-02 00:00:00+01]}"
+SELECT tscale(tint '1@2001-01-01', '-1 day');
+-- ERROR:  The duration must be a positive interval: -1 days
+</programlisting>
+			</listitem>
+
+			<listitem id="shiftTscale">
+				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
+				<para>Shift and scale the time span of the temporal value to the two intervals. This function combines in a single step the functions <link linkend="shift"><varname>shift</varname></link> and <link linkend="tscale"><varname>tscale</varname></link>.</para>
+				<para><varname>shiftTscale(ttype,interval,interval): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
+-- "1@2001-01-02"
+SELECT shiftTscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day', '1 day');
+-- "{1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}"
+SELECT shiftTscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
+-- "[1@2001-01-02, 2@2001-01-03]"
+SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}',
+  '1 day', '1 day'));
+-- "{[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,
+  POINT(1 1)@2001-01-02 12:00:00+01], [POINT(2 2) @2001-01-02 18:00:00+01,
+  POINT(1 1)@2001-01-03 00:00:00+01]}"
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="restriction_functions">
 		<title>Restriction Functions</title>
 
 		<sect2>
@@ -1541,7 +1582,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
+		<sect2 id="ever_always_comparison">
 			<title>Ever and Always Comparison Operators</title>
 			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 			<itemizedlist>
@@ -1779,6 +1820,20 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 	</sect1>
 
 	<sect1>
+		<title>Bounding Box Operators</title>
+
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
+
+		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
+
+		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
+
+		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
+
+		<para>We refer to <xref linkend="box_topo_operators" /> and <xref linkend="box_relpos_operators" /> for the bounding box operators.</para>
+	</sect1>
+
+	<sect1>
 		<title>Mathematical Functions and Operators</title>
 
 		<itemizedlist>
@@ -1962,17 +2017,92 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 	&spatial_functions;
 
 	<sect1>
-		<title>Bounding Box Operators</title>
+		<title>Similarity Functions</title>
+		<itemizedlist>
+			<listitem id="frechetDistance">
+				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
+				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting xml:space="preserve">
+SELECT frechetDistance(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- 0.5
+SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]')::numeric, 6);
+-- 1.414214
+</programlisting>
+			</listitem>
 
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
+			<listitem id="frechetDistancePath">
+				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<para>Get the correspondences between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para>This function requires to allocate in memory a distance matrix whose size is quadratic in the number of instants of the temporal values. Therefore, the function will fail for temporal values with large number of instants depending on the available memory.</para>
+				<programlisting xml:space="preserve">
+SELECT frechetDistancePath(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- (0,0)
+   (1,0)
+   (2,1)
+   (3,2)
+   (4,2)
+SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]');
+-- (0,0)
+   (1,1)
+   (2,1)
+   (3,1)
+   (4,2)
+</programlisting>
+			</listitem>
 
-		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
+			<listitem id="dynamicTimeWarp">
+				<indexterm><primary><varname>dynamicTimeWarp</varname></primary></indexterm>
+				<para>Get the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting xml:space="preserve">
+SELECT dynamicTimeWarp(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- 2
+SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]')::numeric, 6);
+-- 3.380776
+</programlisting>
+			</listitem>
 
-		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
-
-		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
-
-		<para>We refer to <xref linkend="box_topo_operators" /> and <xref linkend="box_relpos_operators" /> for the bounding box operators.</para>
+			<listitem id="dynamicTimeWarpPath">
+				<indexterm><primary><varname>dynamicTimeWarpPath</varname></primary></indexterm>
+				<para>Get the correspondences between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para>This function requires to allocate a distance matrix which is quadratic in the size of the number of instants of the temporal values. Therefore, memory allocation will fail for temporal values with large number of instants.</para>
+				<programlisting xml:space="preserve">
+SELECT dynamicTimeWarpPath(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- (0,0)
+   (1,0)
+   (2,1)
+   (3,2)
+   (4,2)
+SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]');
+-- (0,0)
+   (1,1)
+   (2,1)
+   (3,1)
+   (4,2)
+</programlisting>
+			</listitem>
+		</itemizedlist>
 	</sect1>
 
 	<sect1>
@@ -2245,7 +2375,7 @@ GROUP BY hour ORDER BY hour;
                [6.0625@2012-01-02 03:00:00+01, 6.25@2012-01-02 04:00:00+01)}
    ...
 SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
-  asText(setPrecision(merge((ts).temp), 2)) as temp
+  asText(round(merge((ts).temp), 2)) as temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-14)',
   '1 hour') AS ts) t
 GROUP BY dow, dow_no ORDER BY dow_no;
@@ -2532,7 +2662,7 @@ SELECT mobilitydb_full_version();
 
 	<sect1 id="indexing_temporal_types">
 		<title>Indexing of Temporal Types</title>
-		<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree for temporal alphanumeric types and for temporal point types. The SP-GiST index implements a Quad-tree for temporal alphanumeric types and an Oct-tree for temporal point types. Examples of index creation are as follows:
+		<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree and the SP-GiST index implements an n-dimensional quad-tree. Examples of index creation are as follows:
 			<programlisting xml:space="preserve">
 CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
@@ -2570,12 +2700,10 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</listitem>
 
 				<listitem>
-					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, and <varname>~=</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>period</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
+					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>|=|</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>period</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
 				</listitem>
 			</itemizedlist>
 		</para>
-
-		<para>In addition, a GiST index can accelerate nearest neighbor queries involving the <varname>|=|</varname> operator.</para>
 
 		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float range, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/range and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
 			<programlisting xml:space="preserve">
@@ -2729,9 +2857,9 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The <emphasis>restriction</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. On the other hand, the <emphasis>join</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
 
-			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a PostgreSQL type (such as <varname>integer</varname>, <varname>timestamptz</varname>, etc.) or a new MobilityDB type (such as <varname>period</varname>, <varname>tint_seq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and time dimensions. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a PostgreSQL type (such as <varname>integer</varname>, <varname>timestamptz</varname>, etc.) or a MobilityDB type (such as <varname>period</varname>, <varname>tint</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and time dimensions. The classes correspond to the type of statistics collected as explained in the previous section.</para>
 
-			<para>Currently, only restriction selectivity functions are implemented for temporal types, while join selectivity functions give a default selectivity value depending on the operator. It is planned to implement joint selectivity functions in the future.</para>
+			<para>MobilityDB estimates restriction and join selectivity for temporal types, altough join selectivity for temporal numbers uses a default selectivity value for the value dimension since PostgreSQL currently does not provide join selectivity for range types.</para>
 		</sect2>
 	</sect1>
 </chapter>

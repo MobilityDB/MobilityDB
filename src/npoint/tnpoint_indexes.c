@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,12 +29,15 @@
 
 /**
  * @file tnpoint_indexes.c
- * R-tree GiST and SP-GiST indexes for temporal network points.
+ * @brief R-tree GiST and quad-tree SP-GiST indexes for temporal network
+ * points.
  */
 
 #include "npoint/tnpoint_indexes.h"
 
+/* PostgreSQL */
 #include <access/gist.h>
+/* MobilityDB */
 #include "point/tpoint.h"
 #include "npoint/tnpoint.h"
 
@@ -43,20 +45,19 @@
  * GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_gist_compress);
+PG_FUNCTION_INFO_V1(Tnpoint_gist_compress);
 /**
  * GiST compress function for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_gist_compress(PG_FUNCTION_ARGS)
+Tnpoint_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY* entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-      Temporal *temp = DatumGetTemporal(entry->key);
-    STBOX *box = palloc0(sizeof(STBOX));
-    temporal_bbox(box, temp);
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    STBOX *box = (STBOX *) palloc(sizeof(STBOX));
+    temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -65,37 +66,19 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST decompress function
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(tnpoint_gist_decompress);
-/**
- * GiST decompress function for temporal network points (result in a period)
- */
-PGDLLEXPORT Datum
-tnpoint_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
-
-/*****************************************************************************
  * SP-GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_spgist_compress);
+PG_FUNCTION_INFO_V1(Tnpoint_spgist_compress);
 /**
  * SP-GiST compress function for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_spgist_compress(PG_FUNCTION_ARGS)
+Tnpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(result, temp);
-  PG_FREE_IF_COPY(temp, 0);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_STBOX_P(result);
 }
 

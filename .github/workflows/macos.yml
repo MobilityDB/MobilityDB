@@ -39,7 +39,7 @@ jobs:
         run: |
           pg_ctl -D /usr/local/var/postgres start
           createdb ___mobdb___test___
-          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version();"
 
       - name: Test
         run: |

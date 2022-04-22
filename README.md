@@ -47,15 +47,15 @@ Benefits
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
-Experimental projects
+Experimental Projects
 -----------------------------
 
 These projects push the boundaries of MobilityDB and connect it with the PostgreSQL/PostGIS ecosystem.
 
-*   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
 *   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
+*   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
+*   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck) Integration of MobilityDB with the data visualization framework Deck.gl
 *   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with QGIS
-*   [Move](https://github.com/mschoema/move): QGIS Plugin to visualize moving objects from MobilityDB
 
 Mailing Lists
 ------------
@@ -82,7 +82,7 @@ Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
-*   PostgreSQL >= 10
+*   PostgreSQL >= 11
 *   CMake >= 3.7
 *   PostGIS >= 2.5
 *   JSON-C
@@ -106,19 +106,38 @@ cd MobilityDB/build
 cmake ..
 make
 sudo make install
-psql -c 'CREATE EXTENSION MobilityDB CASCADE'
 ```
-The above commands install the `master` branch. If you want to install another branch, for example, `develop` you can replace the first command above as follows
+The above commands install the `master` branch. If you want to install another branch, for example, `develop`, you can replace the first command above as follows
 ```bash
 git clone --branch develop https://github.com/MobilityDB/MobilityDB
 ```
-
 You should also set the following in `postgresql.conf` depending on the version of PostGIS you have installed (below we use PostGIS 3):
 ```bash
 shared_preload_libraries = 'postgis-3'
 max_locks_per_transaction = 128
 ```
 You can replace `postgis-2.5` above if you want to use PostGIS 2.5.
+
+If you do not preload the PostGIS library you will not be able to load the MobilityDB library and will get an error message such as the following one
+```bash
+ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.0.so": undefined symbol: ST_Distance
+```
+
+Notice that you can find the location of the `postgresql.conf` file as given next:
+```bash
+$ which postgres
+/usr/local/pgsql/bin/postgres
+$ ls /usr/local/pgsql/data/postgresql.conf
+/usr/local/pgsql/data/postgresql.conf
+```
+As can be seen, the PostgreSQL binaries are in the `bin` subdirectory while the `postgresql.conf` file is in the `data` subdirectory.
+
+Once MobilityDB is installed, it needs to be enabled in each database you want to use it in. In the example below we use a database named `mobility`.
+```bash
+createdb mobility
+psql mobility -c "CREATE EXTENSION PostGIS"
+psql mobility -c "CREATE EXTENSION MobilityDB"
+```
 
 Docker Container
 -----------------

@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,14 +35,13 @@
 #ifndef __TNPOINT_INDEXES_H__
 #define __TNPOINT_INDEXES_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
 
 /*****************************************************************************/
 
-extern Datum tnpoint_gist_compress(PG_FUNCTION_ARGS);
-extern Datum tnpoint_spgist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

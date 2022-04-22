@@ -23,7 +23,7 @@ project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSIO
 set(MOBILITYDB_VERSION "${MobilityDB_VERSION}")
 set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
-set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION} ${PROJECT_VERSION_DEV}")
+set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION}${PROJECT_VERSION_DEV}")
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql")
 set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
@@ -33,6 +33,17 @@ add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
   add_definitions(-DDEBUG_BUILD)
+endif()
+
+# Option used for building the MEOS library
+option(MEOS
+  "Set ON|OFF (default=OFF) to build the (Mobility Engine Open Source) MEOS library
+  "
+  OFF
+)
+if(MEOS)
+  add_definitions(-DMEOS)
+  message(STATUS "Building with the MEOS option")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -58,7 +69,8 @@ if(NOT HAS_FFSL)
   add_definitions(-DNO_FFSL)
 endif()
 
-add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+# add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter)
 if(CMAKE_COMPILER_IS_GNUCC)
   if(WITH_COVERAGE)
     message(STATUS "Generating code coverage")
@@ -73,7 +85,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # Verify PostgreSQL Version
 #-------------------------------------
 
-set(PG_MIN_MAJOR_VERSION "10")
+set(PG_MIN_MAJOR_VERSION "11")
 set(PG_MAX_MAJOR_VERSION "14")
 
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)

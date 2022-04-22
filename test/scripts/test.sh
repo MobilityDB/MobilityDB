@@ -120,7 +120,13 @@ run_compare)
   else
     tmpactual=$(mktemp)
     tmpexpected=$(mktemp)
-    sed -e's/^ERROR:.*/ERROR/' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
+    # (1) Text of error messages may change across PostgreSQL/PostGIS/MobilityDB versions.
+    #     For this reason we remove the error message and keep the line with only 'ERROR'
+    # (2) Depending on PostgreSQL/PostGIS version, we remove the lines starting with
+    #     the following error messages:
+    #     * "WARNING:  cache reference leak:"
+    #     * "CONTEXT:  SQL function"
+    sed -e's/^ERROR:.*/ERROR/' -e'/^WARNING:  cache reference leak:.*/d' -e'/^CONTEXT:  SQL function/d' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
     sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
     echo
     echo "Differences"

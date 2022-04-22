@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,21 +29,22 @@
 
 /**
  * @file projection_gk.c
- * Implementation of the Gauss-Krueger projection that is used in Secondo
+ * @brief Implementation of the Gauss-Krueger projection used in Secondo.
  *
- * This projection does not correspond to any standard projection in
+ * @note This projection does not correspond to any standard projection in
  * http://www.epsg.org/. This projection is provided to enable the comparison
  * of MobilityDB and Secondo.
  */
 
 #include "point/projection_gk.h"
 
+/* PostgreSQL */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <math.h>
 #endif
-
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/lifting.h"
@@ -172,7 +172,7 @@ gk(Datum point)
 {
   eqwgs = (awgs * awgs - bwgs * bwgs) / (awgs * awgs);
   eqbes = (abes * abes - bbes * bbes) / (abes * abes);
-  const POINT2D *p2d = datum_get_point2d_p(point);
+  const POINT2D *p2d = datum_point2d_p(point);
   POINT2D result;
   double x = p2d->x;
   double y = p2d->y;
@@ -205,7 +205,7 @@ gk(Datum point)
  * Transform a geometry into the Gauss-Kruger projection used in Secondo
  */
 static GSERIALIZED *
-geometry_transform_gk_internal(GSERIALIZED *gs)
+geometry_transform_gk(GSERIALIZED *gs)
 {
   GSERIALIZED *result = NULL; /* keep compiler quiet */
   int geotype = gserialized_get_type(gs);
@@ -216,9 +216,9 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
       lwpoint = lwpoint_construct_empty(0, false, false);
     else
     {
-      const POINT2D *p2d= gs_get_point2d_p(gs);
+      const POINT2D *p2d = gserialized_point2d_p(gs);
       Datum geom = gk(point2d_get_datum(p2d));
-      p2d  = datum_get_point2d_p(geom);
+      p2d  = datum_point2d_p(geom);
       lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
     }
     result = geo_serialize((LWGEOM *)lwpoint);
@@ -243,7 +243,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
         lwpoint = lwline_get_lwpoint(line, i);
         Datum point2d_datum = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
         Datum geom = gk(point2d_datum);
-        const POINT2D *p2d  = datum_get_point2d_p(geom);
+        const POINT2D *p2d  = datum_point2d_p(geom);
         points[i] = lwpoint_make2d(4326, p2d->x, p2d->y);
       }
 
@@ -262,41 +262,58 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(geometry_transform_gk);
-/**
- * Transform a geometry into the Gauss-Krueger projection used in Secondo
- */
-PGDLLEXPORT Datum
-geometry_transform_gk(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *result = NULL;
-  result = geometry_transform_gk_internal(gs);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tgeompoint_transform_gk);
 /**
  * Transform a temporal point into the Gauss-Krueger projection used in Secondo
  */
-PGDLLEXPORT Datum
-tgeompoint_transform_gk(PG_FUNCTION_ARGS)
+Temporal *
+tgeompoint_transform_gk(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_valid_tempsubtype(temp->subtype);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
   lfinfo.numparam = 0;
-  lfinfo.restypid = temp->basetypid;
+  lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+PG_FUNCTION_INFO_V1(Geometry_transform_gk);
+/**
+ * Transform a geometry into the Gauss-Krueger projection used in Secondo
+ */
+PGDLLEXPORT Datum
+Geometry_transform_gk(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = NULL;
+  result = geometry_transform_gk(gs);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tgeompoint_transform_gk);
+/**
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ */
+PGDLLEXPORT Datum
+Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeompoint_transform_gk(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
+#endif /* #ifndef MEOS */
+
 /*****************************************************************************/
-
-

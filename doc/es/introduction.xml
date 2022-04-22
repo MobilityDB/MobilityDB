@@ -27,8 +27,8 @@
 				<listitem><para>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, <ulink url="https://github.com/adonmo/meos">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></para></listitem>
 				<listitem><para>Anita Graser: integración con <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> y el ecosistema de Python, integración con <ulink url="https://qgis.org/">QGIS</ulink></para></listitem>
 				<listitem><para>Darafei Praliaskouski: integración con <ulink url="https://postgis.net/">PostGIS</ulink></para></listitem>
-				<listitem><para>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, miembro del OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>)</para></listitem>
-				<listitem><para>Vicky Vergara: integración con <ulink url="https://pgrouting.org/">pgRouting</ulink></para></listitem>
+				<listitem><para>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, copresidente del OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>)</para></listitem>
+				<listitem><para>Vicky Vergara: integración con <ulink url="https://pgrouting.org/">pgRouting</ulink>, enlace con <ulink url="https://osgeo.org/">OSGeo</ulink></para></listitem>
 				<listitem><para>Esteban Zimányi (chair): cofoundador del proyecto MobilityDB, coordinación general del proyecto, principal contribuidor del código de backend, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></para></listitem>
 			</itemizedlist>
 		</para>
@@ -101,29 +101,62 @@
 		<sect2 id="short_version">
 			<title>Versión corta</title>
 			<para>
-				Extraer el tar ball
-			</para>
-			<programlisting xml:space="preserve">
-tar xvfz MobilityDB-&last_release_version;.tar.gz
-cd MobilityDB-&last_release_version;
-</programlisting>
-			<para>
 				Para compilar asumiendo que tiene todas las dependencias en su ruta de búsqueda
 			</para>
 			<programlisting xml:space="preserve">
-mkdir build
-cd build
+git clone https://github.com/MobilityDB/MobilityDB
+mkdir MobilityDB/build
+cd MobilityDB/build
 cmake  ..
 make
 sudo make install
 </programlisting>
 			<para>
-				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos individual en la que desee usarlo. En éste ejemplo se usa la versión 2.5.5 de PostGIS.
+				Los comandos anteriores instalan la rama <varname>master</varname>. Si desea instalar otra rama, por ejemplo, <varname>develop</varname>, puede reemplazar el primer comando anterior de la siguiente manera:
+			</para>
+			<programlisting xml:space="preserve">
+git clone --branch develop https://github.com/MobilityDB/MobilityDB
+</programlisting>
+
+			<para>
+				También debe configurar lo siguiente en el archivo <varname>postgresql.conf</varname> según la versión de PostGIS que haya instalado (a continuación usamos PostGIS 3):
+			</para>
+			<programlisting xml:space="preserve">
+shared_preload_libraries = 'postgis-3'
+max_locks_per_transaction = 128
+</programlisting>
+			<para>
+				Puede reemplazar <varname>postgis-2.5</varname> arriba si desea usar PostGIS 2.5.
+			</para>
+
+			<para>
+				Si no carga previamente la biblioteca PostGIS, no podrá cargar la biblioteca MobilityDB y obtendrá un mensaje de error como el siguiente:
+			</para>
+			<programlisting xml:space="preserve">
+ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.0.so":
+  undefined symbol: ST_Distance
+</programlisting>
+
+			<para>
+				Observe que puede encontrar la ubicación del archivo <varname>postgresql.conf</varname> de la manera siguiente.
+			</para>
+			<programlisting xml:space="preserve">
+$ which postgres
+/usr/local/pgsql/bin/postgres
+$ ls /usr/local/pgsql/data/postgresql.conf
+/usr/local/pgsql/data/postgresql.conf
+</programlisting>
+			<para>
+				Como puede verse, los binarios de PostgreSQL están en el subdirectorio <varname>bin</varname> mientras que el archivo <varname>postgresql.conf</varname> está en el subdirectorio <varname>data</varname>.
+			</para>
+
+			<para>
+				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos en la que desee usarlo. En el siguiente ejemplo, usamos una base de datos llamada <varname>mobility</varname>.
 			</para>
 			<programlisting xml:space="preserve">
 createdb mobility
-psql mobility -c "CREATE EXTENSION PostGIS WITH VERSION'2.5.5'"
-psql mobility -c 'CREATE EXTENSION MobilityDB'
+psql mobility -c "CREATE EXTENSION PostGIS"
+psql mobility -c "CREATE EXTENSION MobilityDB"
 </programlisting>
 		</sect2>
 
@@ -192,9 +225,9 @@ CREATE EXTENSION mobilitydb CASCADE;
 			<itemizedlist>
 				<listitem><para>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
-				<listitem><para>PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Tenga en cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la versión 11 de PostgreSQL.</para></listitem>
-				<listitem><para>PostGIS versión 2.5. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role="bold">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</para></listitem>
-				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
+				<listitem><para>PostgreSQL versión 11 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
+				<listitem><para>PostGIS versión 2.5 o superior. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
+				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 			</itemizedlist>
 			<para>
 				Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.

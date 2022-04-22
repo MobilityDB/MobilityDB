@@ -1,0 +1,116 @@
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND contains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND intersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND intersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND intersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND touches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND touches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+ count 
+-------
+     2
+(1 row)
+
+DROP INDEX tbl_tnpoint_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND contains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND intersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND intersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND intersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND touches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND touches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+ count 
+-------
+     2
+(1 row)
+
+DROP INDEX tbl_tnpoint_quadtree_idx;
+DROP INDEX

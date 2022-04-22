@@ -20,11 +20,19 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [10,11,12,13]
+          psql: [11,12,13]
           postgis: [2.5]
           os: [ubuntu-latest, ubuntu-18.04]
           coverage: [0]
           include:
+            - psql: 12
+              postgis: 3
+              os: ubuntu-latest
+              coverage: 0
+            - psql: 13
+              postgis: 3
+              os: ubuntu-latest
+              coverage: 0
             - psql: 14
               postgis: 3
               os: ubuntu-latest
@@ -90,7 +98,7 @@ jobs:
         run: |
           sudo service postgresql start
           sudo -u postgres createdb -p ${PGPORT}  ___mobdb___test___
-          sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+          sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
 
       - name: Test
         run: |

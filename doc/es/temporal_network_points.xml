@@ -112,14 +112,14 @@ SELECT nsegment(76, 0.3, 0.5);
 		<sect2>
 			<title>Funciones de transformación</title>
 			<itemizedlist>
-				<listitem id="npoint_setPrecision">
-					<indexterm><primary><varname>npoint_setPrecision</varname></primary></indexterm>
-					<para>Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
-					<para><varname>setPrecision({npoint,nsegment},int): {npoint,nsegment}</varname></para>
+				<listitem id="npoint_round">
+					<indexterm><primary><varname>npoint_round</varname></primary></indexterm>
+					<para>Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+					<para><varname>round({npoint,nsegment},int): {npoint,nsegment}</varname></para>
 					<programlisting xml:space="preserve">
-SELECT setPrecision(npoint(76, 0.123456789), 6);
+SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
-SELECT setPrecision(nsegment(76, 0.123456789, 0.223456789), 6);
+SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 --  NSegment(76,0.123457,0.223457)
 </programlisting>
 				</listitem>
@@ -489,12 +489,12 @@ SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 </programlisting>
 			</listitem>
 
-			<listitem id="tnpoint_setPrecision">
-				<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
-				<para>Establecer la precisión de la fracción del punto de red temporal en el número de lugares decimales</para>
-				<para><varname>setPrecision(tnpoint,integer): tnpoint</varname></para>
+			<listitem id="tnpoint_round">
+				<indexterm><primary><varname>round</varname></primary></indexterm>
+				<para>Redondear la fracción del punto de red temporal en el número de lugares decimales</para>
+				<para><varname>round(tnpoint,integer): tnpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT setPrecision(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
+SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2012-01-01 00:00:00+01, NPoint(1,0.5)@2012-01-02 00:00:00+01)}
 </programlisting>
 			</listitem>
@@ -952,9 +952,9 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				<para><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, <varname>#&gt;&gt;</varname>, que solo consideran la dimensión temporal en puntos de la red temporal,</para>
 			</listitem>
 			<listitem>
-				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>-|-</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta.</para>
+				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname> y <varname>|=|</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta.</para>
 			</listitem>
 		</itemizedlist>
-		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos. Además, un índice GiST puede acelerar las consultas del vecino más cercano que involucran al operador <varname>|=|</varname>.</para>
+		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos.</para>
 	</sect1>
 </chapter>

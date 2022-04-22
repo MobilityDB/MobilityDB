@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,17 +35,19 @@
 #ifndef __LIFTING_H__
 #define __LIFTING_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /**
  * Structure to represent the information about lifted functions
  *
- * The mandatory parameters are `func`, `numparam`, and `restypid`. These
+ * The mandatory parameters are `func`, `numparam`, and `restype`. These
  * parameters are used by function `tfunc_temporal`, which applies the lifted
  * function to every instant of the temporal value. The remaining parameters
- * are used by functions `tfunc_temporal_base` and `sync_tfunc_temporal_temporal`
+ * are used by functions `tfunc_temporal_base` and `tfunc_temporal_temporal`
  * that apply the lifted function to two base values.
  */
 
@@ -57,17 +58,17 @@ typedef struct
   Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
   int numparam;              /**< Number of parameters of the function */
   Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
-  bool argoids;              /**< True if the lifted function requires the Oid of the arguments */
-  Oid argtypid[2];           /**< Type of the arguments */
-  Oid restypid;              /**< Base type of the result of the function */
+  bool args;                 /**< True if the lifted function requires arguments */
+  CachedType argtype[2];     /**< Base type of the arguments */
+  CachedType restype;        /**< Temporal type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
-  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid, 
+  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
-  bool (*tpfunc)(const TInstant *, const TInstant *, bool, const TInstant *,
-     const TInstant *, bool, Datum *,
-     TimestampTz *);         /**< Turning point function for two temporal types */
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
+    const TInstant *, Datum *,
+    TimestampTz *);          /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/
@@ -94,11 +95,16 @@ extern TSequenceSet *tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value
 extern Temporal *tfunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo);
 
-extern TInstant *sync_tfunc_tinstant_tinstant(const TInstant *inst1,
+extern TInstant *tfunc_tinstant_tinstant(const TInstant *inst1,
   const TInstant *inst2, LiftedFunctionInfo *lfinfo);
-extern TInstantSet *sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1,
+extern TInstantSet *tfunc_tinstantset_tinstantset(const TInstantSet *ti1,
   const TInstantSet *ti2, LiftedFunctionInfo *lfinfo);
-extern Temporal *sync_tfunc_temporal_temporal(const Temporal *temp1,
+extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, LiftedFunctionInfo *lfinfo);
+
+/*****************************************************************************/
+
+extern int efunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/

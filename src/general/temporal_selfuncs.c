@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,8 +29,8 @@
 
 /**
  * @file temporal_selfuncs.c
- * Functions for selectivity estimation of operators on temporal types whose
- * bounding box is a `Period`, that is, `tbool` and `ttext`.
+ * @brief Functions for selectivity estimation of operators on temporal types
+ * whose bounding box is a `Period`, that is, `tbool` and `ttext`.
  *
  * The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`
@@ -40,13 +39,11 @@
  * - Ever/always comparison operators: `?=`, `%=`, `?<>`, `%<>`, `?<, `%<`,
  * ... These still need to be defined. TODO
  *
- * Due to implicit casting, a condition such as `tbool <<# timestamptz` will be
- * transformed into `tbool <<# period`. This allows to reduce the number of
- * cases for the operator definitions, indexes, selectivity, etc.
  */
 
 #include "general/temporal_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/amapi.h>
 #include <access/heapam.h>
@@ -55,11 +52,7 @@
 #include <access/relscan.h>
 #include <access/visibilitymap.h>
 #include <access/skey.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#else
 #include <catalog/pg_collation_d.h>
-#endif
 #include <executor/tuptable.h>
 #include <optimizer/paths.h>
 #include <storage/bufmgr.h>
@@ -69,16 +62,20 @@
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
-#include "general/temporal_boxops.h"
+/* MobilityDB */
 #include "general/timetypes.h"
-
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_selfuncs.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
+#include "general/temporal_util.h"
+#include "general/temporal_boxops.h"
 #include "general/temporal_analyze.h"
+#include "general/tnumber_selfuncs.h"
 #include "point/tpoint.h"
+#include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************
  * This function is exported only after PostgreSQL version 12
@@ -91,7 +88,7 @@
  * @note Function copied from selfuncs.c since it is not exported.
  */
 double
-var_eq_const(VariableStatData *vardata, Oid operator,
+var_eq_const(VariableStatData *vardata, Oid operid,
        Datum constval, bool constisnull,
        bool varonleft, bool negate)
 {
@@ -132,7 +129,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
   }
   else if (HeapTupleIsValid(vardata->statsTuple) &&
        statistic_proc_security_check(vardata,
-                       (opfuncoid = get_opcode(operator))))
+                       (opfuncoid = get_opcode(operid))))
   {
     AttStatsSlot sslot;
     bool    match = false;
@@ -147,7 +144,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
      */
     if (get_attstatsslot(&sslot, vardata->statsTuple,
                // EZ replaced InvalidOid by operator
-               STATISTIC_KIND_MCV, operator,
+               STATISTIC_KIND_MCV, operid,
                ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
     {
       FmgrInfo  eqproc;
@@ -249,42 +246,47 @@ var_eq_const(VariableStatData *vardata, Oid operator,
  *****************************************************************************/
 
 /**
- * Transform the constant into a period.
- *
- * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
- * and PeriodSet are transformed into a Period
+ * Transform the constant into a period
  */
 static bool
 temporal_const_to_period(Node *other, Period *period)
 {
   Oid consttype = ((Const *) other)->consttype;
-
-  if (consttype == type_oid(T_PERIOD))
-    memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
-  else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-    temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
+  CachedType type = oid_type(consttype);
+  if (time_type(type))
+    time_const_to_period(other, period);
+  else if (type == T_TBOOL || type == T_TTEXT)
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
     return false;
   return true;
 }
 
 /**
- * Returns the enum value associated to the operator
+ * Return the enum value associated to the operator
  */
 static bool
-temporal_cachedop(Oid operator, CachedOp *cachedOp)
+temporal_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-    if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -294,13 +296,13 @@ temporal_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 /**
- * Returns a default selectivity estimate for the operator when we don't
+ * Return a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 static double
-default_temporal_selectivity(CachedOp operator)
+temporal_sel_default(CachedOp oper)
 {
-  switch (operator)
+  switch (oper)
   {
     case OVERLAPS_OP:
       return 0.005;
@@ -331,7 +333,19 @@ default_temporal_selectivity(CachedOp operator)
 }
 
 /**
- * Returns an estimate of the selectivity of the search period and the
+ * Return a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+float8
+temporal_joinsel_default(Oid operid __attribute__((unused)))
+{
+  // TODO take care of the operator
+  return 0.001;
+}
+
+
+/**
+ * Return an estimate of the selectivity of the search period and the
  * operator for columns of temporal values. For the traditional comparison
  * operators (<, <=, ...), we follow the approach for range types in
  * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
@@ -339,10 +353,10 @@ default_temporal_selectivity(CachedOp operator)
  * respectively.
  */
 Selectivity
-temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
-  Period *period, CachedOp cachedOp)
+temporal_sel_period(VariableStatData *vardata, Period *period,
+  CachedOp cachedOp)
 {
-  double selec;
+  float8 selec;
 
   /*
    * There is no ~= operator for time types and thus it is necessary to
@@ -350,13 +364,13 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
    */
   if (cachedOp == SAME_OP)
   {
-    Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+    Oid operid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operator, PeriodGetDatum(period),
+    selec = var_eq_const(vardata, operid, PeriodPGetDatum(period),
       false, false, false);
 #else
-    selec = var_eq_const(vardata, operator, DEFAULT_COLLATION_OID,
-      PeriodGetDatum(period), false, false, false);
+    selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
+      PeriodPGetDatum(period), false, false, false);
 #endif
   }
   else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
@@ -371,51 +385,62 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
     cachedOp == LT_OP || cachedOp == LE_OP ||
     cachedOp == GT_OP || cachedOp == GE_OP)
   {
-    selec = calc_period_hist_selectivity(vardata, period, cachedOp);
+    selec = period_sel_hist(vardata, period, cachedOp);
   }
   else /* Unknown operator */
   {
-    selec = default_temporal_selectivity(cachedOp);
+    selec = temporal_sel_default(cachedOp);
   }
   return selec;
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_sel);
 /**
- * Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * Get enumeration value associated to the operator according to the family
  */
-PGDLLEXPORT Datum
-temporal_sel(PG_FUNCTION_ARGS)
+static bool
+temporal_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfamily)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
+  /* Get enumeration value associated to the operator */
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
+  if (tempfamily == TEMPORALTYPE)
+    return temporal_cachedop(operid, cachedOp);
+  else /* tempfamily == TNUMBERTYPE */
+    return tnumber_cachedop(operid, cachedOp);
+}
+
+/**
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a period, that is, tbool and ttext (internal function)
+ */
+float8
+temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
+  TemporalFamily tempfamily)
+{
   VariableStatData vardata;
   Node *other;
   bool varonleft;
   Selectivity selec;
-  CachedOp cachedOp;
-  Period constperiod;
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  bool found = temporal_cachedop(operator, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! temporal_cachedop_family(operid, &cachedOp, tempfamily))
+    /* In the case of unknown operator */
+    return DEFAULT_TEMP_SEL;
 
   /*
    * If expression is not (variable op something) or (something op
    * variable), then punt and return a default estimate.
    */
-  if (!get_restriction_variable(root, args, varRelid,
-    &vardata, &other, &varonleft))
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
+      &varonleft))
+  {
+    if (tempfamily == TEMPORALTYPE)
+      return temporal_sel_default(cachedOp);
+    else /* tempfamily == TNUMBERTYPE */
+      return tnumber_sel_default(cachedOp);
+  }
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -423,7 +448,10 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    if (tempfamily == TEMPORALTYPE)
+      return temporal_sel_default(cachedOp);
+    else /* tempfamily == TNUMBERTYPE */
+      return tnumber_sel_default(cachedOp);
   }
 
   /*
@@ -433,7 +461,7 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (((Const *) other)->constisnull)
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(0.0);
+    return 0.0;
   }
 
   /*
@@ -443,40 +471,206 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
+    operid = get_commutator(operid);
+    if (! operid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+      if (tempfamily == TEMPORALTYPE)
+        return temporal_sel_default(cachedOp);
+      else /* tempfamily == TNUMBERTYPE */
+        return tnumber_sel_default(cachedOp);
     }
   }
 
-  /*
-   * Transform the constant into a Period
-   */
-  found = temporal_const_to_period(other, &constperiod);
-  /* In the case of unknown constant */
-  if (!found)
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+  /* Transform the constant into a bounding box and compute the selectivity */
+  if (tempfamily == TEMPORALTYPE)
+  {
+    Period period;
+    if (! temporal_const_to_period(other, &period))
+      /* In the case of unknown constant */
+      return temporal_sel_default(cachedOp);
+    /* Compute the selectivity */
+    selec = temporal_sel_period(&vardata, &period, cachedOp);
+  }
+  else /* tempfamily == TNUMBERTYPE */
+  {
+    TBOX box;
+    if (! tnumber_const_to_tbox(other, &box))
+      /* In the case of unknown constant */
+      return tnumber_sel_default(cachedOp);
 
-  /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_internal(root, &vardata, &constperiod, cachedOp);
+    assert(MOBDB_FLAGS_GET_X(box.flags) ||
+      MOBDB_FLAGS_GET_T(box.flags));
+    /* Get the base type of the temporal column */
+    Oid basetypid = temptypid_basetypid(vardata.atttype);
+    /* Compute the selectivity */
+    selec = tnumber_sel_box(&vardata, &box, cachedOp, basetypid);
+  }
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
-  PG_RETURN_FLOAT8(selec);
+  return selec;
 }
 
-PG_FUNCTION_INFO_V1(temporal_joinsel);
+/*
+ * Estimate the restriction selectivity value of the operators for the
+ * various families of temporal types.
+ */
+float8
+temporal_sel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operid = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+
+  float8 result;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+         tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
+    result = temporal_sel(root, operid, args, varRelid, tempfamily);
+  else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
+    result = tpoint_sel(root, operid, args, varRelid, tempfamily);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_sel);
+/**
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a period, that is, tbool and ttext.
+ */
+PGDLLEXPORT Datum
+Temporal_sel(PG_FUNCTION_ARGS)
+{
+  return temporal_sel_ext(fcinfo, TEMPORALTYPE);
+}
+
+/*****************************************************************************
+ * Estimate the join selectivity
+ *****************************************************************************/
+
+/**
+ * Return an estimate of the join selectivity for columns of temporal values.
+ * For the traditional comparison operators (<, <=, ...), we follow the
+ * approach for range types in PostgreSQL, this function  computes the
+ * selectivity for <, <=, >, and >=, while the selectivity functions for
+ * = and <> are eqsel and neqsel, respectively.
+ */
+float8
+temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
+  JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo,
+  TemporalFamily tempfamily)
+{
+  Node *arg1 = (Node *) linitial(args);
+  Node *arg2 = (Node *) lsecond(args);
+  Var *var1 = (Var *) arg1;
+  Var *var2 = (Var *) arg2;
+
+  /* We only do column joins right now, no functional joins */
+  /* TODO: handle t1 <op> expandX(t2) */
+  if (!IsA(arg1, Var) || !IsA(arg2, Var))
+    return DEFAULT_TEMP_JOINSEL;
+
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! temporal_cachedop_family(operid, &cachedOp, tempfamily))
+    /* In the case of unknown operator */
+    return DEFAULT_TEMP_SEL;
+
+  /*
+   * Determine whether the value and/or the time components are
+   * taken into account for the selectivity estimation
+   */
+  bool value, time;
+  if (tempfamily == TEMPORALTYPE)
+  {
+    value = false;
+    time = true;
+  }
+  else /* tempfamily == TNUMBERTYPE */
+  {
+    CachedType oprleft = oid_type(var1->vartype);
+    CachedType oprright = oid_type(var2->vartype);
+    if (! tnumber_joinsel_components(cachedOp, oprleft, oprright,
+      &value, &time))
+      /* In the case of unknown arguments */
+      return tnumber_joinsel_default(cachedOp);
+  }
+
+  /*
+   * Since currently there is no join selectivity estimation for range types
+   * in PostgreSQL, for temporal numbers we multiply the default value compute the join selectivity
+   * for the temporal part
+   */
+  float8 selec = 1.0;
+  if (value)
+  {
+    selec *= DEFAULT_TEMP_JOINSEL;
+  }
+  if (time)
+  {
+    /*
+     * There is no ~= operator for time types and thus it is necessary to
+     * take care of this operator here.
+     */
+    if (cachedOp == SAME_OP)
+      // TODO
+      selec *= period_joinsel_default(cachedOp);
+    else
+      /* Estimate join selectivity */
+      selec *= period_joinsel(root, cachedOp, args, jointype, sjinfo);
+  }
+
+  CLAMP_PROBABILITY(selec);
+  return (float8) selec;
+}
+
+/*
+ * Estimate the join selectivity value of the operators for temporal
+ * alphanumeric types and temporal number types.
+ */
+float8
+temporal_joinsel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operid = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  float8 result;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+         tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
+    result = temporal_joinsel(root, operid, args, jointype, sjinfo,
+      tempfamily);
+  else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
+  {
+    int mode = Int32GetDatum(0) /* ND mode TO GENERALIZE */;
+    result = tpoint_joinsel(root, operid, args, jointype, sjinfo,
+      mode, tempfamily);
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_joinsel);
 /*
  * Estimate the join selectivity value of the operators for temporal types
  * whose bounding box is a period, that is, tbool and ttext.
  */
 PGDLLEXPORT Datum
-temporal_joinsel(PG_FUNCTION_ARGS)
+Temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  return temporal_joinsel_ext(fcinfo, TEMPORALTYPE);
 }
 
 /*****************************************************************************/

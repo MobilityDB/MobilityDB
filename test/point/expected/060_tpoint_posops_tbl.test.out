@@ -1,0 +1,1061 @@
+DROP INDEX IF EXISTS tbl_tgeompoint_rtree_idx;
+NOTICE:  index "tbl_tgeompoint_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint_rtree_idx;
+NOTICE:  index "tbl_tgeogpoint_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint_quadtree_idx;
+NOTICE:  index "tbl_tgeompoint_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint_quadtree_idx;
+NOTICE:  index "tbl_tgeogpoint_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP TABLE IF EXISTS test_georelativeposops;
+NOTICE:  table "test_georelativeposops" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_georelativeposops(
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'timestampset', 'tgeompoint', COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'timestampset', 'tgeompoint', COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'timestampset', 'tgeompoint', COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'timestampset', 'tgeompoint', COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'timestampset', 'tgeogpoint', COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'timestampset', 'tgeogpoint', COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'timestampset', 'tgeogpoint', COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'timestampset', 'tgeogpoint', COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #>> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps &<# temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #&> temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeompoint', 'timestampset', COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp <<# ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeompoint', 'timestampset', COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp #>> ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeompoint', 'timestampset', COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp &<# ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeompoint', 'timestampset', COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp #&> ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <<# p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp #>> p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp &<# p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp #&> p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <<# ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp #>> ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp &<# ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp #&> ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeogpoint', 'timestampset', COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp <<# ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeogpoint', 'timestampset', COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp #>> ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeogpoint', 'timestampset', COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp &<# ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeogpoint', 'timestampset', COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp #&> ts;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <<# p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp #>> p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp &<# p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp #&> p;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <<# ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #>> ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp &<# ps;
+INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #&> ps;
+INSERT 0 1
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING GIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING GIST(temp);
+CREATE INDEX
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
+WHERE op = '<<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
+WHERE op = '>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
+WHERE op = '&<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
+WHERE op = '&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
+WHERE op = '<<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
+WHERE op = '|>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
+WHERE op = '&<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
+WHERE op = '|&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <<# temp )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p #>> temp )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p &<# temp )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p #&> temp )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <<# temp )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #>> temp )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps &<# temp )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #&> temp )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <<# temp )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p #>> temp )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p &<# temp )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p #&> temp )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <<# temp )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #>> temp )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps &<# temp )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #&> temp )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
+WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
+WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
+WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
+WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
+WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
+WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
+WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
+WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <<# p )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp #>> p )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp &<# p )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp #&> p )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <<# ps )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp #>> ps )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp &<# ps )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp #&> ps )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <<# p )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp #>> p )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp &<# p )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp #&> p )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <<# ps )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #>> ps )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp &<# ps )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #&> ps )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeogpoint_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING SPGIST(temp);
+CREATE INDEX
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
+WHERE op = '<<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
+WHERE op = '>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
+WHERE op = '&<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
+WHERE op = '&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
+WHERE op = '<<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
+WHERE op = '|>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
+WHERE op = '&<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
+WHERE op = '|&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeompoint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <<# temp )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p #>> temp )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p &<# temp )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p #&> temp )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <<# temp )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #>> temp )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps &<# temp )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #&> temp )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tgeogpoint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <<# temp )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p #>> temp )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p &<# temp )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p #&> temp )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <<# temp )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #>> temp )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps &<# temp )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #&> temp )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
+WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
+WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
+WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
+WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
+WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
+WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
+WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
+WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <<# p )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp #>> p )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp &<# p )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp #&> p )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <<# ps )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp #>> ps )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp &<# ps )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp #&> ps )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <<# p )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp #>> p )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp &<# p )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp #&> p )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <<# ps )
+WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #>> ps )
+WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp &<# ps )
+WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_georelativeposops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #&> ps )
+WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeogpoint_quadtree_idx;
+DROP INDEX
+SELECT * FROM test_georelativeposops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
+ORDER BY op, leftarg, rightarg;
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx 
+----+---------+----------+--------+-----------+--------------
+(0 rows)
+
+DROP TABLE test_georelativeposops;
+DROP TABLE

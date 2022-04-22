@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,8 +29,8 @@
 
 /**
  * @file tnumber_spgist.c
- * SP-GiST implementation of 4-dimensional quad-tree over temporal integers
- * and temporal floats.
+ * @brief SP-GiST implementation of 4-dimensional quad-tree over temporal
+ * integers and temporal floats.
  *
  * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal
@@ -94,41 +93,71 @@
  * that we don't yet have as infinity.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-
 #include "general/tnumber_spgist.h"
 
+/* PostgreSQL */
+#include <assert.h>
 #include <access/spgist.h>
-#include <utils/timestamp.h>
 #include <utils/builtins.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+#include <access/spgist_private.h>
 #include <utils/float.h>
 #endif
-
+#include <utils/timestamp.h>
+/* MobilityDB */
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_gist.h"
+#include "general/tnumber_distance.h"
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-/* To avoid including "access/spgist_private.h" since it conflicts with the
- * EPSILON constant defined there and also in MobilityDB */
-extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
-  int norderbys);
-#endif
-
-/*****************************************************************************/
+/*****************************************************************************
+ * Data structures
+ *****************************************************************************/
 
 /**
- * Structure to represent the bounding box of a temporal number as a
- * 4-dimensiononal point
+ * Structure to represent the bounding box of an inner node containing a set
+ * of temporal boxes
  */
 typedef struct
 {
   TBOX left;
   TBOX right;
-} RectBox;
+} TboxNode;
+
+
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+/**
+ * Initialize the traversal value
+ *
+ * In the beginning, we don't have any restrictions.  We have to
+ * initialize the struct to cover the whole 4D space.
+ */
+static void
+tboxnode_init(TboxNode *nodebox)
+{
+  double infinity = get_float8_infinity();
+  memset(nodebox, 0, sizeof(TboxNode));
+  nodebox->left.xmin = nodebox->right.xmin = -infinity;
+  nodebox->left.xmax = nodebox->right.xmax = infinity;
+  nodebox->left.tmin = nodebox->right.tmin = DT_NOBEGIN;
+  nodebox->left.tmax = nodebox->right.tmax = DT_NOEND;
+  return;
+}
+
+/**
+ * Copy a traversal value
+ */
+TboxNode *
+tboxnode_copy(const TboxNode *box)
+{
+  TboxNode *result = palloc(sizeof(TboxNode));
+  memcpy(result, box, sizeof(TboxNode));
+  return result;
+}
 
 /**
  * Comparator for qsort
@@ -155,7 +184,7 @@ compareDoubles(const void *a, const void *b)
  * a corner of the box. This makes 16 quadrants in total.
  */
 static uint8
-getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
+get_quadrant4D(const TBOX *centroid, const TBOX *inBox)
 {
   uint8 quadrant = 0;
 
@@ -175,204 +204,234 @@ getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
 }
 
 /**
- * Initialize the traversal value
- *
- * In the beginning, we don't have any restrictions.  We have to
- * initialize the struct to cover the whole 4D space.
- */
-static RectBox *
-initRectBox(void)
-{
-  RectBox *rect_box = (RectBox *) palloc(sizeof(RectBox));
-  double infinity = get_float8_infinity();
-
-  rect_box->left.xmin = rect_box->right.xmin = -infinity;
-  rect_box->left.xmax = rect_box->right.xmax = infinity;
-
-  rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
-  rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
-
-  return rect_box;
-}
-
-/**
  * Calculate the next traversal value
  *
- * All centroids are bounded by RectBox, but SP-GiST only keeps
- * boxes.  When we are traversing the tree, we must calculate RectBox,
+ * All centroids are bounded by TboxNode, but SP-GiST only keeps
+ * boxes.  When we are traversing the tree, we must calculate TboxNode,
  * using centroid and quadrant.
  */
-static RectBox *
-nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
+static void
+tboxnode_quadtree_next(const TboxNode *nodebox, const TBOX *centroid,
+  uint8 quadrant, TboxNode *next_nodebox)
 {
-  RectBox *next_rect_box = (RectBox *) palloc(sizeof(RectBox));
-
-  memcpy(next_rect_box, rect_box, sizeof(RectBox));
+  memcpy(next_nodebox, nodebox, sizeof(TboxNode));
 
   if (quadrant & 0x8)
-    next_rect_box->left.xmin = centroid->xmin;
+    next_nodebox->left.xmin = centroid->xmin;
   else
-    next_rect_box->left.xmax = centroid->xmin;
+    next_nodebox->left.xmax = centroid->xmin;
 
   if (quadrant & 0x4)
-    next_rect_box->right.xmin = centroid->xmax;
+    next_nodebox->right.xmin = centroid->xmax;
   else
-    next_rect_box->right.xmax = centroid->xmax;
+    next_nodebox->right.xmax = centroid->xmax;
 
   if (quadrant & 0x2)
-    next_rect_box->left.tmin = centroid->tmin;
+    next_nodebox->left.tmin = centroid->tmin;
   else
-    next_rect_box->left.tmax = centroid->tmin;
+    next_nodebox->left.tmax = centroid->tmin;
 
   if (quadrant & 0x1)
-    next_rect_box->right.tmin = centroid->tmax;
+    next_nodebox->right.tmin = centroid->tmax;
   else
-    next_rect_box->right.tmax = centroid->tmax;
+    next_nodebox->right.tmax = centroid->tmax;
 
-  return next_rect_box;
+  return;
 }
 
 /**
- * Can any rectangle from rect_box overlap with this argument?
+ * Can any rectangle from nodebox overlap with this argument?
  */
 static bool
-overlap4D(const RectBox *rect_box, const TBOX *query)
+overlap4D(const TboxNode *nodebox, const TBOX *query)
 {
   bool result = true;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= rect_box->left.xmin <= query->xmax &&
-      rect_box->right.xmax >= query->xmin;
+    result &= nodebox->left.xmin <= query->xmax &&
+      nodebox->right.xmax >= query->xmin;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= rect_box->left.tmin <= query->tmax &&
-      rect_box->right.tmax >= query->tmin;
+    result &= nodebox->left.tmin <= query->tmax &&
+      nodebox->right.tmax >= query->tmin;
   return result;
 }
 
 /**
- * Can any rectangle from rect_box contain this argument?
+ * Can any rectangle from nodebox contain this argument?
  */
 static bool
-contain4D(const RectBox *rect_box, const TBOX *query)
+contain4D(const TboxNode *nodebox, const TBOX *query)
 {
   bool result = true;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= rect_box->right.xmax >= query->xmax &&
-      rect_box->left.xmin <= query->xmin;
+    result &= nodebox->right.xmax >= query->xmax &&
+      nodebox->left.xmin <= query->xmin;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= rect_box->right.tmax >= query->tmax &&
-      rect_box->left.tmin <= query->tmin;
+    result &= nodebox->right.tmax >= query->tmax &&
+      nodebox->left.tmin <= query->tmin;
   return result;
 }
 
 /**
- * Can any rectangle from rect_box be left of this argument?
+ * Can any rectangle from nodebox be left of this argument?
  */
 static bool
-left4D(const RectBox *rect_box, const TBOX *query)
+left4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.xmax < query->xmin);
+  return (nodebox->right.xmax < query->xmin);
 }
 
 /**
- * Can any rectangle from rect_box does not extend the right of this argument?
+ * Can any rectangle from nodebox does not extend the right of this argument?
  */
 static bool
-overLeft4D(const RectBox *rect_box, const TBOX *query)
+overLeft4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.xmax <= query->xmax);
+  return (nodebox->right.xmax <= query->xmax);
 }
 
 /**
- * Can any rectangle from rect_box be right of this argument?
+ * Can any rectangle from nodebox be right of this argument?
  */
 static bool
-right4D(const RectBox *rect_box, const TBOX *query)
+right4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.xmin > query->xmax);
+  return (nodebox->left.xmin > query->xmax);
 }
 
 /**
- * Can any rectangle from rect_box does not extend the left of this argument?
+ * Can any rectangle from nodebox does not extend the left of this argument?
  */
 static bool
-overRight4D(const RectBox *rect_box, const TBOX *query)
+overRight4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.xmin >= query->xmin);
+  return (nodebox->left.xmin >= query->xmin);
 }
 
 /**
- * Can any rectangle from rect_box be before this argument?
+ * Can any rectangle from nodebox be before this argument?
  */
 static bool
-before4D(const RectBox *rect_box, const TBOX *query)
+before4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.tmax < query->tmin);
+  return (nodebox->right.tmax < query->tmin);
 }
 
 /**
- * Can any rectangle from rect_box does not extend after this argument?
+ * Can any rectangle from nodebox does not extend after this argument?
  */
 static bool
-overBefore4D(const RectBox *rect_box, const TBOX *query)
+overBefore4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.tmax <= query->tmax);
+  return (nodebox->right.tmax <= query->tmax);
 }
 
 /**
- * Can any rectangle from rect_box be after this argument?
+ * Can any rectangle from nodebox be after this argument?
  */
 static bool
-after4D(const RectBox *rect_box, const TBOX *query)
+after4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.tmin > query->tmax);
+  return (nodebox->left.tmin > query->tmax);
 }
 
 /**
- * Can any rectangle from rect_box does not extend before this argument?
+ * Can any rectangle from nodebox does not extend before this argument?
  */
 static bool
-overAfter4D(const RectBox *rect_box, const TBOX *query)
+overAfter4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.tmin >= query->tmin);
+  return (nodebox->left.tmin >= query->tmin);
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
- * Lower bound for the distance between query and rect_box.
+ * Lower bound for the distance between query and nodebox.
  * @note The temporal dimension is not taken into the account since it is not
  * possible to mix different units in the computation. As a consequence, the
  * filtering is not very restrictive.
  */
 static double
-distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
+distance_tbox_nodebox(const TBOX *query, const TboxNode *nodebox)
 {
-  double dx;
+  /* If the boxes do not intersect in the time dimension return infinity */
+  bool hast = MOBDB_FLAGS_GET_T(query->flags);
+  if (hast && (query->tmin > nodebox->right.tmax ||
+      nodebox->left.tmin > query->tmax))
+    return DBL_MAX;
 
-  if (query->xmax < rect_box->left.xmin)
-    dx = rect_box->left.xmin - query->xmax;
-  else if (query->xmin > rect_box->right.xmax)
-    dx = query->xmin - rect_box->right.xmax;
+  double dx;
+  if (query->xmax < nodebox->left.xmin)
+    dx = nodebox->left.xmin - query->xmax;
+  else if (query->xmin > nodebox->right.xmax)
+    dx = query->xmin - nodebox->right.xmax;
   else
     dx = 0;
-
   return dx;
 }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
+
+/**
+ * Transform a query argument into a TBOX.
+ */
+static bool
+tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
+{
+  CachedType type = oid_type(scankey->sk_subtype);
+  if (tnumber_basetype(type))
+  {
+    Datum value = scankey->sk_argument;
+    number_tbox(value, type, result);
+  }
+  else if (tnumber_rangetype(type))
+  {
+    RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
+    range_tbox(range, result);
+  }
+  else if (type == T_TIMESTAMPTZ)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    timestamp_tbox(t, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    timestampset_tbox_slice(scankey->sk_argument, result);
+  }
+  else if (type == T_PERIOD)
+  {
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    period_tbox(p, result);
+  }
+  else if (type == T_PERIODSET)
+  {
+    periodset_tbox_slice(scankey->sk_argument, result);
+  }
+  else if (type == T_TBOX)
+  {
+    memcpy(result, DatumGetTboxP(scankey->sk_argument), sizeof(TBOX));
+  }
+  else if (tnumber_type(type))
+  {
+    temporal_bbox_slice(scankey->sk_argument, result);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", type);
+  return true;
+}
 
 /*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_config);
+PG_FUNCTION_INFO_V1(Tbox_spgist_config);
 /**
  * SP-GiST config function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_config(PG_FUNCTION_ARGS)
+Tbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_TBOX);  /* A type represented by its bounding box */
@@ -387,12 +446,12 @@ tbox_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_choose);
+PG_FUNCTION_INFO_V1(Tbox_quadtree_choose);
 /**
  * SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_choose(PG_FUNCTION_ARGS)
+Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -404,7 +463,7 @@ tbox_spgist_choose(PG_FUNCTION_ARGS)
 
   /* nodeN will be set by core, when allTheSame. */
   if (!in->allTheSame)
-    out->result.matchNode.nodeN = getQuadrant4D(centroid, box);
+    out->result.matchNode.nodeN = get_quadrant4D(centroid, box);
 
   PG_RETURN_VOID();
 }
@@ -413,7 +472,7 @@ tbox_spgist_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_picksplit);
+PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for temporal numbers
  *
@@ -421,7 +480,7 @@ PG_FUNCTION_INFO_V1(tbox_spgist_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-tbox_spgist_picksplit(PG_FUNCTION_ARGS)
+Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -436,7 +495,6 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     TBOX *box = DatumGetTboxP(in->datums[i]);
-
     lowXs[i] = box->xmin;
     highXs[i] = box->xmax;
     lowTs[i] = (double) box->tmin;
@@ -450,8 +508,7 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
 
   median = in->nTuples / 2;
 
-  centroid = palloc0(sizeof(TBOX));
-
+  centroid = (TBOX *) palloc0(sizeof(TBOX));
   centroid->xmin = lowXs[median];
   centroid->xmax = highXs[median];
   centroid->tmin = (TimestampTz) lowTs[median];
@@ -460,10 +517,8 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = PointerGetDatum(centroid);
-
   out->nNodes = 16;
   out->nodeLabels = NULL;    /* We don't need node labels. */
-
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
@@ -474,8 +529,7 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     TBOX *box = DatumGetTboxP(in->datums[i]);
-    uint8 quadrant = getQuadrant4D(centroid, box);
-
+    uint8 quadrant = get_quadrant4D(centroid, box);
     out->leafTupleDatums[i] = PointerGetDatum(box);
     out->mapTuplesToNodes[i] = quadrant;
   }
@@ -490,29 +544,55 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_inner_consistent);
+PG_FUNCTION_INFO_V1(Tbox_quadtree_inner_consistent);
 /**
  * SP-GiST inner consistent function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
+Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
-  MemoryContext old_ctx;
-  RectBox *rect_box;
   uint8 quadrant;
-  TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries;
+  MemoryContext old_ctx;
+  TboxNode *nodebox, infbox, next_nodebox;
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  TBOX *centroid, *queries, *orderbys;
+#else
+  TBOX *centroid, *queries;
+#endif
+
+  /* Fetch the centroid of this node. */
+  assert(in->hasPrefix);
+  centroid = DatumGetTboxP(in->prefixDatum);
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
    * we have just begun to walk the tree.
    */
   if (in->traversalValue)
-    rect_box = in->traversalValue;
+    nodebox = in->traversalValue;
   else
-    rect_box = initRectBox();
+  {
+    tboxnode_init(&infbox);
+    nodebox = &infbox;
+  }
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  /*
+   * Transform the orderbys into bounding boxes initializing the dimensions
+   * that must not be taken into account for the operators to infinity.
+   * This transformation is done here to avoid doing it for all quadrants
+   * in the loop below.
+   */
+  if (in->norderbys > 0)
+  {
+    orderbys = palloc0(sizeof(TBOX) * in->norderbys);
+    for (i = 0; i < in->norderbys; i++)
+      tnumber_spgist_get_tbox(&in->orderbys[i], &orderbys[i]);
+  }
+#endif
 
   if (in->allTheSame)
   {
@@ -520,29 +600,27 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     out->nNodes = in->nNodes;
     out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
+    {
       out->nodeNumbers[i] = i;
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-    if (in->norderbys > 0 && in->nNodes > 0)
-    {
-      double *distances = palloc(sizeof(double) * in->norderbys);
-      for (int j = 0; j < in->norderbys; j++)
+      if (in->norderbys > 0)
       {
-        TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
-        distances[j] = distanceBoxRectBox(box, rect_box);
-      }
+        /* Use parent quadrant box as traversalValue */
+        old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+        out->traversalValues[i] = tboxnode_copy(nodebox);
+        MemoryContextSwitchTo(old_ctx);
 
-      out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-      out->distances[0] = distances;
+        /* Compute the distances */
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[i] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+          distances[j] = distance_tbox_nodebox(&orderbys[j], nodebox);
 
-      for (i = 1; i < in->nNodes; i++)
-      {
-        out->distances[i] = palloc(sizeof(double) * in->norderbys);
-        memcpy(out->distances[i], distances,
-          sizeof(double) * in->norderbys);
+        pfree(orderbys);
       }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
     }
-#endif
 
     PG_RETURN_VOID();
   }
@@ -550,21 +628,11 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   /*
    * Transform the queries into bounding boxes.
    */
-  queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
-  for (i = 0; i < in->nkeys; i++)
+  if (in->nkeys > 0)
   {
-    Oid subtype = in->scankeys[i].sk_subtype;
-    if (tnumber_range_type(subtype))
-      range_to_tbox_internal(&queries[i],
-        DatumGetRangeTypeP(in->scankeys[i].sk_argument));
-    else if (subtype == type_oid(T_TBOX))
-      memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument),
-        sizeof(TBOX));
-    else if (tnumber_type(subtype))
-      temporal_bbox(&queries[i],
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-    else
-      elog(ERROR, "Unrecognized subtype: %d", subtype);
+    queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
+    for (i = 0; i < in->nkeys; i++)
+      tnumber_spgist_get_tbox(&in->scankeys[i], &queries[i]);
   }
 
   /* Allocate enough memory for nodes */
@@ -574,17 +642,13 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-#endif
-  /*
-   * We switch memory context, because we want to allocate memory for new
-   * traversal values (next_rect_box) and pass these pieces of memory to
-   * further call of this function.
-   */
-  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
+  /* Loop for every node */
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)
   {
-    RectBox *next_rect_box = nextRectBox(rect_box, centroid, quadrant);
+    /* Compute the bounding box of the child */
+    tboxnode_quadtree_next(nodebox, centroid, quadrant, &next_nodebox);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -594,75 +658,71 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap4D(next_rect_box, &queries[i]);
+          flag = overlap4D(&next_nodebox, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain4D(next_rect_box, &queries[i]);
+          flag = contain4D(&next_nodebox, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight4D(next_rect_box, &queries[i]);
+          flag = !overRight4D(&next_nodebox, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right4D(next_rect_box, &queries[i]);
+          flag = !right4D(&next_nodebox, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft4D(next_rect_box, &queries[i]);
+          flag = !overLeft4D(&next_nodebox, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left4D(next_rect_box, &queries[i]);
+          flag = !left4D(&next_nodebox, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter4D(next_rect_box, &queries[i]);
+          flag = !overAfter4D(&next_nodebox, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after4D(next_rect_box, &queries[i]);
+          flag = !after4D(&next_nodebox, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore4D(next_rect_box, &queries[i]);
+          flag = !overBefore4D(&next_nodebox, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before4D(next_rect_box, &queries[i]);
+          flag = !before4D(&next_nodebox, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
       }
       /* If any check is failed, we have found our answer. */
-      if (!flag)
+      if (! flag)
         break;
     }
+
     if (flag)
     {
-      out->traversalValues[out->nNodes] = next_rect_box;
+      /* Pass traversalValue and quadrant */
+      old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+      out->traversalValues[out->nNodes] = tboxnode_copy(&next_nodebox);
+      MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = quadrant;
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+      /* Pass distances */
       if (in->norderbys > 0)
       {
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
-        for (int j = 0; j < in->norderbys; j++)
-        {
-          TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
-          distances[j] = distanceBoxRectBox(box, next_rect_box);
-        }
+        for (i = 0; i < in->norderbys; i++)
+          distances[i] = distance_tbox_nodebox(&orderbys[i], &next_nodebox);
       }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
-    else
-    {
-      /*
-       * If this node is not selected, we don't need to keep the next
-       * traversal value in the memory context.
-       */
-      pfree(next_rect_box);
-    }
-  }
+  } /* Loop for every child */
 
-  /* Switch after */
-  MemoryContextSwitchTo(old_ctx);
-
-  pfree(queries);
+  if (in->nkeys > 0)
+    pfree(queries);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+    pfree(orderbys);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
 }
@@ -671,21 +731,18 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_leaf_consistent);
+PG_FUNCTION_INFO_V1(Tbox_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
+Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  Datum leaf = in->leafDatum;
-#endif
-  TBOX *key = DatumGetTboxP(in->leafDatum), query;
-  bool res = true;
-  int  i;
+  TBOX *key = DatumGetTboxP(in->leafDatum);
+  bool result = true;
+  int i;
 
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
@@ -700,64 +757,53 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Oid subtype = in->scankeys[i].sk_subtype;
-    memset(&query, 0, sizeof(TBOX));
+    TBOX query;
 
-    if (tnumber_range_type(subtype))
-    {
-      RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-      range_to_tbox_internal(&query, range);
-      res = tbox_index_consistent_leaf(key, &query, strategy);
-    }
-    else if (subtype == type_oid(T_TBOX))
-    {
-      TBOX *box = DatumGetTboxP(in->scankeys[i].sk_argument);
-      res = tbox_index_consistent_leaf(key, box, strategy);
-    }
-    else if (tnumber_type(subtype))
-    {
-      temporal_bbox(&query,
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-      res = tbox_index_consistent_leaf(key, &query, strategy);
-    }
-    else
-      elog(ERROR, "Unrecognized strategy number: %d", strategy);
+    /* Cast the query to a box and perform the test */
+    tnumber_spgist_get_tbox(&in->scankeys[i], &query);
+    result = tbox_index_consistent_leaf(key, &query, strategy);
 
     /* If any check is failed, we have found our answer. */
-    if (!res)
+    if (! result)
       break;
   }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  if (res && in->norderbys > 0)
+  if (result && in->norderbys > 0)
   {
-    out->distances = spg_key_orderbys_distances(leaf, false, in->orderbys,
-      in->norderbys);
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
+    double *distances = palloc(sizeof(double) * in->norderbys);
+    out->distances = distances;
+    for (i = 0; i < in->norderbys; i++)
+    {
+      TBOX box;
+      tnumber_spgist_get_tbox(&in->orderbys[i], &box);
+      distances[i] = nad_tbox_tbox(&box, key);
+    }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
   }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
-  PG_RETURN_BOOL(res);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
  * SP-GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptnumber_gist_compress);
+PG_FUNCTION_INFO_V1(Tnumber_spgist_compress);
 /**
  * SP-GiST compress function for temporal numbers
  */
 PGDLLEXPORT Datum
-sptnumber_gist_compress(PG_FUNCTION_ARGS)
+Tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  TBOX *box = palloc0(sizeof(TBOX));
-  temporal_bbox(box, temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TBOX_P(box);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  temporal_bbox_slice(tempdatum, result);
+  PG_RETURN_TBOX_P(result);
 }
-#endif
 
 /*****************************************************************************/

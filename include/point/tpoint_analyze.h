@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,10 +35,12 @@
 #ifndef __TPOINT_ANALYZE_H__
 #define __TPOINT_ANALYZE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 #include <commands/vacuum.h>
+/* PostGIS */
 #include <liblwgeom.h>
 
 /*****************************************************************************/
@@ -109,18 +114,14 @@ typedef struct ND_STATS_T
 } ND_STATS;
 
 extern int nd_box_init(ND_BOX *a);
-extern int nd_box_init_bounds(ND_BOX *a);
-extern int nd_box_merge(const ND_BOX *source, ND_BOX *target);
-extern void nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box);
-extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern double nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims);
+extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
+extern int nd_stats_value_index(const ND_STATS *stats, const int *indexes);
 
 extern void gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows, int mode);
-
-extern Datum tpoint_analyze(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

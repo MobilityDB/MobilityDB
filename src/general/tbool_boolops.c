@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,11 +29,12 @@
 
 /**
  * @file tbool_boolops.c
- * Temporal Boolean operators (and, or, not).
+ * @brief Temporal Boolean operators: and, or, not.
  */
 
 #include "general/tbool_boolops.h"
 
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 
@@ -43,7 +43,7 @@
  *****************************************************************************/
 
 /**
- * Returns the Boolean and of the two values
+ * Return the Boolean and of the two values
  */
 Datum
 datum_and(Datum l, Datum r)
@@ -51,9 +51,8 @@ datum_and(Datum l, Datum r)
   return BoolGetDatum(DatumGetBool(l) && DatumGetBool(r));
 }
 
-
 /**
- * Returns the Boolean or of the two values
+ * Return the Boolean or of the two values
  */
 Datum
 datum_or(Datum l, Datum r)
@@ -61,10 +60,39 @@ datum_or(Datum l, Datum r)
   return BoolGetDatum(DatumGetBool(l) || DatumGetBool(r));
 }
 
+/**
+ * Return the Boolean not of the value.
+ */
+Datum
+datum_not(Datum d)
+{
+  return BoolGetDatum(! DatumGetBool(d));
+}
+
 /*****************************************************************************
  * Generic functions
  *****************************************************************************/
 
+/**
+ * Return the not boolean operator of the temporal value.
+ */
+Temporal *
+tnot_tbool(const Temporal *temp)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_not;
+  lfinfo.numparam = 0;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * Return the temporal boolean operator of the temporal value and the value.
+ */
 Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
@@ -72,13 +100,16 @@ boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, b, &lfinfo);
 }
 
+/**
+ * Return the temporal boolean operator of the temporal values.
+ */
 Temporal *
 boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
@@ -87,55 +118,63 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = NULL;
-  return sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
 
 /*****************************************************************************
  * Temporal and
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tand_bool_tbool);
+PG_FUNCTION_INFO_V1(Tand_bool_tbool);
 /**
- * Returns the temporal boolean and of the value and the temporal value
+ * Return the temporal boolean and of the value and the temporal value
  */
 PGDLLEXPORT Datum
-tand_bool_tbool(PG_FUNCTION_ARGS)
+Tand_bool_tbool(PG_FUNCTION_ARGS)
 {
   Datum b = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tand_tbool_bool);
+PG_FUNCTION_INFO_V1(Tand_tbool_bool);
 /**
- * Returns the temporal boolean and of the temporal value and the value
+ * Return the temporal boolean and of the temporal value and the value
  */
 PGDLLEXPORT Datum
-tand_tbool_bool(PG_FUNCTION_ARGS)
+Tand_tbool_bool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum b = PG_GETARG_DATUM(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tand_tbool_tbool);
+PG_FUNCTION_INFO_V1(Tand_tbool_tbool);
 /**
- * Returns the temporal boolean and of the temporal values
+ * Return the temporal boolean and of the temporal values
  */
 PGDLLEXPORT Datum
-tand_tbool_tbool(PG_FUNCTION_ARGS)
+Tand_tbool_tbool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_and);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -148,43 +187,43 @@ tand_tbool_tbool(PG_FUNCTION_ARGS)
  * Temporal or
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tor_bool_tbool);
+PG_FUNCTION_INFO_V1(Tor_bool_tbool);
 /**
- * Returns the temporal boolean or of the value and the temporal value
+ * Return the temporal boolean or of the value and the temporal value
  */
 PGDLLEXPORT Datum
-tor_bool_tbool(PG_FUNCTION_ARGS)
+Tor_bool_tbool(PG_FUNCTION_ARGS)
 {
   Datum b = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tor_tbool_bool);
+PG_FUNCTION_INFO_V1(Tor_tbool_bool);
 /**
- * Returns the temporal boolean or of the temporal value and the value
+ * Return the temporal boolean or of the temporal value and the value
  */
 PGDLLEXPORT Datum
-tor_tbool_bool(PG_FUNCTION_ARGS)
+Tor_tbool_bool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum b = PG_GETARG_DATUM(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tor_tbool_tbool);
+PG_FUNCTION_INFO_V1(Tor_tbool_tbool);
 /**
- * Returns the temporal boolean or of the temporal values
+ * Return the temporal boolean or of the temporal values
  */
 PGDLLEXPORT Datum
-tor_tbool_tbool(PG_FUNCTION_ARGS)
+Tor_tbool_tbool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_or);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -197,103 +236,19 @@ tor_tbool_tbool(PG_FUNCTION_ARGS)
  * Temporal not
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Tnot_tbool);
 /**
- * Returns the temporal boolean not of the temporal value
- */
-static TInstant *
-tnot_tboolinst(const TInstant *inst)
-{
-  TInstant *result = tinstant_copy(inst);
-  Datum *value_ptr = tinstant_value_ptr(result);
-  *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
-  return result;
-}
-
-/**
- * Returns the temporal boolean not of the temporal value
- */
-static TInstantSet *
-tnot_tboolinstset(const TInstantSet *ti)
-{
-  TInstantSet *result = tinstantset_copy(ti);
-  for (int i = 0; i < ti->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(result, i);
-    Datum *value_ptr = tinstant_value_ptr(inst);
-    *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
-  }
-  return result;
-
-}
-
-/**
- * Returns the temporal boolean not of the temporal value
- */
-static TSequence *
-tnot_tboolseq(const TSequence *seq)
-{
-  TSequence *result = tsequence_copy(seq);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(result, i);
-    Datum *value_ptr = tinstant_value_ptr(inst);
-    *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
-  }
-  return result;
-}
-
-/**
- * Returns the temporal boolean not of the temporal value
- */
-static TSequenceSet *
-tnot_tboolseqset(const TSequenceSet *ts)
-{
-  TSequenceSet *result = tsequenceset_copy(ts);
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(result, i);
-    for (int j = 0; j < seq->count; j++)
-    {
-      const TInstant *inst = tsequence_inst_n(seq, j);
-      Datum *value_ptr = tinstant_value_ptr(inst);
-      *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
-    }
-  }
-  return result;
-}
-
-/**
- * Returns the temporal boolean not of the temporal value
- * (dispatch function)
- */
-Temporal *
-tnot_tbool_internal(const Temporal *temp)
-{
-  Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = (Temporal *)tnot_tboolinst((TInstant *)temp);
-  else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tnot_tboolinstset((TInstantSet *)temp);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnot_tboolseq((TSequence *)temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnot_tboolseqset((TSequenceSet *)temp);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(tnot_tbool);
-/**
- * Returns the temporal boolean not of the temporal value
+ * Return the temporal boolean not of the temporal value
  */
 PGDLLEXPORT Datum
-tnot_tbool(PG_FUNCTION_ARGS)
+Tnot_tbool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Temporal *result = tnot_tbool_internal(temp);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnot_tbool(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
+#endif /* #ifndef MEOS */
 
+/*****************************************************************************/

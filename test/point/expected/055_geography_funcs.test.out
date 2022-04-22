@@ -1,0 +1,107 @@
+SELECT ST_AsText(round(ST_LineInterpolatePoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0), 6));
+     st_astext     
+-------------------
+ POINT(4.35 50.85)
+(1 row)
+
+SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, true), 6));
+     st_astext     
+-------------------
+ POINT(4.35 50.85)
+(1 row)
+
+SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false), 6));
+         st_astext          
+----------------------------
+ POINT(37.617222 55.755833)
+(1 row)
+
+SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
+                                                                                                     st_astext                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ MULTIPOINT(7.222099 51.720243,10.232588 52.525434,13.373925 53.256689,16.634776 53.905679,19.999858 54.464967,23.45005 54.928333,26.962817 55.291077,30.512938 55.550263,34.073528 55.704869,37.617222 55.755833)
+(1 row)
+
+SELECT ST_LineInterpolatePoint(geography 'Linestring empty', 0.1);
+ st_lineinterpolatepoint 
+-------------------------
+ 
+(1 row)
+
+SELECT ST_LineInterpolatePoints(geography 'Linestring empty', 0.1, true);
+ st_lineinterpolatepoints 
+--------------------------
+ 
+(1 row)
+
+SELECT ST_LineLocatePoint(geography 'Linestring empty', 'Point(45 45)', true);
+ st_linelocatepoint 
+--------------------
+                   
+(1 row)
+
+SELECT ST_LineSubstring(geography 'Linestring empty', 0.1, 0.2);
+ st_linesubstring 
+------------------
+ 
+(1 row)
+
+SELECT ST_ClosestPoint(geography 'Linestring empty', 'Point(45 45)', true);
+ st_closestpoint 
+-----------------
+ 
+(1 row)
+
+SELECT ST_ShortestLine(geography 'Linestring empty', 'Point(45 45)', true);
+ st_shortestline 
+-----------------
+ 
+(1 row)
+
+/* Errors */
+SELECT ST_LineInterpolatePoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2);
+ERROR:  line_interpolate_point: 2nd arg isn't within [0,1]
+SELECT ST_LineInterpolatePoints(geography 'Point(4.35 50.85)', 0.5, true);
+ERROR:  line_interpolate_point: 1st arg isn't a line
+SELECT ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, true);
+ERROR:  line_interpolate_point: 2nd arg isn't within [0,1]
+SELECT ST_LineSubstring(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, 0.5);
+ERROR:  line_interpolate_point: 2nd arg isn't within [0,1]
+SELECT ST_LineSubstring(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.5, 2);
+ERROR:  line_interpolate_point: 3rd arg isn't within [0,1]
+SELECT round(MAX(ST_Distance(ST_LineInterpolatePoint(g, 0.5), 'Point(50 50 50)'))::numeric, 6) FROM tbl_geog_linestring3D;
+     round      
+----------------
+ 4181648.177519
+(1 row)
+
+SELECT SUM(ST_NumGeometries(ST_LineInterpolatePoints(g, 0.3, repeat:=TRUE)::geometry)) FROM tbl_geog_linestring3D;
+ sum 
+-----
+ 297
+(1 row)
+
+SELECT MAX(ST_LineLocatePoint(g, 'Point(50 50 50)')) FROM tbl_geog_linestring3D;
+ max 
+-----
+   1
+(1 row)
+
+SELECT round(MAX(ST_Length(ST_LineSubstring(g, 0.5, 0.7)))::numeric, 6) FROM tbl_geog_linestring3D;
+     round      
+----------------
+ 5201710.410899
+(1 row)
+
+SELECT round(MAX(ST_Distance(ST_ClosestPoint(t1.g, t2.g), 'Point(50 50 50)'))::numeric, 6) FROM tbl_geog_linestring3D t1, tbl_geog_linestring3D t2;
+     round      
+----------------
+ 4790369.580943
+(1 row)
+
+SELECT round(MAX(ST_Length(ST_ShortestLine(t1.g, t2.g)))::numeric, 6) FROM tbl_geog_linestring3D t1, tbl_geog_linestring3D t2;
+     round      
+----------------
+ 3215502.296386
+(1 row)
+

@@ -1,36 +1,36 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
  * @file temporal_analyze.c
- * Functions for gathering statistics from temporal alphanumeric columns.
+ * @brief Functions for gathering statistics from temporal alphanumeric
+ * columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h
@@ -64,6 +64,7 @@
 
 #include "general/temporal_analyze.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -71,20 +72,15 @@
 #else
 #include <access/heaptoast.h>
 #endif
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#include <catalog/pg_operator.h>
-#else
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_operator_d.h>
-#endif
 #include <commands/vacuum.h>
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
 #include <utils/fmgrprotos.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/time_analyze.h"
 #include "general/rangetypes_ext.h"
@@ -150,11 +146,9 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   RangeBound *lowers, RangeBound *uppers, float8 *lengths,
   TypeCacheEntry *typcache, Oid rangetypid)
 {
-  int num_hist,
-    num_bins = stats->attr->attstattarget;
+  int num_hist, num_bins = stats->attr->attstattarget;
   float4 *emptyfrac;
-  Datum *bound_hist_values;
-  Datum *length_hist_values;
+  Datum *bound_hist_values, *length_hist_values;
   MemoryContext old_cxt;
 
   /* Must copy the target values into anl_context */
@@ -299,7 +293,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] valuestats True when statistics are collected for the value
+ * @param[in] tnumber True when statistics are collected for temporal numbers
  * dimension, that is, it is true for temporal numbers. Otherwise, statistics
  * are collected only for the temporal dimension, that is, in the case of
  * temporal boolean and temporal text.
@@ -307,30 +301,25 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  */
 static void
 temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, bool valuestats)
+  int samplerows, bool tnumber)
 {
-  int null_cnt = 0,
-      non_null_cnt = 0,
-      slot_idx = 0;
-  float8 *value_lengths,
-       *time_lengths;
-  RangeBound *value_lowers,
-       *value_uppers;
-  PeriodBound *time_lowers,
-       *time_uppers;
+  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
+  float8 *value_lengths, *time_lengths;
+  RangeBound *value_lowers, *value_uppers;
+  PeriodBound *time_lowers, *time_uppers;
   double total_width = 0;
-  Oid   rangetypid = 0; /* make compiler quiet */
+  Oid rangetypid = 0; /* make compiler quiet */
   TypeCacheEntry *typcache;
 
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
-  if (valuestats)
+  if (tnumber)
   {
     /* Ensure function is called for temporal numbers */
-    ensure_tnumber_base_type(temporal_extra_data->value_type_id);
-    if (temporal_extra_data->value_type_id == INT4OID)
+    ensure_tnumber_basetype(oid_type(temporal_extra_data->value_typid));
+    if (temporal_extra_data->value_typid == INT4OID)
       rangetypid = type_oid(T_INTRANGE);
-    else /* temporal_extra_data->value_type_id == FLOAT8OID */
+    else /* temporal_extra_data->value_typid == FLOAT8OID */
       rangetypid = type_oid(T_FLOATRANGE);
     typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
     value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
@@ -346,11 +335,9 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum value;
     bool isnull, isempty;
-    RangeBound range_lower,
-        range_upper;
+    RangeBound range_lower, range_upper;
     Period period;
-    PeriodBound period_lower,
-        period_upper;
+    PeriodBound period_lower, period_upper;
     Temporal *temp;
 
     /* Give backend a chance of interrupting us */
@@ -367,24 +354,24 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(value);
 
     /* Get Temporal value */
-    temp = DatumGetTemporal(value);
+    temp = DatumGetTemporalP(value);
 
     /* Remember bounds and length for further usage in histograms */
-    if (valuestats)
+    if (tnumber)
     {
-      RangeType *range = tnumber_value_range_internal(temp);
+      RangeType *range = tnumber_range(temp);
       range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
       value_lowers[non_null_cnt] = range_lower;
       value_uppers[non_null_cnt] = range_upper;
 
-      if (temporal_extra_data->value_type_id == INT4OID)
+      if (temporal_extra_data->value_typid == INT4OID)
         value_lengths[non_null_cnt] = (float8) (DatumGetInt32(range_upper.val) -
           DatumGetInt32(range_lower.val));
-      else if (temporal_extra_data->value_type_id == FLOAT8OID)
+      else if (temporal_extra_data->value_typid == FLOAT8OID)
         value_lengths[non_null_cnt] = DatumGetFloat8(range_upper.val) -
           DatumGetFloat8(range_lower.val);
     }
-    temporal_period(&period, temp);
+    temporal_period(temp, &period);
     period_deserialize(&period, &period_lower, &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;
@@ -405,14 +392,14 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    if (valuestats)
+    if (tnumber)
     {
       range_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
         value_uppers, value_lengths, typcache, rangetypid);
     }
 
-    period_compute_stats1(stats, non_null_cnt, &slot_idx,
-      time_lowers, time_uppers, time_lengths);
+    period_compute_stats1(stats, non_null_cnt, &slot_idx, time_lowers,
+      time_uppers, time_lengths);
   }
   else if (null_cnt > 0)
   {
@@ -423,7 +410,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     stats->stadistinct = 0.0;  /* "unknown" */
   }
 
-  if (valuestats)
+  if (tnumber)
   {
     pfree(value_lowers); pfree(value_uppers); pfree(value_lengths);
   }
@@ -449,8 +436,8 @@ temporal_extra_info(VacAttrStats *stats)
   /*
    * Check attribute data type is a temporal type.
    */
-  if (! temporal_type(stats->attrtypid))
-    elog(ERROR, "temporal_analyze was invoked with invalid type %u",
+  if (! temporal_type(oid_type(stats->attrtypid)))
+    elog(ERROR, "temporal_analyze was invoked with invalid temporal type %u",
        stats->attrtypid);
 
   /* Store our findings for use by stats functions */
@@ -464,7 +451,7 @@ temporal_extra_info(VacAttrStats *stats)
   typentry = lookup_type_cache(stats->attrtypid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
-  extra_data->type_id = typentry->type_id;
+  extra_data->typid = typentry->type_id;
   extra_data->eq_opr = typentry->eq_opr;
   extra_data->lt_opr = typentry->lt_opr;
   extra_data->typbyval = typentry->typbyval;
@@ -474,10 +461,10 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Information about the value type */
-  typentry = lookup_type_cache(base_oid_from_temporal(stats->attrtypid),
+  typentry = lookup_type_cache(temptypid_basetypid(stats->attrtypid),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
-  extra_data->value_type_id = typentry->type_id;
+  extra_data->value_typid = typentry->type_id;
   extra_data->value_eq_opr = typentry->eq_opr;
   extra_data->value_lt_opr = typentry->lt_opr;
   extra_data->value_typbyval = typentry->typbyval;
@@ -487,11 +474,11 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->value_hash = &typentry->hash_proc_finfo;
 
   /* Information about the time type */
-  Oid pertypoid = type_oid(T_PERIOD);
-  typentry = lookup_type_cache(pertypoid,
+  Oid per_typid = type_oid(T_PERIOD);
+  typentry = lookup_type_cache(per_typid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
-  extra_data->time_type_id = pertypoid;
+  extra_data->time_typid = per_typid;
   extra_data->time_eq_opr = typentry->eq_opr;
   extra_data->time_lt_opr = typentry->lt_opr;
   extra_data->time_typbyval = false;
@@ -519,7 +506,7 @@ temporal_extra_info(VacAttrStats *stats)
  */
 void
 temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
   return temp_compute_stats(stats, fetchfunc, samplerows, false);
 }
@@ -529,7 +516,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  */
 void
 tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
   return temp_compute_stats(stats, fetchfunc, samplerows, true);
 }
@@ -568,23 +555,23 @@ generic_analyze(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(true);
 }
 
-PG_FUNCTION_INFO_V1(temporal_analyze);
+PG_FUNCTION_INFO_V1(Temporal_analyze);
 /**
  * Compute the statistics for temporal columns where only the time dimension
  * is considered
  */
 PGDLLEXPORT Datum
-temporal_analyze(PG_FUNCTION_ARGS)
+Temporal_analyze(PG_FUNCTION_ARGS)
 {
   return generic_analyze(fcinfo, &temporal_compute_stats);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_analyze);
+PG_FUNCTION_INFO_V1(Tnumber_analyze);
 /**
  * Compute the statistics for temporal number columns
  */
 PGDLLEXPORT Datum
-tnumber_analyze(PG_FUNCTION_ARGS)
+Tnumber_analyze(PG_FUNCTION_ARGS)
 {
   return generic_analyze(fcinfo, &tnumber_compute_stats);
 }

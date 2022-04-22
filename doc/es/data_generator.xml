@@ -295,10 +295,7 @@
 		<title>Generación de tablas con valores aleatorios</title>
 
 		<para>
-			Los archivos
-			<varname>/datagen/general/create_test_tables_temporal.sql</varname> and
-			<varname>/datagen/point/create_test_tables_tpoint.sql</varname>
-			dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.
+			Los archivos <varname>create_test_tables_temporal.sql</varname> y <varname>create_test_tables_tpoint.sql</varname> dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.
 		</para>
 
 		<programlisting xml:space="preserve">
@@ -602,7 +599,7 @@ SET ti = (SELECT ti FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples con the same timestamp */
 UPDATE tbl_tgeompoint_instset t1
-SET ti = (SELECT setPrecision(ti,6) FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
+SET ti = (SELECT round(ti,6) FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint_instset t1
@@ -631,7 +628,7 @@ SET ts = (SELECT ts FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples con the same timestamp */
 UPDATE tbl_tgeompoint3D_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint3D_seqset t1

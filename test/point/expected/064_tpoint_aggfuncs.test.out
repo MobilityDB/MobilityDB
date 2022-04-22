@@ -1,0 +1,81 @@
+SELECT asText(tcentroid(temp)) FROM (VALUES
+(NULL::tgeompoint),('Point(1 1)@2000-01-01'::tgeompoint),(NULL::tgeompoint)) t(temp);
+               astext                
+-------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)'),
+  (tgeompoint '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04)'),
+  (tgeompoint '[Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)')) t(temp);
+                                  astext                                  
+--------------------------------------------------------------------------
+ {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(4 4)@2000-01-04 00:00:00+00)}
+(1 row)
+
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02)'),
+  (tgeompoint '[Point(3 3 3)@2000-01-03, Point(4 4 4)@2000-01-04)'),
+  (tgeompoint '[Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03)')) t(temp);
+                                       astext                                       
+------------------------------------------------------------------------------------
+ {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (4 4 4)@2000-01-04 00:00:00+00)}
+(1 row)
+
+/* Errors */
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint 'Point(0 0)@2000-01-01'),
+  (tgeompoint 'srid=5676;Point(1 1)@2000-01-01'),
+  ('Point(2 2)@2000-01-01')) t(temp);
+ERROR:  Geometries must have the same SRID for temporal aggregation
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint 'Point(0 0)@2000-01-01'),
+  (tgeompoint 'Point(1 1)@2000-01-01'),
+  ('Point(2 2 2)@2000-01-01')) t(temp);
+ERROR:  Geometries must have the same dimensionality for temporal aggregation
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint 'Point(0 0)@2000-01-01'),
+  (tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}'),
+  ('Point(2 2 2)@2000-01-01')) t(temp);
+ERROR:  Geometries must have the same dimensionality for temporal aggregation
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint 'Point(0 0)@2000-01-01'),
+  (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'),
+  ('Point(2 2 2)@2000-01-01')) t(temp);
+ERROR:  Cannot aggregate temporal values of different type
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(0 0)@2000-01-01]'),
+  (tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'),
+  ('Point(2 2 2)@2000-01-01')) t(temp);
+ERROR:  Cannot aggregate temporal values of different interpolation
+SELECT extent(temp) FROM (VALUES
+(NULL::tgeompoint),('Point(1 1)@2000-01-01'::tgeompoint),(NULL::tgeompoint)) t(temp);
+                               extent                               
+--------------------------------------------------------------------
+ STBOX T((1,1,2000-01-01 00:00:00+00),(1,1,2000-01-01 00:00:00+00))
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+  (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)'),
+  (tgeompoint '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04)'),
+  (tgeompoint '[Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)')) t(temp);
+                               extent                               
+--------------------------------------------------------------------
+ STBOX T((1,1,2000-01-01 00:00:00+00),(4,4,2000-01-04 00:00:00+00))
+(1 row)
+
+SELECT round(extent(temp), 13) FROM (VALUES
+  (tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02)'),
+  (tgeogpoint '[Point(3 3 3)@2000-01-03, Point(4 4 4)@2000-01-04)'),
+  (tgeogpoint '[Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03)')) t(temp);
+                                                                                  round                                                                                  
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT((0.9951340343708,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.06958655048,0.0697564737441,2000-01-04 00:00:00+00))
+(1 row)
+
+/* Errors */
+SELECT extent(temp) FROM (VALUES
+  (tgeompoint 'Point(1 1 1)@2000-01-01'),
+  (tgeompoint 'Point(1 1)@2000-01-01')) t(temp);
+ERROR:  The temporal values must be of the same dimensionality

@@ -20,7 +20,9 @@
 #include "../postgis_config.h"
 
 /* Include for VARATT_EXTERNAL_GET_POINTER */
-#if POSTGIS_PGSQL_VERSION < 130
+// MobilityDB change
+// #if POSTGIS_PGSQL_VERSION < 130
+#if POSTGRESQL_VERSION_NUMBER < 130000
 #include "access/tuptoaster.h"
 #else
 #include "access/detoast.h"
@@ -373,7 +375,7 @@ GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
  */
 // static
 int32_t
-getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs)
+getSRIDbySRS(FunctionCallInfo fcinfo __attribute__((unused)), const char *srs)
 {
 	static const int16_t max_query_size = 512;
 	char query[512];

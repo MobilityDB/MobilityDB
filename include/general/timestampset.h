@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,69 +35,73 @@
 #ifndef __TIMESTAMPSET_H__
 #define __TIMESTAMPSET_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "timetypes.h"
+#include <libpq/pqformat.h>
+/* MobilityDB */
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 
 /* assorted support functions */
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
-extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
-extern void timestampset_bbox(Period *p, const TimestampSet *ts);
 extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
-extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc);
+
+extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
+extern void timestampset_bbox(const TimestampSet *ts, Period *p);
+extern void timestampset_bbox_slice(Datum tsdatum, Period *p);
+extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t,
+  int *loc);
 
 /* Input/output functions */
 
-extern Datum timestampset_in(PG_FUNCTION_ARGS);
-extern Datum timestampset_out(PG_FUNCTION_ARGS);
-extern Datum timestampset_send(PG_FUNCTION_ARGS);
-extern Datum timestampset_recv(PG_FUNCTION_ARGS);
-
 extern char *timestampset_to_string(const TimestampSet *ts);
+extern void timestampset_write(const TimestampSet *ts, StringInfo buf);
+extern TimestampSet *timestampset_read(StringInfo buf);
 
 /* Constructor function */
 
-extern Datum timestampset_constructor(PG_FUNCTION_ARGS);
 
 /* Cast function */
 
-extern Datum timestamp_to_timestampset(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
+extern TimestampSet *timestamp_timestampset(TimestampTz t);
+extern void timestampset_period(const TimestampSet *ts, Period *p);
 
 /* Accessor functions */
 
-extern Datum timestampset_mem_size(PG_FUNCTION_ARGS);
-extern Datum timestampset_timespan(PG_FUNCTION_ARGS);
-extern Datum timestampset_num_timestamps(PG_FUNCTION_ARGS);
-extern Datum timestampset_start_timestamp(PG_FUNCTION_ARGS);
-extern Datum timestampset_end_timestamp(PG_FUNCTION_ARGS);
-extern Datum timestampset_timestamp_n(PG_FUNCTION_ARGS);
-extern Datum timestampset_timestamps(PG_FUNCTION_ARGS);
-extern Datum timestampset_shift(PG_FUNCTION_ARGS);
+extern int timestampset_mem_size(const TimestampSet *ts);
+extern Interval *timestampset_timespan(const TimestampSet *ts);
+extern int timestampset_num_timestamps(const TimestampSet *ts);
+extern TimestampTz timestampset_start_timestamp(const TimestampSet *ts);
+extern TimestampTz timestampset_end_timestamp(const TimestampSet *ts);
+extern bool timestampset_timestamp_n(const TimestampSet *ts, int n,
+  TimestampTz *result);
+extern TimestampTz *timestampset_timestamps(const TimestampSet *ts);
 
-extern void timestampset_to_period_internal(Period *p, const TimestampSet *ts);
-extern TimestampTz *timestampset_timestamps_internal(const TimestampSet *ts);
-extern TimestampSet *timestampset_shift_internal(const TimestampSet *ts, const Interval *interval);
+/* Modification functions */
 
-/* Functions for defining B-tree index */
+extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts,
+  const Interval *start, const Interval *duration);
 
-extern Datum timestampset_cmp(PG_FUNCTION_ARGS);
-extern Datum timestampset_eq(PG_FUNCTION_ARGS);
-extern Datum timestampset_ne(PG_FUNCTION_ARGS);
-extern Datum timestampset_lt(PG_FUNCTION_ARGS);
-extern Datum timestampset_le(PG_FUNCTION_ARGS);
-extern Datum timestampset_ge(PG_FUNCTION_ARGS);
-extern Datum timestampset_gt(PG_FUNCTION_ARGS);
+/* Comparison functions */
 
-extern int timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2);
+extern int timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2);
 
-#endif
+/* Hash functions */
+
+extern uint32 timestampset_hash(const TimestampSet *ts);
+extern uint64 timestampset_hash_extended(const TimestampSet *ts, Datum seed);
 
 /*****************************************************************************/
+
+#endif

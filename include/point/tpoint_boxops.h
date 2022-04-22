@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,73 +35,52 @@
 #ifndef __TPOINT_BOXOPS_H__
 #define __TPOINT_BOXOPS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
 #include "general/temporal_util.h"
-#include "stbox.h"
+#include "point/stbox.h"
 
 /*****************************************************************************/
 
-/* Functions computing the bounding box at the creation of the temporal point */
+/* Functions computing the bounding box at the creation of a temporal point */
 
-extern void tpointinst_make_stbox(STBOX *box, const TInstant *inst);
-extern void tpointinstarr_to_stbox(STBOX *box, const TInstant **inst, int count);
-extern void tpointseqarr_to_stbox(STBOX *box, const TSequence **seq, int count);
+extern void tpointinst_stbox(const TInstant *inst, STBOX *box);
+extern void tgeompointinstarr_stbox(const TInstant **inst, int count,
+  STBOX *box);
+extern void tgeogpointinstarr_stbox(const TInstant **instants, int count,
+  STBOX *box);
+extern void tpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
 
 /* Boxes functions */
 
-extern Datum tpoint_stboxes(PG_FUNCTION_ARGS);
-
-extern ArrayType *tpointseq_stboxes(const TSequence *seq);
-extern ArrayType *tpointseqset_stboxes(const TSequenceSet *ts);
+extern STBOX *tpointseq_stboxes(const TSequence *seq, int *count);
+extern STBOX *tpointseqset_stboxes(const TSequenceSet *ts, int *count);
+extern STBOX * tpoint_stboxes(const Temporal *temp, int *count);
 
 /* Generic box functions */
 
-extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_geo(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_stbox_tpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_stbox(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
+extern int boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool (*func)(const STBOX *, const STBOX *), bool invert);
+extern Datum boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
+  bool (*func)(const STBOX *, const STBOX *), bool invert);
+extern bool boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBOX *, const STBOX *));
 
-/*****************************************************************************/
-
-extern Datum overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
 
 /*****************************************************************************/
 

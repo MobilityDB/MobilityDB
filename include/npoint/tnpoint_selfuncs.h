@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,22 +35,17 @@
 #ifndef __TNPOINT_SELFUNCS_H__
 #define __TNPOINT_SELFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
 #include <fmgr.h>
+#include <catalog/pg_type.h>
+#include <utils/selfuncs.h>
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
-extern Datum tnpoint_overlaps_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_overlaps_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_contains_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_contains_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_same_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_same_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_adjacent_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_adjacent_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_position_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_position_joinsel(PG_FUNCTION_ARGS);
+extern bool tnpoint_cachedop(Oid operid, CachedOp *cachedOp);
 
 /*****************************************************************************/
 

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -31,10 +30,11 @@
 #ifndef __TEMPORAL_TILE_H__
 #define __TEMPORAL_TILE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -46,7 +46,7 @@ typedef struct RangeBucketState
 {
   bool done;
   int i;
-  Oid basetypid;
+  CachedType basetype;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
   Datum size;
   Datum origin;
@@ -131,24 +131,16 @@ typedef struct ValueTimeSplitState
 
 /*****************************************************************************/
 
-extern double float_bucket_internal(double value, double size,
-  double origin);
-extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
-  int64 tunits, TimestampTz torigin);
+extern double float_bucket(double value, double size, double origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+  TimestampTz torigin);
 extern int64 get_interval_units(Interval *interval);
 
-extern Datum number_bucket(PG_FUNCTION_ARGS);
-extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
-extern Datum range_bucket_list(PG_FUNCTION_ARGS);
-extern Datum range_bucket(PG_FUNCTION_ARGS);
-extern Datum period_bucket_list(PG_FUNCTION_ARGS);
-extern Datum period_bucket(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_split(PG_FUNCTION_ARGS);
-extern Datum temporal_time_split(PG_FUNCTION_ARGS);
-extern Datum tbox_multidim_grid(PG_FUNCTION_ARGS);
-extern Datum tbox_multidim_tile(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_time_split(PG_FUNCTION_ARGS);
+extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
+
+/*****************************************************************************/
 
 #endif /* __TEMPORAL_TILE_H__ */
 
-/*****************************************************************************/

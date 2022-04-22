@@ -1,0 +1,2283 @@
+COPY tbl_tbool TO '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY 100
+COPY tbl_tint TO '/tmp/tbl_tint' (FORMAT BINARY);
+COPY 100
+COPY tbl_tfloat TO '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY 100
+COPY tbl_ttext TO '/tmp/tbl_ttext' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tbool_tmp;
+NOTICE:  table "tbl_tbool_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tint_tmp;
+NOTICE:  table "tbl_tint_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tfloat_tmp;
+NOTICE:  table "tbl_tfloat_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_ttext_tmp;
+NOTICE:  table "tbl_ttext_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tbool_tmp AS TABLE tbl_tbool WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tbool_tmp FROM '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY 100
+COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
+COPY 100
+COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY 100
+COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tbool_tmp;
+DROP TABLE
+DROP TABLE tbl_tint_tmp;
+DROP TABLE
+DROP TABLE tbl_tfloat_tmp;
+DROP TABLE
+DROP TABLE tbl_ttext_tmp;
+DROP TABLE
+SELECT extent(temp::period) FROM tbl_tbool;
+                      extent                      
+--------------------------------------------------
+ [2001-01-17 16:00:00+00, 2001-12-21 00:03:00+00]
+(1 row)
+
+SELECT extent(temp::period) FROM tbl_tint;
+                      extent                      
+--------------------------------------------------
+ [2001-01-01 08:20:00+00, 2001-12-27 07:03:00+00]
+(1 row)
+
+SELECT extent(temp::period) FROM tbl_tfloat;
+                      extent                      
+--------------------------------------------------
+ (2001-01-02 18:42:00+00, 2001-12-22 08:07:00+00]
+(1 row)
+
+SELECT extent(temp::period) FROM tbl_ttext;
+                      extent                      
+--------------------------------------------------
+ (2001-01-01 13:49:00+00, 2001-12-03 07:20:00+00]
+(1 row)
+
+SELECT extent(temp::intrange) FROM tbl_tint;
+ extent  
+---------
+ [1,100)
+(1 row)
+
+SELECT round(extent(temp::floatrange)) FROM tbl_tfloat;
+  round  
+---------
+ [1,100]
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+DROP TABLE IF EXISTS tbl_tintinst_test;
+NOTICE:  table "tbl_tintinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tintinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tint_seq;
+SELECT 481
+WITH temp AS (
+  SELECT numSequences(tint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), 5.0, '5 minutes'::interval))
+  FROM tbl_tintinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   9
+(1 row)
+
+DROP TABLE tbl_tintinst_test;
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tfloatinst_test;
+NOTICE:  table "tbl_tfloatinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tfloatinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tfloat_seq;
+SELECT 487
+WITH temp AS (
+  SELECT numSequences(tfloat_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tfloatinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   9
+(1 row)
+
+DROP TABLE tbl_tfloatinst_test;
+DROP TABLE
+SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
+ tempsubtype 
+-------------
+ 
+ Instant
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_instset(inst)) FROM tbl_tbool_inst;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_seq(inst)) FROM tbl_tbool_inst;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_seqset(inst)) FROM tbl_tbool_inst;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_inst(inst)) FROM tbl_tint_inst;
+ tempsubtype 
+-------------
+ 
+ Instant
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_instset(inst)) FROM tbl_tint_inst;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_seq(inst)) FROM tbl_tint_inst;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_seqset(inst)) FROM tbl_tint_inst;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_inst(inst)) FROM tbl_tfloat_inst;
+ tempsubtype 
+-------------
+ 
+ Instant
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_instset(inst)) FROM tbl_tfloat_inst;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_seq(inst)) FROM tbl_tfloat_inst;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_seqset(inst)) FROM tbl_tfloat_inst;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_inst(inst)) FROM tbl_ttext_inst;
+ tempsubtype 
+-------------
+ 
+ Instant
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_instset(inst)) FROM tbl_ttext_inst;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_seq(inst)) FROM tbl_ttext_inst;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_seqset(inst)) FROM tbl_ttext_inst;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_inst(ti)) FROM tbl_tbool_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tbool_instset(ti)) FROM tbl_tbool_instset;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_seq(ti)) FROM tbl_tbool_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tbool_seqset(ti)) FROM tbl_tbool_instset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_inst(ti)) FROM tbl_tint_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_instset(ti)) FROM tbl_tint_instset;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_seq(ti)) FROM tbl_tint_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_seqset(ti)) FROM tbl_tint_instset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_inst(ti)) FROM tbl_tfloat_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_instset(ti)) FROM tbl_tfloat_instset;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_seq(ti)) FROM tbl_tfloat_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_seqset(ti)) FROM tbl_tfloat_instset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_inst(ti)) FROM tbl_ttext_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(ttext_instset(ti)) FROM tbl_ttext_instset;
+ tempsubtype 
+-------------
+ 
+ InstantSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_seq(ti)) FROM tbl_ttext_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(ttext_seqset(ti)) FROM tbl_ttext_instset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_inst(seq)) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tbool_instset(seq)) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tbool_seq(seq)) FROM tbl_tbool_seq;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_seqset(seq)) FROM tbl_tbool_seq;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_inst(seq)) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_instset(seq)) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_seq(seq)) FROM tbl_tint_seq;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_seqset(seq)) FROM tbl_tint_seq;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_inst(seq)) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_instset(seq)) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_seq(seq)) FROM tbl_tfloat_seq;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_seqset(seq)) FROM tbl_tfloat_seq;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_inst(seq)) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(ttext_instset(seq)) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(ttext_seq(seq)) FROM tbl_ttext_seq;
+ tempsubtype 
+-------------
+ 
+ Sequence
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_seqset(seq)) FROM tbl_ttext_seq;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tbool_inst(ts)) FROM tbl_tbool_seqset WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(tbool_instset(ts)) FROM tbl_tbool_seqset WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(tbool_seq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tbool_seqset(ts)) FROM tbl_tbool_seqset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tint_inst(ts)) FROM tbl_tint_seqset WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_instset(ts)) FROM tbl_tint_seqset WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_seq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tint_seqset(ts)) FROM tbl_tint_seqset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(tfloat_inst(ts)) FROM tbl_tfloat_seqset WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_instset(ts)) FROM tbl_tfloat_seqset WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_seq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tfloat_seqset(ts)) FROM tbl_tfloat_seqset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT DISTINCT tempSubtype(ttext_inst(ts)) FROM tbl_ttext_seqset WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(ttext_instset(ts)) FROM tbl_ttext_seqset WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(ttext_seq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(ttext_seqset(ts)) FROM tbl_ttext_seqset;
+ tempsubtype 
+-------------
+ 
+ SequenceSet
+(2 rows)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tbool;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tint;
+ max 
+-----
+  45
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tfloat;
+ max 
+-----
+  53
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_ttext;
+ max 
+-----
+  59
+(1 row)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tbool ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ InstantSet
+ Sequence
+ SequenceSet
+ 
+(5 rows)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tint ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ InstantSet
+ Sequence
+ SequenceSet
+ 
+(5 rows)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tfloat ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ InstantSet
+ Sequence
+ SequenceSet
+ 
+(5 rows)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ InstantSet
+ Sequence
+ SequenceSet
+ 
+(5 rows)
+
+SELECT MAX(memSize(temp)) FROM tbl_tbool;
+ max  
+------
+ 1976
+(1 row)
+
+SELECT MAX(memSize(temp)) FROM tbl_tint;
+ max  
+------
+ 1832
+(1 row)
+
+SELECT MAX(memSize(temp)) FROM tbl_tfloat;
+ max  
+------
+ 1864
+(1 row)
+
+SELECT MAX(memSize(temp)) FROM tbl_ttext;
+ max  
+------
+ 1920
+(1 row)
+
+/*
+SELECT period(temp) FROM tbl_tbool;
+SELECT box(temp) FROM tbl_tint;
+SELECT box(temp) FROM tbl_tfloat;
+SELECT period(temp) FROM tbl_ttext;
+*/
+SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst;
+ getvalue 
+----------
+ 
+ f
+ t
+(3 rows)
+
+SELECT MAX(getValue(inst)) FROM tbl_tint_inst;
+ max 
+-----
+  97
+(1 row)
+
+SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
+   round   
+-----------
+ 99.511055
+(1 row)
+
+SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
+ max 
+-----
+ YXD
+(1 row)
+
+SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
+ max 
+-----
+   2
+(1 row)
+
+SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
+ max 
+-----
+  35
+(1 row)
+
+SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
+ max 
+-----
+  54
+(1 row)
+
+SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tint;
+   round    
+------------
+ 100.000000
+(1 row)
+
+SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.917602
+(1 row)
+
+SELECT DISTINCT startValue(temp) FROM tbl_tbool;
+ startvalue 
+------------
+ f
+ 
+ t
+(3 rows)
+
+SELECT MAX(startValue(temp)) FROM tbl_tint;
+ max 
+-----
+  99
+(1 row)
+
+SELECT round(MAX(startValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.393268
+(1 row)
+
+SELECT MAX(startValue(temp)) FROM tbl_ttext;
+    max     
+------------
+ YRUDSESIDA
+(1 row)
+
+SELECT DISTINCT endValue(temp) FROM tbl_tbool;
+ endvalue 
+----------
+ f
+ 
+ t
+(3 rows)
+
+SELECT MAX(endValue(temp)) FROM tbl_tint;
+ max 
+-----
+  96
+(1 row)
+
+SELECT round(MAX(endValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.393268
+(1 row)
+
+SELECT MAX(endValue(temp)) FROM tbl_ttext;
+    max    
+-----------
+ YLPUJRAAR
+(1 row)
+
+SELECT MAX(minValue(temp)) FROM tbl_tint;
+ max 
+-----
+  96
+(1 row)
+
+SELECT round(MAX(minValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.393268
+(1 row)
+
+SELECT MAX(minValue(temp)) FROM tbl_ttext;
+    max    
+-----------
+ YLPUJRAAR
+(1 row)
+
+SELECT MAX(maxValue(temp)) FROM tbl_tint;
+ max 
+-----
+  99
+(1 row)
+
+SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.917602
+(1 row)
+
+SELECT MAX(maxValue(temp)) FROM tbl_ttext;
+   max   
+---------
+ YYNIIIN
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_tbool_inst;
+          max           
+------------------------
+ 2001-12-24 13:41:00+00
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_tint_inst;
+          max           
+------------------------
+ 2001-12-27 07:03:00+00
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_tfloat_inst;
+          max           
+------------------------
+ 2001-12-27 08:54:00+00
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_ttext_inst;
+          max           
+------------------------
+ 2001-12-30 18:54:00+00
+(1 row)
+
+SELECT MAX(timespan(getTime(temp))) FROM tbl_tbool;
+   max    
+----------
+ 05:39:00
+(1 row)
+
+SELECT MAX(timespan(getTime(temp))) FROM tbl_tint;
+   max    
+----------
+ 04:01:00
+(1 row)
+
+SELECT MAX(timespan(getTime(temp))) FROM tbl_tfloat;
+   max    
+----------
+ 04:55:00
+(1 row)
+
+SELECT MAX(timespan(getTime(temp))) FROM tbl_ttext;
+   max    
+----------
+ 05:34:00
+(1 row)
+
+SELECT MAX(duration(period(temp))) FROM tbl_tbool;
+   max    
+----------
+ 05:39:00
+(1 row)
+
+SELECT MAX(duration(period(temp))) FROM tbl_tint;
+   max    
+----------
+ 04:01:00
+(1 row)
+
+SELECT MAX(duration(period(temp))) FROM tbl_tfloat;
+   max    
+----------
+ 04:55:00
+(1 row)
+
+SELECT MAX(duration(period(temp))) FROM tbl_ttext;
+   max    
+----------
+ 05:34:00
+(1 row)
+
+SELECT MAX(timespan(temp)) FROM tbl_tbool;
+   max    
+----------
+ 05:39:00
+(1 row)
+
+SELECT MAX(timespan(temp)) FROM tbl_tint;
+   max    
+----------
+ 04:01:00
+(1 row)
+
+SELECT MAX(timespan(temp)) FROM tbl_tfloat;
+   max    
+----------
+ 04:55:00
+(1 row)
+
+SELECT MAX(timespan(temp)) FROM tbl_ttext;
+   max    
+----------
+ 05:34:00
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_tbool_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_tint_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_tfloat_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_ttext_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_tbool_seq;
+   max    
+----------
+ 00:46:00
+(1 row)
+
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_tint_seq;
+   max    
+----------
+ 00:46:00
+(1 row)
+
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_tfloat_seq;
+   max    
+----------
+ 00:59:00
+(1 row)
+
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_ttext_seq;
+   max    
+----------
+ 00:53:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_tbool_seq;
+   max    
+----------
+ 00:46:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_tint_seq;
+   max    
+----------
+ 00:46:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_tfloat_seq;
+   max    
+----------
+ 00:59:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_ttext_seq;
+   max    
+----------
+ 00:53:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tbool_seq;
+   max    
+----------
+ 00:46:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tint_seq;
+   max    
+----------
+ 00:46:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tfloat_seq;
+   max    
+----------
+ 00:59:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_ttext_seq;
+   max    
+----------
+ 00:53:00
+(1 row)
+
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tbool_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tint_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tfloat_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_ttext_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tbool_seq;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tint_seq;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tfloat_seq;
+ max 
+-----
+   8
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_ttext_seq;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(numSequences(ts)) FROM tbl_tbool_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(numSequences(ts)) FROM tbl_tint_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(numSequences(ts)) FROM tbl_tfloat_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(numSequences(ts)) FROM tbl_ttext_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tbool_seqset;
+   max    
+----------
+ 00:44:00
+(1 row)
+
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tint_seqset;
+   max    
+----------
+ 00:51:00
+(1 row)
+
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tfloat_seqset;
+   max    
+----------
+ 00:48:00
+(1 row)
+
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_ttext_seqset;
+   max    
+----------
+ 00:54:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tbool_seqset;
+   max    
+----------
+ 00:52:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tint_seqset;
+   max    
+----------
+ 00:47:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tfloat_seqset;
+   max    
+----------
+ 00:50:00
+(1 row)
+
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_ttext_seqset;
+   max    
+----------
+ 00:56:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tbool_seqset;
+   max    
+----------
+ 00:52:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tint_seqset;
+   max    
+----------
+ 00:47:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloat_seqset;
+   max    
+----------
+ 00:50:00
+(1 row)
+
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_ttext_seqset;
+   max    
+----------
+ 00:56:00
+(1 row)
+
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tbool_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tint_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tfloat_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_ttext_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tbool_seqset;
+ max 
+-----
+  54
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tint_seqset;
+ max 
+-----
+  55
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tfloat_seqset;
+ max 
+-----
+  47
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_ttext_seqset;
+ max 
+-----
+  55
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_tbool;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_tint;
+ max 
+-----
+  45
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_tfloat;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_ttext;
+ max 
+-----
+  59
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_tbool;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_tint;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_tfloat;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_ttext;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_tbool;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_tint;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_tfloat;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_ttext;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tbool;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tint;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tfloat;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_ttext;
+ count 
+-------
+    96
+(1 row)
+
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tbool;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tint;
+ max 
+-----
+  45
+(1 row)
+
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tfloat;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_ttext;
+ max 
+-----
+  59
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_tbool;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_tint;
+ max 
+-----
+  45
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_tfloat;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_ttext;
+ max 
+-----
+  59
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_tbool;
+          max           
+------------------------
+ 2001-12-20 23:58:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_tint;
+          max           
+------------------------
+ 2001-12-27 07:03:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_tfloat;
+          max           
+------------------------
+ 2001-12-22 07:32:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_ttext;
+          max           
+------------------------
+ 2001-12-03 06:27:00+00
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_tbool;
+          max           
+------------------------
+ 2001-12-21 00:03:00+00
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_tint;
+          max           
+------------------------
+ 2001-12-27 07:03:00+00
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_tfloat;
+          max           
+------------------------
+ 2001-12-22 08:07:00+00
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_ttext;
+          max           
+------------------------
+ 2001-12-03 07:20:00+00
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tbool;
+          max           
+------------------------
+ 2001-12-21 00:03:00+00
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tint;
+          max           
+------------------------
+ 2001-12-27 07:03:00+00
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tfloat;
+          max           
+------------------------
+ 2001-12-22 08:07:00+00
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_ttext;
+          max           
+------------------------
+ 2001-12-03 07:20:00+00
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tbool;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tint;
+ max 
+-----
+  45
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tfloat;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
+ max 
+-----
+  59
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?= startValue(temp);
+ count 
+-------
+    91
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %= true;
+ count 
+-------
+    14
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %= i;
+ count 
+-------
+    24
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %= f;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?<> startValue(temp);
+ count 
+-------
+    62
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
+ count 
+-------
+    61
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %<> true;
+ count 
+-------
+    20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<> i;
+ count 
+-------
+  8862
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<> f;
+ count 
+-------
+  6094
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<> t;
+ count 
+-------
+  9489
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?< startValue(temp);
+ count 
+-------
+    55
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?< startValue(temp);
+ count 
+-------
+    51
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
+ count 
+-------
+    54
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
+ count 
+-------
+  2196
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
+ count 
+-------
+  2196
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
+ count 
+-------
+  2276
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<= startValue(temp);
+ count 
+-------
+    93
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
+ count 
+-------
+  2268
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
+ count 
+-------
+  2196
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
+ count 
+-------
+  2278
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
+ count 
+-------
+    45
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
+ count 
+-------
+    55
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
+ count 
+-------
+  2685
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
+ count 
+-------
+  2821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
+ count 
+-------
+  2968
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?>= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?>= startValue(temp);
+ count 
+-------
+    94
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
+ count 
+-------
+  2784
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
+ count 
+-------
+  2821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
+ count 
+-------
+  2970
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp != merge(atValue(temp, true), minusValue(temp, true));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValue(temp, i), minusValue(temp, i));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValue(temp, f), minusValue(temp, f));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), minusValue(temp, t));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_intrange WHERE temp != merge(atRange(temp, i), minusRange(temp, i));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange WHERE temp != merge(atRange(temp, f), minusRange(temp, f));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intrange WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatrange WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMin(temp), minusMin(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMin(temp), minusMin(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp != merge(atMin(temp), minusMin(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMax(temp), minusMax(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMax(temp), minusMax(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp != merge(atMax(temp), minusMax(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
+        round         
+----------------------
+ 8155740000000.000000
+(1 row)
+
+SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;
+         round         
+-----------------------
+ 10401464944413.900000
+(1 row)
+
+SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tint;
+    round    
+-------------
+ 4949.834809
+(1 row)
+
+SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tfloat;
+    round    
+-------------
+ 5093.166481
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp = t2.temp;
+ count 
+-------
+   106
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9110
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp < t2.temp;
+ count 
+-------
+  4555
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp <= t2.temp;
+ count 
+-------
+  4661
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp > t2.temp;
+ count 
+-------
+  4555
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
+WHERE t1.temp >= t2.temp;
+ count 
+-------
+  4661
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp = t2.temp;
+ count 
+-------
+   104
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9112
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp < t2.temp;
+ count 
+-------
+  4556
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp <= t2.temp;
+ count 
+-------
+  4660
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp > t2.temp;
+ count 
+-------
+  4556
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
+WHERE t1.temp >= t2.temp;
+ count 
+-------
+  4660
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp = t2.temp;
+ count 
+-------
+   106
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9110
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp < t2.temp;
+ count 
+-------
+  4555
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp <= t2.temp;
+ count 
+-------
+  4661
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp > t2.temp;
+ count 
+-------
+  4555
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
+WHERE t1.temp >= t2.temp;
+ count 
+-------
+  4661
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp = t2.temp;
+ count 
+-------
+   108
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9108
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp < t2.temp;
+ count 
+-------
+  4554
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp <= t2.temp;
+ count 
+-------
+  4662
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp > t2.temp;
+ count 
+-------
+  4554
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
+WHERE t1.temp >= t2.temp;
+ count 
+-------
+  4662
+(1 row)
+

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,26 +29,26 @@
 
 /**
  * @file tnumber_gist.c
- * R-tree GiST index for temporal integers and temporal floats
+ * @brief R-tree GiST index for temporal integers and temporal floats.
  *
  * These functions are based on those in the file `gistproc.c`.
  */
 
 #include "general/tnumber_gist.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
 #include <access/gist.h>
 #include <utils/builtins.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-
+/* MobilityDB */
 #include "general/rangetypes_ext.h"
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_gist.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
@@ -86,47 +85,47 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
-      retval = overlaps_tbox_tbox_internal(key, query);
+      retval = overlaps_tbox_tbox(key, query);
       break;
     case RTContainsStrategyNumber:
-      retval = contains_tbox_tbox_internal(key, query);
+      retval = contains_tbox_tbox(key, query);
       break;
     case RTContainedByStrategyNumber:
-      retval = contained_tbox_tbox_internal(key, query);
+      retval = contained_tbox_tbox(key, query);
       break;
     case RTSameStrategyNumber:
-      retval = same_tbox_tbox_internal(key, query);
+      retval = same_tbox_tbox(key, query);
       break;
     case RTAdjacentStrategyNumber:
-      retval = adjacent_tbox_tbox_internal(key, query);
+      retval = adjacent_tbox_tbox(key, query);
       break;
     case RTLeftStrategyNumber:
-      retval = /* left_tbox_tbox_internal(key, query) */
+      retval = /* left_tbox_tbox(key, query) */
         (key->xmax <= query->xmin);
       break;
     case RTOverLeftStrategyNumber:
-      retval = overleft_tbox_tbox_internal(key, query);
+      retval = overleft_tbox_tbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = /* right_tbox_tbox_internal(key, query) */
+      retval = /* right_tbox_tbox(key, query) */
         (key->xmin >= query->xmax);
       break;
     case RTOverRightStrategyNumber:
-      retval = overright_tbox_tbox_internal(key, query);
+      retval = overright_tbox_tbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = /* before_tbox_tbox_internal(key, query) */
+      retval = /* before_tbox_tbox(key, query) */
         (key->tmax <= query->tmin);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = overbefore_tbox_tbox_internal(key, query);
+      retval = overbefore_tbox_tbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = /* after_tbox_tbox_internal(key, query) */
+      retval = /* after_tbox_tbox(key, query) */
         (key->tmin >= query->tmax);
       break;
     case RTOverAfterStrategyNumber:
-      retval = overafter_tbox_tbox_internal(key, query);
+      retval = overafter_tbox_tbox(key, query);
       break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);
@@ -139,7 +138,7 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
 /**
  * GiST internal-page consistent method for temporal numbers.
  *
- * Returns false if for all data items x below entry, the predicate
+ * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to
  * strategy in the pg_amop table.
  *
@@ -148,7 +147,7 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
+tnumber_gist_consistent(const TBOX *key, const TBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -157,39 +156,39 @@ tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
   {
     case RTOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
-      retval = overlaps_tbox_tbox_internal(key, query);
+      retval = overlaps_tbox_tbox(key, query);
       break;
     case RTContainsStrategyNumber:
     case RTSameStrategyNumber:
-      retval = contains_tbox_tbox_internal(key, query);
+      retval = contains_tbox_tbox(key, query);
       break;
     case RTAdjacentStrategyNumber:
-      retval = adjacent_tbox_tbox_internal(key, query) ||
-         overlaps_tbox_tbox_internal(key, query);
+      retval = adjacent_tbox_tbox(key, query) ||
+         overlaps_tbox_tbox(key, query);
       break;
     case RTLeftStrategyNumber:
-      retval = !overright_tbox_tbox_internal(key, query);
+      retval = !overright_tbox_tbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
-      retval = !right_tbox_tbox_internal(key, query);
+      retval = !right_tbox_tbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = !overleft_tbox_tbox_internal(key, query);
+      retval = !overleft_tbox_tbox(key, query);
       break;
     case RTOverRightStrategyNumber:
-      retval = !left_tbox_tbox_internal(key, query);
+      retval = !left_tbox_tbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = !overafter_tbox_tbox_internal(key, query);
+      retval = !overafter_tbox_tbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = !after_tbox_tbox_internal(key, query);
+      retval = !after_tbox_tbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = !overbefore_tbox_tbox_internal(key, query);
+      retval = !overbefore_tbox_tbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
-      retval = !before_tbox_tbox_internal(key, query);
+      retval = !before_tbox_tbox(key, query);
       break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);
@@ -200,61 +199,82 @@ tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
 }
 
 /**
- * Transform the query into a box initializing the dimensions that must
- * not be taken into account by the operators to infinity.
+ * Transform the query argument into a box initializing the dimensions that
+ * must not be taken into account by the operators to infinity.
  */
 static bool
-tnumber_index_get_tbox(FunctionCallInfo fcinfo, TBOX *query, Oid subtype)
+tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
 {
-  memset(query, 0, sizeof(TBOX));
-  if (tnumber_range_type(subtype))
+  CachedType type = oid_type(typid);
+  if (tnumber_basetype(type))
   {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(1);
-#else
-  RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
+    Datum value = PG_GETARG_DATUM(1);
+    number_tbox(value, type, result);
+  }
+  else if (tnumber_rangetype(type))
+  {
+    RangeType *range = PG_GETARG_RANGE_P(1);
     if (range == NULL)
       return false;
     /* Return false on empty range */
     char flags = range_get_flags(range);
     if (flags & RANGE_EMPTY)
       return false;
-    range_to_tbox_internal(query, range);
+    range_tbox(range, result);
     PG_FREE_IF_COPY(range, 1);
   }
-  else if (subtype == type_oid(T_TBOX))
+  else if (type == T_TIMESTAMPTZ)
+  {
+    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    timestamp_tbox(t, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_tbox_slice(tsdatum, result);
+  }
+  else if (type == T_PERIOD)
+  {
+    Period *p = PG_GETARG_PERIOD_P(1);
+    period_tbox(p, result);
+  }
+  else if (type == T_PERIODSET)
+  {
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_tbox_slice(psdatum, result);
+  }
+  else if (type == T_TBOX)
   {
     TBOX *box = PG_GETARG_TBOX_P(1);
     if (box == NULL)
       return false;
-    memcpy(query, box, sizeof(TBOX));
+    memcpy(result, box, sizeof(TBOX));
   }
-  else if (tnumber_type(subtype))
+  else if (tnumber_type(type))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
+    if (PG_ARGISNULL(1))
       return false;
-    temporal_bbox(query, temp);
-    PG_FREE_IF_COPY(temp, 1);
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
   }
   else
-    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 
-PG_FUNCTION_INFO_V1(tnumber_gist_consistent);
+PG_FUNCTION_INFO_V1(Tnumber_gist_consistent);
 /**
  * GiST consistent method for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_gist_consistent(PG_FUNCTION_ARGS)
+Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-  TBOX *key = DatumGetTboxP(entry->key), query;
+  const TBOX *key = DatumGetTboxP(entry->key);
+  TBOX query;
 
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
@@ -266,13 +286,13 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
-  if (! tnumber_index_get_tbox(fcinfo, &query, subtype))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
     result = tbox_index_consistent_leaf(key, &query, strategy);
   else
-    result = tbox_gist_consistent_internal(key, &query, strategy);
+    result = tnumber_gist_consistent(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }
@@ -282,92 +302,63 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Increase the first box to include the second one
+ * Expand the first box to include the second one
  *
- * @param[inout] b Resulting box
- * @param[in] addon Input box
+ * @param[inout] box1 Resulting box
+ * @param[in] box2 Add-on box
+ * @note This function is similar to tbox_expand in file tbox.c but uses
+ *   NaN-aware comparisons for the value dimension
  */
 static void
-tbox_adjust(TBOX *b, const TBOX *addon)
+tbox_expand_rt(TBOX *box1, const TBOX *box2)
 {
-  if (FLOAT8_LT(b->xmax, addon->xmax))
-    b->xmax = addon->xmax;
-  if (FLOAT8_GT(b->xmin, addon->xmin))
-    b->xmin = addon->xmin;
-  if (FLOAT8_LT(b->tmax, addon->tmax))
-    b->tmax = addon->tmax;
-  if (FLOAT8_GT(b->tmin, addon->tmin))
-    b->tmin = addon->tmin;
+  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
+  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
+  box1->tmin = Min(box1->tmin, box2->tmin);
+  box1->tmax = Max(box1->tmax, box2->tmax);
   return;
 }
 
-PG_FUNCTION_INFO_V1(tbox_gist_union);
+PG_FUNCTION_INFO_V1(Tbox_gist_union);
 /**
  * GiST union method for temporal numbers.
  *
- * Returns the minimal bounding box that encloses all the entries in entryvec
+ * Return the minimal bounding box that encloses all the entries in entryvec
  */
 PGDLLEXPORT Datum
-tbox_gist_union(PG_FUNCTION_ARGS)
+Tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  int *sizep = (int *) PG_GETARG_POINTER(1);
-  int numranges, i;
-  TBOX *cur, *pageunion;
-  numranges = entryvec->n;
-  pageunion = (TBOX *) palloc0(sizeof(TBOX));
-  cur = DatumGetTboxP(entryvec->vector[0].key);
-  memcpy((void *) pageunion, (void *) cur, sizeof(TBOX));
-  for (i = 1; i < numranges; i++)
-  {
-    cur = DatumGetTboxP(entryvec->vector[i].key);
-    tbox_adjust(pageunion, cur);
-  }
-  *sizep = sizeof(TBOX);
-  PG_RETURN_POINTER(pageunion);
+  GISTENTRY *ent = entryvec->vector;
+  TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    tbox_expand_rt(result, DatumGetTboxP(ent[i].key));
+  PG_RETURN_PERIOD_P(result);
 }
 
 /*****************************************************************************
  * GiST compress method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_gist_compress);
+PG_FUNCTION_INFO_V1(Tnumber_gist_compress);
 /**
  * GiST compress method for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_gist_compress(PG_FUNCTION_ARGS)
+Tnumber_gist_compress(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    TBOX *box = palloc0(sizeof(TBOX));
-    temporal_bbox(box, temp);
-    gistentryinit(*retval, PointerGetDatum(box),
-      entry->rel, entry->page, entry->offset, false);
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    TBOX *box = (TBOX *) palloc(sizeof(TBOX));
+    temporal_bbox_slice(entry->key, box);
+    gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
+      entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
   PG_RETURN_POINTER(entry);
 }
-
-/*****************************************************************************
- * GiST decompress method
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(tnumber_gist_decompress);
-/**
- * GiST decompress method for temporal numbers (result in a temporal box)
- */
-PGDLLEXPORT Datum
-tnumber_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************
  * GiST penalty method
@@ -376,21 +367,23 @@ tnumber_gist_decompress(PG_FUNCTION_ARGS)
 /**
  * Calculates the union of two tboxes.
  *
- * @param[out] n Resulting box
  * @param[in] a,b Input boxes
+ * @param[out] new Resulting box
+ * @note This function uses NaN-aware comparisons
  */
 static void
-tbox_union_rt(TBOX *n, const TBOX *a, const TBOX *b)
+tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
 {
-  n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
-  n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  n->tmin = FLOAT8_MIN(a->tmin, b->tmin);
+  memset(new, 0, sizeof(TBOX));
+  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
+  new->tmin = FLOAT8_MIN(a->tmin, b->tmin);
+  new->tmax = FLOAT8_MAX(a->tmax, b->tmax);
   return;
 }
 
 /**
- * Returns the size of a temporal box for penalty-calculation purposes.
+ * Return the size of a temporal box for penalty-calculation purposes.
  * The result can be +Infinity, but not NaN.
  */
 static double
@@ -418,33 +411,30 @@ tbox_size(const TBOX *box)
 }
 
 /**
- * Returns the amount by which the union of the two boxes is larger than
+ * Return the amount by which the union of the two boxes is larger than
  * the original TBOX's area.  The result can be +Infinity, but not NaN.
  */
 static double
 tbox_penalty(const TBOX *original, const TBOX *new)
 {
   TBOX unionbox;
-
-  memset(&unionbox, 0, sizeof(TBOX));
-  tbox_union_rt(&unionbox, original, new);
+  tbox_union_rt(original, new, &unionbox);
   return tbox_size(&unionbox) - tbox_size(original);
 }
 
-PG_FUNCTION_INFO_V1(tbox_gist_penalty);
+PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
 /**
  * GiST penalty method for temporal boxes.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
-tbox_gist_penalty(PG_FUNCTION_ARGS)
+Tbox_gist_penalty(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
   GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
   float *result = (float *) PG_GETARG_POINTER(2);
-  TBOX *origbox = DatumGetTboxP(origentry->key);
-  TBOX *newbox = DatumGetTboxP(newentry->key);
-
+  const TBOX *origbox = DatumGetTboxP(origentry->key);
+  const TBOX *newbox = DatumGetTboxP(newentry->key);
   *result = (float) tbox_penalty(origbox, newbox);
   PG_RETURN_POINTER(result);
 }
@@ -483,7 +473,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
         *left_tbox = *cur;
       }
       else
-        tbox_adjust(left_tbox, cur);
+        tbox_expand_rt(left_tbox, cur);
 
       v->spl_nleft++;
     }
@@ -496,7 +486,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
         *right_tbox = *cur;
       }
       else
-        tbox_adjust(right_tbox, cur);
+        tbox_expand_rt(right_tbox, cur);
 
       v->spl_nright++;
     }
@@ -693,27 +683,22 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 
-PG_FUNCTION_INFO_V1(tbox_gist_picksplit);
+PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
 /**
  * GiST picksplit method for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_gist_picksplit(PG_FUNCTION_ARGS)
+Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
-  OffsetNumber i,
-        maxoff;
+  OffsetNumber i, maxoff;
   ConsiderSplitContext context;
-  TBOX     *box,
-         *leftBox,
-         *rightBox;
-  int      dim,
-        commonEntriesCount;
-  SplitInterval *intervalsLower,
-         *intervalsUpper;
+  TBOX *box, *leftBox, *rightBox;
+  int dim, commonEntriesCount;
+  SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
-  int      nentries;
+  int nentries;
 
   memset(&context, 0, sizeof(ConsiderSplitContext));
 
@@ -733,7 +718,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
     if (i == FirstOffsetNumber)
       context.boundingBox = *box;
     else
-      tbox_adjust(&context.boundingBox, box);
+      tbox_expand_rt(&context.boundingBox, box);
   }
 
   /*
@@ -904,8 +889,8 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
   v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
-  leftBox = palloc0(sizeof(TBOX));
-  rightBox = palloc0(sizeof(TBOX));
+  leftBox = (TBOX *) palloc0(sizeof(TBOX));
+  rightBox = (TBOX *) palloc0(sizeof(TBOX));
 
   /*
    * Allocate an array for "common entries" - entries which can be placed to
@@ -918,7 +903,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      tbox_adjust(leftBox, box);      \
+      tbox_expand_rt(leftBox, box);      \
     else                  \
       *leftBox = *(box);          \
     v->spl_left[v->spl_nleft++] = off;    \
@@ -927,7 +912,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(box, off)          \
   do {                    \
     if (v->spl_nright > 0)          \
-      tbox_adjust(rightBox, box);      \
+      tbox_expand_rt(rightBox, box);      \
     else                  \
       *rightBox = *(box);          \
     v->spl_right[v->spl_nright++] = off;  \
@@ -1004,7 +989,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
     {
       box = DatumGetTboxP(entryvec->vector[commonEntries[i].index].key);
       commonEntries[i].delta = Abs(tbox_penalty(leftBox, box) -
-                     tbox_penalty(rightBox, box));
+        tbox_penalty(rightBox, box));
     }
 
     /*
@@ -1048,15 +1033,15 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_gist_same);
+PG_FUNCTION_INFO_V1(Tbox_gist_same);
 /**
  * GiST same method for temporal numbers.
- * Returns true only when boxes are exactly the same.  We can't use fuzzy
+ * Return true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to box_same().
  */
 PGDLLEXPORT Datum
-tbox_gist_same(PG_FUNCTION_ARGS)
+Tbox_gist_same(PG_FUNCTION_ARGS)
 {
   TBOX *b1 = PG_GETARG_TBOX_P(0);
   TBOX *b2 = PG_GETARG_TBOX_P(1);
@@ -1076,16 +1061,16 @@ tbox_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_gist_distance);
+PG_FUNCTION_INFO_V1(Tbox_gist_distance);
 /**
  * GiST support function. Take in a query and an entry and return the "distance"
  * between them.
 */
-Datum
-tbox_gist_distance(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tbox_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBOX *key = (TBOX *) DatumGetPointer(entry->key);
   TBOX query;
@@ -1099,12 +1084,12 @@ tbox_gist_distance(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Transform the query into a box */
-  if (! tnumber_index_get_tbox(fcinfo, &query, subtype))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */
-  distance = NAD_tbox_tbox_internal(key, &query);
+  distance = nad_tbox_tbox(key, &query);
 
   PG_RETURN_FLOAT8(distance);
 }

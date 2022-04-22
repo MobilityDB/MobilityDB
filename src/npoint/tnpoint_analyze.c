@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,13 +29,15 @@
 
 /**
  * @file tnpoint_analyze.c
- * Functions for gathering statistics from temporal network point columns
+ * @brief Functions for gathering statistics from temporal network point
+ * columns.
  */
 
 #include "npoint/tnpoint_analyze.h"
 
+/* PostgreSQL */
 #include <commands/vacuum.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/time_analyze.h"
 #include "general/temporal.h"
@@ -61,9 +62,9 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows)
 {
   int notnull_cnt = 0;      /* # not null rows in the sample */
-  int null_cnt = 0;       /* # null rows in the sample */
-  int slot_idx = 2;       /* Starting slot for storing temporal statistics */
-  double total_width = 0;     /* # of bytes used by sample */
+  int null_cnt = 0;         /* # null rows in the sample */
+  int slot_idx = 2;         /* Starting slot for storing temporal statistics */
+  double total_width = 0;   /* # of bytes used by sample */
 
   PeriodBound *time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
   PeriodBound *time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
@@ -78,10 +79,8 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     Datum value;
     Temporal *temp;
     Period period;
-    PeriodBound period_lower,
-        period_upper;
-    bool is_null;
-    bool is_copy;
+    PeriodBound period_lower, period_upper;
+    bool is_null, is_copy;
 
     value = fetchfunc(stats, i, &is_null);
 
@@ -93,7 +92,7 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     /* Get temporal point */
-    temp = DatumGetTemporal(value);
+    temp = DatumGetTemporalP(value);
 
     /* TO VERIFY */
     is_copy = VARATT_IS_EXTENDED(temp);
@@ -102,14 +101,13 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(temp);
 
     /* Get period from temporal point */
-    temporal_period(&period, temp);
+    temporal_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
     period_deserialize(&period, &period_lower, &period_upper);
     time_lowers[notnull_cnt] = period_lower;
     time_uppers[notnull_cnt] = period_upper;
-    time_lengths[notnull_cnt] = period_to_secs(period_upper.t,
-      period_lower.t);
+    time_lengths[notnull_cnt] = period_to_secs(period_upper.t, period_lower.t);
 
     /* Increment our "good feature" count */
     notnull_cnt++;
@@ -155,12 +153,12 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_analyze);
+PG_FUNCTION_INFO_V1(Tnpoint_analyze);
 /**
  * Compute the statistics for temporal network point columns
  */
 PGDLLEXPORT Datum
-tnpoint_analyze(PG_FUNCTION_ARGS)
+Tnpoint_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   int16 subtype;

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,15 +29,16 @@
 
 /**
  * @file tnpoint_aggfuncs.c
- * Aggregate functions for temporal network points.
+ * @brief Aggregate functions for temporal network points.
  *
  * The only function currently provided is temporal centroid.
  */
 
 #include "npoint/tnpoint_aggfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
+/* MobilityDB */
 #include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -47,15 +47,15 @@
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_tcentroid_transfn);
+PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 /**
  * Transition function for temporal centroid aggregation of temporal network
  * points
  */
 PGDLLEXPORT Datum
-tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
+Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {
@@ -64,10 +64,10 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     else
       PG_RETURN_NULL();
   }
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Temporal *temp1 = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *temp1 = tnpoint_tgeompoint(temp);
 
-  geoaggstate_check_t(state, temp1);
+  geoaggstate_check_temp(state, temp1);
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
@@ -75,7 +75,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
   if (state)
   {
-    ensure_same_temp_subtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else
@@ -83,7 +83,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
     struct GeoAggregateState extra =
     {
-      .srid = tpoint_srid_internal(temp1),
+      .srid = tpoint_srid(temp1),
       .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
     };
     aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));

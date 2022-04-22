@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -33,9 +36,10 @@
 #ifndef __POSTGIS_H__
 #define __POSTGIS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-
+/* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <lwgeodetic_tree.h>
@@ -285,6 +289,7 @@ extern Datum ST_3DDistance(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum ST_Intersection(PG_FUNCTION_ARGS);
 extern Datum ST_Intersects(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum ST_3DIntersects(PG_FUNCTION_ARGS); /* For 2D */
+extern Datum geography_intersects(PG_FUNCTION_ARGS); /* For geography */
 #endif
 
 extern Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS);

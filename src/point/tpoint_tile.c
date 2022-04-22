@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,20 +29,22 @@
 
 /**
  * @file tpoint_tile.c
- * Functions for spatial and spatiotemporal tiles.
+ * @brief Functions for spatial and spatiotemporal tiles.
  */
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "point/tpoint_tile.h"
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_tile.h"
@@ -58,7 +59,7 @@
 /**
  * Create a bit matrix
  */
-BitMatrix *
+static BitMatrix *
 bitmatrix_make(int *count, int numdims)
 {
   /* Calculate the needed number of bits and bytes */
@@ -72,7 +73,7 @@ bitmatrix_make(int *count, int numdims)
    * already one byte allocated in the struct */
   size_t size = sizeof(BitMatrix) + byteCount - 1;
   /* palloc0 to set all bits to 0 */
-  BitMatrix *result = palloc0(size);
+  BitMatrix *result = (BitMatrix *) palloc0(size);
   /* Fill the structure */
   result->numdims = numdims;
   for (i = 0; i < numdims; i++)
@@ -83,7 +84,7 @@ bitmatrix_make(int *count, int numdims)
 /**
  * Get the value of the bit in the bit matrix
  */
-bool
+static bool
 bitmatrix_get(const BitMatrix *bm, int *coords)
 {
   int i, j;
@@ -107,8 +108,8 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
 /**
  * Set the value of the bit in the bit matrix
  */
-void
-bitmatrix_set(BitMatrix *bm, int *coords, bool value)
+static void
+bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
 {
   int i, j, pos = 0;
   for (i = 0; i < bm->numdims; i++)
@@ -285,8 +286,8 @@ coord_print(int *coords, int numdims)
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] numdims Number of dimensions of the grid
  */
-void
-bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
+static void
+bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 {
   int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
     neighbors[MAXDIMS];
@@ -337,7 +338,7 @@ bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
   {
     /* Set the current Bresenham diagonal tile */
     // coord_print(coords, numdims);
-    bitmatrix_set(bm, coords, true);
+    bitmatrix_set_cell(bm, coords, true);
     /* Exit the loop when finished */
     if (coords[axis] == coords2[axis])
       break;
@@ -354,14 +355,14 @@ bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
       if (neighbors[i] >= min)
       {
         // coord_print(neighbors, numdims);
-        bitmatrix_set(bm, coords, true);
+        bitmatrix_set_cell(bm, coords, true);
       }
       /* Top of the Bresenham diagonal cell for 2D */
       neighbors[i] += 2;
       if (neighbors[i] <= max)
       {
         // coord_print(neighbors, numdims);
-        bitmatrix_set(bm, coords, true);
+        bitmatrix_set_cell(bm, coords, true);
       }
     }
     // printf("-------\n");
@@ -420,8 +421,8 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
     tmin = t;
     tmax = tmin + tunits;
   }
-  return stbox_set(result, true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax);
+  return stbox_set(true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, tmin, tmax, result);
 }
 
 /**
@@ -439,27 +440,27 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
  * dimension is tiled.
  */
 static STboxGridState *
-stbox_tile_state_make(Temporal *temp, STBOX *box, double size,
-  int64 tunits, POINT3DZ sorigin, TimestampTz torigin)
+stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
+  POINT3DZ sorigin, TimestampTz torigin)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
-  STboxGridState *state = palloc0(sizeof(STboxGridState));
+  STboxGridState *state = (STboxGridState *) palloc0(sizeof(STboxGridState));
   /* Fill in state */
   state->done = false;
   state->i = 1;
   state->size = size;
   state->tunits = tunits;
-  state->box.xmin = float_bucket_internal(box->xmin, size, sorigin.x);
-  state->box.xmax = float_bucket_internal(box->xmax, size, sorigin.x);
-  state->box.ymin = float_bucket_internal(box->ymin, size, sorigin.y);
-  state->box.ymax = float_bucket_internal(box->ymax, size, sorigin.y);
-  state->box.zmin = float_bucket_internal(box->zmin, size, sorigin.z);
-  state->box.zmax = float_bucket_internal(box->zmax, size, sorigin.z);
+  state->box.xmin = float_bucket(box->xmin, size, sorigin.x);
+  state->box.xmax = float_bucket(box->xmax, size, sorigin.x);
+  state->box.ymin = float_bucket(box->ymin, size, sorigin.y);
+  state->box.ymax = float_bucket(box->ymax, size, sorigin.y);
+  state->box.zmin = float_bucket(box->zmin, size, sorigin.z);
+  state->box.zmax = float_bucket(box->zmax, size, sorigin.z);
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
-    state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+    state->box.tmin = timestamptz_bucket(box->tmin, tunits, torigin);
+    state->box.tmax = timestamptz_bucket(box->tmax, tunits, torigin);
   }
   state->box.srid = box->srid;
   state->box.flags = box->flags;
@@ -559,11 +560,11 @@ stbox_tile_state_next(STboxGridState *state)
 /**
  * Get the current tile of the multidimensional grid
  *
- * @param[out] box Current tile
  * @param[in] state State to increment
+ * @param[out] box Current tile
  */
 static bool
-stbox_tile_state_get(STBOX *box, STboxGridState *state)
+stbox_tile_state_get(STboxGridState *state, STBOX *box)
 {
   if (!state || state->done)
     return false;
@@ -586,11 +587,12 @@ stbox_tile_state_get(STBOX *box, STboxGridState *state)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(stbox_multidim_grid);
+PG_FUNCTION_INFO_V1(Stbox_multidim_grid);
 /**
  * Generate a multidimensional grid for temporal points.
  */
-Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Stbox_multidim_grid(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
@@ -606,7 +608,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     ensure_has_X_stbox(bounds);
     ensure_not_geodetic(bounds->flags);
     double size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
@@ -633,17 +635,13 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      const POINT2D *p2d = gserialized_point2d_p(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
@@ -668,14 +666,21 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all the grid tiles */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Allocate box */
-  STBOX *box = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *box = (STBOX *) palloc(sizeof(STBOX));
   /* Get current tile and advance state
    * There is no need to test if the tile is found since all tiles should be
    * generated and thus there is no associated bit matrix */
-  stbox_tile_state_get(box, state);
+  stbox_tile_state_get(state, box);
   stbox_tile_state_next(state);
   /* Form tuple and return
    * The i value was incremented with the previous _next function call */
@@ -686,11 +691,12 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
-PG_FUNCTION_INFO_V1(stbox_multidim_tile);
+PG_FUNCTION_INFO_V1(Stbox_multidim_tile);
 /**
  * Generate a tile in a multidimensional grid for temporal points.
 */
-Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Stbox_multidim_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(point);
@@ -704,7 +710,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (PG_NARGS() == 3)
   {
     size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     sorigin = PG_GETARG_GSERIALIZED_P(2);
   }
   else /* PG_NARGS() == 6 */
@@ -712,7 +718,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
     /* If time arguments are given */
     t = PG_GETARG_TIMESTAMPTZ(1);
     size = PG_GETARG_FLOAT8(2);
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     Interval *duration = PG_GETARG_INTERVAL_P(3);
     ensure_valid_duration(duration);
     tunits = get_interval_units(duration);
@@ -727,35 +733,31 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(point->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(point));
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
-    pt = datum_get_point3dz(PointerGetDatum(point));
-    ptorig = datum_get_point3dz(PointerGetDatum(sorigin));
+    pt = datum_point3dz(PointerGetDatum(point));
+    ptorig = datum_point3dz(PointerGetDatum(sorigin));
   }
   else
   {
     /* Initialize to 0 the Z dimension if it is missing */
     memset(&pt, 0, sizeof(POINT3DZ));
-    const POINT2D *p1 = gs_get_point2d_p(sorigin);
+    const POINT2D *p1 = gserialized_point2d_p(sorigin);
     pt.x = p1->x;
     pt.y = p1->y;
     memset(&ptorig, 0, sizeof(POINT3DZ));
-    const POINT2D *p2 = gs_get_point2d_p(sorigin);
+    const POINT2D *p2 = gserialized_point2d_p(sorigin);
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
-  double xmin = float_bucket_internal(pt.x, size, ptorig.x);
-  double ymin = float_bucket_internal(pt.y, size, ptorig.y);
-  double zmin = float_bucket_internal(pt.z, size, ptorig.z);
+  double xmin = float_bucket(pt.x, size, ptorig.x);
+  double ymin = float_bucket(pt.y, size, ptorig.y);
+  double zmin = float_bucket(pt.z, size, ptorig.z);
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
-    tmin = timestamptz_bucket_internal(t, tunits, torigin);
+    tmin = timestamptz_bucket(t, tunits, torigin);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz,
     hast, srid);
@@ -773,7 +775,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
  * @param[in] x,y,z,t Minimum values of the tile
  * @param[in] state Grid information
  */
-void
+static void
 tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
   const STboxGridState *state)
 {
@@ -792,25 +794,26 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
  * Get the coordinates of the tile corresponding the temporal instant point
  *
  * @param[out] coords Tile coordinates
- * @param[out] lower Minimum values  of the tile (optional parameter)
  * @param[in] inst Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   const STboxGridState *state)
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
-  datum_get_point4d(&p, tinstant_value(inst));
-  double x = float_bucket_internal(p.x, state->size, state->box.xmin);
-  double y = float_bucket_internal(p.y, state->size, state->box.ymin);
+  datum_point4d(tinstant_value(inst), &p);
+  double x = float_bucket(p.x, state->size, state->box.xmin);
+  double y = float_bucket(p.y, state->size, state->box.ymin);
   double z = 0;
   TimestampTz t = 0;
   if (hasz)
-    z = float_bucket_internal(p.z, state->size, state->box.zmin);
+    z = float_bucket(p.z, state->size, state->box.zmin);
   if (hast)
-    t = timestamptz_bucket_internal(inst->t, state->tunits, state->box.ymin);
+    t = timestamptz_bucket(inst->t, state->tunits, state->box.ymin);
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(coords, x, y, z, t, state);
   return;
@@ -821,9 +824,11 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
  *
  * @param[out] bm Bit matrix
  * @param[in] inst Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -832,7 +837,7 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
   memset(coords, 0, sizeof(coords));
   tpointinst_get_coords(coords, inst, hasz, hast, state);
   /* Set the corresponding bit in the matix */
-  bitmatrix_set(bm, coords, true);
+  bitmatrix_set_cell(bm, coords, true);
   return;
 }
 
@@ -841,9 +846,11 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
  *
  * @param[out] bm Bit matrix
  * @param[in] ti Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -854,7 +861,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
-    bitmatrix_set(bm, coords, true);
+    bitmatrix_set_cell(bm, coords, true);
   }
   return;
 }
@@ -864,9 +871,11 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
  *
  * @param[out] bm Bit matrix
  * @param[in] seq Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -880,7 +889,7 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     tpointinst_get_coords(coords2, inst2, hasz, hast, state);
-    bresenham(bm, coords1, coords2, numdims);
+    bresenham_bm(bm, coords1, coords2, numdims);
   }
   return;
 }
@@ -890,9 +899,11 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
  *
  * @param[out] bm Bit matrix
  * @param[in] ts Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -912,7 +923,7 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
  */
-void
+static void
 tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
   const STboxGridState *state)
 {
@@ -932,15 +943,15 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_space_split);
+PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
  * Split a temporal point with respect to a spatial grid.
  */
-Datum tpoint_space_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_space_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  STBOX box;
   bool hasz;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
@@ -957,23 +968,18 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     double size = PG_GETARG_FLOAT8(1);
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(2);
     bool bitmatrix = PG_GETARG_BOOL(3);
 
     /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-#if POSTGIS_VERSION_NUMBER < 30000
-    ensure_same_geodetic(temp->flags, sorigin->flags);
-#else
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-#endif
+    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    memset(&bounds, 0, sizeof(STBOX));
-    temporal_bbox(&bounds, temp);
+    temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
@@ -981,17 +987,13 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      const POINT2D *p2d = gserialized_point2d_p(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
@@ -1011,8 +1013,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
       count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
       if (MOBDB_FLAGS_GET_Z(state->box.flags))
         count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
-      if (state->tunits)
-        count[numdims++] = ( (state->box.tmax - state->box.tmin) / state->tunits ) + 1;
+      /* We are sure that there is no additional time dimension */
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(state->bm, temp, state);
     }
@@ -1046,13 +1047,21 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Get current tile (if any) and advance state
      * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
-    memset(&box, 0, sizeof(STBOX));
-    bool found = stbox_tile_state_get(&box, state);
+    STBOX box;
+    bool found = stbox_tile_state_get(state, &box);
     if (! found)
+    {
+      /* Switch to memory context appropriate for multiple function calls */
+      MemoryContext oldcontext =
+        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+      if (state->bm) pfree(state->bm);
+      pfree(state);
+      MemoryContextSwitchTo(oldcontext);
       SRF_RETURN_DONE(funcctx);
+    }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
+    Temporal *atstbox = tpoint_at_stbox(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */
@@ -1068,15 +1077,15 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_space_time_split);
+PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
  * Split a temporal point with respect to a spatiotemporal grid.
  */
-Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_space_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  STBOX box;
   bool hasz;
   bool isnull[3] = {0,0,0}; /* needed to say no value is null */
   Datum tuple_arr[3]; /* used to construct the composite return value */
@@ -1093,7 +1102,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     double size = PG_GETARG_FLOAT8(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(3);
@@ -1101,35 +1110,26 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     bool bitmatrix = PG_GETARG_BOOL(5);
 
     /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
-#if POSTGIS_VERSION_NUMBER < 30000
-    ensure_same_geodetic(temp->flags, sorigin->flags);
-#else
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-#endif
+    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    memset(&bounds, 0, sizeof(STBOX));
-    temporal_bbox(&bounds, temp);
+    temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      const POINT2D *p2d = gserialized_point2d_p(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
@@ -1184,13 +1184,21 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     /* Get current tile (if any) and advance state
      * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
-    memset(&box, 0, sizeof(STBOX));
-    bool found = stbox_tile_state_get(&box, state);
+    STBOX box;
+    bool found = stbox_tile_state_get(state, &box);
     if (! found)
+    {
+      /* Switch to memory context appropriate for multiple function calls */
+      MemoryContext oldcontext =
+        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+      if (state->bm) pfree(state->bm);
+      pfree(state);
+      MemoryContextSwitchTo(oldcontext);
       SRF_RETURN_DONE(funcctx);
+    }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
+    Temporal *atstbox = tpoint_at_stbox(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */

@@ -139,7 +139,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
+					<para><link linkend="time_tscale"><varname>tscale</varname></link>: Escalar el valor de tiempo a un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el valor de tiempo con los intervalos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatrange_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -246,6 +254,20 @@
 
 				<listitem>
 					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor de tiempo anterior al segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de distancia</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia mínima en un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="smallest_distance_secs"><varname>|=|</varname></link>: Obtener la distancia mínima en número de segundos</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -378,7 +400,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_setPrecision"><varname>setPrecision</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
+					<para><link linkend="box_round"><varname>round</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
 				</listitem>
 
 			</itemizedlist>
@@ -695,6 +717,14 @@
 
 				<listitem>
 					<para><link linkend="maxValue"><varname>maxValue</varname></link>: Obtener el valor máximo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minInstant"><varname>minInstant</varname></link>: Obtener el instante con el valor mínimo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="maxInstant"><varname>maxInstant</varname></link>: Obtener el instante con el valor máximo</para>
 				</listitem>
 
 				<listitem>
@@ -1277,7 +1307,7 @@
 				<title>Funciones de manipulación</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
+						<para><link linkend="tpoint_round"><varname>round</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
 					</listitem>
 
 					<listitem>
@@ -1319,10 +1349,6 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
-		</sect2>
-
-		<sect2>
-			<title>Relaciones espaciales</title>
 
 			<sect3>
 				<title>Relaciones posibles </title>
@@ -1373,6 +1399,28 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de similaridad</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Obtener la distancia de Fréchet discreta entre dos valores temporales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2>
@@ -1546,7 +1594,7 @@
 				<title>Funciones de modificación</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+						<para><link linkend="npoint_round"><varname>round</varname></link>: Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1668,7 +1716,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la fracción del punto de red temporal en el número de posiciones decimales</para>
+						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Redondear la fracción del punto de red temporal en el número de posiciones decimales</para>
 					</listitem>
 
 					<listitem>

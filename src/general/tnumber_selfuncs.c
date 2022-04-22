@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,27 +29,26 @@
 
 /**
  * @file tnumber_selfuncs.c
- * Functions for selectivity estimation of operators on temporal number types
+ * @brief Functions for selectivity estimation of operators on temporal number
+ * types.
  */
 
 #include "general/tnumber_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#else
 #include <catalog/pg_collation_d.h>
-#endif
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 #include <utils/selfuncs.h>
 #include "general/temporal_boxops.h"
-
+/* MobilityDB */
 #include "general/period.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
@@ -65,7 +63,7 @@
  *****************************************************************************/
 
 /**
- * Binary search on an array of range bounds. Returns greatest index of range
+ * Binary search on an array of range bounds. Return greatest index of range
  * bound in array which is less(less or equal) than given range bound. If all
  * range bounds in array are greater or equal(greater) than given range bound,
  * return -1. When "equal" flag is set conditions in brackets are used.
@@ -249,17 +247,13 @@ get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
  * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
-calc_hist_selectivity_contained(TypeCacheEntry *typcache,
-                RangeBound *lower, RangeBound *upper,
-                RangeBound *hist_lower, int hist_nvalues,
-                Datum *length_hist_values, int length_hist_nvalues)
+calc_hist_selectivity_contained(TypeCacheEntry *typcache, RangeBound *lower,
+  RangeBound *upper, RangeBound *hist_lower, int hist_nvalues,
+  Datum *length_hist_values, int length_hist_nvalues)
 {
-  int      i,
-        upper_index;
-  float8    prev_dist;
-  double    bin_width;
-  double    upper_bin_width;
-  double    sum_frac;
+  int i, upper_index;
+  float8 prev_dist;
+  double bin_width, upper_bin_width, sum_frac;
 
   /*
    * Begin by finding the bin containing the upper bound, in the lower bound
@@ -268,8 +262,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
    */
   upper->inclusive = !upper->inclusive;
   upper->lower = true;
-  upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues,
-                 false);
+  upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues, false);
 
   /*
    * Calculate upper_bin_width, ie. the fraction of the (upper_index,
@@ -278,8 +271,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
    */
   if (upper_index >= 0 && upper_index < hist_nvalues - 1)
     upper_bin_width = get_position(typcache, upper,
-                     &hist_lower[upper_index],
-                     &hist_lower[upper_index + 1]);
+      &hist_lower[upper_index], &hist_lower[upper_index + 1]);
   else
     upper_bin_width = 0.0;
 
@@ -298,9 +290,9 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
   sum_frac = 0.0;
   for (i = upper_index; i >= 0; i--)
   {
-    double    dist;
-    double    length_hist_frac;
-    bool    final_bin = false;
+    double dist;
+    double length_hist_frac;
+    bool final_bin = false;
 
     /*
      * dist -- distance from upper bound of query range to lower bound of
@@ -317,7 +309,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
        * ignore.
        */
       bin_width -= get_position(typcache, lower, &hist_lower[i],
-                    &hist_lower[i + 1]);
+        &hist_lower[i + 1]);
       if (bin_width < 0.0)
         bin_width = 0.0;
       final_bin = true;
@@ -330,8 +322,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
      * to not exceed the distance to the upper bound of the query range.
      */
     length_hist_frac = calc_length_hist_frac(length_hist_values,
-                         length_hist_nvalues,
-                         prev_dist, dist, true);
+      length_hist_nvalues, prev_dist, dist, true);
 
     /*
      * Add the fraction of tuples in this bin, with a suitable length, to
@@ -441,7 +432,7 @@ calc_hist_selectivity_contains(TypeCacheEntry *typcache,
  */
 static double
 calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
-            RangeType *constval, Oid operator)
+            RangeType *constval, Oid operid)
 {
   AttStatsSlot hslot;
   AttStatsSlot lslot;
@@ -479,21 +470,16 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
   hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
   for (i = 0; i < nhist; i++)
   {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    range_deserialize(typcache, DatumGetRangeType(hslot.values[i]),
-              &hist_lower[i], &hist_upper[i], &empty);
-#else
     range_deserialize(typcache, DatumGetRangeTypeP(hslot.values[i]),
               &hist_lower[i], &hist_upper[i], &empty);
-#endif
     /* The histogram should not contain any empty ranges */
     if (empty)
       elog(ERROR, "bounds histogram contains an empty range");
   }
 
   /* @> and @< also need a histogram of range lengths */
-  if (operator == OID_RANGE_CONTAINS_OP ||
-    operator == OID_RANGE_CONTAINED_OP)
+  if (operid == OID_RANGE_CONTAINS_OP ||
+    operid == OID_RANGE_CONTAINED_OP)
   {
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
@@ -524,7 +510,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
    * Calculate selectivity comparing the lower or upper bound of the
    * constant with the histogram of lower or upper bounds.
    */
-  switch (operator)
+  switch (operid)
   {
     case OID_RANGE_LESS_OP:
 
@@ -644,7 +630,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
       break;
 
     default:
-      elog(ERROR, "unknown range operator %u", operator);
+      elog(ERROR, "unknown range operator %u", operid);
       hist_selec = -1.0;  /* keep compiler quiet */
       break;
   }
@@ -663,51 +649,50 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
  *****************************************************************************/
 
 /**
- * Transform the constant into a temporal box
- *
- * @note Due to implicit casting constants of type Int4, Float8, TimestampTz,
- * TimestampSet, Period, and PeriodSet are transformed into a TBox
+ * Return the enum value associated to the operator
  */
-static bool
-tnumber_const_to_tbox(const Node *other, TBOX *box)
-{
-  Oid consttype = ((Const *) other)->consttype;
-
-  if (tnumber_range_type(consttype))
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    range_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
-#else
-    range_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
-#endif
-  else if (consttype == type_oid(T_TBOX))
-    memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
-  else if (tnumber_type(consttype))
-    temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
-  else
-    return false;
-  return true;
-}
-
-/**
- * Returns the enum value associated to the operator
- */
-static bool
-tnumber_cachedop(Oid operator, CachedOp *cachedOp)
+bool
+tnumber_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operator == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
+    if (/* Time types */
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TFLOAT) ||
+        /* Range types */
+        operid == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
+        /* Tbox type */
+        operid == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        /* Tint type */
+        operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
+        /* Tfloat type */
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -717,46 +702,75 @@ tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 /**
- * Returns the range operator associated to the enum value
+ * Transform the constant into a temporal box
  */
-static Oid
-tnumber_cachedop_rangeop(CachedOp cachedOp)
+bool
+tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
-  Oid op = InvalidOid;
-  if (cachedOp == LT_OP)
-    op = OID_RANGE_LESS_OP;
-  else if (cachedOp == LE_OP)
-    op = OID_RANGE_LESS_EQUAL_OP;
-  else if (cachedOp == GE_OP)
-    op = OID_RANGE_GREATER_EQUAL_OP;
-  else if (cachedOp == GT_OP)
-    op = OID_RANGE_GREATER_OP;
-  else if (cachedOp == OVERLAPS_OP)
-    op = OID_RANGE_OVERLAP_OP;
-  else if (cachedOp == CONTAINS_OP)
-    op = OID_RANGE_CONTAINS_OP;
-  else if (cachedOp == CONTAINED_OP)
-    op = OID_RANGE_CONTAINED_OP;
-  else if (cachedOp == LEFT_OP)
-    op = OID_RANGE_LEFT_OP;
-  else if (cachedOp == RIGHT_OP)
-    op = OID_RANGE_RIGHT_OP;
-  else if (cachedOp == OVERLEFT_OP)
-    op = OID_RANGE_OVERLAPS_LEFT_OP;
-  else if (cachedOp == OVERRIGHT_OP)
-    op = OID_RANGE_OVERLAPS_RIGHT_OP;
-  /* There is no ~= for ranges but we cover this operator explicity */
-  else if (cachedOp == SAME_OP)
-    op = OID_RANGE_OVERLAPS_RIGHT_OP;
-  return op;
+  Oid consttypid = ((Const *) other)->consttype;
+  CachedType type = oid_type(consttypid);
+  if (tnumber_basetype(type))
+    number_tbox(((Const *) other)->constvalue, type, box);
+  else if (tnumber_rangetype(type))
+    range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
+  else if (type == T_TIMESTAMPTZ)
+    timestamp_tbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+  else if (type == T_TIMESTAMPSET)
+    timestampset_tbox_slice(((Const *) other)->constvalue, box);
+  else if (type == T_PERIOD)
+    period_tbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+  else if (type == T_PERIODSET)
+    periodset_tbox_slice(((Const *) other)->constvalue, box);
+  else if (type == T_TBOX)
+    memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
+  else if (tnumber_type(type))
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
+  else
+    return false;
+  return true;
 }
 
 /**
- * Returns a default selectivity estimate for the operator when we don't
+ * Return the range operator associated to the enum value
+ */
+static Oid
+tnumber_rangeop(CachedOp cachedOp)
+{
+  Oid operid = InvalidOid;
+  if (cachedOp == LT_OP)
+    operid = OID_RANGE_LESS_OP;
+  else if (cachedOp == LE_OP)
+    operid = OID_RANGE_LESS_EQUAL_OP;
+  else if (cachedOp == GE_OP)
+    operid = OID_RANGE_GREATER_EQUAL_OP;
+  else if (cachedOp == GT_OP)
+    operid = OID_RANGE_GREATER_OP;
+  else if (cachedOp == OVERLAPS_OP)
+    operid = OID_RANGE_OVERLAP_OP;
+  else if (cachedOp == CONTAINS_OP)
+    operid = OID_RANGE_CONTAINS_OP;
+  else if (cachedOp == CONTAINED_OP)
+    operid = OID_RANGE_CONTAINED_OP;
+  else if (cachedOp == LEFT_OP)
+    operid = OID_RANGE_LEFT_OP;
+  else if (cachedOp == RIGHT_OP)
+    operid = OID_RANGE_RIGHT_OP;
+  else if (cachedOp == OVERLEFT_OP)
+    operid = OID_RANGE_OVERLAPS_LEFT_OP;
+  else if (cachedOp == OVERRIGHT_OP)
+    operid = OID_RANGE_OVERLAPS_RIGHT_OP;
+  /* There is no ~= for ranges but we cover this operator explicity */
+  else if (cachedOp == SAME_OP)
+    operid = OID_RANGE_OVERLAPS_RIGHT_OP;
+  return operid;
+}
+
+/**
+ * Return a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
-static double
-default_tnumber_selectivity(CachedOp operator)
+float8
+tnumber_sel_default(CachedOp operator)
 {
   switch (operator)
   {
@@ -793,7 +807,7 @@ default_tnumber_selectivity(CachedOp operator)
 }
 
 /**
- * Returns an estimate of the selectivity of the temporal search box and the
+ * Return an estimate of the selectivity of the temporal search box and the
  * operator for columns of temporal numbers. For the traditional comparison
  * operators (<, <=, ...) we follow the approach for range types in
  * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
@@ -801,8 +815,8 @@ default_tnumber_selectivity(CachedOp operator)
  * respectively.
  */
 Selectivity
-tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
-  CachedOp cachedOp, Oid basetypid)
+tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
+  Oid basetypid)
 {
   Period period;
   RangeType *range = NULL;
@@ -817,18 +831,19 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
     /* Fetch the range operator corresponding to the cachedOp */
-    value_oprid = tnumber_cachedop_rangeop(cachedOp);
+    value_oprid = tnumber_rangeop(cachedOp);
     /* If the corresponding range operator is not found */
     if (value_oprid != InvalidOid)
     {
+      CachedType basetype = oid_type(basetypid);
       range = range_make(Float8GetDatum(box->xmin),
-        Float8GetDatum(box->xmax), true, true, basetypid);
-      rangetypid = range_oid_from_base(basetypid);
+        Float8GetDatum(box->xmax), true, true, basetype);
+      rangetypid = basetype_rangeoid(basetype);
       typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
     }
   }
   if (MOBDB_FLAGS_GET_T(box->flags))
-    period_set(&period, box->tmin, box->tmax, true, true);
+    period_set(box->tmin, box->tmax, true, true, &period);
 
   /*
    * There is no ~= operator for range/time types and thus it is necessary to
@@ -853,11 +868,11 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, PeriodGetDatum(&period),
+      selec *= var_eq_const(vardata, period_oprid, PeriodPGetDatum(&period),
         false, false, false);
 #else
       selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
-        PeriodGetDatum(&period), false, false, false);
+        PeriodPGetDatum(&period), false, false, false);
 #endif
     }
   }
@@ -876,7 +891,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
         value_oprid);
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
+      selec *= period_sel_hist(vardata, &period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
@@ -891,11 +906,11 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
+      selec *= period_sel_hist(vardata, &period, cachedOp);
   }
   else /* Unknown operator */
   {
-    selec = default_tnumber_selectivity(cachedOp);
+    selec = tnumber_sel_default(cachedOp);
   }
   if (range != NULL)
     pfree(range);
@@ -904,107 +919,80 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_sel);
+PG_FUNCTION_INFO_V1(Tnumber_sel);
 /**
  * Estimate the selectivity value of the operators for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_sel(PG_FUNCTION_ARGS)
+Tnumber_sel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  VariableStatData vardata;
-  Node *other;
-  bool varonleft;
-  Selectivity selec;
-  CachedOp cachedOp;
-  TBOX constBox;
-  Oid basetypid;
-
-  /*
-   * Get enumeration value associated to the operator
-   */
-  bool found = tnumber_cachedop(operator, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
-
-  /*
-   * If expression is not (variable op something) or (something op
-   * variable), then punt and return a default estimate.
-   */
-  if (!get_restriction_variable(root, args, varRelid,
-                  &vardata, &other, &varonleft))
-    PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
-
-  /*
-   * Can't do anything useful if the something is not a constant, either.
-   */
-  if (!IsA(other, Const))
-  {
-    ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
-  }
-
-  /*
-   * All the tbox operators are strict, so we can cope with a NULL constant
-   * right away.
-   */
-  if (((Const *) other)->constisnull)
-  {
-    ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(0.0);
-  }
-
-  /*
-   * If var is on the right, commute the operator, so that we can assume the
-   * var is on the left in what follows.
-   */
-  if (!varonleft)
-  {
-    /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
-    {
-      /* Use default selectivity (should we raise an error instead?) */
-      ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
-    }
-  }
-
-  /*
-   * Transform the constant into a TBOX
-   */
-  memset(&constBox, 0, sizeof(TBOX));
-  found = tnumber_const_to_tbox(other, &constBox);
-  /* In the case of unknown constant */
-  if (!found)
-    PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
-
-  assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
-
-  /* Get the base type of the temporal column */
-  basetypid = base_oid_from_temporal(vardata.atttype);
-  ensure_tnumber_base_type(basetypid);
-
-  /* Compute the selectivity */
-  selec = tnumber_sel_internal(root, &vardata, &constBox, cachedOp, basetypid);
-
-  ReleaseVariableStats(vardata);
-  CLAMP_PROBABILITY(selec);
-  PG_RETURN_FLOAT8(selec);
+  return temporal_sel_ext(fcinfo, TNUMBERTYPE);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_joinsel);
+/*****************************************************************************/
+
+/**
+ * Return a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+float8
+tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
+{
+  // TODO take care of the operator
+  return 0.001;
+}
+
+/**
+ * Depending on the operator and the arguments, determine wheter the value,
+ * the time, or both components are taken into account for computing the
+ * join selectivity
+ */
+bool
+tnumber_joinsel_components(CachedOp cachedOp, CachedType oprleft,
+  CachedType oprright, bool *value, bool *time)
+{
+  /* Get the argument which may not a temporal number */
+  CachedType arg = tnumber_type(oprleft) ? oprright : oprleft;
+
+  /* Determine the components */
+  if (tnumber_basetype(arg) || tnumber_rangetype(arg) ||
+    cachedOp == LEFT_OP || cachedOp == OVERLEFT_OP ||
+    cachedOp == RIGHT_OP || cachedOp == OVERRIGHT_OP)
+  {
+    *value = true;
+    *time = false;
+  }
+  else if (time_type(arg) ||
+    cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
+    cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP)
+  {
+    *value = false;
+    *time = true;
+  }
+  else if (tnumber_type(arg) && (cachedOp == OVERLAPS_OP ||
+    cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP ||
+    cachedOp == SAME_OP || cachedOp == ADJACENT_OP))
+  {
+    *value = true;
+    *time = true;
+  }
+  else
+  {
+    /* By default only the time component is taken into account */
+    *value = false;
+    *time = true;
+  }
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 /**
  * Estimate the join selectivity value of the operators for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_joinsel(PG_FUNCTION_ARGS)
+Tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  return temporal_joinsel_ext(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/

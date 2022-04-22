@@ -1,0 +1,270 @@
+SELECT round(floatrange '[1.123456789,2.123456789]',6);
+        round        
+---------------------
+ [1.123457,2.123457]
+(1 row)
+
+SELECT round(floatrange '[,2.123456789]',6);
+    round    
+-------------
+ (,2.123457]
+(1 row)
+
+SELECT round(floatrange '[-inf,2.123456789]',6);
+        round         
+----------------------
+ [-Infinity,2.123457]
+(1 row)
+
+select round(floatrange '[1.123456789,inf]',6);
+        round        
+---------------------
+ [1.123457,Infinity]
+(1 row)
+
+SELECT round(floatrange '[1.123456789,]',6);
+    round    
+-------------
+ [1.123457,)
+(1 row)
+
+SELECT intrange 'empty' << 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intrange '[3,5)' << 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5 << intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 << intrange '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intrange 'empty' >> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intrange '[3,5)' >> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 >> intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 >> intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intrange 'empty' &< 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intrange '[3,5)' &< 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5 &< intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 &< intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intrange 'empty' &> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intrange '[3,5)' &> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 &> intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 &> intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intrange 'empty' -|- 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intrange '[3,5)' -|- 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5 -|- intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 -|- intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatrange 'empty' << 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange '[3.5, 5.5]' << 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 << floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 << floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange 'empty' >> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange '[3.5, 5.5]' >> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 >> floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 >> floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange 'empty' &< 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange '[3.5, 5.5]' &< 5.5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5.5 &< floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 &< floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatrange 'empty' &> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange '[3.5, 5.5]' &> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 &> floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 &> floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatrange 'empty' -|- 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatrange '[3.5, 5.5]' -|- 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 -|- floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 -|- floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+

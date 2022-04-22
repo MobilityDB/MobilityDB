@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,34 +35,30 @@
 #ifndef __TNPOINT_SPATIALRELS_H__
 #define __TNPOINT_SPATIALRELS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
+/* MobilityDB */
+#include "general/temporal.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 
-extern Datum contains_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum spatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
+  Datum (*func)(Datum, Datum), bool invert);
+extern Datum spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  Datum (*func)(Datum, Datum), bool invert);
+extern int spatialrel_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum));
 
-extern Datum disjoint_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum disjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom,
+  Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
+extern Datum spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
 
-extern Datum intersects_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum intersects_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum touches_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum touches_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum touches_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum touches_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum dwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern int dwithin_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum param);
 
 /*****************************************************************************/
 

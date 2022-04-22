@@ -1,0 +1,333 @@
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ index | count 
+-------+-------
+     1 |    99
+     2 |    88
+     3 |    66
+(3 rows)
+
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ index | count 
+-------+-------
+     1 |    99
+     2 |    84
+     3 |    65
+(3 rows)
+
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ index | count 
+-------+-------
+     1 |    99
+     2 |    94
+     3 |    75
+(3 rows)
+
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ index | count 
+-------+-------
+     1 |    99
+     2 |    92
+     3 |    63
+(3 rows)
+
+SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ index | count 
+-------+-------
+     1 |    99
+(1 row)
+
+SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days', '2001-06-01') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ index | count 
+-------+-------
+     1 |    99
+(1 row)
+
+SELECT SUM(valueBucket(i, 2)) FROM tbl_int;
+ sum  
+------
+ 4828
+(1 row)
+
+SELECT SUM(valueBucket(i, 2, 1)) FROM tbl_int;
+ sum  
+------
+ 4825
+(1 row)
+
+SELECT SUM(valueBucket(f, 2.5)) FROM tbl_float;
+  sum   
+--------
+ 4712.5
+(1 row)
+
+SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
+ sum  
+------
+ 4706
+(1 row)
+
+SELECT rangeBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ rangebucket | count 
+-------------+-------
+ [74,76)     |     6
+ [2,4)       |     5
+ [24,26)     |     5
+(3 rows)
+
+SELECT rangeBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ rangebucket | count 
+-------------+-------
+ [73,75)     |     6
+ [1,3)       |     5
+ [21,23)     |     5
+(3 rows)
+
+SELECT rangeBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ rangebucket | count 
+-------------+-------
+ [15,17.5)   |     6
+ [45,47.5)   |     6
+ [10,12.5)   |     5
+(3 rows)
+
+SELECT rangeBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ rangebucket | count 
+-------------+-------
+ [14,16.5)   |     7
+ [9,11.5)    |     6
+ [46.5,49)   |     6
+(3 rows)
+
+SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+       timebucket       | count 
+------------------------+-------
+ 2001-06-11 00:00:00+00 |     6
+ 2001-09-17 00:00:00+00 |     6
+ 2001-03-26 00:00:00+00 |     5
+(3 rows)
+
+SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+       timebucket       | count 
+------------------------+-------
+ 2001-09-14 00:00:00+00 |     8
+ 2001-03-30 00:00:00+00 |     5
+ 2001-01-26 00:00:00+00 |     4
+(3 rows)
+
+SELECT periodBucket(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                   periodbucket                   | count 
+--------------------------------------------------+-------
+ [2001-05-11 00:00:00+00, 2001-05-13 00:00:00+00) |     3
+ [2001-09-16 00:00:00+00, 2001-09-18 00:00:00+00) |     3
+ [2001-10-06 00:00:00+00, 2001-10-08 00:00:00+00) |     3
+(3 rows)
+
+SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                   periodbucket                   | count 
+--------------------------------------------------+-------
+ [2001-03-31 00:00:00+00, 2001-04-02 00:00:00+00) |     3
+ [2001-04-18 00:00:00+00, 2001-04-20 00:00:00+00) |     3
+ [2001-05-10 00:00:00+00, 2001-05-12 00:00:00+00) |     3
+(3 rows)
+
+SELECT multidimGrid(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                             multidimgrid                              | count 
+-----------------------------------------------------------------------+-------
+ (1,"TBOX((10,2001-01-08 00:00:00+00),(12.5,2001-01-15 00:00:00+00))") |     2
+ (1,"TBOX((5,2001-05-28 00:00:00+00),(7.5,2001-06-04 00:00:00+00))")   |     2
+ (1,"TBOX((7.5,2001-12-03 00:00:00+00),(10,2001-12-10 00:00:00+00))")  |     2
+(3 rows)
+
+SELECT multidimGrid(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                             multidimgrid                              | count 
+-----------------------------------------------------------------------+-------
+ (1,"TBOX((34,2001-11-26 00:00:00+00),(36.5,2001-12-03 00:00:00+00))") |     2
+ (1,"TBOX((6.5,2001-12-03 00:00:00+00),(9,2001-12-10 00:00:00+00))")   |     2
+ (2,"TBOX((36.5,2001-11-26 00:00:00+00),(39,2001-12-03 00:00:00+00))") |     2
+(3 rows)
+
+SELECT multidimGrid(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                             multidimgrid                              | count 
+-----------------------------------------------------------------------+-------
+ (1,"TBOX((11.5,2001-01-12 00:00:00+00),(14,2001-01-19 00:00:00+00))") |     2
+ (1,"TBOX((34,2001-11-23 00:00:00+00),(36.5,2001-11-30 00:00:00+00))") |     2
+ (1,"TBOX((6.5,2001-11-30 00:00:00+00),(9,2001-12-07 00:00:00+00))")   |     2
+(3 rows)
+
+SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week')) FROM
+(SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                              extent                               
+-------------------------------------------------------------------
+ TBOX((12.5,2001-01-22 00:00:00+00),(97.5,2001-12-10 00:00:00+00))
+(1 row)
+
+SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
+(SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                             extent                              
+-----------------------------------------------------------------
+ TBOX((11,2001-01-22 00:00:00+00),(98.5,2001-12-10 00:00:00+00))
+(1 row)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     48 |    20
+     64 |    18
+     44 |    17
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2, 1) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     25 |    19
+     41 |    18
+     49 |    18
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+   67.5 |    50
+     55 |    48
+     65 |    48
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+   66.5 |    48
+     69 |    48
+     24 |    47
+(3 rows)
+
+WITH temp1 AS (
+  SELECT k, temp, (tb).tnumber AS slice
+  FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat_big) t ),
+temp2 AS (
+  SELECT k, temp, merge(slice ORDER BY slice) AS merge
+  FROM temp1 GROUP BY k, temp )
+SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+ k 
+---
+(0 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-02-06 22:00:00+00 |     2
+ 2001-02-17 16:00:00+00 |     2
+ 2001-02-28 18:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-02-06 22:00:00+00 |     2
+ 2001-02-17 16:00:00+00 |     2
+ 2001-02-28 18:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-06-29 18:00:00+00 |     3
+ 2001-02-04 10:00:00+00 |     2
+ 2001-02-04 12:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-06-29 18:00:00+00 |     3
+ 2001-02-04 10:00:00+00 |     2
+ 2001-02-04 12:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-01-12 12:00:00+00 |     2
+ 2001-01-27 02:00:00+00 |     2
+ 2001-01-30 22:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-01-12 12:00:00+00 |     2
+ 2001-01-27 02:00:00+00 |     2
+ 2001-01-30 22:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-12-02 08:00:00+00 |     3
+ 2001-12-02 10:00:00+00 |     3
+ 2001-01-05 14:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-12-02 08:00:00+00 |     3
+ 2001-12-02 10:00:00+00 |     3
+ 2001-01-05 14:00:00+00 |     2
+(3 rows)
+
+WITH temp1 AS (
+  SELECT k, temp, (tb).temp AS slice
+  FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat_big) t ),
+temp2 AS (
+  SELECT k, temp, merge(slice ORDER BY slice) AS merge
+  FROM temp1 GROUP BY k, temp )
+SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+ k 
+---
+(0 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     48 |    20
+     64 |    18
+     44 |    17
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days', 1, '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     25 |    19
+     41 |    18
+     49 |    18
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+   67.5 |    53
+     55 |    51
+     65 |    51
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days', 1.5, '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+   66.5 |    49
+     69 |    49
+     24 |    48
+(3 rows)
+
+WITH temp1 AS (
+  SELECT k, temp, (tb).tnumber AS slice
+  FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat_big) t ),
+temp2 AS (
+  SELECT k, temp, merge(slice ORDER BY slice) AS merge
+  FROM temp1 GROUP BY k, temp )
+SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+ k 
+---
+(0 rows)
+

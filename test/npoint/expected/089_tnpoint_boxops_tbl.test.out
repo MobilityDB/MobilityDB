@@ -1,0 +1,750 @@
+DROP INDEX IF EXISTS test_tnpoint_rtree_idx;
+NOTICE:  index "test_tnpoint_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS test_tnpoint_quadtree_idx;
+NOTICE:  index "test_tnpoint_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP TABLE if exists test_tnpoint_boundboxops;
+NOTICE:  table "test_tnpoint_boundboxops" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_tnpoint_boundboxops(
+  op char(3),
+  leftarg text,
+  rightarg text,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'geometry', 'tnpoint', COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) && temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'geometry', 'tnpoint', COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) @> temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'geometry', 'tnpoint', COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) <@ temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'geometry', 'tnpoint', COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) ~= temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'geometry', 'tnpoint', COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) -|- temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t && temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t @> temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t <@ temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t ~= temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -|- temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts && temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts @> temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <@ temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts ~= temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts -|- temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p && temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p @> temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <@ temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p ~= temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p -|- temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps && temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps @> temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <@ temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps ~= temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps -|- temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'stbox', 'tnpoint', COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) && temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'stbox', 'tnpoint', COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) @> temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'stbox', 'tnpoint', COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) <@ temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'stbox', 'tnpoint', COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) ~= temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'stbox', 'tnpoint', COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) -|- temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'geometry', COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp &&  ST_SetSRID(g, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'geometry', COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp @>  ST_SetSRID(g, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'geometry', COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp <@  ST_SetSRID(g, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'geometry', COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp ~=  ST_SetSRID(g, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'geometry', COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp -|-  ST_SetSRID(g, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp && t;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp @> t;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp <@ t;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp ~= t;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp -|- t;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp && ts;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp @> ts;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <@ ts;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp ~= ts;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp -|- ts;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp && p;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp @> p;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <@ p;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp ~= p;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp -|- p;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp && ps;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp @> ps;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <@ ps;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp ~= ps;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp -|- ps;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'stbox', COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp && SetSRID(b, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'stbox', COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp @> SetSRID(b, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'stbox', COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp <@ SetSRID(b, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'stbox', COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp ~= SetSRID(b, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'stbox', COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp -|- SetSRID(b, 5676);
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp && t2.temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp @> t2.temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <@ t2.temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp ~= t2.temp;
+INSERT 0 1
+INSERT INTO test_tnpoint_boundboxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp -|- t2.temp;
+INSERT 0 1
+CREATE INDEX test_tnpoint_rtree_idx ON tbl_tnpoint USING GIST(temp);
+CREATE INDEX
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) && temp )
+WHERE op = '&&' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) @> temp )
+WHERE op = '@>' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) <@ temp )
+WHERE op = '<@' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) ~= temp )
+WHERE op = '~=' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) -|- temp )
+WHERE op = '-|-' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t && temp )
+WHERE op = '&&' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t @> temp )
+WHERE op = '@>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t <@ temp )
+WHERE op = '<@' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t ~= temp )
+WHERE op = '~=' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -|- temp )
+WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts && temp )
+WHERE op = '&&' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts @> temp )
+WHERE op = '@>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <@ temp )
+WHERE op = '<@' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts ~= temp )
+WHERE op = '~=' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts -|- temp )
+WHERE op = '-|-' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p && temp )
+WHERE op = '&&' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p @> temp )
+WHERE op = '@>' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <@ temp )
+WHERE op = '<@' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p ~= temp )
+WHERE op = '~=' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p -|- temp )
+WHERE op = '-|-' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps && temp )
+WHERE op = '&&' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps @> temp )
+WHERE op = '@>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <@ temp )
+WHERE op = '<@' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps ~= temp )
+WHERE op = '~=' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps -|- temp )
+WHERE op = '-|-' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) && temp )
+WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) @> temp )
+WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) <@ temp )
+WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) ~= temp )
+WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) -|- temp )
+WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp && ST_SetSRID(g, 5676) )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp @> ST_SetSRID(g, 5676) )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp <@ ST_SetSRID(g, 5676) )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp ~= ST_SetSRID(g, 5676) )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp -|- ST_SetSRID(g, 5676) )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp && p )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp @> p )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <@ p )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp ~= p )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+DROP INDEX test_tnpoint_rtree_idx;
+DROP INDEX
+CREATE INDEX test_tnpoint_quadtree_idx ON tbl_tnpoint USING SPGIST(temp);
+CREATE INDEX
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) && temp )
+WHERE op = '&&' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) @> temp )
+WHERE op = '@>' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) <@ temp )
+WHERE op = '<@' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) ~= temp )
+WHERE op = '~=' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) -|- temp )
+WHERE op = '-|-' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t && temp )
+WHERE op = '&&' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t @> temp )
+WHERE op = '@>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t <@ temp )
+WHERE op = '<@' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t ~= temp )
+WHERE op = '~=' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -|- temp )
+WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts && temp )
+WHERE op = '&&' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts @> temp )
+WHERE op = '@>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <@ temp )
+WHERE op = '<@' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts ~= temp )
+WHERE op = '~=' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts -|- temp )
+WHERE op = '-|-' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p && temp )
+WHERE op = '&&' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p @> temp )
+WHERE op = '@>' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <@ temp )
+WHERE op = '<@' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p ~= temp )
+WHERE op = '~=' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p -|- temp )
+WHERE op = '-|-' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps && temp )
+WHERE op = '&&' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps @> temp )
+WHERE op = '@>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <@ temp )
+WHERE op = '<@' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps ~= temp )
+WHERE op = '~=' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps -|- temp )
+WHERE op = '-|-' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) && temp )
+WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) @> temp )
+WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) <@ temp )
+WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) ~= temp )
+WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tnpoint WHERE SetSRID(b, 5676) -|- temp )
+WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp && ST_SetSRID(g, 5676) )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp @> ST_SetSRID(g, 5676) )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp <@ ST_SetSRID(g, 5676) )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp ~= ST_SetSRID(g, 5676) )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp -|- ST_SetSRID(g, 5676) )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp && p )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp @> p )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <@ p )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp ~= p )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'stbox';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_tnpoint_boundboxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE 1
+SELECT * FROM test_tnpoint_boundboxops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
+ORDER BY op, leftarg, rightarg;
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx 
+----+---------+----------+--------+-----------+--------------
+(0 rows)
+
+DROP INDEX test_tnpoint_quadtree_idx;
+DROP INDEX
+DROP TABLE test_tnpoint_boundboxops;
+DROP TABLE

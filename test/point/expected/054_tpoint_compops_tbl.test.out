@@ -1,0 +1,96 @@
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   152
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   148
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   152
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   148
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
