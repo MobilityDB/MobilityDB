@@ -70,7 +70,7 @@ temporal_type(CachedType temptype)
 }
 
 /**
- * Ensures that the base type is supported by MobilityDB
+ * Ensure that the base type is supported by MobilityDB
  */
 void
 ensure_temporal_type(CachedType temptype)
@@ -81,7 +81,7 @@ ensure_temporal_type(CachedType temptype)
 }
 
 /**
- * Ensures that the base type is supported by MobilityDB
+ * Ensure that the base type is supported by MobilityDB
  */
 void
 ensure_temporal_basetype(CachedType basetype)
@@ -110,7 +110,7 @@ temptype_continuous(CachedType temptype)
 }
 
 /**
- * Ensures that the temporal type is continuous
+ * Ensure that the temporal type is continuous
  */
 void
 ensure_temptype_continuous(CachedType temptype)
@@ -232,7 +232,7 @@ tnumber_rangetype(CachedType rangetype)
 }
 
 /**
- * Ensures that the type is a range type
+ * Ensure that the type is a range type
  */
 void
 ensure_tnumber_rangetype(CachedType rangetype)
@@ -296,7 +296,7 @@ tgeo_type(CachedType temptype)
 }
 
 /**
- * Ensures that the type is a point base type supported by MobilityDB
+ * Ensure that the type is a point base type supported by MobilityDB
  */
 void
 ensure_tgeo_type(CachedType temptype)
@@ -327,7 +327,7 @@ datum_eq(Datum l, Datum r, CachedType type)
 bool
 datum_ne(Datum l, Datum r, CachedType type)
 {
-  return !datum_eq2(l, r, type, type);
+  return ! datum_eq2(l, r, type, type);
 }
 
 /**

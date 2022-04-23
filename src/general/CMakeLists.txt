@@ -36,6 +36,8 @@ add_library(general OBJECT
   periodset.c
   rangetypes_ext.c
   ${skiplist.c}
+  span.c
+  span_ops.c
   tbool_boolops.c
   tbox.c
   tempcache.c

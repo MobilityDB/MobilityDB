@@ -953,7 +953,7 @@ tinstant_hash(const TInstant *inst)
   uint32 time_hash;
 
   Datum value = tinstant_value(inst);
-  /* Apply the hash function according to the subtype */
+  /* Apply the hash function according to the base type */
   uint32 value_hash = 0;
   ensure_temporal_type(inst->temptype);
   if (inst->temptype == T_TBOOL)

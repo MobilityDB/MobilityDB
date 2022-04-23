@@ -56,8 +56,10 @@ typedef enum
   T_DOUBLE4,
   T_FLOAT8,
   T_FLOATRANGE,
+  T_FLOATSPAN,
   T_INT4,
   T_INTRANGE,
+  T_INTSPAN,
   T_PERIOD,
   T_PERIODSET,
   T_STBOX,
@@ -69,6 +71,7 @@ typedef enum
   T_TEXT,
   T_TFLOAT,
   T_TIMESTAMPSET,
+  T_TIMESTAMPSPAN,
   T_TIMESTAMPTZ,
   T_TINT,
   T_TSTZRANGE,
@@ -146,15 +149,25 @@ typedef struct
 } temptype_cache_struct;
 #endif
 
+typedef struct
+{
+  CachedType spantype;    /**< Enum value of the span type */
+  CachedType basetype;    /**< Enum value of the base type */
+  bool basecont;          /**< True if the base type is continuous */
+} spantype_cache_struct;
+
 #define TEMPTYPE_CACHE_MAX_LEN   16
 
 /*****************************************************************************/
 
 /* Catalog functions */
 
+extern CachedType temptype_basetype(CachedType temptype);
+extern CachedType spantype_basetype(CachedType spantype);
+extern CachedType basetype_spantype(CachedType basetype);
+
 extern Oid temptype_basetypid(Oid temptypid);
 extern Oid temptypid_basetypid(Oid temptypid);
-extern CachedType temptype_basetype(CachedType temptype);
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
 extern CachedType oid_type(Oid typid);

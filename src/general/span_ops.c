@@ -1,0 +1,1291 @@
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ *
+ *****************************************************************************/
+
+/**
+ * @file time_ops.c
+ * @brief Operators for time types.
+ */
+
+#include "general/span_ops.h"
+
+/* PostgreSQL */
+#include <assert.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+/* MobilityDB */
+#include "general/span.h"
+#include "general/periodset.h"
+#include "general/timestampset.h"
+#include "general/temporal_util.h"
+
+typedef enum
+{
+  UNION,
+  INTER,
+  MINUS
+} SetOper;
+
+/*****************************************************************************/
+
+/**
+ * Return the minimum value of the two span base values
+ */
+Datum
+span_elem_min(Datum l, Datum r, CachedType type)
+{
+  ensure_span_basetype(type);
+  if (type == T_INT4)
+    return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
+  if (type == T_FLOAT8)
+    return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
+  if (type == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
+      DatumGetTimestampTz(r)));
+  elog(ERROR, "unknown span_elem_min function for span base type: %d", type);
+}
+
+/**
+ * Return the minimum value of the two span base values
+ */
+Datum
+span_elem_max(Datum l, Datum r, CachedType type)
+{
+  ensure_span_basetype(type);
+  if (type == T_INT4)
+    return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
+  if (type == T_FLOAT8)
+    return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
+  if (type == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
+      DatumGetTimestampTz(r)));
+  elog(ERROR, "unknown span_elem_max function for span base type: %d", type);
+}
+
+/*****************************************************************************/
+/* contains? */
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the first span value contains the second one.
+ */
+bool
+contains_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  int cmp = span_elem_cmp(s->lower, d, s->basetype, basetype);
+  if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
+    return false;
+
+  cmp = span_elem_cmp(s->upper, d, s->basetype, basetype);
+  if (cmp < 0 || (cmp == 0 && ! s->upper_inc))
+    return false;
+
+  return true;
+}
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the first span value contains the second one.
+ */
+bool
+contains_span_span(const Span *s1, const Span *s2)
+{
+  int c1 = span_elem_cmp(s1->lower, s2->lower, s1->basetype, s2->basetype);
+  int c2 = span_elem_cmp(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  if (
+    (c1 < 0 || (c1 == 0 && (s1->lower_inc || ! s2->lower_inc))) &&
+    (c2 > 0 || (c2 == 0 && (s1->upper_inc || ! s2->upper_inc)))
+  )
+    return true;
+  return false;
+}
+
+/*****************************************************************************/
+/* contained? */
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the first span value is contained by the second one
+ */
+bool
+contained_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  return contains_span_elem(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the first span value is contained by the second one
+ */
+bool
+contained_span_span(const Span *s1, const Span *s2)
+{
+  return contains_span_span(s2, s1);
+}
+
+/*****************************************************************************/
+/* overlaps? */
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the two span values overlap.
+ */
+bool
+overlaps_span_span(const Span *s1, const Span *s2)
+{
+  int c1 = span_elem_cmp(s1->lower, s2->upper, s1->basetype, s2->basetype);
+  int c2 = span_elem_cmp(s2->lower, s1->upper, s2->basetype, s1->basetype);
+  if (
+    (c1 < 0 || (c1 == 0 && s1->lower_inc && s2->upper_inc)) &&
+    (c2 < 0 || (c2 == 0 && s2->lower_inc && s1->upper_inc))
+  )
+    return true;
+  return false;
+}
+
+/*****************************************************************************/
+/* adjacent to (but not overlapping)? */
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the two span values are adjacent.
+ */
+bool
+adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  /*
+   * A timestamp A and a period C..D are adjacent if and only if
+   * A is adjacent to C, or D is adjacent to A.
+   */
+  return (datum_eq2(d, s->lower, basetype, s->basetype) && ! s->lower_inc) ||
+    (datum_eq2(s->upper, d, s->basetype, basetype) && ! s->upper_inc);
+}
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the two span values are adjacent
+ */
+bool
+adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  return adjacent_elem_span(d, basetype, s);
+}
+
+/**
+ * @ingroup libmeos_span_topo
+ * @brief Return true if the two span values are adjacent.
+ */
+bool
+adjacent_span_span(const Span *s1, const Span *s2)
+{
+  /*
+   * Two periods A..B and C..D are adjacent if and only if
+   * B is adjacent to C, or D is adjacent to A.
+   */
+  return (s1->upper == s2->lower && s1->upper_inc != s2->lower_inc) ||
+       (s2->upper == s1->lower && s2->upper_inc != s1->lower_inc);
+}
+
+/*****************************************************************************/
+/* strictly left of? */
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is strictly left the second one.
+ */
+bool
+left_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  int cmp = span_elem_cmp(d, s->lower, basetype, s->basetype);
+  return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is strictly left the second one.
+ */
+bool
+left_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+
+  int cmp = span_elem_cmp(s->upper, d, s->basetype, basetype);
+  return (cmp < 0 || (cmp == 0 && ! s->upper_inc));
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is strictly left the second one.
+ */
+bool
+left_span_span(const Span *s1, const Span *s2)
+{
+  int cmp = span_elem_cmp(s1->upper, s2->lower, s1->basetype, s2->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
+}
+
+/*****************************************************************************/
+/* strictly right of? */
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is strictly right the second one.
+ */
+bool
+right_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  int cmp = span_elem_cmp(d, s->upper, basetype, s->basetype);
+  return (cmp > 0 || (cmp == 0 && ! s->upper_inc));
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is strictly right the
+ * second one.
+ */
+bool
+right_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  int cmp = span_elem_cmp(d, s->lower, basetype, s->basetype);
+  return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is strictly right the second one.
+ */
+bool
+right_span_span(const Span *s1, const Span *s2)
+{
+  int cmp = span_elem_cmp(s2->upper, s1->lower, s2->basetype, s1->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s2->upper_inc || ! s1->lower_inc)));
+}
+
+/*****************************************************************************/
+/* does not extend to right of? */
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is not right the second one.
+ */
+bool
+overleft_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  int cmp = span_elem_cmp(d, s->upper, basetype, s->basetype);
+  return (cmp < 0 || (cmp == 0 && s->upper_inc));
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is not right the second one.
+ */
+bool
+overleft_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  return datum_le2(s->upper, d, s->basetype, basetype);
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is not right the second one.
+ */
+bool
+overleft_span_span(const Span *s1, const Span *s2)
+{
+  int cmp = span_elem_cmp(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
+}
+
+/*****************************************************************************/
+/* does not extend to left of? */
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is not left the second one.
+ */
+bool
+overright_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  int cmp = span_elem_cmp(s->lower, d, s->basetype, basetype);
+  return (cmp < 0 || (cmp == 0 && s->lower_inc));
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is not left the second one.
+ */
+bool
+overright_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  return datum_le2(d, s->lower, basetype, s->basetype);
+}
+
+/**
+ * @ingroup libmeos_span_pos
+ * @brief Return true if the first span value is not left the second one.
+ */
+bool
+overright_span_span(const Span *s1, const Span *s2)
+{
+  int cmp = span_elem_cmp(s2->lower, s1->lower, s1->basetype, s2->basetype);
+  return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
+}
+
+/*****************************************************************************
+ * Set union
+ *****************************************************************************/
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * Return the union of the two span values
+ // */
+// TimestampSet *
+// union_elem_elem(Datum d1, Datum d2, CachedType basetype1, CachedType basetype2)
+// {
+  // TimestampSet *result;
+  // int cmp = span_elem_cmp(d1, d2, basetype1, basetype2);
+  // if (cmp == 0)
+    // result = timestampset_make(&d1, 1);
+  // else
+  // {
+    // Datum times[2];
+    // if (cmp < 0)
+    // {
+      // times[0] = d1;
+      // times[1] = d2;
+    // }
+    // else
+    // {
+      // times[0] = d2;
+      // times[1] = d1;
+    // }
+    // result = timestampset_make(times, 2);
+  // }
+  // return result;
+// }
+
+/**
+ * @ingroup libmeos_span_set
+ * @brief Return the union of the two span values
+ */
+Span *
+union_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  return union_span_elem(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_span_set
+ * @brief Return the union of the two span values
+ */
+Span *
+union_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  Span s1;
+  span_set(d, d, true, true, basetype, &s1);
+  Span *result = union_span_span(s, &s1);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_span_set
+ * @brief Return the union of the two span values.
+ */
+Span *
+union_span_span(const Span *s1, const Span *s2)
+{
+  /* If the periods do not overlap */
+  if (! overlaps_span_span(s1, s2) && ! adjacent_span_span(s1, s2))
+    elog(ERROR, "The union of the two spans would not be contiguous");
+
+  /* Compute the union of the overlapping spans */
+  Span *result = span_copy(s1);
+  span_expand(s2, result);
+  return result;
+}
+
+/*****************************************************************************
+ * Set intersection
+ *****************************************************************************/
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * @brief Return the intersection of the two span values
+ // */
+// bool
+// intersection_elem_elem(Datum d1, Datum d2, Datum *result)
+// {
+  // if (d1 != d2)
+    // return false;
+  // *result  = d1;
+  // return true;
+// }
+
+/**
+ * @ingroup libmeos_span_set
+ * @brief Return the intersection of the two span values
+ */
+bool
+intersection_elem_span(Datum d, CachedType basetype, const Span *s,
+  Datum *result)
+{
+  if (! contains_span_elem(s, d, basetype))
+    return false;
+  *result  = d;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_span_set
+ * @brief Return the intersection of the two span values
+ */
+bool
+intersection_span_elem(const Span *s, Datum d, CachedType basetype,
+  Datum *result)
+{
+  return intersection_elem_span(d, basetype, s, result);
+}
+
+/**
+ * Set the last argument to the intersection of the two periods
+ *
+ * @note This function equivalent is to intersection_span_period
+ * but avoids memory allocation
+ */
+bool
+inter_span_span(const Span *s1, const Span *s2, Span *result)
+{
+  assert(s1->spantype == s2->spantype);
+  /* Bounding box test */
+  if (! overlaps_span_span(s1, s2))
+    return false;
+
+  Datum lower = span_elem_max(s1->lower, s2->lower, s1->basetype);
+  Datum upper = span_elem_min(s1->upper, s2->upper, s1->basetype);
+  bool lower_inc = s1->lower == s2->lower ? s1->lower_inc && s2->lower_inc :
+    ( lower == s1->lower ? s1->lower_inc : s2->lower_inc );
+  bool upper_inc = s1->upper == s2->upper ? s1->upper_inc && s2->upper_inc :
+    ( upper == s1->upper ? s1->upper_inc : s2->upper_inc );
+  span_set(lower, upper, lower_inc, upper_inc, s1->basetype, result);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_span_set
+ * @brief Return the intersection of the two span values.
+ */
+Span *
+intersection_span_span(const Span *s1, const Span *s2)
+{
+  Span *result = palloc0(sizeof(Span));
+  /* We are sure that there is an intersection */
+  inter_span_span(s1, s2, result);
+  return result;
+}
+
+/*****************************************************************************
+ * Set difference
+ * The functions produce new results that must be freed right
+ *****************************************************************************/
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * @brief Return the difference of the two span values
+ // */
+// bool
+// minus_elem_span(Datum d, CachedType basetype, const Span *s, Datum *result)
+// {
+  // if (contains_span_elem(s, d, basetype))
+    // return false;
+  // *result = d;
+  // return true;
+// }
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * @brief Return the difference of the two span values.
+ // */
+// int
+// minus_span_elem1(Span **result, const Span *s, Datum d, CachedType basetype)
+// {
+  // if (! contains_span_elem(s, d))
+  // {
+    // result[0] = span_copy(s);
+    // return 1;
+  // }
+
+  // if (s->lower == d && s->upper == d)
+    // return 0;
+
+  // if (s->lower == d)
+  // {
+    // result[0] = span_make(s->lower, s->upper, false, s->upper_inc, s->spantype);
+    // return 1;
+  // }
+
+  // if (s->upper == d)
+  // {
+    // result[0] = span_make(s->lower, s->upper, s->lower_inc, false, s->spantype);
+    // return 1;
+  // }
+
+  // result[0] = span_make(s->lower, d, s->lower_inc, false, s->spantype);
+  // result[1] = span_make(d, s->upper, false, s->upper_inc, s->spantype);
+  // return 2;
+// }
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * @brief Return the difference of the two span values.
+ // */
+// Span *
+// minus_span_elem(const Span *s, Datum d, CachedType basetype)
+// {
+  // Span *periods[2];
+  // int count = minus_span_elem1(periods, s, d);
+  // if (count == 0)
+    // return NULL;
+  // Span *result = periodset_make((const Span **) periods, count,
+    // NORMALIZE_NO);
+  // for (int i = 0; i < count; i++)
+    // pfree(periods[i]);
+  // return result;
+// }
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * @brief Return the difference of the two span values.
+ // */
+// int
+// minus_span_elem1(Span **result, const Span *s1, const Span *s2)
+// {
+  // PeriodBound lower1, lower2, upper1, upper2;
+
+  // span_deserialize(s1, &lower1, &upper1);
+  // span_deserialize(s2, &lower2, &upper2);
+
+  // int cmp_l1l2 = span_bound_cmp(&lower1, &lower2);
+  // int cmp_l1u2 = span_bound_cmp(&lower1, &upper2);
+  // int cmp_u1l2 = span_bound_cmp(&upper1, &lower2);
+  // int cmp_u1u2 = span_bound_cmp(&upper1, &upper2);
+
+  // /* Result is empty
+   // * s1         |----|
+   // * s2      |----------|
+   // */
+  // if (cmp_l1l2 >= 0 && cmp_u1u2 <= 0)
+    // return 0;
+
+  // /* Result is a periodset
+   // * s1      |----------|
+   // * s2         |----|
+   // * result  |--|    |--|
+   // */
+  // if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
+  // {
+    // result[0] = span_make(s1->lower, s2->lower, s1->lower_inc,
+      // !(s2->lower_inc), s1->spantype);
+    // result[1] = span_make(s2->upper, s1->upper, !(s2->upper_inc),
+      // s1->upper_inc, s1->spantype);
+    // return 2;
+  // }
+
+  // /* Result is a period */
+  // /*
+   // * s1         |----|
+   // * s2  |----|
+   // * s2                 |----|
+   // * result      |----|
+   // */
+  // if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
+    // result[0] = span_copy(s1);
+
+  // /*
+   // * s1           |-----|
+   // * s2               |----|
+   // * result       |---|
+   // */
+  // else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
+    // result[0] = span_make(s1->lower, s2->lower, s1->lower_inc,
+      // !(s2->lower_inc), s->spantype);
+  // /*
+   // * s1         |-----|
+   // * s2      |----|
+   // * result       |---|
+   // */
+  // else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
+    // result[0] = span_make(s2->upper, s1->upper, !(s2->upper_inc),
+      // s1->upper_inc, s->spantype);
+  // return 1;
+// }
+
+// /**
+ // * @ingroup libmeos_span_set
+ // * @brief Return the difference of the two span values.
+ // */
+// Span *
+// minus_span_span(const Span *s1, const Span *s2)
+// {
+  // Span *periods[2];
+  // int count = minus_span_span1(periods, s1, s2);
+  // if (count == 0)
+    // return NULL;
+  // Span *result = span_make((const Span **) periods, count,
+    // NORMALIZE_NO);
+  // for (int i = 0; i < count; i++)
+    // pfree(periods[i]);
+  // return result;
+// }
+
+/******************************************************************************
+ * Distance functions returning a double representing the number of seconds
+ ******************************************************************************/
+
+/**
+ * @ingroup libmeos_span_dist
+ * @brief Return the distance in seconds of the two span values
+ */
+double
+distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
+{
+  ensure_span_basetype(typel);
+  if (typel != typer)
+    ensure_span_basetype(typer);
+  if (typel == T_INT4 && typer == T_INT4)
+    return fabs((double) DatumGetInt32(l) - (double) DatumGetInt32(r));
+  if (typel == T_INT4 && typer == T_FLOAT8)
+    return fabs((double) DatumGetInt32(l) - DatumGetFloat8(r));
+  if (typel == T_FLOAT8 && typer == T_INT4)
+    return fabs(DatumGetFloat8(l) - (double) DatumGetInt32(r));
+  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+    return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+    return fabs((double)(DatumGetTimestampTz(l) - DatumGetTimestampTz(r)));
+  elog(ERROR, "unknown distance_elem_elem function for span base type: %d",
+    typel);
+}
+
+/**
+ * @ingroup libmeos_span_dist
+ * @brief Return the distance in seconds of the two span values.
+ */
+double
+distance_elem_span(Datum d, CachedType basetype, const Span *s)
+{
+  return distance_span_elem(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_span_dist
+ * @brief Return the distance in seconds between the period and the timestamp.
+ */
+double
+distance_span_elem(const Span *s, Datum d, CachedType basetype)
+{
+  /* If the periods intersect return 0 */
+  if (contains_span_elem(s, d, basetype))
+    return 0.0;
+
+  /* If the period is to the left of the timestamp return the distance
+   * between the upper bound of the period and the timestamp */
+  if (datum_gt2(s->lower, d, s->basetype, basetype))
+    return distance_elem_elem(s->lower, d, s->basetype, basetype);
+
+  /* If the first period is to the right of the seconde return the distance
+   * between the upper bound of the second and lower bound of the first */
+  return distance_elem_elem(d, s->upper, basetype, s->basetype);
+}
+
+/**
+ * @ingroup libmeos_span_dist
+ * @brief Return the distance in seconds between two periods.
+ */
+double
+distance_span_span(const Span *s1, const Span *s2)
+{
+  /* If the periods intersect return 0 */
+  if (overlaps_span_span(s1, s2))
+    return 0.0;
+
+  /* If the first period is to the left of the second return the distance
+   * between the upper bound of the first and lower bound of the second */
+  if (s2->lower >= s1->upper)
+    return ((float8) s2->lower - (float8) s1->upper) / USECS_PER_SEC;
+
+  /* If the first period is to the right of the seconde return the distance
+   * between the upper bound of the second and lower bound of the first */
+    return ((float8) s1->lower - (float8) s2->upper) / USECS_PER_SEC;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************/
+/* contains? */
+
+PG_FUNCTION_INFO_V1(Contains_span_elem);
+/**
+ * Return true if the first span value contains the second one
+ */
+PGDLLEXPORT Datum
+Contains_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_BOOL(contains_span_elem(s, d, basetype));
+}
+
+
+PG_FUNCTION_INFO_V1(Contains_span_span);
+/**
+ * Return true if the first span value contains the second one
+ */
+PGDLLEXPORT Datum
+Contains_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(contains_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* contained? */
+
+PG_FUNCTION_INFO_V1(Contained_elem_span);
+/**
+ * Return true if the first span value is contained by the second one
+ */
+PGDLLEXPORT Datum
+Contained_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_BOOL(contained_elem_span(d, basetype, s));
+}
+
+PG_FUNCTION_INFO_V1(Contained_span_span);
+/**
+ * Return true if the first span value is contained by the second one
+ */
+PGDLLEXPORT Datum
+Contained_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(contained_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* overlaps? */
+
+PG_FUNCTION_INFO_V1(Overlaps_span_span);
+/**
+ * Return true if the two span values overlap
+ */
+PGDLLEXPORT Datum
+Overlaps_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overlaps_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* adjacent to (but not overlapping)? */
+
+PG_FUNCTION_INFO_V1(Adjacent_elem_span);
+/**
+ * Return true if the two span values are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_BOOL(adjacent_elem_span(d, basetype, s));
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_span_elem);
+/**
+ * Return true if the two span values are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_BOOL(adjacent_span_elem(s, d, basetype));
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_span_span);
+/**
+ * Return true if the two span values are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(adjacent_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* strictly left of? */
+
+PG_FUNCTION_INFO_V1(Left_elem_span);
+/**
+ * Return true if the first span value is strictly left the second one
+ */
+PGDLLEXPORT Datum
+Left_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_BOOL(left_elem_span(d, basetype, s));
+}
+
+PG_FUNCTION_INFO_V1(Left_span_elem);
+/**
+ * Return true if the first span value is strictly left the second one
+ */
+PGDLLEXPORT Datum
+Left_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_BOOL(left_span_elem(s, d, basetype));
+}
+
+PG_FUNCTION_INFO_V1(Left_span_span);
+/**
+ * Return true if the first span value is strictly left the second one
+ */
+PGDLLEXPORT Datum
+Left_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(left_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* strictly right of? */
+
+PG_FUNCTION_INFO_V1(Right_elem_span);
+/**
+ * Return true if the first span value is strictly right the second one
+ */
+PGDLLEXPORT Datum
+Right_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_BOOL(right_elem_span(d, basetype, s));
+}
+
+PG_FUNCTION_INFO_V1(Right_span_elem);
+/**
+ * Return true if the first span value is strictly right the second one
+ */
+PGDLLEXPORT Datum
+Right_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_BOOL(right_span_elem(s, d, basetype));
+}
+
+PG_FUNCTION_INFO_V1(Right_span_span);
+/**
+ * Return true if the first span value is strictly right the second one
+ */
+PGDLLEXPORT Datum
+Right_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(right_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* does not extend to right of? */
+
+PG_FUNCTION_INFO_V1(Overleft_elem_span);
+/**
+ * Return true if the first span value is not right the second one
+ */
+PGDLLEXPORT Datum
+Overleft_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_BOOL(overleft_elem_span(d, basetype, s));
+}
+
+PG_FUNCTION_INFO_V1(Overleft_span_elem);
+/**
+ * Return true if the first span value is not right the second one
+ */
+PGDLLEXPORT Datum
+Overleft_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_BOOL(overleft_span_elem(s, d, basetype));
+}
+
+PG_FUNCTION_INFO_V1(Overleft_span_span);
+/**
+ * Return true if the first span value is not right the second one
+ */
+PGDLLEXPORT Datum
+Overleft_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overleft_span_span(s1, s2));
+}
+
+/*****************************************************************************/
+/* does not extend to left of? */
+
+PG_FUNCTION_INFO_V1(Overright_elem_span);
+/**
+ * Return true if the first span value is not left the second one
+ */
+PGDLLEXPORT Datum
+Overright_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_BOOL(overright_elem_span(d, basetype, s));
+}
+
+PG_FUNCTION_INFO_V1(Overright_span_elem);
+/**
+ * Return true if the first span value is not left the second one
+ */
+PGDLLEXPORT Datum
+Overright_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_BOOL(overright_span_elem(s, d, basetype));
+}
+
+PG_FUNCTION_INFO_V1(Overright_span_span);
+/**
+ * Return true if the first span value is not left the second one
+ */
+PGDLLEXPORT Datum
+Overright_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overright_span_span(s1, s2));
+}
+
+/*****************************************************************************
+ * Set union
+ *****************************************************************************/
+
+// PG_FUNCTION_INFO_V1(Union_elem_elem);
+// /**
+ // * Return the union of the two span values
+ // */
+// PGDLLEXPORT Datum
+// Union_elem_elem(PG_FUNCTION_ARGS)
+// {
+  // Datum d1 = PG_GETARG_DATUM(0);
+  // Datum d2 = PG_GETARG_DATUM(1);
+  // CachedType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  // CachedType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  // TimestampSet *result = union_elem_elem(d1, d2, basetype1, basetype2);
+  // PG_RETURN_POINTER(result);
+// }
+
+PG_FUNCTION_INFO_V1(Union_elem_span);
+/**
+ * Return the union of the two span values
+ */
+PGDLLEXPORT Datum
+Union_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  Span *result = union_elem_span(d, basetype, s);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Union_span_elem);
+/**
+ * Return the union of the two span values
+ */
+PGDLLEXPORT Datum
+Union_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  Span *result = union_span_elem(s, d, basetype);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Union_span_span);
+/**
+ * Return the union of the two span values
+ */
+PGDLLEXPORT Datum
+Union_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  PG_RETURN_POINTER(union_span_span(s1, s2));
+}
+
+/*****************************************************************************
+ * Set intersection
+ *****************************************************************************/
+
+// PG_FUNCTION_INFO_V1(Intersection_elem_elem);
+// /**
+ // * Return the intersection of the two span values
+ // */
+// PGDLLEXPORT Datum
+// Intersection_elem_elem(PG_FUNCTION_ARGS)
+// {
+  // Datum d1 = PG_GETARG_DATUM(0);
+  // Datum d2 = PG_GETARG_DATUM(1);
+  // CachedType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  // CachedType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  // Datum result;
+  // bool found = intersection_elem_elem(d1, d2, basetype1, basetype2, &result);
+  // if (! found)
+    // PG_RETURN_NULL();
+  // PG_RETURN_DATUM(result);
+// }
+
+PG_FUNCTION_INFO_V1(Intersection_elem_span);
+/**
+ * Return the intersection of the two span values
+ */
+PGDLLEXPORT Datum
+Intersection_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  Datum result;
+  bool found = intersection_elem_span(d, basetype, s, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Intersection_span_elem);
+/**
+ * Return the intersection of the two span values
+ */
+PGDLLEXPORT Datum
+Intersection_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  Datum result;
+  bool found = intersection_span_elem(s, d, basetype, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Intersection_span_span);
+/**
+ * Return the intersection of the two span values
+ */
+PGDLLEXPORT Datum
+Intersection_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  Span *result = intersection_span_span(s1, s2);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_PERIOD_P(result);
+}
+
+/*****************************************************************************
+ * Set difference
+ * The functions produce new results that must be freed right
+ *****************************************************************************/
+
+// PG_FUNCTION_INFO_V1(Minus_elem_elem);
+// /**
+ // * @brief Return the difference of the two span values
+ // */
+// PGDLLEXPORT Datum
+// Minus_elem_elem(PG_FUNCTION_ARGS)
+// {
+  // Datum d1 = PG_GETARG_DATUM(0);
+  // Datum d2 = PG_GETARG_DATUM(1);
+  // CachedType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  // CachedType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  // Datum result;
+  // if (! minus_elem_elem(d1, d2, basetype1, basetype2, &result))
+    // PG_RETURN_NULL();
+  // PG_RETURN_DATUM(result);
+// }
+
+// PG_FUNCTION_INFO_V1(Minus_elem_span);
+// /**
+ // * Return the difference of the two span values
+ // */
+// PGDLLEXPORT Datum
+// Minus_elem_span(PG_FUNCTION_ARGS)
+// {
+  // Datum d = PG_GETARG_DATUM(0);
+  // Span *s = PG_GETARG_SPAN_P(1);
+  // CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  // Datum result;
+  // bool found = minus_elem_span(d, basetype, s, &result);
+  // if (! found)
+    // PG_RETURN_NULL();
+  // PG_RETURN_DATUM(result);
+// }
+
+// PG_FUNCTION_INFO_V1(Minus_span_elem);
+// /**
+ // * Return the difference of the two span values
+ // */
+// PGDLLEXPORT Datum
+// Minus_span_elem(PG_FUNCTION_ARGS)
+// {
+  // Span *s = PG_GETARG_SPAN_P(0);
+  // Datum d = PG_GETARG_DATUM(1);
+  // CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  // Span *result = minus_span_elem(s, d, basetype);
+  // if (! result)
+    // PG_RETURN_NULL();
+  // PG_RETURN_POINTER(result);
+// }
+
+// PG_FUNCTION_INFO_V1(Minus_span_span);
+// /**
+ // * @brief Return the difference of the two span values.
+ // */
+// PGDLLEXPORT Datum
+// Minus_span_span(PG_FUNCTION_ARGS)
+// {
+  // Span *s1 = PG_GETARG_SPAN_P(0);
+  // Span *s2 = PG_GETARG_SPAN_P(1);
+  // Span *result = minus_span_span(s1, s2);
+  // if (! result)
+    // PG_RETURN_NULL();
+  // PG_RETURN_POINTER(result);
+// }
+
+/******************************************************************************
+ * Distance functions returning a double representing the number of seconds
+ ******************************************************************************/
+
+PG_FUNCTION_INFO_V1(Distance_elem_elem);
+/**
+ * Return the distance in seconds of the two span values
+ */
+PGDLLEXPORT Datum
+Distance_elem_elem(PG_FUNCTION_ARGS)
+{
+  Datum d1 = PG_GETARG_DATUM(0);
+  Datum d2 = PG_GETARG_DATUM(1);
+  CachedType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  CachedType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  double result = distance_elem_elem(d1, d2, basetype1, basetype2);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_elem_span);
+/**
+ * Return the distance in seconds of the two span values
+ */
+PGDLLEXPORT Datum
+Distance_elem_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  double result = distance_span_elem(s, d, basetype);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_span_elem);
+/**
+ * Return the distance in seconds of the two span values
+ */
+PGDLLEXPORT Datum
+Distance_span_elem(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  double result = distance_span_elem(s, d, basetype);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_span_span);
+/**
+ * Return the distance in seconds of the two span values
+ */
+PGDLLEXPORT Datum
+Distance_span_span(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
+  double result = distance_span_span(s1, s2);
+  PG_RETURN_FLOAT8(result);
+}
+
+#endif /* #ifndef MEOS */
+
+/******************************************************************************/

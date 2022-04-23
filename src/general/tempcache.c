@@ -69,13 +69,12 @@
  * Global array that keeps type information for the temporal types defined
  * in MobilityDB.
  */
-
 static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
 
 #ifdef MEOS
 static temptype_cache_struct _temptype_cache[] =
 {
-  /* temptype    basetype     continuous basetype? */
+  /* temptype    basetype     basecont */
   {T_TDOUBLE2,   T_DOUBLE2,   true},
   {T_TDOUBLE3,   T_DOUBLE3,   true},
   {T_TDOUBLE4,   T_DOUBLE4,   true},
@@ -89,13 +88,31 @@ static temptype_cache_struct _temptype_cache[] =
 };
 #endif
 
+/**
+ * Global array that keeps type information for the temporal types defined
+ * in MobilityDB.
+ */
+static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
+
+/**
+ * Global array that keeps type information for the span types defined
+ * in MobilityDB.
+ */
+static spantype_cache_struct _spantype_cache[] =
+{
+  /* spantype       basetype       basecont */
+  {T_INTSPAN,       T_INT4,        false},
+  {T_FLOATSPAN,     T_FLOAT8,      true},
+  {T_TIMESTAMPSPAN, T_TIMESTAMPTZ, false},
+};
+
 /*****************************************************************************
  * Functions populating the Oid cache
  *****************************************************************************/
 
 #ifdef MEOS
 /**
- * Return the temporal type from the base type
+ * Return the base type from the temporal type
  * @note this function is defined again for MobilityDB below
  */
 CachedType
@@ -110,6 +127,36 @@ temptype_basetype(CachedType temptype)
   elog(ERROR, "type %u is not a temporal type", temptype);
 }
 #endif
+
+/**
+ * Return the base type from the span type
+ */
+CachedType
+spantype_basetype(CachedType spantype)
+{
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_spantype_cache[i].spantype == spantype)
+      return _spantype_cache[i].basetype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a span type", spantype);
+}
+
+/**
+ * Return the base type from the span type
+ */
+CachedType
+basetype_spantype(CachedType basetype)
+{
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_spantype_cache[i].basetype == basetype)
+      return _spantype_cache[i].spantype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a span type", basetype);
+}
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -175,8 +222,10 @@ const char *_type_names[] =
   [T_DOUBLE4] = "double4",
   [T_FLOAT8] = "float8",
   [T_FLOATRANGE] = "floatrange",
+  [T_FLOATSPAN] = "floatspan",
   [T_INT4] = "int4",
   [T_INTRANGE] = "intrange",
+  [T_INTSPAN] = "intspan",
   [T_PERIOD] = "period",
   [T_PERIODSET] = "periodset",
   [T_STBOX] = "stbox",
@@ -188,6 +237,7 @@ const char *_type_names[] =
   [T_TEXT] = "text",
   [T_TFLOAT] = "tfloat",
   [T_TIMESTAMPSET] = "timestampset",
+  [T_TIMESTAMPSPAN] = "timestampspan",
   [T_TIMESTAMPTZ] = "timestamptz",
   [T_TINT] = "tint",
   [T_TSTZRANGE] = "tstzrange",
