@@ -52,7 +52,7 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
@@ -5108,19 +5108,19 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
     Temporal *temp_z = NULL;
     if (hasz)
       temp_z = tpoint_get_coord(temp1, 2);
-    RangeType *range_x = range_make(Float8GetDatum(box->xmin),
+    Span *span_x = span_make(Float8GetDatum(box->xmin),
       Float8GetDatum(box->xmax), true, upper_inc, T_FLOAT8);
-    RangeType *range_y = range_make(Float8GetDatum(box->ymin),
+    Span *span_y = span_make(Float8GetDatum(box->ymin),
       Float8GetDatum(box->ymax), true, upper_inc, T_FLOAT8);
-    RangeType *range_z = NULL;
+    Span *span_z = NULL;
     if (hasz)
-      range_z = range_make(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
+      span_z = span_make(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
         true, upper_inc, T_FLOAT8);
-    Temporal *at_temp_x = tnumber_restrict_range(temp_x, range_x, REST_AT);
-    Temporal *at_temp_y = tnumber_restrict_range(temp_y, range_y, REST_AT);
+    Temporal *at_temp_x = tnumber_restrict_span(temp_x, span_x, REST_AT);
+    Temporal *at_temp_y = tnumber_restrict_span(temp_y, span_y, REST_AT);
     Temporal *at_temp_z = NULL;
     if (hasz)
-      at_temp_z = tnumber_restrict_range(temp_z, range_z, REST_AT);
+      at_temp_z = tnumber_restrict_span(temp_z, span_z, REST_AT);
     Temporal *result2D = NULL;
     if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
     {
@@ -5132,12 +5132,12 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
       result = (result2D != NULL && hasz) ?
         tpoint_add_z(result2D, at_temp_z, srid) : result2D;
     }
-    pfree(temp_x); pfree(range_x); pfree(temp_y); pfree(range_y);
+    pfree(temp_x); pfree(span_x); pfree(temp_y); pfree(span_y);
     if (at_temp_x != NULL) pfree(at_temp_x);
     if (at_temp_y != NULL) pfree(at_temp_y);
     if (hasz)
     {
-      pfree(temp_z); pfree(range_z);
+      pfree(temp_z); pfree(span_z);
       if (at_temp_z != NULL) pfree(at_temp_z);
       if (result2D != NULL) pfree(result2D);
     }

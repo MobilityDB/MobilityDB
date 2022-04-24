@@ -50,7 +50,7 @@
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -413,16 +413,16 @@ tinstantset_values(const TInstantSet *ti, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of ranges of the temporal float value.
+ * @brief Return the array of spans of the temporal float value.
  */
-RangeType **
-tfloatinstset_ranges(const TInstantSet *ti, int *count)
+Span **
+tfloatinstset_spans(const TInstantSet *ti, int *count)
 {
   int newcount;
   Datum *values = tinstantset_values(ti, &newcount);
-  RangeType **result = palloc(sizeof(RangeType *) * newcount);
+  Span **result = palloc(sizeof(Span *) * newcount);
   for (int i = 0; i < newcount; i++)
-    result[i] = range_make(values[i], values[i], true, true, T_FLOAT8);
+    result[i] = span_make(values[i], values[i], true, true, T_FLOAT8);
   pfree(values);
   *count = newcount;
   return result;
@@ -997,17 +997,17 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal number to the (complement of the) range of base
+ * @brief Restrict the temporal number to the (complement of the) span of base
  * values.
  *
  * @param[in] ti Temporal number
- * @param[in] range Range of base values
+ * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @note A bounding box test has been done in the dispatch function.
  */
 TInstantSet *
-tnumberinstset_restrict_range(const TInstantSet *ti, const RangeType *range,
+tnumberinstset_restrict_span(const TInstantSet *ti, const Span *span,
   bool atfunc)
 {
   /* Singleton instant set */
@@ -1020,7 +1020,7 @@ tnumberinstset_restrict_range(const TInstantSet *ti, const RangeType *range,
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    if (tnumberinst_restrict_range_test(inst, range, atfunc))
+    if (tnumberinst_restrict_span_test(inst, span, atfunc))
       instants[count++] = inst;
   }
   TInstantSet *result = (count == 0) ? NULL :
@@ -1031,19 +1031,19 @@ tnumberinstset_restrict_range(const TInstantSet *ti, const RangeType *range,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the (complement of the) array of ranges
+ * @brief Restrict the temporal value to the (complement of the) array of spans
  * of base values.
  *
  * @param[in] ti Temporal number
- * @param[in] normranges Array of ranges of base values
+ * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
- * @pre The array of ranges is normalized
+ * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
  */
 TInstantSet *
-tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
+tnumberinstset_restrict_spans(const TInstantSet *ti, Span **normspans,
   int count, bool atfunc)
 {
   const TInstant *inst;
@@ -1052,7 +1052,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
   if (ti->count == 1)
   {
     inst = tinstantset_inst_n(ti, 0);
-    if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
+    if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
       return tinstantset_copy(ti);
     return NULL;
   }
@@ -1063,7 +1063,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
   for (int i = 0; i < ti->count; i++)
   {
     inst = tinstantset_inst_n(ti, i);
-    if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
+    if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
       instants[newcount++] = inst;
   }
   TInstantSet *result = (newcount == 0) ? NULL :

@@ -74,14 +74,14 @@ span_index_consistent_leaf(const Span *key, const Span *query,
       return span_eq(key, query);
     case RTAdjacentStrategyNumber:
       return adjacent_span_span(key, query);
-    case RTBeforeStrategyNumber:
-      return before_span_span(key, query);
-    case RTOverBeforeStrategyNumber:
-      return overbefore_span_span(key, query);
-    case RTAfterStrategyNumber:
-      return after_span_span(key, query);
-    case RTOverAfterStrategyNumber:
-      return overafter_span_span(key, query);
+    case RTLeftStrategyNumber:
+      return left_span_span(key, query);
+    case RTOverLeftStrategyNumber:
+      return overleft_span_span(key, query);
+    case RTRightStrategyNumber:
+      return right_span_span(key, query);
+    case RTOverRightStrategyNumber:
+      return overright_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -109,16 +109,15 @@ span_gist_consistent(const Span *key, const Span *query,
     case RTSameStrategyNumber:
       return contains_span_span(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query) ||
-        overlaps_span_span(key, query);
-    case RTBeforeStrategyNumber:
-      return !overafter_span_span(key, query);
-    case RTOverBeforeStrategyNumber:
-      return !after_span_span(key, query);
-    case RTAfterStrategyNumber:
-      return !overbefore_span_span(key, query);
-    case RTOverAfterStrategyNumber:
-      return !before_span_span(key, query);
+      return adjacent_span_span(key, query) || overlaps_span_span(key, query);
+    case RTLeftStrategyNumber:
+      return ! overright_span_span(key, query);
+    case RTOverLeftStrategyNumber:
+      return ! right_span_span(key, query);
+    case RTRightStrategyNumber:
+      return ! overleft_span_span(key, query);
+    case RTOverRightStrategyNumber:
+      return ! left_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -132,10 +131,10 @@ bool
 span_index_recheck(StrategyNumber strategy)
 {
   /* These operators are based on bounding boxes */
-  if (strategy == RTBeforeStrategyNumber ||
-    strategy == RTOverBeforeStrategyNumber ||
-    strategy == RTAfterStrategyNumber ||
-    strategy == RTOverAfterStrategyNumber)
+  if (strategy == RTLeftStrategyNumber ||
+    strategy == RTOverLeftStrategyNumber ||
+    strategy == RTRightStrategyNumber ||
+    strategy == RTOverRightStrategyNumber)
     return false;
   return true;
 }
@@ -249,7 +248,8 @@ PG_FUNCTION_INFO_V1(Span_gist_penalty);
  *
  * The penalty function has the following goals (in order from most to least
  * important):
- * - Avoid broadening (as determined by span_to_secs) the original predicate
+ * - Avoid broadening (as determined by distance_elem_elem) the original
+ *   predicate
  * - Favor adding spans to narrower original predicates
  */
 PGDLLEXPORT Datum
@@ -264,12 +264,14 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   span_deserialize(orig, &orig_lower, &orig_upper);
   span_deserialize(new, &new_lower, &new_upper);
 
-  /* Calculate extension of original span by calling span_to_secs */
+  /* Calculate extension of original span by calling distance_elem_elem */
   float8 diff = 0.0;
   if (span_bound_cmp(&new_lower, &orig_lower) < 0)
-    diff += span_to_secs(orig->lower, new->lower);
+    diff += distance_elem_elem(orig->lower, new->lower, orig->basetype,
+      new->basetype);
   if (span_bound_cmp(&new_upper, &orig_upper) > 0)
-    diff += span_to_secs(new->upper, orig->upper);
+    diff += distance_elem_elem(new->upper, orig->upper, new->basetype,
+      orig->basetype);
   *penalty = (float4) diff;
 
   PG_RETURN_POINTER(penalty);
@@ -388,7 +390,8 @@ span_gist_consider_split(ConsiderSplitContext *context,
      * values) and minimal ratio secondarily.  The subtype_diff is
      * used for overlap measure.
      */
-    overlap = (float4) span_to_secs(left_upper->d, right_lower->d);
+    overlap = (float4) distance_elem_elem(left_upper->val, right_lower->val,
+      left_upper->basetype, right_lower->basetype);
 
     /* If there is no previous selection, select this split */
     if (context->first)
@@ -695,8 +698,10 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
          * (context.left_upper - upper)
          */
         common_entries[common_entries_count].delta =
-          span_to_secs(span->lower, context.right_lower.d) -
-          span_to_secs(context.left_upper.d, span->upper);
+          distance_elem_elem(span->lower, context.right_lower.val,
+            span->basetype, context.right_lower.basetype) -
+          distance_elem_elem(context.left_upper.val, span->upper,
+            context.right_lower.basetype, span->basetype);
         common_entries_count++;
       }
       else

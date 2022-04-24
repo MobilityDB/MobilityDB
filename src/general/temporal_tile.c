@@ -35,6 +35,8 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
+#include "general/temporal_tile.h"
+
 /* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
@@ -46,12 +48,12 @@
 #include <utils/builtins.h>
 #include <utils/datetime.h>
 /* MobilityDB */
-#include "general/temporal_tile.h"
+#include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/rangetypes_ext.h"
+#include "general/span_ops.h"
 #include "general/temporal.h"
 #include "general/temporal_util.h"
 
@@ -73,7 +75,7 @@ int_bucket(int value, int size, int offset)
   if (offset != 0)
   {
     /*
-     * We need to ensure that the value is in range _after_ the offset is
+     * We need to ensure that the value is in span _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
@@ -81,8 +83,7 @@ int_bucket(int value, int size, int offset)
     offset = offset % size;
     if ((offset > 0 && value < PG_INT32_MIN + offset) ||
       (offset < 0 && value > PG_INT32_MAX + offset))
-      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-        errmsg("number out of range")));
+      elog(ERROR, "number out of span");
     value -= offset;
   }
   int result = (value / size) * size;
@@ -95,8 +96,7 @@ int_bucket(int value, int size, int offset)
      * truncates toward 0 in C99.
      */
     if (result < PG_INT32_MIN + size)
-      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-        errmsg("number out of range")));
+      elog(ERROR, "number out of span");
     else
       result -= size;
   }
@@ -118,7 +118,7 @@ float_bucket(double value, double size, double offset)
   if (offset != 0)
   {
     /*
-     * We need to ensure that the value is in range _after_ the offset is
+     * We need to ensure that the value is in span _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
@@ -126,8 +126,7 @@ float_bucket(double value, double size, double offset)
     offset = fmod(offset, size);
     if ((offset > 0 && value < -1 * DBL_MAX + offset) ||
       (offset < 0 && value > DBL_MAX + offset))
-      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-        errmsg("number out of range")));
+      elog(ERROR, "number out of span");
     value -= offset;
   }
   float result = floor(value / size) * size;
@@ -194,7 +193,7 @@ timestamptz_bucket(TimestampTz timestamp, int64 size,
   if (offset != 0)
   {
     /*
-     * We need to ensure that the timestamp is in range _after_ the offset is
+     * We need to ensure that the timestamp is in span _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * time is at least the minimum time value value (DT_NOBEGIN) and when
      * negative that it is less than the maximum time value (DT_NOEND)
@@ -202,8 +201,7 @@ timestamptz_bucket(TimestampTz timestamp, int64 size,
     offset = offset % size;
     if ((offset > 0 && timestamp < DT_NOBEGIN + offset) ||
       (offset < 0 && timestamp > DT_NOEND + offset))
-      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-        errmsg("timestamp out of range")));
+      elog(ERROR, "timestamp out of span");
     timestamp -= offset;
   }
   TimestampTz result = (timestamp / size) * size;
@@ -216,8 +214,7 @@ timestamptz_bucket(TimestampTz timestamp, int64 size,
      * truncates toward 0 in C99.
      */
     if (result < DT_NOBEGIN + size)
-      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-        errmsg("timestamp out of range")));
+      elog(ERROR, "timestamp out of span");
     else
       result -= size;
   }
@@ -253,53 +250,50 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Range bucket functions
+ * Span bucket functions
  *****************************************************************************/
 
 /**
- * Generate an integer or float range bucket from a bucket list
+ * Generate an integer or float span bucket from a bucket list
  *
  * @param[in] value Start value of the bucket
  * @param[in] size Size of the buckets
  * @param[in] basetype Type of the arguments
  */
-static RangeType *
-range_bucket_get(Datum value, Datum size, CachedType basetype)
+static Span *
+span_bucket_get(Datum value, Datum size, CachedType basetype)
 {
   Datum lower = value;
   Datum upper = datum_add(value, size, basetype, basetype);
-  return range_make(lower, upper, true, false, basetype);
+  return span_make(lower, upper, true, false, basetype);
 }
 
 /**
  * Create the initial state that persists across multiple calls of the function
  *
  * @param[in] temp Temporal number to split
- * @param[in] r Bounds for generating the bucket list
+ * @param[in] s Bounds for generating the bucket list
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
  *
  * @pre The size argument must be greater to 0.
  * @note The first argument is NULL when generating the bucket list, otherwise
- * it is a temporal number to be split and in this case r is the value range
+ * it is a temporal number to be split and in this case s is the value span
  * of the temporal number
  */
-static RangeBucketState *
-range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
+static SpanBucketState *
+span_bucket_state_make(Temporal *temp, Span *s, Datum size, Datum origin)
 {
-  RangeBucketState *state = palloc0(sizeof(RangeBucketState));
+  SpanBucketState *state = palloc0(sizeof(SpanBucketState));
   /* Fill in state */
   state->done = false;
   state->i = 1;
   state->temp = temp;
-  state->basetype = (r->rangetypid == type_oid(T_INTRANGE)) ?
-    T_INT4 : T_FLOAT8;
+  state->basetype = s->basetype;
   state->size = size;
   state->origin = origin;
-  Datum lower = lower_datum(r);
-  Datum upper = upper_datum(r);
-  state->minvalue = number_bucket(lower, size, origin, state->basetype);
-  state->maxvalue = number_bucket(upper, size, origin, state->basetype);
+  state->minvalue = number_bucket(s->lower, size, origin, state->basetype);
+  state->maxvalue = number_bucket(s->upper, size, origin, state->basetype);
   state->value = state->minvalue;
   return state;
 }
@@ -310,7 +304,7 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
  * @param[in] state State to increment
  */
 static void
-range_bucket_state_next(RangeBucketState *state)
+span_bucket_state_next(SpanBucketState *state)
 {
   if (!state || state->done)
     return;
@@ -325,15 +319,15 @@ range_bucket_state_next(RangeBucketState *state)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Range_bucket_list);
+PG_FUNCTION_INFO_V1(Span_bucket_list);
 /**
- * Generate a range bucket list.
+ * Generate a span bucket list.
  */
 PGDLLEXPORT Datum
-Range_bucket_list(PG_FUNCTION_ARGS)
+Span_bucket_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  RangeBucketState *state;
+  SpanBucketState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;
@@ -343,7 +337,7 @@ Range_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    RangeType *bounds = PG_GETARG_RANGE_P(0);
+    Span *bounds = PG_GETARG_SPAN_P(0);
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
@@ -357,7 +351,7 @@ Range_bucket_list(PG_FUNCTION_ARGS)
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = range_bucket_state_make(NULL, bounds, size, origin);
+    funcctx->user_fctx = span_bucket_state_make(NULL, bounds, size, origin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -383,10 +377,10 @@ Range_bucket_list(PG_FUNCTION_ARGS)
   /* Store index */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
-  tuple_arr[1] = PointerGetDatum(range_bucket_get(state->value, state->size,
+  tuple_arr[1] = PointerGetDatum(span_bucket_get(state->value, state->size,
     state->basetype));
   /* Advance state */
-  range_bucket_state_next(state);
+  span_bucket_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
@@ -395,12 +389,12 @@ Range_bucket_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Range_bucket);
+PG_FUNCTION_INFO_V1(Span_bucket);
 /**
- * Generate an integer or float range bucket in a bucket list for ranges.
+ * Generate an integer or float span bucket in a bucket list for spans.
 */
 PGDLLEXPORT Datum
-Range_bucket(PG_FUNCTION_ARGS)
+Span_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
@@ -408,7 +402,7 @@ Range_bucket(PG_FUNCTION_ARGS)
   ensure_positive_datum(size, type);
   Datum origin = PG_GETARG_DATUM(2);
   Datum value_bucket = number_bucket(value, size, origin, type);
-  RangeType *result = range_bucket_get(value_bucket, size, type);
+  Span *result = span_bucket_get(value_bucket, size, type);
   PG_RETURN_POINTER(result);
 }
 
@@ -1528,7 +1522,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
     {
       lower_inc1 = upper_inc1 = true;
     }
-    RangeType *segrange = range_make(min_value, max_value, lower_inc1, upper_inc1, basetype);
+    Span *segspan = span_make(min_value, max_value, lower_inc1, upper_inc1, basetype);
     TInstant *bounds[2];
     bounds[first] = incr ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = incr ? bucket_value1 : bucket_value2;
@@ -1545,7 +1539,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         Datum projvalue;
         tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetype,
           &projvalue, &t);
-        tofree[l++] = bounds[last] =  RANGE_ROUNDOFF ?
+        tofree[l++] = bounds[last] =  SPAN_ROUNDOFF ?
           tinstant_make(bucket_upper, t, seq->temptype) :
           tinstant_make(projvalue, t, seq->temptype);
       }
@@ -1554,20 +1548,20 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       /* Determine the bounds of the resulting sequence */
       if (j == first_bucket || j == last_bucket)
       {
-        RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, basetype);
-        RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
-          PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
+        Span *bucketspan = span_make(bucket_lower, bucket_upper, true, false,
+          basetype);
+        Span *inter = intersection_span_span(segspan, bucketspan);
         if (incr)
         {
-          lower_inc1 = lower_inc(intersect);
-          upper_inc1 = upper_inc(intersect);
+          lower_inc1 = inter->lower_inc;
+          upper_inc1 = inter->upper_inc;
         }
         else
         {
-          lower_inc1 = upper_inc(intersect);
-          upper_inc1 = lower_inc(intersect);
+          lower_inc1 = inter->upper_inc;
+          upper_inc1 = inter->lower_inc;
         }
-        pfree(intersect); pfree(bucketrange);
+        pfree(inter); pfree(bucketspan);
       }
       else
       {
@@ -1588,7 +1582,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       bucket_lower = bucket_upper;
       bucket_upper = datum_add(bucket_upper, size, basetype, basetype);
     }
-    pfree(segrange);
+    pfree(segspan);
     inst1 = inst2;
     value1 = value2;
     bucket_value1 = bucket_value2;
@@ -1774,10 +1768,10 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    RangeType *range = tnumber_range((const Temporal *) temp);
-    Datum start_value = lower_datum(range);
+    Span *span = tnumber_span((const Temporal *) temp);
+    Datum start_value = span->lower;
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(upper_datum(range), size, basetype, basetype);
+    Datum end_value = datum_add(span->upper, size, basetype, basetype);
     Datum start_bucket = number_bucket(start_value, size, origin, basetype);
     Datum end_bucket = number_bucket(end_value, size, origin, basetype);
     int count = (basetype == T_INT4) ?
@@ -1913,10 +1907,10 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    RangeType *range = tnumber_range((const Temporal *) temp);
-    Datum start_value = lower_datum(range);
+    Span *span = tnumber_span((const Temporal *) temp);
+    Datum start_value = span->lower;
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(upper_datum(range), size, basetype, basetype);
+    Datum end_value = datum_add(span->upper, size, basetype, basetype);
     Datum start_bucket = number_bucket(start_value, size, origin, basetype);
     Datum end_bucket = number_bucket(end_value, size, origin, basetype);
     int value_count = (basetype == T_INT4) ?
@@ -1947,14 +1941,14 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
     while (datum_lt(lower_value, end_bucket, basetype))
     {
       Datum upper_value = datum_add(lower_value, size, basetype, basetype);
-      range = range_make(lower_value, upper_value, true, false, basetype);
-      Temporal *atrange = tnumber_restrict_range(temp, range, REST_AT);
-      if (atrange != NULL)
+      span = span_make(lower_value, upper_value, true, false, basetype);
+      Temporal *atspan = tnumber_restrict_span(temp, span, REST_AT);
+      if (atspan != NULL)
       {
         int num_time_splits;
         TimestampTz *times;
-        Temporal **time_splits = temporal_time_split(atrange,
-          start_time_bucket, end_time_bucket, tunits, torigin, time_count, &times,
+        Temporal **time_splits = temporal_time_split(atspan, start_time_bucket,
+          end_time_bucket, tunits, torigin, time_count, &times,
           &num_time_splits);
         for (int i = 0; i < num_time_splits; i++)
         {
@@ -1966,7 +1960,7 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
         pfree(time_splits);
         pfree(times);
       }
-      pfree(range);
+      pfree(span);
       lower_value = upper_value;
     }
 

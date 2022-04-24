@@ -390,13 +390,13 @@ CREATE FUNCTION period(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION range(tint)
-  RETURNS intrange
-  AS 'MODULE_PATHNAME', 'Tint_to_range'
+CREATE FUNCTION span(tint)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Tint_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range(tfloat)
-  RETURNS floatrange
-  AS 'MODULE_PATHNAME', 'Tfloat_to_range'
+CREATE FUNCTION span(tfloat)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Tfloat_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Casting CANNOT be implicit to avoid ambiguity
@@ -405,8 +405,8 @@ CREATE CAST (tint AS period) WITH FUNCTION period(tint);
 CREATE CAST (tfloat AS period) WITH FUNCTION period(tfloat);
 CREATE CAST (ttext AS period) WITH FUNCTION period(ttext);
 
-CREATE CAST (tint AS intrange) WITH FUNCTION range(tint);
-CREATE CAST (tfloat AS floatrange) WITH FUNCTION range(tfloat);
+CREATE CAST (tint AS intspan) WITH FUNCTION span(tint);
+CREATE CAST (tfloat AS floatspan) WITH FUNCTION span(tfloat);
 
 CREATE FUNCTION tfloat(tint)
   RETURNS tfloat
@@ -636,21 +636,21 @@ CREATE FUNCTION getValues(tint)
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
-  RETURNS floatrange[]
-  AS 'MODULE_PATHNAME', 'Tfloat_ranges'
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Tfloat_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueRange(tint)
-  RETURNS intrange
-  AS 'MODULE_PATHNAME', 'Tnumber_range'
+CREATE FUNCTION valueSpan(tint)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueRange(tfloat)
-  RETURNS floatrange
-  AS 'MODULE_PATHNAME', 'Tnumber_range'
+CREATE FUNCTION valueSpan(tfloat)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tbool)
@@ -1204,40 +1204,40 @@ CREATE FUNCTION minusValues(ttext, text[])
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atRange(tint, intrange)
+CREATE FUNCTION atSpan(tint, intspan)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tnumber_at_range'
+  AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atRange(tfloat, floatrange)
+CREATE FUNCTION atSpan(tfloat, floatspan)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_at_range'
+  AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusRange(tint, intrange)
+CREATE FUNCTION minusSpan(tint, intspan)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tnumber_minus_range'
+  AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusRange(tfloat, floatrange)
+CREATE FUNCTION minusSpan(tfloat, floatspan)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_minus_range'
+  AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atRanges(tint, intrange[])
+CREATE FUNCTION atSpans(tint, intspan[])
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tnumber_at_ranges'
+  AS 'MODULE_PATHNAME', 'Tnumber_at_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atRanges(tfloat, floatrange[])
+CREATE FUNCTION atSpans(tfloat, floatspan[])
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_at_ranges'
+  AS 'MODULE_PATHNAME', 'Tnumber_at_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusRanges(tint, intrange[])
+CREATE FUNCTION minusSpans(tint, intspan[])
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tnumber_minus_ranges'
+  AS 'MODULE_PATHNAME', 'Tnumber_minus_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusRanges(tfloat, floatrange[])
+CREATE FUNCTION minusSpans(tfloat, floatspan[])
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_minus_ranges'
+  AS 'MODULE_PATHNAME', 'Tnumber_minus_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atMin(tint)

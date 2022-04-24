@@ -42,7 +42,7 @@
  * Struct for storing the state that persists across multiple calls generating
  * the bucket list
  */
-typedef struct RangeBucketState
+typedef struct SpanBucketState
 {
   bool done;
   int i;
@@ -53,7 +53,7 @@ typedef struct RangeBucketState
   Datum minvalue;
   Datum maxvalue;
   Datum value;
-} RangeBucketState;
+} SpanBucketState;
 
 /**
  * Struct for storing the state that persists across multiple calls generating

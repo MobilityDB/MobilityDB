@@ -49,7 +49,7 @@
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -865,25 +865,24 @@ tsequenceset_values(const TSequenceSet *ts, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of ranges of base values of the temporal float
+ * @brief Return the array of spans of base values of the temporal float
  * value.
  */
-RangeType **
-tfloatseqset_ranges(const TSequenceSet *ts, int *count)
+Span **
+tfloatseqset_spans(const TSequenceSet *ts, int *count)
 {
-  int count1 = MOBDB_FLAGS_GET_LINEAR(ts->flags) ?
-    ts->count : ts->totalcount;
-  RangeType **ranges = palloc(sizeof(RangeType *) * count1);
+  int count1 = MOBDB_FLAGS_GET_LINEAR(ts->flags) ? ts->count : ts->totalcount;
+  Span **spans = palloc(sizeof(Span *) * count1);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tfloatseq_ranges1(seq, &ranges[k]);
+    k += tfloatseq_spans1(seq, &spans[k]);
   }
-  RangeType **result = rangearr_normalize(ranges, k, count);
+  Span **result = spanarr_normalize(spans, k, count);
   if ((*count) > 1)
-    rangearr_sort(result, *count);
-  pfree_array((void **) ranges, k);
+    spanarr_sort(result, *count);
+  pfree_array((void **) spans, k);
   return result;
 }
 
@@ -1392,14 +1391,14 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float value as a floatrange.
+ * @brief Cast a temporal float value as a floatspan.
  */
-RangeType *
-tfloatseqset_range(const TSequenceSet *ts)
+Span *
+tfloatseqset_span(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tfloatseq_range(tsequenceset_seq_n(ts, 0));
+    return tfloatseq_span(tsequenceset_seq_n(ts, 0));
 
   /* General case */
   TBOX *box = tsequenceset_bbox_ptr(ts);
@@ -1407,32 +1406,35 @@ tfloatseqset_range(const TSequenceSet *ts)
   Datum max = Float8GetDatum(box->xmax);
   /* It step interpolation */
   if(! MOBDB_FLAGS_GET_LINEAR(ts->flags))
-    return range_make(min, max, true, true, T_FLOAT8);
+    return span_make(min, max, true, true, T_FLOAT8);
 
   /* Linear interpolation */
-  RangeType **ranges = palloc(sizeof(RangeType *) * ts->count);
+  Span **spans = palloc(sizeof(Span *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    ranges[i] = tfloatseq_range(seq);
+    spans[i] = tfloatseq_span(seq);
   }
+  /* Sort the spans before normalization */
+  spanarr_sort(spans, ts->count);
+  /* Normalize the spans */
   int newcount;
-  RangeType **normranges = rangearr_normalize(ranges, ts->count, &newcount);
-  RangeType *result;
+  Span **normspans = spanarr_normalize(spans, ts->count, &newcount);
+  Span *result;
   if (newcount == 1)
   {
-    result = normranges[0];
-    pfree_array((void **) ranges, ts->count);
-    pfree(normranges);
+    result = normspans[0];
+    pfree_array((void **) spans, ts->count);
+    pfree(normspans);
     return result;
   }
 
-  RangeType *start = normranges[0];
-  RangeType *end = normranges[newcount - 1];
-  result = range_make(lower_datum(start), upper_datum(end),
-    lower_inc(start), upper_inc(end), T_FLOAT8);
-  pfree_array((void **) normranges, newcount);
-  pfree_array((void **) ranges, ts->count);
+  Span *start = normspans[0];
+  Span *end = normspans[newcount - 1];
+  result = span_make(start->lower, end->upper, start->lower_inc,
+    end->upper_inc, T_FLOAT8);
+  pfree_array((void **) normspans, newcount);
+  pfree_array((void **) spans, ts->count);
   return result;
 }
 
@@ -1848,18 +1850,18 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal number to the range of base values.
+ * @brief Restrict the temporal number to the span of base values.
  *
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
  */
 TSequenceSet *
-tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
+tnumberseqset_restrict_span(const TSequenceSet *ts, const Span *span,
   bool atfunc)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tnumberseq_restrict_range(tsequenceset_seq_n(ts, 0), range,
+    return tnumberseq_restrict_span(tsequenceset_seq_n(ts, 0), span,
       atfunc);
 
   /* General case */
@@ -1872,7 +1874,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tnumberseq_restrict_range2(seq, range, atfunc, &sequences[k]);
+    k += tnumberseq_restrict_span2(seq, span, atfunc, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1880,24 +1882,24 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal number to the (complement of the) array of
- * ranges of base values
+ * spans of base values
  *
  * @param[in] ts Temporal number
- * @param[in] normranges Array of ranges of base values
+ * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number value
- * @pre The array of ranges is normalized
+ * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
  */
 TSequenceSet *
-tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
+tnumberseqset_restrict_spans(const TSequenceSet *ts, Span **normspans,
   int count, bool atfunc)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tnumberseq_restrict_ranges(tsequenceset_seq_n(ts, 0),
-      normranges, count, atfunc, BBOX_TEST_NO);
+    return tnumberseq_restrict_spans(tsequenceset_seq_n(ts, 0),
+      normspans, count, atfunc, BBOX_TEST_NO);
 
   /* General case */
   int maxcount = ts->totalcount * count;
@@ -1909,7 +1911,7 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tnumberseq_restrict_ranges1(seq, normranges, count, atfunc,
+    k += tnumberseq_restrict_spans1(seq, normspans, count, atfunc,
       BBOX_TEST, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);

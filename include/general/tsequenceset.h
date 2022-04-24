@@ -39,9 +39,9 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/temporal.h"
+#include "general/span.h"
 
 /*****************************************************************************/
 
@@ -108,7 +108,7 @@ extern TSequenceSet *tsequenceset_from_base(Datum value, CachedType temptype,
 /* Accessor functions */
 
 extern Datum *tsequenceset_values(const TSequenceSet *ts, int *count);
-extern RangeType **tfloatseqset_ranges(const TSequenceSet *ts, int *count);
+extern Span **tfloatseqset_spans(const TSequenceSet *ts, int *count);
 extern const TInstant *tsequenceset_min_instant(const TSequenceSet *ts);
 extern const TInstant *tsequenceset_max_instant(const TSequenceSet *ts);
 extern Datum tsequenceset_min_value(const TSequenceSet *ts);
@@ -139,7 +139,7 @@ extern int tsequenceset_timestamps1(const TSequenceSet *ts,
 
 /* Cast functions */
 
-extern RangeType *tfloatseqset_range(const TSequenceSet *ts);
+extern Span *tfloatseqset_span(const TSequenceSet *ts);
 extern TSequenceSet *tintseqset_tfloatseqset(const TSequenceSet *ts);
 extern TSequenceSet *tfloatseqset_tintseqset(const TSequenceSet *ts);
 
@@ -169,10 +169,10 @@ extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ts,
   Datum value, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ts,
   const Datum *values, int count, bool atfunc);
-extern TSequenceSet *tnumberseqset_restrict_range(const TSequenceSet *ts,
-  const RangeType *range, bool atfunc);
-extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts,
-  RangeType **normranges, int count, bool atfunc);
+extern TSequenceSet *tnumberseqset_restrict_span(const TSequenceSet *ts,
+  const Span *span, bool atfunc);
+extern TSequenceSet *tnumberseqset_restrict_spans(const TSequenceSet *ts,
+  Span **normspans, int count, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ts,
   bool min, bool atfunc);
 extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts,

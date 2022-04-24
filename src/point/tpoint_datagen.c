@@ -42,6 +42,7 @@
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */
 #include <utils/builtins.h>
+#include <utils/typcache.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #else

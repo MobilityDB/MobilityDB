@@ -28,38 +28,38 @@
  *****************************************************************************/
 
 /**
- * @file rangetypes_ext.h
- * Extended operators for range types.
+ * @file span.h
+ * Operators for span types.
  */
 
-#ifndef __RANGETYPES_EXT_H__
-#define __RANGETYPES_EXT_H__
+#ifndef __SPAN_H__
+#define __SPAN_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-/* MobilityDB */
-#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 
 /* Generic functions */
 
-extern Datum lower_datum(const RangeType *range);
-extern Datum upper_datum(const RangeType *range);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-extern bool lower_inc(RangeType *range);
-extern bool upper_inc(RangeType *range);
-#else
-extern bool lower_inc(const RangeType *range);
-extern bool upper_inc(const RangeType *range);
-#endif
-extern void range_bounds(const RangeType *range, double *xmin, double *xmax);
-extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, CachedType basetype);
-extern RangeType **rangearr_normalize(RangeType **ranges, int count,
-  int *newcount);
+// extern Datum intrange_canonical(PG_FUNCTION_ARGS);
+
+extern Datum span_left_elem(PG_FUNCTION_ARGS);
+extern Datum span_overleft_elem(PG_FUNCTION_ARGS);
+extern Datum span_right_elem(PG_FUNCTION_ARGS);
+extern Datum span_overright_elem(PG_FUNCTION_ARGS);
+extern Datum span_adjacent_elem(PG_FUNCTION_ARGS);
+
+extern Datum elem_left_span(PG_FUNCTION_ARGS);
+extern Datum elem_overleft_span(PG_FUNCTION_ARGS);
+extern Datum elem_right_span(PG_FUNCTION_ARGS);
+extern Datum elem_overright_span(PG_FUNCTION_ARGS);
+extern Datum elem_adjacent_span(PG_FUNCTION_ARGS);
+
+extern Datum floatspan_round(PG_FUNCTION_ARGS);
+
+extern Datum span_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum span_extent_transfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

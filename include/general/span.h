@@ -63,7 +63,7 @@ typedef struct
  */
 typedef struct
 {
-  Datum d;              /**< bound value */
+  Datum val;              /**< bound value */
   bool inclusive;       /**< bound is inclusive (vs exclusive) */
   bool lower;           /**< this is the lower (vs upper) bound */
   uint8 spantype;       /**< span type */
@@ -86,10 +86,10 @@ typedef struct
 
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
+extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
 extern bool span_type(CachedType spantype);
 extern void ensure_span_type(CachedType spantype);
 extern void ensure_span_basetype(CachedType basetype);
-extern int span_elem_cmp(Datum l, Datum r, CachedType typel, CachedType typer);
 extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *a1, const void *a2);
 extern int span_lower_cmp(const Span *a, const Span *b);
@@ -99,10 +99,11 @@ extern Span *span_make(Datum lower, Datum upper, bool lower_inc,
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   CachedType spantype, Span *s);
 extern Span *span_copy(const Span *s);
-extern float8 span_to_secs(Datum t1, Datum t2);
 extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
 extern Span *span_super_union(const Span *s1, const Span *s2);
 extern void span_expand(const Span *s1, Span *s2);
+extern void span_bounds(const Span *s, double *xmin, double *xmax);
+extern int span_cmp_bounds(const SpanBound *b1, const SpanBound *b2);
 
 /* Input/output functions */
 

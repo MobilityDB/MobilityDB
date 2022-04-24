@@ -56,7 +56,7 @@
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "general/tbox.h"
 #include "point/tpoint.h"
 #include "point/stbox.h"
@@ -582,9 +582,11 @@ adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * number
  */
 bool
-contains_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
+contains_number_tnumber(Datum number, CachedType basetype,
+  const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox, INVERT);
+  return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox,
+    INVERT);
 }
 
 /**
@@ -593,31 +595,33 @@ contains_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumb
  * the number
  */
 bool
-contains_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
+contains_tnumber_number(const Temporal *tnumber, Datum number,
+  CachedType basetype)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox,
+    INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range contains the bounding box of the temporal
+ * @brief Return true if the span contains the bounding box of the temporal
  * number
  */
 bool
-contains_range_tnumber(const RangeType *range, const Temporal *tnumber)
+contains_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &contains_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &contains_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number contains the
- * range
+ * span
  */
 bool
-contains_tnumber_range(const Temporal *tnumber, const RangeType *range)
+contains_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &contains_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &contains_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -679,24 +683,24 @@ contained_tnumber_number(const Temporal *tnumber, Datum number, CachedType baset
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range is contained in the bounding box of the
+ * @brief Return true if the span is contained in the bounding box of the
  * temporal number
  */
 bool
-contained_range_tnumber(const RangeType *range, const Temporal *tnumber)
+contained_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &contained_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &contained_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number is contained
- * in the range
+ * in the span
  */
 bool
-contained_tnumber_range(const Temporal *tnumber, const RangeType *range)
+contained_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &contained_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &contained_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -736,48 +740,50 @@ contained_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range and the bounding box of the temporal number
+ * @brief Return true if the span and the bounding box of the temporal number
  * overlap
  */
 bool
 overlaps_number_tnumber(Datum number, CachedType basetype,
   const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox, INVERT);
+  return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox,
+    INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the
- * the range overlap
+ * the span overlap
  */
 bool
 overlaps_tnumber_number(const Temporal *tnumber, Datum number,
   CachedType basetype)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox,
+    INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range and the bounding box of the temporal number
+ * @brief Return true if the span and the bounding box of the temporal number
  * overlap
  */
 bool
-overlaps_range_tnumber(const RangeType *range, const Temporal *tnumber)
+overlaps_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &overlaps_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &overlaps_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the
- * the range overlap
+ * the span overlap
  */
 bool
-overlaps_tnumber_range(const Temporal *tnumber, const RangeType *range)
+overlaps_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &overlaps_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &overlaps_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -816,7 +822,7 @@ overlaps_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range and the bounding box of the temporal number
+ * @brief Return true if the span and the bounding box of the temporal number
  * are equal on the common dimensions
  */
 bool
@@ -828,7 +834,7 @@ same_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the
- * the range are equal on the common dimensions
+ * the span are equal on the common dimensions
  */
 bool
 same_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -838,24 +844,24 @@ same_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range and the bounding box of the temporal number
+ * @brief Return true if the span and the bounding box of the temporal number
  * are equal on the common dimensions
  */
 bool
-same_range_tnumber(const RangeType *range, const Temporal *tnumber)
+same_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &same_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &same_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the
- * the range are equal on the common dimensions
+ * the span are equal on the common dimensions
  */
 bool
-same_tnumber_range(const Temporal *tnumber, const RangeType *range)
+same_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &same_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &same_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -895,7 +901,7 @@ same_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range and the bounding box of the temporal number
+ * @brief Return true if the span and the bounding box of the temporal number
  * are adjacent
  */
 bool
@@ -909,7 +915,7 @@ adjacent_number_tnumber(Datum number, CachedType basetype,
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the
- * the range are adjacent
+ * the span are adjacent
  */
 bool
 adjacent_tnumber_number(const Temporal *tnumber, Datum number,
@@ -921,24 +927,24 @@ adjacent_tnumber_number(const Temporal *tnumber, Datum number,
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the range and the bounding box of the temporal number
+ * @brief Return true if the span and the bounding box of the temporal number
  * are adjacent
  */
 bool
-adjacent_range_tnumber(const RangeType *range, const Temporal *tnumber)
+adjacent_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &adjacent_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &adjacent_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the
- * the range are adjacent
+ * the span are adjacent
  */
 bool
-adjacent_tnumber_range(const Temporal *tnumber, const RangeType *range)
+adjacent_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &adjacent_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &adjacent_tbox_tbox, INVERT_NO);
 }
 
 /**

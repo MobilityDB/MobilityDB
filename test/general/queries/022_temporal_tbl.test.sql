@@ -70,8 +70,8 @@ SELECT extent(temp::period) FROM tbl_tint;
 SELECT extent(temp::period) FROM tbl_tfloat;
 SELECT extent(temp::period) FROM tbl_ttext;
 
-SELECT extent(temp::intrange) FROM tbl_tint;
-SELECT round(extent(temp::floatrange)) FROM tbl_tfloat;
+SELECT extent(temp::intspan) FROM tbl_tint;
+SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
 
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
@@ -226,8 +226,8 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
 
-SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tint;
-SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tint;
+SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tfloat;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
@@ -473,13 +473,13 @@ WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
 SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL ) tmp
 WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
 
-SELECT COUNT(*) FROM tbl_tint, tbl_intrange WHERE temp != merge(atRange(temp, i), minusRange(temp, i));
-SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange WHERE temp != merge(atRange(temp, f), minusRange(temp, f));
+SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp != merge(atSpan(temp, i), minusSpan(temp, i));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, f), minusSpan(temp, f));
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intrange WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatrange WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intspan WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatspan WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMin(temp), minusMin(temp));
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMin(temp), minusMin(temp));

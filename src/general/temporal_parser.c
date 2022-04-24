@@ -480,7 +480,8 @@ span_parse(char **str, CachedType spantype, bool make)
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse span")));
 
-  Oid basetypid = type_oid(spantype_basetype(spantype));
+  CachedType basetype = spantype_basetype(spantype);
+  Oid basetypid = type_oid(basetype);
   /* The next two instructions will throw an exception if they fail */
   Datum lower = elem_parse(str, basetypid);
   p_comma(str);
@@ -496,7 +497,7 @@ span_parse(char **str, CachedType spantype, bool make)
 
   if (! make)
     return NULL;
-  return span_make(lower, upper, lower_inc, upper_inc, spantype);
+  return span_make(lower, upper, lower_inc, upper_inc, basetype);
 }
 
 /*****************************************************************************/

@@ -57,9 +57,15 @@
 Datum
 datum_round_float(Datum value, Datum prec)
 {
-  Datum number = call_function1(float8_numeric, value);
-  Datum round = call_function2(numeric_round, number, prec);
-  return call_function1(numeric_float8, round);
+  Datum result = value;
+  if (DatumGetFloat8(value) != -1 * get_float8_infinity() &&
+      DatumGetFloat8(value) != get_float8_infinity())
+  {
+    Datum number = call_function1(float8_numeric, value);
+    Datum round = call_function2(numeric_round, number, prec);
+    result = call_function1(numeric_float8, round);
+  }
+  return result;
 }
 
 /**

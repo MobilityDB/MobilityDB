@@ -123,6 +123,28 @@ CREATE TYPE timestampspan (
 );
 
 /******************************************************************************
+ * Constructors for ranges equivalent to the spans
+ ******************************************************************************/
+
+CREATE TYPE intrange;
+
+CREATE FUNCTION intrange_canonical(r intrange)
+  RETURNS intrange
+  AS 'MODULE_PATHNAME', 'intrange_canonical'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE intrange AS RANGE (
+  subtype = integer,
+  SUBTYPE_DIFF = int4range_subdiff,
+  CANONICAL = intrange_canonical
+);
+
+CREATE TYPE floatrange AS RANGE (
+  subtype = float8,
+  SUBTYPE_DIFF = float8mi
+);
+
+/******************************************************************************
  * Constructors
  ******************************************************************************/
 
@@ -207,6 +229,16 @@ CREATE FUNCTION upper_inc(timestampspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(floatspan, integer DEFAULT 0)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 
 /******************************************************************************
  * Operators

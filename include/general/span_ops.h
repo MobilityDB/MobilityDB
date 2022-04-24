@@ -32,8 +32,8 @@
  * Operators for time types.
  */
 
-#ifndef __TIME_OPS_H__
-#define __TIME_OPS_H__
+#ifndef __SPAN_OPS_H__
+#define __SPAN_OPS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -45,28 +45,11 @@
 
 /*****************************************************************************/
 
-/**
- * Enumeration for the relative position of a given element into a skiplist
- */
-typedef enum
-{
-  BEFORE,
-  DURING,
-  AFTER
-} RelativePos;
-
-/*****************************************************************************/
-
 /* Miscellaneous */
 
 extern uint32_t time_max_header_size(void);
 extern bool time_type(CachedType timetype);
 extern void ensure_time_type(CachedType timetype);
-
-/* Functions for aggregations */
-
-extern RelativePos pos_elem_elem(Datum d1, Datum d2);
-extern RelativePos pos_span_elem(const Span *s, Datum d);
 
 /* contains? */
 
@@ -81,29 +64,29 @@ extern bool contained_span_span(const Span *s1, const Span *s2);
 
 extern bool overlaps_span_span(const Span *s1, const Span *s2);
 
-/* before */
+/* left */
 
-extern bool before_elem_span(Datum d, CachedType basetype, const Span *s);
-extern bool before_span_elem(const Span *s, Datum d, CachedType basetype);
-extern bool before_span_span(const Span *s1, const Span *s2);
+extern bool left_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool left_span_elem(const Span *s, Datum d, CachedType basetype);
+extern bool left_span_span(const Span *s1, const Span *s2);
 
-/* after */
+/* right */
 
-extern bool after_elem_span(Datum d, CachedType basetype, const Span *s);
-extern bool after_span_elem(const Span *s, Datum d, CachedType basetype);
-extern bool after_span_span(const Span *s1, const Span *s2);
+extern bool right_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool right_span_elem(const Span *s, Datum d, CachedType basetype);
+extern bool right_span_span(const Span *s1, const Span *s2);
 
-/* overbefore */
+/* overleft */
 
-extern bool overbefore_elem_span(Datum d, CachedType basetype, const Span *s);
-extern bool overbefore_span_elem(const Span *s, Datum d, CachedType basetype);
-extern bool overbefore_span_span(const Span *s1, const Span *s2);
+extern bool overleft_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool overleft_span_elem(const Span *s, Datum d, CachedType basetype);
+extern bool overleft_span_span(const Span *s1, const Span *s2);
 
-/* overafter */
+/* overright */
 
-extern bool overafter_elem_span(Datum d, CachedType basetype, const Span *s);
-extern bool overafter_span_elem(const Span *s, Datum d, CachedType basetype);
-extern bool overafter_span_span(const Span *s1, const Span *s2);
+extern bool overright_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool overright_span_elem(const Span *s, Datum d, CachedType basetype);
+extern bool overright_span_span(const Span *s1, const Span *s2);
 
 /* adjacent */
 
@@ -113,21 +96,14 @@ extern bool adjacent_span_span(const Span *s1, const Span *s2);
 
 /* union */
 
-extern Span *union_elem_span(Datum d, CachedType basetype, const Span *s);
-extern Span *union_span_elem(const Span *s, Datum d, CachedType basetype);
-extern Span *union_span_span(const Span *s1, const Span *s2);
+extern Span *union_span_span(const Span *s1, const Span *s2, bool strict);
 
 /* intersection */
 
-// extern bool intersection_elem_elem(Datum d1, Datum d2, Datum *result);
-extern bool intersection_span_elem(const Span *s, Datum d, CachedType basetype,
-  Datum *result);
 extern Span *intersection_span_span(const Span *s1, const Span *s2);
 
 /* minus */
 
-extern bool minus_elem_elem(Datum d1, Datum d2, Datum *result);
-extern Span *minus_span_elem(const Span *s, Datum d, CachedType basetype);
 extern Span *minus_span_span(const Span *s1, const Span *s2);
 
 /* Distance returning a float in seconds for use with indexes in

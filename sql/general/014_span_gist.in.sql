@@ -76,21 +76,21 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   OPERATOR  18    = (intspan, intspan),
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
-  OPERATOR  25    |=| (intspan, int) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (intspan, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspan, int) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspan, intspan) FOR ORDER BY pg_catalog.float_ops,
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
-  OPERATOR  28    &<# (intspan, int),
-  OPERATOR  28    &<# (intspan, intspan),
+  OPERATOR  28    &< (intspan, int),
+  OPERATOR  28    &< (intspan, intspan),
   -- strictly before
-  OPERATOR  29    <<# (intspan, int),
-  OPERATOR  29    <<# (intspan, intspan),
+  OPERATOR  29    << (intspan, int),
+  OPERATOR  29    << (intspan, intspan),
   -- strictly after
-  OPERATOR  30    #>> (intspan, int),
-  OPERATOR  30    #>> (intspan, intspan),
+  OPERATOR  30    >> (intspan, int),
+  OPERATOR  30    >> (intspan, intspan),
   -- overlaps or after
-  OPERATOR  31    #&> (intspan, int),
-  OPERATOR  31    #&> (intspan, intspan),
+  OPERATOR  31    &> (intspan, int),
+  OPERATOR  31    &> (intspan, intspan),
   -- functions
   FUNCTION  1  span_gist_consistent(internal, intspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
@@ -111,7 +111,7 @@ CREATE FUNCTION span_gist_consistent(internal, floatspan, smallint, oid, interna
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS intspan_rtree_ops
+CREATE OPERATOR CLASS floatspan_rtree_ops
   DEFAULT FOR TYPE floatspan USING gist AS
   -- overlaps
   OPERATOR  3     && (floatspan, floatspan),
@@ -126,21 +126,21 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   OPERATOR  18    = (floatspan, floatspan),
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
-  OPERATOR  25    |=| (floatspan, float) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (floatspan, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspan, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspan, floatspan) FOR ORDER BY pg_catalog.float_ops,
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
-  OPERATOR  28    &<# (floatspan, float),
-  OPERATOR  28    &<# (floatspan, floatspan),
+  OPERATOR  28    &< (floatspan, float),
+  OPERATOR  28    &< (floatspan, floatspan),
   -- strictly before
-  OPERATOR  29    <<# (floatspan, float),
-  OPERATOR  29    <<# (floatspan, floatspan),
+  OPERATOR  29    << (floatspan, float),
+  OPERATOR  29    << (floatspan, floatspan),
   -- strictly after
-  OPERATOR  30    #>> (floatspan, float),
-  OPERATOR  30    #>> (floatspan, floatspan),
+  OPERATOR  30    >> (floatspan, float),
+  OPERATOR  30    >> (floatspan, floatspan),
   -- overlaps or after
-  OPERATOR  31    #&> (floatspan, float),
-  OPERATOR  31    #&> (floatspan, floatspan),
+  OPERATOR  31    &> (floatspan, float),
+  OPERATOR  31    &> (floatspan, floatspan),
   -- functions
   FUNCTION  1  span_gist_consistent(internal, floatspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),

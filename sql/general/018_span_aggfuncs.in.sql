@@ -27,40 +27,42 @@
  *
  *****************************************************************************/
 
-/**
- * @file rangetypes_ext.h
- * Extended operators for range types.
+/*
+ * time_aggfuncs.sql
+ * Aggregate functions for time types
  */
 
-#ifndef __RANGETYPES_EXT_H__
-#define __RANGETYPES_EXT_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-
 /*****************************************************************************/
 
-/* Generic functions */
+CREATE FUNCTION span_extent_transfn(intspan, intspan)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_combinefn(intspan, intspan)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-extern Datum intrange_canonical(PG_FUNCTION_ARGS);
+CREATE FUNCTION span_extent_transfn(floatspan, floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_combinefn(floatspan, floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-extern Datum range_left_elem(PG_FUNCTION_ARGS);
-extern Datum range_overleft_elem(PG_FUNCTION_ARGS);
-extern Datum range_right_elem(PG_FUNCTION_ARGS);
-extern Datum range_overright_elem(PG_FUNCTION_ARGS);
-extern Datum range_adjacent_elem(PG_FUNCTION_ARGS);
-
-extern Datum elem_left_range(PG_FUNCTION_ARGS);
-extern Datum elem_overleft_range(PG_FUNCTION_ARGS);
-extern Datum elem_right_range(PG_FUNCTION_ARGS);
-extern Datum elem_overright_range(PG_FUNCTION_ARGS);
-extern Datum elem_adjacent_range(PG_FUNCTION_ARGS);
-
-extern Datum floatrange_round(PG_FUNCTION_ARGS);
-
-extern Datum range_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum range_extent_transfn(PG_FUNCTION_ARGS);
+CREATE AGGREGATE extent(intspan) (
+  SFUNC = span_extent_transfn,
+  STYPE = intspan,
+  COMBINEFUNC = span_extent_combinefn
+  -- , PARALLEL = safe
+);
+CREATE AGGREGATE extent(floatspan) (
+  SFUNC = span_extent_transfn,
+  STYPE = floatspan,
+  COMBINEFUNC = span_extent_combinefn
+  -- , PARALLEL = safe
+);
 
 /*****************************************************************************/
-
-#endif

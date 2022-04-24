@@ -219,26 +219,26 @@ ensure_tnumber_basetype(CachedType basetype)
 }
 
 /**
- * Return true if the type is a range number type
+ * Return true if the type is a span number type
  *
  * @note Function used in particular in the indexes
  */
 bool
-tnumber_rangetype(CachedType rangetype)
+tnumber_spantype(CachedType spantype)
 {
-  if (rangetype == T_INTRANGE || rangetype == T_FLOATRANGE)
+  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a range type
+ * Ensure that the type is a span type
  */
 void
-ensure_tnumber_rangetype(CachedType rangetype)
+ensure_tnumber_spantype(CachedType spantype)
 {
-  if (! tnumber_rangetype(rangetype))
-    elog(ERROR, "unknown number range type: %d", rangetype);
+  if (! tnumber_spantype(spantype))
+    elog(ERROR, "unknown number span type: %d", spantype);
   return;
 }
 
@@ -374,6 +374,31 @@ datum_ge(Datum l, Datum r, CachedType type)
  * Version of the functions where the types of both arguments may be different
  * but compatible, e.g., integer and float
  */
+
+/**
+ * Return true if the first value is less than the second one
+ * (base type dispatch function)
+ */
+int
+datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
+{
+  ensure_span_basetype(typel);
+  if (typel != typer)
+    ensure_span_basetype(typer);
+  if (typel == T_INT4 && typer == T_INT4)
+    return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
+      ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
+  if (typel == T_INT4 && typer == T_FLOAT8)
+    return float8_cmp_internal((double) DatumGetInt32(l), DatumGetFloat8(r));
+  if (typel == T_FLOAT8 && typer == T_INT4)
+    return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
+  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+    return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
+  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+    return timestamp_cmp_internal(DatumGetTimestampTz(l),
+      DatumGetTimestampTz(r));
+  elog(ERROR, "unknown span_elem_cmp function for span base type: %d", typel);
+}
 
 /**
  * Return true if the two values are equal even if their type is not the same
@@ -927,13 +952,12 @@ period_sort_cmp(const Period **l, const Period **r)
 }
 
 /**
- * Comparator function for ranges
+ * Comparator function for spans
  */
 static int
-range_sort_cmp(const RangeType **l, const RangeType **r)
+span_sort_cmp(const Span **l, const Span **r)
 {
-  return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
-    RangeTypePGetDatum(*r)));
+  return span_cmp(*l, *r);
 }
 
 /**
@@ -1010,13 +1034,13 @@ periodarr_sort(Period **periods, int count)
 }
 
 /**
- * Sort function for ranges
+ * Sort function for spans
  */
 void
-rangearr_sort(RangeType **ranges, int count)
+spanarr_sort(Span **spans, int count)
 {
-  qsort(ranges, (size_t) count, sizeof(RangeType *),
-    (qsort_comparator) &range_sort_cmp);
+  qsort(spans, (size_t) count, sizeof(Span *),
+    (qsort_comparator) &span_sort_cmp);
 }
 
 /**
@@ -1349,17 +1373,17 @@ hypot4d(double x, double y, double z, double m)
  *****************************************************************************/
 
 /**
- * Return the Oid of the range type corresponding to the base type
+ * Return the Oid of the span type corresponding to the base type
  */
 Oid
-basetype_rangeoid(CachedType basetype)
+basetype_spanoid(CachedType basetype)
 {
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
-    return type_oid(T_INTRANGE);
+    return type_oid(T_INTSPAN);
   if (basetype == T_FLOAT8)
-    return type_oid(T_FLOATRANGE);
-  elog(ERROR, "unknown range type for base type: %d", basetype);
+    return type_oid(T_FLOATSPAN);
+  elog(ERROR, "unknown span type for base type: %d", basetype);
 }
 
 /*****************************************************************************
@@ -1455,12 +1479,12 @@ periodarr_extract(ArrayType *array, int *count)
 }
 
 /**
- * Extract a C array from a PostgreSQL array containing ranges
+ * Extract a C array from a PostgreSQL array containing spans
  */
-RangeType **
-rangearr_extract(ArrayType *array, int *count)
+Span **
+spanarr_extract(ArrayType *array, int *count)
 {
-  return (RangeType **) datumarr_extract(array, count);
+  return (Span **) datumarr_extract(array, count);
 }
 
 /**
@@ -1520,14 +1544,14 @@ periodarr_to_array(const Period **periods, int count)
 }
 
 /**
- * Convert a C array of ranges into a PostgreSQL array
+ * Convert a C array of spans into a PostgreSQL array
  */
 ArrayType *
-rangearr_to_array(RangeType **ranges, int count, CachedType type)
+spanarr_to_array(Span **spans, int count, CachedType type)
 {
   assert(count > 0);
   Oid typid = type_oid(type);
-  ArrayType *result = construct_array((Datum *) ranges, count, typid, -1,
+  ArrayType *result = construct_array((Datum *) spans, count, typid, -1,
     false, 'd');
   return result;
 }
@@ -1575,6 +1599,70 @@ stboxarr_to_array(STBOX *boxarr, int count)
     type_oid(T_STBOX), sizeof(STBOX), false, 'd');
   pfree(boxes);
   return result;
+}
+
+/*****************************************************************************
+ * Range functions
+ *****************************************************************************/
+
+/**
+ * Construct a range value from given arguments
+ */
+RangeType *
+range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
+  CachedType basetype)
+{
+  Oid rangetypid = 0;
+  assert (basetype == T_INT4 || basetype == T_FLOAT8 ||
+    basetype == T_TIMESTAMPTZ);
+  if (basetype == T_INT4)
+    rangetypid = type_oid(T_INTRANGE);
+  else if (basetype == T_FLOAT8)
+    rangetypid = type_oid(T_FLOATRANGE);
+  else /* basetype == T_TIMESTAMPTZ */
+    rangetypid = type_oid(T_TSTZRANGE);
+
+  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  RangeBound lower;
+  RangeBound upper;
+  lower.val = from;
+  lower.infinite = false;
+  lower.inclusive = lower_inc;
+  lower.lower = true;
+  upper.val = to;
+  upper.infinite = false;
+  upper.inclusive = upper_inc;
+  upper.lower = false;
+  return make_range(typcache, &lower, &upper, false);
+}
+
+PG_FUNCTION_INFO_V1(intrange_canonical);
+/**
+ * Canonical function for defining the intrange type
+ */
+PGDLLEXPORT Datum
+intrange_canonical(PG_FUNCTION_ARGS)
+{
+  RangeType *range = PG_GETARG_RANGE_P(0);
+  TypeCacheEntry *typcache;
+  RangeBound lower_bound;
+  RangeBound upper_bound;
+  bool empty;
+  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
+  if (empty)
+    PG_RETURN_RANGE_P(range);
+  if (!lower_bound.infinite && !lower_bound.inclusive)
+  {
+    lower_bound.val = DirectFunctionCall2(int4pl, lower_bound.val, Int32GetDatum(1));
+    lower_bound.inclusive = true;
+  }
+  if (!upper_bound.infinite && upper_bound.inclusive)
+  {
+    upper_bound.val = DirectFunctionCall2(int4pl, upper_bound.val, Int32GetDatum(1));
+    upper_bound.inclusive = false;
+  }
+  PG_RETURN_RANGE_P(range_serialize(typcache, &lower_bound, &upper_bound, false));
 }
 
 #endif /* #ifndef MEOS */

@@ -39,8 +39,8 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <libpq/pqformat.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
+#include "general/span.h"
 #include "general/tempcache.h"
 #include "general/timetypes.h"
 
@@ -99,7 +99,7 @@ extern TBOX *tbox_read(StringInfo buf);
 extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
 extern void int_tbox(int i, TBOX *box);
 extern void float_tbox(double d, TBOX *box);
-extern void range_tbox(const RangeType *r, TBOX *box);
+extern void span_tbox(const Span *r, TBOX *box);
 extern void timestamp_tbox(TimestampTz t, TBOX *box);
 extern void timestampset_tbox(const TimestampSet *ts, TBOX *box);
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
@@ -111,9 +111,9 @@ extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
 extern TBOX *float_timestamp_to_tbox(double d, TimestampTz t);
 extern TBOX *int_period_to_tbox(int i, Period *p);
 extern TBOX *float_period_to_tbox(double d, Period *p);
-extern TBOX *range_timestamp_to_tbox(RangeType *range, TimestampTz t);
-extern TBOX *range_period_to_tbox(RangeType *range, Period *p);
-extern RangeType *tbox_to_floatrange(TBOX *box);
+extern TBOX *span_timestamp_to_tbox(Span *span, TimestampTz t);
+extern TBOX *span_period_to_tbox(Span *span, Period *p);
+extern Span *tbox_to_floatspan(TBOX *box);
 extern Period *tbox_to_period(TBOX *box);
 
 /* Accessor functions */

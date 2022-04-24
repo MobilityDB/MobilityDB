@@ -45,6 +45,7 @@
 #include "general/temporal.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
+#include "general/tnumber_mathfuncs.h"
 #include "general/rangetypes_ext.h"
 
 /*****************************************************************************
@@ -62,7 +63,7 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
 {
   if (lower)
   {
-    lower->d = s->lower;
+    lower->val = s->lower;
     lower->inclusive = s->lower_inc;
     lower->lower = true;
     lower->spantype = s->spantype;
@@ -70,12 +71,39 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
   }
   if (upper)
   {
-    upper->d = s->upper;
+    upper->val = s->upper;
     upper->inclusive = s->upper_inc;
     upper->lower = false;
     upper->spantype = s->spantype;
     upper->basetype = s->basetype;
   }
+}
+
+/*
+ * @brief Construct a span value from the bounds
+ *
+ * This does not force canonicalization of the span value.  In most cases,
+ * external callers should only be canonicalization functions.
+ */
+Span *
+span_serialize(SpanBound *lower, SpanBound *upper)
+{
+  assert(lower->basetype == upper->basetype);
+
+  /* If lower bound value is above upper, it's wrong */
+  int cmp = datum_cmp2(lower->val, upper->val, lower->basetype,
+    upper->basetype);
+
+  if (cmp > 0)
+    elog(ERROR, "span lower bound must be less than or equal to span upper bound");
+
+  /* If bounds are equal, and not both inclusive, span is empty */
+  if (cmp == 0 && ! (lower->inclusive && upper->inclusive))
+    elog(ERROR, "a span cannot be empty");
+
+  Span *result = span_make(lower->val, upper->val, lower->inclusive,
+    upper->inclusive, lower->basetype);
+  return result;
 }
 
 /*****************************************************************************/
@@ -115,31 +143,6 @@ ensure_span_basetype(CachedType basetype)
 }
 
 /**
- * Return true if the first value is less than the second one
- * (base type dispatch function)
- */
-int
-span_elem_cmp(Datum l, Datum r, CachedType typel, CachedType typer)
-{
-  ensure_span_basetype(typel);
-  if (typel != typer)
-    ensure_span_basetype(typer);
-  if (typel == T_INT4 && typer == T_INT4)
-    return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
-      ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
-  if (typel == T_INT4 && typer == T_FLOAT8)
-    return float8_cmp_internal((double) DatumGetInt32(l), DatumGetFloat8(r));
-  if (typel == T_FLOAT8 && typer == T_INT4)
-    return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
-    return timestamp_cmp_internal(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r));
-  elog(ERROR, "unknown span_elem_cmp function for span base type: %d", typel);
-}
-
-/**
  * Compare two span boundary points, returning <0, 0, or >0 according to
  * whether b1 is less than, equal to, or greater than b2.
  *
@@ -162,7 +165,7 @@ int
 span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
 {
   /* Compare the values */
-  int32 result = span_elem_cmp(b1->d, b2->d, b1->basetype, b2->basetype);
+  int32 result = datum_cmp2(b1->val, b2->val, b1->basetype, b2->basetype);
 
   /*
    * If the comparison is not equal and the bounds are both inclusive or
@@ -209,7 +212,7 @@ span_bound_qsort_cmp(const void *a1, const void *a2)
 int
 span_lower_cmp(const Span *a, const Span *b)
 {
-  int result = span_elem_cmp(a->lower, b->lower, a->basetype, b->basetype);
+  int result = datum_cmp2(a->lower, b->lower, a->basetype, b->basetype);
   if (result == 0)
   {
     if (a->lower_inc == b->lower_inc)
@@ -235,7 +238,7 @@ span_lower_cmp(const Span *a, const Span *b)
 int
 span_upper_cmp(const Span *a, const Span *b)
 {
-  int result = span_elem_cmp(a->upper, b->upper, a->basetype, b->basetype);
+  int result = datum_cmp2(a->upper, b->upper, a->basetype, b->basetype);
   if (result == 0)
   {
     if (a->upper_inc == b->upper_inc)
@@ -257,11 +260,11 @@ span_upper_cmp(const Span *a, const Span *b)
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType spantype)
+  CachedType basetype)
 {
   /* Note: zero-fill is done in the span_set function */
   Span *s = (Span *) palloc(sizeof(Span));
-  span_set(lower, upper, lower_inc, upper_inc, spantype, s);
+  span_set(lower, upper, lower_inc, upper_inc, basetype, s);
   return s;
 }
 
@@ -271,10 +274,10 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType spantype, Span *s)
+  CachedType basetype, Span *s)
 {
-  CachedType basetype = spantype_basetype(spantype);
-  int cmp = span_elem_cmp(lower, upper, basetype, basetype);
+  CachedType spantype = basetype_spantype(basetype);
+  int cmp = datum_cmp2(lower, upper, basetype, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
@@ -309,17 +312,7 @@ span_copy(const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_accessor
- * @brief Return the number of seconds of the span as a float8 value
- */
-float8
-span_to_secs(Datum upper, Datum lower)
-{
-  return ((float8) upper - (float8) lower) / USECS_PER_SEC;
-}
-
-/**
- * Normalize an array of spans
+ * @brief Normalize an array of spans
  *
  * The input spans may overlap and may be non contiguous.
  * The normalized spans are new spans that must be freed.
@@ -392,8 +385,8 @@ span_super_union(const Span *s1, const Span *s2)
 void
 span_expand(const Span *s1, Span *s2)
 {
-  int cmp1 = span_elem_cmp(s1->lower, s2->lower, s1->basetype, s2->basetype);
-  int cmp2 = span_elem_cmp(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  int cmp1 = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
+  int cmp2 = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
   bool lower1 = cmp1 < 0 || (cmp1 == 0 && (s2->lower_inc || ! s1->lower_inc));
   bool upper1 = cmp2 > 0 || (cmp2 == 0 && (s2->upper_inc || ! s1->upper_inc));
   s2->lower = lower1 ? s2->lower : s1->lower;
@@ -401,6 +394,85 @@ span_expand(const Span *s1, Span *s2)
   s2->upper = upper1 ? s2->upper : s1->upper;
   s2->upper_inc = upper1 ? s2->upper_inc : s1->upper_inc;
   return;
+}
+
+/**
+ * Get the bounds of the span as double values.
+ *
+ * @param[in] span Input span
+ * @param[out] xmin, xmax Lower and upper bounds
+ */
+void
+span_bounds(const Span *s, double *xmin, double *xmax)
+{
+  ensure_tnumber_spantype(s->spantype);
+  if (s->spantype == T_INTSPAN)
+  {
+    *xmin = (double)(DatumGetInt32(s->lower));
+    *xmax = (double)(DatumGetInt32(s->upper));
+  }
+  else /* s->spantype == T_FLOATSPAN */
+  {
+    *xmin = DatumGetFloat8(s->lower);
+    *xmax = DatumGetFloat8(s->upper);
+  }
+}
+
+/*
+ * Compare two span boundary points, returning <0, 0, or >0 according to
+ * whether b1 is less than, equal to, or greater than b2.
+ *
+ * The boundaries can be any combination of upper and lower; so it's useful
+ * for a variety of operators.
+ *
+ * The simple case is when b1 and b2 are both inclusive, in which
+ * case the result is just a comparison of the values held in b1 and b2.
+ *
+ * If a bound is exclusive, then we need to know whether it's a lower bound,
+ * in which case we treat the boundary point as "just greater than" the held
+ * value; or an upper bound, in which case we treat the boundary point as
+ * "just less than" the held value.
+ *
+ * There is only one case where two boundaries compare equal but are not
+ * identical: when both bounds are inclusive and hold the same value,
+ * but one is an upper bound and the other a lower bound.
+ */
+int
+span_cmp_bounds(const SpanBound *b1, const SpanBound *b2)
+{
+  int32 result = datum_cmp2(b1->val, b2->val, b1->basetype, b2->basetype);
+
+  /*
+   * If the comparison is anything other than equal, we're done. If they
+   * compare equal though, we still have to consider whether the boundaries
+   * are inclusive or exclusive.
+   */
+  if (result == 0)
+  {
+    if (!b1->inclusive && !b2->inclusive)
+    {
+      /* both are exclusive */
+      if (b1->lower == b2->lower)
+        return 0;
+      else
+        return b1->lower ? 1 : -1;
+    }
+    else if (!b1->inclusive)
+      return b1->lower ? 1 : -1;
+    else if (!b2->inclusive)
+      return b2->lower ? -1 : 1;
+    else
+    {
+      /*
+       * Both are inclusive and the values held are equal, so they are
+       * equal regardless of whether they are upper or lower boundaries,
+       * or a mix.
+       */
+      return 0;
+    }
+  }
+
+  return result;
 }
 
 /*****************************************************************************
@@ -498,9 +570,8 @@ span_read(StringInfo buf, CachedType spantype)
 Span *
 elem_span(Datum d, CachedType basetype)
 {
-  CachedType spantype = basetype_spantype(basetype);
-  ensure_span_type(spantype);
-  Span *result = span_make(d, d, true, true, spantype);
+  ensure_span_basetype(basetype);
+  Span *result = span_make(d, d, true, true, basetype);
   return result;
 }
 
@@ -596,6 +667,22 @@ span_distance(const Span *s)
   // return;
 // }
 
+/**
+ * @ingroup libmeos_span_transf
+ * @brief Set the precision of the float span to the number of decimal places.
+ */
+Span *
+floatspan_round(Span *span, Datum size)
+{
+  /* Set precision of bounds */
+  Datum lower = datum_round_float(span->lower, size);
+  Datum upper = datum_round_float(span->upper, size);
+  /* Create resulting span */
+  Span *result = span_make(lower, upper, span->lower_inc, span->upper_inc,
+    span->basetype);
+  return result;
+}
+
 /*****************************************************************************
  * Btree support
  *****************************************************************************/
@@ -637,12 +724,12 @@ span_ne(const Span *s1, const Span *s2)
 int
 span_cmp(const Span *s1, const Span *s2)
 {
-  int cmp = span_elem_cmp(s1->lower, s2->lower, s1->basetype, s2->basetype);
+  int cmp = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
   if (cmp != 0)
     return cmp;
   if (s1->lower_inc != s2->lower_inc)
     return s1->lower_inc ? -1 : 1;
-  cmp = span_elem_cmp(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  cmp = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
   if (cmp != 0)
     return cmp;
   if (s1->upper_inc != s2->upper_inc)
@@ -843,8 +930,9 @@ Span_constructor2(PG_FUNCTION_ARGS)
   Datum lower = PG_GETARG_DATUM(0);
   Datum upper = PG_GETARG_DATUM(1);
   CachedType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  CachedType basetype = spantype_basetype(spantype);
   Span *span;
-  span = span_make(lower, upper, true, false, spantype);
+  span = span_make(lower, upper, true, false, basetype);
   PG_RETURN_PERIOD_P(span);
 }
 
@@ -861,8 +949,9 @@ Span_constructor4(PG_FUNCTION_ARGS)
   bool lower_inc = PG_GETARG_BOOL(2);
   bool upper_inc = PG_GETARG_BOOL(3);
   CachedType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  CachedType basetype = spantype_basetype(spantype);
   Span *span;
-  span = span_make(lower, upper, lower_inc, upper_inc, spantype);
+  span = span_make(lower, upper, lower_inc, upper_inc, basetype);
   PG_RETURN_PERIOD_P(span);
 }
 
@@ -1039,6 +1128,21 @@ Span_upper_inc(PG_FUNCTION_ARGS)
   // PG_RETURN_POINTER(result);
 // }
 
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(Floatspan_round);
+/**
+ * Set the precision of the float range to the number of decimal places
+ */
+PGDLLEXPORT Datum
+Floatspan_round(PG_FUNCTION_ARGS)
+{
+  Span *span = PG_GETARG_SPAN_P(0);
+  Datum size = PG_GETARG_DATUM(1);
+  Span *result = floatspan_round(span, size);
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Btree support
  *****************************************************************************/
@@ -1159,4 +1263,4 @@ Span_hash_extended(PG_FUNCTION_ARGS)
 
 #endif /* #ifndef MEOS */
 
-/*****************************************************************************/
+/******************************************************************************/

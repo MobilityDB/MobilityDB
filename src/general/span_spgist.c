@@ -157,10 +157,10 @@ get_quadrant2D(const Span *centroid, const Span *query)
 static bool
 overlap2D(const SpanNode *nodebox, const Span *query)
 {
-  Span p;
+  Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.spantype, &p);
-  return overlaps_span_span(&p, query);
+    nodebox->right.upper_inc, nodebox->left.spantype, &s);
+  return overlaps_span_span(&s, query);
 }
 
 /**
@@ -169,46 +169,46 @@ overlap2D(const SpanNode *nodebox, const Span *query)
 static bool
 contain2D(const SpanNode *nodebox, const Span *query)
 {
-  Span p;
+  Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.spantype,&p);
-  return contains_span_span(&p, query);
+    nodebox->right.upper_inc, nodebox->left.spantype,&s);
+  return contains_span_span(&s, query);
 }
 
 /**
- * Can any span from nodebox be before the query?
+ * Can any span from nodebox be left the query?
  */
 static bool
-before2D(const SpanNode *nodebox, const Span *query)
+left2D(const SpanNode *nodebox, const Span *query)
 {
-  return before_span_span(&nodebox->right, query);
+  return left_span_span(&nodebox->right, query);
 }
 
 /**
- * Can any span from nodebox does not extend after the query?
+ * Can any span from nodebox does not extend right the query?
  */
 static bool
-overBefore2D(const SpanNode *nodebox, const Span *query)
+overLeft2D(const SpanNode *nodebox, const Span *query)
 {
-  return overbefore_span_span(&nodebox->right, query);
+  return overleft_span_span(&nodebox->right, query);
 }
 
 /**
- * Can any span from nodebox be after the query?
+ * Can any span from nodebox be right the query?
  */
 static bool
-after2D(const SpanNode *nodebox, const Span *query)
+right2D(const SpanNode *nodebox, const Span *query)
 {
-  return after_span_span(&nodebox->left, query);
+  return right_span_span(&nodebox->left, query);
 }
 
 /**
- * Can any span from nodebox does not extend before the query?
+ * Can any span from nodebox does not extend left the query?
  */
 static bool
-overAfter2D(const SpanNode *nodebox, const Span *query)
+overRight2D(const SpanNode *nodebox, const Span *query)
 {
-  return overafter_span_span(&nodebox->left, query);
+  return overright_span_span(&nodebox->left, query);
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -218,21 +218,13 @@ overAfter2D(const SpanNode *nodebox, const Span *query)
 static double
 distance_span_nodespan(Span *query, SpanNode *nodebox)
 {
-  /* If the the span intersects the nodebox return 0 */
-  Span p;
+  /* Determine the maximum span of the nodebox */
+  Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.spantype, &p);
-  if (overlaps_span_span(query, &p))
-    return 0;
+    nodebox->right.upper_inc, nodebox->left.spantype, &s);
 
-  /* If the query is to the left of the nodebox return the distance between
-   * the upper bound of the query and lower bound of the nodebox */
-  if (nodebox->left.lower >= query->upper)
-    return nodebox->left.lower - query->upper;
-
-  /* If the query is to the right of the nodebox return the distance between
-   * the upper bound of the nodebox and lower bound of the query */
-  return query->lower - nodebox->right.upper;
+  /* Compute the distance between the query span and the nodebox span */
+  return distance_span_span(query, &s);
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
@@ -250,8 +242,8 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   }
   else if (type == T_INTSPAN || type == T_FLOATSPAN)
   {
-    Span *p = DatumGetSpanP(scankey->sk_argument);
-    memcpy(result, p, sizeof(Span));
+    Span *s = DatumGetSpanP(scankey->sk_argument);
+    memcpy(result, s, sizeof(Span));
   }
   /* For temporal types whose bounding box is a span */
   else if (temporal_type(type))
@@ -359,9 +351,9 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
 
   median = in->nTuples / 2;
 
-  centroid = span_make(lowerBounds[median].d, upperBounds[median].d,
+  centroid = span_make(lowerBounds[median].val, upperBounds[median].val,
     lowerBounds[median].inclusive, upperBounds[median].inclusive,
-    lowerBounds[median].spantype);
+    lowerBounds[median].basetype);
 
   /* Fill the output */
   out->hasPrefix = true;
@@ -510,17 +502,17 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
         case RTSameStrategyNumber:
           flag = contain2D(&next_nodespan, &queries[i]);
           break;
-        case RTBeforeStrategyNumber:
-          flag = !overAfter2D(&next_nodespan, &queries[i]);
+        case RTLeftStrategyNumber:
+          flag = !overRight2D(&next_nodespan, &queries[i]);
           break;
-        case RTOverBeforeStrategyNumber:
-          flag = !after2D(&next_nodespan, &queries[i]);
+        case RTOverLeftStrategyNumber:
+          flag = !right2D(&next_nodespan, &queries[i]);
           break;
-        case RTAfterStrategyNumber:
-          flag = !overBefore2D(&next_nodespan, &queries[i]);
+        case RTRightStrategyNumber:
+          flag = !overLeft2D(&next_nodespan, &queries[i]);
           break;
-        case RTOverAfterStrategyNumber:
-          flag = !before2D(&next_nodespan, &queries[i]);
+        case RTOverRightStrategyNumber:
+          flag = !left2D(&next_nodespan, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);

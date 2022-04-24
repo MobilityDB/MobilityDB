@@ -28,39 +28,63 @@
  *****************************************************************************/
 
 /**
- * @file rangetypes_ext.h
- * Extended operators for range types.
+ * @file span_aggfuncs.c
+ * @brief Aggregate function for span types.
  */
 
-#ifndef __RANGETYPES_EXT_H__
-#define __RANGETYPES_EXT_H__
+// #include "general/span_aggfuncs.h"
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
+#include "general/span.h"
+#include "general/span_ops.h"
 
 /*****************************************************************************/
 
-/* Generic functions */
+PG_FUNCTION_INFO_V1(Span_extent_transfn);
+/**
+ * Transition function for extent aggregation of span values
+ */
+PGDLLEXPORT Datum
+Span_extent_transfn(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
+  Span *result;
 
-extern Datum lower_datum(const RangeType *range);
-extern Datum upper_datum(const RangeType *range);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-extern bool lower_inc(RangeType *range);
-extern bool upper_inc(RangeType *range);
-#else
-extern bool lower_inc(const RangeType *range);
-extern bool upper_inc(const RangeType *range);
-#endif
-extern void range_bounds(const RangeType *range, double *xmin, double *xmax);
-extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, CachedType basetype);
-extern RangeType **rangearr_normalize(RangeType **ranges, int count,
-  int *newcount);
+  /* Can't do anything with null inputs */
+  if (!s1 && !s2)
+    PG_RETURN_NULL();
+  /* Null span and non-null span, return the span */
+  else if (!s1)
+    result = span_copy(s2);
+  /* Non-null span and null span, return the span */
+  else if (!s2)
+    result = span_copy(s1);
+  else
+    /* Non-strict union */
+    result = union_span_span(s1, s2, false);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Span_extent_combinefn);
+/**
+ * Combine function for temporal extent aggregation
+ */
+PGDLLEXPORT Datum
+Span_extent_combinefn(PG_FUNCTION_ARGS)
+{
+  Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
+  if (!s2 && !s1)
+    PG_RETURN_NULL();
+  if (s1 && !s2)
+    PG_RETURN_POINTER(s1);
+  if (s2 && !s1)
+    PG_RETURN_POINTER(s2);
+  /* Non-strict union */
+  Span *result = union_span_span(s1, s2, false);
+  PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************/
 
-#endif
