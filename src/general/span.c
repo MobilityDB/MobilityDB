@@ -358,7 +358,8 @@ span_bounds(const Span *s, double *xmin, double *xmax)
   if (s->spantype == T_INTSPAN)
   {
     *xmin = (double)(DatumGetInt32(s->lower));
-    *xmax = (double)(DatumGetInt32(s->upper));
+    /* intspans are in canonical form so their upper bound is exclusive */
+    *xmax = (double)(DatumGetInt32(s->upper) - 1);
   }
   else /* s->spantype == T_FLOATSPAN */
   {

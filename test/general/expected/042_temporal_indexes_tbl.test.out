@@ -196,55 +196,55 @@ SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@
   9599
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
  count 
 -------
   1783
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
  count 
 -------
    676
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
  count 
 -------
     95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
  count 
 -------
    543
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
  count 
 -------
     95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
  count 
 -------
     94
@@ -532,55 +532,55 @@ SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-
   9600
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
  count 
 -------
   1431
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
  count 
 -------
     65
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
  count 
 -------
     65
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
  count 
 -------
     65
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
  count 
 -------
      2
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
  count 
 -------
    110
@@ -1172,55 +1172,55 @@ SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@
   9599
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
  count 
 -------
   1783
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
  count 
 -------
    676
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
  count 
 -------
     95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
  count 
 -------
    543
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
  count 
 -------
     95
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
  count 
 -------
     94
@@ -1508,55 +1508,55 @@ SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-
   9600
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
  count 
 -------
   1431
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
  count 
 -------
     65
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
  count 
 -------
     65
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatrange '[1,3]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
  count 
 -------
     65
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
  count 
 -------
      2
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatrange '[97,100]';
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
  count 
 -------
    110
