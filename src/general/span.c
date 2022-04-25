@@ -269,6 +269,28 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 }
 
 /**
+ * @brief Canonicalize discrete spans.
+ */
+void
+span_canonicalize(Span *s)
+{
+  if (s->basetype == T_INT4)
+  {
+    if (! s->lower_inc)
+    {
+      s->lower = Int32GetDatum(DatumGetInt32(s->lower) + 1);
+      s->lower_inc = true;
+    }
+
+    if (s->upper_inc)
+    {
+      s->upper = Int32GetDatum(DatumGetInt32(s->upper) + 1);
+      s->upper_inc = false;
+    }
+  }
+}
+
+/**
  * @ingroup libmeos_span_constructor
  * @brief Set the span from the argument values.
  */
@@ -297,6 +319,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   s->upper_inc = upper_inc;
   s->spantype = spantype;
   s->basetype = basetype;
+  span_canonicalize(s);
 }
 
 /**

@@ -1547,12 +1547,11 @@ periodarr_to_array(const Period **periods, int count)
  * Convert a C array of spans into a PostgreSQL array
  */
 ArrayType *
-spanarr_to_array(Span **spans, int count, CachedType type)
+spanarr_to_array(Span **spans, int count)
 {
   assert(count > 0);
-  Oid typid = type_oid(type);
-  ArrayType *result = construct_array((Datum *) spans, count, typid, -1,
-    false, 'd');
+  ArrayType *result = construct_array((Datum *) spans, count,
+    type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
   return result;
 }
 

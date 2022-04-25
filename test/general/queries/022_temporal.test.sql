@@ -1783,13 +1783,11 @@ SELECT minusValues(tint '{[1@2000-01-01, 1@2000-01-03],[2@2000-01-04, 2@2000-01-
 SELECT minusValues(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[2.5@2000-01-04, 2.5@2000-01-05]}', ARRAY[1.5, 2.5]);
 SELECT minusValues(ttext '{[AA@2000-01-01, AA@2000-01-03],[BB@2000-01-04, BB@2000-01-05]}', ARRAY[text 'AA', 'BB']);
 
-SELECT atSpan(tint '1@2000-01-01', intspan 'empty');
 SELECT atSpan(tint '1@2000-01-01', intspan '[1,3]');
 SELECT atSpan(tint '{1@2000-01-01}', intspan '[1,3]');
 SELECT atSpan(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intspan '[1,3]');
 SELECT atSpan(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intspan '[1,3]');
 SELECT atSpan(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intspan '[1,3]');
-SELECT atSpan(tfloat '1.5@2000-01-01', floatspan 'empty');
 SELECT atSpan(tfloat '1.5@2000-01-01', floatspan '[1,3]');
 SELECT atSpan(tfloat '{1.5@2000-01-01}', floatspan '[1,3]');
 SELECT atSpan(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatspan '[1,3]');
@@ -1805,13 +1803,11 @@ SELECT atSpan(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000
 
 SELECT atSpan(tfloat '[1@2000-01-01, 2@2000-01-02]', floatspan '[2, 3]');
 
-SELECT minusSpan(tint '1@2000-01-01', intspan 'empty');
 SELECT minusSpan(tint '1@2000-01-01', intspan '[1,3]');
 SELECT minusSpan(tint '{1@2000-01-01}', intspan '[1,3]');
 SELECT minusSpan(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intspan '[1,3]');
 SELECT minusSpan(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intspan '[1,3]');
 SELECT minusSpan(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intspan '[1,3]');
-SELECT minusSpan(tfloat '1.5@2000-01-01', floatspan 'empty');
 SELECT minusSpan(tfloat '1.5@2000-01-01', floatspan '[1,3]');
 SELECT minusSpan(tfloat '{1.5@2000-01-01}', floatspan '[1,3]');
 SELECT minusSpan(tfloat '[1@2000-01-01,2@2000-01-02]','[2,3]');
@@ -1829,18 +1825,15 @@ SELECT minusSpan(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@
 SELECT minusSpan(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatspan '[1,3]');
 SELECT minusSpan(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatspan '[2,3]');
 
-SELECT atSpans(tint '1@2000-01-01', ARRAY[intspan 'empty']);
 SELECT atSpans(tint '1@2000-01-01', ARRAY[intspan '[1,3]']);
 SELECT atSpans(tint '{1@2000-01-01}', ARRAY[intspan '[1,3]']);
 SELECT atSpans(tint '{1@2000-01-01}', ARRAY[intspan '[2,3]']);
 SELECT atSpans(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intspan '[1,3]']);
 SELECT atSpans(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intspan '[1,3]']);
 SELECT atSpans(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intspan '[1,3]']);
-SELECT atSpans(tfloat '1.5@2000-01-01', ARRAY[floatspan 'empty']);
 SELECT atSpans(tfloat '1.5@2000-01-01', ARRAY[floatspan '[1,3]']);
 SELECT atSpans(tfloat '{1.5@2000-01-01}', ARRAY[floatspan '[1,3]']);
 SELECT atSpans(tfloat '{1.5@2000-01-01}', ARRAY[floatspan '[2,3]']);
-SELECT atSpans(tfloat '[1@2000-01-03, 3@2000-01-04]', ARRAY[floatspan 'empty', '[1.5,2]']);
 SELECT atSpans(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatspan '[1,3]']);
 SELECT atSpans(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatspan '[1,3]']);
 SELECT atSpans(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatspan '[1,3]']);
@@ -1868,14 +1861,12 @@ SELECT atSpans(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@20
 SELECT atSpans(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', ARRAY[floatspan '[1,2]', '[2.5,3]']);
 SELECT atSpans(tfloat'{[1@2000-01-01, 2@2000_01-02],[7@2000-01-03, 8@2000_01-04]}',ARRAY[floatspan '[3,4]','[5,6]']);
 
-SELECT minusSpans(tint '1@2000-01-01', ARRAY[intspan 'empty']);
 SELECT minusSpans(tint '1@2000-01-01', ARRAY[intspan '[1,3]']);
 SELECT minusSpans(tint '{1@2000-01-01}', ARRAY[intspan '[1,3]']);
 SELECT minusSpans(tint '{1@2000-01-01}', ARRAY[intspan '[2,3]']);
 SELECT minusSpans(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intspan '[1,3]']);
 SELECT minusSpans(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intspan '[1,3]']);
 SELECT minusSpans(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intspan '[1,3]']);
-SELECT minusSpans(tfloat '1.5@2000-01-01', ARRAY[floatspan 'empty']);
 SELECT minusSpans(tfloat '1.5@2000-01-01', ARRAY[floatspan '[1,3]']);
 SELECT minusSpans(tfloat '{1.5@2000-01-01}', ARRAY[floatspan '[1,3]']);
 SELECT minusSpans(tfloat '{1.5@2000-01-01}', ARRAY[floatspan '[2,3]']);

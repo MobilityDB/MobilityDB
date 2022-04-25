@@ -121,7 +121,7 @@ extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 extern ArrayType *datumarr_to_array(Datum *values, int count, CachedType type);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
-extern ArrayType *spanarr_to_array(Span **spans, int count, CachedType type);
+extern ArrayType *spanarr_to_array(Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
