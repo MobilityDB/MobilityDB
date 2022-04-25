@@ -409,7 +409,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
  * @brief Transform the integer and the period to a temporal box
  */
 TBOX *
-int_period_to_tbox(int i, Period *p)
+int_period_to_tbox(int i, const Period *p)
 {
   TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
     p->upper);
@@ -421,7 +421,7 @@ int_period_to_tbox(int i, Period *p)
  * @brief Transform the float and the period to a temporal box
  */
 TBOX *
-float_period_to_tbox(double d, Period *p)
+float_period_to_tbox(double d, const Period *p)
 {
   TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
   return result;
@@ -432,7 +432,7 @@ float_period_to_tbox(double d, Period *p)
  * @brief Transform the span and the timestamp to a temporal box
  */
 TBOX *
-span_timestamp_to_tbox(Span *span, TimestampTz t)
+span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
   double xmin, xmax;
   span_bounds(span, &xmin, &xmax);
@@ -445,7 +445,7 @@ span_timestamp_to_tbox(Span *span, TimestampTz t)
  * @brief Transform the span and the period to a temporal box
  */
 TBOX *
-span_period_to_tbox(Span *span, Period *p)
+span_period_to_tbox(const Span *span, const Period *p)
 {
   ensure_tnumber_spantype(span->spantype);
   double xmin, xmax;
@@ -458,10 +458,24 @@ span_period_to_tbox(Span *span, Period *p)
 
 /**
  * @ingroup libmeos_box_cast
+ * @brief Cast the temporal box value as a integer span value.
+ */
+Span *
+tbox_intspan(const TBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    return NULL;
+  Span *result = span_make(Int32GetDatum((int) box->xmin),
+    Int32GetDatum((int) box->xmax), true, true, T_INT4);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_cast
  * @brief Cast the temporal box value as a float span value.
  */
 Span *
-tbox_floatspan(TBOX *box)
+tbox_floatspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -475,7 +489,7 @@ tbox_floatspan(TBOX *box)
  * @brief Cast the temporal box value as a period value
  */
 Period *
-tbox_period(TBOX *box)
+tbox_period(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;

@@ -32,33 +32,32 @@
  * Functions for gathering statistics from time type columns
  */
 
-#ifndef __TIME_ANALYZE_H__
-#define __TIME_ANALYZE_H__
+#ifndef __SPAN_ANALYZE_H__
+#define __SPAN_ANALYZE_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 #include <commands/vacuum.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 
 /*
  * It is not possible to differentiate bound histogram of ranges and of periods
  * with the combinination stakind/staop values, since the staop is not set by
  * the compute_range_stats function and thus it is necessary to define a new stakind
  */
-#define STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM  8
+#define STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM  10
 /*
  * It is not possible to differentiate lengths of ranges and lengths of periods
  * with the combinination stakind/staop values, since the lenghts are expressed
  * with float8 values and thus it is necessary to define a new stakind
  */
-#define STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM  9
+#define STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM  11
 
 /*****************************************************************************/
 
-extern int float8_qsort_cmp(const void *a1, const void *a2);
-extern void period_compute_stats1(VacAttrStats *stats, int non_null_cnt,
-  int *slot_idx, PeriodBound *lowers, PeriodBound *uppers, float8 *lengths);
+extern void span_compute_stats1(VacAttrStats *stats, int non_null_cnt,
+  int *slot_idx, SpanBound *lowers, SpanBound *uppers, float8 *lengths);
 
 /*****************************************************************************/
 

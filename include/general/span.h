@@ -94,14 +94,8 @@ extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *a1, const void *a2);
 extern int span_lower_cmp(const Span *a, const Span *b);
 extern int span_upper_cmp(const Span *a, const Span *b);
-extern Span *span_make(Datum lower, Datum upper, bool lower_inc,
-  bool upper_inc, CachedType spantype);
-extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType spantype, Span *s);
-extern Span *span_copy(const Span *s);
 extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
 extern Span *span_super_union(const Span *s1, const Span *s2);
-extern void span_expand(const Span *s1, Span *s2);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
 extern int span_cmp_bounds(const SpanBound *b1, const SpanBound *b2);
 
@@ -113,10 +107,15 @@ extern Span *span_read(StringInfo buf, CachedType spantype);
 
 /* Constructors */
 
+extern Span *span_make(Datum lower, Datum upper, bool lower_inc,
+  bool upper_inc, CachedType basetype);
+extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
+  CachedType basetype, Span *s);
+extern Span *span_copy(const Span *s);
 
 /* Casting */
 
-// extern Span *timestamp_period(Datum d);
+extern Span *elem_span(Datum d, CachedType basetype);
 
 /* Accessor functions */
 
@@ -126,7 +125,10 @@ extern bool span_lower_inc(Span *s);
 extern bool span_upper_inc(Span *s);
 extern double span_distance(const Span *s);
 
-/* Modification functions */
+/* Transformation functions */
+
+extern void span_expand(const Span *s1, Span *s2);
+extern Span *floatspan_round(Span *span, Datum size);
 
 // extern void span_shift_tscale(const Interval *start,
   // const Interval *duration, Span *result);

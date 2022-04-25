@@ -109,12 +109,13 @@ extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
 extern TBOX *float_timestamp_to_tbox(double d, TimestampTz t);
-extern TBOX *int_period_to_tbox(int i, Period *p);
-extern TBOX *float_period_to_tbox(double d, Period *p);
-extern TBOX *span_timestamp_to_tbox(Span *span, TimestampTz t);
-extern TBOX *span_period_to_tbox(Span *span, Period *p);
-extern Span *tbox_to_floatspan(TBOX *box);
-extern Period *tbox_to_period(TBOX *box);
+extern TBOX *int_period_to_tbox(int i, const Period *p);
+extern TBOX *float_period_to_tbox(double d, const Period *p);
+extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
+extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
+extern Span *tbox_intspan(const TBOX *box);
+extern Span *tbox_floatspan(const TBOX *box);
+extern Period *tbox_period(const TBOX *box);
 
 /* Accessor functions */
 

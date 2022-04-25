@@ -412,7 +412,11 @@ intersection_span_span(const Span *s1, const Span *s2)
 {
   Span *result = palloc0(sizeof(Span));
   /* We are sure that there is an intersection */
-  inter_span_span(s1, s2, result);
+  if (! inter_span_span(s1, s2, result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 

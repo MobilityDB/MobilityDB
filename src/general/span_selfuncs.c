@@ -35,7 +35,7 @@
  * Estimates are based on histograms of lower and upper bounds.
  */
 
-#include "general/time_selfuncs.h"
+#include "general/span_selfuncs.h"
 
 /* PostgreSQL */
 #include <assert.h>
@@ -49,12 +49,10 @@
 #include <utils/timestamp.h>
 #include <math.h>
 /* MobilityDB */
-#include "general/timestampset.h"
-#include "general/period.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/time_analyze.h"
+#include "general/span_ops.h"
 #include "general/tempcache.h"
+#include "general/span_analyze.h"
+#include "general/time_selfuncs.h"
 
 /*****************************************************************************/
 
@@ -62,8 +60,8 @@
  * Return a default selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-float8
-period_sel_default(CachedOp cachedOp __attribute__((unused)))
+static float8
+span_sel_default(CachedOp cachedOp __attribute__((unused)))
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_SEL;
@@ -73,8 +71,8 @@ period_sel_default(CachedOp cachedOp __attribute__((unused)))
  * Return a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-float8
-period_joinsel_default(CachedOp cachedOp __attribute__((unused)))
+static float8
+span_joinsel_default(CachedOp cachedOp __attribute__((unused)))
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_JOINSEL;
@@ -84,25 +82,24 @@ period_joinsel_default(CachedOp cachedOp __attribute__((unused)))
  * Get the enum associated to the operator from different cases
  */
 static bool
-time_cachedop(Oid operid, CachedOp *cachedOp)
+span_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+    if (operid == oper_oid((CachedOp) i, T_INT4, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_INTSPAN, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_INTSPAN, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPAN))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -112,9 +109,9 @@ time_cachedop(Oid operid, CachedOp *cachedOp)
 }
 
 /**
- * Binary search on an array of period bounds. Return greatest index of period
- * bound in array which is less (less or equal) than given period bound. If all
- * period bounds in array are greater or equal (greater) than given period bound,
+ * Binary search on an array of span bounds. Return greatest index of span
+ * bound in array which is less (less or equal) than given span bound. If all
+ * span bounds in array are greater or equal (greater) than given span bound,
  * return -1. When "equal" flag is set, the conditions in parenthesis are used.
  *
  * This function is used for scalar operator selectivity estimation. Another
@@ -122,14 +119,14 @@ time_cachedop(Oid operid, CachedOp *cachedOp)
  * of portion of bounds which are less or equal to given bound.
  */
 static int
-period_bound_bsearch(const PeriodBound *value, const PeriodBound *hist,
+span_bound_bsearch(const SpanBound *value, const SpanBound *hist,
   int hist_nvalues, bool equal)
 {
   int lower = -1, upper = hist_nvalues - 1;
   while (lower < upper)
   {
     int middle = (lower + upper + 1) / 2;
-    int cmp = period_bound_cmp(&hist[middle], value);
+    int cmp = span_bound_cmp(&hist[middle], value);
     if (cmp < 0 || (equal && cmp == 0))
       lower = middle;
     else
@@ -139,284 +136,55 @@ period_bound_bsearch(const PeriodBound *value, const PeriodBound *hist,
 }
 
 /**
- * Measure distance between two period bounds
+ * Measure distance between two span bounds
  */
 static float8
-period_bound_distance(const PeriodBound *bound1, const PeriodBound *bound2)
+span_bound_distance(const SpanBound *bound1, const SpanBound *bound2)
 {
-  return period_to_secs(bound2->t, bound1->t);
+  return distance_elem_elem(bound2->val, bound1->val, bound2->basetype,
+    bound1->basetype);
 }
 
 /**
- * Get relative position of value in histogram bin in [0,1] period
+ * Get relative position of value in histogram bin in [0,1] span
  */
 static float8
-period_position(const PeriodBound *value, const PeriodBound *hist1,
-  const PeriodBound *hist2)
+span_position(const SpanBound *value, const SpanBound *hist1,
+  const SpanBound *hist2)
 {
   /* Calculate relative position using distance function. */
-  float8 bin_width = period_bound_distance(hist1, hist2);
+  float8 bin_width = span_bound_distance(hist1, hist2);
   if (bin_width <= 0.0)
     return 0.5;      /* zero width bin */
 
-  float8 position = period_bound_distance(hist1, value) / bin_width;
-  /* Relative position must be in [0,1] period */
+  float8 position = span_bound_distance(hist1, value) / bin_width;
+  /* Relative position must be in [0,1] span */
   position = Max(position, 0.0);
   position = Min(position, 1.0);
   return position;
-}
-
-/**
- * Binary search on length histogram. Return greatest index of period length in
- * histogram which is less than (less than or equal) the given length value. If
- * all lengths in the histogram are greater than (greater than or equal) the
- * given length, returns -1.
- *
- * Function copied from file rangetypes_selfuncs.c snce it is not exported
- */
-int
-length_hist_bsearch(Datum *hist_length, int hist_length_nvalues,
-  double value, bool equal)
-{
-  int lower = -1, upper = hist_length_nvalues - 1;
-  while (lower < upper)
-  {
-    int middle = (lower + upper + 1) / 2;
-    double middleval = DatumGetFloat8(hist_length[middle]);
-    if (middleval < value || (equal && middleval <= value))
-      lower = middle;
-    else
-      upper = middle - 1;
-  }
-  return lower;
-}
-
-/**
- * Get relative position of value in a length histogram bin in [0,1] range.
- *
- * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
- * not exported.
- */
-double
-get_len_position(double value, double hist1, double hist2)
-{
-  if (!isinf(hist1) && !isinf(hist2))
-  {
-    /*
-     * Both bounds are finite. The value should be finite too, because it
-     * lies somewhere between the bounds. If it doesn't, just return
-     * something.
-     */
-    if (isinf(value))
-      return 0.5;
-
-    return 1.0 - (hist2 - value) / (hist2 - hist1);
-  }
-  else if (isinf(hist1) && !isinf(hist2))
-  {
-    /*
-     * Lower bin boundary is -infinite, upper is finite. Return 1.0 to
-     * indicate the value is infinitely far from the lower bound.
-     */
-    return 1.0;
-  }
-  else if (isinf(hist1) && isinf(hist2))
-  {
-    /* same as above, but in reverse */
-    return 0.0;
-  }
-  else
-  {
-    /*
-     * If both bin boundaries are infinite, they should be equal to each
-     * other, and the value should also be infinite and equal to both
-     * bounds. (But don't Assert that, to avoid crashing unnecessarily if
-     * the caller messes up)
-     *
-     * Assume the value to lie in the middle of the infinite bounds.
-     */
-    return 0.5;
-  }
-}
-
-/**
- * Calculate the average of function P(x), in the interval [length1, length2],
- * where P(x) is the fraction of tuples with length < x (or length <= x if
- * 'equal' is true).
- *
- * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
- * not exported.
- */
-double
-calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
-  double length1, double length2, bool equal)
-{
-  double frac, A, B, PA, PB, pos, area;
-  int i;
-
-  assert(length2 >= length1);
-
-  if (length2 < 0.0)
-    return 0.0;        /* shouldn't happen, but doesn't hurt to check */
-
-  /* All lengths in the table are <= infinite. */
-  if (isinf(length2) && equal)
-    return 1.0;
-
-  /*----------
-   * The average of a function between A and B can be calculated by the
-   * formula:
-   *
-   *          B
-   *    1     /
-   * -------  | P(x)dx
-   *  B - A   /
-   *          A
-   *
-   * The geometrical interpretation of the integral is the area under the
-   * graph of P(x). P(x) is defined by the length histogram. We calculate
-   * the area in a piecewise fashion, iterating through the length histogram
-   * bins. Each bin is a trapezoid:
-   *
-   *       P(x2)
-   *        /|
-   *       / |
-   * P(x1)/  |
-   *     |   |
-   *     |   |
-   *  ---+---+--
-   *     x1  x2
-   *
-   * where x1 and x2 are the boundaries of the current histogram, and P(x1)
-   * and P(x1) are the cumulative fraction of tuples at the boundaries.
-   *
-   * The area of each trapezoid is 1/2 * (P(x2) + P(x1)) * (x2 - x1)
-   *
-   * The first bin contains the lower bound passed by the caller, so we
-   * use linear interpolation between the previous and next histogram bin
-   * boundary to calculate P(x1). Likewise for the last bin: we use linear
-   * interpolation to calculate P(x2). For the bins in between, x1 and x2
-   * lie on histogram bin boundaries, so P(x1) and P(x2) are simply:
-   * P(x1) =    (bin index) / (number of bins)
-   * P(x2) = (bin index + 1 / (number of bins)
-   */
-
-  /* First bin, the one that contains lower bound */
-  i = length_hist_bsearch(hist_length, hist_length_nvalues, length1, equal);
-  if (i >= hist_length_nvalues - 1)
-    return 1.0;
-
-  if (i < 0)
-  {
-    i = 0;
-    pos = 0.0;
-  }
-  else
-  {
-    /* Interpolate length1's position in the bin */
-    pos = get_len_position(length1, DatumGetFloat8(hist_length[i]),
-      DatumGetFloat8(hist_length[i + 1]));
-  }
-  PB = (((double) i) + pos) / (double) (hist_length_nvalues - 1);
-  B = length1;
-
-  /*
-   * In the degenerate case that length1 == length2, simply return
-   * P(length1). This is not merely an optimization: if length1 == length2,
-   * we'd divide by zero later on.
-   */
-  if (length2 == length1)
-    return PB;
-
-  /*
-   * Loop through all the bins, until we hit the last bin, the one that
-   * contains the upper bound. (if lower and upper bounds are in the same
-   * bin, this falls out immediately)
-   */
-  area = 0.0;
-  for (; i < hist_length_nvalues - 1; i++)
-  {
-    double bin_upper = DatumGetFloat8(hist_length[i + 1]);
-
-    /* Check if we've reached the last bin */
-    if (!(bin_upper < length2 || (equal && bin_upper <= length2)))
-      break;
-
-    /* the upper bound of previous bin is the lower bound of this bin */
-    A = B;
-    PA = PB;
-
-    B = bin_upper;
-    PB = (double) i / (double) (hist_length_nvalues - 1);
-
-    /*
-     * Add the area of this trapezoid to the total. The point of the
-     * if-check is to avoid NaN, in the corner case that PA == PB == 0,
-     * and B - A == Inf. The area of a zero-height trapezoid (PA == PB ==
-     * 0) is zero, regardless of the width (B - A).
-     */
-    if (PA > 0 || PB > 0)
-      area += 0.5 * (PB + PA) * (B - A);
-  }
-
-  /* Last bin */
-  A = B;
-  PA = PB;
-
-  B = length2;        /* last bin ends at the constant upper bound */
-  if (i >= hist_length_nvalues - 1)
-    pos = 0.0;
-  else
-  {
-    if (DatumGetFloat8(hist_length[i]) ==
-        DatumGetFloat8(hist_length[i + 1]))
-      pos = 0.0;
-    else
-      pos = get_len_position(length2, DatumGetFloat8(hist_length[i]),
-        DatumGetFloat8(hist_length[i + 1]));
-  }
-  PB = (((double) i) + pos) / (double) (hist_length_nvalues - 1);
-
-  if (PA > 0 || PB > 0)
-    area += 0.5 * (PB + PA) * (B - A);
-
-  /*
-   * Ok, we have calculated the area, i.e. the integral. Divide by width to
-   * get the requested average.
-   *
-   * Avoid NaN arising from infinite / infinite. This happens at least if
-   * length2 is infinite. It's not clear what the correct value would be in
-   * that case, so 0.5 seems as good as any value.
-   */
-  if (isinf(area) && isinf(length2))
-    frac = 0.5;
-  else
-    frac = area / (length2 - length1);
-
-  return frac;
 }
 
 /*****************************************************************************/
 
 /**
  * Estimate the fraction of values less than (or equal to, if 'equal' argument
- * is true) a given const in a histogram of period bounds.
+ * is true) a given const in a histogram of span bounds.
  */
 static double
-period_sel_scalar(const PeriodBound *constbound, const PeriodBound *hist,
+span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
   int nhist, bool equal)
 {
   /*
    * Find the histogram bin the given constant falls into. Estimate
    * selectivity as the number of preceding whole bins.
    */
-  int index = period_bound_bsearch(constbound, hist, nhist, equal);
+  int index = span_bound_bsearch(constbound, hist, nhist, equal);
   Selectivity selec = (Selectivity) (Max(index, 0)) /
     (Selectivity) (nhist - 1);
 
   /* Adjust using linear interpolation within the bin */
   if (index >= 0 && index < nhist - 1)
-    selec += period_position(constbound, &hist[index], &hist[index + 1]) /
+    selec += span_position(constbound, &hist[index], &hist[index + 1]) /
       (Selectivity) (nhist - 1);
 
   return selec;
@@ -424,25 +192,25 @@ period_sel_scalar(const PeriodBound *constbound, const PeriodBound *hist,
 
 /**
  * Calculate selectivity of "var && const" operator, i.e., estimate the fraction
- * of periods that overlap the constant lower and upper bounds. This uses
- * the histograms of period lower and upper bounds.
+ * of spans that overlap the constant lower and upper bounds. This uses
+ * the histograms of span lower and upper bounds.
  *
  * Note that A && B <=> NOT (A <<# B OR A #>> B).
  *
  * Since A <<# B and A #>> B are mutually exclusive events we can
  * sum their probabilities to find probability of (A <<# B OR A #>> B).
  *
- * "(period/periodset) @> timestamptz" is equivalent to "period && [elem,elem]".
- * The caller already constructed the singular period from the element
+ * "(span/spanset) @> timestamptz" is equivalent to "span && [elem,elem]".
+ * The caller already constructed the singular span from the element
  * constant, so just treat it the same as &&.
  */
 static double
-period_sel_overlaps(const PeriodBound *const_lower, const PeriodBound *const_upper,
-  const PeriodBound *hist_lower, const PeriodBound *hist_upper, int nhist)
+span_sel_overlaps(const SpanBound *const_lower, const SpanBound *const_upper,
+  const SpanBound *hist_lower, const SpanBound *hist_upper, int nhist)
 {
-  /* If the periods do not overlap return 0.0 */
-  if (period_bound_cmp(const_lower, &hist_upper[nhist - 1]) > 0 ||
-      period_bound_cmp(&hist_lower[0], const_upper) > 0)
+  /* If the spans do not overlap return 0.0 */
+  if (span_bound_cmp(const_lower, &hist_upper[nhist - 1]) > 0 ||
+      span_bound_cmp(&hist_lower[0], const_upper) > 0)
     return 0.0;
 
   /*
@@ -454,25 +222,25 @@ period_sel_overlaps(const PeriodBound *const_lower, const PeriodBound *const_upp
    * Sel = 1.0 - ( Sel(upper(A) < lower(B)) + ( 1 - Sel(lower(A) <= upper(B)) ) )
    */
   //EZ
-  // double selec = period_sel_scalar(const_upper, hist_lower, nhist, false);
-  // selec += (1.0 - period_sel_scalar(const_lower, hist_upper, nhist, true));
+  // double selec = span_sel_scalar(const_upper, hist_lower, nhist, false);
+  // selec += (1.0 - span_sel_scalar(const_lower, hist_upper, nhist, true));
   // selec = 1.0 - selec;
 
-  double selec = period_sel_scalar(const_lower, hist_upper, nhist, false);
-  selec += (1.0 - period_sel_scalar(const_upper, hist_lower, nhist, true));
+  double selec = span_sel_scalar(const_lower, hist_upper, nhist, false);
+  selec += (1.0 - span_sel_scalar(const_upper, hist_lower, nhist, true));
   selec = 1.0 - selec;
   return selec;
 }
 
 /**
  * Calculate selectivity of "var <@ const" operator, i.e., estimate the fraction
- * of periods that fall within the constant lower and upper bounds. This uses
- * the histograms of period lower bounds and period lengths, on the assumption
- * that the period lengths are independent of the lower bounds.
+ * of spans that fall within the constant lower and upper bounds. This uses
+ * the histograms of span lower bounds and span lengths, on the assumption
+ * that the span lengths are independent of the lower bounds.
  */
 static double
-period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
-  PeriodBound *hist_lower, int hist_nvalues, Datum *hist_length,
+span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
+  SpanBound *hist_lower, int hist_nvalues, Datum *hist_length,
   int hist_length_nvalues)
 {
   int i, upper_index;
@@ -481,12 +249,12 @@ period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
 
   /*
    * Begin by finding the bin containing the upper bound, in the lower bound
-   * histogram. Any period with a lower bound > constant upper bound can't
+   * histogram. Any span with a lower bound > constant upper bound can't
    * match, i.e. there are no matches in bins greater than upper_index.
    */
   const_upper->inclusive = !const_upper->inclusive;
   const_upper->lower = true;
-  upper_index = period_bound_bsearch(const_upper, hist_lower, hist_nvalues, false);
+  upper_index = span_bound_bsearch(const_upper, hist_lower, hist_nvalues, false);
 
   /*
    * Calculate upper_bin_width, i.e. the fraction of the (upper_index,
@@ -494,7 +262,7 @@ period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
    * using linear interpolation of distance function.
    */
   if (upper_index >= 0 && upper_index < hist_nvalues - 1)
-    upper_bin_width = period_position(const_upper, &hist_lower[upper_index],
+    upper_bin_width = span_position(const_upper, &hist_lower[upper_index],
       &hist_lower[upper_index + 1]);
   else
     upper_bin_width = 0.0;
@@ -520,25 +288,25 @@ period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
     /*
      * dist -- distance from constant upper bound to the lower bound of
      * the current bin in the lower bound histogram. Or to the lower bound
-     * of the constant period, if this is the final bin, containing the
+     * of the constant span, if this is the final bin, containing the
      * constant lower bound.
      */
-    if (period_bound_cmp(&hist_lower[i], const_lower) < 0)
+    if (span_bound_cmp(&hist_lower[i], const_lower) < 0)
     {
-      dist = period_bound_distance(const_lower, const_upper);
+      dist = span_bound_distance(const_lower, const_upper);
 
       /*
        * Subtract from bin_width the portion of this bin that we want to
        * ignore.
        */
-      bin_width -= period_position(const_lower, &hist_lower[i],
+      bin_width -= span_position(const_lower, &hist_lower[i],
         &hist_lower[i + 1]);
       if (bin_width < 0.0)
         bin_width = 0.0;
       final_bin = true;
     }
     else
-      dist = period_bound_distance(&hist_lower[i], const_upper);
+      dist = span_bound_distance(&hist_lower[i], const_upper);
 
     /*
      * Estimate the fraction of tuples in this bin that are narrow enough
@@ -565,13 +333,13 @@ period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
 
 /**
  * Calculate selectivity of "var @> const" operator, i.e., estimate the fraction
- * of periods that contain the constant lower and upper bounds. This uses
- * the histograms of period lower bounds and period lengths, on the assumption
- * that the period lengths are independent of the lower bounds.
+ * of spans that contain the constant lower and upper bounds. This uses
+ * the histograms of span lower bounds and span lengths, on the assumption
+ * that the span lengths are independent of the lower bounds.
  */
 static double
-period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
-  PeriodBound *hist_lower, int hist_nvalues, Datum *hist_length,
+span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
+  SpanBound *hist_lower, int hist_nvalues, Datum *hist_length,
   int hist_length_nvalues)
 {
   int i, lower_index;
@@ -579,7 +347,7 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
   float8 prev_dist;
 
   /* Find the bin containing the constant lower bound */
-  lower_index = period_bound_bsearch(const_lower, hist_lower, hist_nvalues, true);
+  lower_index = span_bound_bsearch(const_lower, hist_lower, hist_nvalues, true);
 
   /*
    * Calculate lower_bin_width, i.e., the fraction of the (lower_index,
@@ -587,7 +355,7 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
    * using linear interpolation of distance function.
    */
   if (lower_index >= 0 && lower_index < hist_nvalues - 1)
-    lower_bin_width = period_position(const_lower, &hist_lower[lower_index],
+    lower_bin_width = span_position(const_lower, &hist_lower[lower_index],
       &hist_lower[lower_index + 1]);
   else
     lower_bin_width = 0.0;
@@ -598,13 +366,13 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
    * "current" bin's lower and upper bounds from the constant upper bound.
    * We begin from constant lower bound, and walk afterwards, so the first bin's
    * upper bound is the constant lower bound, and its distance to the constant
-   * upper bound is the length of the constant period.
+   * upper bound is the length of the constant span.
    *
    * bin_width represents the width of the current bin. Normally it is 1.0,
    * meaning a full width bin, except for the first bin, which is only
    * counted up to the constant lower bound.
    */
-  prev_dist = period_bound_distance(const_lower, const_upper);
+  prev_dist = span_bound_distance(const_lower, const_upper);
   sum_frac = 0.0;
   bin_width = lower_bin_width;
   for (i = lower_index; i >= 0; i--)
@@ -617,7 +385,7 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
      * of lower bound histogram or constant lower bound (if we've
      * reach it).
      */
-    dist = period_bound_distance(&hist_lower[i], const_upper);
+    dist = span_bound_distance(&hist_lower[i], const_upper);
 
     /*
      * Get average fraction of length histogram which covers intervals
@@ -638,32 +406,32 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
 /*****************************************************************************/
 
 /**
- * Calculate period operator selectivity using histograms of period bounds.
+ * Calculate span operator selectivity using histograms of span bounds.
  *
  * @note Used by the selectivity functions and the debugging functions.
  */
 static double
-period_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
-  const Period *constval, CachedOp cachedOp)
+span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
+  const Span *constval, CachedOp cachedOp)
 {
-  PeriodBound *hist_lower, *hist_upper;
-  PeriodBound const_lower, const_upper;
+  SpanBound *hist_lower, *hist_upper;
+  SpanBound const_lower, const_upper;
   double selec;
   int nhist, i;
 
   /*
-   * Convert histogram of periods into histograms of its lower and upper
+   * Convert histogram of spans into histograms of its lower and upper
    * bounds.
    */
   nhist = hslot->nvalues;
-  hist_lower = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
-  hist_upper = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
+  hist_lower = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
+  hist_upper = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
   for (i = 0; i < nhist; i++)
-    period_deserialize(DatumGetPeriodP(hslot->values[i]),
+    span_deserialize(DatumGetSpanP(hslot->values[i]),
       &hist_lower[i], &hist_upper[i]);
 
   /* Extract the bounds of the constant value. */
-  period_deserialize(constval, &const_lower, &const_upper);
+  span_deserialize(constval, &const_lower, &const_upper);
 
   /*
    * Calculate the restriction selectivity of the various operators.
@@ -673,55 +441,55 @@ period_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
    * equal lower bounds. Estimate that by comparing the lower bounds
    * only. This gives a fairly accurate estimate assuming there
    * aren't many rows with a lower bound equal to the constant's
-   * lower bound. These operators work only for the period,period
+   * lower bound. These operators work only for the span,span
    * combination of parameters. This is because the B-tree stores the
    * values, not their bounding boxes.
    *
    * For the relative position operators (<<#, &<#, #>>, #>&) which are
    * based on bounding boxes the selectivity is estimated by determining
    * the fraction of values less than (or less than or equal to) a given
-   * constant in the histograms of period bounds.
+   * constant in the histograms of span bounds.
    *
    * The other operators (&&, @>, <@, and -|-) have specific procedures
    * above.
    */
   if (cachedOp == LT_OP)
-    selec = period_sel_scalar(&const_lower, hist_lower, nhist, false);
+    selec = span_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == LE_OP)
-    selec = period_sel_scalar(&const_lower, hist_lower, nhist, true);
+    selec = span_sel_scalar(&const_lower, hist_lower, nhist, true);
   else if (cachedOp == GT_OP)
-    selec = 1.0 - period_sel_scalar(&const_lower, hist_lower, nhist, false);
+    selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == GE_OP)
-    selec = 1.0 - period_sel_scalar(&const_lower, hist_lower, nhist, true);
+    selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, true);
   else if (cachedOp == BEFORE_OP)
     /* var <<# const when upper(var) < lower(const)*/
-    selec = period_sel_scalar(&const_lower, hist_upper, nhist, false);
+    selec = span_sel_scalar(&const_lower, hist_upper, nhist, false);
   else if (cachedOp == OVERBEFORE_OP)
     /* var &<# const when upper(var) <= upper(const) */
-    selec = period_sel_scalar(&const_upper, hist_upper, nhist, true);
+    selec = span_sel_scalar(&const_upper, hist_upper, nhist, true);
   else if (cachedOp == AFTER_OP)
     /* var #>> const when lower(var) > upper(const) */
-    selec = 1.0 - period_sel_scalar(&const_upper, hist_lower, nhist, true);
+    selec = 1.0 - span_sel_scalar(&const_upper, hist_lower, nhist, true);
   else if (cachedOp == OVERAFTER_OP)
     /* var #&> const when lower(var) >= lower(const)*/
-    selec = 1.0 - period_sel_scalar(&const_lower, hist_lower, nhist, false);
+    selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == OVERLAPS_OP)
-    selec = period_sel_overlaps(&const_lower, &const_upper, hist_lower,
+    selec = span_sel_overlaps(&const_lower, &const_upper, hist_lower,
       hist_upper, nhist);
   else if (cachedOp == CONTAINS_OP)
-    selec = period_sel_contains(&const_lower, &const_upper, hist_lower,
+    selec = span_sel_contains(&const_lower, &const_upper, hist_lower,
       nhist, lslot->values, lslot->nvalues);
   else if (cachedOp == CONTAINED_OP)
-    selec = period_sel_contained(&const_lower, &const_upper, hist_lower,
+    selec = span_sel_contained(&const_lower, &const_upper, hist_lower,
       nhist, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
     // TODO Analyze whether a similar approach as PostgreSQL selectivity
     // estimation for equality can be used. There, they estimate 1/n if
     // the value is not in the MCV
-    selec = period_sel_default(InvalidOid);
+    selec = span_sel_default(InvalidOid);
   else
   {
-    elog(ERROR, "Unable to compute join selectivity for unknown period operator");
+    elog(ERROR, "Unable to compute join selectivity for unknown span operator");
     selec = -1.0;  /* keep compiler quiet */
   }
 
@@ -731,12 +499,12 @@ period_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
 }
 
 /**
- * Calculate period operator selectivity using histograms of period bounds.
+ * Calculate span operator selectivity using histograms of span bounds.
  *
  * This estimate is for the portion of values that are not NULL.
  */
 double
-period_sel_hist(VariableStatData *vardata, const Period *constval,
+span_sel_hist(VariableStatData *vardata, const Span *constval,
   CachedOp cachedOp)
 {
   AttStatsSlot hslot, lslot;
@@ -744,10 +512,10 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
 
   memset(&hslot, 0, sizeof(hslot));
 
-  /* Try to get histogram of period bounds of vardata */
+  /* Try to get histogram of span bounds of vardata */
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
       get_attstatsslot(&hslot, vardata->statsTuple,
-        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid,
+        STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM, InvalidOid,
         ATTSTATSSLOT_VALUES)))
     return -1.0;
   /* Check that it's a histogram, not just a dummy entry */
@@ -757,14 +525,14 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
     return -1.0;
   }
 
-  /* @> and @< also need a histogram of period lengths */
+  /* @> and @< also need a histogram of span lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
     memset(&lslot, 0, sizeof(lslot));
 
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
-          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM, InvalidOid,
           ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot);
@@ -779,7 +547,7 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
     }
   }
 
-  selec = period_sel_hist1(&hslot, &lslot, constval, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, constval, cachedOp);
 
   free_attstatsslot(&hslot);
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
@@ -792,58 +560,16 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
 /*****************************************************************************/
 
 /**
- * Transform the constant into a period
- */
-void
-time_const_to_period(Node *other, Period *period)
-{
-  Oid timetypid = ((Const *) other)->consttype;
-  CachedType timetype = oid_type(timetypid);
-  const Period *p;
-  ensure_time_type(timetype);
-  if (timetype == T_TIMESTAMPTZ)
-  {
-    /* The right argument is a TimestampTz constant. We convert it into
-     * a singleton period */
-    TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    period_set(t, t, true, true, period);
-  }
-  else if (timetype == T_TIMESTAMPSET)
-  {
-    /* The right argument is a TimestampSet constant. We convert it into
-     * a period, which is its bounding box. */
-    p = timestampset_bbox_ptr(
-      DatumGetTimestampSetP(((Const *) other)->constvalue));
-    memcpy(period, p, sizeof(Period));
-  }
-  else if (timetype == T_PERIOD)
-  {
-    /* Just copy the value */
-    p = DatumGetPeriodP(((Const *) other)->constvalue);
-    memcpy(period, p, sizeof(Period));
-  }
-  else /* timetype == T_PERIODSET */
-  {
-    /* The right argument is a PeriodSet constant. We convert it into
-     * a period, which is its bounding box. */
-    p = periodset_bbox_ptr(
-      DatumGetPeriodSetP(((Const *) other)->constvalue));
-    memcpy(period, p, sizeof(Period));
-  }
-  return;
-}
-
-/**
- * Restriction selectivity for period operators (internal function)
+ * Restriction selectivity for span operators
  */
 float8
-period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
+span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
   bool varonleft;
   Selectivity selec;
-  Period period;
+  Span span;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -851,7 +577,7 @@ period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
       &varonleft))
-    return period_sel_default(operid);
+    return span_sel_default(operid);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -859,11 +585,11 @@ period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return period_sel_default(operid);
+    return span_sel_default(operid);
   }
 
   /*
-   * All the period operators are strict, so we can cope with a NULL constant
+   * All the span operators are strict, so we can cope with a NULL constant
    * right away.
    */
   if (((Const *) other)->constisnull)
@@ -885,29 +611,30 @@ period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
       /* TODO: check whether there might still be a way to estimate.
        * Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return period_sel_default(operid);
+      return span_sel_default(operid);
     }
   }
 
   /*
    * OK, there's a Var and a Const we're dealing with here. If the constant
-   * is not of the period type, it should be converted to a period.
+   * is not of the span type, it should be converted to a span.
    */
-  time_const_to_period(other, &period);
+  Span *s = DatumGetSpanP(((Const *) other)->constvalue);
+  memcpy(&span, s, sizeof(Span));
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(operid, &cachedOp))
+  if (! span_cachedop(operid, &cachedOp))
     /* Unknown operator */
-    return period_sel_default(operid);
+    return span_sel_default(operid);
 
   /*
-   * Estimate using statistics. Note that period_sel need not handle
+   * Estimate using statistics. Note that span_sel need not handle
    * PERIOD_ELEM_CONTAINED_OP.
    */
   float4 null_frac;
 
-  /* First look up the fraction of NULLs periods from pg_statistic. */
+  /* First look up the fraction of NULLs spans from pg_statistic. */
   if (HeapTupleIsValid(vardata.statsTuple))
   {
     Form_pg_statistic stats =
@@ -918,7 +645,7 @@ period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   {
     /*
      * No stats are available. Follow through the calculations below
-     * anyway, assuming no NULLs periods. This still allows us
+     * anyway, assuming no NULLs spans. This still allows us
      * to give a better-than-nothing estimate.
      */
     null_frac = 0.0;
@@ -931,13 +658,13 @@ period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    * returning the default estimate, because this still takes into
    * account the fraction of NULL tuples, if we had statistics for them.
    */
-  float8 hist_selec = period_sel_hist(&vardata, &period, cachedOp);
+  float8 hist_selec = span_sel_hist(&vardata, &span, cachedOp);
   if (hist_selec < 0.0)
-    hist_selec = period_sel_default(operid);
+    hist_selec = span_sel_default(operid);
 
   selec = hist_selec;
 
-  /* All period operators are strict */
+  /* All span operators are strict */
   selec *= (1.0 - null_frac);
 
   ReleaseVariableStats(vardata);
@@ -945,34 +672,34 @@ period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(Period_sel);
+PG_FUNCTION_INFO_V1(Span_sel);
 /**
- * Restriction selectivity for period operators
+ * Restriction selectivity for span operators
  */
 PGDLLEXPORT Datum
-Period_sel(PG_FUNCTION_ARGS)
+Span_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selec = period_sel(root, operid, args, varRelid);
+  float8 selec = span_sel(root, operid, args, varRelid);
   PG_RETURN_FLOAT8((float8) selec);
 }
 
-PG_FUNCTION_INFO_V1(_mobdb_period_sel);
+PG_FUNCTION_INFO_V1(_mobdb_span_sel);
 /**
  * Utility function to read the calculated selectivity for a given
- * table/column, operator, and search period.
+ * table/column, operator, and search span.
  * Used for debugging the selectivity code.
  */
 PGDLLEXPORT Datum
-_mobdb_period_sel(PG_FUNCTION_ARGS)
+_mobdb_span_sel(PG_FUNCTION_ARGS)
 {
   Oid table_oid = PG_GETARG_OID(0);
   text *att_text = PG_GETARG_TEXT_P(1);
   Oid operid = PG_GETARG_OID(2);
-  Period *p = PG_GETARG_PERIOD_P(3);
+  Span *p = PG_GETARG_SPAN_P(3);
   float8 selec = 0.0;
 
   /* Test input parameters */
@@ -995,9 +722,9 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(operid, &cachedOp))
+  if (! span_cachedop(operid, &cachedOp))
     /* In case of unknown operator */
-    elog(ERROR, "Unknown period operator %d", operid);
+    elog(ERROR, "Unknown span operator %d", operid);
 
   /* Retrieve the stats object */
   HeapTuple stats_tuple = NULL;
@@ -1009,7 +736,7 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
     elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table_oid) ?
       get_rel_name(table_oid) : "NULL");
 
-  int stats_kind = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
+  int stats_kind = STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM;
   if (! get_attstatsslot(&hslot, stats_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
@@ -1020,12 +747,12 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
     elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
   }
 
-  /* @> and @< also need a histogram of period lengths */
+  /* @> and @< also need a histogram of span lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
     memset(&lslot, 0, sizeof(lslot));
 
-   stats_kind = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
+   stats_kind = STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM;
    if (!(HeapTupleIsValid(stats_tuple) &&
         get_attstatsslot(&lslot, stats_tuple, stats_kind, InvalidOid,
           ATTSTATSSLOT_VALUES)))
@@ -1042,7 +769,7 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = period_sel_hist1(&hslot, &lslot, p, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, p, cachedOp);
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
@@ -1057,15 +784,15 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Given two histograms of period bounds, estimate the fraction of values in
+ * Given two histograms of span bounds, estimate the fraction of values in
  * the first histogram that are less than (or equal to, if 'equal' argument
  * is true) a value in the second histogram. The join selectivity estimation
- * for all period operators is expressed using this function.
+ * for all span operators is expressed using this function.
  *
  * The general idea is to iteratively decompose (var op var) into a summation
- * of (var op const) using the period bounds present in first histogram as
+ * of (var op const) using the span bounds present in first histogram as
  * const. Then, (var op const) is calculated using the function
- * period_sel_scalar, which estimates the restriction selectivity.
+ * span_sel_scalar, which estimates the restriction selectivity.
  *
  * Consider two variables Var1 and Var2 whose distributions are given by
  * hist1 and hist2, respectively. To estimate:
@@ -1078,7 +805,7 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
  *
  * The second probability is the difference between the selectivity of the
  * upper and lower bounds of the bin, which can be directly computed by
- * calling period_sel_scalar.
+ * calling span_sel_scalar.
  *
  * The first probability, however, cannot be directly computed because we do
  * not have a concrete value for Var2. Instead, we can under and over estimate
@@ -1096,17 +823,17 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
  * The first and last terms above are computed out of the loop. The rest is
  * computed in the loop.
  */
-double
-period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
-  const PeriodBound *hist2, int nhist2, bool equal)
+static double
+span_joinsel_scalar(const SpanBound *hist1, int nhist1,
+  const SpanBound *hist2, int nhist2, bool equal)
 {
   Selectivity selec = (Selectivity)
-    (period_sel_scalar(&hist1[0], hist2, nhist2, equal) / 2);
+    (span_sel_scalar(&hist1[0], hist2, nhist2, equal) / 2);
   for (int i = 1; i < nhist1 - 1; ++i)
     selec += (Selectivity)
-      period_sel_scalar(&hist1[i], hist2, nhist2, equal);
+      span_sel_scalar(&hist1[i], hist2, nhist2, equal);
   selec += (Selectivity)
-    (period_sel_scalar(&hist1[nhist1 - 1], hist2, nhist2, equal) / 2);
+    (span_sel_scalar(&hist1[nhist1 - 1], hist2, nhist2, equal) / 2);
   return selec / (nhist1 - 1);
 }
 
@@ -1114,17 +841,17 @@ period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
  * Look up the fraction of values in the first histogram that overlap a value
  * in the second histogram
  */
-double
-period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
-  int nhist1, PeriodBound *lower2, PeriodBound *upper2, int nhist2)
+static double
+span_joinsel_overlaps(SpanBound *lower1, SpanBound *upper1,
+  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2)
 {
-  /* If the periods do not overlap return 0.0 */
-  if (period_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
+  /* If the spans do not overlap return 0.0 */
+  if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
+      span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  double selec = period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
-  selec += (1.0 - period_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
+  double selec = span_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
+  selec += (1.0 - span_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
   selec = 1.0 - selec;
 
   return selec;
@@ -1134,19 +861,19 @@ period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
  * Look up the fraction of values in the first histogram that contain a value
  * in the second histogram
  */
-double
-period_joinsel_contains(PeriodBound *lower1, PeriodBound *upper1,
-  int nhist1, PeriodBound *lower2, PeriodBound *upper2, int nhist2,
+static double
+span_joinsel_contains(SpanBound *lower1, SpanBound *upper1,
+  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2,
   Datum *length, int length_nvalues)
 {
-  /* If the periods do not overlap return 0.0 */
-  if (period_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
+  /* If the spans do not overlap return 0.0 */
+  if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
+      span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
   Selectivity selec = 0.0;
   for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) period_sel_contains(&lower1[i], &upper1[i],
+    selec += (Selectivity) span_sel_contains(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
   return selec / (nhist1 - 1);
 }
@@ -1155,53 +882,53 @@ period_joinsel_contains(PeriodBound *lower1, PeriodBound *upper1,
  * Look up the fraction of values in the first histogram that is
  * contained in a value in the second histogram
  */
-double
-period_joinsel_contained(PeriodBound *lower1, PeriodBound *upper1,
-  int nhist1, PeriodBound *lower2, PeriodBound *upper2, int nhist2,
+static double
+span_joinsel_contained(SpanBound *lower1, SpanBound *upper1,
+  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2,
   Datum *length, int length_nvalues)
 {
-  /* If the periods do not overlap return 0.0 */
-  if (period_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
+  /* If the spans do not overlap return 0.0 */
+  if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
+      span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
   Selectivity selec = 0.0;
   for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) period_sel_contained(&lower1[i], &upper1[i],
+    selec += (Selectivity) span_sel_contained(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
   return selec / (nhist1 - 1);
 }
 
 /**
- * Calculate period operator selectivity using histograms of period bounds.
+ * Calculate span operator selectivity using histograms of span bounds.
  */
 static double
-period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
+span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
   AttStatsSlot *lslot, CachedOp cachedOp)
 {
   int nhist1, nhist2;
-  PeriodBound *lower1, *upper1, *lower2, *upper2;
+  SpanBound *lower1, *upper1, *lower2, *upper2;
   int i;
   double selec;
 
   /*
-   * Convert histogram of periods into histograms of its lower and upper
+   * Convert histogram of spans into histograms of its lower and upper
    * bounds for vardata1 and vardata2.
    */
   nhist1 = hslot1->nvalues;
-  lower1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
-  upper1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
+  lower1 = (SpanBound *) palloc(sizeof(SpanBound) * nhist1);
+  upper1 = (SpanBound *) palloc(sizeof(SpanBound) * nhist1);
   for (i = 0; i < nhist1; i++)
   {
-    period_deserialize(DatumGetPeriodP(hslot1->values[i]),
+    span_deserialize(DatumGetSpanP(hslot1->values[i]),
       &lower1[i], &upper1[i]);
   }
   nhist2 = hslot2->nvalues;
-  lower2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
-  upper2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
+  lower2 = (SpanBound *) palloc(sizeof(SpanBound) * nhist2);
+  upper2 = (SpanBound *) palloc(sizeof(SpanBound) * nhist2);
   for (i = 0; i < nhist2; i++)
   {
-    period_deserialize(DatumGetPeriodP(hslot2->values[i]),
+    span_deserialize(DatumGetSpanP(hslot2->values[i]),
       &lower2[i], &upper2[i]);
   }
 
@@ -1213,52 +940,52 @@ period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
    * equal lower bounds. Estimate that by comparing the lower bounds
    * only. This gives a fairly accurate estimate assuming there
    * aren't many rows with a lower bound equal to the constant's
-   * lower bound. These operators work only for the period,period
+   * lower bound. These operators work only for the span,span
    * combination of parameters. This is because the B-tree stores the
    * values, not their bounding boxes.
    *
    * For the relative position operators (<<#, &<#, #>>, #>&) which are
    * based on bounding boxes the selectivity is estimated by determining
    * the fraction of values less than (or less than or equal to) a given
-   * constant in the histograms of period bounds.
+   * constant in the histograms of span bounds.
    *
    * The other operators (&&, @>, <@, and -|-) have specific procedures
    * above.
    */
   if (cachedOp == LT_OP)
-    selec = period_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
+    selec = span_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
   else if (cachedOp == LE_OP)
-    selec = period_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
+    selec = span_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
   else if (cachedOp == GT_OP)
-    selec = 1.0 - period_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
+    selec = 1.0 - span_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
   else if (cachedOp == GE_OP)
-    selec = 1.0 - period_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
+    selec = 1.0 - span_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
   else if (cachedOp == BEFORE_OP)
     /* var1 <<# var2 when upper(var1) < lower(var2)*/
-    selec = period_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
+    selec = span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
   else if (cachedOp == OVERBEFORE_OP)
     /* var1 &<# var2 when upper(var1) <= upper(var2) */
-    selec = period_joinsel_scalar(upper1, nhist1, upper2, nhist2, true);
+    selec = span_joinsel_scalar(upper1, nhist1, upper2, nhist2, true);
   else if (cachedOp == AFTER_OP)
     /* var1 #>> var2 when lower(var1) > upper(var2) */
-    selec = 1.0 - period_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
+    selec = 1.0 - span_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
   else if (cachedOp == OVERAFTER_OP)
     /* var1 #&> var2 when lower(var1) >= lower(var2) */
-    selec = 1.0 - period_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
+    selec = 1.0 - span_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
   else if (cachedOp == OVERLAPS_OP)
-    selec = period_joinsel_overlaps(lower1, upper1, nhist1, lower2, upper2, nhist2);
+    selec = span_joinsel_overlaps(lower1, upper1, nhist1, lower2, upper2, nhist2);
   else if (cachedOp == CONTAINS_OP)
-    selec = period_joinsel_contains(lower1, upper1, nhist1, lower2, upper2,
+    selec = span_joinsel_contains(lower1, upper1, nhist1, lower2, upper2,
       nhist2, lslot->values, lslot->nvalues);
   else if (cachedOp == CONTAINED_OP)
-    selec = period_joinsel_contained(lower1, upper1, nhist1, lower2, upper2,
+    selec = span_joinsel_contained(lower1, upper1, nhist1, lower2, upper2,
       nhist2, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
     // TO DO
-    selec = period_joinsel_default(InvalidOid);
+    selec = span_joinsel_default(InvalidOid);
   else
   {
-    elog(ERROR, "Unable to compute join selectivity for unknown period operator");
+    elog(ERROR, "Unable to compute join selectivity for unknown span operator");
     selec = -1.0;  /* keep compiler quiet */
   }
 
@@ -1268,12 +995,12 @@ period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
 }
 
 /**
- * Calculate period operator selectivity using histograms of period bounds.
+ * Calculate span operator selectivity using histograms of span bounds.
  *
  * This estimate is for the portion of values that are not NULL.
  */
 static double
-period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
+span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   CachedOp cachedOp)
 {
   /* There is only one lslot, see explanation below */
@@ -1285,12 +1012,12 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
-  /* Try to get histogram of periods of vardata1 and vardata2 */
+  /* Try to get histogram of spans of vardata1 and vardata2 */
   if (HeapTupleIsValid(vardata1->statsTuple))
   {
     stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
     have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
-      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+      STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot1.nvalues < 2)
     {
@@ -1302,7 +1029,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   {
     stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
     have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
-      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+      STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot2.nvalues < 2)
     {
@@ -1347,7 +1074,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     return selec;
   }
 
-  /* @> and @< also need a histogram of period lengths */
+  /* @> and @< also need a histogram of span lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
     /* We only get histograms for vardata2 since for computing the join
@@ -1358,7 +1085,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 
     if (!(HeapTupleIsValid(vardata2->statsTuple) &&
         get_attstatsslot(&lslot, vardata1->statsTuple,
-          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM, InvalidOid,
           ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
@@ -1373,7 +1100,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     }
   }
 
-  selec = period_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
+  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
 
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
@@ -1386,10 +1113,10 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 /*****************************************************************************/
 
 /**
- * Join selectivity for periods (internal function)
+ * Join selectivity for spans (internal function)
  */
 float8
-period_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
+span_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
@@ -1398,7 +1125,7 @@ period_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
     &join_is_reversed);
 
   /* Estimate join selectivity */
-  float8 selec = period_joinsel_hist(&vardata1, &vardata2, cachedOp);
+  float8 selec = span_joinsel_hist(&vardata1, &vardata2, cachedOp);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
@@ -1406,9 +1133,9 @@ period_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(Period_joinsel);
+PG_FUNCTION_INFO_V1(Span_joinsel);
 /**
- * Join selectivity for periods.
+ * Join selectivity for spans.
  *
  * The selectivity is the ratio of the number of
  * rows we think will be returned divided the maximum number of rows the join
@@ -1418,7 +1145,7 @@ PG_FUNCTION_INFO_V1(Period_joinsel);
  * This function is inspired from function eqjoinsel in file selfuncs.c
  */
 PGDLLEXPORT Datum
-Period_joinsel(PG_FUNCTION_ARGS)
+Span_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -1428,11 +1155,11 @@ Period_joinsel(PG_FUNCTION_ARGS)
 
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(period_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
   /* Only respond to an inner join/unknown context join */
   if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(period_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
   Node *arg1 = (Node *) linitial(args);
   Node *arg2 = (Node *) lsecond(args);
@@ -1440,27 +1167,27 @@ Period_joinsel(PG_FUNCTION_ARGS)
   /* We only do column joins right now, no functional joins */
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
-    PG_RETURN_FLOAT8(period_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(operid, &cachedOp))
+  if (! span_cachedop(operid, &cachedOp))
     /* Unknown operator */
-    PG_RETURN_FLOAT8(period_joinsel_default(operid));
+    PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
-  float8 selec = period_joinsel(root, cachedOp, args, jointype, sjinfo);
+  float8 selec = span_joinsel(root, cachedOp, args, jointype, sjinfo);
 
   PG_RETURN_FLOAT8(selec);
 }
 
-PG_FUNCTION_INFO_V1(_mobdb_period_joinsel);
+PG_FUNCTION_INFO_V1(_mobdb_span_joinsel);
 /**
  * Utility function to read the calculated selectivity for a given
  * couple of table/column, and operator.
  * Used for debugging the selectivity code.
  */
 PGDLLEXPORT Datum
-_mobdb_period_joinsel(PG_FUNCTION_ARGS)
+_mobdb_span_joinsel(PG_FUNCTION_ARGS)
 {
   Oid table1_oid = PG_GETARG_OID(0);
   text *att1_text = PG_GETARG_TEXT_P(1);
@@ -1506,14 +1233,14 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(operid, &cachedOp))
+  if (! span_cachedop(operid, &cachedOp))
     /* In case of unknown operator */
-    elog(ERROR, "Unknown period operator %d", operid);
+    elog(ERROR, "Unknown span operator %d", operid);
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
   AttStatsSlot hslot1, hslot2, lslot;
-  int stats_kind = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
+  int stats_kind = STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM;
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
@@ -1548,14 +1275,14 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
     elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
   }
 
-  /* @> and @< also need a histogram of period lengths */
+  /* @> and @< also need a histogram of span lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
     /* We only get histograms for the second table since for computing the
      * join selectivity we loop over values of the first histogram assuming
      * they are constant and call the restriction selectivity over the
      * second histogram */
-    stats_kind = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
+    stats_kind = STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM;
     memset(&lslot, 0, sizeof(lslot));
 
     if (! get_attstatsslot(&lslot, stats2_tuple, stats_kind, InvalidOid,
@@ -1574,7 +1301,7 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   }
 
   /* Compute selectivity */
-  selec = period_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
+  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
 
   ReleaseSysCache(stats1_tuple); ReleaseSysCache(stats2_tuple);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);

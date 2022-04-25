@@ -114,8 +114,9 @@ span_serialize(SpanBound *lower, SpanBound *upper)
 bool
 span_type(CachedType spantype)
 {
-  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN ||
-      spantype == T_TIMESTAMPSPAN)
+  // if (spantype == T_INTSPAN || spantype == T_FLOATSPAN ||
+      // spantype == T_TIMESTAMPSPAN)
+  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN)
     return true;
   return false;
 }
@@ -137,7 +138,8 @@ ensure_span_type(CachedType spantype)
 void
 ensure_span_basetype(CachedType basetype)
 {
-  if (basetype != T_INT4 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ)
+  // if (basetype != T_INT4 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ)
+  if (basetype != T_INT4 && basetype != T_FLOAT8)
     elog(ERROR, "unknown span base type: %d", basetype);
   return;
 }
@@ -255,20 +257,6 @@ span_upper_cmp(const Span *a, const Span *b)
 }
 
 /**
- * @ingroup libmeos_span_constructor
- * @brief Construct a span from the bounds.
- */
-Span *
-span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType basetype)
-{
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = (Span *) palloc(sizeof(Span));
-  span_set(lower, upper, lower_inc, upper_inc, basetype, s);
-  return s;
-}
-
-/**
  * @brief Canonicalize discrete spans.
  */
 void
@@ -288,50 +276,6 @@ span_canonicalize(Span *s)
       s->upper_inc = false;
     }
   }
-}
-
-/**
- * @ingroup libmeos_span_constructor
- * @brief Set the span from the argument values.
- */
-void
-span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType basetype, Span *s)
-{
-  CachedType spantype = basetype_spantype(basetype);
-  int cmp = datum_cmp2(lower, upper, basetype, basetype);
-  /* error check: if lower bound value is above upper, it's wrong */
-  if (cmp > 0)
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Span lower bound must be less than or equal to span upper bound")));
-
-  /* error check: if bounds are equal, and not both inclusive, span is empty */
-  if (cmp == 0 && !(lower_inc && upper_inc))
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Span cannot be empty")));
-
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(s, 0, sizeof(Span));
-  /* Now fill in the span */
-  s->lower = lower;
-  s->upper = upper;
-  s->lower_inc = lower_inc;
-  s->upper_inc = upper_inc;
-  s->spantype = spantype;
-  s->basetype = basetype;
-  span_canonicalize(s);
-}
-
-/**
- * @ingroup libmeos_span_constructor
- * @brief Return a copy of the span.
- */
-Span *
-span_copy(const Span *s)
-{
-  Span *result = (Span *) palloc(sizeof(Span));
-  memcpy((char *) result, (char *) s, sizeof(Span));
-  return result;
 }
 
 /**
@@ -399,24 +343,6 @@ span_super_union(const Span *s1, const Span *s2)
   Span *result = span_copy(s1);
   span_expand(s2, result);
   return result;
-}
-
-/**
- * @ingroup libmeos_span_transf
- * @brief Expand the second span with the first one
- */
-void
-span_expand(const Span *s1, Span *s2)
-{
-  int cmp1 = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
-  int cmp2 = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
-  bool lower1 = cmp1 < 0 || (cmp1 == 0 && (s2->lower_inc || ! s1->lower_inc));
-  bool upper1 = cmp2 > 0 || (cmp2 == 0 && (s2->upper_inc || ! s1->upper_inc));
-  s2->lower = lower1 ? s2->lower : s1->lower;
-  s2->lower_inc = lower1 ? s2->lower_inc : s1->lower_inc;
-  s2->upper = upper1 ? s2->upper : s1->upper;
-  s2->upper_inc = upper1 ? s2->upper_inc : s1->upper_inc;
-  return;
 }
 
 /**
@@ -582,6 +508,64 @@ span_read(StringInfo buf, CachedType spantype)
  * Constructor functions
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_span_constructor
+ * @brief Construct a span from the bounds.
+ */
+Span *
+span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
+  CachedType basetype)
+{
+  /* Note: zero-fill is done in the span_set function */
+  Span *s = (Span *) palloc(sizeof(Span));
+  span_set(lower, upper, lower_inc, upper_inc, basetype, s);
+  return s;
+}
+
+/**
+ * @ingroup libmeos_span_constructor
+ * @brief Set the span from the argument values.
+ */
+void
+span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
+  CachedType basetype, Span *s)
+{
+  CachedType spantype = basetype_spantype(basetype);
+  int cmp = datum_cmp2(lower, upper, basetype, basetype);
+  /* error check: if lower bound value is above upper, it's wrong */
+  if (cmp > 0)
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Span lower bound must be less than or equal to span upper bound")));
+
+  /* error check: if bounds are equal, and not both inclusive, span is empty */
+  if (cmp == 0 && !(lower_inc && upper_inc))
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Span cannot be empty")));
+
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(s, 0, sizeof(Span));
+  /* Now fill in the span */
+  s->lower = lower;
+  s->upper = upper;
+  s->lower_inc = lower_inc;
+  s->upper_inc = upper_inc;
+  s->spantype = spantype;
+  s->basetype = basetype;
+  span_canonicalize(s);
+}
+
+/**
+ * @ingroup libmeos_span_constructor
+ * @brief Return a copy of the span.
+ */
+Span *
+span_copy(const Span *s)
+{
+  Span *result = (Span *) palloc(sizeof(Span));
+  memcpy((char *) result, (char *) s, sizeof(Span));
+  return result;
+}
+
 /*****************************************************************************
  * Casting
  *****************************************************************************/
@@ -689,6 +673,24 @@ span_distance(const Span *s)
          // TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
   // return;
 // }
+
+/**
+ * @ingroup libmeos_span_transf
+ * @brief Expand the second span with the first one
+ */
+void
+span_expand(const Span *s1, Span *s2)
+{
+  int cmp1 = datum_cmp2(s2->lower, s1->lower, s2->basetype, s1->basetype);
+  int cmp2 = datum_cmp2(s2->upper, s1->upper, s2->basetype, s1->basetype);
+  bool lower1 = cmp1 < 0 || (cmp1 == 0 && (s2->lower_inc || ! s1->lower_inc));
+  bool upper1 = cmp2 > 0 || (cmp2 == 0 && (s2->upper_inc || ! s1->upper_inc));
+  s2->lower = lower1 ? s2->lower : s1->lower;
+  s2->lower_inc = lower1 ? s2->lower_inc : s1->lower_inc;
+  s2->upper = upper1 ? s2->upper : s1->upper;
+  s2->upper_inc = upper1 ? s2->upper_inc : s1->upper_inc;
+  return;
+}
 
 /**
  * @ingroup libmeos_span_transf

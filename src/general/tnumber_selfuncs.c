@@ -45,448 +45,20 @@
 #include <utils/float.h>
 #endif
 #include <utils/selfuncs.h>
-#include "general/temporal_boxops.h"
 /* MobilityDB */
+#include "general/timestampset.h"
 #include "general/period.h"
+#include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/span_ops.h"
+#include "general/temporal_boxops.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 #include "general/tbox.h"
+#include "general/span_selfuncs.h"
 #include "general/time_selfuncs.h"
 #include "general/temporal_analyze.h"
 #include "general/temporal_selfuncs.h"
-
-/*****************************************************************************
- * Functions transposed from PostgreSQL file rangetypes_selfuncs.c
- *****************************************************************************/
-
-/**
- * Binary search on an array of span bounds. Return greatest index of span
- * bound in array which is less(less or equal) than given span bound. If all
- * span bounds in array are greater or equal(greater) than given span bound,
- * return -1. When "equal" flag is set conditions in brackets are used.
- *
- * This function is used in scalar operator selectivity estimation. Another
- * goal of this function is to find a histogram bin where to stop
- * interpolation of portion of bounds which are less or equal to given bound.
- * @note Function transposed from rangetypes_selfuncs.c.
- */
-static int
-sbound_bsearch(SpanBound *value, SpanBound *hist, int hist_length, bool equal)
-{
-  int lower = -1;
-  int upper = hist_length - 1;
-
-  while (lower < upper)
-  {
-    int middle = (lower + upper + 1) / 2;
-    int cmp = span_cmp_bounds(&hist[middle], value);
-
-    if (cmp < 0 || (equal && cmp == 0))
-      lower = middle;
-    else
-      upper = middle - 1;
-  }
-  return lower;
-}
-
-/**
- * Get relative position of value in histogram bin in [0,1] span.
- * @note Function transposed from rangetypes_selfuncs.c.
- */
-static float8
-get_position(SpanBound *value, SpanBound *hist1, SpanBound *hist2)
-{
-  /* Calculate relative position using distance function. */
-  float8 bin_width = distance_elem_elem(hist2->val, hist1->val,
-    hist2->basetype, hist1->basetype);
-  if (bin_width <= 0.0)
-    return 0.5;      /* zero width bin */
-
-  float8 position = distance_elem_elem(value->val, hist1->val,
-    value->basetype, hist1->basetype) / bin_width;
-
-  /* Relative position must be in [0,1] range */
-  position = Max(position, 0.0);
-  position = Min(position, 1.0);
-  return position;
-}
-
-/**
- * Look up the fraction of values less than (or equal, if 'equal' argument
- * is true) a given const in a histogram of span bounds.
- * @note Function transposed from rangetypes_selfuncs.c.
- */
-static double
-calc_hist_selectivity_scalar(SpanBound *constbound, SpanBound *hist,
-  int hist_nvalues, bool equal)
-{
-  Selectivity selec;
-  int index;
-
-  /*
-   * Find the histogram bin the given constant falls into. Estimate
-   * selectivity as the number of preceding whole bins.
-   */
-  index = sbound_bsearch(constbound, hist, hist_nvalues, equal);
-  selec = (Selectivity) (Max(index, 0)) / (Selectivity) (hist_nvalues - 1);
-
-  /* Adjust using linear interpolation within the bin */
-  if (index >= 0 && index < hist_nvalues - 1)
-    selec += get_position(constbound, &hist[index], &hist[index + 1]) /
-      (Selectivity) (hist_nvalues - 1);
-
-  return selec;
-}
-
-/**
- * Calculate selectivity of "var <@ const" operator, ie. estimate the fraction
- * of ranges that fall within the constant lower and upper bounds. This uses
- * the histograms of range lower bounds and range lengths, on the assumption
- * that the range lengths are independent of the lower bounds.
- *
- * The caller has already checked that constant lower and upper bounds are
- * finite.
- * @note Function copied from rangetypes_selfuncs.c since it is not exported.
- */
-static double
-calc_hist_selectivity_contained(SpanBound *lower, SpanBound *upper,
-  SpanBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
-  int length_hist_nvalues)
-{
-  int i, upper_index;
-  float8 prev_dist;
-  double bin_width, upper_bin_width, sum_frac;
-  CachedType basetype = lower->basetype;
-
-  /*
-   * Begin by finding the bin containing the upper bound, in the lower bound
-   * histogram. Any span with a lower bound > constant upper bound can't
-   * match, ie. there are no matches in bins greater than upper_index.
-   */
-  upper->inclusive = ! upper->inclusive;
-  upper->lower = true;
-  upper_index = sbound_bsearch(upper, hist_lower, hist_nvalues, false);
-
-  /*
-   * Calculate upper_bin_width, ie. the fraction of the (upper_index,
-   * upper_index + 1) bin which is greater than upper bound of query span
-   * using linear interpolation of subdiff function.
-   */
-  if (upper_index >= 0 && upper_index < hist_nvalues - 1)
-    upper_bin_width = get_position(upper, &hist_lower[upper_index],
-      &hist_lower[upper_index + 1]);
-  else
-    upper_bin_width = 0.0;
-
-  /*
-   * In the loop, dist and prev_dist are the distance of the "current" bin's
-   * lower and upper bounds from the constant upper bound.
-   *
-   * bin_width represents the width of the current bin. Normally it is 1.0,
-   * meaning a full width bin, but can be less in the corner cases: start
-   * and end of the loop. We start with bin_width = upper_bin_width, because
-   * we begin at the bin containing the upper bound.
-   */
-  prev_dist = 0.0;
-  bin_width = upper_bin_width;
-
-  sum_frac = 0.0;
-  for (i = upper_index; i >= 0; i--)
-  {
-    double dist;
-    double length_hist_frac;
-    bool final_bin = false;
-
-    /*
-     * dist -- distance from upper bound of query span to lower bound of
-     * the current bin in the lower bound histogram. Or to the lower bound
-     * of the constant span, if this is the final bin, containing the
-     * constant lower bound.
-     */
-    if (span_cmp_bounds(&hist_lower[i], lower) < 0)
-    {
-      dist = distance_elem_elem(lower->val, upper->val, basetype, basetype);
-
-      /*
-       * Subtract from bin_width the portion of this bin that we want to
-       * ignore.
-       */
-      bin_width -= get_position(lower, &hist_lower[i],
-        &hist_lower[i + 1]);
-      if (bin_width < 0.0)
-        bin_width = 0.0;
-      final_bin = true;
-    }
-    else
-      dist = distance_elem_elem(hist_lower[i].val, upper->val, basetype,
-        basetype);
-
-    /*
-     * Estimate the fraction of tuples in this bin that are narrow enough
-     * to not exceed the distance to the upper bound of the query span.
-     */
-    length_hist_frac = calc_length_hist_frac(length_hist_values,
-      length_hist_nvalues, prev_dist, dist, true);
-
-    /*
-     * Add the fraction of tuples in this bin, with a suitable length, to
-     * the total.
-     */
-    sum_frac += length_hist_frac * bin_width / (double) (hist_nvalues - 1);
-
-    if (final_bin)
-      break;
-
-    bin_width = 1.0;
-    prev_dist = dist;
-  }
-
-  return sum_frac;
-}
-
-/**
- * Calculate selectivity of "var @> const" operator, ie. estimate the fraction
- * of spans that contain the constant lower and upper bounds. This uses
- * the histograms of span lower bounds and span lengths, on the assumption
- * that the span lengths are independent of the lower bounds.
- *
- * Note, this is "var @> const", ie. estimate the fraction of spans that
- * contain the constant lower and upper bounds.
- * @note Function copied from rangetypes_selfuncs.c since it is not exported.
- */
-static double
-calc_hist_selectivity_contains(SpanBound *lower, SpanBound *upper,
-  SpanBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
-  int length_hist_nvalues)
-{
-  int i, lower_index;
-  double bin_width, lower_bin_width, sum_frac;
-  float8 prev_dist;
-  CachedType basetype = lower->basetype;
-
-  /* Find the bin containing the lower bound of query span. */
-  lower_index = sbound_bsearch(lower, hist_lower, hist_nvalues, true);
-
-  /*
-   * Calculate lower_bin_width, ie. the fraction of the of (lower_index,
-   * lower_index + 1) bin which is greater than lower bound of query span
-   * using linear interpolation of subdiff function.
-   */
-  if (lower_index >= 0 && lower_index < hist_nvalues - 1)
-    lower_bin_width = get_position(lower, &hist_lower[lower_index],
-      &hist_lower[lower_index + 1]);
-  else
-    lower_bin_width = 0.0;
-
-  /*
-   * Loop through all the lower bound bins, smaller than the query lower
-   * bound. In the loop, dist and prev_dist are the distance of the
-   * "current" bin's lower and upper bounds from the constant upper bound.
-   * We begin from query lower bound, and walk backwards, so the first bin's
-   * upper bound is the query lower bound, and its distance to the query
-   * upper bound is the length of the query span.
-   *
-   * bin_width represents the width of the current bin. Normally it is 1.0,
-   * meaning a full width bin, except for the first bin, which is only
-   * counted up to the constant lower bound.
-   */
-  prev_dist = distance_elem_elem(lower->val, upper->val, basetype, basetype);
-  sum_frac = 0.0;
-  bin_width = lower_bin_width;
-  for (i = lower_index; i >= 0; i--)
-  {
-    float8    dist;
-    double    length_hist_frac;
-
-    /*
-     * dist -- distance from upper bound of query span to current value
-     * of lower bound histogram or lower bound of query span (if we've
-     * reach it).
-     */
-    dist = distance_elem_elem(hist_lower[i].val, upper->val, basetype,
-      basetype);
-
-    /*
-     * Get average fraction of length histogram which covers intervals
-     * longer than (or equal to) distance to upper bound of query span.
-     */
-    length_hist_frac =
-      1.0 - calc_length_hist_frac(length_hist_values,
-                    length_hist_nvalues,
-                    prev_dist, dist, false);
-
-    sum_frac += length_hist_frac * bin_width / (double) (hist_nvalues - 1);
-
-    bin_width = 1.0;
-    prev_dist = dist;
-  }
-
-  return sum_frac;
-}
-
-/**
- * @|brief Calculate span operator selectivity using histograms of span bounds.
- *
- * This estimate is for the portion of values that are not empty and not NULL.
- * @note Function transposed from rangetypes_selfuncs.c.
- */
-static double
-calc_hist_selectivity(VariableStatData *vardata, Span *constval,
-  CachedOp cachedOp)
-{
-  AttStatsSlot hslot, lslot;
-  SpanBound *hist_lower, *hist_upper, const_lower, const_upper;
-  int nhist, i;
-  double hist_selec;
-
-  /* Try to get histogram of spans */
-  if (!(HeapTupleIsValid(vardata->statsTuple) &&
-      get_attstatsslot(&hslot, vardata->statsTuple,
-               STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
-               ATTSTATSSLOT_VALUES)))
-    return -1.0;
-
-  /*
-   * Convert histogram of spans into histograms of its lower and upper
-   * bounds.
-   */
-  nhist = hslot.nvalues;
-  hist_lower = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
-  hist_upper = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
-  for (i = 0; i < nhist; i++)
-    span_deserialize(DatumGetSpanP(hslot.values[i]), &hist_lower[i],
-      &hist_upper[i]);
-
-  /* @> and @< also need a histogram of span lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
-  {
-    if (!(HeapTupleIsValid(vardata->statsTuple) &&
-        get_attstatsslot(&lslot, vardata->statsTuple,
-                 STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM,
-                 InvalidOid,
-                 ATTSTATSSLOT_VALUES)))
-    {
-      free_attstatsslot(&hslot);
-      return -1.0;
-    }
-
-    /* check that it's a histogram, not just a dummy entry */
-    if (lslot.nvalues < 2)
-    {
-      free_attstatsslot(&lslot);
-      free_attstatsslot(&hslot);
-      return -1.0;
-    }
-  }
-  else
-    memset(&lslot, 0, sizeof(lslot));
-
-  /* Extract the bounds of the constant value. */
-  span_deserialize(constval, &const_lower, &const_upper);
-
-  /*
-   * Calculate selectivity comparing the lower or upper bound of the
-   * constant with the histogram of lower or upper bounds.
-   */
-  switch (cachedOp)
-  {
-    case LT_OP:
-
-      /*
-       * The regular b-tree comparison operators (<, <=, >, >=) compare
-       * the lower bounds first, and the upper bounds for values with
-       * equal lower bounds. Estimate that by comparing the lower bounds
-       * only. This gives a fairly accurate estimate assuming there
-       * aren't many rows with a lower bound equal to the constant's
-       * lower bound.
-       */
-      hist_selec =
-        calc_hist_selectivity_scalar(&const_lower, hist_lower, nhist, false);
-      break;
-
-    case LE_OP:
-      hist_selec =
-        calc_hist_selectivity_scalar(&const_lower, hist_lower, nhist, true);
-      break;
-
-    case GT_OP:
-      hist_selec = 1 -
-        calc_hist_selectivity_scalar(&const_lower, hist_lower, nhist, false);
-      break;
-
-    case GE_OP:
-      hist_selec = 1 -
-        calc_hist_selectivity_scalar(&const_lower, hist_lower, nhist, true);
-      break;
-
-    case LEFT_OP:
-      /* var << const when upper(var) < lower(const) */
-      hist_selec =
-        calc_hist_selectivity_scalar(&const_lower, hist_upper, nhist, false);
-      break;
-
-    case RIGHT_OP:
-      /* var >> const when lower(var) > upper(const) */
-      hist_selec = 1 -
-        calc_hist_selectivity_scalar(&const_upper, hist_lower, nhist, true);
-      break;
-
-    case OVERRIGHT_OP:
-      /* compare lower bounds */
-      hist_selec = 1 -
-        calc_hist_selectivity_scalar(&const_lower, hist_lower, nhist, false);
-      break;
-
-    case OVERLEFT_OP:
-      /* compare upper bounds */
-      hist_selec =
-        calc_hist_selectivity_scalar(&const_upper, hist_upper, nhist, true);
-      break;
-
-    case OVERLAPS_OP:
-      /*
-       * A && B <=> NOT (A << B OR A >> B).
-       *
-       * Since A << B and A >> B are mutually exclusive events we can
-       * sum their probabilities to find probability of (A << B OR A >>
-       * B).
-       *
-       * "span @> elem" is equivalent to "span && [elem,elem]". The
-       * caller already constructed the singular span from the element
-       * constant, so just treat it the same as &&.
-       */
-      hist_selec =
-        calc_hist_selectivity_scalar(&const_lower, hist_upper,
-                       nhist, false);
-      hist_selec +=
-        (1.0 - calc_hist_selectivity_scalar(&const_upper, hist_lower,
-                          nhist, true));
-      hist_selec = 1.0 - hist_selec;
-      break;
-
-    case CONTAINS_OP:
-      hist_selec = calc_hist_selectivity_contains(&const_lower, &const_upper,
-        hist_lower, nhist, lslot.values, lslot.nvalues);
-      break;
-
-    case CONTAINED_OP:
-        hist_selec = calc_hist_selectivity_contained(&const_lower,
-          &const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
-      break;
-
-    default:
-      elog(ERROR, "unknown span operator %u", cachedOp);
-      hist_selec = -1.0;  /* keep compiler quiet */
-      break;
-  }
-
-  free_attstatsslot(&lslot);
-  free_attstatsslot(&hslot);
-
-  return hist_selec;
-}
 
 /*****************************************************************************
  * Internal functions computing selectivity
@@ -552,26 +124,62 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
  * Transform the constant into a temporal box
  */
 bool
-tnumber_const_to_tbox(const Node *other, TBOX *box)
+tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
+  CachedType basetype)
 {
   Oid consttypid = ((Const *) other)->consttype;
   CachedType type = oid_type(consttypid);
   if (tnumber_basetype(type))
-    number_tbox(((Const *) other)->constvalue, type, box);
-  else if (tnumber_spantype(type))
-    span_tbox(DatumGetSpanP(((Const *) other)->constvalue), box);
+  {
+    Datum value = ((Const *) other)->constvalue;
+    *s = elem_span(value, type);
+  }
+  else if (span_type(type))
+  {
+    Span *span = DatumGetSpanP(((Const *) other)->constvalue);
+    *s = span_copy(span);
+  }
   else if (type == T_TIMESTAMPTZ)
-    timestamp_tbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+  {
+    TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
+    *p = timestamp_period(t);
+  }
   else if (type == T_TIMESTAMPSET)
-    timestampset_tbox_slice(((Const *) other)->constvalue, box);
+  {
+    *p = (Period *) palloc(sizeof(Period));
+    timestampset_bbox_slice(((Const *) other)->constvalue, *p);
+  }
   else if (type == T_PERIOD)
-    period_tbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+  {
+    Period *period = DatumGetPeriodP(((Const *) other)->constvalue);
+    *p = period_copy(period);
+  }
   else if (type == T_PERIODSET)
-    periodset_tbox_slice(((Const *) other)->constvalue, box);
+  {
+    *p = (Period *) palloc(sizeof(Period));
+    periodset_bbox_slice(((Const *) other)->constvalue, *p);
+  }
   else if (type == T_TBOX)
-    memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
+  {
+    const TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
+    ensure_span_basetype(basetype);
+    if (basetype == T_INT4)
+      *s = tbox_intspan(box);
+    else /* basetype == T_FLOAT8 */
+      *s = tbox_floatspan(box);
+    *p = tbox_period(box);
+  }
   else if (tnumber_type(type))
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
+  {
+    const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
+    TBOX box;
+    temporal_bbox(temp, &box);
+    if (basetype == T_INT4)
+      *s = tbox_intspan(&box);
+    else /* basetype == T_FLOAT8 */
+      *s = tbox_floatspan(&box);
+    *p = tbox_period(&box);
+  }
   else
     return false;
   return true;
@@ -627,33 +235,15 @@ tnumber_sel_default(CachedOp operator)
  * respectively.
  */
 Selectivity
-tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
-  Oid basetypid)
+tnumber_sel_span_period(VariableStatData *vardata, Span *span, Period *period,
+  CachedOp cachedOp, Oid basetypid)
 {
-  Period period;
-  Span *span = NULL;
   double selec;
   Oid value_oprid, period_oprid;
 
   /* Enable the multiplication of the selectivity of the value and time
    * dimensions since either may be missing */
   selec = 1.0;
-
-  if (MOBDB_FLAGS_GET_X(box->flags))
-  {
-    /* Fetch the span operator corresponding to the cachedOp */
-    value_oprid = oper_oid(cachedOp, T_TBOX, T_TBOX);
-      // tnumber_spanop(cachedOp);
-    /* If the corresponding span operator is not found */
-    if (value_oprid != InvalidOid)
-    {
-      CachedType basetype = oid_type(basetypid);
-      span = span_make(Float8GetDatum(box->xmin), Float8GetDatum(box->xmax),
-        true, true, basetype);
-    }
-  }
-  if (MOBDB_FLAGS_GET_T(box->flags))
-    period_set(box->tmin, box->tmax, true, true, &period);
 
   /*
    * There is no ~= operator for span/time types and thus it is necessary to
@@ -662,7 +252,7 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
   if (cachedOp == SAME_OP)
   {
     /* Selectivity for the value dimension */
-    if (MOBDB_FLAGS_GET_X(box->flags))
+    if (span != NULL)
     {
       value_oprid = oper_oid(EQ_OP, basetypid, basetypid);
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -674,15 +264,15 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
 #endif
     }
     /* Selectivity for the time dimension */
-    if (MOBDB_FLAGS_GET_T(box->flags))
+    if (period != NULL)
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, PeriodPGetDatum(&period),
+      selec *= var_eq_const(vardata, period_oprid, PeriodPGetDatum(period),
         false, false, false);
 #else
       selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
-        PeriodPGetDatum(&period), false, false, false);
+        PeriodPGetDatum(period), false, false, false);
 #endif
     }
   }
@@ -696,32 +286,30 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
     cachedOp == GT_OP || cachedOp == GE_OP)
   {
     /* Selectivity for the value dimension */
-    if (MOBDB_FLAGS_GET_X(box->flags) && span != NULL)
-      selec *= calc_hist_selectivity(vardata, span, value_oprid);
+    if (span != NULL)
+      selec *= span_sel_hist(vardata, span, cachedOp);
     /* Selectivity for the time dimension */
-    if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= period_sel_hist(vardata, &period, cachedOp);
+    if (period != NULL)
+      selec *= period_sel_hist(vardata, period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
   {
     /* Selectivity for the value dimension */
-    if (MOBDB_FLAGS_GET_X(box->flags) && span != NULL)
-      selec *= calc_hist_selectivity(vardata, span, value_oprid);
+    if (span != NULL)
+      selec *= span_sel_hist(vardata, span, cachedOp);
   }
   else if (cachedOp == BEFORE_OP || cachedOp == AFTER_OP ||
     cachedOp == OVERBEFORE_OP || cachedOp == OVERAFTER_OP)
   {
     /* Selectivity for the value dimension */
-    if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= period_sel_hist(vardata, &period, cachedOp);
+    if (period != NULL)
+      selec *= period_sel_hist(vardata, period, cachedOp);
   }
   else /* Unknown operator */
   {
     selec = tnumber_sel_default(cachedOp);
   }
-  if (span != NULL)
-    pfree(span);
   return selec;
 }
 

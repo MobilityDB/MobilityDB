@@ -10,7 +10,9 @@ else()
   set(geo_constructors.c geo_constructors.c)
   set(skiplist.c skiplist.c)
   set(span_aggfuncs.c span_aggfuncs.c)
+  set(span_analyze.c span_analyze.c)
   set(span_gist.c span_gist.c)
+  set(span_selfuncs.c span_selfuncs.c)
   set(span_spgist.c span_spgist.c)
   set(temporal_aggfuncs.c temporal_aggfuncs.c)
   set(temporal_analyze.c temporal_analyze.c)
@@ -40,9 +42,11 @@ add_library(general OBJECT
   ${skiplist.c}
   span.c
   ${span_aggfuncs.c}
+  ${span_analyze.c}
   ${span_gist.c}
   ${span_spgist.c}
   span_ops.c
+  ${span_selfuncs.c}
   tbool_boolops.c
   tbox.c
   tempcache.c

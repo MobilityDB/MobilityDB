@@ -495,17 +495,21 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else /* tempfamily == TNUMBERTYPE */
   {
-    TBOX box;
-    if (! tnumber_const_to_tbox(other, &box))
+    /* Get the base type of the temporal column */
+    Oid basetypid = temptypid_basetypid(vardata.atttype);
+    Oid basetype = oid_type(basetypid);
+    /* Transform the constant into a span and/or a period */
+    Span *s = NULL;
+    Period *p = NULL;
+    if (! tnumber_const_to_span_period(other, &s, &p, basetype))
       /* In the case of unknown constant */
       return tnumber_sel_default(cachedOp);
 
-    assert(MOBDB_FLAGS_GET_X(box.flags) ||
-      MOBDB_FLAGS_GET_T(box.flags));
-    /* Get the base type of the temporal column */
-    Oid basetypid = temptypid_basetypid(vardata.atttype);
     /* Compute the selectivity */
-    selec = tnumber_sel_box(&vardata, &box, cachedOp, basetypid);
+    selec = tnumber_sel_span_period(&vardata, s, p, cachedOp, basetypid);
+    /* Free variables */
+    if (s) pfree(s);
+    if (p) pfree(p);
   }
 
   ReleaseVariableStats(vardata);

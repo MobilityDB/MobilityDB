@@ -87,10 +87,10 @@ CREATE FUNCTION timestampspan_send(timestampspan)
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION span_analyze(internal)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Span_analyze'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE intspan (
   internallength = 24,
@@ -98,8 +98,8 @@ CREATE TYPE intspan (
   output = intspan_out,
   receive = intspan_recv,
   send = intspan_send,
-  alignment = double
-  -- ,analyze = intspan_analyze
+  alignment = double,
+  analyze = span_analyze
 );
 
 CREATE TYPE floatspan (
@@ -108,8 +108,8 @@ CREATE TYPE floatspan (
   output = floatspan_out,
   receive = floatspan_recv,
   send = floatspan_send,
-  alignment = double
-  -- ,analyze = floatspan_analyze
+  alignment = double,
+  analyze = span_analyze
 );
 
 CREATE TYPE timestampspan (
@@ -118,8 +118,8 @@ CREATE TYPE timestampspan (
   output = timestampspan_out,
   receive = timestampspan_recv,
   send = timestampspan_send,
-  alignment = double
-  -- ,analyze = span_analyze
+  alignment = double,
+  analyze = span_analyze
 );
 
 /******************************************************************************
@@ -175,7 +175,7 @@ CREATE FUNCTION timestampspan(timestamptz, timestamptz, boolean, boolean)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Functions
+ * Accessor functions
  ******************************************************************************/
 
 CREATE FUNCTION lower(intspan)
@@ -239,6 +239,18 @@ CREATE FUNCTION round(floatspan, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspan_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Selectivity functions
+ *****************************************************************************/
+
+CREATE FUNCTION span_sel(internal, oid, internal, integer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Span_sel'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Span_joinsel'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Operators
@@ -338,115 +350,115 @@ CREATE FUNCTION span_cmp(timestampspan, timestampspan)
 CREATE OPERATOR = (
   PROCEDURE = span_eq,
   LEFTARG = intspan, RIGHTARG = intspan,
-  COMMUTATOR = =, NEGATOR = <>
-  -- RESTRICT = eqsel, JOIN = eqjoinsel
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   PROCEDURE = span_eq,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  COMMUTATOR = =, NEGATOR = <>
-  -- RESTRICT = eqsel, JOIN = eqjoinsel
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   PROCEDURE = span_eq,
   LEFTARG = timestampspan, RIGHTARG = timestampspan,
-  COMMUTATOR = =, NEGATOR = <>
-  -- RESTRICT = eqsel, JOIN = eqjoinsel
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
 );
 
 CREATE OPERATOR <> (
   PROCEDURE = span_ne,
   LEFTARG = intspan, RIGHTARG = intspan,
-  COMMUTATOR = <>, NEGATOR = =
-  -- RESTRICT = neqsel, JOIN = neqjoinsel
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   PROCEDURE = span_ne,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  COMMUTATOR = <>, NEGATOR = =
-  -- RESTRICT = neqsel, JOIN = neqjoinsel
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   PROCEDURE = span_ne,
   LEFTARG = timestampspan, RIGHTARG = timestampspan,
-  COMMUTATOR = <>, NEGATOR = =
-  -- RESTRICT = neqsel, JOIN = neqjoinsel
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
 );
 
 CREATE OPERATOR < (
   PROCEDURE = span_lt,
   LEFTARG = intspan, RIGHTARG = intspan,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   PROCEDURE = span_lt,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   PROCEDURE = span_lt,
   LEFTARG = timestampspan, RIGHTARG = timestampspan,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
   PROCEDURE = span_le,
   LEFTARG = intspan, RIGHTARG = intspan,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   PROCEDURE = span_le,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   PROCEDURE = span_le,
   LEFTARG = timestampspan, RIGHTARG = timestampspan,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
   PROCEDURE = span_ge,
   LEFTARG = intspan, RIGHTARG = intspan,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = span_ge,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = span_ge,
   LEFTARG = timestampspan, RIGHTARG = timestampspan,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
   PROCEDURE = span_gt,
   LEFTARG = intspan, RIGHTARG = intspan,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   PROCEDURE = span_gt,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   PROCEDURE = span_gt,
   LEFTARG = timestampspan, RIGHTARG = timestampspan,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS intspan_ops

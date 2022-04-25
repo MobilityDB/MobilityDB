@@ -1522,7 +1522,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
     {
       lower_inc1 = upper_inc1 = true;
     }
-    Span *segspan = span_make(min_value, max_value, lower_inc1, upper_inc1, basetype);
+    Span *segspan = span_make(min_value, max_value, lower_inc1, upper_inc1,
+      basetype);
     TInstant *bounds[2];
     bounds[first] = incr ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = incr ? bucket_value1 : bucket_value2;
@@ -1551,17 +1552,25 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         Span *bucketspan = span_make(bucket_lower, bucket_upper, true, false,
           basetype);
         Span *inter = intersection_span_span(segspan, bucketspan);
-        if (incr)
+        if (inter)
         {
-          lower_inc1 = inter->lower_inc;
-          upper_inc1 = inter->upper_inc;
+          if (incr)
+          {
+            lower_inc1 = inter->lower_inc;
+            upper_inc1 = inter->upper_inc;
+          }
+          else
+          {
+            lower_inc1 = inter->upper_inc;
+            upper_inc1 = inter->lower_inc;
+          }
+          pfree(inter); pfree(bucketspan);
         }
         else
         {
-          lower_inc1 = inter->upper_inc;
-          upper_inc1 = inter->lower_inc;
+          // elog(ERROR, "There is a problem");
+          lower_inc1 = upper_inc1 = false;
         }
-        pfree(inter); pfree(bucketspan);
       }
       else
       {

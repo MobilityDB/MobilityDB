@@ -76,7 +76,7 @@ timestampset_bbox_ptr(const TimestampSet *ts)
 void
 timestampset_bbox(const TimestampSet *ts, Period *p)
 {
-  const Period *p1 = (Period *)&ts->period;
+  const Period *p1 = (Period *) &ts->period;
   period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
   return;
 }
