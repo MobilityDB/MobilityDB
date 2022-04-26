@@ -292,8 +292,12 @@ span_bucket_state_make(Temporal *temp, Span *s, Datum size, Datum origin)
   state->basetype = s->basetype;
   state->size = size;
   state->origin = origin;
+  Datum upper = s->upper;
+  /* intspans are in canonical form so their upper bound is exclusive */
+  if (s->basetype == T_INT4)
+    upper = Int32GetDatum(DatumGetInt32(s->upper) - 1);
   state->minvalue = number_bucket(s->lower, size, origin, state->basetype);
-  state->maxvalue = number_bucket(s->upper, size, origin, state->basetype);
+  state->maxvalue = number_bucket(upper, size, origin, state->basetype);
   state->value = state->minvalue;
   return state;
 }

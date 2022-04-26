@@ -287,12 +287,12 @@ span_canonicalize(Span *s)
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the input array
  * @param[out] newcount Number of elements in the output array
- * @pre It is supposed that the spans are sorted.
- * This should be ensured by the calling function !!!
  */
 Span **
 spanarr_normalize(Span **spans, int count, int *newcount)
 {
+  /* Sort the spans before normalization */
+  spanarr_sort(spans, count);
   int k = 0;
   Span **result = palloc(sizeof(Span *) * count);
   Span *current = spans[0];

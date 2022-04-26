@@ -1415,8 +1415,6 @@ tfloatseqset_span(const TSequenceSet *ts)
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     spans[i] = tfloatseq_span(seq);
   }
-  /* Sort the spans before normalization */
-  spanarr_sort(spans, ts->count);
   /* Normalize the spans */
   int newcount;
   Span **normspans = spanarr_normalize(spans, ts->count, &newcount);
