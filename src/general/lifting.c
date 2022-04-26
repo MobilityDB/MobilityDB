@@ -153,9 +153,7 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"

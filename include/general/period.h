@@ -39,7 +39,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
-#include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/timetypes.h"
 

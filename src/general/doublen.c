@@ -43,13 +43,6 @@
 */
 #include "general/doublen.h"
 
-/* PostgreSQL */
-#include <libpq/pqformat.h>
-#include <utils/builtins.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
-#endif
-
 /*****************************************************************************
  * Functions
  *****************************************************************************/

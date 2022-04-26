@@ -42,10 +42,8 @@
 /* MobilityDB */
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/temporal.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
-#include "general/rangetypes_ext.h"
 
 /*****************************************************************************
  * General functions
