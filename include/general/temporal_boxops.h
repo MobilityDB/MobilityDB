@@ -38,11 +38,11 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/temporal.h"
 #include "general/period.h"
+#include "general/span.h"
 #include "general/tbox.h"
 #include "point/stbox.h"
 
@@ -105,7 +105,7 @@ extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
 
 extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
   CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern int boxop_tnumber_range(const Temporal *temp, const RangeType *range,
+extern int boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
 extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
@@ -116,9 +116,9 @@ extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
+extern Datum boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
+extern Datum boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));

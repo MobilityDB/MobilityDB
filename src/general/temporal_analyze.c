@@ -39,12 +39,12 @@
  * - Slot 1
  *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_BOUNDS_HISTOGRAM`.
  *     - `staop` contains the "<" operator of the value dimension.
- *     - `stavalues` stores the histogram of ranges for the value dimension.
+ *     - `stavalues` stores the histogram of spans for the value dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  * - Slot 2
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM`.
+ *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM`.
  *     - `staop` contains the "<" operator to the value dimension.
- *     - `stavalues` stores the length of the histogram of ranges for the value dimension.
+ *     - `stavalues` stores the length of the histogram of spans for the value dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  * - Slot 3
  *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM`.
@@ -83,7 +83,7 @@
 /* MobilityDB */
 #include "general/period.h"
 #include "general/time_analyze.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -107,44 +107,23 @@
 TemporalAnalyzeExtraData *temporal_extra_data;
 
 /*****************************************************************************
- * Functions copied from rangetypes_typanalyze.c since it is not exported.
- *****************************************************************************/
-
-/**
- * Comparison function for sorting RangeBounds.
- *
- * @note Function copied from file rangetypes_typanalyze.c since it is not exported.
- */
-static int
-range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
-{
-  RangeBound *b1 = (RangeBound *) a1;
-  RangeBound *b2 = (RangeBound *) a2;
-  TypeCacheEntry *typcache = (TypeCacheEntry *) arg;
-
-  return range_cmp_bounds(typcache, b1, b2);
-}
-
-/*****************************************************************************
  * Generic statistics functions for alphanumeric temporal types.
  *****************************************************************************/
 
 /**
- * Compute statistics for the value dimension (that is ranges) for temporal numbers
+ * Compute statistics for the value dimension (that is spans) for temporal numbers
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null
  * @param[in] slot_idx Index of the slot where the statistics collected are stored
- * @param[in] lowers,uppers Arrays of range bounds
- * @param[in] lengths Arrays of range lengths
- * @param[in] typcache Information about the range stored in the cache
- * @param[in] rangetypid Oid of the range type
- * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c
+ * @param[in] lowers,uppers Arrays of span bounds
+ * @param[in] lengths Arrays of span lengths
+ * @param[in] spantypid Oid of the span type
+ * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
  */
 void
-range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-  RangeBound *lowers, RangeBound *uppers, float8 *lengths,
-  TypeCacheEntry *typcache, Oid rangetypid)
+span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
+  SpanBound *lowers, SpanBound *uppers, float8 *lengths, Oid spantypid)
 {
   int num_hist, num_bins = stats->attr->attstattarget;
   float4 *emptyfrac;
@@ -163,10 +142,10 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     /* Generate a bounds histogram slot entry */
 
     /* Sort bound values */
-    qsort_arg(lowers, (size_t) non_null_cnt, sizeof(RangeBound),
-      range_bound_qsort_cmp, typcache);
-    qsort_arg(uppers, (size_t) non_null_cnt, sizeof(RangeBound),
-      range_bound_qsort_cmp, typcache);
+    qsort(lowers, (size_t) non_null_cnt, sizeof(SpanBound),
+      span_bound_qsort_cmp);
+    qsort(uppers, (size_t) non_null_cnt, sizeof(SpanBound),
+      span_bound_qsort_cmp);
 
     num_hist = non_null_cnt;
     if (num_hist > num_bins)
@@ -175,9 +154,9 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
     /*
-     * The object of this loop is to construct ranges from first and
+     * The object of this loop is to construct spans from first and
      * last entries in lowers[] and uppers[] along with evenly-spaced
-     * values in between. So the i'th value is a range of lowers[(i *
+     * values in between. So the i'th value is a span of lowers[(i *
      * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
      * (num_hist - 1)]. But computing that subscript directly risks
      * integer overflow when the stats target is more than a couple
@@ -191,8 +170,8 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 
     for (int i = 0; i < num_hist; i++)
     {
-      bound_hist_values[i] = PointerGetDatum(
-        range_serialize(typcache, &lowers[pos], &uppers[pos], false));
+      bound_hist_values[i] = PointerGetDatum(span_serialize(&lowers[pos],
+        &uppers[pos]));
 
       pos += delta;
       posfrac += deltafrac;
@@ -204,7 +183,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
       }
     }
 
-    TypeCacheEntry *range_typeentry = lookup_type_cache(rangetypid,
+    TypeCacheEntry *span_typeentry = lookup_type_cache(spantypid,
       TYPECACHE_EQ_OPR | TYPECACHE_CMP_PROC_FINFO |
       TYPECACHE_HASH_PROC_FINFO);
 
@@ -212,16 +191,16 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     stats->staop[*slot_idx] = temporal_extra_data->lt_opr;
     stats->stavalues[*slot_idx] = bound_hist_values;
     stats->numvalues[*slot_idx] = num_hist;
-    stats->statypid[*slot_idx] = range_typeentry->type_id;
-    stats->statyplen[*slot_idx] = range_typeentry->typlen;
-    stats->statypbyval[*slot_idx] =range_typeentry->typbyval;
-    stats->statypalign[*slot_idx] = range_typeentry->typalign;
+    stats->statypid[*slot_idx] = span_typeentry->type_id;
+    stats->statyplen[*slot_idx] = span_typeentry->typlen;
+    stats->statypbyval[*slot_idx] =span_typeentry->typbyval;
+    stats->statypalign[*slot_idx] = span_typeentry->typalign;
     (*slot_idx)++;
 
     /* Generate a length histogram slot entry */
 
     /*
-    * Ascending sort of range lengths for further filling of histogram
+    * Ascending sort of span lengths for further filling of histogram
     */
     qsort(lengths, (size_t) non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
@@ -277,7 +256,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   stats->statypbyval[*slot_idx] = true;
   stats->statypalign[*slot_idx] = 'd';
 
-  /* Store 0 as value for the fraction of empty ranges */
+  /* Store 0 as value for the fraction of empty spans */
   emptyfrac = (float4 *) palloc(sizeof(float4));
   *emptyfrac = 0.0;
   stats->stanumbers[*slot_idx] = emptyfrac;
@@ -297,7 +276,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * dimension, that is, it is true for temporal numbers. Otherwise, statistics
  * are collected only for the temporal dimension, that is, in the case of
  * temporal boolean and temporal text.
- * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c
+ * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
  */
 static void
 temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -305,11 +284,10 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *value_lengths, *time_lengths;
-  RangeBound *value_lowers, *value_uppers;
+  SpanBound *value_lowers, *value_uppers;
   PeriodBound *time_lowers, *time_uppers;
   double total_width = 0;
-  Oid rangetypid = 0; /* make compiler quiet */
-  TypeCacheEntry *typcache;
+  Oid spantypid = 0; /* make compiler quiet */
 
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
@@ -318,12 +296,11 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_basetype(oid_type(temporal_extra_data->value_typid));
     if (temporal_extra_data->value_typid == INT4OID)
-      rangetypid = type_oid(T_INTRANGE);
+      spantypid = type_oid(T_INTSPAN);
     else /* temporal_extra_data->value_typid == FLOAT8OID */
-      rangetypid = type_oid(T_FLOATRANGE);
-    typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
-    value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
-    value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
+      spantypid = type_oid(T_FLOATSPAN);
+    value_lowers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
+    value_uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
     value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
   }
   time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
@@ -334,8 +311,8 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   for (int i = 0; i < samplerows; i++)
   {
     Datum value;
-    bool isnull, isempty;
-    RangeBound range_lower, range_upper;
+    bool isnull;
+    SpanBound span_lower, span_upper;
     Period period;
     PeriodBound period_lower, period_upper;
     Temporal *temp;
@@ -359,17 +336,17 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     if (tnumber)
     {
-      RangeType *range = tnumber_range(temp);
-      range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
-      value_lowers[non_null_cnt] = range_lower;
-      value_uppers[non_null_cnt] = range_upper;
+      Span *span = tnumber_span(temp);
+      span_deserialize(span, &span_lower, &span_upper);
+      value_lowers[non_null_cnt] = span_lower;
+      value_uppers[non_null_cnt] = span_upper;
 
       if (temporal_extra_data->value_typid == INT4OID)
-        value_lengths[non_null_cnt] = (float8) (DatumGetInt32(range_upper.val) -
-          DatumGetInt32(range_lower.val));
+        value_lengths[non_null_cnt] = (float8) (DatumGetInt32(span_upper.val) -
+          DatumGetInt32(span_lower.val));
       else if (temporal_extra_data->value_typid == FLOAT8OID)
-        value_lengths[non_null_cnt] = DatumGetFloat8(range_upper.val) -
-          DatumGetFloat8(range_lower.val);
+        value_lengths[non_null_cnt] = DatumGetFloat8(span_upper.val) -
+          DatumGetFloat8(span_lower.val);
     }
     temporal_period(temp, &period);
     period_deserialize(&period, &period_lower, &period_upper);
@@ -394,8 +371,8 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     if (tnumber)
     {
-      range_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
-        value_uppers, value_lengths, typcache, rangetypid);
+      span_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
+        value_uppers, value_lengths, spantypid);
     }
 
     period_compute_stats1(stats, non_null_cnt, &slot_idx, time_lowers,

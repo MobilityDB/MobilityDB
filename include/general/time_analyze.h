@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 #include <commands/vacuum.h>
 /* MobilityDB */
 #include "general/period.h"
@@ -58,7 +56,6 @@
 
 /*****************************************************************************/
 
-extern int period_bound_qsort_cmp(const void *a1, const void *a2);
 extern int float8_qsort_cmp(const void *a1, const void *a2);
 extern void period_compute_stats1(VacAttrStats *stats, int non_null_cnt,
   int *slot_idx, PeriodBound *lowers, PeriodBound *uppers, float8 *lengths);

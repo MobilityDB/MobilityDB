@@ -443,6 +443,64 @@ periodset_parse(char **str)
 }
 
 /*****************************************************************************/
+/* Span Types */
+
+/**
+ * Parse a timestamp value from the buffer.
+ */
+Datum
+elem_parse(char **str, CachedType basetypid)
+{
+  p_whitespace(str);
+  int delim = 0;
+  while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' &&
+    (*str)[delim] != '\0')
+    delim++;
+  char bak = (*str)[delim];
+  (*str)[delim] = '\0';
+  Datum result = call_input(basetypid, *str);
+  (*str)[delim] = bak;
+  *str += delim;
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a span value from the buffer.
+ */
+Span *
+span_parse(char **str, CachedType spantype, bool make)
+{
+  bool lower_inc = false, upper_inc = false;
+  if (p_obracket(str))
+    lower_inc = true;
+  else if (p_oparen(str))
+    lower_inc = false;
+  else
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+      errmsg("Could not parse span")));
+
+  CachedType basetype = spantype_basetype(spantype);
+  Oid basetypid = type_oid(basetype);
+  /* The next two instructions will throw an exception if they fail */
+  Datum lower = elem_parse(str, basetypid);
+  p_comma(str);
+  Datum upper = elem_parse(str, basetypid);
+
+  if (p_cbracket(str))
+    upper_inc = true;
+  else if (p_cparen(str))
+    upper_inc = false;
+  else
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+      errmsg("Could not parse span")));
+
+  if (! make)
+    return NULL;
+  return span_make(lower, upper, lower_inc, upper_inc, basetype);
+}
+
+/*****************************************************************************/
 /* Temporal Types */
 
 /**

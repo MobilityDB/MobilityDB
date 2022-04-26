@@ -57,6 +57,8 @@ typedef struct
   TimestampTz upper;    /**< upper bound value */
   bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
   bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
+  uint8 spantype;       /**< Span type */
+  uint8 basetype;       /**< Span subtype */
 } Period;
 
 /**

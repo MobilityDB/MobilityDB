@@ -491,50 +491,50 @@ overright_number_tnumber(Datum number, CachedType basetype,
 }
 
 /*****************************************************************************/
-/* Range op Tnumber */
+/* Span op Tnumber */
 
 /**
  * @ingroup libmeos_temporal_pos
- * @brief Return true if the number range value is strictly to the left of the
+ * @brief Return true if the number span value is strictly to the left of the
  * temporal number
  */
 bool
-left_range_tnumber(const RangeType *range, const Temporal *tnumber)
+left_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &left_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &left_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_pos
- * @brief Return true if the number range value is not to the right of the
+ * @brief Return true if the number span value is not to the right of the
  * temporal number
  */
 bool
-overleft_range_tnumber(const RangeType *range, const Temporal *tnumber)
+overleft_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &overleft_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &overleft_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_pos
- * @brief Return true if the number range value is strictly to the right of the
+ * @brief Return true if the number span value is strictly to the right of the
  * temporal number
  */
 bool
-right_range_tnumber(const RangeType *range, const Temporal *tnumber)
+right_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &right_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &right_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_pos
- * @brief Return true if the number range value is not to the left of the
+ * @brief Return true if the number span value is not to the left of the
  * temporal number
  */
 bool
-overright_range_tnumber(const RangeType *range, const Temporal *tnumber)
+overright_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_range(tnumber, range, &overright_tbox_tbox, INVERT);
+  return boxop_tnumber_span(tnumber, span, &overright_tbox_tbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -592,50 +592,50 @@ overright_tnumber_number(const Temporal *tnumber, Datum number,
 }
 
 /*****************************************************************************/
-/* Tnumber op Range */
+/* Tnumber op Span */
 
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal number is strictly to the left of the
- * number range value
+ * number span value
  */
 bool
-left_tnumber_range(const Temporal *tnumber, const RangeType *range)
+left_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &left_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &left_tbox_tbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal number is not to the right of the
- * number range value
+ * number span value
  */
 bool
-overleft_tnumber_range(const Temporal *tnumber, const RangeType *range)
+overleft_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &overleft_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &overleft_tbox_tbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal number is strictly to the right of the
- * number range value
+ * number span value
  */
 bool
-right_tnumber_range(const Temporal *tnumber, const RangeType *range)
+right_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &right_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &right_tbox_tbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal number is not to the left of the
- * number range value
+ * number span value
  */
 bool
-overright_tnumber_range(const Temporal *tnumber, const RangeType *range)
+overright_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_range(tnumber, range, &overright_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_span(tnumber, span, &overright_tbox_tbox, INVERT_NO);
 }
 
 /*****************************************************************************/

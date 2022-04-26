@@ -45,25 +45,21 @@
 
 /*****************************************************************************/
 
-extern void time_const_to_period(Node *other, Period *period);
-extern double period_sel_hist(VariableStatData *vardata,
-  const Period *constval, CachedOp cachedOp);
-extern double period_sel_scalar(const PeriodBound *constbound,
-  const PeriodBound *hist, int hist_nvalues, bool equal);
-extern double period_joinsel_hist(VariableStatData *vardata1,
-  VariableStatData *vardata2, CachedOp cachedOp);
+extern float8 period_sel_default(CachedOp cachedOp);
+extern float8 period_joinsel_default(CachedOp cachedOp);
 
 extern int length_hist_bsearch(Datum *length_hist_values,
   int length_hist_nvalues, double value, bool equal);
 extern double get_len_position(double value, double hist1, double hist2);
-extern double calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
-  double length1, double length2, bool equal);
+extern double calc_length_hist_frac(Datum *length_hist_values,
+  int length_hist_nvalues, double length1, double length2, bool equal);
 
-extern float8 period_sel_default(CachedOp cachedOp);
-extern float8 period_joinsel_default(CachedOp cachedOp);
-
+extern double period_sel_hist(VariableStatData *vardata,
+  const Period *constval, CachedOp cachedOp);
+extern void time_const_to_period(Node *other, Period *period);
 extern float8 period_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid);
+
 extern float8 period_joinsel(PlannerInfo *root, CachedOp cachedOp,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
 

@@ -37,24 +37,24 @@
  * Bucket functions
  *****************************************************************************/
 
-CREATE TYPE number_intrange AS (
+CREATE TYPE number_intspan AS (
   index integer,
-  range intrange
+  span intspan
 );
-CREATE TYPE number_floatrange AS (
+CREATE TYPE number_floatspan AS (
   index integer,
-  range floatrange
+  span floatspan
 );
 
-CREATE FUNCTION bucketList(bounds intrange, size integer,
+CREATE FUNCTION bucketList(bounds intspan, size integer,
   origin integer DEFAULT 0)
-  RETURNS SETOF number_intrange
-  AS 'MODULE_PATHNAME', 'Range_bucket_list'
+  RETURNS SETOF number_intspan
+  AS 'MODULE_PATHNAME', 'Span_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bucketList(bounds floatrange, size float,
+CREATE FUNCTION bucketList(bounds floatspan, size float,
   origin float DEFAULT 0.0)
-  RETURNS SETOF number_floatrange
-  AS 'MODULE_PATHNAME', 'Range_bucket_list'
+  RETURNS SETOF number_floatspan
+  AS 'MODULE_PATHNAME', 'Span_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueBucket("value" integer, size integer,
@@ -68,15 +68,15 @@ CREATE FUNCTION valueBucket("value" float, size float,
   AS 'MODULE_PATHNAME', 'Number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION rangeBucket(value integer, size integer,
+CREATE FUNCTION spanBucket(value integer, size integer,
   origin integer DEFAULT 0)
-  RETURNS intrange
-  AS 'MODULE_PATHNAME', 'Range_bucket'
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION rangeBucket(value float, size float,
+CREATE FUNCTION spanBucket(value float, size float,
   origin float DEFAULT 0.0)
-  RETURNS floatrange
-  AS 'MODULE_PATHNAME', 'Range_bucket'
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

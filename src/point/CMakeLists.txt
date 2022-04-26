@@ -6,6 +6,8 @@ if(MEOS)
   set(tpoint_spatialrels_meos.c tpoint_spatialrels_meos.c)
   set(tpoint_tempspatialrels_meos.c tpoint_tempspatialrels_meos.c)
 else()
+  set(geography_functions.c geography_functions.c)
+  set(projection_gk.c projection_gk.c)
   set(tpoint_aggfuncs.c tpoint_aggfuncs.c)
   set(tpoint_analytics.c tpoint_analytics.c)
   set(tpoint_analyze.c tpoint_analyze.c)
@@ -14,11 +16,12 @@ else()
   set(tpoint_posops.c tpoint_posops.c)
   set(tpoint_selfuncs.c tpoint_selfuncs.c)
   set(tpoint_spgist.c tpoint_spgist.c)
+  set(tpoint_tile.c tpoint_tile.c)
 endif()
 
 add_library(point OBJECT
-  geography_functions.c
-  projection_gk.c
+  ${geography_functions.c}
+  ${projection_gk.c}
   stbox.c
   tpoint.c
   ${tpoint_aggfuncs.c}
@@ -37,7 +40,7 @@ add_library(point OBJECT
   tpoint_spatialrels.c
   ${tpoint_spgist.c}
   tpoint_tempspatialrels.c
-  tpoint_tile.c
+  ${tpoint_tile.c}
   ${tpoint_meos.c}
   ${tpoint_boxops_meos.c}
   ${tpoint_posops_meos.c}

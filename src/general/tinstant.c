@@ -51,7 +51,7 @@
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-#include "general/rangetypes_ext.h"
+#include "general/span_ops.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -291,14 +291,14 @@ tinstant_values(const TInstant *inst)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of ranges of the temporal float value.
+ * @brief Return the array of spans of the temporal float value.
  */
-RangeType **
-tfloatinst_ranges(const TInstant *inst)
+Span **
+tfloatinst_spans(const TInstant *inst)
 {
-  RangeType **result = palloc(sizeof(RangeType));
+  Span **result = palloc(sizeof(Span *));
   Datum value = tinstant_value(inst);
-  result[0] = range_make(value, value, true, true, T_FLOAT8);
+  result[0] = span_make(value, value, true, true, T_FLOAT8);
   return result;
 }
 
@@ -597,68 +597,64 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
 
 /**
  * Return true if the temporal number satisfies the restriction to the
- * (complement of the) range of base values
+ * (complement of the) span of base values
  *
  * @param[in] inst Temporal number
- * @param[in] range Range of base values
+ * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
- * @note This function is called for each composing instant in a temporal instant set.
+ * @note This function is called for each composing instant in a temporal
+ * instant set.
  */
 
 bool
-tnumberinst_restrict_range_test(const TInstant *inst, const RangeType *range,
+tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
   bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  bool contains = range_contains_elem_internal(typcache, (RangeType *) range, d);
-#else
-  bool contains = range_contains_elem_internal(typcache, range, d);
-#endif
+  CachedType basetype = temptype_basetype(inst->temptype);
+  bool contains = contains_span_elem(span, d, basetype);
   return atfunc ? contains : ! contains;
 }
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal number to the (complement of the) range of
+ * @brief Restrict the temporal number to the (complement of the) span of
  * base values.
  *
  * @param[in] inst Temporal number
- * @param[in] range Range of base values
+ * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  */
 TInstant *
-tnumberinst_restrict_range(const TInstant *inst, const RangeType *range,
+tnumberinst_restrict_span(const TInstant *inst, const Span *span,
   bool atfunc)
 {
-  if (tnumberinst_restrict_range_test(inst, range, atfunc))
+  if (tnumberinst_restrict_span_test(inst, span, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
 
 /**
  * Return true if the temporal number satisfies the restriction to the
- * (complement of the) array of ranges of base values
- * @pre The ranges are normalized
+ * (complement of the) array of spans of base values
+ * @pre The spans are normalized
  * @note This function is called for each composing instant in a temporal
  * instant set.
  */
 bool
-tnumberinst_restrict_ranges_test(const TInstant *inst, RangeType **normranges,
+tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
   int count, bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
-     TYPECACHE_RANGE_INFO);
+  CachedType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < count; i++)
   {
-    if (range_contains_elem_internal(typcache, normranges[i], d))
+    if (contains_span_elem(normspans[i], d, basetype))
       return atfunc ? true : false;
   }
-  /* Since the array of ranges has been filtered with the bounding box of
+  /* Since the array of spans has been filtered with the bounding box of
    * the temporal instant, normally we never reach here */
   return atfunc ? false : true;
 }
@@ -666,13 +662,13 @@ tnumberinst_restrict_ranges_test(const TInstant *inst, RangeType **normranges,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal number to the (complement of the) array of
- * ranges of base values.
+ * spans of base values.
  */
 TInstant *
-tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
+tnumberinst_restrict_spans(const TInstant *inst, Span **normspans,
   int count, bool atfunc)
 {
-  if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
+  if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -938,7 +934,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 
 /*****************************************************************************
  * Function for defining hash index
- * The function reuses the approach for range types for combining the hash of
+ * The function reuses the approach for span types for combining the hash of
  * the lower and upper bounds.
  *****************************************************************************/
 
@@ -953,7 +949,7 @@ tinstant_hash(const TInstant *inst)
   uint32 time_hash;
 
   Datum value = tinstant_value(inst);
-  /* Apply the hash function according to the subtype */
+  /* Apply the hash function according to the base type */
   uint32 value_hash = 0;
   ensure_temporal_type(inst->temptype);
   if (inst->temptype == T_TBOOL)

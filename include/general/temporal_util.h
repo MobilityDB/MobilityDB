@@ -39,12 +39,13 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
+#include <utils/rangetypes.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-#include <utils/rangetypes.h>
 /* PostgreSQL */
 #include "general/temporal.h"
+#include "general/span.h"
 #include "point/postgis.h"
 
 /*****************************************************************************/
@@ -63,8 +64,8 @@ extern bool tnumber_type(CachedType temptype);
 extern void ensure_tnumber_type(CachedType temptype);
 extern bool tnumber_basetype(CachedType basetype);
 extern void ensure_tnumber_basetype(CachedType basetype);
-extern bool tnumber_rangetype(CachedType rangetype);
-extern void ensure_tnumber_rangetype(CachedType rangetype);
+extern bool tnumber_spantype(CachedType spantype);
+extern void ensure_tnumber_spantype(CachedType spantype);
 extern bool tspatial_type(CachedType temptype);
 extern bool tspatial_basetype(CachedType basetype);
 extern bool tgeo_basetype(CachedType basetype);
@@ -73,7 +74,7 @@ extern void ensure_tgeo_type(CachedType basetype);
 
 /* Oid functions */
 
-extern Oid basetype_rangeoid(CachedType basetype);
+extern Oid basetype_spanoid(CachedType basetype);
 extern Oid basetype_oid(CachedType basetype);
 extern Oid temptype_oid(CachedType temptype);
 
@@ -114,13 +115,13 @@ extern char *stringarr_to_string(char **strings, int count, int outlen,
 extern Datum *datumarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 extern Period **periodarr_extract(ArrayType *array, int *count);
-extern RangeType **rangearr_extract(ArrayType *array, int *count);
+extern Span **spanarr_extract(ArrayType *array, int *count);
 extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, CachedType type);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
-extern ArrayType *rangearr_to_array(RangeType **ranges, int count, CachedType type);
+extern ArrayType *spanarr_to_array(Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
@@ -132,7 +133,7 @@ extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
 extern void periodarr_sort(Period **periods, int count);
-extern void rangearr_sort(RangeType **ranges, int count);
+extern void spanarr_sort(Span **spans, int count);
 extern void tinstarr_sort(TInstant **instants, int count);
 extern void tseqarr_sort(TSequence **sequences, int count);
 
@@ -163,6 +164,7 @@ extern bool datum_le(Datum l, Datum r, CachedType type);
 extern bool datum_gt(Datum l, Datum r, CachedType type);
 extern bool datum_ge(Datum l, Datum r, CachedType type);
 
+extern int datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer);
 extern bool datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer);
 extern bool datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer);
 extern bool datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer);
@@ -181,6 +183,11 @@ extern Datum datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer);
 
 extern double hypot3d(double x, double y, double z);
 extern double hypot4d(double x, double y, double z, double m);
+
+/* Range  functions */
+
+extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
+  bool upper_inc, CachedType basetype);
 
 /*****************************************************************************/
 

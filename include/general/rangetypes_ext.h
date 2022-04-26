@@ -61,25 +61,6 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
 extern RangeType **rangearr_normalize(RangeType **ranges, int count,
   int *newcount);
 
-extern Datum intrange_canonical(PG_FUNCTION_ARGS);
-
-extern Datum range_left_elem(PG_FUNCTION_ARGS);
-extern Datum range_overleft_elem(PG_FUNCTION_ARGS);
-extern Datum range_right_elem(PG_FUNCTION_ARGS);
-extern Datum range_overright_elem(PG_FUNCTION_ARGS);
-extern Datum range_adjacent_elem(PG_FUNCTION_ARGS);
-
-extern Datum elem_left_range(PG_FUNCTION_ARGS);
-extern Datum elem_overleft_range(PG_FUNCTION_ARGS);
-extern Datum elem_right_range(PG_FUNCTION_ARGS);
-extern Datum elem_overright_range(PG_FUNCTION_ARGS);
-extern Datum elem_adjacent_range(PG_FUNCTION_ARGS);
-
-extern Datum floatrange_round(PG_FUNCTION_ARGS);
-
-extern Datum range_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum range_extent_transfn(PG_FUNCTION_ARGS);
-
 /*****************************************************************************/
 
 #endif

@@ -2536,14 +2536,16 @@ minus_period_period1(Period **result, const Period *p1, const Period *p2)
    * result       |---|
    */
   else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
-    result[0] = period_make(p1->lower, p2->lower, p1->lower_inc, !(p2->lower_inc));
+    result[0] = period_make(p1->lower, p2->lower, p1->lower_inc,
+      !(p2->lower_inc));
   /*
    * p1         |-----|
    * p2      |----|
    * result       |---|
    */
   else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
-    result[0] = period_make(p2->upper, p1->upper, !(p2->upper_inc), p1->upper_inc);
+    result[0] = period_make(p2->upper, p1->upper, !(p2->upper_inc),
+      p1->upper_inc);
   return 1;
 }
 

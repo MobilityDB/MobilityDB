@@ -56,7 +56,7 @@
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "general/tbox.h"
 #include "point/tpoint.h"
 #include "point/stbox.h"
@@ -485,24 +485,20 @@ boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
 }
 
 /**
- * Generic bounding box operator for a temporal number and a range
+ * Generic bounding box operator for a temporal number and a span
  *
  * @param[in] temp Temporal number
- * @param[in] range Range
+ * @param[in] span Span
  * @param[in] func Bounding box function
- * @param[in] invert True when the range is the first argument of the function.
+ * @param[in] invert True when the span is the first argument of the function.
  */
 int
-boxop_tnumber_range(const Temporal *temp, const RangeType *range,
+boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
-  /* Return false on empty range excepted for contains */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
-    return -1;
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  range_tbox(range, &box2);
+  span_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return (result ? 1 : 0);
 }
@@ -1257,19 +1253,18 @@ boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic bounding box operator for a range and a temporal number
+ * Generic bounding box operator for a span and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
 Datum
-boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
+boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
+  Span *span = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = boxop_tnumber_range(temp, range, func, INVERT);
-  PG_FREE_IF_COPY(range, 0);
+  int result = boxop_tnumber_span(temp, span, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -1277,20 +1272,19 @@ boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic bounding box operator for a temporal number and a range
+ * Generic bounding box operator for a temporal number and a span
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
+boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  RangeType *range = PG_GETARG_RANGE_P(1);
-  int result = boxop_tnumber_range(temp, range, func, INVERT_NO);
+  Span *span = PG_GETARG_SPAN_P(1);
+  int result = boxop_tnumber_span(temp, span, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(range, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -1354,7 +1348,7 @@ boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Contains_number_tnumber);
 /**
- * Return true if the range contains the bounding box of the temporal number
+ * Return true if the span contains the bounding box of the temporal number
  */
 PGDLLEXPORT Datum
 Contains_number_tnumber(PG_FUNCTION_ARGS)
@@ -1365,7 +1359,7 @@ Contains_number_tnumber(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contains_tnumber_number);
 /**
  * Return true if the bounding box of the temporal number contains the
- * the range
+ * the span
  */
 PGDLLEXPORT Datum
 Contains_tnumber_number(PG_FUNCTION_ARGS)
@@ -1373,24 +1367,24 @@ Contains_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_range_tnumber);
+PG_FUNCTION_INFO_V1(Contains_span_tnumber);
 /**
- * Return true if the range contains the bounding box of the temporal number
+ * Return true if the span contains the bounding box of the temporal number
  */
 PGDLLEXPORT Datum
-Contains_range_tnumber(PG_FUNCTION_ARGS)
+Contains_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_tnumber_range);
+PG_FUNCTION_INFO_V1(Contains_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number contains the range
+ * Return true if the bounding box of the temporal number contains the span
  */
 PGDLLEXPORT Datum
-Contains_tnumber_range(PG_FUNCTION_ARGS)
+Contains_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &contains_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
@@ -1430,7 +1424,7 @@ Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_number_tnumber);
 /**
- * Return true if the range is contained in the bounding box of the temporal
+ * Return true if the span is contained in the bounding box of the temporal
  * number
  */
 PGDLLEXPORT Datum
@@ -1442,7 +1436,7 @@ Contained_number_tnumber(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contained_tnumber_number);
 /**
  * Return true if the bounding box of the temporal number is contained in the
- * the range
+ * the span
  */
 PGDLLEXPORT Datum
 Contained_tnumber_number(PG_FUNCTION_ARGS)
@@ -1450,26 +1444,26 @@ Contained_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_range_tnumber);
+PG_FUNCTION_INFO_V1(Contained_span_tnumber);
 /**
- * Return true if the range is contained in the bounding box of the temporal
+ * Return true if the span is contained in the bounding box of the temporal
  * number
  */
 PGDLLEXPORT Datum
-Contained_range_tnumber(PG_FUNCTION_ARGS)
+Contained_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_tnumber_range);
+PG_FUNCTION_INFO_V1(Contained_tnumber_span);
 /**
  * Return true if the bounding box of the temporal number is contained in
- * the range
+ * the span
  */
 PGDLLEXPORT Datum
-Contained_tnumber_range(PG_FUNCTION_ARGS)
+Contained_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &contained_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
@@ -1529,26 +1523,26 @@ Overlaps_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_range_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_span_tnumber);
 /**
- * Return true if the range and the bounding box of the temporal number
+ * Return true if the span and the bounding box of the temporal number
  * overlap
  */
 PGDLLEXPORT Datum
-Overlaps_range_tnumber(PG_FUNCTION_ARGS)
+Overlaps_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_tnumber_range);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number and the range
+ * Return true if the bounding box of the temporal number and the span
  * overlap
  */
 PGDLLEXPORT Datum
-Overlaps_tnumber_range(PG_FUNCTION_ARGS)
+Overlaps_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
@@ -1607,26 +1601,26 @@ Same_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_range_tnumber);
+PG_FUNCTION_INFO_V1(Same_span_tnumber);
 /**
- * Return true if the range and the bounding box of the temporal number are
+ * Return true if the span and the bounding box of the temporal number are
  * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-Same_range_tnumber(PG_FUNCTION_ARGS)
+Same_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &same_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_tnumber_range);
+PG_FUNCTION_INFO_V1(Same_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number and the range are
+ * Return true if the bounding box of the temporal number and the span are
  * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-Same_tnumber_range(PG_FUNCTION_ARGS)
+Same_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &same_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &same_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
@@ -1686,26 +1680,26 @@ Adjacent_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_range_tnumber);
+PG_FUNCTION_INFO_V1(Adjacent_span_tnumber);
 /**
- * Return true if the range and the bounding box of the temporal number are
+ * Return true if the span and the bounding box of the temporal number are
  * adjacent
  */
 PGDLLEXPORT Datum
-Adjacent_range_tnumber(PG_FUNCTION_ARGS)
+Adjacent_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_tnumber_range);
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number and the range are
+ * Return true if the bounding box of the temporal number and the span are
  * adjacent
  */
 PGDLLEXPORT Datum
-Adjacent_tnumber_range(PG_FUNCTION_ARGS)
+Adjacent_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);

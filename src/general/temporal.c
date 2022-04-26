@@ -60,7 +60,7 @@
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
-#include "general/rangetypes_ext.h"
+#include "general/span.h"
 #include "general/tnumber_distance.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
@@ -980,18 +980,18 @@ temporal_merge_array(Temporal **temparr, int count)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer to an intrange.
+ * @brief Cast a temporal integer to an intspan.
  *
- * @note Note that the temporal subtype INSTANT does not have bounding box.
+ * @note The temporal subtype INSTANT does not have bounding box.
  */
-RangeType *
-tint_range(const Temporal *temp)
+Span *
+tint_span(const Temporal *temp)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    return range_make(value, value, true, true, T_INT4);
+    return span_make(value, value, true, true, T_INT4);
   }
 
   TBOX *box;
@@ -1003,36 +1003,36 @@ tint_range(const Temporal *temp)
     box = tsequenceset_bbox_ptr((TSequenceSet *) temp);
   Datum min = Int32GetDatum(((int) box->xmin));
   Datum max = Int32GetDatum(((int) box->xmax));
-  return range_make(min, max, true, true, T_INT4);
+  return span_make(min, max, true, true, T_INT4);
 }
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer to an intrange.
+ * @brief Cast a temporal integer to an intspan.
  *
  * @note Note that the temporal subtype INSTANT does not have bounding box.
  */
-RangeType *
-tfloat_range(const Temporal *temp)
+Span *
+tfloat_span(const Temporal *temp)
 {
   ensure_valid_tempsubtype(temp->subtype);
-  RangeType *result;
+  Span *result;
   if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    result = range_make(value, value, true, true, T_FLOAT8);
+    result = span_make(value, value, true, true, T_FLOAT8);
   }
   else if (temp->subtype == INSTANTSET)
   {
     TBOX *box = tinstantset_bbox_ptr((TInstantSet *) temp);
     Datum min = Float8GetDatum(box->xmin);
     Datum max = Float8GetDatum(box->xmax);
-    result = range_make(min, max, true, true, T_FLOAT8);
+    result = span_make(min, max, true, true, T_FLOAT8);
   }
   else if (temp->subtype == SEQUENCE)
-    result = tfloatseq_range((TSequence *) temp);
+    result = tfloatseq_span((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tfloatseqset_range((TSequenceSet *) temp);
+    result = tfloatseqset_span((TSequenceSet *) temp);
   return result;
 }
 
@@ -1325,24 +1325,24 @@ temporal_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the base values of the temporal float value as an array of
- * ranges.
+ * spans.
  */
-RangeType **
-tfloat_ranges(const Temporal *temp, int *count)
+Span **
+tfloat_spans(const Temporal *temp, int *count)
 {
-  RangeType **result;
+  Span **result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
-    result = tfloatinst_ranges((TInstant *) temp);
+    result = tfloatinst_spans((TInstant *) temp);
     *count = 1;
   }
   else if (temp->subtype == INSTANTSET)
-    result = tfloatinstset_ranges((TInstantSet *) temp, count);
+    result = tfloatinstset_spans((TInstantSet *) temp, count);
   else if (temp->subtype == SEQUENCE)
-    result = tfloatseq_ranges((TSequence *) temp, count);
+    result = tfloatseq_spans((TSequence *) temp, count);
   else /* temp->subtype == SEQUENCESET */
-    result = tfloatseqset_ranges((TSequenceSet *) temp, count);
+    result = tfloatseqset_spans((TSequenceSet *) temp, count);
   return result;
 }
 
@@ -1368,18 +1368,18 @@ temporal_time(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the value range of the temporal number value.
+ * @brief Return the value span of the temporal number value.
  */
-RangeType *
-tnumber_range(const Temporal *temp)
+Span *
+tnumber_span(const Temporal *temp)
 {
-  RangeType *result = NULL;
+  Span *result = NULL;
   CachedType basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    result = range_make(value, value, true, true, basetype);
+    result = span_make(value, value, true, true, basetype);
   }
   else
   {
@@ -1396,7 +1396,7 @@ tnumber_range(const Temporal *temp)
       min = Float8GetDatum(box->xmin);
       max = Float8GetDatum(box->xmax);
     }
-    result = range_make(min, max, true, true, basetype);
+    result = span_make(min, max, true, true, basetype);
   }
   return result;
 }
@@ -2286,58 +2286,55 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 }
 
 /**
- * Return true if the bounding box of the temporal number overlaps the range
+ * Return true if the bounding box of the temporal number overlaps the span
  * of base values
  */
 bool
-tnumber_bbox_restrict_range(const Temporal *temp, const RangeType *range)
+tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
 {
   /* Bounding box test */
   assert(tnumber_type(temp->temptype));
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  range_tbox(range, &box2);
+  span_tbox(span, &box2);
   return overlaps_tbox_tbox(&box1, &box2);
 }
 
 /**
- * Return the array of ranges of base values that overlap with the bounding box
+ * Return the array of spans of base values that overlap with the bounding box
  * of the temporal value.
  *
  * @param[in] temp Temporal value
- * @param[in] ranges Array of ranges of base values
+ * @param[in] spans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[out] newcount Number of elements in the output array
- * @return Filtered array of ranges.
+ * @return Filtered array of spans.
  */
-RangeType **
-tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
+Span **
+tnumber_bbox_restrict_spans(const Temporal *temp, Span **spans,
   int count, int *newcount)
 {
   assert(tnumber_type(temp->temptype));
-  RangeType **newranges = palloc(sizeof(Datum) * count);
+  Span **newspans = palloc(sizeof(Datum) * count);
   int k = 0;
   TBOX box1;
   temporal_bbox(temp, &box1);
   for (int i = 0; i < count; i++)
   {
-    char flags = range_get_flags(ranges[i]);
-    if (flags & RANGE_EMPTY)
-      continue;
     TBOX box2;
-    range_tbox(ranges[i], &box2);
+    span_tbox(spans[i], &box2);
     if (overlaps_tbox_tbox(&box1, &box2))
-      newranges[k++] = ranges[i];
+      newspans[k++] = spans[i];
   }
   if (k == 0)
   {
     *newcount = 0;
-    pfree(newranges);
+    pfree(newspans);
     return NULL;
   }
-  RangeType **normranges = rangearr_normalize(newranges, k, newcount);
-  pfree(newranges);
-  return normranges;
+  Span **normspans = spanarr_normalize(newspans, k, newcount);
+  pfree(newspans);
+  return normspans;
 }
 
 /*****************************************************************************
@@ -2427,15 +2424,13 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
 /*****************************************************************************/
 
 /**
- * Restrict the temporal value to the (complement of the) range of base values.
+ * Restrict the temporal value to the (complement of the) span of base values.
  */
 Temporal *
-tnumber_restrict_range(const Temporal *temp, RangeType *range, bool atfunc)
+tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc)
 {
-  /* Empty range and Bounding box test */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY ||
-    ! tnumber_bbox_restrict_range(temp, range))
+  /* Bounding box test */
+  if (! tnumber_bbox_restrict_span(temp, span))
   {
     if (atfunc)
       return NULL;
@@ -2448,34 +2443,34 @@ tnumber_restrict_range(const Temporal *temp, RangeType *range, bool atfunc)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *) tnumberinst_restrict_range(
-      (TInstant *) temp, range, atfunc);
+    result = (Temporal *) tnumberinst_restrict_span((TInstant *) temp,
+      span, atfunc);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tnumberinstset_restrict_range(
-      (TInstantSet *) temp, range, atfunc);
+    result = (Temporal *) tnumberinstset_restrict_span((TInstantSet *) temp,
+      span, atfunc);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) tnumberseq_restrict_range(
-      (TSequence *) temp, range, atfunc);
+    result = (Temporal *) tnumberseq_restrict_span((TSequence *) temp,
+      span, atfunc);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) tnumberseqset_restrict_range(
-      (TSequenceSet *) temp, range, atfunc);
+    result = (Temporal *) tnumberseqset_restrict_span((TSequenceSet *) temp,
+      span, atfunc);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * Restrict the temporal value to the (complement of the) array of ranges
+ * Restrict the temporal value to the (complement of the) array of spans
  * of base values.
  */
 Temporal *
-tnumber_restrict_ranges(const Temporal *temp, RangeType **ranges, int count,
+tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
   bool atfunc)
 {
   /* Bounding box test */
   int newcount;
-  RangeType **newranges = tnumber_bbox_restrict_ranges(temp, ranges,
-    count, &newcount);
+  Span **newspans = tnumber_bbox_restrict_spans(temp, spans, count,
+    &newcount);
   if (newcount == 0)
   {
     if (atfunc)
@@ -2486,24 +2481,24 @@ tnumber_restrict_ranges(const Temporal *temp, RangeType **ranges, int count,
         (Temporal *) tsequence_tsequenceset((TSequence *) temp);
   }
   if (newcount == 1)
-    return tnumber_restrict_range(temp, newranges[0], atfunc);
+    return tnumber_restrict_span(temp, newspans[0], atfunc);
 
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *) tnumberinst_restrict_ranges((TInstant *) temp,
-      newranges, newcount, atfunc);
+    result = (Temporal *) tnumberinst_restrict_spans((TInstant *) temp,
+      newspans, newcount, atfunc);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tnumberinstset_restrict_ranges((TInstantSet *) temp,
-      newranges, newcount, atfunc);
+    result = (Temporal *) tnumberinstset_restrict_spans((TInstantSet *) temp,
+      newspans, newcount, atfunc);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) tnumberseq_restrict_ranges((TSequence *) temp,
-        newranges, newcount, atfunc, BBOX_TEST_NO);
+    result = (Temporal *) tnumberseq_restrict_spans((TSequence *) temp,
+        newspans, newcount, atfunc, BBOX_TEST_NO);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) tnumberseqset_restrict_ranges((TSequenceSet *) temp,
-      newranges, newcount, atfunc);
+    result = (Temporal *) tnumberseqset_restrict_spans((TSequenceSet *) temp,
+      newspans, newcount, atfunc);
 
-  pfree_array((void **) newranges, newcount);
+  pfree_array((void **) newspans, newcount);
 
   return result;
 }
@@ -2717,16 +2712,16 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_type(temp->temptype);
     /* The basetype of the temporal value determines wheter the
-     * argument box is converted into an intrange or a floatrange */
-    RangeType *range;
+     * argument box is converted into an intspan or a floatspan */
+    Span *span;
     if (temp->temptype == T_TINT)
-      range = range_make(Int32GetDatum((int) box->xmin),
+      span = span_make(Int32GetDatum((int) box->xmin),
         Int32GetDatum((int) box->xmax), true, true, T_INT4);
     else /* temp->temptype == T_TFLOAT */
-      range = range_make(Float8GetDatum(box->xmin),
+      span = span_make(Float8GetDatum(box->xmin),
         Float8GetDatum(box->xmax), true, true, T_FLOAT8);
-    result = tnumber_restrict_range(temp1, range, true);
-    pfree(range);
+    result = tnumber_restrict_span(temp1, span, true);
+    pfree(span);
   }
   else
     result = temp1;
@@ -2740,7 +2735,7 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
  * @brief Restrict the temporal number to the complement of the temporal box.
  *
  * We cannot make the difference from each dimension separately, i.e.,
- * restrict at the period and then restrict to the range. Therefore, we
+ * restrict at the period and then restrict to the span. Therefore, we
  * compute the atTbox and then compute the complement of the value obtained.
  *
  */
@@ -3781,28 +3776,28 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
  * Cast functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tint_to_range);
+PG_FUNCTION_INFO_V1(Tint_to_span);
 /**
- * Cast the temporal integer value as an intrange
+ * Cast the temporal integer value as an intspan
  */
 PGDLLEXPORT Datum
-Tint_to_range(PG_FUNCTION_ARGS)
+Tint_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  RangeType *result = tint_range(temp);
+  Span *result = tint_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tfloat_to_range);
+PG_FUNCTION_INFO_V1(Tfloat_to_span);
 /**
- * Cast the temporal integer value as an intrange
+ * Cast the temporal integer value as an intspan
  */
 PGDLLEXPORT Datum
-Tfloat_to_range(PG_FUNCTION_ARGS)
+Tfloat_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  RangeType *result = tfloat_range(temp);
+  Span *result = tfloat_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -4041,19 +4036,19 @@ Temporal_values(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tfloat_ranges);
+PG_FUNCTION_INFO_V1(Tfloat_spans);
 /**
  * Return the base values of the temporal float value as an array
- * of ranges
+ * of spans
  */
 PGDLLEXPORT Datum
-Tfloat_ranges(PG_FUNCTION_ARGS)
+Tfloat_spans(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  RangeType **ranges = tfloat_ranges(temp, &count);
-  ArrayType *result = rangearr_to_array(ranges, count, T_FLOATRANGE);
-  pfree_array((void **) ranges, count);
+  Span **spans = tfloat_spans(temp, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree_array((void **) spans, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -4106,17 +4101,17 @@ Tinstant_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_range);
+PG_FUNCTION_INFO_V1(Tnumber_span);
 /**
- * Return the value range of the temporal integer value
+ * Return the value span of the temporal integer value
  */
 PGDLLEXPORT Datum
-Tnumber_range(PG_FUNCTION_ARGS)
+Tnumber_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  RangeType *result = tnumber_range(temp);
+  Span *result = tnumber_span(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_RANGE_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_start_value);
@@ -4713,46 +4708,45 @@ Temporal_minus_values(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 static Datum
-tnumber_restrict_range_ext(FunctionCallInfo fcinfo, bool atfunc)
+tnumber_restrict_span_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  RangeType *range = PG_GETARG_RANGE_P(1);
-  Temporal *result = tnumber_restrict_range(temp, range, atfunc);
+  Span *span = PG_GETARG_SPAN_P(1);
+  Temporal *result = tnumber_restrict_span(temp, span, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(range, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_at_range);
+PG_FUNCTION_INFO_V1(Tnumber_at_span);
 /**
- * Restrict the temporal value to the range of base values
+ * Restrict the temporal value to the span of base values
  */
 PGDLLEXPORT Datum
-Tnumber_at_range(PG_FUNCTION_ARGS)
+Tnumber_at_span(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_range_ext(fcinfo, REST_AT);
+  return tnumber_restrict_span_ext(fcinfo, REST_AT);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_minus_range);
+PG_FUNCTION_INFO_V1(Tnumber_minus_span);
 /**
- * Restrict the temporal value to the complement of the range of base values
+ * Restrict the temporal value to the complement of the span of base values
  */
 PGDLLEXPORT Datum
-Tnumber_minus_range(PG_FUNCTION_ARGS)
+Tnumber_minus_span(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_range_ext(fcinfo, REST_MINUS);
+  return tnumber_restrict_span_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
 
 /**
- * Restrict the temporal value to the (complement of the) array of ranges
+ * Restrict the temporal value to the (complement of the) array of spans
  * of base values
  */
 static Datum
-tnumber_restrict_ranges_ext(FunctionCallInfo fcinfo, bool atfunc)
+tnumber_restrict_spans_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
@@ -4773,11 +4767,11 @@ tnumber_restrict_ranges_ext(FunctionCallInfo fcinfo, bool atfunc)
       PG_RETURN_POINTER(result);
     }
   }
-  RangeType **ranges = rangearr_extract(array, &count);
+  Span **spans = spanarr_extract(array, &count);
   Temporal *result = (count > 1) ?
-    tnumber_restrict_ranges(temp, ranges, count, atfunc) :
-    tnumber_restrict_range(temp, ranges[0], atfunc);
-  pfree(ranges);
+    tnumber_restrict_spans(temp, spans, count, atfunc) :
+    tnumber_restrict_span(temp, spans[0], atfunc);
+  pfree(spans);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(array, 1);
   if (result == NULL)
@@ -4785,25 +4779,25 @@ tnumber_restrict_ranges_ext(FunctionCallInfo fcinfo, bool atfunc)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_at_ranges);
+PG_FUNCTION_INFO_V1(Tnumber_at_spans);
 /**
- * Restrict the temporal value to the array of ranges of base values
+ * Restrict the temporal value to the array of spans of base values
  */
 PGDLLEXPORT Datum
-Tnumber_at_ranges(PG_FUNCTION_ARGS)
+Tnumber_at_spans(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_ranges_ext(fcinfo, REST_AT);
+  return tnumber_restrict_spans_ext(fcinfo, REST_AT);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_minus_ranges);
+PG_FUNCTION_INFO_V1(Tnumber_minus_spans);
 /**
- * Restrict the temporal value to the complement of the array of ranges
+ * Restrict the temporal value to the complement of the array of spans
  * of base values
  */
 PGDLLEXPORT Datum
-Tnumber_minus_ranges(PG_FUNCTION_ARGS)
+Tnumber_minus_spans(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_ranges_ext(fcinfo, REST_MINUS);
+  return tnumber_restrict_spans_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

@@ -38,10 +38,9 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include <utils/array.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/temporal.h"
+#include "general/span.h"
 
 /*****************************************************************************/
 
@@ -75,7 +74,7 @@ extern TInstantSet *tinstantset_from_base(Datum value, CachedType temptype,
 /* Accessor functions */
 
 extern Datum *tinstantset_values(const TInstantSet *ti, int *count);
-extern RangeType **tfloatinstset_ranges(const TInstantSet *ti, int *count);
+extern Span **tfloatinstset_spans(const TInstantSet *ti, int *count);
 extern PeriodSet *tinstantset_time(const TInstantSet *ti);
 extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
@@ -115,10 +114,10 @@ extern TInstantSet *tinstantset_restrict_value(const TInstantSet *ti,
   Datum value, bool atfunc);
 extern TInstantSet *tinstantset_restrict_values(const TInstantSet *ti,
   const Datum *values, int count, bool atfunc);
-extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti,
-  const RangeType *range, bool atfunc);
-extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti,
-  RangeType **normranges, int count, bool atfunc);
+extern TInstantSet *tnumberinstset_restrict_span(const TInstantSet *ti,
+  const Span *span, bool atfunc);
+extern TInstantSet *tnumberinstset_restrict_spans(const TInstantSet *ti,
+  Span **normspans, int count, bool atfunc);
 extern const TInstant *tinstantset_min_instant(const TInstantSet *ti);
 extern const TInstant *tinstantset_max_instant(const TInstantSet *ti);
 extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *ti,

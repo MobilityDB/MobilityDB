@@ -73,26 +73,20 @@ SELECT tboxt('2000-01-02','2000-01-01');
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))'::floatrange;
+SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))'::floatspan;
 SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))'::period;
-SELECT tbox 'TBOX((1.0,), (2.0, ))'::floatrange;
+SELECT tbox 'TBOX((1.0,), (2.0, ))'::floatspan;
 SELECT tbox 'TBOX((1.0,), (2.0, ))'::period;
-SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::floatrange;
+SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::floatspan;
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
 
 SELECT 1::tbox;
 SELECT 1.5::tbox;
-SELECT floatrange 'empty'::tbox;
-SELECT floatrange '(,1]'::tbox;
-SELECT floatrange '[1,)'::tbox;
-SELECT floatrange '[1,2]'::tbox;
-
-SELECT tbox(floatrange 'empty', timestamptz '2000-01-01');
-SELECT tbox(floatrange 'empty', period '[2000-01-01,2000-01-02]');
+SELECT floatspan '[1,2]'::tbox;
 
 -------------------------------------------------------------------------------
 
-SELECT ROUND(MAX(upper(b::floatrange) - lower(b::floatrange))::numeric, 6) FROM tbl_tbox;
+SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tbox;
 SELECT MAX(duration(b::period)) FROM tbl_tbox;
 
 -------------------------------------------------------------------------------
@@ -287,7 +281,7 @@ SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((1
 SELECT tbox_cmp('TBOX((1,),(2,))', 'TBOX((1,2001-01-01),(2,2001-01-02))');
 SELECT tbox_cmp('TBOX((1,2001-01-01),(2,2001-01-02))', 'TBOX((1,),(2,))');
 
-SELECT tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))' = floatrange '[1, 2]'::tbox;
+SELECT tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))' = floatspan '[1, 2]'::tbox;
 
 -------------------------------------------------------------------------------
 

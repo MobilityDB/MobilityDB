@@ -28,68 +28,56 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for extensions of range data type.
--- File Range.c
+-- Tests for extensions of span data type.
+-- File span.c
 -------------------------------------------------------------------------------
 
-SELECT round(floatrange '[1.123456789,2.123456789]',6);
-SELECT round(floatrange '[,2.123456789]',6);
-SELECT round(floatrange '[-inf,2.123456789]',6);
-select round(floatrange '[1.123456789,inf]',6);
-SELECT round(floatrange '[1.123456789,]',6);
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i;
 
--------------------------------------------------------------------------------
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i >> t2.i;
 
-SELECT intrange 'empty' << 5;
-SELECT intrange '[3,5)' << 5;
-SELECT 5 << intrange 'empty';
-SELECT 5 << intrange '[3,5)';
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &< t2.i;
 
-SELECT intrange 'empty' >> 5;
-SELECT intrange '[3,5)' >> 5;
-SELECT 5 >> intrange 'empty';
-SELECT 5 >> intrange '[3,5)';
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &> t2.i;
 
-SELECT intrange 'empty' &< 5;
-SELECT intrange '[3,5)' &< 5;
-SELECT 5 &< intrange 'empty';
-SELECT 5 &< intrange '[3,5)';
-
-SELECT intrange 'empty' &> 5;
-SELECT intrange '[3,5)' &> 5;
-SELECT 5 &> intrange 'empty';
-SELECT 5 &> intrange '[3,5)';
-
-SELECT intrange 'empty' -|- 5;
-SELECT intrange '[3,5)' -|- 5;
-SELECT 5 -|- intrange 'empty';
-SELECT 5 -|- intrange '[3,5)';
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i -|- t2.i;
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i -|- t2.i;
 
 -------------------------------------------------------------------------------
 
-SELECT floatrange 'empty' << 5.5;
-SELECT floatrange '[3.5, 5.5]' << 5.5;
-SELECT 5.5 << floatrange 'empty';
-SELECT 5.5 << floatrange '[3.5, 5.5]';
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f << t2.f;
 
-SELECT floatrange 'empty' >> 5.5;
-SELECT floatrange '[3.5, 5.5]' >> 5.5;
-SELECT 5.5 >> floatrange 'empty';
-SELECT 5.5 >> floatrange '[3.5, 5.5]';
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f >> t2.f;
 
-SELECT floatrange 'empty' &< 5.5;
-SELECT floatrange '[3.5, 5.5]' &< 5.5;
-SELECT 5.5 &< floatrange 'empty';
-SELECT 5.5 &< floatrange '[3.5, 5.5]';
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &< t2.f;
 
-SELECT floatrange 'empty' &> 5.5;
-SELECT floatrange '[3.5, 5.5]' &> 5.5;
-SELECT 5.5 &> floatrange 'empty';
-SELECT 5.5 &> floatrange '[3.5, 5.5]';
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f;
 
-SELECT floatrange 'empty' -|- 5.5;
-SELECT floatrange '[3.5, 5.5]' -|- 5.5;
-SELECT 5.5 -|- floatrange 'empty';
-SELECT 5.5 -|- floatrange '[3.5, 5.5]';
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f -|- t2.f;
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f -|- t2.f;
+
+-------------------------------------------------------------------------------
+
+-- encourage use of parallel plans
+set parallel_setup_cost=0;
+set parallel_tuple_cost=0;
+set min_parallel_table_scan_size=0;
+set max_parallel_workers_per_gather=2;
+
+SELECT round(extent(temp::floatspan),6) FROM tbl_tfloat_big;
+
+-- reset to default values
+reset parallel_setup_cost;
+reset parallel_tuple_cost;
+reset min_parallel_table_scan_size;
+reset max_parallel_workers_per_gather;
 
 -------------------------------------------------------------------------------

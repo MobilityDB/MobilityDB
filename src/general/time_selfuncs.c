@@ -142,7 +142,7 @@ period_bound_bsearch(const PeriodBound *value, const PeriodBound *hist,
  * Measure distance between two period bounds
  */
 static float8
-period_distance(const PeriodBound *bound1, const PeriodBound *bound2)
+period_bound_distance(const PeriodBound *bound1, const PeriodBound *bound2)
 {
   return period_to_secs(bound2->t, bound1->t);
 }
@@ -155,11 +155,11 @@ period_position(const PeriodBound *value, const PeriodBound *hist1,
   const PeriodBound *hist2)
 {
   /* Calculate relative position using distance function. */
-  float8 bin_width = period_distance(hist1, hist2);
+  float8 bin_width = period_bound_distance(hist1, hist2);
   if (bin_width <= 0.0)
     return 0.5;      /* zero width bin */
 
-  float8 position = period_distance(hist1, value) / bin_width;
+  float8 position = period_bound_distance(hist1, value) / bin_width;
   /* Relative position must be in [0,1] period */
   position = Max(position, 0.0);
   position = Min(position, 1.0);
@@ -402,7 +402,7 @@ calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
  * Estimate the fraction of values less than (or equal to, if 'equal' argument
  * is true) a given const in a histogram of period bounds.
  */
-double
+static double
 period_sel_scalar(const PeriodBound *constbound, const PeriodBound *hist,
   int nhist, bool equal)
 {
@@ -525,7 +525,7 @@ period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
      */
     if (period_bound_cmp(&hist_lower[i], const_lower) < 0)
     {
-      dist = period_distance(const_lower, const_upper);
+      dist = period_bound_distance(const_lower, const_upper);
 
       /*
        * Subtract from bin_width the portion of this bin that we want to
@@ -538,7 +538,7 @@ period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
       final_bin = true;
     }
     else
-      dist = period_distance(&hist_lower[i], const_upper);
+      dist = period_bound_distance(&hist_lower[i], const_upper);
 
     /*
      * Estimate the fraction of tuples in this bin that are narrow enough
@@ -604,7 +604,7 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
    * meaning a full width bin, except for the first bin, which is only
    * counted up to the constant lower bound.
    */
-  prev_dist = period_distance(const_lower, const_upper);
+  prev_dist = period_bound_distance(const_lower, const_upper);
   sum_frac = 0.0;
   bin_width = lower_bin_width;
   for (i = lower_index; i >= 0; i--)
@@ -617,7 +617,7 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
      * of lower bound histogram or constant lower bound (if we've
      * reach it).
      */
-    dist = period_distance(&hist_lower[i], const_upper);
+    dist = period_bound_distance(&hist_lower[i], const_upper);
 
     /*
      * Get average fraction of length histogram which covers intervals
@@ -1272,7 +1272,7 @@ period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
  *
  * This estimate is for the portion of values that are not NULL.
  */
-double
+static double
 period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   CachedOp cachedOp)
 {

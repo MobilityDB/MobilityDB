@@ -31,11 +31,11 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days', '2001-06-01') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -47,11 +47,11 @@ SELECT SUM(valueBucket(i, 2, 1)) FROM tbl_int;
 SELECT SUM(valueBucket(f, 2.5)) FROM tbl_float;
 SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
 
-SELECT rangeBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT rangeBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT rangeBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT rangeBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 

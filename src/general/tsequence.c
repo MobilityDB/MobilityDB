@@ -52,7 +52,7 @@
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-#include "general/rangetypes_ext.h"
+#include "general/span_ops.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -1068,13 +1068,13 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double dvalue = datum_double(value, basetype);
   double min = Min(dvalue1, dvalue2);
   double max = Max(dvalue1, dvalue2);
-  /* if value is to the left or to the right of the range */
+  /* if value is to the left or to the right of the span */
   if (dvalue < min || dvalue > max)
     return false;
 
-  double range = (max - min);
+  double span = (max - min);
   double partial = (dvalue - min);
-  double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
+  double fraction = dvalue1 < dvalue2 ? partial / span : 1 - partial / span;
   if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction)
     return false;
 
@@ -1705,18 +1705,17 @@ tsequence_values(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the range of base values of the temporal float.
+ * @brief Return the span of base values of the temporal float.
  */
-RangeType *
-tfloatseq_range(const TSequence *seq)
+Span *
+tfloatseq_span(const TSequence *seq)
 {
   TBOX *box = tsequence_bbox_ptr(seq);
   Datum min = Float8GetDatum(box->xmin);
   Datum max = Float8GetDatum(box->xmax);
   /* It step interpolation or equal bounding box bounds */
-  if(! MOBDB_FLAGS_GET_LINEAR(seq->flags) ||
-    box->xmin == box->xmax)
-    return range_make(min, max, true, true, T_FLOAT8);
+  if(! MOBDB_FLAGS_GET_LINEAR(seq->flags) || box->xmin == box->xmax)
+    return span_make(min, max, true, true, T_FLOAT8);
 
   Datum start = tinstant_value(tsequence_inst_n(seq, 0));
   Datum end = tinstant_value(tsequence_inst_n(seq, seq->count - 1));
@@ -1749,25 +1748,25 @@ tfloatseq_range(const TSequence *seq)
         break;
     }
   }
-  return range_make(min, max, min_inc, max_inc, T_FLOAT8);
+  return span_make(min, max, min_inc, max_inc, T_FLOAT8);
 }
 
 /**
- * Return the ranges of base values of the temporal float
+ * Return the spans of base values of the temporal float
  * with stepwise interpolation
  *
  * @param[out] result Array on which the pointers of the newly constructed
- * ranges are stored
+ * spans are stored
  * @param[in] seq Temporal value
- * @result Number of ranges in the result
+ * @result Number of spans in the result
  */
 int
-tfloatseq_ranges1(const TSequence *seq, RangeType **result)
+tfloatseq_spans1(const TSequence *seq, Span **result)
 {
   /* Temporal float with linear interpolation */
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
-    result[0] = tfloatseq_range(seq);
+    result[0] = tfloatseq_span(seq);
     return 1;
   }
 
@@ -1775,20 +1774,20 @@ tfloatseq_ranges1(const TSequence *seq, RangeType **result)
   int count;
   Datum *values = tsequence_values(seq, &count);
   for (int i = 0; i < count; i++)
-    result[i] = range_make(values[i], values[i], true, true, T_FLOAT8);
+    result[i] = span_make(values[i], values[i], true, true, T_FLOAT8);
   pfree(values);
   return count;
 }
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of ranges of base values of the temporal float value.
+ * @brief Return the array of spans of base values of the temporal float value.
  */
-RangeType **
-tfloatseq_ranges(const TSequence *seq, int *count)
+Span **
+tfloatseq_spans(const TSequence *seq, int *count)
 {
-  RangeType **result = palloc(sizeof(RangeType *) * seq->count);
-  *count = tfloatseq_ranges1(seq, result);
+  Span **result = palloc(sizeof(Span *) * seq->count);
+  *count = tfloatseq_spans1(seq, result);
   return result;
 }
 
@@ -2825,24 +2824,22 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 
 /**
  * Restrict the segment of a temporal number to the (complement of the)
- * range of base values
+ * span of base values
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequence is stored
  * @param[in] inst1,inst2 Temporal values defining the segment
  * @param[in] lower_inclu,upper_inclu Upper and lower bounds of the segment
  * @param[in] linear True when the segment has linear interpolation
- * @param[in] range Range of base values
+ * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal sequence value
  */
 static int
-tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
-  bool linear, bool lower_inclu, bool upper_inclu, const RangeType *range,
+tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
+  bool linear, bool lower_inclu, bool upper_inclu, const Span *span,
   bool atfunc, TSequence **result)
 {
-  TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
-    TYPECACHE_RANGE_INFO);
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   CachedType basetype = temptype_basetype(inst1->temptype);
@@ -2852,11 +2849,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
   /* Constant segment (step or linear interpolation) */
   if (datum_eq(value1, value2, basetype))
   {
-#if POSTGRESQL_VERSION_NUMBER < 130000
-    contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
-#else
-    contains = range_contains_elem_internal(typcache, range, value1);
-#endif
+    contains = contains_span_elem(span, value1, basetype);
     if ((atfunc && ! contains) || (! atfunc && contains))
       return 0;
     instants[0] = (TInstant *) inst1;
@@ -2870,11 +2863,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
   if (! linear)
   {
     int k = 0;
-#if POSTGRESQL_VERSION_NUMBER < 130000
-    contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
-#else
-    contains = range_contains_elem_internal(typcache, range, value1);
-#endif
+    contains = contains_span_elem(span, value1, basetype);
     if ((atfunc && contains) || (! atfunc && ! contains))
     {
       instants[0] = (TInstant *) inst1;
@@ -2883,11 +2872,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
         lower_inclu, false, linear, NORMALIZE_NO);
       pfree(instants[1]);
     }
-#if POSTGRESQL_VERSION_NUMBER < 130000
-    contains = range_contains_elem_internal(typcache, (RangeType *) range, value2);
-#else
-    contains = range_contains_elem_internal(typcache, range, value2);
-#endif
+    contains = contains_span_elem(span, value2, basetype);
     if (upper_inclu &&
       ((atfunc && contains) || (! atfunc && ! contains)))
     {
@@ -2899,15 +2884,13 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
   /* Linear interpolation */
   bool lower_inc1, upper_inc1;
   bool increasing = DatumGetFloat8(value1) < DatumGetFloat8(value2);
-  RangeType *valuerange = increasing ?
-    range_make(value1, value2, lower_inclu, upper_inclu, basetype) :
-    range_make(value2, value1, upper_inclu, lower_inclu, basetype);
-  RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
-    PointerGetDatum(valuerange), PointerGetDatum(range)));
-  pfree(valuerange);
-  if (RangeIsEmpty(intersect))
+  Span *valuespan = increasing ?
+    span_make(value1, value2, lower_inclu, upper_inclu, basetype) :
+    span_make(value2, value1, upper_inclu, lower_inclu, basetype);
+  Span *inter = intersection_span_span(valuespan, span);
+  pfree(valuespan);
+  if (! inter)
   {
-    pfree(intersect);
     if (atfunc)
       return 0;
     /* MINUS */
@@ -2919,17 +2902,17 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* We are sure that neither lower or upper are infinite */
-  Datum lower = lower_datum(intersect);
-  Datum upper = upper_datum(intersect);
-  bool lower_inc2 = lower_inc(intersect);
-  bool upper_inc2 = upper_inc(intersect);
-  pfree(intersect);
+  Datum lower = inter->lower;
+  Datum upper = inter->upper;
+  bool lower_inc2 = inter->lower_inc;
+  bool upper_inc2 = inter->upper_inc;
+  pfree(inter);
   double dlower = DatumGetFloat8(lower);
   double dupper = DatumGetFloat8(upper);
   double dvalue1 = DatumGetFloat8(value1);
   double dvalue2 = DatumGetFloat8(value2);
   TimestampTz t1, t2;
-  /* Intersection range is a single value */
+  /* Intersection span is a single value */
   if (dlower == dupper)
   {
     if (atfunc)
@@ -2987,7 +2970,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
       freei = tfloatsegm_intersection_value(inst1, inst2, lower, basetype, &t1);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
-      instants[i] = RANGE_ROUNDOFF ?
+      instants[i] = SPAN_ROUNDOFF ?
         tinstant_make(lower, t1, inst1->temptype) :
         tsegment_at_timestamp(inst1, inst2, linear, t1);
     }
@@ -3001,7 +2984,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
       freej = tfloatsegm_intersection_value(inst1, inst2, upper, basetype, &t2);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
-      instants[j] = RANGE_ROUNDOFF ?
+      instants[j] = SPAN_ROUNDOFF ?
         tinstant_make(upper, t2, inst1->temptype) :
         tsegment_at_timestamp(inst1, inst2, linear, t2);
     }
@@ -3025,7 +3008,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
     tfloatsegm_intersection_value(inst1, inst2, lower, basetype, &t1);
     /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
-    instbounds[i] = RANGE_ROUNDOFF ?
+    instbounds[i] = SPAN_ROUNDOFF ?
       tinstant_make(lower, t1, inst1->temptype) :
       tsegment_at_timestamp(inst1, inst2, linear, t1);
   }
@@ -3034,7 +3017,7 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
     tfloatsegm_intersection_value(inst1, inst2, upper, basetype, &t2);
     /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
-    instbounds[j] = RANGE_ROUNDOFF ?
+    instbounds[j] = SPAN_ROUNDOFF ?
       tinstant_make(upper, t2, inst1->temptype) :
       tsegment_at_timestamp(inst1, inst2, linear, t2);
   }
@@ -3086,25 +3069,25 @@ tnumberseq_restrict_range1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Restrict the temporal number to the (complement of the) range of
+ * Restrict the temporal number to the (complement of the) span of
  * base values
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq temporal number
- * @param[in] range Range of base values
+ * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumberseq_restrict_range2(const TSequence *seq, const RangeType *range,
-  bool atfunc, TSequence **result)
+tnumberseq_restrict_span2(const TSequence *seq, const Span *span, bool atfunc,
+  TSequence **result)
 {
   /* Bounding box test */
   TBOX box1, box2;
   tsequence_bbox(seq, &box1);
-  range_tbox(range, &box2);
+  span_tbox(span, &box2);
   if (! overlaps_tbox_tbox(&box1, &box2))
   {
     if (atfunc)
@@ -3124,7 +3107,7 @@ tnumberseq_restrict_range2(const TSequence *seq, const RangeType *range,
     /* The bounding box test above does not distinguish between
      * inclusive/exclusive bounds */
     inst1 = tsequence_inst_n(seq, 0);
-    TInstant *inst = tnumberinst_restrict_range(inst1, range, atfunc);
+    TInstant *inst = tnumberinst_restrict_span(inst1, span, atfunc);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -3141,8 +3124,8 @@ tnumberseq_restrict_range2(const TSequence *seq, const RangeType *range,
   {
     inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    k += tnumberseq_restrict_range1(inst1, inst2, linear, lower_inc, upper_inc,
-      range, atfunc, &result[k]);
+    k += tnumberseq_restrict_span1(inst1, inst2, linear, lower_inc, upper_inc,
+      span, atfunc, &result[k]);
     inst1 = inst2;
     lower_inc = true;
   }
@@ -3151,56 +3134,55 @@ tnumberseq_restrict_range2(const TSequence *seq, const RangeType *range,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal number to the (complement of the) range of base
+ * @brief Restrict the temporal number to the (complement of the) span of base
  * values.
  *
  * @param[in] seq Temporal number
- * @param[in] range Range of base values
+ * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function. */
 TSequenceSet *
-tnumberseq_restrict_range(const TSequence *seq, const RangeType *range,
-  bool atfunc)
+tnumberseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc)
 {
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
   if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tnumberseq_restrict_range2(seq, range, atfunc, sequences);
+  int newcount = tnumberseq_restrict_span2(seq, span, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
 /*****************************************************************************/
 
 /**
- * Restrict the temporal number to the (complement of the) array of ranges
+ * Restrict the temporal number to the (complement of the) array of spans
  * of base values
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq Temporal number
- * @param[in] normranges Array of ranges of base values
+ * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
  * @param[in] bboxtest True when the bounding box test should be performed
  * @return Number of resulting sequences returned
- * @pre The array of ranges is normalized
+ * @pre The array of spans is normalized
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
+tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
   int count, bool atfunc, bool bboxtest, TSequence **result)
 {
-  RangeType **newranges;
+  Span **newspans;
   int newcount;
 
   /* Bounding box test */
   if (bboxtest)
   {
-    newranges = tnumber_bbox_restrict_ranges((Temporal *) seq, normranges,
+    newspans = tnumber_bbox_restrict_spans((Temporal *) seq, normspans,
       count, &newcount);
     if (newcount == 0)
     {
@@ -3215,7 +3197,7 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
   }
   else
   {
-    newranges = normranges;
+    newspans = normspans;
     newcount = count;
   }
 
@@ -3225,10 +3207,10 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    TInstant *inst = tnumberinst_restrict_ranges(inst1, newranges, newcount,
+    TInstant *inst = tnumberinst_restrict_spans(inst1, newspans, newcount,
       atfunc);
     if (bboxtest)
-      pfree(newranges);
+      pfree(newspans);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -3250,14 +3232,14 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
       for (int j = 0; j < newcount; j++)
       {
-        k += tnumberseq_restrict_range1(inst1, inst2, linear, lower_inc,
-          upper_inc, newranges[j], REST_AT, &result[k]);
+        k += tnumberseq_restrict_span1(inst1, inst2, linear, lower_inc,
+          upper_inc, newspans[j], REST_AT, &result[k]);
       }
       inst1 = inst2;
       lower_inc = true;
     }
     if (bboxtest)
-      pfree(newranges);
+      pfree(newspans);
     if (k > 1)
       tseqarr_sort(result, k);
     return k;
@@ -3266,13 +3248,13 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
   {
     /*
      * MINUS function
-     * Compute first the tnumberseq_at_ranges, then compute its complement
+     * Compute first the tnumberseq_at_spans, then compute its complement
      * Notice that in this case due to rounoff errors it may be the case
-     * that temp is not equal to merge(atRanges(temp, .),minusRanges(temp, .),
-     * since we kept the range values instead of the projected values when
-     * computing atRanges
+     * that temp is not equal to merge(atSpans(temp, .),minusSpans(temp, .),
+     * since we kept the span values instead of the projected values when
+     * computing atSpans
      */
-    TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, newcount,
+    TSequenceSet *ts = tnumberseq_restrict_spans(seq, newspans, newcount,
       REST_AT, bboxtest);
     if (ts == NULL)
     {
@@ -3290,7 +3272,7 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
     }
     pfree(ts); pfree(ps1);
     if (bboxtest)
-      pfree(newranges);
+      pfree(newspans);
     return newcount;
   }
 }
@@ -3298,21 +3280,21 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal number to (the complement of) the array of
- * ranges of base values
+ * spans of base values
  *
  * @param[in] seq Temporal number
- * @param[in] normranges Array of ranges of base values
+ * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
  * @param[in] bboxtest True when the bounding box test should be performed
  * @return Resulting temporal number
- * @pre The array of ranges is normalized
+ * @pre The array of spans is normalized
  * @note A bounding box test and an instantaneous sequence test are done in
- * the function tnumberseq_restrict_ranges1 since the latter is called
+ * the function tnumberseq_restrict_spans1 since the latter is called
  * for each composing sequence of a temporal sequence set number.
  */
 TSequenceSet *
-tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
+tnumberseq_restrict_spans(const TSequence *seq, Span **normspans,
   int count, bool atfunc, bool bboxtest)
 {
   /* General case */
@@ -3321,7 +3303,7 @@ tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
   if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-  int newcount = tnumberseq_restrict_ranges1(seq, normranges, count, atfunc,
+  int newcount = tnumberseq_restrict_spans1(seq, normspans, count, atfunc,
     bboxtest, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
@@ -4133,7 +4115,7 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 /*****************************************************************************
  * Function for defining hash index
  * The function reuses the approach for array types for combining the hash of
- * the elements and the approach for range types for combining the period
+ * the elements and the approach for span types for combining the period
  * bounds.
  *****************************************************************************/
 

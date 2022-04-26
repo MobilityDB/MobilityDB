@@ -386,10 +386,10 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
     Datum value = scankey->sk_argument;
     number_tbox(value, type, result);
   }
-  else if (tnumber_rangetype(type))
+  else if (tnumber_spantype(type))
   {
-    RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
-    range_tbox(range, result);
+    Span *span = DatumGetSpanP(scankey->sk_argument);
+    span_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
@@ -523,8 +523,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
   /*
-   * Assign ranges to corresponding nodes according to quadrants relative to
-   * the "centroid" range
+   * Assign spans to corresponding nodes according to quadrants relative to
+   * the "centroid" span
    */
   for (i = 0; i < in->nTuples; i++)
   {

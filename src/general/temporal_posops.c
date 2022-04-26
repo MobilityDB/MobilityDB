@@ -473,48 +473,48 @@ Overright_number_tnumber(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* Range op Tnumber */
 
-PG_FUNCTION_INFO_V1(Left_range_tnumber);
+PG_FUNCTION_INFO_V1(Left_span_tnumber);
 /**
- * Return true if the number range value is strictly to the left of the
+ * Return true if the number span value is strictly to the left of the
  * temporal number
  */
 PGDLLEXPORT Datum
-Left_range_tnumber(PG_FUNCTION_ARGS)
+Left_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &left_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &left_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overleft_range_tnumber);
+PG_FUNCTION_INFO_V1(Overleft_span_tnumber);
 /**
- * Return true if the number range value is not to the right of the
+ * Return true if the number span value is not to the right of the
  * temporal number
  */
 PGDLLEXPORT Datum
-Overleft_range_tnumber(PG_FUNCTION_ARGS)
+Overleft_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &overleft_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &overleft_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Right_range_tnumber);
+PG_FUNCTION_INFO_V1(Right_span_tnumber);
 /**
- * Return true if the number range value is strictly to the right of the
+ * Return true if the number span value is strictly to the right of the
  * temporal number
  */
 PGDLLEXPORT Datum
-Right_range_tnumber(PG_FUNCTION_ARGS)
+Right_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &right_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &right_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overright_range_tnumber);
+PG_FUNCTION_INFO_V1(Overright_span_tnumber);
 /**
- * Return true if the number range value is not to the left of the
+ * Return true if the number span value is not to the left of the
  * temporal number
  */
 PGDLLEXPORT Datum
-Overright_range_tnumber(PG_FUNCTION_ARGS)
+Overright_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &overright_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &overright_tbox_tbox);
 }
 
 /*****************************************************************************/
@@ -567,48 +567,48 @@ Overright_tnumber_number(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* Tnumber op Range */
 
-PG_FUNCTION_INFO_V1(Left_tnumber_range);
+PG_FUNCTION_INFO_V1(Left_tnumber_span);
 /**
  * Return true if the temporal number is strictly to the left of the
- * number range value
+ * number span value
  */
 PGDLLEXPORT Datum
-Left_tnumber_range(PG_FUNCTION_ARGS)
+Left_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &left_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &left_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overleft_tnumber_range);
+PG_FUNCTION_INFO_V1(Overleft_tnumber_span);
 /**
  * Return true if the temporal number is not to the right of the
- * number range value
+ * number span value
  */
 PGDLLEXPORT Datum
-Overleft_tnumber_range(PG_FUNCTION_ARGS)
+Overleft_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &overleft_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &overleft_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Right_tnumber_range);
+PG_FUNCTION_INFO_V1(Right_tnumber_span);
 /**
  * Return true if the temporal number is strictly to the right of the
- * number range value
+ * number span value
  */
 PGDLLEXPORT Datum
-Right_tnumber_range(PG_FUNCTION_ARGS)
+Right_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &right_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &right_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overright_tnumber_range);
+PG_FUNCTION_INFO_V1(Overright_tnumber_span);
 /**
  * Return true if the temporal number is not to the left of the
- * number range value
+ * number span value
  */
 PGDLLEXPORT Datum
-Overright_tnumber_range(PG_FUNCTION_ARGS)
+Overright_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &overright_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &overright_tbox_tbox);
 }
 
 /*****************************************************************************/
