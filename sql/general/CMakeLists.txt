@@ -9,7 +9,6 @@ if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
 endif()
 
 SET(LOCAL_FILES
-  000_catalog
   001_period
   003_timestampset
   005_periodset

@@ -268,7 +268,8 @@ tinstant_read(StringInfo buf, CachedType temptype)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  Datum value = call_recv(temptype_basetypid(temptype), &buf2);
+  Oid basetypid = type_oid(temptype_basetype(temptype));
+  Datum value = call_recv(basetypid, &buf2);
   buf->cursor += size ;
   return tinstant_make(value, t, temptype);
 }

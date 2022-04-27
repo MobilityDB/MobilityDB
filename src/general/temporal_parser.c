@@ -517,8 +517,9 @@ TInstant *
 tinstant_parse(char **str, CachedType temptype, bool end, bool make)
 {
   p_whitespace(str);
+  Oid basetypid = type_oid(temptype_basetype(temptype));
   /* The next two instructions will throw an exception if they fail */
-  Datum elem = basetype_parse(str, temptype_basetypid(temptype));
+  Datum elem = basetype_parse(str, basetypid);
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   if (! make)

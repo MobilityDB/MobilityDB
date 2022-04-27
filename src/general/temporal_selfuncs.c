@@ -495,8 +495,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   else /* tempfamily == TNUMBERTYPE */
   {
     /* Get the base type of the temporal column */
-    Oid basetypid = temptypid_basetypid(vardata.atttype);
-    Oid basetype = oid_type(basetypid);
+    CachedType basetype = temptype_basetype(oid_type(vardata.atttype));
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Period *p = NULL;
@@ -505,7 +504,8 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       return tnumber_sel_default(cachedOp);
 
     /* Compute the selectivity */
-    selec = tnumber_sel_span_period(&vardata, s, p, cachedOp, basetypid);
+    selec = tnumber_sel_span_period(&vardata, s, p, cachedOp,
+      type_oid(basetype));
     /* Free variables */
     if (s) pfree(s);
     if (p) pfree(p);

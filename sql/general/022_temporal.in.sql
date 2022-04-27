@@ -37,12 +37,6 @@ CREATE TYPE tbool;
 CREATE TYPE tfloat;
 CREATE TYPE ttext;
 
-/* temporal, base, contbase, box */
-SELECT register_temporal_type('tbool', 'bool', false, 'period');
-SELECT register_temporal_type('tint', 'int4', false, 'tbox');
-SELECT register_temporal_type('tfloat', 'float8', true, 'tbox');
-SELECT register_temporal_type('ttext', 'text', false, 'period');
-
 /*****************************************************************************
  * Utility functions
  *****************************************************************************/

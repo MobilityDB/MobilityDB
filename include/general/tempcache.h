@@ -125,27 +125,12 @@ typedef enum
 /**
  * Structure to represent the temporal type cache array.
  */
-#ifndef MEOS
-typedef struct
-{
-  Oid temptypid;          /**< Oid of the temporal type */
-  CachedType temptype;    /**< Enum value of the temporal type */
-  Oid basetypid;          /**< Oid of the base type */
-  CachedType basetype;    /**< Enum value of the base type */
-  int32 basetyplen;       /**< Length of the base type */
-  bool basebyval;         /**< True if the base type is passed by value */
-  bool basecont;          /**< True if the base type is continuous */
-  Oid boxtypid;           /**< Oid of the box type */
-  int32 boxtyplen;        /**< Length of the box type */
-} temptype_cache_struct;
-#else
 typedef struct
 {
   CachedType temptype;    /**< Enum value of the temporal type */
   CachedType basetype;    /**< Enum value of the base type */
   bool basecont;          /**< True if the base type is continuous */
 } temptype_cache_struct;
-#endif
 
 typedef struct
 {
@@ -164,8 +149,6 @@ extern CachedType temptype_basetype(CachedType temptype);
 extern CachedType spantype_basetype(CachedType spantype);
 extern CachedType basetype_spantype(CachedType basetype);
 
-extern Oid temptype_basetypid(Oid temptypid);
-extern Oid temptypid_basetypid(Oid temptypid);
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
 extern CachedType oid_type(Oid typid);

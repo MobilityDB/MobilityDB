@@ -439,7 +439,8 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Information about the value type */
-  typentry = lookup_type_cache(temptypid_basetypid(stats->attrtypid),
+  CachedType basetype = temptype_basetype(oid_type(stats->attrtypid));
+  typentry = lookup_type_cache(type_oid(basetype),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
   extra_data->value_typid = typentry->type_id;
