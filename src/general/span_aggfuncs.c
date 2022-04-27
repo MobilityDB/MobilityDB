@@ -34,6 +34,9 @@
 
 // #include "general/span_aggfuncs.h"
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/span_ops.h"

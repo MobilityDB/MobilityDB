@@ -35,10 +35,6 @@
 #ifndef __TBOX_H__
 #define __TBOX_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <libpq/pqformat.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/tempcache.h"
@@ -57,6 +53,12 @@ typedef struct
   TimestampTz tmax;   /**< maximum timestamp */
   int16       flags;  /**< flags */
 } TBOX;
+
+// typedef struct
+// {
+  // Span      xspan;   /**< span for the values */
+  // Period    tspan;   /**< period for the timestamps */
+// } TBOXNew;
 
 /* fmgr macros temporal types */
 

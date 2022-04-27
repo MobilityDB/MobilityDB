@@ -55,6 +55,7 @@
 #include "point/tpoint_analyze.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <float.h>
 #include <access/htup_details.h>

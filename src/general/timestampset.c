@@ -65,38 +65,9 @@ timestampset_time_n(const TimestampSet *ts, int index)
  * Return a pointer to the precomputed bounding box of the timestamp set value
  */
 const Period *
-timestampset_bbox_ptr(const TimestampSet *ts)
+timestampset_period_ptr(const TimestampSet *ts)
 {
   return (Period *)&ts->period;
-}
-
-/**
- * Copy in the second argument the bounding box of the timestamp set value
- */
-void
-timestampset_bbox(const TimestampSet *ts, Period *p)
-{
-  const Period *p1 = (Period *) &ts->period;
-  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
-  return;
-}
-
-/**
- * Peak into a timestamp set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-timestampset_bbox_slice(Datum tsdatum, Period *p)
-{
-  TimestampSet *ts = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
-    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
-      time_max_header_size());
-  else
-    ts = (TimestampSet *) tsdatum;
-  timestampset_bbox(ts, p);
-  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
-  return;
 }
 
 /**
@@ -307,16 +278,14 @@ timestamp_timestampset(TimestampTz t)
 
 /**
  * @ingroup libmeos_time_cast
- * @brief Return the bounding period of the timestamp set value.
+ * @brief Copy in the second argument the bounding period of the timestamp
+ * set value
  */
 void
 timestampset_period(const TimestampSet *ts, Period *p)
 {
-  TimestampTz start = timestampset_time_n(ts, 0);
-  TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(p, 0, sizeof(Period));
-  period_set(start, end, true, true, p);
+  const Period *p1 = &ts->period;
+  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
   return;
 }
 
@@ -596,7 +565,8 @@ timestampset_hash(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    uint32 time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(t)));
+    uint32 time_hash = DatumGetUInt32(call_function1(hashint8,
+      TimestampTzGetDatum(t)));
     result = (result << 5) - result + time_hash;
   }
   return result;
@@ -720,6 +690,24 @@ Timestamp_to_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_period_slice(Datum tsdatum, Period *p)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_period(ts, p);
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(Timestampset_to_period);
 /**
  * Return the bounding period on which the timestamp set value is defined
@@ -729,7 +717,7 @@ Timestampset_to_period(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  timestampset_bbox_slice(tsdatum, result);
+  timestampset_period_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 

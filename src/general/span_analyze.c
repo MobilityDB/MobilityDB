@@ -45,6 +45,7 @@
 #include "general/span_analyze.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <catalog/pg_operator.h>
 /* MobilityDB */

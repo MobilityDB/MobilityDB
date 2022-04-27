@@ -46,7 +46,6 @@
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "general/tnumber_mathfuncs.h"
-#include "general/rangetypes_ext.h"
 
 /*****************************************************************************
  * General functions

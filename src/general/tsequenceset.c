@@ -880,8 +880,6 @@ tfloatseqset_spans(const TSequenceSet *ts, int *count)
     k += tfloatseq_spans1(seq, &spans[k]);
   }
   Span **result = spanarr_normalize(spans, k, count);
-  if ((*count) > 1)
-    spanarr_sort(result, *count);
   pfree_array((void **) spans, k);
   return result;
 }
@@ -1404,7 +1402,7 @@ tfloatseqset_span(const TSequenceSet *ts)
   TBOX *box = tsequenceset_bbox_ptr(ts);
   Datum min = Float8GetDatum(box->xmin);
   Datum max = Float8GetDatum(box->xmax);
-  /* It step interpolation */
+  /* Step interpolation */
   if(! MOBDB_FLAGS_GET_LINEAR(ts->flags))
     return span_make(min, max, true, true, T_FLOAT8);
 
@@ -1421,9 +1419,9 @@ tfloatseqset_span(const TSequenceSet *ts)
   Span *result;
   if (newcount == 1)
   {
-    result = normspans[0];
+    result = span_copy(normspans[0]);
     pfree_array((void **) spans, ts->count);
-    pfree(normspans);
+    pfree_array((void **) normspans, newcount);
     return result;
   }
 
@@ -2009,7 +2007,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   /* Bounding box test */
   Period p1;
   tsequenceset_period(ts1, &p1);
-  const Period *p2 = timestampset_bbox_ptr(ts2);
+  const Period *p2 = timestampset_period_ptr(ts2);
   if (! overlaps_period_period(&p1, p2))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts1);
 
@@ -2161,7 +2159,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
   /* Bounding box test */
   Period p1;
   tsequenceset_period(ts, &p1);
-  const Period *p2 = periodset_bbox_ptr(ps);
+  const Period *p2 = periodset_period_ptr(ps);
   if (! overlaps_period_period(&p1, p2))
     return atfunc ? NULL : tsequenceset_copy(ts);
 

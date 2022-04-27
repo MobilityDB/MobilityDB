@@ -36,6 +36,7 @@
 #include "npoint/tnpoint_analyze.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <commands/vacuum.h>
 /* MobilityDB */
 #include "general/period.h"

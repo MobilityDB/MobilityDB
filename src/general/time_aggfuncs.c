@@ -276,7 +276,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   if (!p)
   {
     result = palloc(sizeof(Period));
-    timestampset_bbox(ts, result);
+    timestampset_period(ts, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null timestampset, return the period */
@@ -288,7 +288,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  timestampset_bbox(ts, &p1);
+  timestampset_period(ts, &p1);
   result = period_super_union(p, &p1);
 
   PG_FREE_IF_COPY(ts, 1);
@@ -344,7 +344,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   if (!p)
   {
     result = palloc(sizeof(Period));
-    periodset_bbox(ps, result);
+    periodset_period(ps, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -356,7 +356,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  periodset_bbox(ps, &p1);
+  periodset_period(ps, &p1);
   result = period_super_union(p, &p1);
 
   PG_FREE_IF_COPY(ps, 1);

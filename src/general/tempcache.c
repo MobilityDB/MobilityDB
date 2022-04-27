@@ -50,6 +50,8 @@
 #include "general/tempcache.h"
 
 /* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000

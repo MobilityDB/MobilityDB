@@ -65,6 +65,7 @@
 #include "general/temporal_analyze.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <math.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000

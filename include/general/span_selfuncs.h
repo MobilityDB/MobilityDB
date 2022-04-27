@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/selfuncs.h>
 /* MobilityDB */
 #include "general/temporal_selfuncs.h"
 #include "general/timetypes.h"

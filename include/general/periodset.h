@@ -37,8 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <libpq/pqformat.h>
-#include <catalog/pg_type.h>
+#include <lib/stringinfo.h>
 /* MobilityDB */
 #include "general/timetypes.h"
 
@@ -47,9 +46,9 @@
 /* General functions */
 
 extern const Period *periodset_per_n(const PeriodSet *ps, int index);
-extern const Period *periodset_bbox_ptr(const PeriodSet *ps);
-extern void periodset_bbox(const PeriodSet *ps, Period *p);
-extern void periodset_bbox_slice(Datum psdatum, Period *p);
+extern const Period *periodset_period_ptr(const PeriodSet *ps);
+extern void periodset_period(const PeriodSet *ps, Period *p);
+extern void periodset_period_slice(Datum psdatum, Period *p);
 extern PeriodSet *periodset_make(const Period **periods, int count,
   bool normalize);
 extern PeriodSet *periodset_make_free(Period **periods, int count,

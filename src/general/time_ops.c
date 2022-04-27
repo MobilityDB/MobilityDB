@@ -54,17 +54,6 @@ typedef enum
 /*****************************************************************************/
 
 /**
- * Return the size in bytes to read from toast to get the basic information
- * from a variable-length time type: Time struct (i.e., TimestampSet
- * or PeriodSet) and bounding box size
-*/
-uint32_t
-time_max_header_size(void)
-{
-  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
-}
-
-/**
  * Return true if the type is a time type
  */
 bool
@@ -134,8 +123,8 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
   if (setop == INTER || setop == MINUS)
   {
     /* Bounding box test */
-    const Period *p1 = timestampset_bbox_ptr(ts1);
-    const Period *p2 = timestampset_bbox_ptr(ts2);
+    const Period *p1 = timestampset_period_ptr(ts1);
+    const Period *p2 = timestampset_period_ptr(ts2);
     if (! overlaps_period_period(p1, p2))
       return setop == INTER ? NULL : timestampset_copy(ts1);
   }
@@ -204,7 +193,7 @@ setop_timestampset_period(const TimestampSet *ts, const Period *p,
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts);
+  const Period *p1 = timestampset_period_ptr(ts);
   if (! overlaps_period_period(p1, p))
     return (setop == INTER) ? NULL : timestampset_copy(ts);
 
@@ -229,8 +218,8 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts);
-  const Period *p2 = periodset_bbox_ptr(ps);
+  const Period *p1 = timestampset_period_ptr(ts);
+  const Period *p2 = periodset_period_ptr(ps);
   if (! overlaps_period_period(p1, p2))
     return (setop == INTER) ? NULL : timestampset_copy(ts);
 
@@ -289,7 +278,7 @@ bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = timestampset_bbox_ptr(ts);
+  const Period *p = timestampset_period_ptr(ts);
   if (! contains_period_timestamp(p, t))
     return false;
 
@@ -306,8 +295,8 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts1);
-  const Period *p2 = timestampset_bbox_ptr(ts2);
+  const Period *p1 = timestampset_period_ptr(ts1);
+  const Period *p2 = timestampset_period_ptr(ts2);
   if (! contains_period_period(p1, p2))
     return false;
 
@@ -355,7 +344,7 @@ bool
 contains_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   /* It is sufficient to do a bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts);
+  const Period *p1 = timestampset_period_ptr(ts);
   if (! contains_period_period(p, p1))
     return false;
   return true;
@@ -386,7 +375,7 @@ bool
 contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox_ptr(ps);
+  const Period *p = periodset_period_ptr(ps);
   if (! contains_period_timestamp(p, t))
     return false;
 
@@ -404,8 +393,8 @@ bool
 contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
-  const Period *p2 = timestampset_bbox_ptr(ts);
+  const Period *p1 = periodset_period_ptr(ps);
+  const Period *p2 = timestampset_period_ptr(ts);
   if (! contains_period_period(p1, p2))
     return false;
 
@@ -435,7 +424,7 @@ bool
 contains_periodset_period(const PeriodSet *ps, const Period *p)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p1 = periodset_period_ptr(ps);
   if (! contains_period_period(p1, p))
     return false;
 
@@ -452,7 +441,7 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
 bool
 contains_period_periodset(const Period *p, const PeriodSet *ps)
 {
-  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p1 = periodset_period_ptr(ps);
   return contains_period_period(p, p1);
 }
 
@@ -464,8 +453,8 @@ bool
 contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps1);
-  const Period *p2 = periodset_bbox_ptr(ps2);
+  const Period *p1 = periodset_period_ptr(ps1);
+  const Period *p2 = periodset_period_ptr(ps2);
   if (! contains_period_period(p1, p2))
     return false;
 
@@ -615,8 +604,8 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts1);
-  const Period *p2 = timestampset_bbox_ptr(ts2);
+  const Period *p1 = timestampset_period_ptr(ts1);
+  const Period *p2 = timestampset_period_ptr(ts2);
   if (! overlaps_period_period(p1, p2))
     return false;
 
@@ -644,7 +633,7 @@ bool
 overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts);
+  const Period *p1 = timestampset_period_ptr(ts);
   if (! overlaps_period_period(p, p1))
     return false;
 
@@ -665,8 +654,8 @@ bool
 overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
-  const Period *p2 = timestampset_bbox_ptr(ts);
+  const Period *p1 = periodset_period_ptr(ps);
+  const Period *p2 = timestampset_period_ptr(ts);
   if (! overlaps_period_period(p1, p2))
     return false;
 
@@ -720,7 +709,7 @@ bool
 overlaps_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p1 = periodset_period_ptr(ps);
   if (! overlaps_period_period(p, p1))
     return false;
 
@@ -766,8 +755,8 @@ bool
 overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps1);
-  const Period *p2 = periodset_bbox_ptr(ps2);
+  const Period *p1 = periodset_period_ptr(ps1);
+  const Period *p2 = periodset_period_ptr(ps2);
   if (! overlaps_period_period(p1, p2))
     return false;
 
@@ -2191,7 +2180,7 @@ PeriodSet *
 intersection_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p1 = periodset_period_ptr(ps);
   if (! overlaps_period_period(p, p1))
     return NULL;
 
@@ -2262,8 +2251,8 @@ intersection_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps1);
-  const Period *p2 = periodset_bbox_ptr(ps2);
+  const Period *p1 = periodset_period_ptr(ps1);
+  const Period *p2 = periodset_period_ptr(ps2);
   Period p;
   if (! inter_period_period(p1, p2, &p))
     return NULL;
@@ -2363,7 +2352,7 @@ TimestampSet *
 minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = timestampset_bbox_ptr(ts);
+  const Period *p = timestampset_period_ptr(ts);
   if (! contains_period_timestamp(p, t))
     return timestampset_copy(ts);
 
@@ -2472,7 +2461,7 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
   /* Transform the period into a period set */
   PeriodSet *ps = period_periodset(p);
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox_ptr(ts);
+  const Period *p1 = timestampset_period_ptr(ts);
   if (! overlaps_period_period(p, p1))
     return ps;
 
@@ -2618,7 +2607,7 @@ PeriodSet *
 minus_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p1 = periodset_period_ptr(ps);
   if (! overlaps_period_period(p, p1))
     return periodset_make((const Period **) &p, 1, false);
 
@@ -2638,7 +2627,7 @@ PeriodSet *
 minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox_ptr(ps);
+  const Period *p = periodset_period_ptr(ps);
   if (! contains_period_timestamp(p, t))
     return periodset_copy(ps);
 
@@ -2662,8 +2651,8 @@ PeriodSet *
 minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
-  const Period *p2 = timestampset_bbox_ptr(ts);
+  const Period *p1 = periodset_period_ptr(ps);
+  const Period *p2 = timestampset_period_ptr(ts);
   if (! overlaps_period_period(p1, p2))
     return periodset_copy(ps);
 
@@ -2771,7 +2760,7 @@ PeriodSet *
 minus_periodset_period(const PeriodSet *ps, const Period *p)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p1 = periodset_period_ptr(ps);
   if (! overlaps_period_period(p1, p))
     return periodset_copy(ps);
 
@@ -2795,8 +2784,8 @@ PeriodSet *
 minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox_ptr(ps1);
-  const Period *p2 = periodset_bbox_ptr(ps2);
+  const Period *p1 = periodset_period_ptr(ps1);
+  const Period *p2 = periodset_period_ptr(ps2);
   if (! overlaps_period_period(p1, p2))
     return periodset_copy(ps1);
 
@@ -2872,7 +2861,7 @@ Interval *
 distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
   Period p;
-  timestampset_bbox(ts, &p);
+  timestampset_period(ts, &p);
   Interval *result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -2898,7 +2887,7 @@ Interval *
 distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
   Period p;
-  periodset_bbox(ps, &p);
+  periodset_period(ps, &p);
   Interval *result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -2915,7 +2904,7 @@ Interval *
 distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   Period p;
-  timestampset_bbox(ts, &p);
+  timestampset_period(ts, &p);
   Interval *result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -2929,8 +2918,8 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   Period p1, p2;
-  timestampset_bbox(ts1, &p1);
-  timestampset_bbox(ts2, &p2);
+  timestampset_period(ts1, &p1);
+  timestampset_period(ts2, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   return result;
 }
@@ -2943,7 +2932,7 @@ Interval *
 distance_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   Period p1;
-  timestampset_bbox(ts, &p1);
+  timestampset_period(ts, &p1);
   Interval *result = distance_period_period(&p1, p);
   return result;
 }
@@ -2956,8 +2945,8 @@ Interval *
 distance_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   Period p1, p2;
-  timestampset_bbox(ts, &p1);
-  periodset_bbox(ps, &p2);
+  timestampset_period(ts, &p1);
+  periodset_period(ps, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   return result;
 }
@@ -2997,7 +2986,7 @@ Interval *
 distance_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   Period p1;
-  timestampset_bbox(ts, &p1);
+  timestampset_period(ts, &p1);
   Interval *result = distance_period_period(p, &p1);
   return result;
 }
@@ -3035,7 +3024,7 @@ Interval *
 distance_period_periodset(const Period *p, const PeriodSet *ps)
 {
   Period p1;
-  periodset_bbox(ps, &p1);
+  periodset_period(ps, &p1);
   Interval *result = distance_period_period(&p1, p);
   return result;
 }
@@ -3052,7 +3041,7 @@ Interval *
 distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   Period p;
-  periodset_bbox(ps, &p);
+  periodset_period(ps, &p);
   Interval *result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -3065,8 +3054,8 @@ Interval *
 distance_periodset_timestampset(const PeriodSet *ps, TimestampSet *ts)
 {
   Period p1, p2;
-  periodset_bbox(ps, &p1);
-  timestampset_bbox(ts, &p2);
+  periodset_period(ps, &p1);
+  timestampset_period(ts, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   return result;
 }
@@ -3079,7 +3068,7 @@ Interval *
 distance_periodset_period(const PeriodSet *ps, const Period *p)
 {
   Period p1;
-  periodset_bbox(ps, &p1);
+  periodset_period(ps, &p1);
   Interval *result = distance_period_period(&p1, p);
   return result;
 }
@@ -3092,8 +3081,8 @@ Interval *
 distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   Period p1, p2;
-  periodset_bbox(ps1, &p1);
-  periodset_bbox(ps2, &p2);
+  periodset_period(ps1, &p1);
+  periodset_period(ps2, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   return result;
 }
@@ -3127,7 +3116,7 @@ double
 distance_secs_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
   Period p;
-  timestampset_bbox(ts, &p);
+  timestampset_period(ts, &p);
   double result = distance_secs_period_timestamp(&p, t);
   return result;
 }
@@ -3154,7 +3143,7 @@ double
 distance_secs_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
   Period p;
-  periodset_bbox(ps, &p);
+  periodset_period(ps, &p);
   double result = distance_secs_period_timestamp(&p, t);
   return result;
 }
@@ -3171,7 +3160,7 @@ double
 distance_secs_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   Period p;
-  timestampset_bbox(ts, &p);
+  timestampset_period(ts, &p);
   double result = distance_secs_period_timestamp(&p, t);
   return result;
 }
@@ -3187,8 +3176,8 @@ distance_secs_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   Period p1, p2;
-  timestampset_bbox(ts1, &p1);
-  timestampset_bbox(ts2, &p2);
+  timestampset_period(ts1, &p1);
+  timestampset_period(ts2, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   return result;
 }
@@ -3203,7 +3192,7 @@ double
 distance_secs_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   Period p1;
-  timestampset_bbox(ts, &p1);
+  timestampset_period(ts, &p1);
   double result = distance_secs_period_period(&p1, p);
   return result;
 }
@@ -3219,8 +3208,8 @@ distance_secs_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps)
 {
   Period p1, p2;
-  timestampset_bbox(ts, &p1);
-  periodset_bbox(ps, &p2);
+  timestampset_period(ts, &p1);
+  periodset_period(ps, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   return result;
 }
@@ -3291,7 +3280,7 @@ double
 distance_secs_period_periodset(const Period *p, const PeriodSet *ps)
 {
   Period p1;
-  periodset_bbox(ps, &p1);
+  periodset_period(ps, &p1);
   double result = distance_secs_period_period(&p1, p);
   return result;
 }
@@ -3345,8 +3334,8 @@ double
 distance_secs_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   Period p1, p2;
-  periodset_bbox(ps1, &p1);
-  periodset_bbox(ps2, &p2);
+  periodset_period(ps1, &p1);
+  periodset_period(ps2, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   return result;
 }
@@ -3359,6 +3348,18 @@ distance_secs_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /*****************************************************************************/
 
 #ifndef MEOS
+
+/**
+ * Return the size in bytes to read from toast to get the basic information
+ * from a variable-length time type: Time struct (i.e., TimestampSet
+ * or PeriodSet) and bounding box size
+*/
+uint32_t
+time_max_header_size(void)
+{
+  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
+}
+
 
 /*****************************************************************************/
 /* contains? */
@@ -5591,7 +5592,7 @@ Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p;
-  timestampset_bbox_slice(ts, &p);
+  timestampset_period_slice(ts, &p);
   Interval *result = distance_period_timestamp(&p, t);
   PG_RETURN_POINTER(result);
 }
@@ -5619,7 +5620,7 @@ Distance_timestamp_periodset(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p;
-  periodset_bbox_slice(ps, &p);
+  periodset_period_slice(ps, &p);
   Interval *result = distance_period_timestamp(&p, t);
   PG_RETURN_POINTER(result);
 }
@@ -5634,7 +5635,7 @@ Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
-  timestampset_bbox_slice(ts, &p);
+  timestampset_period_slice(ts, &p);
   Interval *result = distance_period_timestamp(&p, t);
   PG_RETURN_POINTER(result);
 }
@@ -5649,8 +5650,8 @@ Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
   Datum ts1 = PG_GETARG_DATUM(0);
   Datum ts2 = PG_GETARG_DATUM(1);
   Period p1, p2;
-  timestampset_bbox_slice(ts1, &p1);
-  timestampset_bbox_slice(ts2, &p2);
+  timestampset_period_slice(ts1, &p1);
+  timestampset_period_slice(ts2, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   PG_RETURN_POINTER(result);
 }
@@ -5665,7 +5666,7 @@ Distance_timestampset_period(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
-  timestampset_bbox_slice(ts, &p1);
+  timestampset_period_slice(ts, &p1);
   Interval *result = distance_period_period(&p1, p);
   PG_RETURN_POINTER(result);
 }
@@ -5680,8 +5681,8 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p1, p2;
-  timestampset_bbox_slice(ts, &p1);
-  periodset_bbox_slice(ps, &p2);
+  timestampset_period_slice(ts, &p1);
+  periodset_period_slice(ps, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   PG_RETURN_POINTER(result);
 }
@@ -5709,7 +5710,7 @@ Distance_period_timestampset(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p1;
-  timestampset_bbox_slice(ts, &p1);
+  timestampset_period_slice(ts, &p1);
   Interval *result = distance_period_period(p, &p1);
   PG_RETURN_POINTER(result);
 }
@@ -5737,7 +5738,7 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p1;
-  periodset_bbox_slice(ps, &p1);
+  periodset_period_slice(ps, &p1);
   Interval *result = distance_period_period(&p1, p);
   PG_RETURN_POINTER(result);
 }
@@ -5752,7 +5753,7 @@ Distance_periodset_timestamp(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
-  periodset_bbox_slice(ps, &p);
+  periodset_period_slice(ps, &p);
   Interval *result = distance_period_timestamp(&p, t);
   PG_RETURN_POINTER(result);
 }
@@ -5767,8 +5768,8 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p1, p2;
-  periodset_bbox_slice(ps, &p1);
-  timestampset_bbox_slice(ts, &p2);
+  periodset_period_slice(ps, &p1);
+  timestampset_period_slice(ts, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   PG_RETURN_POINTER(result);
 }
@@ -5783,7 +5784,7 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
-  periodset_bbox_slice(ps, &p1);
+  periodset_period_slice(ps, &p1);
   Interval *result = distance_period_period(&p1, p);
   PG_RETURN_POINTER(result);
 }
@@ -5798,8 +5799,8 @@ Distance_periodset_periodset(PG_FUNCTION_ARGS)
   Datum ps1 = PG_GETARG_DATUM(0);
   Datum ps2 = PG_GETARG_DATUM(1);
   Period p1, p2;
-  periodset_bbox_slice(ps1, &p1);
-  periodset_bbox_slice(ps2, &p2);
+  periodset_period_slice(ps1, &p1);
+  periodset_period_slice(ps2, &p2);
   Interval *result = distance_period_period(&p1, &p2);
   PG_RETURN_POINTER(result);
 }
@@ -5831,7 +5832,7 @@ Distance_secs_timestamp_timestampset(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p;
-  timestampset_bbox_slice(ts, &p);
+  timestampset_period_slice(ts, &p);
   double result = distance_secs_period_timestamp(&p, t);
   PG_RETURN_FLOAT8(result);
 }
@@ -5859,7 +5860,7 @@ Distance_secs_timestamp_periodset(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p;
-  periodset_bbox_slice(ps, &p);
+  periodset_period_slice(ps, &p);
   double result = distance_secs_period_timestamp(&p, t);
   PG_RETURN_FLOAT8(result);
 }
@@ -5874,7 +5875,7 @@ Distance_secs_timestampset_timestamp(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
-  timestampset_bbox_slice(ts, &p);
+  timestampset_period_slice(ts, &p);
   double result = distance_secs_period_timestamp(&p, t);
   PG_RETURN_FLOAT8(result);
 }
@@ -5889,8 +5890,8 @@ Distance_secs_timestampset_timestampset(PG_FUNCTION_ARGS)
   Datum ts1 = PG_GETARG_DATUM(0);
   Datum ts2 = PG_GETARG_DATUM(1);
   Period p1, p2;
-  timestampset_bbox_slice(ts1, &p1);
-  timestampset_bbox_slice(ts2, &p2);
+  timestampset_period_slice(ts1, &p1);
+  timestampset_period_slice(ts2, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
@@ -5905,7 +5906,7 @@ Distance_secs_timestampset_period(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
-  timestampset_bbox_slice(ts, &p1);
+  timestampset_period_slice(ts, &p1);
   double result = distance_secs_period_period(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
@@ -5920,8 +5921,8 @@ Distance_secs_timestampset_periodset(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p1, p2;
-  timestampset_bbox_slice(ts, &p1);
-  periodset_bbox_slice(ps, &p2);
+  timestampset_period_slice(ts, &p1);
+  periodset_period_slice(ps, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
@@ -5949,7 +5950,7 @@ Distance_secs_period_timestampset(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p1;
-  timestampset_bbox_slice(ts, &p1);
+  timestampset_period_slice(ts, &p1);
   double result = distance_secs_period_period(p, &p1);
   PG_RETURN_FLOAT8(result);
 }
@@ -5977,7 +5978,7 @@ Distance_secs_period_periodset(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p1;
-  periodset_bbox_slice(ps, &p1);
+  periodset_period_slice(ps, &p1);
   double result = distance_secs_period_period(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
@@ -5992,7 +5993,7 @@ Distance_secs_periodset_timestamp(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
-  periodset_bbox_slice(ps, &p);
+  periodset_period_slice(ps, &p);
   double result = distance_secs_period_timestamp(&p, t);
   PG_RETURN_FLOAT8(result);
 }
@@ -6007,8 +6008,8 @@ Distance_secs_periodset_timestampset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p1, p2;
-  periodset_bbox_slice(ps, &p1);
-  timestampset_bbox_slice(ts, &p2);
+  periodset_period_slice(ps, &p1);
+  timestampset_period_slice(ts, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
@@ -6023,7 +6024,7 @@ Distance_secs_periodset_period(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
-  periodset_bbox_slice(ps, &p1);
+  periodset_period_slice(ps, &p1);
   double result = distance_secs_period_period(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
@@ -6038,8 +6039,8 @@ Distance_secs_periodset_periodset(PG_FUNCTION_ARGS)
   Datum ps1 = PG_GETARG_DATUM(0);
   Datum ps2 = PG_GETARG_DATUM(1);
   Period p1, p2;
-  periodset_bbox_slice(ps1, &p1);
-  periodset_bbox_slice(ps2, &p2);
+  periodset_period_slice(ps1, &p1);
+  periodset_period_slice(ps2, &p2);
   double result = distance_secs_period_period(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }

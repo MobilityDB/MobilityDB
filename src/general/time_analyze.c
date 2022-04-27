@@ -45,6 +45,7 @@
 #include "general/time_analyze.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
@@ -280,14 +281,14 @@ timetype_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     else if (timetype == T_TIMESTAMPSET)
     {
       TimestampSet *ts= DatumGetTimestampSetP(value);
-      period = timestampset_bbox_ptr(ts);
+      period = timestampset_period_ptr(ts);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
     else
     {
       PeriodSet *ps= DatumGetPeriodSetP(value);
-      period = periodset_bbox_ptr(ps);
+      period = periodset_period_ptr(ps);
       /* Adjust the size */
       total_width += VARSIZE(ps);
     }

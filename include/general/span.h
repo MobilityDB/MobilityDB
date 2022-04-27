@@ -39,7 +39,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
-#include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/tempcache.h"
 
@@ -63,7 +62,7 @@ typedef struct
  */
 typedef struct
 {
-  Datum val;              /**< bound value */
+  Datum val;            /**< bound value */
   bool inclusive;       /**< bound is inclusive (vs exclusive) */
   bool lower;           /**< this is the lower (vs upper) bound */
   uint8 spantype;       /**< span type */

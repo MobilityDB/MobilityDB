@@ -28,18 +28,12 @@
  *****************************************************************************/
 
 /**
- * @file time_spgist.h
+ * @file span_spgist.h
  * Quad-tree SP-GiST index for time types.
  */
 
 #ifndef __SPAN_SPGIST_H__
 #define __SPAN_SPGIST_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/span.h"
 
 /*****************************************************************************/
 

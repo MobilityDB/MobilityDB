@@ -38,6 +38,7 @@
 #include "general/time_selfuncs.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <math.h>
 #include <port.h>
@@ -811,8 +812,8 @@ time_const_to_period(Node *other, Period *period)
   else if (timetype == T_TIMESTAMPSET)
   {
     /* The right argument is a TimestampSet constant. We convert it into
-     * a period, which is its bounding box. */
-    p = timestampset_bbox_ptr(
+     * its bounding period. */
+    p = timestampset_period_ptr(
       DatumGetTimestampSetP(((Const *) other)->constvalue));
     memcpy(period, p, sizeof(Period));
   }
@@ -825,8 +826,8 @@ time_const_to_period(Node *other, Period *period)
   else /* timetype == T_PERIODSET */
   {
     /* The right argument is a PeriodSet constant. We convert it into
-     * a period, which is its bounding box. */
-    p = periodset_bbox_ptr(
+     * its bounding period. */
+    p = periodset_period_ptr(
       DatumGetPeriodSetP(((Const *) other)->constvalue));
     memcpy(period, p, sizeof(Period));
   }

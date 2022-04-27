@@ -38,11 +38,11 @@
 #include "general/span_spgist.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <access/spgist.h>
 /* MobilityDB */
 #include "general/span_ops.h"
-#include "general/span.h"
 #include "general/span_gist.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"

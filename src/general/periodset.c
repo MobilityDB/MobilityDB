@@ -64,38 +64,9 @@ periodset_per_n(const PeriodSet *ps, int index)
  * Return a pointer to the precomputed bounding box of the period set value
  */
 const Period *
-periodset_bbox_ptr(const PeriodSet *ps)
+periodset_period_ptr(const PeriodSet *ps)
 {
   return (Period *) &ps->period;
-}
-
-/**
- * Copy in the second argument the bounding box of the timestamp set value
- */
-void
-periodset_bbox(const PeriodSet *ps, Period *p)
-{
-  const Period *p1 = (Period *) &ps->period;
-  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
-  return;
-}
-
-/**
- * Peak into a period set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-periodset_bbox_slice(Datum psdatum, Period *p)
-{
-  PeriodSet *ps = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
-    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
-      time_max_header_size());
-  else
-    ps = (PeriodSet *) psdatum;
-  periodset_bbox(ps, p);
-  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
-  return;
 }
 
 /**
@@ -348,17 +319,16 @@ period_periodset(const Period *period)
 
 /**
  * @ingroup libmeos_time_cast
- * @brief Return the bounding period of the period set value.
+ * @brief Copy in the second argument the bounding period of the period set value
  */
 void
 periodset_period(const PeriodSet *ps, Period *p)
 {
-  const Period *start = periodset_per_n(ps, 0);
-  const Period *end = periodset_per_n(ps, ps->count - 1);
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(p, 0, sizeof(Period));
-  period_set(start->lower, end->upper, start->lower_inc, end->upper_inc, p);
+  const Period *p1 = (Period *) &ps->period;
+  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
+  return;
 }
+
 
 /*****************************************************************************
  * Accessor functions
@@ -938,6 +908,24 @@ Period_to_periodset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Peak into a period set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+periodset_period_slice(Datum psdatum, Period *p)
+{
+  PeriodSet *ps = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
+    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+      time_max_header_size());
+  else
+    ps = (PeriodSet *) psdatum;
+  periodset_period(ps, p);
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(Periodset_to_period);
 /**
  * Return the bounding period on which the period set value is defined
@@ -947,7 +935,7 @@ Periodset_to_period(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = palloc(sizeof(Period));
-  periodset_bbox_slice(psdatum, result);
+  periodset_period_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 

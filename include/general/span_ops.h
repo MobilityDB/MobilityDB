@@ -35,13 +35,9 @@
 #ifndef __SPAN_OPS_H__
 #define __SPAN_OPS_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/span.h"
-#include "general/timetypes.h"
 
 /*****************************************************************************/
 

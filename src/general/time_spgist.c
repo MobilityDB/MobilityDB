@@ -38,6 +38,7 @@
 #include "general/time_spgist.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <access/spgist.h>
 #include <utils/timestamp.h>
@@ -254,7 +255,7 @@ time_spgist_get_period(const ScanKeyData *scankey, Period *result)
   }
   else if (type == T_TIMESTAMPSET)
   {
-    timestampset_bbox_slice(scankey->sk_argument, result);
+    timestampset_period_slice(scankey->sk_argument, result);
   }
   else if (type == T_PERIOD)
   {
@@ -263,7 +264,7 @@ time_spgist_get_period(const ScanKeyData *scankey, Period *result)
   }
   else if (type == T_PERIODSET)
   {
-    periodset_bbox_slice(scankey->sk_argument, result);
+    periodset_period_slice(scankey->sk_argument, result);
   }
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(type))
@@ -634,7 +635,7 @@ Timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  timestampset_bbox_slice(tsdatum, result);
+  timestampset_period_slice(tsdatum, result);
   PG_RETURN_PERIOD_P(result);
 }
 
@@ -647,7 +648,7 @@ Periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  periodset_bbox_slice(psdatum, result);
+  periodset_period_slice(psdatum, result);
   PG_RETURN_PERIOD_P(result);
 }
 

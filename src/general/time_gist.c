@@ -160,7 +160,7 @@ time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid typid)
   else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
-    timestampset_bbox_slice(tsdatum, result);
+    timestampset_period_slice(tsdatum, result);
   }
   else if (type == T_PERIOD)
   {
@@ -172,7 +172,7 @@ time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid typid)
   else if (type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
-    periodset_bbox_slice(psdatum, result);
+    periodset_period_slice(psdatum, result);
   }
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(type))
@@ -254,7 +254,7 @@ Timestampset_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
     Period *period = (Period *) palloc(sizeof(Period));
-    timestampset_bbox_slice(entry->key, period);
+    timestampset_period_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -292,7 +292,7 @@ Periodset_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
     Period *period = (Period *) palloc(sizeof(Period));
-    periodset_bbox_slice(entry->key, period);
+    periodset_period_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period),
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);

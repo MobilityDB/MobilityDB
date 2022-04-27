@@ -1705,7 +1705,7 @@ tsequence_values(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the span of base values of the temporal float.
+ * @brief Return the float span of the temporal float.
  */
 Span *
 tfloatseq_span(const TSequence *seq)
@@ -1717,11 +1717,15 @@ tfloatseq_span(const TSequence *seq)
   if(! MOBDB_FLAGS_GET_LINEAR(seq->flags) || box->xmin == box->xmax)
     return span_make(min, max, true, true, T_FLOAT8);
 
-  Datum start = tinstant_value(tsequence_inst_n(seq, 0));
-  Datum end = tinstant_value(tsequence_inst_n(seq, seq->count - 1));
-  Datum lower, upper;
+  /* For sequences with linear interpolation the bounds of the span are
+   * those in the bounding box but we need to determine whether the bounds
+   * are inclusive or not */
+  double start = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, 0)));
+  double end = DatumGetFloat8(tinstant_value(
+    tsequence_inst_n(seq, seq->count - 1)));
+  double lower, upper;
   bool lower_inc, upper_inc;
-  if (DatumGetFloat8(start) < DatumGetFloat8(end))
+  if (start < end)
   {
     lower = start; lower_inc = seq->period.lower_inc;
     upper = end; upper_inc = seq->period.upper_inc;
@@ -1731,19 +1735,16 @@ tfloatseq_span(const TSequence *seq)
     lower = end; lower_inc = seq->period.upper_inc;
     upper = start; upper_inc = seq->period.lower_inc;
   }
-  bool min_inc = DatumGetFloat8(min) < DatumGetFloat8(lower) ||
-    (DatumGetFloat8(min) == DatumGetFloat8(lower) && lower_inc);
-  bool max_inc = DatumGetFloat8(max) > DatumGetFloat8(upper) ||
-    (DatumGetFloat8(max) == DatumGetFloat8(upper) && upper_inc);
+  bool min_inc = box->xmin < lower || (box->xmin == lower && lower_inc);
+  bool max_inc = box->xmax > upper || (box->xmax == upper && upper_inc);
+  /* Determine whether the minimum and/or maximum appear inside the sequence */
   if (! min_inc || ! max_inc)
   {
     for (int i = 1; i < seq->count - 1; i++)
     {
-      const TInstant *inst = tsequence_inst_n(seq, i);
-      if (min_inc || DatumGetFloat8(min) == DatumGetFloat8(tinstant_value(inst)))
-        min_inc = true;
-      if (max_inc || DatumGetFloat8(max) == DatumGetFloat8(tinstant_value(inst)))
-        max_inc = true;
+      double value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, i)));
+      min_inc |= (box->xmin == value);
+      max_inc |= (box->xmax == value);
       if (min_inc && max_inc)
         break;
     }
@@ -1752,8 +1753,7 @@ tfloatseq_span(const TSequence *seq)
 }
 
 /**
- * Return the spans of base values of the temporal float
- * with stepwise interpolation
+ * Return the float spans of the temporal float
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * spans are stored
@@ -3499,7 +3499,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   }
 
   /* Bounding box test */
-  const Period *p = timestampset_bbox_ptr(ts);
+  const Period *p = timestampset_period_ptr(ts);
   if (! overlaps_period_period(&seq->period, p))
     return NULL;
 
@@ -3550,7 +3550,7 @@ tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
       result);
 
   /* Bounding box test */
-  const Period *p = timestampset_bbox_ptr(ts);
+  const Period *p = timestampset_period_ptr(ts);
   if (! overlaps_period_period(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
@@ -3813,7 +3813,7 @@ tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
   }
 
   /* Bounding box test */
-  const Period *p = periodset_bbox_ptr(ps);
+  const Period *p = periodset_period_ptr(ps);
   if (! overlaps_period_period(&seq->period, p))
     return 0;
 
@@ -3912,7 +3912,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   bool atfunc)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox_ptr(ps);
+  const Period *p = periodset_period_ptr(ps);
   if (! overlaps_period_period(&seq->period, p))
     return atfunc ? NULL : tsequence_tsequenceset(seq);
 
