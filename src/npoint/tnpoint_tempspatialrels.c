@@ -40,6 +40,7 @@
 
 /* MobilityDB */
 #include "general/temporal_util.h"
+#include "point/postgis.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 #include "npoint/tnpoint_spatialfuncs.h"

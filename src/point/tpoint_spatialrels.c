@@ -49,6 +49,7 @@
 /* PostgreSQL */
 #include <assert.h>
 /* MobilityDB */
+#include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

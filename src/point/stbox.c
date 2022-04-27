@@ -44,6 +44,7 @@
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"

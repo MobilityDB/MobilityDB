@@ -3268,8 +3268,10 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   /* Now check for the type */
   for (i = 0; i < TEMPSUBTYPE_STRUCT_ARRAY_LEN; i++)
   {
-    if (len == strnlen(tempsubtype_struct_array[i].subtypeName, TEMPSUBTYPE_MAX_LEN) &&
-      !strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName, TEMPSUBTYPE_MAX_LEN))
+    if (len == strnlen(tempsubtype_struct_array[i].subtypeName,
+        TEMPSUBTYPE_MAX_LEN) &&
+      ! strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName,
+        TEMPSUBTYPE_MAX_LEN))
     {
       *subtype = tempsubtype_struct_array[i].subtype;
       pfree(tmpstr);

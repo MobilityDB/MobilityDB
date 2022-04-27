@@ -37,7 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 /* JSON-C */
 #include <json-c/json.h>
 /* MobilityDB */

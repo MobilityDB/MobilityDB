@@ -50,6 +50,7 @@
 #include <measures3d.h>
 #endif
 /* MobilityDB */
+#include "general/lifting.h"
 #include "general/period.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"

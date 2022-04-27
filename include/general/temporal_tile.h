@@ -30,9 +30,6 @@
 #ifndef __TEMPORAL_TILE_H__
 #define __TEMPORAL_TILE_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <fmgr.h>
 /* MobilityDB */
 #include "general/temporal.h"
 

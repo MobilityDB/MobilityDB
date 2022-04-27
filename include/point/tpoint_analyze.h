@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 #include <commands/vacuum.h>
 /* PostGIS */
 #include <liblwgeom.h>

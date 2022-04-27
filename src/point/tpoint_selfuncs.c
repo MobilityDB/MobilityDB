@@ -45,6 +45,7 @@
 #include "general/time_selfuncs.h"
 #include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
+#include "point/postgis.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_analyze.h"

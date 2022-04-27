@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <assert.h>
+#include <math.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */

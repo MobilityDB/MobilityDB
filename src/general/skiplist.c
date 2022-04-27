@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <assert.h>
+#include <math.h>
 #include <executor/spi.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>

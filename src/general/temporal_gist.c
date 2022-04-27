@@ -36,6 +36,7 @@
 #include "general/temporal_gist.h"
 
 /* PostgreSQL */
+#include <access/stratnum.h>
 #include <access/gist.h>
 /* MobilityDB */
 #include "general/timetypes.h"

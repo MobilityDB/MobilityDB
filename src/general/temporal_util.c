@@ -37,11 +37,12 @@
 /* PostgreSQL */
 #include <assert.h>
 #include <catalog/pg_collation.h>
-#include <fmgr.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
-#include <utils/timestamp.h>
 #include <utils/varlena.h>
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+#include <utils/float.h>
+#endif
 /* MobilityDB */
 #include "general/period.h"
 #include "general/temporaltypes.h"

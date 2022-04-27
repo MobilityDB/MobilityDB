@@ -35,9 +35,6 @@
 #ifndef __TEMPORAL_PARSER_H__
 #define __TEMPORAL_PARSER_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/timetypes.h"

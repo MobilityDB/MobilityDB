@@ -42,8 +42,6 @@
 #define __TIMETYPES_H__
 
 /* PostgreSQL */
-#include <postgres.h>
-#include <access/stratnum.h>
 #include <utils/timestamp.h>
 
 /*****************************************************************************/

@@ -37,7 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
 

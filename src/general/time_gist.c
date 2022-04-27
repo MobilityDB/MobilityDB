@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <assert.h>
 #include <access/gist.h>
+#include <access/stratnum.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/timetypes.h"

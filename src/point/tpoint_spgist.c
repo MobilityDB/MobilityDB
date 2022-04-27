@@ -96,6 +96,7 @@
 #include "point/tpoint_spgist.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <float.h>
 #include <access/spgist.h>
@@ -106,6 +107,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/temporal.h"
 #include "general/period.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"

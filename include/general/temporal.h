@@ -37,7 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
@@ -377,6 +376,16 @@ typedef struct
   double    c;
   double    d;
 } double4;
+
+/**
+ * Structure to represent the span and the period type which are both of the
+ * same length
+ */
+typedef union spanperiod
+{
+  Span      s;
+  Period    p;
+} spanperiod;
 
 /*****************************************************************************
  * Miscellaneous

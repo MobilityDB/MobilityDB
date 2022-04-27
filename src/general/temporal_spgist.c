@@ -40,10 +40,9 @@
 #include <postgres.h>
 #include <assert.h>
 #include <access/spgist.h>
-#include <catalog/pg_type.h>
-#include <utils/builtins.h>
 /* MobilityDB */
 #include "general/timetypes.h"
+#include "general/temporal.h"
 #include "general/tempcache.h"
 #include "general/period.h"
 #include "general/time_gist.h"

@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/array.h>
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/span.h"

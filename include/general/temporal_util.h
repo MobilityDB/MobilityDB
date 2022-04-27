@@ -37,16 +37,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
-#endif
 /* PostgreSQL */
 #include "general/temporal.h"
 #include "general/span.h"
-#include "point/postgis.h"
 
 /*****************************************************************************/
 

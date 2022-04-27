@@ -35,8 +35,8 @@
 #include "general/temporal_waggfuncs.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/builtins.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"

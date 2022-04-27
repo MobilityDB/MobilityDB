@@ -38,6 +38,7 @@
 #include "point/tpoint_datagen.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <access/htup_details.h>
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */

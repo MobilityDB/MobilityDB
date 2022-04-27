@@ -42,6 +42,7 @@
 #include "npoint/tnpoint_spatialrels.h"
 
 /* MobilityDB */
+#include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 #include "npoint/tnpoint_spatialfuncs.h"
