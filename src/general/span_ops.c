@@ -114,6 +114,7 @@ contains_span_elem(const Span *s, Datum d, CachedType basetype)
 bool
 contains_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int c1 = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
   int c2 = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
   if (
@@ -157,6 +158,7 @@ contained_span_span(const Span *s1, const Span *s2)
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int c1 = datum_cmp2(s1->lower, s2->upper, s1->basetype, s2->basetype);
   int c2 = datum_cmp2(s2->lower, s1->upper, s2->basetype, s1->basetype);
   if (
@@ -206,8 +208,12 @@ adjacent_span_span(const Span *s1, const Span *s2)
    * Two spans A..B and C..D are adjacent if and only if
    * B is adjacent to C, or D is adjacent to A.
    */
-  return (s1->upper == s2->lower && s1->upper_inc != s2->lower_inc) ||
-       (s2->upper == s1->lower && s2->upper_inc != s1->lower_inc);
+  assert(s1->spantype == s2->spantype);
+  return (
+    (datum_eq2(s1->upper, s2->lower, s1->basetype, s2->basetype) &&
+      s1->upper_inc != s2->lower_inc) ||
+    (datum_eq2(s2->upper, s1->lower, s2->basetype, s1->basetype) &&
+      s2->upper_inc != s1->lower_inc) );
 }
 
 /*****************************************************************************/
@@ -243,6 +249,7 @@ left_span_elem(const Span *s, Datum d, CachedType basetype)
 bool
 left_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp2(s1->upper, s2->lower, s1->basetype, s2->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
 }
@@ -280,6 +287,7 @@ right_span_elem(const Span *s, Datum d, CachedType basetype)
 bool
 right_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp2(s2->upper, s1->lower, s2->basetype, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s2->upper_inc || ! s1->lower_inc)));
 }
@@ -315,6 +323,7 @@ overleft_span_elem(const Span *s, Datum d, CachedType basetype)
 bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
 }
@@ -350,6 +359,7 @@ overright_span_elem(const Span *s, Datum d, CachedType basetype)
 bool
 overright_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp2(s2->lower, s1->lower, s1->basetype, s2->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
 }
@@ -508,8 +518,10 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
     return fabs(DatumGetFloat8(l) - (double) DatumGetInt32(r));
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+  /* Distance in seconds if the base type is TimestampTz */
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
-    return fabs((double)(DatumGetTimestampTz(l) - DatumGetTimestampTz(r)));
+    return (double) labs((DatumGetTimestampTz(l) - DatumGetTimestampTz(r))) /
+      USECS_PER_SEC;
   elog(ERROR, "unknown distance_elem_elem function for span base type: %d",
     typel);
 }
@@ -554,6 +566,8 @@ distance_span_elem(const Span *s, Datum d, CachedType basetype)
 double
 distance_span_span(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
+
   /* If the spans intersect return 0 */
   if (overlaps_span_span(s1, s2))
     return 0.0;
@@ -953,7 +967,7 @@ Distance_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_span_elem(s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }

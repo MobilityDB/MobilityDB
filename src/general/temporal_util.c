@@ -83,11 +83,13 @@ ensure_temporal_type(CachedType temptype)
 
 /**
  * Ensure that the base type is supported by MobilityDB
+ * @note We added the TimestampTz type to cope with base types for spans
  */
 void
 ensure_temporal_basetype(CachedType basetype)
 {
-  if (basetype != T_BOOL && basetype != T_INT4 &&
+  if (basetype != T_TIMESTAMPTZ &&
+    basetype != T_BOOL && basetype != T_INT4 &&
     basetype != T_FLOAT8 && basetype != T_TEXT &&
     basetype != T_DOUBLE2 && basetype != T_DOUBLE3 &&
     basetype != T_DOUBLE4 && basetype != T_GEOMETRY &&
@@ -403,7 +405,6 @@ datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
 
 /**
  * Return true if the two values are equal even if their type is not the same
- * (base type dispatch function)
  */
 bool
 datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -412,7 +413,8 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel != typer)
     ensure_temporal_basetype(typer);
   if ((typel == T_BOOL && typer == T_BOOL) ||
-    (typel == T_INT4 && typer == T_INT4))
+    (typel == T_INT4 && typer == T_INT4) ||
+    (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ))
     return l == r;
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
@@ -458,6 +460,8 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   ensure_temporal_basetype(typel);
   if (typel != typer)
     ensure_temporal_basetype(typer);
+  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+    return DatumGetTimestampTz(l) < DatumGetTimestampTz(r);
   if (typel == T_BOOL && typer == T_BOOL)
     return DatumGetBool(l) < DatumGetBool(r);
   if (typel == T_INT4 && typer == T_INT4)

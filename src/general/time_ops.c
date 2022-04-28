@@ -2832,263 +2832,6 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /******************************************************************************
- * Distance functions returning an Interval
- ******************************************************************************/
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  Interval *result;
-  if (t1 < t2)
-    result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(t2), TimestampTzGetDatum(t1)));
-  else
-    result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(t1), TimestampTzGetDatum(t2)));
-  return result;
-}
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
-{
-  Period p;
-  timestampset_period(ts, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  return result;
-}
-#endif
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestamp_period(TimestampTz t, const Period *p)
-{
-  Interval *result = distance_period_timestamp(p, t);
-  return result;
-}
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
-{
-  Period p;
-  periodset_period(ps, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  return result;
-}
-#endif
-
-/******************************************************************************/
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
-{
-  Period p;
-  timestampset_period(ts, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  Period p1, p2;
-  timestampset_period(ts1, &p1);
-  timestampset_period(ts2, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  Period p1;
-  timestampset_period(ts, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
-{
-  Period p1, p2;
-  timestampset_period(ts, &p1);
-  periodset_period(ps, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  return result;
-}
-#endif
-
-/******************************************************************************/
-
-/**
- * @ingroup libmeos_time_dist
- * Distance between a period and a timestamp
- */
-Interval *
-distance_period_timestamp(const Period *p, TimestampTz t)
-{
-  /* If the periods intersect return 0 */
-  if (contains_period_timestamp(p, t))
-    return palloc0(sizeof(Interval));
-
-  /* If the period is to the left of the timestamp return the distance
-   * between the upper bound of the period and the timestamp */
-  if (p->lower > t)
-    return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(p->lower), TimestampTzGetDatum(t)));
-
-  /* If the first period is to the right of the seconde return the distance
-   * between the upper bound of the second and lower bound of the first */
-    return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(t), TimestampTzGetDatum(p->upper)));
-}
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time valuess
- */
-Interval *
-distance_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  Period p1;
-  timestampset_period(ts, &p1);
-  Interval *result = distance_period_period(p, &p1);
-  return result;
-}
-#endif
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance between two periods.
- */
-Interval *
-distance_period_period(const Period *p1, const Period *p2)
-{
-  /* If the periods intersect return 0 */
-  if (overlaps_period_period(p1, p2))
-    return palloc0(sizeof(Interval));
-
-  /* If the first period is to the left of the second return the distance
-   * between the upper bound of the first and lower bound of the second */
-  if (p2->lower >= p1->upper)
-    return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(p2->lower), TimestampTzGetDatum(p1->upper)));
-
-  /* If the first period is to the right of the seconde return the distance
-   * between the upper bound of the second and lower bound of the first */
-    return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(p1->lower), TimestampTzGetDatum(p2->upper)));
-}
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  Period p1;
-  periodset_period(ps, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  return result;
-}
-#endif
-
-/******************************************************************************/
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
-{
-  Period p;
-  periodset_period(ps, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_periodset_timestampset(const PeriodSet *ps, TimestampSet *ts)
-{
-  Period p1, p2;
-  periodset_period(ps, &p1);
-  timestampset_period(ts, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values
- */
-Interval *
-distance_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  Period p1;
-  periodset_period(ps, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_dist
- * @brief Return the distance of the two time values.
- */
-Interval *
-distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  Period p1, p2;
-  periodset_period(ps1, &p1);
-  periodset_period(ps2, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  return result;
-}
-#endif
-
-/******************************************************************************
  * Distance functions returning a double representing the number of seconds
  ******************************************************************************/
 
@@ -3097,7 +2840,7 @@ distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
  * @brief Return the distance in seconds of the two time values
  */
 double
-distance_secs_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
+distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 {
   double result;
   if (t1 < t2)
@@ -3113,11 +2856,11 @@ distance_secs_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
  */
 #ifdef MEOS
 double
-distance_secs_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
   Period p;
   timestampset_period(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
+  double result = distance_period_timestamp(&p, t);
   return result;
 }
 #endif
@@ -3128,9 +2871,9 @@ distance_secs_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  */
 #ifdef MEOS
 double
-distance_secs_timestamp_period(TimestampTz t, const Period *p)
+distance_timestamp_period(TimestampTz t, const Period *p)
 {
-  return distance_secs_period_timestamp(p, t);
+  return distance_period_timestamp(p, t);
 }
 #endif
 
@@ -3140,11 +2883,11 @@ distance_secs_timestamp_period(TimestampTz t, const Period *p)
  */
 #ifdef MEOS
 double
-distance_secs_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
   Period p;
   periodset_period(ps, &p);
-  double result = distance_secs_period_timestamp(&p, t);
+  double result = distance_period_timestamp(&p, t);
   return result;
 }
 #endif
@@ -3157,11 +2900,11 @@ distance_secs_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
  */
 #ifdef MEOS
 double
-distance_secs_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   Period p;
   timestampset_period(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
+  double result = distance_period_timestamp(&p, t);
   return result;
 }
 #endif
@@ -3172,13 +2915,13 @@ distance_secs_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
  */
 #ifdef MEOS
 double
-distance_secs_timestampset_timestampset(const TimestampSet *ts1,
+distance_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   Period p1, p2;
   timestampset_period(ts1, &p1);
   timestampset_period(ts2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
+  double result = distance_period_period(&p1, &p2);
   return result;
 }
 #endif
@@ -3189,11 +2932,11 @@ distance_secs_timestampset_timestampset(const TimestampSet *ts1,
  */
 #ifdef MEOS
 double
-distance_secs_timestampset_period(const TimestampSet *ts, const Period *p)
+distance_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   Period p1;
   timestampset_period(ts, &p1);
-  double result = distance_secs_period_period(&p1, p);
+  double result = distance_period_period(&p1, p);
   return result;
 }
 #endif
@@ -3204,13 +2947,13 @@ distance_secs_timestampset_period(const TimestampSet *ts, const Period *p)
  */
 #ifdef MEOS
 double
-distance_secs_timestampset_periodset(const TimestampSet *ts,
+distance_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps)
 {
   Period p1, p2;
   timestampset_period(ts, &p1);
   periodset_period(ps, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
+  double result = distance_period_period(&p1, &p2);
   return result;
 }
 #endif
@@ -3222,7 +2965,7 @@ distance_secs_timestampset_periodset(const TimestampSet *ts,
  * @brief Return the distance in seconds between the period and the timestamp.
  */
 double
-distance_secs_period_timestamp(const Period *p, TimestampTz t)
+distance_period_timestamp(const Period *p, TimestampTz t)
 {
   /* If the periods intersect return 0 */
   if (contains_period_timestamp(p, t))
@@ -3244,9 +2987,9 @@ distance_secs_period_timestamp(const Period *p, TimestampTz t)
  */
 #ifdef MEOS
 double
-distance_secs_period_timestampset(const Period *p, const TimestampSet *ts)
+distance_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  return distance_secs_timestampset_period(ts, p);
+  return distance_timestampset_period(ts, p);
 }
 #endif
 
@@ -3255,7 +2998,7 @@ distance_secs_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return the distance in seconds between two periods.
  */
 double
-distance_secs_period_period(const Period *p1, const Period *p2)
+distance_period_period(const Period *p1, const Period *p2)
 {
   /* If the periods intersect return 0 */
   if (overlaps_period_period(p1, p2))
@@ -3277,11 +3020,11 @@ distance_secs_period_period(const Period *p1, const Period *p2)
  */
 #ifdef MEOS
 double
-distance_secs_period_periodset(const Period *p, const PeriodSet *ps)
+distance_period_periodset(const Period *p, const PeriodSet *ps)
 {
   Period p1;
   periodset_period(ps, &p1);
-  double result = distance_secs_period_period(&p1, p);
+  double result = distance_period_period(&p1, p);
   return result;
 }
 #endif
@@ -3294,9 +3037,9 @@ distance_secs_period_periodset(const Period *p, const PeriodSet *ps)
  */
 #ifdef MEOS
 double
-distance_secs_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  return distance_secs_timestamp_periodset(t, ps);
+  return distance_timestamp_periodset(t, ps);
 }
 #endif
 
@@ -3306,10 +3049,10 @@ distance_secs_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
  */
 #ifdef MEOS
 double
-distance_secs_periodset_timestampset(const PeriodSet *ps,
+distance_periodset_timestampset(const PeriodSet *ps,
   const TimestampSet *ts)
 {
-  return distance_secs_timestampset_periodset(ts, ps);
+  return distance_timestampset_periodset(ts, ps);
 }
 #endif
 
@@ -3319,9 +3062,9 @@ distance_secs_periodset_timestampset(const PeriodSet *ps,
  */
 #ifdef MEOS
 double
-distance_secs_periodset_period(const PeriodSet *ps, const Period *p)
+distance_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  return distance_secs_period_periodset(p, ps);
+  return distance_period_periodset(p, ps);
 }
 #endif
 
@@ -3331,12 +3074,12 @@ distance_secs_periodset_period(const PeriodSet *ps, const Period *p)
  */
 #ifdef MEOS
 double
-distance_secs_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
+distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   Period p1, p2;
   periodset_period(ps1, &p1);
   periodset_period(ps2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
+  double result = distance_period_period(&p1, &p2);
   return result;
 }
 #endif
@@ -5566,25 +5309,25 @@ Minus_periodset_periodset(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************
- * Distance functions returning an Interval
+ * Distance functions returning a double representing the number of seconds
  ******************************************************************************/
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestamp);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
   TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
   TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  Interval *result = distance_timestamp_timestamp(t1, t2);
-  PG_RETURN_POINTER(result);
+  double result = distance_timestamp_timestamp(t1, t2);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestampset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -5593,26 +5336,26 @@ Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(1);
   Period p;
   timestampset_period_slice(ts, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_timestamp(&p, t);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_period);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  Interval *result = distance_timestamp_period(t, p);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_timestamp(p, t);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_periodset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -5621,13 +5364,13 @@ Distance_timestamp_periodset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(1);
   Period p;
   periodset_period_slice(ps, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_timestamp(&p, t);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestamp);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -5636,13 +5379,13 @@ Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
   timestampset_period_slice(ts, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_timestamp(&p, t);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestampset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -5652,13 +5395,13 @@ Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
   Period p1, p2;
   timestampset_period_slice(ts1, &p1);
   timestampset_period_slice(ts2, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(&p1, &p2);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_period);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestampset_period(PG_FUNCTION_ARGS)
@@ -5667,13 +5410,13 @@ Distance_timestampset_period(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
   timestampset_period_slice(ts, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(&p1, p);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_periodset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -5683,26 +5426,26 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
   Period p1, p2;
   timestampset_period_slice(ts, &p1);
   periodset_period_slice(ps, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(&p1, &p2);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_period_timestamp);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_period_timestamp(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Interval *result = distance_period_timestamp(p, t);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_timestamp(p, t);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_period_timestampset);
 /**
- * Return the distance of the two time valuess
+ * Return the distance in seconds of the two time valuess
  */
 PGDLLEXPORT Datum
 Distance_period_timestampset(PG_FUNCTION_ARGS)
@@ -5711,26 +5454,26 @@ Distance_period_timestampset(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(1);
   Period p1;
   timestampset_period_slice(ts, &p1);
-  Interval *result = distance_period_period(p, &p1);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(p, &p1);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_period_period);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  Interval *result = distance_period_period(p1, p2);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(p1, p2);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_period_periodset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_period_periodset(PG_FUNCTION_ARGS)
@@ -5739,13 +5482,13 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(1);
   Period p1;
   periodset_period_slice(ps, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(&p1, p);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestamp);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -5754,13 +5497,13 @@ Distance_periodset_timestamp(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
   periodset_period_slice(ps, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_timestamp(&p, t);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestampset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -5770,13 +5513,13 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
   Period p1, p2;
   periodset_period_slice(ps, &p1);
   timestampset_period_slice(ts, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(&p1, &p2);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_periodset_period);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_periodset_period(PG_FUNCTION_ARGS)
@@ -5785,13 +5528,13 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
   periodset_period_slice(ps, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  PG_RETURN_POINTER(result);
+  double result = distance_period_period(&p1, p);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Distance_periodset_periodset);
 /**
- * Return the distance of the two time values
+ * Return the distance in seconds of the two time values
  */
 PGDLLEXPORT Datum
 Distance_periodset_periodset(PG_FUNCTION_ARGS)
@@ -5801,247 +5544,7 @@ Distance_periodset_periodset(PG_FUNCTION_ARGS)
   Period p1, p2;
   periodset_period_slice(ps1, &p1);
   periodset_period_slice(ps2, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
-}
-
-/******************************************************************************
- * Distance functions returning a double representing the number of seconds
- ******************************************************************************/
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  double result = distance_secs_timestamp_timestamp(t1, t2);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_timestampset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p;
-  timestampset_period_slice(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  double result = distance_secs_period_timestamp(p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p;
-  periodset_period_slice(ps, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p;
-  timestampset_period_slice(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_timestampset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  Datum ts1 = PG_GETARG_DATUM(0);
-  Datum ts2 = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  timestampset_period_slice(ts1, &p1);
-  timestampset_period_slice(ts2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_period(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  timestampset_period_slice(ts, &p1);
-  double result = distance_secs_period_period(&p1, p);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  timestampset_period_slice(ts, &p1);
-  periodset_period_slice(ps, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  double result = distance_secs_period_timestamp(p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_timestampset);
-/**
- * Return the distance in seconds of the two time valuess
- */
-PGDLLEXPORT Datum
-Distance_secs_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p1;
-  timestampset_period_slice(ts, &p1);
-  double result = distance_secs_period_period(p, &p1);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  double result = distance_secs_period_period(p1, p2);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p1;
-  periodset_period_slice(ps, &p1);
-  double result = distance_secs_period_period(&p1, p);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p;
-  periodset_period_slice(ps, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_timestampset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  periodset_period_slice(ps, &p1);
-  timestampset_period_slice(ts, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_period(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  periodset_period_slice(ps, &p1);
-  double result = distance_secs_period_period(&p1, p);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  Datum ps1 = PG_GETARG_DATUM(0);
-  Datum ps2 = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  periodset_period_slice(ps1, &p1);
-  periodset_period_slice(ps2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
+  double result = distance_period_period(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
 

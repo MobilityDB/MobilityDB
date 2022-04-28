@@ -360,192 +360,96 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps * t2.ps IS N
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_timestamptz t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t <-> ts) FROM tbl_timestamptz, tbl_timestampset;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t <-> p) FROM tbl_timestamptz, tbl_period;
-   min    
-----------
- 00:46:00
+ min  
+------
+ 2760
 (1 row)
 
 SELECT MIN(t <-> ps) FROM tbl_timestamptz, tbl_periodset;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(ts <-> t) FROM tbl_timestampset, tbl_timestamptz;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t1.ts <-> t2.ts) FROM tbl_timestampset t1, tbl_timestampset t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(ts <-> p) FROM tbl_timestampset, tbl_period;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(ts <-> ps) FROM tbl_timestampset, tbl_periodset;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(p <-> t) FROM tbl_period, tbl_timestamptz;
-   min    
-----------
- 00:46:00
+ min  
+------
+ 2760
 (1 row)
 
 SELECT MIN(p <-> ts) FROM tbl_period, tbl_timestampset;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t1.p <-> t2.p) FROM tbl_period t1, tbl_period t2;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(p <-> ps) FROM tbl_period, tbl_periodset;
-   min    
-----------
- 00:35:00
+ min  
+------
+ 2100
 (1 row)
 
 SELECT MIN(ps <-> t) FROM tbl_periodset, tbl_timestamptz;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(ps <-> ts) FROM tbl_periodset, tbl_timestampset;
-   min    
-----------
- 00:00:00
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(ps <-> p) FROM tbl_periodset, tbl_period;
-   min    
-----------
- 00:35:00
+ min  
+------
+ 2100
 (1 row)
 
 SELECT MIN(t1.ps <-> t2.ps) FROM tbl_periodset t1, tbl_periodset t2;
-   min    
-----------
- 00:00:00
-(1 row)
-
-SELECT MIN(t1.t |=| t2.t) FROM tbl_timestamptz t1, tbl_timestamptz t2;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t |=| ts) FROM tbl_timestamptz, tbl_timestampset;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t |=| p) FROM tbl_timestamptz, tbl_period;
- min  
-------
- 2760
-(1 row)
-
-SELECT MIN(t |=| ps) FROM tbl_timestamptz, tbl_periodset;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(ts |=| t) FROM tbl_timestampset, tbl_timestamptz;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t1.ts |=| t2.ts) FROM tbl_timestampset t1, tbl_timestampset t2;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(ts |=| p) FROM tbl_timestampset, tbl_period;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(ts |=| ps) FROM tbl_timestampset, tbl_periodset;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(p |=| t) FROM tbl_period, tbl_timestamptz;
- min  
-------
- 2760
-(1 row)
-
-SELECT MIN(p |=| ts) FROM tbl_period, tbl_timestampset;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t1.p |=| t2.p) FROM tbl_period t1, tbl_period t2;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(p |=| ps) FROM tbl_period, tbl_periodset;
- min  
-------
- 2100
-(1 row)
-
-SELECT MIN(ps |=| t) FROM tbl_periodset, tbl_timestamptz;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(ps |=| ts) FROM tbl_periodset, tbl_timestampset;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(ps |=| p) FROM tbl_periodset, tbl_period;
- min  
-------
- 2100
-(1 row)
-
-SELECT MIN(t1.ps |=| t2.ps) FROM tbl_periodset t1, tbl_periodset t2;
  min 
 -----
    0

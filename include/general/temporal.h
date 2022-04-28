@@ -37,6 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
@@ -236,6 +237,11 @@ struct tempsubtype_struct
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3
+
+#if POSTGRESQL_VERSION_NUMBER < 120000
+extern int float8_cmp_internal(float8 a, float8 b);
+extern double get_float8_infinity(void);
+#endif
 
 /* Convenience macros for NaN-aware comparisons */
 #define FLOAT8_EQ(a,b)   (float8_cmp_internal(a, b) == 0)

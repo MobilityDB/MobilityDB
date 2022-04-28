@@ -612,7 +612,7 @@ Period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     {
       /* Cast the order by argument to a period and perform the test */
       time_spgist_get_period(&in->orderbys[i], &period);
-      distances[i] = distance_secs_period_period(&period, key);
+      distances[i] = distance_period_period(&period, key);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;

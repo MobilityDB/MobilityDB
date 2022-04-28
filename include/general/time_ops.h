@@ -334,75 +334,41 @@ extern PeriodSet *minus_periodset_period(const PeriodSet *ps, const Period *p);
 extern PeriodSet *minus_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
-/* Distance returning an Interval */
-
-extern Interval *distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
-extern Interval *distance_timestamp_timestampset(TimestampTz t,
-  const TimestampSet *ts);
-extern Interval *distance_timestamp_period(TimestampTz t, const Period *p);
-extern Interval *distance_timestamp_periodset(TimestampTz t,
-  const PeriodSet *ps);
-
-extern Interval *distance_timestampset_timestamp(const TimestampSet *ts,
-  TimestampTz t);
-extern Interval *distance_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2);
-extern Interval *distance_timestampset_period(const TimestampSet *ts,
-  const Period *p);
-extern Interval *distance_timestampset_periodset(const TimestampSet *ts,
-  const PeriodSet *ps);
-
-extern Interval *distance_period_timestamp(const Period *p, TimestampTz t);
-extern Interval *distance_period_timestampset(const Period *p,
-  const TimestampSet *ts);
-extern Interval *distance_period_period(const Period *p1, const Period *p2);
-extern Interval *distance_period_periodset(const Period *p,
-  const PeriodSet *ps);
-
-extern Interval *distance_periodset_timestamp(const PeriodSet *ps,
-  TimestampTz t);
-extern Interval *distance_periodset_timestampset(const PeriodSet *ps,
-  TimestampSet *ts);
-extern Interval *distance_periodset_period(const PeriodSet *ps,
-  const Period *p);
-extern Interval *distance_periodset_periodset(const PeriodSet *ps1,
-  const PeriodSet *ps2);
-
 /* Distance returning a float in seconds for use with indexes in
  * nearest neighbor searches */
 
-extern double distance_secs_timestamp_timestamp(TimestampTz t1,
+extern double distance_timestamp_timestamp(TimestampTz t1,
   TimestampTz t2);
-extern double distance_secs_timestamp_timestampset(TimestampTz t,
+extern double distance_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
-extern double distance_secs_timestamp_period(TimestampTz t, const Period *p);
-extern double distance_secs_timestamp_periodset(TimestampTz t,
+extern double distance_timestamp_period(TimestampTz t, const Period *p);
+extern double distance_timestamp_periodset(TimestampTz t,
   const PeriodSet *ps);
 
-extern double distance_secs_timestampset_timestamp(const TimestampSet *ts,
+extern double distance_timestampset_timestamp(const TimestampSet *ts,
   TimestampTz t);
-extern double distance_secs_timestampset_timestampset(const TimestampSet *ts1,
+extern double distance_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2);
-extern double distance_secs_timestampset_period(const TimestampSet *ts,
+extern double distance_timestampset_period(const TimestampSet *ts,
   const Period *p);
-extern double distance_secs_timestampset_periodset(const TimestampSet *ts,
+extern double distance_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps);
 
-extern double distance_secs_period_timestamp(const Period *p,
+extern double distance_period_timestamp(const Period *p,
   TimestampTz t);
-extern double distance_secs_period_timestampset(const Period *p,
+extern double distance_period_timestampset(const Period *p,
   const TimestampSet *ts);
-extern double distance_secs_period_period(const Period *p1, const Period *p2);
-extern double distance_secs_period_periodset(const Period *p,
+extern double distance_period_period(const Period *p1, const Period *p2);
+extern double distance_period_periodset(const Period *p,
   const PeriodSet *ps);
 
-extern double distance_secs_periodset_timestamp(const PeriodSet *ps,
+extern double distance_periodset_timestamp(const PeriodSet *ps,
   TimestampTz t);
-extern double distance_secs_periodset_timestampset(const PeriodSet *ps,
+extern double distance_periodset_timestampset(const PeriodSet *ps,
   const TimestampSet *ts);
-extern double distance_secs_periodset_period(const PeriodSet *ps,
+extern double distance_periodset_period(const PeriodSet *ps,
   const Period *p);
-extern double distance_secs_periodset_periodset(const PeriodSet *ps1,
+extern double distance_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
 /*****************************************************************************/
