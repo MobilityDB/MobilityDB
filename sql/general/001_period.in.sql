@@ -32,53 +32,53 @@
  * SQL definitions for timestamptz periods.
  */
 
-CREATE TYPE period;
+-- CREATE TYPE period;
 
-CREATE FUNCTION period_in(cstring)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_in'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_out(period)
-  RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Period_out'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_recv(internal)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_recv'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_send(period)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Period_send'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period_in(cstring)
+  -- RETURNS period
+  -- AS 'MODULE_PATHNAME', 'Period_in'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period_out(period)
+  -- RETURNS cstring
+  -- AS 'MODULE_PATHNAME', 'Period_out'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period_recv(internal)
+  -- RETURNS period
+  -- AS 'MODULE_PATHNAME', 'Period_recv'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period_send(period)
+  -- RETURNS bytea
+  -- AS 'MODULE_PATHNAME', 'Period_send'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION period_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Period_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period_analyze(internal)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'Period_analyze'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE TYPE period (
-  internallength = 24,
-  input = period_in,
-  output = period_out,
-  receive = period_recv,
-  send = period_send,
-  alignment = double,
-  analyze = period_analyze
-);
+-- CREATE TYPE period (
+  -- internallength = 24,
+  -- input = period_in,
+  -- output = period_out,
+  -- receive = period_recv,
+  -- send = period_send,
+  -- alignment = double,
+  -- analyze = period_analyze
+-- );
 
 /******************************************************************************
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION period(timestamptz, timestamptz)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_constructor2'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period(timestamptz, timestamptz)
+  -- RETURNS period
+  -- AS 'MODULE_PATHNAME', 'Period_constructor2'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_constructor4'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
+  -- RETURNS period
+  -- AS 'MODULE_PATHNAME', 'Period_constructor4'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Casting

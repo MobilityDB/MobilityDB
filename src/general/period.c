@@ -60,20 +60,20 @@ period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
 {
   if (lower)
   {
-    lower->t = p->lower;
+    lower->val = p->lower;
     lower->inclusive = p->lower_inc;
     lower->lower = true;
     /* Make the period bound value memory compatible with a span bound value */
-    lower->spantype = T_TSTZSPAN;
+    lower->spantype = T_PERIOD;
     lower->basetype = T_TIMESTAMPTZ;
   }
   if (upper)
   {
-    upper->t = p->upper;
+    upper->val = p->upper;
     upper->inclusive = p->upper_inc;
     upper->lower = false;
     /* Make the period bound value memory compatible with a span bound value */
-    upper->spantype = T_TSTZSPAN;
+    upper->spantype = T_PERIOD;
     upper->basetype = T_TIMESTAMPTZ;
   }
 }
@@ -105,7 +105,7 @@ period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2)
   int32 result;
 
   /* Compare the values */
-  result = timestamp_cmp_internal(b1->t, b2->t);
+  result = timestamp_cmp_internal((TimestampTz) b1->val, (TimestampTz) b2->val);
 
   /*
    * If the comparison is not equal and the bounds are both inclusive or
@@ -234,7 +234,7 @@ period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
   p->lower_inc = lower_inc;
   p->upper_inc = upper_inc;
   /* Make the period value memory compatible with a span value */
-  p->spantype = T_TSTZSPAN;
+  p->spantype = T_PERIOD;
   p->basetype = T_TIMESTAMPTZ;
 
 }

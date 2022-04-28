@@ -70,7 +70,6 @@ typedef enum
   T_TEXT,
   T_TFLOAT,
   T_TIMESTAMPSET,
-  T_TSTZSPAN,
   T_TIMESTAMPTZ,
   T_TINT,
   T_TSTZRANGE,

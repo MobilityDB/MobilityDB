@@ -38,19 +38,19 @@ CREATE FUNCTION period_spgist_config(internal, internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_quadtree_choose(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME', 'Period_quadtree_choose'
+  AS 'MODULE_PATHNAME', 'Span_quadtree_choose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_quadtree_picksplit(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME', 'Period_quadtree_picksplit'
+  AS 'MODULE_PATHNAME', 'Span_quadtree_picksplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_quadtree_inner_consistent(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME', 'Period_quadtree_inner_consistent'
+  AS 'MODULE_PATHNAME', 'Span_quadtree_inner_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_spgist_leaf_consistent(internal, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_spgist_leaf_consistent'
+  AS 'MODULE_PATHNAME', 'Span_spgist_leaf_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_spgist_compress(internal)
   RETURNS internal

@@ -198,12 +198,12 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
       *loc = middle;
       return true;
     }
-    if (t <= p->lower)
+    if (t <= (TimestampTz) p->lower)
       last = middle - 1;
     else
       first = middle + 1;
   }
-  if (t >= p->upper)
+  if (t >= (TimestampTz) p->upper)
     middle++;
   *loc = middle;
   return false;
@@ -565,9 +565,9 @@ periodset_timestamps(const PeriodSet *ps, int *count)
   for (int i = 1; i < ps->count; i++)
   {
     p = periodset_per_n(ps, i);
-    if (result[k - 1] != p->lower)
+    if (result[k - 1] != (TimestampTz) p->lower)
       result[k++] = p->lower;
-    if (result[k - 1] != p->upper)
+    if (result[k - 1] != (TimestampTz) p->upper)
       result[k++] = p->upper;
   }
   *count = k;

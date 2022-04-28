@@ -408,12 +408,12 @@ tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t, int *loc)
       *loc = middle;
       return true;
     }
-    if (t <= seq->period.lower)
+    if (t <= (TimestampTz) seq->period.lower)
       last = middle - 1;
     else
       first = middle + 1;
   }
-  if (t >= seq->period.upper)
+  if (t >= (TimestampTz) seq->period.upper)
     middle++;
   *loc = middle;
   return false;
@@ -1965,7 +1965,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
     {
       seq = tsequenceset_seq_n(ts, i);
       k += tsequence_minus_timestamp1(seq, t, &sequences[k]);
-      if (t < seq->period.upper)
+      if (t < (TimestampTz) seq->period.upper)
       {
         i++;
         break;
@@ -2035,9 +2035,9 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
       }
       else
       {
-        if (t <= seq->period.lower)
+        if (t <= (TimestampTz) seq->period.lower)
           i++;
-        if (t >= seq->period.upper)
+        if (t >= (TimestampTz) seq->period.upper)
           j++;
       }
     }

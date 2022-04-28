@@ -83,7 +83,7 @@ ensure_temporal_type(CachedType temptype)
 
 /**
  * Ensure that the base type is supported by MobilityDB
- * @note We added the TimestampTz type to cope with base types for spans
+ * @note The TimestampTz type is added to cope with base types for spans
  */
 void
 ensure_temporal_basetype(CachedType basetype)
@@ -388,6 +388,9 @@ datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
   ensure_span_basetype(typel);
   if (typel != typer)
     ensure_span_basetype(typer);
+  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+    return timestamp_cmp_internal(DatumGetTimestampTz(l),
+      DatumGetTimestampTz(r));
   if (typel == T_INT4 && typer == T_INT4)
     return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
       ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
@@ -397,9 +400,6 @@ datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
-    return timestamp_cmp_internal(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r));
   elog(ERROR, "unknown span_elem_cmp function for span base type: %d", typel);
 }
 
@@ -412,9 +412,9 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
   ensure_temporal_basetype(typel);
   if (typel != typer)
     ensure_temporal_basetype(typer);
-  if ((typel == T_BOOL && typer == T_BOOL) ||
-    (typel == T_INT4 && typer == T_INT4) ||
-    (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ))
+  if ((typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ) ||
+    (typel == T_BOOL && typer == T_BOOL) ||
+    (typel == T_INT4 && typer == T_INT4))
     return l == r;
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));

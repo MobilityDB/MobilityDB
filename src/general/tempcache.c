@@ -94,7 +94,7 @@ spantype_cache_struct _spantype_cache[] =
   /* spantype       basetype       basecont */
   {T_INTSPAN,       T_INT4,        false},
   {T_FLOATSPAN,     T_FLOAT8,      true},
-  {T_TSTZSPAN,      T_TIMESTAMPTZ, false},
+  {T_PERIOD,        T_TIMESTAMPTZ, false},
 };
 
 /*****************************************************************************
@@ -229,7 +229,6 @@ const char *_type_names[] =
   [T_TEXT] = "text",
   [T_TFLOAT] = "tfloat",
   [T_TIMESTAMPSET] = "timestampset",
-  [T_TSTZSPAN] = "tstzspan",
   [T_TIMESTAMPTZ] = "timestamptz",
   [T_TINT] = "tint",
   [T_TSTZRANGE] = "tstzrange",

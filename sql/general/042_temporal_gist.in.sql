@@ -63,7 +63,7 @@ CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
 
 CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbool_gist_compress(internal)
   RETURNS internal
@@ -90,7 +90,7 @@ CREATE FUNCTION tfloat_gist_compress(internal)
 
 CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_gist_compress(internal)
   RETURNS internal

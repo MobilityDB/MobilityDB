@@ -42,6 +42,8 @@
 /* MobilityDB */
 #include "general/span.h"
 #include "general/span_ops.h"
+#include "general/timestampset.h"
+#include "general/periodset.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 
@@ -159,6 +161,35 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
       PG_RETURN_BOOL(false);
     memcpy(result, p, sizeof(Span));
   }
+  else if (type == T_TIMESTAMPTZ)
+  {
+    /* Since function span_gist_consistent is strict, t is not NULL */
+    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    span_set(t, t, true, true, type, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_period_slice(tsdatum, result);
+  }
+  else if (type == T_PERIOD)
+  {
+    Period *p = PG_GETARG_PERIOD_P(1);
+    if (p == NULL)
+      PG_RETURN_BOOL(false);
+    memcpy(result, p, sizeof(Period));
+  }
+  else if (type == T_PERIODSET)
+  {
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_period_slice(psdatum, result);
+  }
+  /* For temporal types whose bounding box is a period */
+  else if (temporal_type(type))
+  {
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
+  }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
@@ -232,6 +263,48 @@ Span_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
     gistentryinit(*retval, entry->key, entry->rel, entry->page,
+      entry->offset, false);
+    PG_RETURN_POINTER(retval);
+  }
+  PG_RETURN_POINTER(entry);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Timestampset_gist_compress);
+/**
+ * GiST compress method for timestamp sets
+ */
+PGDLLEXPORT Datum
+Timestampset_gist_compress(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (entry->leafkey)
+  {
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    Period *period = (Period *) palloc(sizeof(Period));
+    timestampset_period_slice(entry->key, period);
+    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
+      entry->offset, false);
+    PG_RETURN_POINTER(retval);
+  }
+  PG_RETURN_POINTER(entry);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_gist_compress);
+/**
+ * GiST compress method for period sets
+ */
+PGDLLEXPORT Datum
+Periodset_gist_compress(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (entry->leafkey)
+  {
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    Period *period = (Period *) palloc(sizeof(Period));
+    periodset_period_slice(entry->key, period);
+    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
@@ -459,7 +532,7 @@ spanbounds_cmp_upper(const void *a, const void *b)
  * (We assume the deltas can't be NaN.)
  */
 int
-span_common_entry_cmp(const void *i1, const void *i2)
+common_entry_cmp(const void *i1, const void *i2)
 {
   double delta1 = ((CommonEntry *) i1)->delta;
   double delta2 = ((CommonEntry *) i2)->delta;
@@ -732,7 +805,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
      * the most ambiguous entries first.
      */
     qsort(common_entries, (size_t) common_entries_count, sizeof(CommonEntry),
-        span_common_entry_cmp);
+        common_entry_cmp);
 
     /*
      * Distribute "common entries" between groups according to sorting.

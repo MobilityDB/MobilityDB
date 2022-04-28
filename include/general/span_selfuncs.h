@@ -44,16 +44,6 @@
 /*****************************************************************************/
 
 /**
- * Structure to represent the span and the period type which are both of the
- * same length
- */
-typedef union SpanPeriod
-{
-  Span      s;
-  Period    p;
-} SpanPeriod;
-
-/**
  * Enumeration for using the same functions for computing selectivity of spans
  * and periods
  */

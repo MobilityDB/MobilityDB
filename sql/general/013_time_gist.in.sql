@@ -35,11 +35,11 @@
 CREATE FUNCTION timestampset_gist_consistent(internal, timestampset, smallint,
     oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gist_union(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_gist_union'
+  AS 'MODULE_PATHNAME', 'Span_gist_union'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_gist_compress(internal)
   RETURNS internal
@@ -47,19 +47,19 @@ CREATE FUNCTION timestampset_gist_compress(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gist_penalty(internal, internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_gist_penalty'
+  AS 'MODULE_PATHNAME', 'Span_gist_penalty'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gist_picksplit(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_gist_picksplit'
+  AS 'MODULE_PATHNAME', 'Span_gist_picksplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gist_same(period, period, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_gist_same'
+  AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gist_fetch(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_gist_fetch'
+  AS 'MODULE_PATHNAME', 'Span_gist_fetch'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS timestampset_rtree_ops
@@ -121,11 +121,11 @@ CREATE OPERATOR CLASS timestampset_rtree_ops
 
 CREATE FUNCTION period_gist_consistent(internal, period, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_gist_compress'
+  AS 'MODULE_PATHNAME', 'Span_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS period_rtree_ops
@@ -188,7 +188,7 @@ CREATE OPERATOR CLASS period_rtree_ops
 CREATE FUNCTION periodset_gist_consistent(internal, periodset, smallint, oid,
     internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_gist_compress(internal)
   RETURNS internal

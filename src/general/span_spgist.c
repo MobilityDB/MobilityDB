@@ -42,6 +42,8 @@
 #include <assert.h>
 #include <access/spgist.h>
 /* MobilityDB */
+#include "general/timestampset.h"
+#include "general/periodset.h"
 #include "general/span_ops.h"
 #include "general/span_gist.h"
 #include "general/temporal_util.h"
@@ -286,6 +288,22 @@ Floatspan_spgist_config(PG_FUNCTION_ARGS)
   cfg->prefixType = type_oid(T_FLOATSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels. */
   cfg->leafType = type_oid(T_FLOATSPAN);
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
+}
+
+PG_FUNCTION_INFO_V1(Period_spgist_config);
+/**
+ * SP-GiST config function for span types
+ */
+PGDLLEXPORT Datum
+Period_spgist_config(PG_FUNCTION_ARGS)
+{
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  cfg->prefixType = type_oid(T_PERIOD);  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = type_oid(T_PERIOD);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -623,5 +641,31 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * SP-GiST compress functions
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Timestampset_spgist_compress);
+/**
+ * SP-GiST compress function for timestamp sets
+ */
+PGDLLEXPORT Datum
+Timestampset_spgist_compress(PG_FUNCTION_ARGS)
+{
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  Period *result = (Period *) palloc(sizeof(Period));
+  timestampset_period_slice(tsdatum, result);
+  PG_RETURN_PERIOD_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_spgist_compress);
+/**
+ * SP-GiST compress function for period sets
+ */
+PGDLLEXPORT Datum
+Periodset_spgist_compress(PG_FUNCTION_ARGS)
+{
+  Datum psdatum = PG_GETARG_DATUM(0);
+  Period *result = (Period *) palloc(sizeof(Period));
+  periodset_period_slice(psdatum, result);
+  PG_RETURN_PERIOD_P(result);
+}
 
 /*****************************************************************************/

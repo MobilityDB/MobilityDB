@@ -9,10 +9,9 @@ if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
 endif()
 
 SET(LOCAL_FILES
-  001_period
+  001_span
   003_timestampset
   005_periodset
-  007_span
   011_time_ops
   012_span_ops
   013_time_gist

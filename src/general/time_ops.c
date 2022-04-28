@@ -229,7 +229,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
   int i = 0, j = 0, k = 0;
   while (i < ts->count && j < ps->count)
   {
-    if (t < p->lower)
+    if (t < (TimestampTz) p->lower)
     {
       if (setop == MINUS)
         times[k++] = t;
@@ -239,7 +239,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
       else
         t = timestampset_time_n(ts, i);
     }
-    else if (t > p->upper)
+    else if (t > (TimestampTz) p->upper)
     {
       j++;
       if (j == ps->count)
@@ -407,7 +407,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
       j++;
     else
     {
-      if (t > p->upper)
+      if (t > (TimestampTz) p->upper)
         i++;
       else
         return false;
@@ -666,7 +666,7 @@ overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
     const Period *p = periodset_per_n(ps, j);
     if (contains_period_timestamp(p, t))
       return true;
-    else if (t > p->upper)
+    else if (t > (TimestampTz) p->upper)
       j++;
     else
       i++;
@@ -794,8 +794,8 @@ adjacent_timestamp_period(TimestampTz t, const Period *p)
    * A timestamp A and a period C..D are adjacent if and only if
    * A is adjacent to C, or D is adjacent to A.
    */
-  return (t == p->lower && ! p->lower_inc) ||
-    (p->upper == t && ! p->upper_inc);
+  return (t == (TimestampTz) p->lower && ! p->lower_inc) ||
+    ((TimestampTz) p->upper == t && ! p->upper_inc);
 }
 
 /**
@@ -811,8 +811,8 @@ adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
    */
   const Period *p1 = periodset_per_n(ps, 0);
   const Period *p2 = periodset_per_n(ps, ps->count - 1);
-  return (t == p1->lower && ! p1->lower_inc) ||
-       (p2->upper == t && ! p2->upper_inc);
+  return (t == (TimestampTz) p1->lower && ! p1->lower_inc) ||
+       ((TimestampTz) p2->upper == t && ! p2->upper_inc);
 }
 
 /**
@@ -828,8 +828,8 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
    */
   TimestampTz t1 = timestampset_time_n(ts, 0);
   TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
-  return (t2 == p->lower && ! p->lower_inc) ||
-       (p->upper == t1 && ! p->upper_inc);
+  return (t2 == (TimestampTz) p->lower && ! p->lower_inc) ||
+         ((TimestampTz) p->upper == t1 && ! p->upper_inc);
 }
 
 /**
@@ -847,8 +847,8 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
   const Period *p1 = periodset_per_n(ps, 0);
   const Period *p2 = periodset_per_n(ps, ps->count - 1);
-  return (t2 == p1->lower && ! p1->lower_inc) ||
-       (p2->upper == t1 && ! p2->upper_inc);
+  return (t2 == (TimestampTz) p1->lower && ! p1->lower_inc) ||
+       ((TimestampTz) p2->upper == t1 && ! p2->upper_inc);
 }
 
 /**
@@ -1390,7 +1390,7 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 overbefore_period_timestamp(const Period *p, TimestampTz t)
 {
-  return p->upper <= t;
+  return (TimestampTz) p->upper <= t;
 }
 
 /**
@@ -1562,7 +1562,7 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 overafter_period_timestamp(const Period *p, TimestampTz t)
 {
-  return (t <= p->lower);
+  return (t <= (TimestampTz) p->lower);
 }
 
 /**
@@ -2147,10 +2147,10 @@ inter_period_period(const Period *p1, const Period *p2, Period *result)
 
   TimestampTz lower = Max(p1->lower, p2->lower);
   TimestampTz upper = Min(p1->upper, p2->upper);
-  bool lower_inc = p1->lower == p2->lower ? p1->lower_inc && p2->lower_inc :
-    ( lower == p1->lower ? p1->lower_inc : p2->lower_inc );
-  bool upper_inc = p1->upper == p2->upper ? p1->upper_inc && p2->upper_inc :
-    ( upper == p1->upper ? p1->upper_inc : p2->upper_inc );
+  bool lower_inc = (p1->lower == p2->lower) ? p1->lower_inc && p2->lower_inc :
+    ( lower == (TimestampTz) p1->lower ? p1->lower_inc : p2->lower_inc );
+  bool upper_inc = (p1->upper == p2->upper) ? p1->upper_inc && p2->upper_inc :
+    ( upper == (TimestampTz) p1->upper ? p1->upper_inc : p2->upper_inc );
   period_set(lower, upper, lower_inc, upper_inc, result);
   return true;
 }
@@ -2413,16 +2413,16 @@ minus_period_timestamp1(Period **result, const Period *p, TimestampTz t)
     return 1;
   }
 
-  if (p->lower == t && p->upper == t)
+  if ((TimestampTz) p->lower == t && (TimestampTz) p->upper == t)
     return 0;
 
-  if (p->lower == t)
+  if ((TimestampTz) p->lower == t)
   {
     result[0] = period_make(p->lower, p->upper, false, p->upper_inc);
     return 1;
   }
 
-  if (p->upper == t)
+  if ((TimestampTz) p->upper == t)
   {
     result[0] = period_make(p->lower, p->upper, p->lower_inc, false);
     return 1;
@@ -2663,7 +2663,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   TimestampTz t = timestampset_time_n(ts, 0);
   while (i < ps->count && j < ts->count)
   {
-    if (t > curr->upper)
+    if (t > (TimestampTz) curr->upper)
     {
       periods[k++] = curr;
       i++;
@@ -2672,7 +2672,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
       else
         curr = period_copy(periodset_per_n(ps, i));
     }
-    else if (t < curr->lower)
+    else if (t < (TimestampTz) curr->lower)
     {
       j++;
       if (j == ts->count)
@@ -2693,13 +2693,13 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
           else
             curr = period_copy(periodset_per_n(ps, i));
         }
-        else if (curr->lower == t)
+        else if ((TimestampTz) curr->lower == t)
         {
           Period *curr1 = period_make(curr->lower, curr->upper, false, curr->upper_inc);
           pfree(curr);
           curr = curr1;
         }
-        else if (curr->upper == t)
+        else if ((TimestampTz) curr->upper == t)
         {
           periods[k++] = period_make(curr->lower, curr->upper, curr->lower_inc, false);
           pfree(curr);
@@ -2719,7 +2719,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
       }
       else
       {
-        if (curr->upper == t)
+        if ((TimestampTz) curr->upper == t)
         {
           periods[k++] = curr;
           i++;
@@ -2973,7 +2973,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 
   /* If the period is to the left of the timestamp return the distance
    * between the upper bound of the period and the timestamp */
-  if (p->lower > t)
+  if ((TimestampTz) p->lower > t)
     return ((float8) p->lower - (float8) t) / USECS_PER_SEC;
 
   /* If the first period is to the right of the seconde return the distance

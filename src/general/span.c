@@ -113,8 +113,7 @@ span_serialize(SpanBound *lower, SpanBound *upper)
 bool
 span_type(CachedType spantype)
 {
-  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN ||
-      spantype == T_TSTZSPAN)
+  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN || spantype == T_PERIOD)
     return true;
   return false;
 }
@@ -935,8 +934,8 @@ PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  CachedType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  PG_RETURN_POINTER(span_read(buf, spantype));
+  Oid spantypid = PG_GETARG_OID(1);
+  PG_RETURN_POINTER(span_read(buf, oid_type(spantypid)));
 }
 
 /*****************************************************************************

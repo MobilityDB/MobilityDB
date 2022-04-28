@@ -43,35 +43,40 @@
 
 /* PostgreSQL */
 #include <utils/timestamp.h>
+/* MobilityDB */
+#include "general/span.h"
 
 /*****************************************************************************/
 
-/**
- * Structure to represent periods
- */
-typedef struct
-{
-  TimestampTz lower;    /**< lower bound value */
-  TimestampTz upper;    /**< upper bound value */
-  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
-  /* Make period values memory compatible with span values */
-  uint8 spantype;       /**< Span type */
-  uint8 basetype;       /**< Span subtype */
-} Period;
+// /**
+ // * Structure to represent periods
+ // */
+// typedef struct
+// {
+  // TimestampTz lower;    /**< lower bound value */
+  // TimestampTz upper;    /**< upper bound value */
+  // bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
+  // bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
+  // /* Make period values memory compatible with span values */
+  // uint8 spantype;       /**< Span type */
+  // uint8 basetype;       /**< Span subtype */
+// } Period;
 
-/**
- * Internal representation of either bound of a period (not what's on disk)
- */
-typedef struct
-{
-  TimestampTz t;        /**< bound value */
-  bool inclusive;       /**< bound is inclusive (vs exclusive) */
-  bool lower;           /**< this is the lower (vs upper) bound */
-  /* Make period values memory compatible with span values */
-  uint8 spantype;       /**< Span type */
-  uint8 basetype;       /**< Span subtype */
-} PeriodBound;
+// /**
+ // * Internal representation of either bound of a period (not what's on disk)
+ // */
+// typedef struct
+// {
+  // TimestampTz t;        /**< bound value */
+  // bool inclusive;       /**< bound is inclusive (vs exclusive) */
+  // bool lower;           /**< this is the lower (vs upper) bound */
+  // /* Make period values memory compatible with span values */
+  // uint8 spantype;       /**< Span type */
+  // uint8 basetype;       /**< Span subtype */
+// } PeriodBound;
+
+typedef Span Period;
+typedef SpanBound PeriodBound;
 
 /**
  * Structure to represent timestamp sets

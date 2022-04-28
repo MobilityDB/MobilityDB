@@ -422,44 +422,6 @@ Floatspan_analyze(PG_FUNCTION_ARGS)
  * @param[in] totalrows Total number of rows
  */
 static void
-tstzspan_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats(stats, fetchfunc, samplerows, T_TSTZSPAN);
-  return;
-}
-
-PG_FUNCTION_INFO_V1(Tstzspan_analyze);
-/**
- *  Compute statistics for float span columns
- */
-PGDLLEXPORT Datum
-Tstzspan_analyze(PG_FUNCTION_ARGS)
-{
-  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-  Form_pg_attribute attr = stats->attr;
-
-  if (attr->attstattarget < 0)
-    attr->attstattarget = default_statistics_target;
-
-  stats->compute_stats = tstzspan_compute_stats;
-  /* same as in std_typanalyze */
-  stats->minrows = 300 * attr->attstattarget;
-
-  PG_RETURN_BOOL(true);
-}
-
-/*****************************************************************************/
-
-/**
- * Compute statistics for period columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
@@ -469,7 +431,7 @@ period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 PG_FUNCTION_INFO_V1(Period_analyze);
 /**
- *  Compute statistics for period columns
+ *  Compute statistics for float span columns
  */
 PGDLLEXPORT Datum
 Period_analyze(PG_FUNCTION_ARGS)
@@ -486,6 +448,8 @@ Period_analyze(PG_FUNCTION_ARGS)
 
   PG_RETURN_BOOL(true);
 }
+
+/*****************************************************************************/
 
 /**
  * Compute statistics for timestampset columns (callback function)
