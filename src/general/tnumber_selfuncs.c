@@ -290,7 +290,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Period *period,
     /* Selectivity for the time dimension */
     if (period != NULL)
       /* Cast the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, SPANSEL);
+      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, PERIODSEL);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
@@ -305,7 +305,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Period *period,
     /* Selectivity for the value dimension */
     if (period != NULL)
       /* Cast the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, SPANSEL);
+      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, PERIODSEL);
   }
   else /* Unknown operator */
   {

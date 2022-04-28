@@ -698,7 +698,7 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
     if (spansel == SPANSEL)
       span_deserialize(DatumGetSpanP(hslot->values[i]),
         &hist_lower[i], &hist_upper[i]);
-    else /* spansel == PEIODSEL */
+    else /* spansel == PERIODSEL */
       period_deserialize(DatumGetPeriodP(hslot->values[i]),
         (PeriodBound *) &hist_lower[i], (PeriodBound *) &hist_upper[i]);
   }
@@ -734,16 +734,16 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
     selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == GE_OP)
     selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, true);
-  else if (cachedOp == BEFORE_OP)
+  else if (cachedOp == LEFT_OP || cachedOp == BEFORE_OP)
     /* var <<# const when upper(var) < lower(const)*/
     selec = span_sel_scalar(&const_lower, hist_upper, nhist, false);
-  else if (cachedOp == OVERBEFORE_OP)
+  else if (cachedOp == OVERLEFT_OP || cachedOp == OVERBEFORE_OP)
     /* var &<# const when upper(var) <= upper(const) */
     selec = span_sel_scalar(&const_upper, hist_upper, nhist, true);
-  else if (cachedOp == AFTER_OP)
+  else if (cachedOp == RIGHT_OP || cachedOp == AFTER_OP)
     /* var #>> const when lower(var) > upper(const) */
     selec = 1.0 - span_sel_scalar(&const_upper, hist_lower, nhist, true);
-  else if (cachedOp == OVERAFTER_OP)
+  else if (cachedOp == OVERRIGHT_OP || cachedOp == OVERAFTER_OP)
     /* var #&> const when lower(var) >= lower(const)*/
     selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == OVERLAPS_OP)
@@ -1045,7 +1045,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   Oid table_oid = PG_GETARG_OID(0);
   text *att_text = PG_GETARG_TEXT_P(1);
   Oid operid = PG_GETARG_OID(2);
-  Span *p = PG_GETARG_SPAN_P(3);
+  Period *p = PG_GETARG_PERIOD_P(3);
   float8 selec = 0.0;
 
   /* Test input parameters */
@@ -1068,7 +1068,8 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! span_cachedop(operid, &cachedOp))
+  bool found = time_cachedop(operid, &cachedOp);
+  if (! found)
     /* In case of unknown operator */
     elog(ERROR, "Unknown span operator %d", operid);
 
@@ -1082,7 +1083,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table_oid) ?
       get_rel_name(table_oid) : "NULL");
 
-  int stats_kind = STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM; // TODO
+  int stats_kind = STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM; // TODO
   if (! get_attstatsslot(&hslot, stats_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
@@ -1098,7 +1099,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   {
     memset(&lslot, 0, sizeof(lslot));
 
-   stats_kind = STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM; // TODO
+   stats_kind = STATISTIC_KIND_TIME_LENGTH_HISTOGRAM; // TODO
    if (!(HeapTupleIsValid(stats_tuple) &&
         get_attstatsslot(&lslot, stats_tuple, stats_kind, InvalidOid,
           ATTSTATSSLOT_VALUES)))
@@ -1115,7 +1116,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, p, cachedOp, T_FLOATSPAN); // TODO
+  selec = span_sel_hist1(&hslot, &lslot, (Span *) p, cachedOp,PERIODSEL); // TODO
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
@@ -1582,14 +1583,14 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! span_cachedop(operid, &cachedOp))
+  if (! time_cachedop(operid, &cachedOp))
     /* In case of unknown operator */
     elog(ERROR, "Unknown span operator %d", operid);
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
   AttStatsSlot hslot1, hslot2, lslot;
-  int stats_kind = STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM; // TODO
+  int stats_kind = STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM; // TODO
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
