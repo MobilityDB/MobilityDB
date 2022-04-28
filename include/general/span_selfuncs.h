@@ -43,13 +43,37 @@
 
 /*****************************************************************************/
 
-// extern float8 span_sel_default(CachedOp cachedOp);
-// extern float8 span_joinsel_default(CachedOp cachedOp);
+/**
+ * Structure to represent the span and the period type which are both of the
+ * same length
+ */
+typedef union SpanPeriod
+{
+  Span      s;
+  Period    p;
+} SpanPeriod;
+
+/**
+ * Enumeration for using the same functions for computing selectivity of spans
+ * and periods
+ */
+typedef enum
+{
+  SPANSEL,
+  PERIODSEL
+} SpanPeriodSel;
+
+/*****************************************************************************/
+
+extern float8 span_sel_default(CachedOp cachedOp);
+extern float8 span_joinsel_default(CachedOp cachedOp);
+
+extern void time_const_to_period(Node *other, Period *period);
 
 extern double span_sel_hist(VariableStatData *vardata, const Span *constval,
-  CachedOp cachedOp);
+  CachedOp cachedOp, SpanPeriodSel spansel);
 extern float8 span_sel(PlannerInfo *root, Oid operid, List *args,
-  int varRelid);
+  int varRelid, SpanPeriodSel spansel);
 
 extern float8 span_joinsel(PlannerInfo *root, CachedOp cachedOp,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo);

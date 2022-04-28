@@ -113,9 +113,8 @@ span_serialize(SpanBound *lower, SpanBound *upper)
 bool
 span_type(CachedType spantype)
 {
-  // if (spantype == T_INTSPAN || spantype == T_FLOATSPAN ||
-      // spantype == T_TIMESTAMPSPAN)
-  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN)
+  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN ||
+      spantype == T_TSTZSPAN)
     return true;
   return false;
 }
@@ -137,8 +136,7 @@ ensure_span_type(CachedType spantype)
 void
 ensure_span_basetype(CachedType basetype)
 {
-  // if (basetype != T_INT4 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ)
-  if (basetype != T_INT4 && basetype != T_FLOAT8)
+  if (basetype != T_INT4 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ)
     elog(ERROR, "unknown span base type: %d", basetype);
   return;
 }

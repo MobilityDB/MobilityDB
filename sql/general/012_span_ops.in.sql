@@ -49,13 +49,13 @@ CREATE OPERATOR @> (
   PROCEDURE = span_contains,
   LEFTARG = intspan, RIGHTARG = int,
   COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = span_contains,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_contains(floatspan, float)
@@ -71,13 +71,13 @@ CREATE OPERATOR @> (
   PROCEDURE = span_contains,
   LEFTARG = floatspan, RIGHTARG = float,
   COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = span_contains,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -95,13 +95,13 @@ CREATE OPERATOR <@ (
   PROCEDURE = span_contained,
   LEFTARG = int, RIGHTARG = intspan,
   COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = span_contained,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_contained(float, floatspan)
@@ -117,13 +117,13 @@ CREATE OPERATOR <@ (
   PROCEDURE = span_contained,
   LEFTARG = float, RIGHTARG = floatspan,
   COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = span_contained,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -141,13 +141,13 @@ CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -169,19 +169,19 @@ CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = int, RIGHTARG = intspan,
   COMMUTATOR = >>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = intspan, RIGHTARG = int,
   COMMUTATOR = >>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = >>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_left(float, floatspan)
@@ -201,19 +201,19 @@ CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = float, RIGHTARG = floatspan,
   COMMUTATOR = >>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = floatspan, RIGHTARG = float,
   COMMUTATOR = >>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = >>,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -235,19 +235,19 @@ CREATE OPERATOR >> (
   PROCEDURE = span_right,
   LEFTARG = int, RIGHTARG = intspan,
   COMMUTATOR = <<,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = span_right,
   LEFTARG = intspan, RIGHTARG = int,
   COMMUTATOR = <<,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = span_right,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = <<,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_right(float, floatspan)
@@ -267,19 +267,19 @@ CREATE OPERATOR >> (
   PROCEDURE = span_right,
   LEFTARG = float, RIGHTARG = floatspan,
   COMMUTATOR = <<,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = span_right,
   LEFTARG = floatspan, RIGHTARG = float,
   COMMUTATOR = <<,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = span_right,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = <<,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -300,17 +300,17 @@ CREATE FUNCTION span_overleft(intspan, intspan)
 CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = int, RIGHTARG = intspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = intspan, RIGHTARG = int,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = intspan, RIGHTARG = intspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_overleft(float, floatspan)
@@ -329,17 +329,17 @@ CREATE FUNCTION span_overleft(floatspan, floatspan)
 CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = float, RIGHTARG = floatspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = floatspan, RIGHTARG = float,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -360,17 +360,17 @@ CREATE FUNCTION span_overright(intspan, intspan)
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = int, RIGHTARG = intspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = intspan, RIGHTARG = int,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = intspan, RIGHTARG = intspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_overright(float, floatspan)
@@ -389,17 +389,17 @@ CREATE FUNCTION span_overright(floatspan, floatspan)
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = float, RIGHTARG = floatspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = floatspan, RIGHTARG = float,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = floatspan, RIGHTARG = floatspan,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -421,19 +421,19 @@ CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = int, RIGHTARG = intspan,
   COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = intspan, RIGHTARG = int,
   COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = intspan, RIGHTARG = intspan,
   COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE FUNCTION span_adjacent(float, floatspan)
@@ -453,19 +453,19 @@ CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = float, RIGHTARG = floatspan,
   COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = floatspan, RIGHTARG = float,
   COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = period_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /*****************************************************************************/

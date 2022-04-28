@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_selfuncs.c
+ * @file span_selfuncs.c
  * @brief Functions for selectivity estimation of time types operators.
  *
  * These functions are based on those of the file `rangetypes_selfuncs.c`.
@@ -52,7 +52,9 @@
 #include "general/span_ops.h"
 #include "general/tempcache.h"
 #include "general/span_analyze.h"
-#include "general/time_selfuncs.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
 
 /*****************************************************************************/
 
@@ -60,7 +62,7 @@
  * Return a default selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-static float8
+float8
 span_sel_default(CachedOp cachedOp __attribute__((unused)))
 {
   // TODO take care of the operator
@@ -71,7 +73,7 @@ span_sel_default(CachedOp cachedOp __attribute__((unused)))
  * Return a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-static float8
+float8
 span_joinsel_default(CachedOp cachedOp __attribute__((unused)))
 {
   // TODO take care of the operator
@@ -107,6 +109,39 @@ span_cachedop(Oid operid, CachedOp *cachedOp)
   }
   return false;
 }
+
+/**
+ * Get the enum associated to the operator from different cases
+ */
+bool
+time_cachedop(Oid operid, CachedOp *cachedOp)
+{
+  for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
+  {
+    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+      {
+        *cachedOp = (CachedOp) i;
+        return true;
+      }
+  }
+  return false;
+}
+
+/*****************************************************************************/
 
 /**
  * Binary search on an array of span bounds. Return greatest index of span
@@ -162,6 +197,237 @@ span_position(const SpanBound *value, const SpanBound *hist1,
   position = Max(position, 0.0);
   position = Min(position, 1.0);
   return position;
+}
+
+/*****************************************************************************/
+/**
+ * Binary search on length histogram. Return greatest index of period length in
+ * histogram which is less than (less than or equal) the given length value. If
+ * all lengths in the histogram are greater than (greater than or equal) the
+ * given length, returns -1.
+ *
+ * Function copied from file rangetypes_selfuncs.c snce it is not exported
+ */
+int
+length_hist_bsearch(Datum *hist_length, int hist_length_nvalues,
+  double value, bool equal)
+{
+  int lower = -1, upper = hist_length_nvalues - 1;
+  while (lower < upper)
+  {
+    int middle = (lower + upper + 1) / 2;
+    double middleval = DatumGetFloat8(hist_length[middle]);
+    if (middleval < value || (equal && middleval <= value))
+      lower = middle;
+    else
+      upper = middle - 1;
+  }
+  return lower;
+}
+
+/**
+ * Get relative position of value in a length histogram bin in [0,1] range.
+ *
+ * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
+ * not exported.
+ */
+double
+get_len_position(double value, double hist1, double hist2)
+{
+  if (!isinf(hist1) && !isinf(hist2))
+  {
+    /*
+     * Both bounds are finite. The value should be finite too, because it
+     * lies somewhere between the bounds. If it doesn't, just return
+     * something.
+     */
+    if (isinf(value))
+      return 0.5;
+
+    return 1.0 - (hist2 - value) / (hist2 - hist1);
+  }
+  else if (isinf(hist1) && !isinf(hist2))
+  {
+    /*
+     * Lower bin boundary is -infinite, upper is finite. Return 1.0 to
+     * indicate the value is infinitely far from the lower bound.
+     */
+    return 1.0;
+  }
+  else if (isinf(hist1) && isinf(hist2))
+  {
+    /* same as above, but in reverse */
+    return 0.0;
+  }
+  else
+  {
+    /*
+     * If both bin boundaries are infinite, they should be equal to each
+     * other, and the value should also be infinite and equal to both
+     * bounds. (But don't Assert that, to avoid crashing unnecessarily if
+     * the caller messes up)
+     *
+     * Assume the value to lie in the middle of the infinite bounds.
+     */
+    return 0.5;
+  }
+}
+
+/**
+ * Calculate the average of function P(x), in the interval [length1, length2],
+ * where P(x) is the fraction of tuples with length < x (or length <= x if
+ * 'equal' is true).
+ *
+ * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
+ * not exported.
+ */
+double
+calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
+  double length1, double length2, bool equal)
+{
+  double frac, A, B, PA, PB, pos, area;
+  int i;
+
+  assert(length2 >= length1);
+
+  if (length2 < 0.0)
+    return 0.0;        /* shouldn't happen, but doesn't hurt to check */
+
+  /* All lengths in the table are <= infinite. */
+  if (isinf(length2) && equal)
+    return 1.0;
+
+  /*----------
+   * The average of a function between A and B can be calculated by the
+   * formula:
+   *
+   *          B
+   *    1     /
+   * -------  | P(x)dx
+   *  B - A   /
+   *          A
+   *
+   * The geometrical interpretation of the integral is the area under the
+   * graph of P(x). P(x) is defined by the length histogram. We calculate
+   * the area in a piecewise fashion, iterating through the length histogram
+   * bins. Each bin is a trapezoid:
+   *
+   *       P(x2)
+   *        /|
+   *       / |
+   * P(x1)/  |
+   *     |   |
+   *     |   |
+   *  ---+---+--
+   *     x1  x2
+   *
+   * where x1 and x2 are the boundaries of the current histogram, and P(x1)
+   * and P(x1) are the cumulative fraction of tuples at the boundaries.
+   *
+   * The area of each trapezoid is 1/2 * (P(x2) + P(x1)) * (x2 - x1)
+   *
+   * The first bin contains the lower bound passed by the caller, so we
+   * use linear interpolation between the previous and next histogram bin
+   * boundary to calculate P(x1). Likewise for the last bin: we use linear
+   * interpolation to calculate P(x2). For the bins in between, x1 and x2
+   * lie on histogram bin boundaries, so P(x1) and P(x2) are simply:
+   * P(x1) =    (bin index) / (number of bins)
+   * P(x2) = (bin index + 1 / (number of bins)
+   */
+
+  /* First bin, the one that contains lower bound */
+  i = length_hist_bsearch(hist_length, hist_length_nvalues, length1, equal);
+  if (i >= hist_length_nvalues - 1)
+    return 1.0;
+
+  if (i < 0)
+  {
+    i = 0;
+    pos = 0.0;
+  }
+  else
+  {
+    /* Interpolate length1's position in the bin */
+    pos = get_len_position(length1, DatumGetFloat8(hist_length[i]),
+      DatumGetFloat8(hist_length[i + 1]));
+  }
+  PB = (((double) i) + pos) / (double) (hist_length_nvalues - 1);
+  B = length1;
+
+  /*
+   * In the degenerate case that length1 == length2, simply return
+   * P(length1). This is not merely an optimization: if length1 == length2,
+   * we'd divide by zero later on.
+   */
+  if (length2 == length1)
+    return PB;
+
+  /*
+   * Loop through all the bins, until we hit the last bin, the one that
+   * contains the upper bound. (if lower and upper bounds are in the same
+   * bin, this falls out immediately)
+   */
+  area = 0.0;
+  for (; i < hist_length_nvalues - 1; i++)
+  {
+    double bin_upper = DatumGetFloat8(hist_length[i + 1]);
+
+    /* Check if we've reached the last bin */
+    if (!(bin_upper < length2 || (equal && bin_upper <= length2)))
+      break;
+
+    /* the upper bound of previous bin is the lower bound of this bin */
+    A = B;
+    PA = PB;
+
+    B = bin_upper;
+    PB = (double) i / (double) (hist_length_nvalues - 1);
+
+    /*
+     * Add the area of this trapezoid to the total. The point of the
+     * if-check is to avoid NaN, in the corner case that PA == PB == 0,
+     * and B - A == Inf. The area of a zero-height trapezoid (PA == PB ==
+     * 0) is zero, regardless of the width (B - A).
+     */
+    if (PA > 0 || PB > 0)
+      area += 0.5 * (PB + PA) * (B - A);
+  }
+
+  /* Last bin */
+  A = B;
+  PA = PB;
+
+  B = length2;        /* last bin ends at the constant upper bound */
+  if (i >= hist_length_nvalues - 1)
+    pos = 0.0;
+  else
+  {
+    if (DatumGetFloat8(hist_length[i]) ==
+        DatumGetFloat8(hist_length[i + 1]))
+      pos = 0.0;
+    else
+      pos = get_len_position(length2, DatumGetFloat8(hist_length[i]),
+        DatumGetFloat8(hist_length[i + 1]));
+  }
+  PB = (((double) i) + pos) / (double) (hist_length_nvalues - 1);
+
+  if (PA > 0 || PB > 0)
+    area += 0.5 * (PB + PA) * (B - A);
+
+  /*
+   * Ok, we have calculated the area, i.e. the integral. Divide by width to
+   * get the requested average.
+   *
+   * Avoid NaN arising from infinite / infinite. This happens at least if
+   * length2 is infinite. It's not clear what the correct value would be in
+   * that case, so 0.5 seems as good as any value.
+   */
+  if (isinf(area) && isinf(length2))
+    frac = 0.5;
+  else
+    frac = area / (length2 - length1);
+
+  return frac;
 }
 
 /*****************************************************************************/
@@ -252,12 +518,13 @@ span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
    * histogram. Any span with a lower bound > constant upper bound can't
    * match, i.e. there are no matches in bins greater than upper_index.
    */
-  const_upper->inclusive = !const_upper->inclusive;
+  const_upper->inclusive = ! const_upper->inclusive;
   const_upper->lower = true;
-  upper_index = span_bound_bsearch(const_upper, hist_lower, hist_nvalues, false);
+  upper_index = span_bound_bsearch(const_upper, hist_lower, hist_nvalues,
+    false);
 
   /*
-   * Calculate upper_bin_width, i.e. the fraction of the (upper_index,
+   * Calculate upper_bin_width, i.e., the fraction of the (upper_index,
    * upper_index + 1) bin which is greater than constant upper bound
    * using linear interpolation of distance function.
    */
@@ -280,7 +547,7 @@ span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
   bin_width = upper_bin_width;
 
   sum_frac = 0.0;
-  for (i = upper_index; i >= 0; i--)
+  for (i = upper_index - 1; i >= 0; i--)
   {
     double dist, hist_length_frac;
     bool final_bin = false;
@@ -411,8 +678,8 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
  * @note Used by the selectivity functions and the debugging functions.
  */
 static double
-span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
-  const Span *constval, CachedOp cachedOp)
+span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
+  CachedOp cachedOp, SpanPeriodSel spansel)
 {
   SpanBound *hist_lower, *hist_upper;
   SpanBound const_lower, const_upper;
@@ -427,8 +694,14 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
   hist_lower = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
   hist_upper = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
   for (i = 0; i < nhist; i++)
-    span_deserialize(DatumGetSpanP(hslot->values[i]),
-      &hist_lower[i], &hist_upper[i]);
+  {
+    if (spansel == SPANSEL)
+      span_deserialize(DatumGetSpanP(hslot->values[i]),
+        &hist_lower[i], &hist_upper[i]);
+    else /* spansel == PEIODSEL */
+      period_deserialize(DatumGetPeriodP(hslot->values[i]),
+        (PeriodBound *) &hist_lower[i], (PeriodBound *) &hist_upper[i]);
+  }
 
   /* Extract the bounds of the constant value. */
   span_deserialize(constval, &const_lower, &const_upper);
@@ -505,18 +778,20 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
  */
 double
 span_sel_hist(VariableStatData *vardata, const Span *constval,
-  CachedOp cachedOp)
+  CachedOp cachedOp, SpanPeriodSel spansel)
 {
   AttStatsSlot hslot, lslot;
   double selec;
 
   memset(&hslot, 0, sizeof(hslot));
 
+  int stats_kind = (spansel == SPANSEL) ?
+    STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
+    STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   /* Try to get histogram of span bounds of vardata */
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
       get_attstatsslot(&hslot, vardata->statsTuple,
-        STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM, InvalidOid,
-        ATTSTATSSLOT_VALUES)))
+        stats_kind, InvalidOid, ATTSTATSSLOT_VALUES)))
     return -1.0;
   /* Check that it's a histogram, not just a dummy entry */
   if (hslot.nvalues < 2)
@@ -530,10 +805,12 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
   {
     memset(&lslot, 0, sizeof(lslot));
 
+    stats_kind = (spansel == SPANSEL) ?
+      STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+      STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
-          STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM, InvalidOid,
-          ATTSTATSSLOT_VALUES)))
+          stats_kind, InvalidOid, ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot);
       return -1.0;
@@ -547,7 +824,7 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, constval, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, constval, cachedOp, spansel);
 
   free_attstatsslot(&hslot);
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
@@ -560,16 +837,60 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
 /*****************************************************************************/
 
 /**
- * Restriction selectivity for span operators
+ * Transform the constant into a period
+ */
+void
+time_const_to_period(Node *other, Period *period)
+{
+  Oid timetypid = ((Const *) other)->consttype;
+  CachedType timetype = oid_type(timetypid);
+  const Period *p;
+  ensure_time_type(timetype);
+  if (timetype == T_TIMESTAMPTZ)
+  {
+    /* The right argument is a TimestampTz constant. We convert it into
+     * a singleton period */
+    TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
+    period_set(t, t, true, true, period);
+  }
+  else if (timetype == T_TIMESTAMPSET)
+  {
+    /* The right argument is a TimestampSet constant. We convert it into
+     * its bounding period. */
+    p = timestampset_period_ptr(
+      DatumGetTimestampSetP(((Const *) other)->constvalue));
+    memcpy(period, p, sizeof(Period));
+  }
+  else if (timetype == T_PERIOD)
+  {
+    /* Just copy the value */
+    p = DatumGetPeriodP(((Const *) other)->constvalue);
+    memcpy(period, p, sizeof(Period));
+  }
+  else /* timetype == T_PERIODSET */
+  {
+    /* The right argument is a PeriodSet constant. We convert it into
+     * its bounding period. */
+    p = periodset_period_ptr(
+      DatumGetPeriodSetP(((Const *) other)->constvalue));
+    memcpy(period, p, sizeof(Period));
+  }
+  return;
+}
+
+/**
+ * Restriction selectivity for span and time operators
  */
 float8
-span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
+span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
+  SpanPeriodSel spansel)
 {
   VariableStatData vardata;
   Node *other;
   bool varonleft;
   Selectivity selec;
   Span span;
+  Period period;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -619,12 +940,22 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    * OK, there's a Var and a Const we're dealing with here. If the constant
    * is not of the span type, it should be converted to a span.
    */
-  Span *s = DatumGetSpanP(((Const *) other)->constvalue);
-  memcpy(&span, s, sizeof(Span));
+  if (spansel == SPANSEL)
+  {
+    Span *s = DatumGetSpanP(((Const *) other)->constvalue);
+    memcpy(&span, s, sizeof(Span));
+  }
+  else
+  {
+    time_const_to_period(other, &period);
+    memcpy(&span, &period, sizeof(Span));
+  }
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! span_cachedop(operid, &cachedOp))
+  bool found = (spansel == SPANSEL) ?
+    span_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
+  if (! found)
     /* Unknown operator */
     return span_sel_default(operid);
 
@@ -658,7 +989,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    * returning the default estimate, because this still takes into
    * account the fraction of NULL tuples, if we had statistics for them.
    */
-  float8 hist_selec = span_sel_hist(&vardata, &span, cachedOp);
+  float8 hist_selec = span_sel_hist(&vardata, &span, cachedOp, spansel);
   if (hist_selec < 0.0)
     hist_selec = span_sel_default(operid);
 
@@ -683,7 +1014,22 @@ Span_sel(PG_FUNCTION_ARGS)
   Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selec = span_sel(root, operid, args, varRelid);
+  float8 selec = span_sel(root, operid, args, varRelid, SPANSEL);
+  PG_RETURN_FLOAT8((float8) selec);
+}
+
+PG_FUNCTION_INFO_V1(Period_sel);
+/**
+ * Restriction selectivity for period operators
+ */
+PGDLLEXPORT Datum
+Period_sel(PG_FUNCTION_ARGS)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operid = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selec = span_sel(root, operid, args, varRelid, PERIODSEL);
   PG_RETURN_FLOAT8((float8) selec);
 }
 
@@ -736,7 +1082,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table_oid) ?
       get_rel_name(table_oid) : "NULL");
 
-  int stats_kind = STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM;
+  int stats_kind = STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM; // TODO
   if (! get_attstatsslot(&hslot, stats_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
@@ -752,7 +1098,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   {
     memset(&lslot, 0, sizeof(lslot));
 
-   stats_kind = STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM;
+   stats_kind = STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM; // TODO
    if (!(HeapTupleIsValid(stats_tuple) &&
         get_attstatsslot(&lslot, stats_tuple, stats_kind, InvalidOid,
           ATTSTATSSLOT_VALUES)))
@@ -769,7 +1115,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, p, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, p, cachedOp, T_FLOATSPAN); // TODO
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
@@ -1016,8 +1362,10 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   if (HeapTupleIsValid(vardata1->statsTuple))
   {
     stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
+
     have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
-      STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+      STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM, InvalidOid,  // TODO
+      ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot1.nvalues < 2)
     {
@@ -1029,7 +1377,8 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   {
     stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
     have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
-      STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+      STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM, InvalidOid, // TODO
+      ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot2.nvalues < 2)
     {
@@ -1085,7 +1434,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 
     if (!(HeapTupleIsValid(vardata2->statsTuple) &&
         get_attstatsslot(&lslot, vardata1->statsTuple,
-          STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM, InvalidOid,
+          STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM, InvalidOid, // TODO
           ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
@@ -1240,7 +1589,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
   AttStatsSlot hslot1, hslot2, lslot;
-  int stats_kind = STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM;
+  int stats_kind = STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM; // TODO
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
@@ -1282,7 +1631,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
      * join selectivity we loop over values of the first histogram assuming
      * they are constant and call the restriction selectivity over the
      * second histogram */
-    stats_kind = STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM;
+    stats_kind = STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM; // TODO
     memset(&lslot, 0, sizeof(lslot));
 
     if (! get_attstatsslot(&lslot, stats2_tuple, stats_kind, InvalidOid,

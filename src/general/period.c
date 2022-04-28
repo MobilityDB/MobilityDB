@@ -63,12 +63,18 @@ period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
     lower->t = p->lower;
     lower->inclusive = p->lower_inc;
     lower->lower = true;
+    /* Make the period bound value memory compatible with a span bound value */
+    lower->spantype = T_TSTZSPAN;
+    lower->basetype = T_TIMESTAMPTZ;
   }
   if (upper)
   {
     upper->t = p->upper;
     upper->inclusive = p->upper_inc;
     upper->lower = false;
+    /* Make the period bound value memory compatible with a span bound value */
+    upper->spantype = T_TSTZSPAN;
+    upper->basetype = T_TIMESTAMPTZ;
   }
 }
 
@@ -227,6 +233,10 @@ period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
   p->upper = upper;
   p->lower_inc = lower_inc;
   p->upper_inc = upper_inc;
+  /* Make the period value memory compatible with a span value */
+  p->spantype = T_TSTZSPAN;
+  p->basetype = T_TIMESTAMPTZ;
+
 }
 
 /**

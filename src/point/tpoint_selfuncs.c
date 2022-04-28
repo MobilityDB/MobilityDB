@@ -42,7 +42,7 @@
 /* MobilityDB */
 #include "general/period.h"
 #include "general/time_ops.h"
-#include "general/time_selfuncs.h"
+#include "general/span_selfuncs.h"
 #include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
 #include "point/postgis.h"
@@ -1342,10 +1342,10 @@ tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
      */
     if (cachedOp == SAME_OP ||
       (cachedOp == OVERLAPS_OP && list_length(args) != 2))
-      selec *= period_joinsel_default(cachedOp);
+      selec *= span_joinsel_default(cachedOp);
     else
       /* Estimate join selectivity */
-      selec *= period_joinsel(root, cachedOp, args, jointype, sjinfo);
+      selec *= span_joinsel(root, cachedOp, args, jointype, sjinfo);
   }
   return selec;
 }

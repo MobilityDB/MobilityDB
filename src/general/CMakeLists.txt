@@ -24,9 +24,7 @@ else()
   set(temporal_tile.c temporal_tile.c)
   set(temporal_waggfuncs.c temporal_waggfuncs.c)
   set(time_aggfuncs.c time_aggfuncs.c)
-  set(time_analyze.c time_analyze.c)
   set(time_gist.c time_gist.c)
-  set(time_selfuncs.c time_selfuncs.c)
   set(time_spgist.c time_spgist.c)
   set(tnumber_gist.c tnumber_gist.c)
   set(tnumber_selfuncs.c tnumber_selfuncs.c)
@@ -66,10 +64,8 @@ add_library(general OBJECT
   temporal_util.c
   ${temporal_waggfuncs.c}
   ${time_aggfuncs.c}
-  ${time_analyze.c}
   ${time_gist.c}
   time_ops.c
-  ${time_selfuncs.c}
   ${time_spgist.c}
   timestampset.c
   tinstant.c

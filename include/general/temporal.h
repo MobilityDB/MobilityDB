@@ -377,16 +377,6 @@ typedef struct
   double    d;
 } double4;
 
-/**
- * Structure to represent the span and the period type which are both of the
- * same length
- */
-typedef union spanperiod
-{
-  Span      s;
-  Period    p;
-} spanperiod;
-
 /*****************************************************************************
  * Miscellaneous
  *****************************************************************************/

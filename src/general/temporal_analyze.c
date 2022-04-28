@@ -37,22 +37,22 @@
  * for more information about the statistics collected.
  *
  * - Slot 1
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_BOUNDS_HISTOGRAM`.
+ *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM`.
  *     - `staop` contains the "<" operator of the value dimension.
  *     - `stavalues` stores the histogram of spans for the value dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  * - Slot 2
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM`.
+ *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM`.
  *     - `staop` contains the "<" operator to the value dimension.
  *     - `stavalues` stores the length of the histogram of spans for the value dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  * - Slot 3
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM`.
+ *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM`.
  *     - `staop` contains the "<" operator of the time dimension.
  *     - `stavalues` stores the histogram of periods for the time dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  * - Slot 4
- *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM`.
+ *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_TIME_LENGTH_HISTOGRAM`.
  *     - `staop` contains the "<" operator of the time dimension.
  *     - `stavalues` stores the length of the histogram of periods for the time dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
@@ -83,8 +83,9 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/period.h"
-#include "general/time_analyze.h"
 #include "general/span.h"
+#include "general/span_ops.h"
+#include "general/span_analyze.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -112,7 +113,7 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  *****************************************************************************/
 
 /**
- * Compute statistics for the value dimension (that is spans) for temporal numbers
+ * Compute statistics for the value dimension for temporal numbers
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null
@@ -188,7 +189,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
       TYPECACHE_EQ_OPR | TYPECACHE_CMP_PROC_FINFO |
       TYPECACHE_HASH_PROC_FINFO);
 
-    stats->stakind[*slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+    stats->stakind[*slot_idx] = STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM;
     stats->staop[*slot_idx] = temporal_extra_data->lt_opr;
     stats->stavalues[*slot_idx] = bound_hist_values;
     stats->numvalues[*slot_idx] = num_hist;
@@ -248,7 +249,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     length_hist_values = palloc(0);
     num_hist = 0;
   }
-  stats->stakind[*slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
+  stats->stakind[*slot_idx] = STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM;
   stats->staop[*slot_idx] = Float8LessOperator;
   stats->stavalues[*slot_idx] = length_hist_values;
   stats->numvalues[*slot_idx] = num_hist;
@@ -286,7 +287,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *value_lengths, *time_lengths;
   SpanBound *value_lowers, *value_uppers;
-  PeriodBound *time_lowers, *time_uppers;
+  SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
   Oid spantypid = 0; /* make compiler quiet */
 
@@ -304,8 +305,8 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     value_uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
     value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
   }
-  time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
-  time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
+  time_lowers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
+  time_uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
   time_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
   /* Loop over the temporal values. */
@@ -315,7 +316,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     bool isnull;
     SpanBound span_lower, span_upper;
     Period period;
-    PeriodBound period_lower, period_upper;
+    SpanBound period_lower, period_upper;
     Temporal *temp;
 
     /* Give backend a chance of interrupting us */
@@ -350,11 +351,12 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
           DatumGetFloat8(span_lower.val);
     }
     temporal_period(temp, &period);
-    period_deserialize(&period, &period_lower, &period_upper);
+    period_deserialize(&period, (PeriodBound *) &period_lower,
+      (PeriodBound *) &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;
-    time_lengths[non_null_cnt] = period_to_secs(period_upper.t,
-      period_lower.t);
+    time_lengths[non_null_cnt] = distance_elem_elem(period_upper.val,
+      period_lower.val, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
     non_null_cnt++;
   }
@@ -376,8 +378,8 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
         value_uppers, value_lengths, spantypid);
     }
 
-    period_compute_stats1(stats, non_null_cnt, &slot_idx, time_lowers,
-      time_uppers, time_lengths);
+    span_compute_stats1(stats, non_null_cnt, &slot_idx, time_lowers,
+      time_uppers, time_lengths, T_PERIOD);
   }
   else if (null_cnt > 0)
   {

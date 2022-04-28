@@ -48,6 +48,7 @@
  */
 typedef enum
 {
+  // T_UNKNOWN = 0,
   T_BOOL,
   T_DOUBLE2,
   T_DOUBLE3,
@@ -69,7 +70,7 @@ typedef enum
   T_TEXT,
   T_TFLOAT,
   T_TIMESTAMPSET,
-  T_TIMESTAMPSPAN,
+  T_TSTZSPAN,
   T_TIMESTAMPTZ,
   T_TINT,
   T_TSTZRANGE,
@@ -90,6 +91,7 @@ typedef enum
  */
 typedef enum
 {
+  // UNKNOWN_OP = 0,
   EQ_OP,
   NE_OP,
   LT_OP,

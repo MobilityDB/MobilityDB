@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_analyze.h
+ * @file span_analyze.h
  * Functions for gathering statistics from time type columns
  */
 
@@ -42,22 +42,23 @@
 #include "general/span.h"
 
 /*
- * It is not possible to differentiate bound histogram of ranges and of periods
- * with the combinination stakind/staop values, since the staop is not set by
- * the compute_range_stats function and thus it is necessary to define a new stakind
+ * It is not possible to differentiate bound histogram of spans for the value
+ * and the time dimension with the combination stakind/staop values and thus
+ * it is necessary to define different stakind for each dimension even if the
+ * values collected are of the same type
  */
-#define STATISTIC_KIND_SPAN_BOUNDS_HISTOGRAM  10
-/*
- * It is not possible to differentiate lengths of ranges and lengths of periods
- * with the combinination stakind/staop values, since the lenghts are expressed
- * with float8 values and thus it is necessary to define a new stakind
- */
-#define STATISTIC_KIND_SPAN_LENGTH_HISTOGRAM  11
+#define STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM   8
+#define STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM   9
+#define STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM   10
+#define STATISTIC_KIND_TIME_LENGTH_HISTOGRAM   11
 
 /*****************************************************************************/
 
+extern int float8_qsort_cmp(const void *a1, const void *a2);
+
 extern void span_compute_stats1(VacAttrStats *stats, int non_null_cnt,
-  int *slot_idx, SpanBound *lowers, SpanBound *uppers, float8 *lengths);
+  int *slot_idx, SpanBound *lowers, SpanBound *uppers, float8 *lengths,
+  CachedType type);
 
 /*****************************************************************************/
 

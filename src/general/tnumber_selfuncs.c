@@ -56,7 +56,6 @@
 #include "general/tempcache.h"
 #include "general/tbox.h"
 #include "general/span_selfuncs.h"
-#include "general/time_selfuncs.h"
 #include "general/temporal_analyze.h"
 #include "general/temporal_selfuncs.h"
 
@@ -287,24 +286,26 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Period *period,
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
-      selec *= span_sel_hist(vardata, span, cachedOp);
+      selec *= span_sel_hist(vardata, span, cachedOp, SPANSEL);
     /* Selectivity for the time dimension */
     if (period != NULL)
-      selec *= period_sel_hist(vardata, period, cachedOp);
+      /* Cast the period as a span to call the span selectivity functions */
+      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, SPANSEL);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
-      selec *= span_sel_hist(vardata, span, cachedOp);
+      selec *= span_sel_hist(vardata, span, cachedOp, SPANSEL);
   }
   else if (cachedOp == BEFORE_OP || cachedOp == AFTER_OP ||
     cachedOp == OVERBEFORE_OP || cachedOp == OVERAFTER_OP)
   {
     /* Selectivity for the value dimension */
     if (period != NULL)
-      selec *= period_sel_hist(vardata, period, cachedOp);
+      /* Cast the period as a span to call the span selectivity functions */
+      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, SPANSEL);
   }
   else /* Unknown operator */
   {

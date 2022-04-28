@@ -270,22 +270,22 @@ timetype_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     /* Get the (bounding) period and deserialize it for further analysis. */
-    assert(timetype ==  T_PERIOD || timetype == T_TIMESTAMPSET ||
-      timetype == T_PERIODSET);
-    if (timetype == T_PERIOD)
+    assert(type ==  T_PERIOD || type == T_TIMESTAMPSET ||
+      type == T_PERIODSET || type == T_INTSPAN || type == T_FLOATSPAN);
+    if (type == T_PERIOD)
     {
       period = DatumGetPeriodP(value);
       /* Adjust the size */
       total_width += sizeof(Period);
     }
-    else if (timetype == T_TIMESTAMPSET)
+    else if (type == T_TIMESTAMPSET)
     {
       TimestampSet *ts= DatumGetTimestampSetP(value);
       period = timestampset_period_ptr(ts);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
-    else
+    else if (type == T_PERIODSET)
     {
       PeriodSet *ps= DatumGetPeriodSetP(value);
       period = periodset_period_ptr(ps);

@@ -34,7 +34,7 @@
 
 CREATE TYPE intspan;
 CREATE TYPE floatspan;
-CREATE TYPE timestampspan;
+CREATE TYPE tstzspan;
 
 CREATE FUNCTION intspan_in(cstring)
   RETURNS intspan
@@ -70,26 +70,34 @@ CREATE FUNCTION floatspan_send(floatspan)
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timestampspan_in(cstring)
-  RETURNS timestampspan
+CREATE FUNCTION tstzspan_in(cstring)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampspan_out(timestampspan)
+CREATE FUNCTION tstzspan_out(tstzspan)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Span_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampspan_recv(internal)
-  RETURNS timestampspan
+CREATE FUNCTION tstzspan_recv(internal)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampspan_send(timestampspan)
+CREATE FUNCTION tstzspan_send(tstzspan)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION span_analyze(internal)
+CREATE FUNCTION intspan_analyze(internal)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Span_analyze'
+  AS 'MODULE_PATHNAME', 'Intspan_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspan_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Floatspan_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzspan_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Tstzspan_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE intspan (
@@ -99,7 +107,7 @@ CREATE TYPE intspan (
   receive = intspan_recv,
   send = intspan_send,
   alignment = double,
-  analyze = span_analyze
+  analyze = intspan_analyze
 );
 
 CREATE TYPE floatspan (
@@ -109,17 +117,17 @@ CREATE TYPE floatspan (
   receive = floatspan_recv,
   send = floatspan_send,
   alignment = double,
-  analyze = span_analyze
+  analyze = floatspan_analyze
 );
 
-CREATE TYPE timestampspan (
+CREATE TYPE tstzspan (
   internallength = 24,
-  input = timestampspan_in,
-  output = timestampspan_out,
-  receive = timestampspan_recv,
-  send = timestampspan_send,
+  input = tstzspan_in,
+  output = tstzspan_out,
+  receive = tstzspan_recv,
+  send = tstzspan_send,
   alignment = double,
-  analyze = span_analyze
+  analyze = tstzspan_analyze
 );
 
 /******************************************************************************
@@ -156,7 +164,7 @@ CREATE FUNCTION floatspan(float, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_constructor2'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampspan(timestamptz, timestamptz)
+CREATE FUNCTION tstzspan(timestamptz, timestamptz)
   RETURNS span
   AS 'MODULE_PATHNAME', 'Span_constructor2'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -169,8 +177,8 @@ CREATE FUNCTION floatspan(float, float, boolean, boolean)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_constructor4'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampspan(timestamptz, timestamptz, boolean, boolean)
-  RETURNS timestampspan
+CREATE FUNCTION tstzspan(timestamptz, timestamptz, boolean, boolean)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_constructor4'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -186,7 +194,7 @@ CREATE FUNCTION lower(floatspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower(timestampspan)
+CREATE FUNCTION lower(tstzspan)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Span_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -199,7 +207,7 @@ CREATE FUNCTION upper(floatspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper(timestampspan)
+CREATE FUNCTION upper(tstzspan)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Span_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -212,7 +220,7 @@ CREATE FUNCTION lower_inc(floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(timestampspan)
+CREATE FUNCTION lower_inc(tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -225,7 +233,7 @@ CREATE FUNCTION upper_inc(floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(timestampspan)
+CREATE FUNCTION upper_inc(tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -252,6 +260,24 @@ CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
   AS 'MODULE_PATHNAME', 'Span_joinsel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Functions for debugging the selectivity code
+
+-- Given a table, column, and period returns the estimate of what proportion
+-- of the table would be returned by a query using the given operator.
+CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
+    p period)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- Given two tables and columns, returns estimate of the proportion of rows a
+-- given join operator will return relative to the number of rows an
+-- unconstrained table join would return
+CREATE OR REPLACE FUNCTION _mobdb_span_joinsel(tbl1 regclass, col1 text,
+    tbl2 regclass, col2 text, oper regoper)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Operators
  ******************************************************************************/
@@ -264,7 +290,7 @@ CREATE FUNCTION span_eq(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_eq(timestampspan, timestampspan)
+CREATE FUNCTION span_eq(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -277,7 +303,7 @@ CREATE FUNCTION span_ne(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_ne(timestampspan, timestampspan)
+CREATE FUNCTION span_ne(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -290,7 +316,7 @@ CREATE FUNCTION span_lt(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_lt(timestampspan, timestampspan)
+CREATE FUNCTION span_lt(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -303,7 +329,7 @@ CREATE FUNCTION span_le(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_le(timestampspan, timestampspan)
+CREATE FUNCTION span_le(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -316,7 +342,7 @@ CREATE FUNCTION span_ge(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_ge(timestampspan, timestampspan)
+CREATE FUNCTION span_ge(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -329,7 +355,7 @@ CREATE FUNCTION span_gt(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gt(timestampspan, timestampspan)
+CREATE FUNCTION span_gt(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -342,7 +368,7 @@ CREATE FUNCTION span_cmp(floatspan, floatspan)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Span_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_cmp(timestampspan, timestampspan)
+CREATE FUNCTION span_cmp(tstzspan, tstzspan)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Span_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -361,7 +387,7 @@ CREATE OPERATOR = (
 );
 CREATE OPERATOR = (
   PROCEDURE = span_eq,
-  LEFTARG = timestampspan, RIGHTARG = timestampspan,
+  LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
@@ -380,7 +406,7 @@ CREATE OPERATOR <> (
 );
 CREATE OPERATOR <> (
   PROCEDURE = span_ne,
-  LEFTARG = timestampspan, RIGHTARG = timestampspan,
+  LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
@@ -399,7 +425,7 @@ CREATE OPERATOR < (
 );
 CREATE OPERATOR < (
   PROCEDURE = span_lt,
-  LEFTARG = timestampspan, RIGHTARG = timestampspan,
+  LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -418,7 +444,7 @@ CREATE OPERATOR <= (
 );
 CREATE OPERATOR <= (
   PROCEDURE = span_le,
-  LEFTARG = timestampspan, RIGHTARG = timestampspan,
+  LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -437,7 +463,7 @@ CREATE OPERATOR >= (
 );
 CREATE OPERATOR >= (
   PROCEDURE = span_ge,
-  LEFTARG = timestampspan, RIGHTARG = timestampspan,
+  LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -456,7 +482,7 @@ CREATE OPERATOR > (
 );
 CREATE OPERATOR > (
   PROCEDURE = span_gt,
-  LEFTARG = timestampspan, RIGHTARG = timestampspan,
+  LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -477,14 +503,14 @@ CREATE OPERATOR CLASS floatspan_ops
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
   FUNCTION  1  span_cmp(floatspan, floatspan);
-CREATE OPERATOR CLASS timestampspan_ops
-  DEFAULT FOR TYPE timestampspan USING btree  AS
+CREATE OPERATOR CLASS tstzspan_ops
+  DEFAULT FOR TYPE tstzspan USING btree  AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,
   OPERATOR  3  = ,
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
-  FUNCTION  1  span_cmp(timestampspan, timestampspan);
+  FUNCTION  1  span_cmp(tstzspan, tstzspan);
 
 /******************************************************************************/
 
@@ -496,7 +522,7 @@ CREATE FUNCTION span_hash(floatspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash(timestampspan)
+CREATE FUNCTION span_hash(tstzspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -509,7 +535,7 @@ CREATE FUNCTION span_hash_extended(floatspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash_extended(timestampspan, bigint)
+CREATE FUNCTION span_hash_extended(tstzspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -525,9 +551,9 @@ CREATE OPERATOR CLASS hash_floatspan_ops
     FUNCTION    1   span_hash(floatspan),
     FUNCTION    2   span_hash_extended(floatspan, bigint);
 CREATE OPERATOR CLASS hash_span_ops
-  DEFAULT FOR TYPE timestampspan USING hash AS
+  DEFAULT FOR TYPE tstzspan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   span_hash(timestampspan),
-    FUNCTION    2   span_hash_extended(timestampspan, bigint);
+    FUNCTION    1   span_hash(tstzspan),
+    FUNCTION    2   span_hash_extended(tstzspan, bigint);
 
 /******************************************************************************/
