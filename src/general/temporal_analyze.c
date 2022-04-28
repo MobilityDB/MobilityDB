@@ -67,6 +67,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
+#include <fmgr.h>
 #include <math.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000
 #include <access/tuptoaster.h>

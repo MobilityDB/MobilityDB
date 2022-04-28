@@ -38,6 +38,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <statistics/extended_stats_internal.h>
+#include <fmgr.h>
 
 /*****************************************************************************/
 
