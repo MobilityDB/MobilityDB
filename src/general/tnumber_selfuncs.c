@@ -133,7 +133,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
     Datum value = ((Const *) other)->constvalue;
     *s = elem_span(value, type);
   }
-  else if (span_type(type))
+  else if (type == T_INTSPAN || type == T_FLOATSPAN)
   {
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
     *s = span_copy(span);

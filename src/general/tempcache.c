@@ -163,45 +163,6 @@ basetype_spantype(CachedType basetype)
  *****************************************************************************/
 
 /**
- * Global array for caching the names of the operators used in MobilityDB
- * to avoid (slow) lookups. The array is initialized at the loading of
- * the extension.
- */
-const char *_op_names[] =
-{
-  [EQ_OP] = "=",
-  [NE_OP] = "<>",
-  [LT_OP] = "<",
-  [LE_OP] = "<=",
-  [GT_OP] = ">",
-  [GE_OP] = ">=",
-  [ADJACENT_OP] = "-|-",
-  [UNION_OP] = "+",
-  [MINUS_OP] = "-",
-  [INTERSECT_OP] = "*",
-  [OVERLAPS_OP] = "&&",
-  [CONTAINS_OP] = "@>",
-  [CONTAINED_OP] = "<@",
-  [SAME_OP] = "~=",
-  [LEFT_OP] = "<<",
-  [OVERLEFT_OP] = "&<",
-  [RIGHT_OP] = ">>",
-  [OVERRIGHT_OP] = "&>",
-  [BELOW_OP] = "<<|",
-  [OVERBELOW_OP] = "&<|",
-  [ABOVE_OP] = "|>>",
-  [OVERABOVE_OP] = "|&>",
-  [FRONT_OP] = "<</",
-  [OVERFRONT_OP] = "&</",
-  [BACK_OP] = "/>>",
-  [OVERBACK_OP] = "/&>",
-  [BEFORE_OP] = "<<#",
-  [OVERBEFORE_OP] = "&<#",
-  [AFTER_OP] = "#>>",
-  [OVERAFTER_OP] = "#&>"
-};
-
-/**
  * Global array for caching the names of the types used in MobilityDB
  * to avoid (slow) lookups. The array is initialized at the loading of
  * the extension.
@@ -240,6 +201,45 @@ const char *_type_names[] =
   [T_NPOINT] = "npoint",
   [T_NSEGMENT] = "nsegment",
   [T_TNPOINT] = "tnpoint"
+};
+
+/**
+ * Global array for caching the names of the operators used in MobilityDB
+ * to avoid (slow) lookups. The array is initialized at the loading of
+ * the extension.
+ */
+const char *_op_names[] =
+{
+  [EQ_OP] = "=",
+  [NE_OP] = "<>",
+  [LT_OP] = "<",
+  [LE_OP] = "<=",
+  [GT_OP] = ">",
+  [GE_OP] = ">=",
+  [ADJACENT_OP] = "-|-",
+  [UNION_OP] = "+",
+  [MINUS_OP] = "-",
+  [INTERSECT_OP] = "*",
+  [OVERLAPS_OP] = "&&",
+  [CONTAINS_OP] = "@>",
+  [CONTAINED_OP] = "<@",
+  [SAME_OP] = "~=",
+  [LEFT_OP] = "<<",
+  [OVERLEFT_OP] = "&<",
+  [RIGHT_OP] = ">>",
+  [OVERRIGHT_OP] = "&>",
+  [BELOW_OP] = "<<|",
+  [OVERBELOW_OP] = "&<|",
+  [ABOVE_OP] = "|>>",
+  [OVERABOVE_OP] = "|&>",
+  [FRONT_OP] = "<</",
+  [OVERFRONT_OP] = "&</",
+  [BACK_OP] = "/>>",
+  [OVERBACK_OP] = "/&>",
+  [BEFORE_OP] = "<<#",
+  [OVERBEFORE_OP] = "&<#",
+  [AFTER_OP] = "#>>",
+  [OVERAFTER_OP] = "#&>"
 };
 
 /**

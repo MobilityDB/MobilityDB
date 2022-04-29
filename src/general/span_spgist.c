@@ -40,12 +40,15 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
+#include <float.h>
 #include <access/spgist.h>
 /* MobilityDB */
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_ops.h"
 #include "general/span_gist.h"
+#include "general/period.h"
+#include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 
@@ -74,11 +77,30 @@ typedef struct
  * initialize the struct to cover the whole 2D space.
  */
 static void
-spannode_init(SpanNode *nodebox)
+spannode_init(SpanNode *nodebox, CachedType spantype, CachedType basetype)
 {
   memset(nodebox, 0, sizeof(SpanNode));
-  nodebox->left.lower = nodebox->left.upper = DT_NOBEGIN;
-  nodebox->right.lower = nodebox->right.upper = DT_NOEND;
+  Datum min, max;
+  ensure_span_type(spantype);
+  if (spantype == T_PERIOD)
+  {
+    min = TimestampTzGetDatum(DT_NOBEGIN);
+    max = TimestampTzGetDatum(DT_NOEND);
+  }
+  else if (spantype == T_INTSPAN)
+  {
+    min = Int32GetDatum(PG_INT32_MIN);
+    max = Int32GetDatum(PG_INT32_MAX);
+  }
+  else if (spantype == T_FLOATSPAN)
+  {
+    min = Float8GetDatum(-1 * DBL_MAX);
+    max = Float8GetDatum(DBL_MAX);
+  }
+  nodebox->left.lower = nodebox->left.upper = min;
+  nodebox->right.lower = nodebox->right.upper = max;
+  nodebox->left.spantype = nodebox->right.spantype = spantype;
+  nodebox->left.basetype = nodebox->right.basetype = basetype;
   return;
 }
 
@@ -161,7 +183,7 @@ overlap2D(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.spantype, &s);
+    nodebox->right.upper_inc, nodebox->left.basetype, &s);
   return overlaps_span_span(&s, query);
 }
 
@@ -173,7 +195,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.spantype,&s);
+    nodebox->right.upper_inc, nodebox->left.basetype, &s);
   return contains_span_span(&s, query);
 }
 
@@ -213,6 +235,42 @@ overRight2D(const SpanNode *nodebox, const Span *query)
   return overright_span_span(&nodebox->left, query);
 }
 
+/**
+ * Can any period from nodebox be before the query?
+ */
+static bool
+before2D(const SpanNode *nodebox, const Period *query)
+{
+  return before_period_period(&nodebox->right, query);
+}
+
+/**
+ * Can any period from nodebox does not extend after the query?
+ */
+static bool
+overBefore2D(const SpanNode *nodebox, const Period *query)
+{
+  return overbefore_period_period(&nodebox->right, query);
+}
+
+/**
+ * Can any period from nodebox be after the query?
+ */
+static bool
+after2D(const SpanNode *nodebox, const Period *query)
+{
+  return after_period_period(&nodebox->left, query);
+}
+
+/**
+ * Can any period from nodebox does not extend before the query?
+ */
+static bool
+overAfter2D(const SpanNode *nodebox, const Period *query)
+{
+  return overafter_period_period(&nodebox->left, query);
+}
+
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
  * Distance between a query span and a box of spans
@@ -223,7 +281,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
   /* Determine the maximum span of the nodebox */
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.spantype, &s);
+    nodebox->right.upper_inc, nodebox->left.basetype, &s);
 
   /* Compute the distance between the query span and the nodebox span */
   return distance_span_span(query, &s);
@@ -248,6 +306,25 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
     memcpy(result, s, sizeof(Span));
   }
   /* For temporal types whose bounding box is a span */
+  else if (type == T_TIMESTAMPTZ)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    period_set(t, t, true, true, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    timestampset_period_slice(scankey->sk_argument, result);
+  }
+  else if (type == T_PERIOD)
+  {
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    memcpy(result, p, sizeof(Period));
+  }
+  else if (type == T_PERIODSET)
+  {
+    periodset_period_slice(scankey->sk_argument, result);
+  }
+  /* For temporal types whose bounding box is a period */
   else if (temporal_type(type))
   {
     temporal_bbox_slice(scankey->sk_argument, result);
@@ -433,7 +510,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     nodebox = in->traversalValue;
   else
   {
-    spannode_init(&infbox);
+    spannode_init(&infbox, centroid->spantype, centroid->basetype);
     nodebox = &infbox;
   }
 
@@ -521,16 +598,28 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
           flag = contain2D(&next_nodespan, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight2D(&next_nodespan, &queries[i]);
+          flag = ! overRight2D(&next_nodespan, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right2D(&next_nodespan, &queries[i]);
+          flag = ! right2D(&next_nodespan, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft2D(&next_nodespan, &queries[i]);
+          flag = ! overLeft2D(&next_nodespan, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left2D(&next_nodespan, &queries[i]);
+          flag = ! left2D(&next_nodespan, &queries[i]);
+          break;
+        case RTBeforeStrategyNumber:
+          flag = ! overAfter2D(&next_nodespan, &queries[i]);
+          break;
+        case RTOverBeforeStrategyNumber:
+          flag = ! after2D(&next_nodespan, &queries[i]);
+          break;
+        case RTAfterStrategyNumber:
+          flag = ! overBefore2D(&next_nodespan, &queries[i]);
+          break;
+        case RTOverAfterStrategyNumber:
+          flag = ! before2D(&next_nodespan, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
