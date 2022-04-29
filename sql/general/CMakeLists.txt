@@ -1,6 +1,7 @@
 # Postgres version dependant files
 if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
   set(FILE_013 013_span_spgist)
+  set(FILE_014 014_time_spgist)
   set(FILE_044 044_temporal_spgist)
   if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 120000)
     set(FILE_019 019_geo_constructors)
@@ -14,7 +15,9 @@ SET(LOCAL_FILES
   007_time_ops
   009_span_ops
   011_span_gist
+  012_time_gist
   ${FILE_013}
+  ${FILE_014}
   015_time_aggfuncs
   017_span_aggfuncs
   ${FILE_019}

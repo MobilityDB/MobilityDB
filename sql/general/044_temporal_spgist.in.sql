@@ -189,10 +189,10 @@ CREATE OPERATOR CLASS tbool_quadtree_ops
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_quadtree_choose(internal, internal),
-  FUNCTION  3  period_quadtree_picksplit(internal, internal),
-  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
+  FUNCTION  2  span_quadtree_choose(internal, internal),
+  FUNCTION  3  span_quadtree_picksplit(internal, internal),
+  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/
@@ -507,10 +507,10 @@ CREATE OPERATOR CLASS ttext_quadtree_ops
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_quadtree_choose(internal, internal),
-  FUNCTION  3  period_quadtree_picksplit(internal, internal),
-  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
+  FUNCTION  2  span_quadtree_choose(internal, internal),
+  FUNCTION  3  span_quadtree_picksplit(internal, internal),
+  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/

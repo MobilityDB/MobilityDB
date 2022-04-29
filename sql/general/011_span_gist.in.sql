@@ -56,10 +56,6 @@ CREATE FUNCTION span_gist_consistent(internal, intspan, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS intspan_rtree_ops
   DEFAULT FOR TYPE intspan USING gist AS
@@ -94,7 +90,6 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, intspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  span_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(intspan, intspan, internal),
@@ -144,7 +139,6 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, floatspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  span_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(floatspan, floatspan, internal),

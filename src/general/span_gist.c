@@ -268,26 +268,6 @@ Span_gist_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Span_gist_compress);
-/**
- * GiST compress method for spans
- */
-PGDLLEXPORT Datum
-Span_gist_compress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  if (entry->leafkey)
-  {
-    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
-    gistentryinit(*retval, entry->key, entry->rel, entry->page,
-      entry->offset, false);
-    PG_RETURN_POINTER(retval);
-  }
-  PG_RETURN_POINTER(entry);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Timestampset_gist_compress);
 /**
  * GiST compress method for timestamp sets

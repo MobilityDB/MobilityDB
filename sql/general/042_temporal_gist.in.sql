@@ -222,11 +222,11 @@ CREATE OPERATOR CLASS tbool_rtree_ops
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
   FUNCTION  1  tbool_gist_consistent(internal, tbool, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
   FUNCTION  3  tbool_gist_compress(internal),
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(period, period, internal);
 
 /******************************************************************************/
 
@@ -550,10 +550,10 @@ CREATE OPERATOR CLASS ttext_rtree_ops
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
   FUNCTION  1  ttext_gist_consistent(internal, ttext, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
   FUNCTION  3  ttext_gist_compress(internal),
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(period, period, internal);
 
 /******************************************************************************/
