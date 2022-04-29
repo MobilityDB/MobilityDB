@@ -147,7 +147,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -221,23 +221,23 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
+					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
+					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer número o valor de rango a la derecha del segundo?</para>
+					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer número o valor de rango a la derecha del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer número o valor de rango a la izquierda del segundo?</para>
+					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer número o valor de rango a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_adjacent"><varname>-|-</varname></link>: ¿Es el primer número o valor de rango adyacente al segundo?</para>
+					<para><link linkend="span_adjacent"><varname>-|-</varname></link>: ¿Es el primer número o valor de rango adyacente al segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -285,7 +285,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_extent"><varname>extent</varname></link>: Extensión del rango delimitador</para>
+					<para><link linkend="span_extent"><varname>extent</varname></link>: Extensión del rango delimitador</para>
 				</listitem>
 
 				<listitem>
@@ -620,7 +620,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Convertir un número temporal a un rango</para>
+					<para><link linkend="tnumber_span"><varname>tnumber::span</varname></link>: Convertir un número temporal a un rango</para>
 				</listitem>
 
 				<listitem>
@@ -728,7 +728,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueRange"><varname>valueRange</varname></link>: Obtener el rango de valores</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname></link>: Obtener el rango de valores</para>
 				</listitem>
 
 				<listitem>
@@ -869,11 +869,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atRange"><varname>atRange</varname></link>: Restringir a un rango de valores</para>
+						<para><link linkend="atSpan"><varname>atSpan</varname></link>: Restringir a un rango de valores</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atRanges"><varname>atRanges</varname></link>: Restringir a una matriz de rangos de valores</para>
+						<para><link linkend="atSpans"><varname>atSpans</varname></link>: Restringir a una matriz de rangos de valores</para>
 					</listitem>
 
 					<listitem>
@@ -927,11 +927,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusRange"><varname>minusRange</varname></link>: Diferencia con un rango de valores</para>
+						<para><link linkend="minusSpan"><varname>minusSpan</varname></link>: Diferencia con un rango de valores</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusRanges"><varname>minusRanges</varname></link>: Diferencia con una matriz de rangos de valores</para>
+						<para><link linkend="minusSpans"><varname>minusSpans</varname></link>: Diferencia con una matriz de rangos de valores</para>
 					</listitem>
 
 					<listitem>
@@ -1439,7 +1439,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada.</para>
+						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada.</para>
 					</listitem>
 
 					<listitem>

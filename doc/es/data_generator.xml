@@ -31,7 +31,7 @@
 					<para><varname>random_int_array</varname>: Generar una matriz de enteros aleatorios</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_intrango</varname>: Generar un rango aleatorio de enteros</para>
+					<para><varname>random_intspan</varname>: Generar un rango aleatorio de enteros</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_float</varname>: Generar un número flotante aleatorio</para>
@@ -40,7 +40,7 @@
 					<para><varname>random_float_array</varname>: Generar una matriz de números flotantes aleatorios</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_floatrango</varname>: Generar un rango aleatorio de números flotantes</para>
+					<para><varname>random_floatrange</varname>: Generar un rango aleatorio de números flotantes</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_text</varname>: Generar un texto aleatorio</para>
@@ -52,13 +52,13 @@
 					<para><varname>random_timestamptz_array</varname>: Generar una matriz de marcas de tiempo con zona horaria aleatorias</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_minutos</varname>: Generar un intervalo de minutos aleatorio</para>
+					<para><varname>random_minutes</varname>: Generar un intervalo de minutos aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tstzrange</varname>: Generar rango aleatorio de marcas de tiempo con zona horaria </para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tstzrango_array</varname>: Generar una matriz de rangos aleatorios de marcas de tiempo con zona horaria</para>
+					<para><varname>random_tstzrange_array</varname>: Generar una matriz de rangos aleatorios de marcas de tiempo con zona horaria</para>
 				</listitem>
 			</itemizedlist>
 	</sect1>
@@ -154,7 +154,7 @@
 	</sect1>
 
 	<sect1>
-		<title>Generador para tipos de tiempo y de cuadro delimitador MobilityDB</title>
+		<title>Generador para tipos de tiempo, de rango, y de cuadro delimitador MobilityDB</title>
 
 			<itemizedlist>
 				<listitem>
@@ -168,6 +168,12 @@
 				</listitem>
 				<listitem>
 					<para><varname>random_periodset</varname>: Generar un <varname>periodset</varname> aleatorio</para>
+				</listitem>
+				<listitem>
+					<para><varname>random_intspan</varname>: Generar un rango aleatorio de enteros</para>
+				</listitem>
+				<listitem>
+					<para><varname>random_floatspan</varname>: Generar un rango aleatorio de números flotantes</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbox</varname>: Generar un <varname>tbox</varname> aleatorio</para>
@@ -342,14 +348,14 @@ FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
-			La creación de una tabla <varname>tbl_floatrange</varname> que contiene valores aleatorios <varname>floatrange</varname> donde los límites de los valores están en el rango [0,100] y la máxima diferencia entre los límites inferiores y superiores es 10 se da a continuación.
+			La creación de una tabla <varname>tbl_floatspan</varname> que contiene valores aleatorios <varname>floatspan</varname> donde los límites de los valores están en el rango [0,100] y la máxima diferencia entre los límites inferiores y superiores es 10 se da a continuación.
 		</para>
 		<programlisting xml:space="preserve">
-CREATE TABLE tbl_floatrango AS
+CREATE TABLE tbl_floatspan AS
 /* Add perc NULL valores */
 SELECT k, NULL AS f
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatrango(0, 100, 10)
+SELECT k, random_floatspan(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 

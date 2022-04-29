@@ -66,7 +66,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>numrange</varname> representa cualquier tipo de rango numérico, es decir, <varname>intrange</varname> o <varname>floatrange</varname>,</para>
+			<para><varname>numspan</varname> representa cualquier tipo de rango numérico, es decir, <varname>intspan</varname> o <varname>floatspan</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -368,16 +368,16 @@ SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::period;
 </programlisting>
 			</listitem>
 
-			<listitem id="tnumber_range">
+			<listitem id="tnumber_span">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir un número temporal a un rango</para>
-				<para><varname>tnumber::range</varname></para>
+				<para><varname>tnumber::span</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intrange;
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- "[1, 3)"
-SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatrange;
+SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- "(1, 3]"
-SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatrange;
+SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- "[1, 3]"
 </programlisting>
 			</listitem>
@@ -560,7 +560,7 @@ SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2012-01-01'));
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Obtener los valores</para>
-				<para><varname>getValues(ttype): {base[],floatrange[],geo}</varname></para>
+				<para><varname>getValues(ttype): {base[],floatspan[],geo}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT getValues(tint '[1@2012-01-01, 2@2012-01-03]');
 -- "{1,2}"
@@ -655,15 +655,15 @@ SELECT maxInstant(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-0
 </programlisting>
 			</listitem>
 
-			<listitem id="valueRange">
-				<indexterm><primary><varname>valueRange</varname></primary></indexterm>
+			<listitem id="valueSpan">
+				<indexterm><primary><varname>valueSpan</varname></primary></indexterm>
 				<para>Obtener el rango de valores</para>
-				<para><varname>valueRange(tnumber): numrange</varname></para>
+				<para><varname>valueSpan(tnumber): numspan</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting xml:space="preserve">
-SELECT valueRange(tfloat '{[2@2012-01-01, 1@2012-01-03), [4@2012-01-03, 6@2012-01-05)}');
+SELECT valueSpan(tfloat '{[2@2012-01-01, 1@2012-01-03), [4@2012-01-03, 6@2012-01-05)}');
 -- "[1,6]"
-SELECT valueRange(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+SELECT valueSpan(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "[1,3])"
 </programlisting>
 			</listitem>
@@ -1165,23 +1165,23 @@ SELECT asText(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03
 </programlisting>
 				</listitem>
 
-				<listitem id="atRange">
-					<indexterm><primary><varname>atRange</varname></primary></indexterm>
+				<listitem id="atSpan">
+					<indexterm><primary><varname>atSpan</varname></primary></indexterm>
 					<para>Restringir a un rango de valores</para>
-					<para><varname>atRange(tnumber,numrange): ttype</varname></para>
+					<para><varname>atSpan(tnumber,numspan): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT atRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[1,3]');
+SELECT atSpan(tfloat '[1@2012-01-01, 4@2012-01-4)', floatspan '[1,3]');
 -- "[1@2012-01-01, 3@2012-01-03]"
 </programlisting>
 				</listitem>
 
-				<listitem id="atRanges">
-					<indexterm><primary><varname>atRanges</varname></primary></indexterm>
+				<listitem id="atSpans">
+					<indexterm><primary><varname>atSpans</varname></primary></indexterm>
 					<para>Restringir a una matriz de rangos de valores</para>
-					<para><varname>atRanges(tnumber,numrange[]): ttype</varname></para>
+					<para><varname>atSpans(tnumber,numspan[]): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
-  ARRAY[floatrange '[1,2]', '[3,4]']);
+SELECT atSpans(tfloat '[1@2012-01-01, 5@2012-01-05)',
+  ARRAY[floatspan '[1,2]', '[3,4]']);
 -- "{[1@2012-01-01, 2@2012-01-02],[3@2012-01-03, 4@2012-01-04]}"
 </programlisting>
 				</listitem>
@@ -1336,23 +1336,23 @@ SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@201
 </programlisting>
 				</listitem>
 
-				<listitem id="minusRange">
-					<indexterm><primary><varname>minusRange</varname></primary></indexterm>
+				<listitem id="minusSpan">
+					<indexterm><primary><varname>minusSpan</varname></primary></indexterm>
 					<para>Diferencia con un rango de valores</para>
-					<para><varname>minusRange(tnumber,numrange): ttype</varname></para>
+					<para><varname>minusSpan(tnumber,numspan): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT minusRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[2,3]');
+SELECT minusSpan(tfloat '[1@2012-01-01, 4@2012-01-4)', floatspan '[2,3]');
 -- "{[1@2012-01-01, 2@2012-01-02), (3@2012-01-03, 4@2012-01-04)}"
 </programlisting>
 				</listitem>
 
-				<listitem id="minusRanges">
-					<indexterm><primary><varname>minusRanges</varname></primary></indexterm>
+				<listitem id="minusSpans">
+					<indexterm><primary><varname>minusSpans</varname></primary></indexterm>
 					<para>Diferencia con una matriz de rangos de valores</para>
-					<para><varname>minusRanges(tnumber,numrange[]): ttype</varname></para>
+					<para><varname>minusSpans(tnumber,numspan[]): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT minusRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
-  ARRAY[floatrange '[1,2]', '[3,4]']);
+SELECT minusSpans(tfloat '[1@2012-01-01, 5@2012-01-05)',
+  ARRAY[floatspan '[1,2]', '[3,4]']);
 -- "{(2@2012-01-02, 3@2012-01-03), (4@2012-01-04, 5@2012-01-05)}"
 </programlisting>
 				</listitem>
@@ -2121,17 +2121,17 @@ SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-0
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
 					<para>Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud o duración alineados con el origen &SRF;.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en 0 para los rangos y en lunes 3 de enero de 2000 para los períodos. Los índices empiezan en 1. </para>
-					<para><varname>bucketList(bounds range,width number,origin number=0): setof index_range</varname></para>
+					<para><varname>bucketList(bounds span,width number,origin number=0): setof index_span</varname></para>
 					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof index_period</varname></para>
 					<programlisting xml:space="preserve">
-SELECT (bl).index, (bl).range
-FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intrange, 2) AS bl) t;
+SELECT (bl).index, (bl).span
+FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intspan, 2) AS bl) t;
 -- 1 | [14,16)
    2 | [16,18)
    3 | [18,20)
    ...
-SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatrange, 2, -7);
+SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatspan, 2, -7);
 -- (1,"[-11,-9)")
    (2,"[-9,-7)")
    (3,"[-7,-5)")
@@ -2163,19 +2163,19 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 </programlisting>
 				</listitem>
 
-				<listitem id="rangeBucket">
-					<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
+				<listitem id="spanBucket">
+					<indexterm><primary><varname>spanBucket</varname></primary></indexterm>
 					<para>Obtener el rango en el espacio de intervalos que contiene el número de entrada.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en 0.</para>
-					<para><varname>rangeBucket(value number,width number,origin number=0): range</varname></para>
+					<para><varname>spanBucket(value number,width number,origin number=0): span</varname></para>
 					<programlisting xml:space="preserve">
-SELECT rangeBucket(2, 2);
+SELECT spanBucket(2, 2);
 -- [2,4)
-SELECT rangeBucket(2, 2, 1);
+SELECT spanBucket(2, 2, 1);
 -- [1,3)
-SELECT rangeBucket(2, 2.5);
+SELECT spanBucket(2, 2.5);
 -- [0,2.5)
-SELECT rangeBucket(2, 2.5, 1.5);
+SELECT spanBucket(2, 2.5, 1.5);
 -- [1.5,4)
 </programlisting>
 				</listitem>
@@ -2695,11 +2695,11 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		<para>Por ejemplo, dado el índice definido anteriormente en la tabla <varname>Department</varname> y una consulta que implica una condición con el operador <varname>&amp;&amp;</varname> (superposición), si el argumento derecho es un flotante temporal, entonces se consideran tanto el valor como las dimensiones de tiempo para filtrar las tuplas de la relación, mientras que si el argumento derecho es un valor flotante, un rango flotante o un tipo de tiempo, entonces el valor o la dimensión de tiempo se utilizará para filtrar las tuplas de la relación. Además, se puede construir un cuadro delimitador a partir de un valor/rango y/o una marca de tiempo/período, que se puede usar para filtrar las tuplas de la relación. Ejemplos de consultas que utilizan el índice en la tabla <varname>Department</varname> definida anteriormente se dan a continuación.
 			<programlisting xml:space="preserve">
 SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
-SELECT * FROM Department WHERE NoEmps &amp;&amp; intrange '[1, 5)';
+SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2012-04-01';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; period '[2012-04-01, 2012-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
-tbox(intrange '[1, 5)', period '[2012-04-01, 2012-05-01)');
+tbox(intspan '[1, 5)', period '[2012-04-01, 2012-05-01)');
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
 tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
 </programlisting>
@@ -2789,7 +2789,7 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>Las estadísticas recopiladas para columnas de los nuevos tipos de tiempo <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para el tipo <varname>period</varname>, que es equivalente a <varname>tszrange</varname>, excepto que los períodos no pueden estar vacíos. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su cuadro delimitador que es un <varname>period</varname> y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
+			<para>Las estadísticas recopiladas para columnas de los tipos de tiempo y de rango <varname>timestampset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname> y <varname>floatspan</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para los tipos de rango en MobilityDB, que son versiones más eficientes de los tipos de rango en PostgreSQL. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su período delimitador y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
 
 			<para>Las estadísticas recopiladas para columnas de los tipos temporales dependen del subtipo temporal y del tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensiónes de tiempo y de valor de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo:
 				<itemizedlist>
@@ -2846,7 +2846,7 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>integer</varname>, <varname>timestamptz</varname>, etc.) o un tipo MobilityDB (como <varname>period</varname>, <varname>tint</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
 
-			<para>MobilityDB estima la selectividad de restricción y de combinación para tipos temporales, aunque la selectividad de combinación para números temporales utiliza un valor de selectividad predeterminado para la dimensión de valor, ya que PostgreSQL actualmente no proporciona selectividad de combinación para tipos de rango.</para>
+			<para>MobilityDB estima la selectividad de restricción y de combinación para tipos de tiempo, de rango y temporales.</para>
 		</sect2>
 	</sect1>
 </chapter>

@@ -92,7 +92,7 @@ spannode_init(SpanNode *nodebox, CachedType spantype, CachedType basetype)
     min = Int32GetDatum(PG_INT32_MIN);
     max = Int32GetDatum(PG_INT32_MAX);
   }
-  else if (spantype == T_FLOATSPAN)
+  else /* spantype == T_FLOATSPAN */
   {
     min = Float8GetDatum(-1 * DBL_MAX);
     max = Float8GetDatum(DBL_MAX);

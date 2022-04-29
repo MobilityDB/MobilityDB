@@ -8,15 +8,15 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="time_types_range_types">
-	<title>Time Types and Range Types</title>
+<chapter id="time_types_span_types">
+	<title>Time Types and Span Types</title>
 
 	<para>
-		Temporal types are based on four time types: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>.
+		Temporal types are based on four time types: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. Furthermore, there are two span types <varname>intspan</varname> and <varname>floatspan</varname> for representing, respectively, ranges of integer and float values.
 	</para>
 
 	<para>
-		The <varname>period</varname> type is a specialized version of the <varname>tstzrange</varname> (short for timestamp with time zone range) type provided by PostgreSQL. Type <varname>period</varname> has similar functionality as type <varname>tstzrange</varname> but has a more efficient implementation, in particular it is of fixed length while the <varname>tstzrange</varname> type is of variable length. Furthermore, empty periods and infinite bounds are not allowed in <varname>period</varname> values, while they are allowed in <varname>tstzrange</varname> values.
+		The <varname>period</varname>, <varname>intspan</varname>, and <varname>floatspan</varname> types in MobilityDB correspond, respectively, to the <varname>tstzrange</varname>, <varname>int4range</varname>, and <varname>float8range</varname> types in PostgreSQL. Span types in MobilityDB have similar functionality as the range types in PostgreSQL but they have a more efficient implementation. In particular, span types in MobilityDB are of fixed length while the range types in PostgreSQL are of variable length. Furthermore, empty ranges and infinite bounds are not allowed in span values in MobilityDB, while they are allowed in range values in PostgreSQL.
 	</para>
 
 	<para>
@@ -70,15 +70,11 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 -- "{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}"
 </programlisting>
 
-	<para>
-		Besides the built-in range types provided by PostgreSQL, MobilityDB defines two additional range types: <varname>intrange</varname> (another name for <varname>int4range</varname>) and <varname>floatrange</varname>.
-	</para>
-
 	<sect1 id ="functions_operations_time_types">
-		<title>Functions and Operators for Time Types and Range Types</title>
+		<title>Functions and Operators for Time Types and Span Types</title>
 
 		<para>
-			We present next the functions and operators for time and range types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
+			We present next the functions and operators for time and span types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
 		</para>
 		<itemizedlist>
 			<listitem>
@@ -91,7 +87,7 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 				<para><varname>number</varname> represents any number type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
 			</listitem>
 			<listitem>
-				<para><varname>range</varname> represents any number range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+				<para><varname>span</varname> represents any number span type, that is, <varname>intspan</varname> or <varname>floatspan</varname>.</para>
 			</listitem>
 			<listitem>
 				<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
@@ -478,16 +474,16 @@ SELECT shiftTscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05
 </programlisting>
 			</listitem>
 
-				<listitem id="floatrange_round">
+				<listitem id="floatspan_round">
 					<indexterm><primary><varname>round</varname></primary></indexterm>
-					<para>Round the bounds of a float range to a number of decimal places</para>
-					<para><varname>round(floatrange,integer): floatrange</varname></para>
+					<para>Round the bounds of a float span to a number of decimal places</para>
+					<para><varname>round(floatspan,integer): floatspan</varname></para>
 					<programlisting xml:space="preserve">
-SELECT round(floatrange '[1.123456789,2.123456789)', 3);
+SELECT round(floatspan '[1.123456789,2.123456789)', 3);
 -- "[1.123,2.123)"
-SELECT round(floatrange '(,2.123456789]', 3);
+SELECT round(floatspan '(,2.123456789]', 3);
 -- "(,2.123]"
-SELECT round(floatrange '[1.123456789, inf)', 3);
+SELECT round(floatspan '[1.123456789, inf)', 3);
 -- "[1.123,Infinity)"
 </programlisting>
 				</listitem>
@@ -674,59 +670,59 @@ SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-0
 		<sect2 id="time_relpos_operators">
 			<title>Relative Position Operators</title>
 
-			<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept ranges as left or right argument. We extended these operators for numeric ranges so that one argument may be an integer or a float.</para>
+			<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept ranges as left or right argument. We extended these operators for numeric spans so that one argument may be an integer or a float.</para>
 
-			<para>The relative position operators available for the time types and range types are given next.</para>
+			<para>The relative position operators available for the time types and span types are given next.</para>
 
 			<itemizedlist>
-				<listitem id="range_left">
+				<listitem id="span_left">
 					<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
-					<para>Is the first number or range value strictly left of the second one?</para>
-					<para><varname>{number,range} &lt;&lt; {number,range}: boolean</varname></para>
+					<para>Is the first number or span value strictly left of the second one?</para>
+					<para><varname>{number,span} &lt;&lt; {number,span}: boolean</varname></para>
 					<programlisting xml:space="preserve">
-SELECT intrange '[15, 20)' &lt;&lt; 20;
+SELECT intspan '[15, 20)' &lt;&lt; 20;
 -- true
 </programlisting>
 				</listitem>
 
-				<listitem id="range_right">
+				<listitem id="span_right">
 					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
-					<para>Is the first number or range value strictly right of the second one?</para>
-					<para><varname>{number,range} &gt;&gt; {number,range}: boolean</varname></para>
+					<para>Is the first number or span value strictly right of the second one?</para>
+					<para><varname>{number,span} &gt;&gt; {number,span}: boolean</varname></para>
 					<programlisting xml:space="preserve">
-SELECT intrange '[15, 20)' &gt;&gt; 10;
+SELECT intspan '[15, 20)' &gt;&gt; 10;
 -- true
 </programlisting>
 				</listitem>
 
-				<listitem id="range_overleft">
+				<listitem id="span_overleft">
 					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
-					<para>Is the first number or range value not to the right of the second one?</para>
-					<para><varname>{number,range} &amp;&lt; {number,range}: boolean</varname></para>
+					<para>Is the first number or span value not to the right of the second one?</para>
+					<para><varname>{number,span} &amp;&lt; {number,span}: boolean</varname></para>
 					<programlisting xml:space="preserve">
-SELECT intrange '[15, 20)' &amp;&lt; 18;
+SELECT intspan '[15, 20)' &amp;&lt; 18;
 -- false
 </programlisting>
 				</listitem>
 
-				<listitem id="range_overright">
+				<listitem id="span_overright">
 					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
-					<para>Is the first number or range value not to the left of the second one?</para>
-					<para><varname>{number,range} &amp;&gt; {number,range}: boolean</varname></para>
+					<para>Is the first number or span value not to the left of the second one?</para>
+					<para><varname>{number,span} &amp;&gt; {number,span}: boolean</varname></para>
 					<programlisting xml:space="preserve">
 SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';
 -- true
-SELECT intrange '[15, 20)' &amp;&gt; 30;
+SELECT intspan '[15, 20)' &amp;&gt; 30;
 -- true
 </programlisting>
 				</listitem>
 
-				<listitem id="range_adjacent">
+				<listitem id="span_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
-					<para>Is the first number or range value adjacent to the second one?</para>
-					<para><varname>{number,range} -|- {number,range}: boolean</varname></para>
+					<para>Is the first number or span value adjacent to the second one?</para>
+					<para><varname>{number,span} -|- {number,span}: boolean</varname></para>
 					<programlisting xml:space="preserve">
-SELECT floatrange '[15, 20)' -|- 20;
+SELECT floatspan '[15, 20)' -|- 20;
 -- true
 </programlisting>
 				</listitem>
@@ -819,9 +815,9 @@ SELECT timestampset '{2012-01-01, 2012-01-03, 2012-01-05}' |=|
 				<listitem><para>Function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
 			</itemizedlist>
 
-			<para>Similarly, there is an aggregate function for range types:</para>
+			<para>Similarly, there is an aggregate function for span types:</para>
 			<itemizedlist>
-				<listitem><para>Function <varname>extent</varname> returns a bounding range that encloses a set of integer or float range values.</para></listitem>
+				<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of integer or float span values.</para></listitem>
 			</itemizedlist>
 
 			<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
@@ -875,17 +871,17 @@ SELECT extent(ps) FROM periods;
 </programlisting>
 				</listitem>
 
-				<listitem id="range_extent">
+				<listitem id="span_extent">
 					<indexterm><primary><varname>extent</varname></primary></indexterm>
-					<para>Bounding range</para>
-					<para><varname>extent(range): range</varname></para>
+					<para>Bounding span</para>
+					<para><varname>extent(span): span</varname></para>
 					<programlisting xml:space="preserve">
-WITH ranges(r) AS (
-  SELECT floatrange '[1, 4)' UNION
-  SELECT floatrange '(5, 8)' UNION
-  SELECT floatrange '(7, 9)'
+WITH spans(r) AS (
+  SELECT floatspan '[1, 4)' UNION
+  SELECT floatspan '(5, 8)' UNION
+  SELECT floatspan '(7, 9)'
 )
-SELECT extent(r) FROM ranges;
+SELECT extent(r) FROM spans;
 -- "[1,9)"
 </programlisting>
 				</listitem>

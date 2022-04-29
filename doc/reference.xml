@@ -12,7 +12,7 @@
 	<title>MobilityDB Reference</title>
 
 	<sect1>
-		<title>Functions and Operators for Time Types and Range Types</title>
+		<title>Functions and Operators for Time Types and Span Types</title>
 
 		<sect2>
 			<title>Constructor Functions</title>
@@ -147,7 +147,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_round"><varname>round</varname></link>: Round the bounds of a float range to a number of decimal places</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Round the bounds of a float span to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -221,23 +221,23 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: Is the first number or range value scritly left of the second one?</para>
+					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: Is the first number or span value scritly left of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: Is the first number or range value strictly right of the second one?</para>
+					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: Is the first number or span value strictly right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: Is the first number or range value not to the right of the second one?</para>
+					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: Is the first number or span value not to the right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: Is the first number or range value not to the left of the second one?</para>
+					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: Is the first number or span value not to the left of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_adjacent"><varname>-|-</varname></link>: Is the first number or range value adjacent to the second one?</para>
+					<para><link linkend="span_adjacent"><varname>-|-</varname></link>: Is the first number or span value adjacent to the second one?</para>
 				</listitem>
 
 				<listitem>
@@ -285,7 +285,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_extent"><varname>extent</varname></link>: Bounding range</para>
+					<para><link linkend="span_extent"><varname>extent</varname></link>: Bounding span</para>
 				</listitem>
 
 				<listitem>
@@ -620,7 +620,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Cast a temporal number to a range</para>
+					<para><link linkend="tnumber_span"><varname>tnumber::span</varname></link>: Cast a temporal number to a span</para>
 				</listitem>
 
 				<listitem>
@@ -705,7 +705,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueRange"><varname>valueRange</varname></link>: Get the value range</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname></link>: Get the value span</para>
 				</listitem>
 
 				<listitem>
@@ -869,11 +869,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atRange"><varname>atRange</varname></link>: Restrict to a range</para>
+						<para><link linkend="atSpan"><varname>atSpan</varname></link>: Restrict to a span</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atRanges"><varname>atRanges</varname></link>: Restrict to an array of ranges</para>
+						<para><link linkend="atSpans"><varname>atSpans</varname></link>: Restrict to an array of spans</para>
 					</listitem>
 
 					<listitem>
@@ -927,11 +927,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusRange"><varname>minusRange</varname></link>: Difference with a range</para>
+						<para><link linkend="minusSpan"><varname>minusSpan</varname></link>: Difference with a span</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusRanges"><varname>minusRanges</varname></link>: Difference with an array of ranges</para>
+						<para><link linkend="minusSpans"><varname>minusSpans</varname></link>: Difference with an array of spans</para>
 					</listitem>
 
 					<listitem>
@@ -1433,7 +1433,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the range or period with buckets of the same width or duration aligned with the origin</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the span or period with buckets of the same width or duration aligned with the origin</para>
 					</listitem>
 
 					<listitem>
@@ -1441,7 +1441,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Returns the range in the bucket space that contains the input number</para>
+						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Returns the span in the bucket space that contains the input number</para>
 					</listitem>
 
 					<listitem>

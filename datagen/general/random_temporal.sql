@@ -164,6 +164,34 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate a random integer span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between the lower and upper bounds
+ */
+DROP FUNCTION IF EXISTS random_intspan;
+CREATE FUNCTION random_intspan(lowvalue int, highvalue int, maxdelta int)
+  RETURNS intspan AS $$
+DECLARE
+  v int;
+BEGIN
+  IF lowvalue > highvalue - maxdelta THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
+      lowvalue, highvalue, maxdelta;
+  END IF;
+  v = random_int(lowvalue, highvalue - maxdelta);
+  RETURN intspan(v, v + random_int(1, maxdelta));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_intspan(-100, 100, 10) AS ir
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random float in a range
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
@@ -256,6 +284,34 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_floatrange(-100, 100, 10) AS fr
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate a random float span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the span
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ */
+DROP FUNCTION IF EXISTS random_floatspan;
+CREATE FUNCTION random_floatspan(lowvalue float, highvalue float, maxdelta int)
+  RETURNS floatspan AS $$
+DECLARE
+  v float;
+BEGIN
+  IF lowvalue > highvalue - maxdelta THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
+      lowvalue, highvalue, maxdelta;
+  END IF;
+  v = random_float(lowvalue, highvalue - maxdelta);
+  RETURN floatspan(v, v + random_float(1, maxdelta));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_floatspan(-100, 100, 10) AS fr
 FROM generate_series(1,10) k;
 */
 

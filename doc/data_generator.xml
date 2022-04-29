@@ -154,7 +154,7 @@
 	</sect1>
 
 	<sect1>
-		<title>Generator for MobilityDB Time and Box Types</title>
+		<title>Generator for MobilityDB Time, Span, and Box Types</title>
 
 			<itemizedlist>
 				<listitem>
@@ -168,6 +168,12 @@
 				</listitem>
 				<listitem>
 					<para><varname>random_periodset</varname>: Generate a random <varname>periodset</varname></para>
+				</listitem>
+				<listitem>
+					<para><varname>random_intspan</varname>: Generate a random integer span</para>
+				</listitem>
+				<listitem>
+					<para><varname>random_floatspan</varname>: Generate a random float span</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbox</varname>: Generate a random <varname>tbox</varname></para>
@@ -342,14 +348,14 @@ FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_floatrange</varname> containing random <varname>floatrange</varname> values where the bounds for values are in the range [0,100] and the maximum difference between the lower and the upper bounds is 10 is given next.
+			The creation of a table <varname>tbl_floatspan</varname> containing random <varname>floatspan</varname> values where the bounds for values are in the range [0,100] and the maximum difference between the lower and the upper bounds is 10 is given next.
 		</para>
 		<programlisting xml:space="preserve">
-CREATE TABLE tbl_floatrange AS
+CREATE TABLE tbl_floatspan AS
 /* Add perc NULL values */
 SELECT k, NULL AS f
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatrange(0, 100, 10)
+SELECT k, random_floatspan(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
