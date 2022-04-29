@@ -50,218 +50,6 @@
  *****************************************************************************/
 
 /**
- * Deconstruct the period
- *
- * @param[in] p Period value
- * @param[out] lower,upper Bounds
- */
-void
-period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
-{
-  if (lower)
-  {
-    lower->val = p->lower;
-    lower->inclusive = p->lower_inc;
-    lower->lower = true;
-    /* Make the period bound value memory compatible with a span bound value */
-    lower->spantype = T_PERIOD;
-    lower->basetype = T_TIMESTAMPTZ;
-  }
-  if (upper)
-  {
-    upper->val = p->upper;
-    upper->inclusive = p->upper_inc;
-    upper->lower = false;
-    /* Make the period bound value memory compatible with a span bound value */
-    upper->spantype = T_PERIOD;
-    upper->basetype = T_TIMESTAMPTZ;
-  }
-}
-
-/*****************************************************************************/
-
-/**
- * Compare two period boundary points, returning <0, 0, or >0 according to
- * whether b1 is less than, equal to, or greater than b2.
- *
- * The boundaries can be any combination of upper and lower; so it's useful
- * for a variety of operators.
- *
- * The simple case is when b1 and b2 are both inclusive, in which
- * case the result is just a comparison of the values held in b1 and b2.
- *
- * If a bound is exclusive, then we need to know whether it's a lower bound,
- * in which case we treat the boundary point as "just greater than" the held
- * value; or an upper bound, in which case we treat the boundary point as
- * "just less than" the held value.
- *
- * There is only one case where two boundaries compare equal but are not
- * identical: when both bounds are inclusive and hold the same value,
- * but one is an upper bound and the other a lower bound.
- */
-int
-period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2)
-{
-  int32 result;
-
-  /* Compare the values */
-  result = timestamp_cmp_internal((TimestampTz) b1->val, (TimestampTz) b2->val);
-
-  /*
-   * If the comparison is not equal and the bounds are both inclusive or
-   * both exclusive, we're done. If they compare equal, we still have to
-   * consider whether the boundaries are inclusive or exclusive.
-  */
-  if (result == 0)
-  {
-    if (! b1->inclusive && ! b2->inclusive)
-    {
-      /* both are exclusive */
-      if (b1->lower == b2->lower)
-        return 0;
-      else
-        return b1->lower ? 1 : -1;
-    }
-    else if (! b1->inclusive)
-      return b1->lower ? 1 : -1;
-    else if (! b2->inclusive)
-      return b2->lower ? -1 : 1;
-  }
-
-  return result;
-}
-
-/**
- * Comparison function for sorting period bounds.
- */
-int
-period_bound_qsort_cmp(const void *a1, const void *a2)
-{
-  PeriodBound *b1 = (PeriodBound *) a1;
-  PeriodBound *b2 = (PeriodBound *) a2;
-  return period_bound_cmp(b1, b2);
-}
-
-/**
- * Compare the lower bound of two periods, returning <0, 0, or >0 according to
- * whether a's bound is less than, equal to, or greater than b's bound.
- *
- * @note This function does the same as period_bound_cmp but avoids
- * deserializing the periods into lower and upper bounds
- */
-int
-period_lower_cmp(const Period *a, const Period *b)
-{
-  int result = timestamp_cmp_internal(a->lower, b->lower);
-  if (result == 0)
-  {
-    if (a->lower_inc == b->lower_inc)
-      /* both are inclusive or exclusive */
-      return 0;
-    else if (a->lower_inc)
-      /* first is inclusive and second is exclusive */
-      return 1;
-    else
-      /* first is exclusive and second is inclusive */
-      return -1;
-  }
-  return result;
-}
-
-/**
- * Compare the upper bound of two periods, returning <0, 0, or >0 according to
- * whether a's bound is less than, equal to, or greater than b's bound.
- *
- * @note This function does the same as period_bound_cmp but avoids
- * deserializing the periods into lower and upper bounds
- */
-int
-period_upper_cmp(const Period *a, const Period *b)
-{
-  int result = timestamp_cmp_internal(a->upper, b->upper);
-  if (result == 0)
-  {
-    if (a->upper_inc == b->upper_inc)
-      /* both are inclusive or exclusive */
-      return 0;
-    else if (a->upper_inc)
-      /* first is inclusive and second is exclusive */
-      return 1;
-    else
-      /* first is exclusive and second is inclusive */
-      return -1;
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_constructor
- * @brief Construct a period from the bounds.
- */
-Period *
-period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
-{
-  /* Note: zero-fill is done in the period_set function */
-  Period *period = (Period *) palloc(sizeof(Period));
-  period_set(lower, upper, lower_inc, upper_inc, period);
-  return period;
-}
-
-/**
- * @ingroup libmeos_time_constructor
- * @brief Set the period from the argument values.
- */
-void
-period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
-  bool upper_inc, Period *p)
-{
-  int cmp = timestamp_cmp_internal(lower, upper);
-  /* error check: if lower bound value is above upper, it's wrong */
-  if (cmp > 0)
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Period lower bound must be less than or equal to period upper bound")));
-
-  /* error check: if bounds are equal, and not both inclusive, period is empty */
-  if (cmp == 0 && !(lower_inc && upper_inc))
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Period cannot be empty")));
-
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(p, 0, sizeof(Period));
-  /* Now fill in the period */
-  p->lower = lower;
-  p->upper = upper;
-  p->lower_inc = lower_inc;
-  p->upper_inc = upper_inc;
-  /* Make the period value memory compatible with a span value */
-  p->spantype = T_PERIOD;
-  p->basetype = T_TIMESTAMPTZ;
-
-}
-
-/**
- * @ingroup libmeos_time_constructor
- * @brief Return a copy of the period.
- */
-Period *
-period_copy(const Period *p)
-{
-  Period *result = (Period *) palloc(sizeof(Period));
-  memcpy((char *) result, (char *) p, sizeof(Period));
-  return result;
-}
-
-/**
- * @ingroup libmeos_time_accessor
- * @brief Return the number of seconds of the period as a float8 value
- */
-float8
-period_to_secs(TimestampTz upper, TimestampTz lower)
-{
-  return ((float8) upper - (float8) lower) / USECS_PER_SEC;
-}
-
-/**
  * Normalize an array of periods
  *
  * The input periods may overlap and may be non contiguous.
@@ -353,6 +141,63 @@ period_expand(const Period *p1, Period *p2)
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_time_constructor
+ * @brief Construct a period from the bounds.
+ */
+Period *
+period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
+{
+  /* Note: zero-fill is done in the period_set function */
+  Period *period = (Period *) palloc(sizeof(Period));
+  period_set(lower, upper, lower_inc, upper_inc, period);
+  return period;
+}
+
+/**
+ * @ingroup libmeos_time_constructor
+ * @brief Set the period from the argument values.
+ */
+void
+period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc, Period *p)
+{
+  int cmp = timestamp_cmp_internal(lower, upper);
+  /* error check: if lower bound value is above upper, it's wrong */
+  if (cmp > 0)
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Period lower bound must be less than or equal to period upper bound")));
+
+  /* error check: if bounds are equal, and not both inclusive, period is empty */
+  if (cmp == 0 && !(lower_inc && upper_inc))
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Period cannot be empty")));
+
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(p, 0, sizeof(Period));
+  /* Now fill in the period */
+  p->lower = lower;
+  p->upper = upper;
+  p->lower_inc = lower_inc;
+  p->upper_inc = upper_inc;
+  /* Make the period value memory compatible with a span value */
+  p->spantype = T_PERIOD;
+  p->basetype = T_TIMESTAMPTZ;
+
+}
+
+/**
+ * @ingroup libmeos_time_constructor
+ * @brief Return a copy of the period.
+ */
+Period *
+period_copy(const Period *p)
+{
+  Period *result = (Period *) palloc(sizeof(Period));
+  memcpy((char *) result, (char *) p, sizeof(Period));
+  return result;
+}
 
 /*****************************************************************************
  * Casting

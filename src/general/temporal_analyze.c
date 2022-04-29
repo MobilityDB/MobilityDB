@@ -352,8 +352,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
           DatumGetFloat8(span_lower.val);
     }
     temporal_period(temp, &period);
-    period_deserialize(&period, (PeriodBound *) &period_lower,
-      (PeriodBound *) &period_upper);
+    span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;
     time_lengths[non_null_cnt] = distance_elem_elem(period_upper.val,

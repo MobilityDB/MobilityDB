@@ -344,7 +344,7 @@ span_super_union(const Span *s1, const Span *s2)
 /**
  * Get the bounds of the span as double values.
  *
- * @param[in] span Input span
+ * @param[in] s Input span
  * @param[out] xmin, xmax Lower and upper bounds
  */
 void

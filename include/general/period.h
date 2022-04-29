@@ -46,8 +46,6 @@
 
 /* General functions */
 
-extern void period_deserialize(const Period *p, PeriodBound *lower,
-  PeriodBound *upper);
 extern int period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2);
 extern int period_bound_qsort_cmp(const void *b1, const void *b2);
 extern int period_lower_cmp(const Period *a, const Period *b);
@@ -57,7 +55,6 @@ extern Period *period_make(TimestampTz lower, TimestampTz upper,
   extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc, Period *p);
 extern Period *period_copy(const Period *p);
-extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 extern Period *period_super_union(const Period *p1, const Period *p2);
 extern void period_expand(const Period *p2, Period *p1);

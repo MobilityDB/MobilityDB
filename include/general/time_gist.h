@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_gist.c
+ * @file time_gist.h
  * R-tree GiST index for time types.
  */
 

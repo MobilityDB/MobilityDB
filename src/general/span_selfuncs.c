@@ -679,7 +679,7 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
  */
 static double
 span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
-  CachedOp cachedOp, SpanPeriodSel spansel)
+  CachedOp cachedOp)
 {
   SpanBound *hist_lower, *hist_upper;
   SpanBound const_lower, const_upper;
@@ -694,14 +694,8 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
   hist_lower = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
   hist_upper = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
   for (i = 0; i < nhist; i++)
-  {
-    if (spansel == SPANSEL)
       span_deserialize(DatumGetSpanP(hslot->values[i]),
         &hist_lower[i], &hist_upper[i]);
-    else /* spansel == PERIODSEL */
-      period_deserialize(DatumGetPeriodP(hslot->values[i]),
-        (PeriodBound *) &hist_lower[i], (PeriodBound *) &hist_upper[i]);
-  }
 
   /* Extract the bounds of the constant value. */
   span_deserialize(constval, &const_lower, &const_upper);
@@ -824,7 +818,7 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, constval, cachedOp, spansel);
+  selec = span_sel_hist1(&hslot, &lslot, constval, cachedOp);
 
   free_attstatsslot(&hslot);
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
@@ -1116,7 +1110,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, (Span *) p, cachedOp,PERIODSEL); // TODO
+  selec = span_sel_hist1(&hslot, &lslot, (Span *) p, cachedOp);
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
@@ -1307,6 +1301,18 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
     selec = 1.0 - span_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
   else if (cachedOp == GE_OP)
     selec = 1.0 - span_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
+  else if (cachedOp == LEFT_OP)
+    /* var1 << var2 when upper(var1) < lower(var2)*/
+    selec = span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
+  else if (cachedOp == OVERLEFT_OP)
+    /* var1 &< var2 when upper(var1) <= upper(var2) */
+    selec = span_joinsel_scalar(upper1, nhist1, upper2, nhist2, true);
+  else if (cachedOp == RIGHT_OP)
+    /* var1 >> var2 when lower(var1) > upper(var2) */
+    selec = 1.0 - span_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
+  else if (cachedOp == OVERRIGHT_OP)
+    /* var1 &> var2 when lower(var1) >= lower(var2) */
+    selec = 1.0 - span_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
   else if (cachedOp == BEFORE_OP)
     /* var1 <<# var2 when upper(var1) < lower(var2)*/
     selec = span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);

@@ -2474,19 +2474,21 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_time_set
  * @brief Return the difference of the two time values.
+ * @note This function generalizes the function minus_span_span by enabling
+ * the result to be two periods
  */
-int
-minus_period_period1(Period **result, const Period *p1, const Period *p2)
+static int
+minus_period_period1(const Period *p1, const Period *p2, Period **result)
 {
-  PeriodBound lower1, lower2, upper1, upper2;
+  SpanBound lower1, lower2, upper1, upper2;
 
-  period_deserialize(p1, &lower1, &upper1);
-  period_deserialize(p2, &lower2, &upper2);
+  span_deserialize((const Span *) p1, &lower1, &upper1);
+  span_deserialize((const Span *) p2, &lower2, &upper2);
 
-  int cmp_l1l2 = period_bound_cmp(&lower1, &lower2);
-  int cmp_l1u2 = period_bound_cmp(&lower1, &upper2);
-  int cmp_u1l2 = period_bound_cmp(&upper1, &lower2);
-  int cmp_u1u2 = period_bound_cmp(&upper1, &upper2);
+  int cmp_l1l2 = span_bound_cmp(&lower1, &lower2);
+  int cmp_l1u2 = span_bound_cmp(&lower1, &upper2);
+  int cmp_u1l2 = span_bound_cmp(&upper1, &lower2);
+  int cmp_u1u2 = span_bound_cmp(&upper1, &upper2);
 
   /* Result is empty
    * p1         |----|
@@ -2546,7 +2548,7 @@ PeriodSet *
 minus_period_period(const Period *p1, const Period *p2)
 {
   Period *periods[2];
-  int count = minus_period_period1(periods, p1, p2);
+  int count = minus_period_period1(p1, p2, periods);
   if (count == 0)
     return NULL;
   PeriodSet *result = periodset_make((const Period **) periods, count,
@@ -2580,7 +2582,7 @@ minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
       break;
     }
     Period *minus[2];
-    int countminus = minus_period_period1(minus, curr, p1);
+    int countminus = minus_period_period1(curr, p1, minus);
     pfree(curr);
     /* minus can have from 0 to 2 periods */
     if (countminus == 0)
@@ -2770,7 +2772,7 @@ minus_periodset_period(const PeriodSet *ps, const Period *p)
   for (int i = 0; i < ps->count; i++)
   {
     p1 = periodset_per_n(ps, i);
-    k += minus_period_period1(&periods[k], p1, p);
+    k += minus_period_period1(p1, p, &periods[k]);
   }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;

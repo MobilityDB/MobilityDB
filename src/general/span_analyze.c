@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_analyze.c
+ * @file span_analyze.c
  * @brief Functions for gathering statistics from time type columns.
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.
@@ -83,6 +83,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
  * @param[in] slot_idx Index of the slot where the statistics collected are stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
+ * @param[in] type type Enumerated type of the span
  */
 void
 span_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
@@ -265,25 +266,16 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Get the (bounding) period or span and deserialize it for further
      * analysis. */
-    assert(type ==  T_PERIOD || type == T_TIMESTAMPSET ||
-      type == T_PERIODSET || type == T_INTSPAN || type == T_FLOATSPAN);
+    assert(type == T_TIMESTAMPSET || type == T_PERIODSET ||
+      type ==  T_PERIOD || type == T_INTSPAN || type == T_FLOATSPAN);
     const Span *span;
     const Period *period;
     SpanBound lower, upper;
-    if (type == T_PERIOD)
-    {
-      period = DatumGetPeriodP(value);
-      period_deserialize(period, (PeriodBound *) &lower,
-        (PeriodBound *) &upper);
-      /* Adjust the size */
-      total_width += sizeof(Period);
-    }
-    else if (type == T_TIMESTAMPSET)
+    if (type == T_TIMESTAMPSET)
     {
       TimestampSet *ts= DatumGetTimestampSetP(value);
       period = timestampset_period_ptr(ts);
-      period_deserialize(period, (PeriodBound *) &lower,
-        (PeriodBound *) &upper);
+      span_deserialize((Span *) period, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
@@ -291,12 +283,11 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     {
       PeriodSet *ps= DatumGetPeriodSetP(value);
       period = periodset_period_ptr(ps);
-      period_deserialize(period, (PeriodBound *) &lower,
-        (PeriodBound *) &upper);
+      span_deserialize((Period *) period, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ps);
     }
-    else /* type == T_INTSPAN || type == T_FLOATSPAN */
+    else /* type ==  T_PERIOD ||type == T_INTSPAN || type == T_FLOATSPAN */
     {
       span = DatumGetSpanP(value);
       span_deserialize(span, &lower, &upper);

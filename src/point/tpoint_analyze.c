@@ -1005,8 +1005,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     temporal_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
-    period_deserialize(&period, (PeriodBound *) &period_lower,
-      (PeriodBound *) &period_upper);
+    span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[notnull_cnt] = period_lower;
     time_uppers[notnull_cnt] = period_upper;
     time_lengths[notnull_cnt] = distance_elem_elem(period_upper.val,
