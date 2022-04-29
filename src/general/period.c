@@ -350,79 +350,6 @@ period_expand(const Period *p1, Period *p2)
  * Input/output functions
  *****************************************************************************/
 
-/**
- * Remove the quotes from the string representation of a period
- */
-static void
-unquote(char *str)
-{
-  char *last = str;
-  while (*str != '\0')
-  {
-    if (*str != '"')
-    {
-      *last++ = *str;
-    }
-    str++;
-  }
-  *last = '\0';
-  return;
-}
-
-/**
- * @ingroup libmeos_time_input_output
- * @brief Return the string representation of the period.
- */
-char *
-period_to_string(const Period *p)
-{
-  char *lower = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
-  char *upper = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
-  StringInfoData buf;
-  initStringInfo(&buf);
-  appendStringInfoChar(&buf, p->lower_inc ? (char) '[' : (char) '(');
-  appendStringInfoString(&buf, lower);
-  appendStringInfoString(&buf, ", ");
-  appendStringInfoString(&buf, upper);
-  appendStringInfoChar(&buf, p->upper_inc ? (char) ']' : (char) ')');
-  unquote(buf.data);
-  pfree(lower); pfree(upper);
-  return buf.data;
-}
-
-/**
- * @ingroup libmeos_time_input_output
- * @brief Write the binary representation of the time value into the buffer.
- */
-void
-period_write(const Period *p, StringInfo buf)
-{
-  bytea *lower = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
-  bytea *upper = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
-  pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
-  pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
-  pq_sendbyte(buf, p->lower_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, p->upper_inc ? (uint8) 1 : (uint8) 0);
-  pfree(lower);
-  pfree(upper);
-}
-
-/**
- * @ingroup libmeos_time_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
- */
-Period *
-period_read(StringInfo buf)
-{
-  Period *result = (Period *) palloc0(sizeof(Period));
-  result->lower = call_recv(TIMESTAMPTZOID, buf);
-  result->upper = call_recv(TIMESTAMPTZOID, buf);
-  result->lower_inc = (char) pq_getmsgbyte(buf);
-  result->upper_inc = (char) pq_getmsgbyte(buf);
-  return result;
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -718,88 +645,9 @@ period_hash_extended(const Period *p, Datum seed)
  * Input/output functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Period_in);
-/**
- * Input function for periods
- */
-PGDLLEXPORT Datum
-Period_in(PG_FUNCTION_ARGS)
-{
-  char *input = PG_GETARG_CSTRING(0);
-  Period *result = period_parse(&input, true);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Period_out);
-/**
- * Output function for periods
- */
-PGDLLEXPORT Datum
-Period_out(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PG_RETURN_CSTRING(period_to_string(p));
-}
-
-PG_FUNCTION_INFO_V1(Period_send);
-/**
- * Send function for periods
- */
-PGDLLEXPORT Datum
-Period_send(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  period_write(p, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
-}
-
-PG_FUNCTION_INFO_V1(Period_recv);
-/**
- * Receive function for periods
- */
-PGDLLEXPORT Datum
-Period_recv(PG_FUNCTION_ARGS)
-{
-  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(period_read(buf));
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Period_constructor2);
-/**
- * Construct a period from the two arguments
- */
-PGDLLEXPORT Datum
-Period_constructor2(PG_FUNCTION_ARGS)
-{
-  TimestampTz lower = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz upper = PG_GETARG_TIMESTAMPTZ(1);
-  Period *period;
-  period = period_make(lower, upper, true, false);
-  PG_RETURN_PERIOD_P(period);
-}
-
-
-PG_FUNCTION_INFO_V1(Period_constructor4);
-/**
- * Construct a period from the four arguments
- */
-PGDLLEXPORT Datum
-Period_constructor4(PG_FUNCTION_ARGS)
-{
-  TimestampTz lower = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz upper = PG_GETARG_TIMESTAMPTZ(1);
-  bool lower_inc = PG_GETARG_BOOL(2);
-  bool upper_inc = PG_GETARG_BOOL(3);
-  Period *period;
-  period = period_make(lower, upper, lower_inc, upper_inc);
-  PG_RETURN_PERIOD_P(period);
-}
 
 /*****************************************************************************
  * Casting

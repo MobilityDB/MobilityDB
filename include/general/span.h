@@ -96,7 +96,6 @@ extern int span_upper_cmp(const Span *a, const Span *b);
 extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
 extern Span *span_super_union(const Span *s1, const Span *s2);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
-extern int span_cmp_bounds(const SpanBound *b1, const SpanBound *b2);
 
 /* Input/output functions */
 
@@ -128,9 +127,6 @@ extern double span_distance(const Span *s);
 
 extern void span_expand(const Span *s1, Span *s2);
 extern Span *floatspan_round(Span *span, Datum size);
-
-// extern void span_shift_tscale(const Interval *start,
-  // const Interval *duration, Span *result);
 
 /* Comparison functions */
 

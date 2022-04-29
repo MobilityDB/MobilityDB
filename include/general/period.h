@@ -64,12 +64,7 @@ extern void period_expand(const Period *p2, Period *p1);
 
 /* Input/output functions */
 
-extern char *period_to_string(const Period *p);
-extern void period_write(const Period *p, StringInfo buf);
-extern Period *period_read(StringInfo buf);
-
 /* Constructors */
-
 
 /* Casting */
 

@@ -51,16 +51,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
- * @brief Return the n-th period of the period set value.
- */
-const Period *
-periodset_per_n(const PeriodSet *ps, int index)
-{
-  return (Period *) &ps->elems[index];
-}
-
-/**
  * Return a pointer to the precomputed bounding box of the period set value
  */
 const Period *
@@ -68,6 +58,120 @@ periodset_period_ptr(const PeriodSet *ps)
 {
   return (Period *) &ps->period;
 }
+
+/**
+ * Return the location of the timestamp in the temporal sequence set
+ * value using binary search
+ *
+ * If the timestamp is found, the index of the period is returned
+ * in the output parameter. Otherwise, return a number encoding whether the
+ * timestamp is before, between two periods, or after the period set value.
+ * For example, given a value composed of 3 periods and a timestamp, the
+ * result of the function is as follows:
+ * @code
+ *               0          1          2
+ *            |-----|    |-----|    |-----|
+ * 1)    t^                                        => loc = 0
+ * 2)            t^                                => loc = 0
+ * 3)                 t^                           => loc = 1
+ * 4)                            t^                => loc = 2
+ * 5)                                        t^    => loc = 3
+ * @endcode
+ * @param[in] ps Period set value
+ * @param[in] t Timestamp
+ * @param[out] loc Location
+ * @result Return true if the timestamp is contained in the period set value
+ */
+bool
+periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
+{
+  int first = 0;
+  int last = ps->count - 1;
+  int middle = 0; /* make compiler quiet */
+  const Period *p = NULL; /* make compiler quiet */
+  while (first <= last)
+  {
+    middle = (first + last)/2;
+    p = periodset_per_n(ps, middle);
+    if (contains_period_timestamp(p, t))
+    {
+      *loc = middle;
+      return true;
+    }
+    if (t <= (TimestampTz) p->lower)
+      last = middle - 1;
+    else
+      first = middle + 1;
+  }
+  if (t >= (TimestampTz) p->upper)
+    middle++;
+  *loc = middle;
+  return false;
+}
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_time_input_output
+ * @brief Return the string representation of the period set value.
+ */
+char *
+periodset_to_string(const PeriodSet *ps)
+{
+  char **strings = palloc(sizeof(char *) * ps->count);
+  size_t outlen = 0;
+
+  for (int i = 0; i < ps->count; i++)
+  {
+    const Period *p = periodset_per_n(ps, i);
+    strings[i] = span_to_string(p);
+    outlen += strlen(strings[i]) + 2;
+  }
+  return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');
+}
+
+/**
+ * @ingroup libmeos_time_input_output
+ * @brief Write the binary representation of the time value into the buffer.
+ *
+ * @param[in] ps Time value
+ * @param[in] buf Buffer
+ */
+void
+periodset_write(const PeriodSet *ps, StringInfo buf)
+{
+  pq_sendint32(buf, ps->count);
+  for (int i = 0; i < ps->count; i++)
+  {
+    const Period *p = periodset_per_n(ps, i);
+    span_write((Span *) p, buf);
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_time_input_output
+ * @brief Return a new time value from its binary representation
+ * read from the buffer.
+ *
+ * @param[in] buf Buffer
+ */
+PeriodSet *
+periodset_read(StringInfo buf)
+{
+  int count = (int) pq_getmsgint(buf, 4);
+  Period **periods = palloc(sizeof(Period *) * count);
+  for (int i = 0; i < count; i++)
+    periods[i] = span_read(buf, T_PERIOD);
+  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
+  return result;
+}
+
+/*****************************************************************************
+ * Constructor function
+ ****************************************************************************/
 
 /**
  * @ingroup libmeos_time_constructor
@@ -159,120 +263,6 @@ periodset_copy(const PeriodSet *ps)
   return result;
 }
 
-/**
- * Return the location of the timestamp in the temporal sequence set
- * value using binary search
- *
- * If the timestamp is found, the index of the period is returned
- * in the output parameter. Otherwise, return a number encoding whether the
- * timestamp is before, between two periods, or after the period set value.
- * For example, given a value composed of 3 periods and a timestamp, the
- * result of the function is as follows:
- * @code
- *               0          1          2
- *            |-----|    |-----|    |-----|
- * 1)    t^                                        => loc = 0
- * 2)            t^                                => loc = 0
- * 3)                 t^                           => loc = 1
- * 4)                            t^                => loc = 2
- * 5)                                        t^    => loc = 3
- * @endcode
- * @param[in] ps Period set value
- * @param[in] t Timestamp
- * @param[out] loc Location
- * @result Return true if the timestamp is contained in the period set value
- */
-bool
-periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
-{
-  int first = 0;
-  int last = ps->count - 1;
-  int middle = 0; /* make compiler quiet */
-  const Period *p = NULL; /* make compiler quiet */
-  while (first <= last)
-  {
-    middle = (first + last)/2;
-    p = periodset_per_n(ps, middle);
-    if (contains_period_timestamp(p, t))
-    {
-      *loc = middle;
-      return true;
-    }
-    if (t <= (TimestampTz) p->lower)
-      last = middle - 1;
-    else
-      first = middle + 1;
-  }
-  if (t >= (TimestampTz) p->upper)
-    middle++;
-  *loc = middle;
-  return false;
-}
-
-/*****************************************************************************
- * Input/output functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_time_input_output
- * @brief Return the string representation of the period set value.
- */
-char *
-periodset_to_string(const PeriodSet *ps)
-{
-  char **strings = palloc(sizeof(char *) * ps->count);
-  size_t outlen = 0;
-
-  for (int i = 0; i < ps->count; i++)
-  {
-    const Period *p = periodset_per_n(ps, i);
-    strings[i] = period_to_string(p);
-    outlen += strlen(strings[i]) + 2;
-  }
-  return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');
-}
-
-/**
- * @ingroup libmeos_time_input_output
- * @brief Write the binary representation of the time value into the buffer.
- *
- * @param[in] ps Time value
- * @param[in] buf Buffer
- */
-void
-periodset_write(const PeriodSet *ps, StringInfo buf)
-{
-  pq_sendint32(buf, ps->count);
-  for (int i = 0; i < ps->count; i++)
-  {
-    const Period *p = periodset_per_n(ps, i);
-    period_write(p, buf);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_time_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
- *
- * @param[in] buf Buffer
- */
-PeriodSet *
-periodset_read(StringInfo buf)
-{
-  int count = (int) pq_getmsgint(buf, 4);
-  Period **periods = palloc(sizeof(Period *) * count);
-  for (int i = 0; i < count; i++)
-    periods[i] = period_read(buf);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
-  return result;
-}
-
-/*****************************************************************************
- * Constructor function
- ****************************************************************************/
-
 /*****************************************************************************
  * Cast function
  *****************************************************************************/
@@ -329,10 +319,19 @@ periodset_period(const PeriodSet *ps, Period *p)
   return;
 }
 
-
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_time_accessor
+ * @brief Return the n-th period of the period set value.
+ */
+const Period *
+periodset_per_n(const PeriodSet *ps, int index)
+{
+  return (Period *) &ps->elems[index];
+}
 
 /**
  * @ingroup libmeos_time_accessor

@@ -374,39 +374,6 @@ timestampset_parse(char **str)
 
 /**
  * @ingroup libmeos_time_input_output
- * @brief Parse a period value from the buffer.
- */
-Period *
-period_parse(char **str, bool make)
-{
-  bool lower_inc = false, upper_inc = false;
-  if (p_obracket(str))
-    lower_inc = true;
-  else if (p_oparen(str))
-    lower_inc = false;
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period")));
-
-  TimestampTz lower = timestamp_parse(str);
-  p_comma(str);
-  TimestampTz upper = timestamp_parse(str);
-
-  if (p_cbracket(str))
-    upper_inc = true;
-  else if (p_cparen(str))
-    upper_inc = false;
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period")));
-
-  if (! make)
-    return NULL;
-  return period_make(lower, upper, lower_inc, upper_inc);
-}
-
-/**
- * @ingroup libmeos_time_input_output
  * @brief Parse a period set value from the buffer.
  */
 PeriodSet *
@@ -418,12 +385,12 @@ periodset_parse(char **str)
 
   /* First parsing */
   char *bak = *str;
-  period_parse(str, false);
+  span_parse(str, T_PERIOD, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    period_parse(str, false);
+    span_parse(str, T_PERIOD, false);
   }
   if (!p_cbrace(str))
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -435,7 +402,7 @@ periodset_parse(char **str)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    periods[i] = period_parse(str, true);
+    periods[i] = span_parse(str, T_PERIOD, true);
   }
   p_cbrace(str);
   PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);

@@ -364,63 +364,6 @@ span_bounds(const Span *s, double *xmin, double *xmax)
   }
 }
 
-/*
- * Compare two span boundary points, returning <0, 0, or >0 according to
- * whether b1 is less than, equal to, or greater than b2.
- *
- * The boundaries can be any combination of upper and lower; so it's useful
- * for a variety of operators.
- *
- * The simple case is when b1 and b2 are both inclusive, in which
- * case the result is just a comparison of the values held in b1 and b2.
- *
- * If a bound is exclusive, then we need to know whether it's a lower bound,
- * in which case we treat the boundary point as "just greater than" the held
- * value; or an upper bound, in which case we treat the boundary point as
- * "just less than" the held value.
- *
- * There is only one case where two boundaries compare equal but are not
- * identical: when both bounds are inclusive and hold the same value,
- * but one is an upper bound and the other a lower bound.
- */
-int
-span_cmp_bounds(const SpanBound *b1, const SpanBound *b2)
-{
-  int32 result = datum_cmp2(b1->val, b2->val, b1->basetype, b2->basetype);
-
-  /*
-   * If the comparison is anything other than equal, we're done. If they
-   * compare equal though, we still have to consider whether the boundaries
-   * are inclusive or exclusive.
-   */
-  if (result == 0)
-  {
-    if (!b1->inclusive && !b2->inclusive)
-    {
-      /* both are exclusive */
-      if (b1->lower == b2->lower)
-        return 0;
-      else
-        return b1->lower ? 1 : -1;
-    }
-    else if (!b1->inclusive)
-      return b1->lower ? 1 : -1;
-    else if (!b2->inclusive)
-      return b2->lower ? -1 : 1;
-    else
-    {
-      /*
-       * Both are inclusive and the values held are equal, so they are
-       * equal regardless of whether they are upper or lower boundaries,
-       * or a mix.
-       */
-      return 0;
-    }
-  }
-
-  return result;
-}
-
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -452,8 +395,8 @@ char *
 span_to_string(const Span *s)
 {
   Oid basetypid = type_oid(s->basetype);
-  char *lower = call_output(basetypid, TimestampTzGetDatum(s->lower));
-  char *upper = call_output(basetypid, TimestampTzGetDatum(s->upper));
+  char *lower = call_output(basetypid, s->lower);
+  char *upper = call_output(basetypid, s->upper);
   StringInfoData buf;
   initStringInfo(&buf);
   appendStringInfoChar(&buf, s->lower_inc ? (char) '[' : (char) '(');
@@ -474,8 +417,8 @@ void
 span_write(const Span *s, StringInfo buf)
 {
   Oid basetypid = type_oid(s->basetype);
-  bytea *lower = call_send(basetypid, TimestampTzGetDatum(s->lower));
-  bytea *upper = call_send(basetypid, TimestampTzGetDatum(s->upper));
+  bytea *lower = call_send(basetypid, s->lower);
+  bytea *upper = call_send(basetypid, s->upper);
   pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
   pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
   pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
