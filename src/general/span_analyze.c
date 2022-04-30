@@ -82,11 +82,11 @@ float8_qsort_cmp(const void *a1, const void *a2)
  * @param[in] slot_idx Index of the slot where the statistics collected are stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
- * @param[in] type type Enumerated type of the span
+ * @param[in] spantype type Enumerated type of the span
  */
 void
-span_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-  SpanBound *lowers, SpanBound *uppers, float8 *lengths, CachedType type)
+span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
+  SpanBound *lowers, SpanBound *uppers, float8 *lengths, CachedType spantype)
 {
   int num_hist, num_bins = stats->attr->attstattarget;
   Datum *bound_hist_values, *length_hist_values;
@@ -96,7 +96,7 @@ span_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
   /* Set the kind of histogram depending on the value or the time dimension */
-  bool valuedim = (type == T_INTSPAN || type == T_FLOATSPAN);
+  bool valuedim = (spantype == T_INTSPAN || spantype == T_FLOATSPAN);
 
   /*
    * Generate a bounds histogram and a length histogram slot entries
@@ -236,7 +236,7 @@ span_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] samplerows Number of sample rows
  */
 static void
-span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, CachedType type)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
@@ -313,7 +313,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    span_compute_stats1(stats, non_null_cnt, &slot_idx, lowers, uppers,
+    span_compute_stats(stats, non_null_cnt, &slot_idx, lowers, uppers,
       lengths, type);
   }
   else if (null_cnt > 0)
@@ -343,7 +343,7 @@ static void
 intspan_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats(stats, fetchfunc, samplerows, T_INTSPAN);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_INTSPAN);
   return;
 }
 
@@ -379,7 +379,7 @@ static void
 floatspan_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats(stats, fetchfunc, samplerows, T_FLOATSPAN);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_FLOATSPAN);
   return;
 }
 
@@ -415,7 +415,7 @@ static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats(stats, fetchfunc, samplerows, T_PERIOD);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_PERIOD);
   return;
 }
 
@@ -453,7 +453,7 @@ static void
 timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats(stats, fetchfunc, samplerows, T_TIMESTAMPSET);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TIMESTAMPSET);
   return;
 }
 
@@ -489,7 +489,7 @@ static void
 periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats(stats, fetchfunc, samplerows, T_PERIODSET);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_PERIODSET);
   return;
 }
 

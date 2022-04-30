@@ -956,7 +956,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 /**
  * Compute the statistics for temporal point columns (callback function)
  */
-static void
+void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows)
 {
@@ -1038,8 +1038,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     gserialized_compute_stats(stats, fetchfunc, sample_rows, total_rows, 0);
 
     /* Compute statistics for time dimension */
-    span_compute_stats1(stats, notnull_cnt, &slot_idx, time_lowers,
-      time_uppers, time_lengths, T_PERIOD);
+    span_compute_stats(stats, notnull_cnt, &slot_idx, time_lowers, time_uppers,
+      time_lengths, T_PERIOD);
   }
   else if (null_cnt > 0)
   {

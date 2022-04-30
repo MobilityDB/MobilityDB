@@ -2552,22 +2552,25 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
 
   /* Can't do anything with null inputs */
-  if (!box1 && !box2)
+  if (! box1 && ! box2)
     PG_RETURN_NULL();
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   /* One of the boxes is null, return the other one */
-  if (!box1)
+  if (! box1)
   {
     memcpy(result, box2, sizeof(STBOX));
     PG_RETURN_POINTER(result);
   }
-  if (!box2)
+  if (! box2)
   {
     memcpy(result, box1, sizeof(STBOX));
     PG_RETURN_POINTER(result);
   }
 
   /* Both boxes are not null */
+  ensure_same_srid_stbox(box1, box2);
+  ensure_same_dimensionality(box1->flags, box2->flags);
+  ensure_same_geodetic(box1->flags, box2->flags);
   memcpy(result, box1, sizeof(STBOX));
   stbox_expand(box2, result);
   PG_RETURN_POINTER(result);

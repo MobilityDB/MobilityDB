@@ -56,7 +56,7 @@
 
 extern int float8_qsort_cmp(const void *a1, const void *a2);
 
-extern void span_compute_stats1(VacAttrStats *stats, int non_null_cnt,
+extern void span_compute_stats(VacAttrStats *stats, int non_null_cnt,
   int *slot_idx, SpanBound *lowers, SpanBound *uppers, float8 *lengths,
   CachedType type);
 

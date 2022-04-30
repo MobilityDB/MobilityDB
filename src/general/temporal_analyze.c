@@ -112,162 +112,6 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  *****************************************************************************/
 
 /**
- * Compute statistics for the value dimension for temporal numbers
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] non_null_cnt Number of rows that are not null
- * @param[in] slot_idx Index of the slot where the statistics collected are stored
- * @param[in] lowers,uppers Arrays of span bounds
- * @param[in] lengths Arrays of span lengths
- * @param[in] spantypid Oid of the span type
- * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
- */
-void
-span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-  SpanBound *lowers, SpanBound *uppers, float8 *lengths, Oid spantypid)
-{
-  int num_hist, num_bins = stats->attr->attstattarget;
-  float4 *emptyfrac;
-  Datum *bound_hist_values, *length_hist_values;
-  MemoryContext old_cxt;
-
-  /* Must copy the target values into anl_context */
-  old_cxt = MemoryContextSwitchTo(stats->anl_context);
-
-  /*
-   * Generate a bounds histogram and a length histogram slot entries
-   * if there are at least two values.
-   */
-  if (non_null_cnt >= 2)
-  {
-    /* Generate a bounds histogram slot entry */
-
-    /* Sort bound values */
-    qsort(lowers, (size_t) non_null_cnt, sizeof(SpanBound),
-      span_bound_qsort_cmp);
-    qsort(uppers, (size_t) non_null_cnt, sizeof(SpanBound),
-      span_bound_qsort_cmp);
-
-    num_hist = non_null_cnt;
-    if (num_hist > num_bins)
-      num_hist = num_bins + 1;
-
-    bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-    /*
-     * The object of this loop is to construct spans from first and
-     * last entries in lowers[] and uppers[] along with evenly-spaced
-     * values in between. So the i'th value is a span of lowers[(i *
-     * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
-     * (num_hist - 1)]. But computing that subscript directly risks
-     * integer overflow when the stats target is more than a couple
-     * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
-     * at each step, tracking the integral and fractional parts of the
-     * sum separately.
-     */
-    int delta = (non_null_cnt - 1) / (num_hist - 1);
-    int deltafrac = (non_null_cnt - 1) % (num_hist - 1);
-    int pos = 0, posfrac = 0;
-
-    for (int i = 0; i < num_hist; i++)
-    {
-      bound_hist_values[i] = PointerGetDatum(span_serialize(&lowers[pos],
-        &uppers[pos]));
-
-      pos += delta;
-      posfrac += deltafrac;
-      if (posfrac >= (num_hist - 1))
-      {
-        /* fractional part exceeds 1, carry to integer part */
-        pos++;
-        posfrac -= (num_hist - 1);
-      }
-    }
-
-    TypeCacheEntry *span_typeentry = lookup_type_cache(spantypid,
-      TYPECACHE_EQ_OPR | TYPECACHE_CMP_PROC_FINFO |
-      TYPECACHE_HASH_PROC_FINFO);
-
-    stats->stakind[*slot_idx] = STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM;
-    stats->staop[*slot_idx] = temporal_extra_data->lt_opr;
-    stats->stavalues[*slot_idx] = bound_hist_values;
-    stats->numvalues[*slot_idx] = num_hist;
-    stats->statypid[*slot_idx] = span_typeentry->type_id;
-    stats->statyplen[*slot_idx] = span_typeentry->typlen;
-    stats->statypbyval[*slot_idx] =span_typeentry->typbyval;
-    stats->statypalign[*slot_idx] = span_typeentry->typalign;
-    (*slot_idx)++;
-
-    /* Generate a length histogram slot entry */
-
-    /*
-    * Ascending sort of span lengths for further filling of histogram
-    */
-    qsort(lengths, (size_t) non_null_cnt, sizeof(float8), float8_qsort_cmp);
-
-    num_hist = non_null_cnt;
-    if (num_hist > num_bins)
-      num_hist = num_bins + 1;
-
-    length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-    /*
-    * The object of this loop is to copy the first and last lengths[]
-    * entries along with evenly-spaced values in between. So the i'th
-    * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
-    * computing that subscript directly risks integer overflow when
-    * the stats target is more than a couple thousand.  Instead we
-    * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-    * the integral and fractional parts of the sum separately.
-    */
-    delta = (non_null_cnt - 1) / (num_hist - 1);
-    deltafrac = (non_null_cnt - 1) % (num_hist - 1);
-    pos = posfrac = 0;
-
-    for (int i = 0; i < num_hist; i++)
-    {
-      length_hist_values[i] = Float8GetDatum(lengths[pos]);
-      pos += delta;
-      posfrac += deltafrac;
-      if (posfrac >= (num_hist - 1))
-      {
-        /* fractional part exceeds 1, carry to integer part */
-        pos++;
-        posfrac -= (num_hist - 1);
-      }
-    }
-  }
-  else
-  {
-    /*
-    * Even when we don't create the histogram, store an empty array
-    * to mean "no histogram". We can't just leave stavalues NULL,
-    * because get_attstatsslot() errors if you ask for stavalues, and
-    * it's NULL. We'll still store the empty fraction in stanumbers.
-    */
-    length_hist_values = palloc(0);
-    num_hist = 0;
-  }
-  stats->stakind[*slot_idx] = STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM;
-  stats->staop[*slot_idx] = Float8LessOperator;
-  stats->stavalues[*slot_idx] = length_hist_values;
-  stats->numvalues[*slot_idx] = num_hist;
-  stats->statypid[*slot_idx] = FLOAT8OID;
-  stats->statyplen[*slot_idx] = sizeof(float8);
-  stats->statypbyval[*slot_idx] = true;
-  stats->statypalign[*slot_idx] = 'd';
-
-  /* Store 0 as value for the fraction of empty spans */
-  emptyfrac = (float4 *) palloc(sizeof(float4));
-  *emptyfrac = 0.0;
-  stats->stanumbers[*slot_idx] = emptyfrac;
-  stats->numnumbers[*slot_idx] = 1;
-  (*slot_idx)++;
-
-  MemoryContextSwitchTo(old_cxt);
-}
-
-/**
  * Compute statistics for temporal columns
  *
  * @param[in] stats Structure storing statistics information
@@ -288,7 +132,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   SpanBound *value_lowers, *value_uppers;
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
-  Oid spantypid = 0; /* make compiler quiet */
+  CachedType spantype; /* make compiler quiet */
 
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
@@ -297,9 +141,9 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_basetype(oid_type(temporal_extra_data->value_typid));
     if (temporal_extra_data->value_typid == INT4OID)
-      spantypid = type_oid(T_INTSPAN);
+      spantype = T_INTSPAN;
     else /* temporal_extra_data->value_typid == FLOAT8OID */
-      spantypid = type_oid(T_FLOATSPAN);
+      spantype = T_FLOATSPAN;
     value_lowers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
     value_uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
     value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
@@ -373,10 +217,10 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     if (tnumber)
     {
       span_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
-        value_uppers, value_lengths, spantypid);
+        value_uppers, value_lengths, spantype);
     }
 
-    span_compute_stats1(stats, non_null_cnt, &slot_idx, time_lowers,
+    span_compute_stats(stats, non_null_cnt, &slot_idx, time_lowers,
       time_uppers, time_lengths, T_PERIOD);
   }
   else if (null_cnt > 0)

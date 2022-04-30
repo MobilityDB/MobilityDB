@@ -1802,16 +1802,16 @@ Tbox_extent_transfn(PG_FUNCTION_ARGS)
   TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
 
   /* Can't do anything with null inputs */
-  if (!box1 && !box2)
+  if (! box1 && ! box2)
     PG_RETURN_NULL();
   TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
   /* One of the boxes is null, return the other one */
-  if (!box1)
+  if (! box1)
   {
     memcpy(result, box2, sizeof(TBOX));
     PG_RETURN_POINTER(result);
   }
-  if (!box2)
+  if (! box2)
   {
     memcpy(result, box1, sizeof(TBOX));
     PG_RETURN_POINTER(result);

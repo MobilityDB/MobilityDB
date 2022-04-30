@@ -973,17 +973,17 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
   Period *result;
 
   /* Can't do anything with null inputs */
-  if (!p && !temp)
+  if (! p && ! temp)
     PG_RETURN_NULL();
   /* Null period and non-null temporal, return the bbox of the temporal */
-  if (!p)
+  if (! p)
   {
     result = palloc0(sizeof(Period));
     temporal_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
-  if (!temp)
+  if (! temp)
   {
     result = palloc0(sizeof(Period));
     memcpy(result, p, sizeof(Period));
@@ -995,27 +995,6 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
   result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_extent_combinefn);
-/**
- * Combine function for temporal extent aggregation
- */
-PGDLLEXPORT Datum
-Temporal_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
-
-  if (!p2 && !p1)
-    PG_RETURN_NULL();
-  if (p1 && !p2)
-    PG_RETURN_POINTER(p1);
-  if (p2 && !p1)
-    PG_RETURN_POINTER(p2);
-
-  Period *result = union_span_span(p1, p2, false);
   PG_RETURN_POINTER(result);
 }
 
@@ -1052,29 +1031,6 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
   temporal_bbox(temp, result);
   tbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tnumber_extent_combinefn);
-/**
- * Combine function for temporal extent aggregation for temporal numbers
- */
-PGDLLEXPORT Datum
-Tnumber_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
-
-  if (!box2 && !box1)
-    PG_RETURN_NULL();
-  if (box1 && !box2)
-    PG_RETURN_POINTER(box1);
-  if (box2 && !box1)
-    PG_RETURN_POINTER(box2);
-  /* Both boxes are not null */
-  ensure_same_dimensionality_tbox(box1, box2);
-  TBOX *result = tbox_copy(box1);
-  tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

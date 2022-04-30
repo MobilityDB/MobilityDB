@@ -42,7 +42,7 @@ CREATE FUNCTION temporal_extent_transfn(period, ttext)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_extent_combinefn(period, period)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'Temporal_extent_combinefn'
+  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tbool) (
@@ -68,7 +68,7 @@ CREATE FUNCTION tnumber_extent_transfn(tbox, tfloat)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tnumber_extent_combinefn(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tnumber_extent_combinefn'
+  AS 'MODULE_PATHNAME', 'Tbox_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tint) (

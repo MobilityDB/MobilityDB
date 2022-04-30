@@ -41,9 +41,7 @@
 /*****************************************************************************/
 
 extern Datum Temporal_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum Temporal_extent_combinefn(PG_FUNCTION_ARGS);
 extern Datum Tnumber_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_extent_combinefn(PG_FUNCTION_ARGS);
 
 extern Datum Tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum Tbool_tand_combinefn(PG_FUNCTION_ARGS);

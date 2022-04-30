@@ -55,13 +55,13 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
   Span *result;
 
   /* Can't do anything with null inputs */
-  if (!s1 && !s2)
+  if (! s1 && ! s2)
     PG_RETURN_NULL();
   /* Null span and non-null span, return the span */
-  else if (!s1)
+  else if (! s1)
     result = span_copy(s2);
   /* Non-null span and null span, return the span */
-  else if (!s2)
+  else if (! s2)
     result = span_copy(s1);
   else
     /* Non-strict union */
@@ -78,11 +78,11 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
-  if (!s2 && !s1)
+  if (! s2 && ! s1)
     PG_RETURN_NULL();
-  if (s1 && !s2)
+  if (s1 && ! s2)
     PG_RETURN_POINTER(s1);
-  if (s2 && !s1)
+  if (s2 && ! s1)
     PG_RETURN_POINTER(s2);
   /* Non-strict union */
   Span *result = union_span_span(s1, s2, false);
