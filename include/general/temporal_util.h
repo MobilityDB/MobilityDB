@@ -152,6 +152,7 @@ extern Datum datum_div(Datum l, Datum r, CachedType typel, CachedType typer);
 
 /* Comparison functions on datums */
 
+extern int datum_cmp(Datum l, Datum r, CachedType type);
 extern bool datum_eq(Datum l, Datum r, CachedType type);
 extern bool datum_ne(Datum l, Datum r, CachedType type);
 extern bool datum_lt(Datum l, Datum r, CachedType type);

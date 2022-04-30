@@ -149,10 +149,7 @@ period_expand(const Period *p1, Period *p2)
 Period *
 period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
 {
-  /* Note: zero-fill is done in the period_set function */
-  Period *period = (Period *) palloc(sizeof(Period));
-  period_set(lower, upper, lower_inc, upper_inc, period);
-  return period;
+  return span_make(lower, upper, lower_inc, upper_inc, T_TIMESTAMPTZ);
 }
 
 /**
@@ -163,28 +160,7 @@ void
 period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc, Period *p)
 {
-  int cmp = timestamp_cmp_internal(lower, upper);
-  /* error check: if lower bound value is above upper, it's wrong */
-  if (cmp > 0)
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Period lower bound must be less than or equal to period upper bound")));
-
-  /* error check: if bounds are equal, and not both inclusive, period is empty */
-  if (cmp == 0 && !(lower_inc && upper_inc))
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Period cannot be empty")));
-
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(p, 0, sizeof(Period));
-  /* Now fill in the period */
-  p->lower = lower;
-  p->upper = upper;
-  p->lower_inc = lower_inc;
-  p->upper_inc = upper_inc;
-  /* Make the period value memory compatible with a span value */
-  p->spantype = T_PERIOD;
-  p->basetype = T_TIMESTAMPTZ;
-
+  return span_set(lower, upper, lower_inc, upper_inc, T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -194,9 +170,7 @@ period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
 Period *
 period_copy(const Period *p)
 {
-  Period *result = (Period *) palloc(sizeof(Period));
-  memcpy((char *) result, (char *) p, sizeof(Period));
-  return result;
+  return span_copy(p);
 }
 
 /*****************************************************************************
@@ -218,57 +192,14 @@ timestamp_period(TimestampTz t)
  * Accessor functions
  *****************************************************************************/
 
-#ifdef MEOS
-/**
- * @ingroup libmeos_time_cast
- * @brief Return the lower bound value
- */
-TimestampTz
-period_lower(Period *p)
-{
-  return p->lower;
-}
-
-/**
- * @ingroup libmeos_time_accessor
- * @brief Return the upper bound value
- */
-TimestampTz
-period_upper(Period *p)
-{
-  return p->upper;
-}
-
-/**
- * @ingroup libmeos_time_accessor
- * @brief Return true if the lower bound value is inclusive
- */
-bool
-period_lower_inc(Period *p)
-{
-  return p->lower_inc != 0;
-}
-
-/**
- * @ingroup libmeos_time_accessor
- * @brief Return true if the upper bound value is inclusive
- */
-bool
-period_upper_inc(Period *p)
-{
-  return p->upper_inc != 0;
-}
-#endif
-
 /**
  * @ingroup libmeos_time_accessor
  * @brief Return the duration of the period as an interval.
  */
 Interval *
-period_duration(const Period *p)
+period_duration(const Span *s)
 {
-  return DatumGetIntervalP(call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
+  return DatumGetIntervalP(call_function2(timestamp_mi, s->upper, s->lower));
 }
 
 /*****************************************************************************
@@ -559,54 +490,6 @@ Tstzrange_to_period(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* period -> timestamptz functions */
-
-PG_FUNCTION_INFO_V1(Period_lower);
-/**
- * Return the lower bound value
- */
-PGDLLEXPORT Datum
-Period_lower(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PG_RETURN_TIMESTAMPTZ(p->lower);
-}
-
-PG_FUNCTION_INFO_V1(Period_upper);
-/**
- * Return the upper bound value
- */
-PGDLLEXPORT Datum
-Period_upper(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PG_RETURN_TIMESTAMPTZ(p->upper);
-}
-
-/* period -> bool functions */
-
-PG_FUNCTION_INFO_V1(Period_lower_inc);
-/**
- * Return true if the lower bound value is inclusive
- */
-PGDLLEXPORT Datum
-Period_lower_inc(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PG_RETURN_BOOL(p->lower_inc != 0);
-}
-
-PG_FUNCTION_INFO_V1(Period_upper_inc);
-/**
- * Return true if the upper bound value is inclusive
- */
-PGDLLEXPORT Datum
-Period_upper_inc(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PG_RETURN_BOOL(p->upper_inc != 0);
-}
-
 PG_FUNCTION_INFO_V1(Period_duration);
 /**
  * Return the duration of the period
@@ -614,8 +497,8 @@ PG_FUNCTION_INFO_V1(Period_duration);
 PGDLLEXPORT Datum
 Period_duration(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Interval *result = period_duration(p);
+  Span *s = PG_GETARG_SPAN_P(0);
+  Interval *result = period_duration(s);
   PG_RETURN_POINTER(result);
 }
 

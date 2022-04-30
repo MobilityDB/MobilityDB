@@ -113,7 +113,7 @@ span_serialize(SpanBound *lower, SpanBound *upper)
 bool
 span_type(CachedType spantype)
 {
-  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN || spantype == T_PERIOD)
+  if (spantype == T_PERIOD || spantype == T_INTSPAN || spantype == T_FLOATSPAN)
     return true;
   return false;
 }
@@ -135,7 +135,7 @@ ensure_span_type(CachedType spantype)
 void
 ensure_span_basetype(CachedType basetype)
 {
-  if (basetype != T_INT4 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ)
+  if (basetype != T_TIMESTAMPTZ && basetype != T_INT4 && basetype != T_FLOAT8)
     elog(ERROR, "unknown span base type: %d", basetype);
   return;
 }
@@ -492,6 +492,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   s->spantype = spantype;
   s->basetype = basetype;
   span_canonicalize(s);
+  return;
 }
 
 /**
@@ -581,38 +582,6 @@ span_distance(const Span *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
-// /**
- // * @ingroup libmeos_span_transf
- // * @brief Shift and/or scale the span by the two intervals.
- // */
-// void
-// span_shift_tscale(const Interval *start, const Interval *duration,
-  // Span *result)
-// {
-  // assert(start != NULL || duration != NULL);
-  // if (duration != NULL)
-    // ensure_valid_duration(duration);
-  // bool instant = (result->lower == result->upper);
-
-  // if (start != NULL)
-  // {
-    // result->lower = DatumGetTimestampTz(DirectFunctionCall2(
-      // timestamptz_pl_interval, TimestampTzGetDatum(result->lower),
-      // PointerGetDatum(start)));
-    // if (instant)
-      // result->upper = result->lower;
-    // else
-      // result->upper = DatumGetTimestampTz(DirectFunctionCall2(
-        // timestamptz_pl_interval, TimestampTzGetDatum(result->upper),
-        // PointerGetDatum(start)));
-  // }
-  // if (duration != NULL && ! instant)
-    // result->upper =
-      // DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-         // TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
-  // return;
-// }
 
 /**
  * @ingroup libmeos_span_transf
@@ -761,23 +730,25 @@ span_gt(const Span *s1, const Span *s2)
 uint32
 span_hash(const Span *s)
 {
-  uint32 result;
-  char flags = '\0';
-  uint32 lower_hash;
-  uint32 upper_hash;
-
   /* Create flags from the lower_inc and upper_inc values */
+  char flags = '\0';
   if (s->lower_inc)
     flags |= 0x01;
   if (s->upper_inc)
     flags |= 0x02;
 
-  /* Apply the hash function to each bound */
-  lower_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(s->lower)));
-  upper_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(s->upper)));
+  /* Create type from the spantype and basetype values */
+  uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
+  uint32 type_hash = DatumGetUInt32(call_function1(hashint4, type));
 
-  /* Merge hashes of flags and bounds */
-  result = DatumGetUInt32(hash_uint32((uint32) flags));
+  /* Apply the hash function to each bound */
+  uint32 lower_hash = DatumGetUInt32(call_function1(hashint8, s->lower));
+  uint32 upper_hash = DatumGetUInt32(call_function1(hashint8, s->upper));
+
+  /* Merge hashes of flags, type, and bounds */
+  uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
+  result ^= type_hash;
+  result = (result << 1) | (result >> 31);
   result ^= lower_hash;
   result = (result << 1) | (result >> 31);
   result ^= upper_hash;
@@ -794,6 +765,7 @@ span_hash_extended(const Span *s, Datum seed)
 {
   uint64 result;
   char flags = '\0';
+  uint64 type_hash;
   uint64 lower_hash;
   uint64 upper_hash;
 
@@ -803,15 +775,19 @@ span_hash_extended(const Span *s, Datum seed)
   if (s->upper_inc)
     flags |= 0x02;
 
+  /* Create type from the spantype and basetype values */
+  uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
+  type_hash = DatumGetUInt64(call_function2(hashint4extended, type, seed));
+
   /* Apply the hash function to each bound */
-  lower_hash = DatumGetUInt64(call_function2(hashint8extended,
-    TimestampTzGetDatum(s->lower), seed));
-  upper_hash = DatumGetUInt64(call_function2(hashint8extended,
-    TimestampTzGetDatum(s->upper), seed));
+  lower_hash = DatumGetUInt64(call_function2(hashint8extended, s->lower, seed));
+  upper_hash = DatumGetUInt64(call_function2(hashint8extended, s->upper, seed));
 
   /* Merge hashes of flags and bounds */
   result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
     DatumGetInt64(seed)));
+  result ^= type_hash;
+  result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= lower_hash;
   result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= upper_hash;

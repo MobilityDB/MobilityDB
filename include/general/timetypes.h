@@ -53,7 +53,6 @@
  * of the time dimension
  */
 typedef Span Period;
-typedef SpanBound PeriodBound;
 
 /**
  * Structure to represent timestamp sets

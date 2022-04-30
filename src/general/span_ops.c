@@ -115,8 +115,8 @@ bool
 contains_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  int c1 = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
-  int c2 = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  int c1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
+  int c2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
   if (
     (c1 < 0 || (c1 == 0 && (s1->lower_inc || ! s2->lower_inc))) &&
     (c2 > 0 || (c2 == 0 && (s1->upper_inc || ! s2->upper_inc)))
@@ -159,8 +159,8 @@ bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  int c1 = datum_cmp2(s1->lower, s2->upper, s1->basetype, s2->basetype);
-  int c2 = datum_cmp2(s2->lower, s1->upper, s2->basetype, s1->basetype);
+  int c1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
+  int c2 = datum_cmp(s2->lower, s1->upper, s2->basetype);
   if (
     (c1 < 0 || (c1 == 0 && s1->lower_inc && s2->upper_inc)) &&
     (c2 < 0 || (c2 == 0 && s2->lower_inc && s1->upper_inc))
@@ -250,7 +250,7 @@ bool
 left_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  int cmp = datum_cmp2(s1->upper, s2->lower, s1->basetype, s2->basetype);
+  int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
 }
 
@@ -288,7 +288,7 @@ bool
 right_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  int cmp = datum_cmp2(s2->upper, s1->lower, s2->basetype, s1->basetype);
+  int cmp = datum_cmp(s2->upper, s1->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s2->upper_inc || ! s1->lower_inc)));
 }
 
@@ -324,7 +324,7 @@ bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  int cmp = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
 }
 
@@ -360,7 +360,7 @@ bool
 overright_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  int cmp = datum_cmp2(s2->lower, s1->lower, s1->basetype, s2->basetype);
+  int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
 }
 

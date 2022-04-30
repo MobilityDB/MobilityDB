@@ -52,7 +52,7 @@
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************
- * Temporal/base types tests
+ * Temporal/span/base type tests
  *****************************************************************************/
 
 /**
@@ -316,6 +316,15 @@ ensure_tgeo_type(CachedType temptype)
 /* Version of the functions where the types of both arguments is equal */
 
 /**
+ * Return true if the first value is less than the second one
+ */
+int
+datum_cmp(Datum l, Datum r, CachedType type)
+{
+  return datum_cmp2(l, r, type, type);
+}
+
+/**
  * Return true if the two values are equal
  */
 bool
@@ -447,12 +456,11 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 bool
 datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 {
-  return !datum_eq2(l, r, typel, typer);
+  return ! datum_eq2(l, r, typel, typer);
 }
 
 /**
  * Return true if the first value is less than the second one
- * (base type dispatch function)
  */
 bool
 datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
