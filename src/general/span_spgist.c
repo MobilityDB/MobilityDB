@@ -43,12 +43,12 @@
 #include <float.h>
 #include <access/spgist.h>
 /* MobilityDB */
+#include "general/temp_catalog.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_ops.h"
 #include "general/time_ops.h"
-#include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temporal.h"
 #include "general/span_gist.h"
 
 /*****************************************************************************

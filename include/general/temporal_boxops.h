@@ -38,7 +38,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal.h"
 #include "general/span.h"
 #include "general/tbox.h"
@@ -103,7 +103,7 @@ extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
 
 extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
   CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern int boxop_tnumber_span(const Temporal *temp, const Span *span,
+extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
 extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert);

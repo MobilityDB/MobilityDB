@@ -106,8 +106,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_gist.h"
 #include "general/tnumber_distance.h"

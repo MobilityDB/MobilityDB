@@ -55,7 +55,6 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
 #include "general/tbox.h"
 #include "point/tpoint.h"
 #include "point/stbox.h"
@@ -491,7 +490,7 @@ boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
  * @param[in] func Bounding box function
  * @param[in] invert True when the span is the first argument of the function.
  */
-int
+bool
 boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
@@ -499,7 +498,7 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
   temporal_bbox(temp, &box1);
   span_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return (result ? 1 : 0);
+  return (result);
 }
 
 /**
@@ -1263,10 +1262,8 @@ boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
 {
   Span *span = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = boxop_tnumber_span(temp, span, func, INVERT);
+  bool result = boxop_tnumber_span(temp, span, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
@@ -1282,10 +1279,8 @@ boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *span = PG_GETARG_SPAN_P(1);
-  int result = boxop_tnumber_span(temp, span, func, INVERT_NO);
+  bool result = boxop_tnumber_span(temp, span, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
-    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 

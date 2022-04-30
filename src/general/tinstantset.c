@@ -47,7 +47,7 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "point/tpoint.h"
@@ -175,72 +175,6 @@ tinstantset_make1(const TInstant **instants, int count)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant set value from the array of temporal
- * instant values.
- *
- * For example, the memory structure of a temporal instant set value
- * with two instants is as follows
- * @code
- *  -----------------------------------------------------------
- *  ( TInstantSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
- *  -----------------------------------------------------------
- *  -------------------------------------
- *  ( TInstant_0 )_X | ( TInstant_1 )_X |
- *  -------------------------------------
- * @endcode
- * where the `_X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding instants
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] merge True when overlapping instants are allowed as required in
- * merge operations
- */
-TInstantSet *
-tinstantset_make(const TInstant **instants, int count, bool merge)
-{
-  tinstantset_make_valid(instants, count, merge);
-  return tinstantset_make1(instants, count);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant set value from the array of temporal
- * instant values and free the array and the instants after the creation.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] merge True when overlapping instants are allowed as required in
- * merge operations
- */
-TInstantSet *
-tinstantset_make_free(TInstant **instants, int count, bool merge)
-{
-  if (count == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
-  TInstantSet *result = tinstantset_make((const TInstant **) instants,
-    count, merge);
-  pfree_array((void **) instants, count);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Return a copy of the temporal value.
- */
-TInstantSet *
-tinstantset_copy(const TInstantSet *ti)
-{
-  TInstantSet *result = palloc0(VARSIZE(ti));
-  memcpy(result, ti, VARSIZE(ti));
-  return result;
-}
-
-/**
  * Return the location of the timestamp in the temporal instant set
  * value using binary search
  *
@@ -360,6 +294,72 @@ tinstantset_read(StringInfo buf, CachedType temptype)
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant set value from the array of temporal
+ * instant values.
+ *
+ * For example, the memory structure of a temporal instant set value
+ * with two instants is as follows
+ * @code
+ *  -----------------------------------------------------------
+ *  ( TInstantSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
+ *  -----------------------------------------------------------
+ *  -------------------------------------
+ *  ( TInstant_0 )_X | ( TInstant_1 )_X |
+ *  -------------------------------------
+ * @endcode
+ * where the `_X` are unused bytes added for double padding, `offset_0` and
+ * `offset_1` are offsets for the corresponding instants
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] merge True when overlapping instants are allowed as required in
+ * merge operations
+ */
+TInstantSet *
+tinstantset_make(const TInstant **instants, int count, bool merge)
+{
+  tinstantset_make_valid(instants, count, merge);
+  return tinstantset_make1(instants, count);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant set value from the array of temporal
+ * instant values and free the array and the instants after the creation.
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] merge True when overlapping instants are allowed as required in
+ * merge operations
+ */
+TInstantSet *
+tinstantset_make_free(TInstant **instants, int count, bool merge)
+{
+  if (count == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  TInstantSet *result = tinstantset_make((const TInstant **) instants,
+    count, merge);
+  pfree_array((void **) instants, count);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of the temporal value.
+ */
+TInstantSet *
+tinstantset_copy(const TInstantSet *ti)
+{
+  TInstantSet *result = palloc0(VARSIZE(ti));
+  memcpy(result, ti, VARSIZE(ti));
+  return result;
+}
 
 /**
  * @ingroup libmeos_temporal_constructor

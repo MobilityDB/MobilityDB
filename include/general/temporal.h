@@ -43,7 +43,7 @@
 #include <utils/lsyscache.h>
 /* MobilityDB */
 #include "general/span.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
 #include "point/stbox.h"
@@ -493,9 +493,6 @@ extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
 extern void ensure_seq_subtypes(int16 subtype);
 extern void ensure_tinstarr(const TInstant **instants, int count);
-extern int *tsequenceset_make_valid_gaps(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear, double maxdist, Interval *maxt,
-  int *countsplits);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 extern void ensure_same_temptype(const Temporal *temp1,

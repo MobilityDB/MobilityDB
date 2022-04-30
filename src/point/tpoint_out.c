@@ -45,7 +45,7 @@
 #endif
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"

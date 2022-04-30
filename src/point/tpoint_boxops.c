@@ -54,7 +54,6 @@
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "point/tpoint.h"
 #include "point/stbox.h"

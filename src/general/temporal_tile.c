@@ -49,7 +49,7 @@
 #include <utils/datetime.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/span_ops.h"

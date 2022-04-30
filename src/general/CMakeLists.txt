@@ -44,7 +44,7 @@ add_library(general OBJECT
   ${span_selfuncs.c}
   tbool_boolops.c
   tbox.c
-  tempcache.c
+  temp_catalog.c
   temporal.c
   ${temporal_aggfuncs.c}
   ${temporal_analyze.c}

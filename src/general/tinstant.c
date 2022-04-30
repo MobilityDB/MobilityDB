@@ -47,7 +47,7 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/span_ops.h"
@@ -100,85 +100,6 @@ tinstant_value_copy(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant value from the arguments.
- *
- * The memory structure of a temporal instant value is as follows
- * @code
- * ----------------------------------
- * ( TInstant )_X | ( Value )_X |
- * ----------------------------------
- * @endcode
- * where the `_X` are unused bytes added for double padding.
- *
- * @param value Base value
- * @param t Timestamp
- * @param temptype Base type
- */
-TInstant *
-tinstant_make(Datum value, TimestampTz t, CachedType temptype)
-{
-  size_t value_offset = double_pad(sizeof(TInstant));
-  size_t size = value_offset;
-  /* Create the temporal value */
-  TInstant *result;
-  size_t value_size;
-  void *value_from;
-  CachedType basetype = temptype_basetype(temptype);
-  /* Copy value */
-  bool typbyval = basetype_byvalue(basetype);
-  if (typbyval)
-  {
-    /* For base types passed by value */
-    value_size = double_pad(sizeof(Datum));
-    value_from = &value;
-  }
-  else
-  {
-    /* For base types passed by reference */
-    value_from = DatumGetPointer(value);
-    int16 typlen = basetype_length(basetype);
-    value_size = (typlen != -1) ? double_pad((unsigned int) typlen) :
-      double_pad(VARSIZE(value_from));
-  }
-  size += value_size;
-  result = palloc0(size);
-  void *value_to = ((char *) result) + value_offset;
-  memcpy(value_to, value_from, value_size);
-  /* Initialize fixed-size values */
-  result->temptype = temptype;
-  result->subtype = INSTANT;
-  result->t = t;
-  SET_VARSIZE(result, size);
-  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
-  bool continuous = temptype_continuous(temptype);
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(temptype))
-  {
-    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
-    MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
-    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Return a copy of the temporal instant value.
- */
-TInstant *
-tinstant_copy(const TInstant *inst)
-{
-  TInstant *result = palloc0(VARSIZE(inst));
-  memcpy(result, inst, VARSIZE(inst));
-  return result;
-}
-
-/**
  * Sets the value and the timestamp of the temporal instant value
  *
  * @param[in,out] inst Temporal value to be modified
@@ -193,6 +114,20 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
   inst->t = t;
   Datum *value_ptr = tinstant_value_ptr(inst);
   *value_ptr = value;
+}
+
+/**
+ * Convert the value of temporal number instant to a double
+ */
+double
+tnumberinst_double(const TInstant *inst)
+{
+  ensure_tnumber_type(inst->temptype);
+  Datum d = tinstant_value(inst);
+  if (inst->temptype == T_TINT)
+    return (double)(DatumGetInt32(d));
+  else /* inst->temptype == T_TFLOAT */
+    return DatumGetFloat8(d);
 }
 
 /*****************************************************************************
@@ -271,6 +206,89 @@ tinstant_read(StringInfo buf, CachedType temptype)
   Datum value = call_recv(basetypid, &buf2);
   buf->cursor += size ;
   return tinstant_make(value, t, temptype);
+}
+
+/*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant value from the arguments.
+ *
+ * The memory structure of a temporal instant value is as follows
+ * @code
+ * ----------------------------------
+ * ( TInstant )_X | ( Value )_X |
+ * ----------------------------------
+ * @endcode
+ * where the `_X` are unused bytes added for double padding.
+ *
+ * @param value Base value
+ * @param t Timestamp
+ * @param temptype Base type
+ */
+TInstant *
+tinstant_make(Datum value, TimestampTz t, CachedType temptype)
+{
+  size_t value_offset = double_pad(sizeof(TInstant));
+  size_t size = value_offset;
+  /* Create the temporal value */
+  TInstant *result;
+  size_t value_size;
+  void *value_from;
+  CachedType basetype = temptype_basetype(temptype);
+  /* Copy value */
+  bool typbyval = basetype_byvalue(basetype);
+  if (typbyval)
+  {
+    /* For base types passed by value */
+    value_size = double_pad(sizeof(Datum));
+    value_from = &value;
+  }
+  else
+  {
+    /* For base types passed by reference */
+    value_from = DatumGetPointer(value);
+    int16 typlen = basetype_length(basetype);
+    value_size = (typlen != -1) ? double_pad((unsigned int) typlen) :
+      double_pad(VARSIZE(value_from));
+  }
+  size += value_size;
+  result = palloc0(size);
+  void *value_to = ((char *) result) + value_offset;
+  memcpy(value_to, value_from, value_size);
+  /* Initialize fixed-size values */
+  result->temptype = temptype;
+  result->subtype = INSTANT;
+  result->t = t;
+  SET_VARSIZE(result, size);
+  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
+  bool continuous = temptype_continuous(temptype);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
+  if (tgeo_type(temptype))
+  {
+    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
+    MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
+    MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
+    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of the temporal instant value.
+ */
+TInstant *
+tinstant_copy(const TInstant *inst)
+{
+  TInstant *result = palloc0(VARSIZE(inst));
+  memcpy(result, inst, VARSIZE(inst));
+  return result;
 }
 
 /*****************************************************************************

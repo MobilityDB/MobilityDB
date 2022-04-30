@@ -41,7 +41,7 @@
 #include <json-c/json.h>
 /* MobilityDB */
 #include "general/temporal.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 
 /*****************************************************************************/
 

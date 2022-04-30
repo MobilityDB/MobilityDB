@@ -39,8 +39,7 @@
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temp_catalog.h"
 #include "general/doublen.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_aggfuncs.h"

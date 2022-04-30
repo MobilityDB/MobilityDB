@@ -43,7 +43,7 @@
 #include <utils/selfuncs.h>
 #include <utils/typcache.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal.h"
 
 #define BTREE_AM_OID   403

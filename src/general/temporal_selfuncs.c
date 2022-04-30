@@ -69,7 +69,6 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/span_selfuncs.h"
-#include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_analyze.h"
 #include "general/tnumber_selfuncs.h"

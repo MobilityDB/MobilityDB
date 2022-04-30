@@ -45,8 +45,8 @@
 #include "general/time_ops.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temporal.h"
+#include "general/temp_catalog.h"
 
 /*****************************************************************************
  * GiST consistent methods

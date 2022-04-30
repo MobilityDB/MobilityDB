@@ -41,7 +41,7 @@
 #include <lib/stringinfo.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 
 /*****************************************************************************/
 
@@ -93,9 +93,6 @@ typedef struct
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
-extern bool span_type(CachedType spantype);
-extern void ensure_span_type(CachedType spantype);
-extern void ensure_span_basetype(CachedType basetype);
 extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *a1, const void *a2);
 extern int span_lower_cmp(const Span *a, const Span *b);

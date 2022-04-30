@@ -54,29 +54,6 @@ typedef enum
 /*****************************************************************************/
 
 /**
- * Return true if the type is a time type
- */
-bool
-time_type(CachedType timetype)
-{
-  if (timetype == T_TIMESTAMPTZ || timetype == T_TIMESTAMPSET ||
-    timetype == T_PERIOD || timetype == T_PERIODSET)
-    return true;
-  return false;
-}
-
-/**
- * Ensure that the type corresponds to a time type
- */
-void
-ensure_time_type(CachedType timetype)
-{
-  if (! time_type(timetype))
-    elog(ERROR, "unknown time type: %d", timetype);
-  return;
-}
-
-/**
  * Determine the relative position of the two timestamps
  */
 RelativeTimePos

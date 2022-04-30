@@ -46,11 +46,6 @@
 /* General functions */
 
 extern const TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
-extern TInstantSet *tinstantset_make(const TInstant **instants, int count,
-  bool merge);
-extern TInstantSet *tinstantset_make_free(TInstant **instants, int count,
-  bool merge);
-extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
 
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
 extern void tinstantset_bbox(const TInstantSet *ti, void *box);
@@ -67,6 +62,11 @@ extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
+extern TInstantSet *tinstantset_make(const TInstant **instants, int count,
+  bool merge);
+extern TInstantSet *tinstantset_make_free(TInstant **instants, int count,
+  bool merge);
+extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
 extern TInstantSet *tinstantset_from_base(Datum value, CachedType temptype,
   const TimestampSet *ts);
 

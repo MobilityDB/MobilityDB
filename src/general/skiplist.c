@@ -49,7 +49,6 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
-#include "general/temporal_util.h"
 #include "general/temporal_aggfuncs.h"
 
 /*****************************************************************************

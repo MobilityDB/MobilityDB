@@ -36,7 +36,7 @@
 #define __SPAN_OPS_H__
 
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/span.h"
 
 /*****************************************************************************/

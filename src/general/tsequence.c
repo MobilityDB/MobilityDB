@@ -48,8 +48,7 @@
 #include "general/time_ops.h"
 #include "general/doublen.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_boxops.h"
 #include "general/span_ops.h"
 #include "point/tpoint.h"
@@ -425,64 +424,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   }
   if (normalize && count > 1)
     pfree(norminsts);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence value from the array of temporal
- * instant values.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
- * @param[in] linear True when the interpolation is linear
- * @param[in] normalize True when the resulting value should be normalized
- */
-TSequence *
-tsequence_make(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, bool linear, bool normalize)
-{
-  tsequence_make_valid(instants, count, lower_inc, upper_inc, linear);
-  return tsequence_make1(instants, count, lower_inc, upper_inc, linear,
-    normalize);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence value from the array of temporal
- * instant values and free the array and the instants after the creation.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
- * @param[in] linear True when the interpolation is linear
- * @param[in] normalize True when the resulting value should be normalized
- */
-TSequence *
-tsequence_make_free(TInstant **instants, int count, bool lower_inc,
-   bool upper_inc, bool linear, bool normalize)
-{
-  if (count == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
-  TSequence *result = tsequence_make((const TInstant **) instants, count,
-    lower_inc, upper_inc, linear, normalize);
-  pfree_array((void **) instants, count);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Return a copy of the temporal value.
- */
-TSequence *
-tsequence_copy(const TSequence *seq)
-{
-  TSequence *result = palloc0(VARSIZE(seq));
-  memcpy(result, seq, VARSIZE(seq));
   return result;
 }
 
@@ -1426,6 +1367,64 @@ tsequence_read(StringInfo buf, CachedType temptype)
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence value from the array of temporal
+ * instant values.
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] linear True when the interpolation is linear
+ * @param[in] normalize True when the resulting value should be normalized
+ */
+TSequence *
+tsequence_make(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, bool normalize)
+{
+  tsequence_make_valid(instants, count, lower_inc, upper_inc, linear);
+  return tsequence_make1(instants, count, lower_inc, upper_inc, linear,
+    normalize);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence value from the array of temporal
+ * instant values and free the array and the instants after the creation.
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] linear True when the interpolation is linear
+ * @param[in] normalize True when the resulting value should be normalized
+ */
+TSequence *
+tsequence_make_free(TInstant **instants, int count, bool lower_inc,
+   bool upper_inc, bool linear, bool normalize)
+{
+  if (count == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  TSequence *result = tsequence_make((const TInstant **) instants, count,
+    lower_inc, upper_inc, linear, normalize);
+  pfree_array((void **) instants, count);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of the temporal value.
+ */
+TSequence *
+tsequence_copy(const TSequence *seq)
+{
+  TSequence *result = palloc0(VARSIZE(seq));
+  memcpy(result, seq, VARSIZE(seq));
+  return result;
+}
 
 /**
  * @ingroup libmeos_temporal_constructor

@@ -39,7 +39,7 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/timetypes.h"
 
 /*****************************************************************************/
@@ -59,8 +59,6 @@ typedef enum
 /* Miscellaneous */
 
 extern uint32_t time_max_header_size(void);
-extern bool time_type(CachedType timetype);
-extern void ensure_time_type(CachedType timetype);
 
 /* Functions for aggregations */
 

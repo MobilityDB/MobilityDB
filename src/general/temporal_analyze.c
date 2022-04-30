@@ -86,7 +86,7 @@
 #include "general/span_ops.h"
 #include "general/span_analyze.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_analyze.h"
 

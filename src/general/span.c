@@ -108,39 +108,6 @@ span_serialize(SpanBound *lower, SpanBound *upper)
 /*****************************************************************************/
 
 /**
- * Return true if the type is a time type
- */
-bool
-span_type(CachedType spantype)
-{
-  if (spantype == T_PERIOD || spantype == T_INTSPAN || spantype == T_FLOATSPAN)
-    return true;
-  return false;
-}
-
-/**
- * Ensure that the type corresponds to a time type
- */
-void
-ensure_span_type(CachedType spantype)
-{
-  if (! span_type(spantype))
-    elog(ERROR, "unknown span type: %d", spantype);
-  return;
-}
-
-/**
- * Ensures that the base type is supported by MobilityDB
- */
-void
-ensure_span_basetype(CachedType basetype)
-{
-  if (basetype != T_TIMESTAMPTZ && basetype != T_INT4 && basetype != T_FLOAT8)
-    elog(ERROR, "unknown span base type: %d", basetype);
-  return;
-}
-
-/**
  * Compare two span boundary points, returning <0, 0, or >0 according to
  * whether b1 is less than, equal to, or greater than b2.
  *

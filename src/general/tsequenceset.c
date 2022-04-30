@@ -47,7 +47,7 @@
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temp_catalog.h"
 #include "general/temporal_boxops.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -99,273 +99,6 @@ tsequenceset_seq_n(const TSequenceSet *ts, int index)
       ts->count * sizeof(size_t) +
       /* offset */
       (tsequenceset_offsets_ptr(ts))[index]);
-}
-
-/**
- * Ensure the validity of the arguments when creating a temporal value
- */
-static void
-tsequenceset_make_valid(const TSequence **sequences, int count)
-{
-  bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
-  /* Ensure that all values are of sequence subtype and of the same interpolation */
-  for (int i = 0; i < count; i++)
-  {
-    if (sequences[i]->subtype != SEQUENCE)
-    {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input values must be temporal sequences")));
-    }
-    if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
-    {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input sequences must have the same interpolation")));
-    }
-  }
-  return;
-}
-
-/**
- * Construct a temporal sequence set value from the array of temporal
- * sequence values
- *
- * For example, the memory structure of a temporal sequence set value
- * with two sequences is as follows
- * @code
- * ------------------------------------------------------------
- * ( TSequenceSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
- * ------------------------------------------------------------
- * ---------------------------------------
- * ( TSequence_0 )_X | ( TSequence_1 )_X |
- * ---------------------------------------
- * @endcode
- * where the `_X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding sequences.
- *
- * @param[in] sequences Array of sequences
- * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
- * In particular, normalize is false when synchronizing two
- * temporal sequence set values before applying an operation to them.
- */
-TSequenceSet *
-tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
-{
-  /* Test the validity of the sequences */
-  assert(count > 0);
-  ensure_valid_tseqarr(sequences, count);
-  /* Normalize the array of sequences */
-  TSequence **normseqs = (TSequence **) sequences;
-  int newcount = count;
-  if (normalize && count > 1)
-    normseqs = tseqarr_normalize(sequences, count, &newcount);
-
-  /* Get the bounding box size */
-  size_t bboxsize = temporal_bbox_size(sequences[0]->temptype);
-
-  /* Compute the size of the temporal sequence */
-  /* Bounding box size */
-  size_t memsize = bboxsize;
-  /* Size of composing sequences */
-  int totalcount = 0;
-  for (int i = 0; i < newcount; i++)
-  {
-    totalcount += normseqs[i]->count;
-    memsize += double_pad(VARSIZE(normseqs[i]));
-  }
-  /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TSequenceSet)) + newcount * sizeof(size_t);
-  /* Create the temporal sequence set */
-  TSequenceSet *result = palloc0(memsize);
-  SET_VARSIZE(result, memsize);
-  result->count = newcount;
-  result->totalcount = totalcount;
-  result->temptype = sequences[0]->temptype;
-  result->subtype = SEQUENCESET;
-  result->bboxsize = bboxsize;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
-    MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
-  MOBDB_FLAGS_SET_LINEAR(result->flags,
-    MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(sequences[0]->temptype))
-  {
-    MOBDB_FLAGS_SET_Z(result->flags,
-      MOBDB_FLAGS_GET_Z(sequences[0]->flags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags,
-      MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
-  }
-  /* Initialization of the variable-length part */
-  /*
-   * Compute the bounding box
-   * Only external types have bounding box, internal types such
-   * as double2, double3, or double4 do not have bounding box
-   */
-  if (bboxsize != 0)
-  {
-    tsequenceset_make_bbox((const TSequence **) normseqs, newcount,
-      tsequenceset_bbox_ptr(result));
-  }
-  /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TSequenceSet)) + double_pad(bboxsize) +
-    newcount * sizeof(size_t);
-  size_t pos = 0;
-  for (int i = 0; i < newcount; i++)
-  {
-    memcpy(((char *) result) + pdata + pos, normseqs[i],
-      VARSIZE(normseqs[i]));
-    (tsequenceset_offsets_ptr(result))[i] = pos;
-    pos += double_pad(VARSIZE(normseqs[i]));
-  }
-  if (normalize && count > 1)
-    pfree_array((void **) normseqs, newcount);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence set value from the array of temporal
- * sequence values.
- *
- * @param[in] sequences Array of sequences
- * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
- * In particular, normalize is false when synchronizing two
- * temporal sequence set values before applying an operation to them.
- */
-TSequenceSet *
-tsequenceset_make(const TSequence **sequences, int count, bool normalize)
-{
-  tsequenceset_make_valid(sequences, count);
-  return tsequenceset_make1(sequences, count, normalize);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence set value from the array of temporal
- * sequence values and free the array and the sequences after the creation.
- *
- * @param[in] sequences Array of sequences
- * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
- */
-TSequenceSet *
-tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
-{
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    count, normalize);
-  pfree_array((void **) sequences, count);
-  return result;
-}
-
-/**
- * Ensure the validity of the arguments when creating a temporal value
- * This function extends function tsequence_make_valid by spliting the
- * sequences according the maximum distance or interval between instants.
- */
-int *
-tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, bool linear, double maxdist, Interval *maxt, int *countsplits)
-{
-  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
-  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
-    SEQUENCE, maxdist, maxt, countsplits);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence set value from the array of temporal
- * sequence values.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] linear True when the resulting value has linear interpolation.
- * @param[in] maxdist Maximum distance for defining a gap.
- * @param[in] maxt Maximum time interval for defining a gap.
- */
-TSequenceSet *
-tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
-  float maxdist, Interval *maxt)
-{
-  /* Set the interval to NULL if it is negative or zero */
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(maxt),
-    PointerGetDatum(&intervalzero));
-  if (cmp <= 0)
-    maxt = NULL;
-
-  TSequence *seq;
-  TSequenceSet *result;
-
-  /* If no gaps are given construt call the standard sequence constructor */
-  if (maxdist <= 0.0 && maxt == NULL)
-  {
-    seq = tsequence_make((const TInstant **) instants, count, true, true,
-      linear, NORMALIZE);
-    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
-    return result;
-  }
-
-  /* Ensure that the array of instants is valid and determine the splits */
-  int countsplits;
-  int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
-    count, true, true, linear, maxdist, maxt, &countsplits);
-  if (countsplits == 0)
-  {
-    /* There are no gaps  */
-    pfree(splits);
-    seq = tsequence_make1((const TInstant **) instants, count,
-      true, true, linear, NORMALIZE);
-    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
-  }
-  else
-  {
-    int newcount = 0;
-    /* Split according to gaps  */
-    const TInstant **newinsts = palloc(sizeof(TInstant *) * count);
-    TSequence **sequences = palloc(sizeof(TSequence *) * (countsplits + 1));
-    int j = 0, k = 0;
-    for (int i = 0; i < count; i++)
-    {
-      if (splits[j] == i)
-      {
-        /* Finalize the current sequence and start a new one */
-        assert(k > 0);
-        sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
-          true, true, linear, NORMALIZE);
-        j++; k = 0;
-      }
-      /* Continue with the current sequence */
-      newinsts[k++] = instants[i];
-    }
-    /* Construct last sequence */
-    if (k > 0)
-      sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
-        true, true, linear, NORMALIZE);
-    result = tsequenceset_make((const TSequence **) sequences, newcount,
-      NORMALIZE);
-    pfree(newinsts); pfree(sequences);
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Return a copy of the temporal value.
- */
-TSequenceSet *
-tsequenceset_copy(const TSequenceSet *ts)
-{
-  TSequenceSet *result = palloc0(VARSIZE(ts));
-  memcpy(result, ts, VARSIZE(ts));
-  return result;
 }
 
 /**
@@ -804,6 +537,274 @@ tsequenceset_read(StringInfo buf, CachedType temptype)
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
+
+/**
+ * Ensure the validity of the arguments when creating a temporal value
+ */
+static void
+tsequenceset_make_valid(const TSequence **sequences, int count)
+{
+  bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
+  /* Ensure that all values are of sequence subtype and of the same interpolation */
+  for (int i = 0; i < count; i++)
+  {
+    if (sequences[i]->subtype != SEQUENCE)
+    {
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Input values must be temporal sequences")));
+    }
+    if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
+    {
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Input sequences must have the same interpolation")));
+    }
+  }
+  return;
+}
+
+
+/**
+ * Construct a temporal sequence set value from the array of temporal
+ * sequence values
+ *
+ * For example, the memory structure of a temporal sequence set value
+ * with two sequences is as follows
+ * @code
+ * ------------------------------------------------------------
+ * ( TSequenceSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
+ * ------------------------------------------------------------
+ * ---------------------------------------
+ * ( TSequence_0 )_X | ( TSequence_1 )_X |
+ * ---------------------------------------
+ * @endcode
+ * where the `_X` are unused bytes added for double padding, `offset_0` and
+ * `offset_1` are offsets for the corresponding sequences.
+ *
+ * @param[in] sequences Array of sequences
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized.
+ * In particular, normalize is false when synchronizing two
+ * temporal sequence set values before applying an operation to them.
+ */
+static TSequenceSet *
+tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
+{
+  /* Test the validity of the sequences */
+  assert(count > 0);
+  ensure_valid_tseqarr(sequences, count);
+  /* Normalize the array of sequences */
+  TSequence **normseqs = (TSequence **) sequences;
+  int newcount = count;
+  if (normalize && count > 1)
+    normseqs = tseqarr_normalize(sequences, count, &newcount);
+
+  /* Get the bounding box size */
+  size_t bboxsize = temporal_bbox_size(sequences[0]->temptype);
+
+  /* Compute the size of the temporal sequence */
+  /* Bounding box size */
+  size_t memsize = bboxsize;
+  /* Size of composing sequences */
+  int totalcount = 0;
+  for (int i = 0; i < newcount; i++)
+  {
+    totalcount += normseqs[i]->count;
+    memsize += double_pad(VARSIZE(normseqs[i]));
+  }
+  /* Size of the struct and the offset array */
+  memsize += double_pad(sizeof(TSequenceSet)) + newcount * sizeof(size_t);
+  /* Create the temporal sequence set */
+  TSequenceSet *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
+  result->count = newcount;
+  result->totalcount = totalcount;
+  result->temptype = sequences[0]->temptype;
+  result->subtype = SEQUENCESET;
+  result->bboxsize = bboxsize;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
+    MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
+  MOBDB_FLAGS_SET_LINEAR(result->flags,
+    MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
+  if (tgeo_type(sequences[0]->temptype))
+  {
+    MOBDB_FLAGS_SET_Z(result->flags,
+      MOBDB_FLAGS_GET_Z(sequences[0]->flags));
+    MOBDB_FLAGS_SET_GEODETIC(result->flags,
+      MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
+  }
+  /* Initialization of the variable-length part */
+  /*
+   * Compute the bounding box
+   * Only external types have bounding box, internal types such
+   * as double2, double3, or double4 do not have bounding box
+   */
+  if (bboxsize != 0)
+  {
+    tsequenceset_make_bbox((const TSequence **) normseqs, newcount,
+      tsequenceset_bbox_ptr(result));
+  }
+  /* Store the composing instants */
+  size_t pdata = double_pad(sizeof(TSequenceSet)) + double_pad(bboxsize) +
+    newcount * sizeof(size_t);
+  size_t pos = 0;
+  for (int i = 0; i < newcount; i++)
+  {
+    memcpy(((char *) result) + pdata + pos, normseqs[i],
+      VARSIZE(normseqs[i]));
+    (tsequenceset_offsets_ptr(result))[i] = pos;
+    pos += double_pad(VARSIZE(normseqs[i]));
+  }
+  if (normalize && count > 1)
+    pfree_array((void **) normseqs, newcount);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from the array of temporal
+ * sequence values.
+ *
+ * @param[in] sequences Array of sequences
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized.
+ * In particular, normalize is false when synchronizing two
+ * temporal sequence set values before applying an operation to them.
+ */
+TSequenceSet *
+tsequenceset_make(const TSequence **sequences, int count, bool normalize)
+{
+  tsequenceset_make_valid(sequences, count);
+  return tsequenceset_make1(sequences, count, normalize);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from the array of temporal
+ * sequence values and free the array and the sequences after the creation.
+ *
+ * @param[in] sequences Array of sequences
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized.
+ */
+TSequenceSet *
+tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
+{
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
+    count, normalize);
+  pfree_array((void **) sequences, count);
+  return result;
+}
+
+/**
+ * Ensure the validity of the arguments when creating a temporal value
+ * This function extends function tsequence_make_valid by spliting the
+ * sequences according the maximum distance or interval between instants.
+ */
+static int *
+tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, double maxdist, Interval *maxt, int *countsplits)
+{
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
+    SEQUENCE, maxdist, maxt, countsplits);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from the array of temporal
+ * sequence values.
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] linear True when the resulting value has linear interpolation.
+ * @param[in] maxdist Maximum distance for defining a gap.
+ * @param[in] maxt Maximum time interval for defining a gap.
+ */
+TSequenceSet *
+tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
+  float maxdist, Interval *maxt)
+{
+  /* Set the interval to NULL if it is negative or zero */
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = call_function2(interval_cmp, PointerGetDatum(maxt),
+    PointerGetDatum(&intervalzero));
+  if (cmp <= 0)
+    maxt = NULL;
+
+  TSequence *seq;
+  TSequenceSet *result;
+
+  /* If no gaps are given construt call the standard sequence constructor */
+  if (maxdist <= 0.0 && maxt == NULL)
+  {
+    seq = tsequence_make((const TInstant **) instants, count, true, true,
+      linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    return result;
+  }
+
+  /* Ensure that the array of instants is valid and determine the splits */
+  int countsplits;
+  int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
+    count, true, true, linear, maxdist, maxt, &countsplits);
+  if (countsplits == 0)
+  {
+    /* There are no gaps  */
+    pfree(splits);
+    seq = tsequence_make1((const TInstant **) instants, count,
+      true, true, linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+  }
+  else
+  {
+    int newcount = 0;
+    /* Split according to gaps  */
+    const TInstant **newinsts = palloc(sizeof(TInstant *) * count);
+    TSequence **sequences = palloc(sizeof(TSequence *) * (countsplits + 1));
+    int j = 0, k = 0;
+    for (int i = 0; i < count; i++)
+    {
+      if (splits[j] == i)
+      {
+        /* Finalize the current sequence and start a new one */
+        assert(k > 0);
+        sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
+          true, true, linear, NORMALIZE);
+        j++; k = 0;
+      }
+      /* Continue with the current sequence */
+      newinsts[k++] = instants[i];
+    }
+    /* Construct last sequence */
+    if (k > 0)
+      sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
+        true, true, linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) sequences, newcount,
+      NORMALIZE);
+    pfree(newinsts); pfree(sequences);
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of the temporal value.
+ */
+TSequenceSet *
+tsequenceset_copy(const TSequenceSet *ts)
+{
+  TSequenceSet *result = palloc0(VARSIZE(ts));
+  memcpy(result, ts, VARSIZE(ts));
+  return result;
+}
 
 /**
  * @ingroup libmeos_temporal_constructor

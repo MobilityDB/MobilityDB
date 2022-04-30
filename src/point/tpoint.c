@@ -39,8 +39,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temp_catalog.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"
 #include "point/stbox.h"
