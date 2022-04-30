@@ -4566,8 +4566,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * the intersection is non empty
  */
 Period **
-tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
-  int *count)
+tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 {
   /* The temporal sequence has at least 2 instants since
    * (1) the test for instantaneous full sequence is done in the calling function
@@ -4583,8 +4582,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   if (seq->count == 2 &&
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
-    result = palloc(sizeof(Period *));
-    result[0] = period_copy(&seq->period);
+    result = palloc(sizeof(Span *));
+    result[0] = span_copy(&seq->period);
     *count = 1;
     return result;
   }
@@ -4639,7 +4638,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       if ((seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        periods[k++] = period_make(t1, t1, true, true);
+        periods[k++] = span_make(t1, t1, true, true, T_TIMESTAMPTZ);
       }
     }
     else
@@ -4658,7 +4657,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       if (t1 == t2 && (seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        periods[k++] = period_make(t1, t1, true, true);
+        periods[k++] = span_make(t1, t1, true, true, T_TIMESTAMPTZ);
       }
       else
       {
@@ -4666,7 +4665,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
         TimestampTz upper1 = Max(t1, t2);
         bool lower_inc1 = (lower1 == start->t) ? seq->period.lower_inc : true;
         bool upper_inc1 = (upper1 == end->t) ? seq->period.upper_inc : true;
-        periods[k++] = period_make(lower1, upper1, lower_inc1, upper_inc1);
+        periods[k++] = span_make(lower1, upper1, lower_inc1, upper_inc1,
+          T_TIMESTAMPTZ);
       }
     }
   }
@@ -5087,7 +5087,7 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
   if (hast)
   {
     Period p;
-    period_set(box->tmin, box->tmax, true, upper_inc, &p);
+    span_set(box->tmin, box->tmax, true, upper_inc, T_TIMESTAMPTZ, &p);
     temp1 = temporal_restrict_period(temp, &p, REST_AT);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */

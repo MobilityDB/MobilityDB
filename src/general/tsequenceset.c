@@ -1072,8 +1072,8 @@ tsequenceset_period(const TSequenceSet *ts, Period *p)
 {
   const TSequence *start = tsequenceset_seq_n(ts, 0);
   const TSequence *end = tsequenceset_seq_n(ts, ts->count - 1);
-  period_set(start->period.lower, end->period.upper,
-    start->period.lower_inc, end->period.upper_inc, p);
+  span_set(start->period.lower, end->period.upper, start->period.lower_inc,
+    end->period.upper_inc, T_TIMESTAMPTZ, p);
   return;
 }
 
@@ -1583,9 +1583,9 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
   const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
   const TInstant *inst1 = tsequence_inst_n(seq1, 0);
   const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
-  period_set(inst1->t, inst2->t, seq1->period.lower_inc,
-    seq2->period.upper_inc, &p1);
-  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
+  span_set(inst1->t, inst2->t, seq1->period.lower_inc, seq2->period.upper_inc,
+    T_TIMESTAMPTZ, &p1);
+  span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
   period_shift_tscale(start, duration, &p2);
   TimestampTz shift;
   if (start != NULL)

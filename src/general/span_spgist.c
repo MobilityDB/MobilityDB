@@ -308,7 +308,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    period_set(t, t, true, true, result);
+    span_set(t, t, true, true, T_TIMESTAMPTZ, result);
   }
   else if (type == T_TIMESTAMPSET)
   {

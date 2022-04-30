@@ -96,6 +96,7 @@ extern Span *union_span_span(const Span *s1, const Span *s2, bool strict);
 
 /* intersection */
 
+extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
 extern Span *intersection_span_span(const Span *s1, const Span *s2);
 
 /* minus */

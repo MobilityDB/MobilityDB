@@ -42,8 +42,8 @@
 /* MobilityDB */
 #include "general/skiplist.h"
 #include "general/timestampset.h"
-#include "general/span.h"
 #include "general/periodset.h"
+#include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -270,17 +270,17 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   Period *result;
 
   /* Can't do anything with null inputs */
-  if (!p && !ts)
+  if (! p && ! ts)
     PG_RETURN_NULL();
   /* Null period and non-null timestampset, return the bbox of the timestampset */
-  if (!p)
+  if (! p)
   {
     result = palloc(sizeof(Period));
     timestampset_period(ts, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null timestampset, return the period */
-  if (!ts)
+  if (! ts)
   {
     result = palloc0(sizeof(Period));
     memcpy(result, p, sizeof(Period));
@@ -289,39 +289,9 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
 
   Period p1;
   timestampset_period(ts, &p1);
-  result = span_super_union(p, &p1);
+  result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Period_extent_transfn);
-/**
- * Transition function for temporal extent aggregation of period values
- * with period bounding box
- */
-PGDLLEXPORT Datum
-Period_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
-  const Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
-  Period *result;
-
-  /* Can't do anything with null inputs */
-  if (!p1 && !p2)
-    PG_RETURN_NULL();
-  /* Null period and non-null period, return the period */
-  else if (!p1)
-    result = period_copy(p2);
-  /* Non-null period and null period, return the period */
-  else if (!p2)
-    result = period_copy(p1);
-  else
-  {
-    Period p;
-    period_set(p2->lower, p2->upper, p2->lower_inc, p2->upper_inc, &p);
-    result = span_super_union(p1, &p);
-  }
   PG_RETURN_POINTER(result);
 }
 
@@ -338,17 +308,17 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   Period *result;
 
   /* Can't do anything with null inputs */
-  if (!p && !ps)
+  if (! p && ! ps)
     PG_RETURN_NULL();
   /* Null period and non-null period set, return the bbox of the period set */
-  if (!p)
+  if (! p)
   {
     result = palloc(sizeof(Period));
     periodset_period(ps, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
-  if (!ps)
+  if (! ps)
   {
     result = palloc0(sizeof(Period));
     memcpy(result, p, sizeof(Period));
@@ -357,7 +327,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
 
   Period p1;
   periodset_period(ps, &p1);
-  result = span_super_union(p, &p1);
+  result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
@@ -612,29 +582,6 @@ Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Aggregate combine functions for time types
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Time_extent_combinefn);
-/**
- * Combine function for temporal extent aggregation
- */
-PGDLLEXPORT Datum
-Time_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
-
-  if (!p2 && !p1)
-    PG_RETURN_NULL();
-  if (p1 && !p2)
-    PG_RETURN_POINTER(p1);
-  if (p2 && !p1)
-    PG_RETURN_POINTER(p2);
-
-  Period *result = span_super_union(p1, p2);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Time_tunion_combinefn);
 /**

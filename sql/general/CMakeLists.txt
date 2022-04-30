@@ -12,14 +12,14 @@ SET(LOCAL_FILES
   001_span
   003_timestampset
   005_periodset
-  007_time_ops
-  009_span_ops
+  007_span_ops
+  009_time_ops
   011_span_gist
   012_time_gist
   ${FILE_013}
   ${FILE_014}
-  015_time_aggfuncs
-  017_span_aggfuncs
+  015_span_aggfuncs
+  017_time_aggfuncs
   ${FILE_019}
   020_doublen
   021_tbox

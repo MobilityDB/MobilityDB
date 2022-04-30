@@ -387,8 +387,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   result->temptype = instants[0]->temptype;
   result->subtype = SEQUENCE;
   result->bboxsize = bboxsize;
-  period_set(norminsts[0]->t, norminsts[newcount - 1]->t, lower_inc, upper_inc,
-    &result->period);
+  span_set(norminsts[0]->t, norminsts[newcount - 1]->t, lower_inc, upper_inc,
+    T_TIMESTAMPTZ, &result->period);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
@@ -856,7 +856,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period inter;
-  if (! inter_period_period(&seq1->period, &seq2->period, &inter))
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return false;
 
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
@@ -1926,8 +1926,8 @@ tsequence_duration(const TSequence *seq)
 void
 tsequence_period(const TSequence *seq, Period *p)
 {
-  period_set(seq->period.lower, seq->period.upper, seq->period.lower_inc,
-    seq->period.upper_inc, p);
+  span_set(seq->period.lower, seq->period.upper, seq->period.lower_inc,
+    seq->period.upper_inc, T_TIMESTAMPTZ, p);
   return;
 }
 
@@ -3671,7 +3671,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 {
   /* Bounding box test */
   Period inter;
-  if (! inter_period_period(&seq->period, p, &inter))
+  if (! inter_span_span(&seq->period, p, &inter))
     return NULL;
 
   /* Instantaneous sequence */

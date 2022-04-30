@@ -98,14 +98,16 @@ timestampset_make(const TimestampTz *times, int count)
         errmsg("Invalid value for timestamp set")));
   }
   /* Notice that the first timestamp is already declared in the struct */
-  size_t memsize = double_pad(sizeof(TimestampSet)) + sizeof(TimestampTz) * (count - 1);
+  size_t memsize = double_pad(sizeof(TimestampSet)) +
+    sizeof(TimestampTz) * (count - 1);
   /* Create the TimestampSet */
   TimestampSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
 
   /* Compute the bounding box */
-  period_set(times[0], times[count - 1], true, true, &result->period);
+  span_set(times[0], times[count - 1], true, true, T_TIMESTAMPTZ,
+    &result->period);
   /* Copy the timestamp array */
   for (int i = 0; i < count; i++)
     result->elems[i] = times[i];
@@ -285,7 +287,7 @@ void
 timestampset_period(const TimestampSet *ts, Period *p)
 {
   const Period *p1 = &ts->period;
-  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
   return;
 }
 

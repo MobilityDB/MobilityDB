@@ -424,7 +424,7 @@ period_bucket_get(TimestampTz t, int64 tunits)
 {
   TimestampTz lower = t;
   TimestampTz upper = lower + tunits;
-  return period_make(lower, upper, true, false);
+  return span_make(lower, upper, true, false, T_TIMESTAMPTZ);
 }
 
 /**

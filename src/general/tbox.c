@@ -492,7 +492,7 @@ tbox_period(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
-  Period *result = period_make(box->tmin, box->tmax, true, true);
+  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
   return result;
 }
 

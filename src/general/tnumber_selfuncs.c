@@ -149,7 +149,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (type == T_PERIOD)
   {
     Period *period = DatumGetPeriodP(((Const *) other)->constvalue);
-    *p = period_copy(period);
+    *p = span_copy(period);
   }
   else if (type == T_PERIODSET)
   {

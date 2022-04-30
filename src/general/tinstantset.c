@@ -437,7 +437,7 @@ tinstantset_time(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    periods[i] = period_make(inst->t, inst->t, true, true);
+    periods[i] = span_make(inst->t, inst->t, true, true, T_TIMESTAMPTZ);
   }
   PeriodSet *result = periodset_make_free(periods, ti->count, NORMALIZE_NO);
   return result;
@@ -522,7 +522,7 @@ tinstantset_period(const TInstantSet *ti, Period *p)
 {
   TimestampTz lower = tinstantset_start_timestamp(ti);
   TimestampTz upper = tinstantset_end_timestamp(ti);
-  return period_set(lower, upper, true, true, p);
+  return span_set(lower, upper, true, true, T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -726,8 +726,8 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
   Period p1, p2;
   const TInstant *inst1 = tinstantset_inst_n(ti, 0);
   const TInstant *inst2 = tinstantset_inst_n(ti, ti->count - 1);
-  period_set(inst1->t, inst2->t, true, true, &p1);
-  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
+  span_set(inst1->t, inst2->t, true, true, T_TIMESTAMPTZ, &p1);
+  span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
   period_shift_tscale(start, duration, &p2);
   TimestampTz shift;
   if (start != NULL)

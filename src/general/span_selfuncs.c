@@ -844,7 +844,7 @@ time_const_to_period(Node *other, Period *period)
     /* The right argument is a TimestampTz constant. We convert it into
      * a singleton period */
     TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    period_set(t, t, true, true, period);
+    span_set(t, t, true, true, T_TIMESTAMPTZ, period);
   }
   else if (timetype == T_TIMESTAMPSET)
   {

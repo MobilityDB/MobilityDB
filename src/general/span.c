@@ -294,21 +294,6 @@ spanarr_normalize(Span **spans, int count, int *newcount)
 }
 
 /**
- * Return the smallest span that contains s1 and s2
- *
- * This differs from regular span union in a critical ways:
- * It won'd throw an error for non-adjacent s1 and s2, but just absorb
- * the intervening values into the result span.
- */
-Span *
-span_super_union(const Span *s1, const Span *s2)
-{
-  Span *result = span_copy(s1);
-  span_expand(s2, result);
-  return result;
-}
-
-/**
  * Get the bounds of the span as double values.
  *
  * @param[in] s Input span
@@ -475,37 +460,6 @@ span_copy(const Span *s)
   Span *result = (Span *) palloc(sizeof(Span));
   memcpy((char *) result, (char *) s, sizeof(Span));
   return result;
-}
-
-/**
- * @ingroup libmeos_time_constructor
- * @brief Construct a period from the bounds.
- */
-Period *
-period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
-{
-  return span_make(lower, upper, lower_inc, upper_inc, T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_time_constructor
- * @brief Set the period from the argument values.
- */
-void
-period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
-  bool upper_inc, Period *p)
-{
-  return span_set(lower, upper, lower_inc, upper_inc, T_TIMESTAMPTZ, p);
-}
-
-/**
- * @ingroup libmeos_time_constructor
- * @brief Return a copy of the period.
- */
-Period *
-period_copy(const Period *p)
-{
-  return span_copy(p);
 }
 
 /*****************************************************************************
@@ -1020,8 +974,8 @@ Tstzrange_to_period(PG_FUNCTION_ARGS)
       errmsg("Range bounds cannot be infinite")));
 
   range_deserialize(typcache, range, &lower, &upper, &empty);
-  period = period_make(DatumGetTimestampTz(lower.val),
-    DatumGetTimestampTz(upper.val), lower.inclusive, upper.inclusive);
+  period = span_make(lower.val, upper.val, lower.inclusive, upper.inclusive,
+    T_TIMESTAMPTZ);
   PG_RETURN_POINTER(period);
 }
 
@@ -1102,7 +1056,7 @@ Period_shift(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
-  Period *result = period_copy(p);
+  Period *result = span_copy(p);
   period_shift_tscale(start, NULL, result);
   PG_RETURN_POINTER(result);
 }
@@ -1116,7 +1070,7 @@ Period_tscale(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Period *result = period_copy(p);
+  Period *result = span_copy(p);
   period_shift_tscale(NULL, duration, result);
   PG_RETURN_POINTER(result);
 }
@@ -1131,7 +1085,7 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Period *result = period_copy(p);
+  Period *result = span_copy(p);
   period_shift_tscale(start, duration, result);
   PG_RETURN_POINTER(result);
 }

@@ -52,13 +52,13 @@ Datum
 span_elem_min(Datum l, Datum r, CachedType type)
 {
   ensure_span_basetype(type);
+  if (type == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
+      DatumGetTimestampTz(r)));
   if (type == T_INT4)
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
   if (type == T_FLOAT8)
     return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
-  if (type == T_TIMESTAMPTZ)
-    return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r)));
   elog(ERROR, "unknown span_elem_min function for span base type: %d", type);
 }
 
@@ -69,13 +69,13 @@ Datum
 span_elem_max(Datum l, Datum r, CachedType type)
 {
   ensure_span_basetype(type);
+  if (type == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
+      DatumGetTimestampTz(r)));
   if (type == T_INT4)
     return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
   if (type == T_FLOAT8)
     return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
-  if (type == T_TIMESTAMPTZ)
-    return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r)));
   elog(ERROR, "unknown span_elem_max function for span base type: %d", type);
 }
 
@@ -415,7 +415,6 @@ Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
   Span *result = palloc0(sizeof(Span));
-  /* We are sure that there is an intersection */
   if (! inter_span_span(s1, s2, result))
   {
     pfree(result);

@@ -275,9 +275,6 @@ extern bool intersection_period_timestamp(const Period *p, TimestampTz t,
   TimestampTz *result);
 extern TimestampSet *intersection_period_timestampset(const Period *ps,
   const TimestampSet *ts);
-extern Period *intersection_period_period(const Period *p1, const Period *p2);
-extern bool inter_period_period(const Period *p1, const Period *p2,
-  Period *result);
 extern PeriodSet *intersection_period_periodset(const Period *p,
   const PeriodSet *ps);
 

@@ -1367,7 +1367,7 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period inter;
-  if (! inter_period_period(&seq1->period, &seq2->period, &inter))
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return 0;
 
   /* If the two sequences intersect at an instant */
@@ -2026,23 +2026,22 @@ efunc_tsequence_tsequence(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  Period *inter = intersection_period_period(&seq1->period,
-    &seq2->period);
-  if (inter == NULL)
+  Period inter;
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return -1;
 
   /* If the two sequences intersect at an instant */
-  if (inter->lower == inter->upper)
+  if (inter.lower == inter.upper)
   {
     Datum value1, value2;
-    tsequence_value_at_timestamp(seq1, inter->lower, &value1);
-    tsequence_value_at_timestamp(seq2, inter->lower, &value2);
+    tsequence_value_at_timestamp(seq1, inter.lower, &value1);
+    tsequence_value_at_timestamp(seq2, inter.lower, &value2);
     bool resvalue = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
     return resvalue ? 1 : 0;
   }
   /* Ever functions are always discontinuous */
   assert(lfinfo->discont);
-  return efunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, inter);
+  return efunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, &inter);
 }
 
 /*****************************************************************************/

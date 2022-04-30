@@ -356,7 +356,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(span, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      left_span = span_super_union(left_span, span); \
+      left_span = union_span_span(left_span, span, false); \
     else                  \
       left_span = (span);        \
     v->spl_left[v->spl_nleft++] = (off);  \
@@ -365,7 +365,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(span, off)        \
   do {                    \
     if (v->spl_nright > 0)          \
-      right_span = span_super_union(right_span, span); \
+      right_span = union_span_span(right_span, span, false); \
     else                  \
       right_span = (span);      \
     v->spl_right[v->spl_nright++] = (off);  \

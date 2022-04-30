@@ -98,7 +98,6 @@ extern int span_bound_qsort_cmp(const void *a1, const void *a2);
 extern int span_lower_cmp(const Span *a, const Span *b);
 extern int span_upper_cmp(const Span *a, const Span *b);
 extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
-extern Span *span_super_union(const Span *s1, const Span *s2);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
 /* Input/output functions */
@@ -114,11 +113,6 @@ extern Span *span_make(Datum lower, Datum upper, bool lower_inc,
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   CachedType basetype, Span *s);
 extern Span *span_copy(const Span *s);
-extern Period *period_make(TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc);
-  extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
-  bool upper_inc, Period *p);
-extern Period *period_copy(const Period *p);
 
 /* Casting */
 

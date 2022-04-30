@@ -913,7 +913,7 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   if (MOBDB_FLAGS_GET_T(box.flags))
   {
     /* Transform the STBOX into a Period */
-    period_set(box.tmin, box.tmax, true, true, &period);
+    span_set(box.tmin, box.tmax, true, true, T_TIMESTAMPTZ, &period);
 
     /* Compute the selectivity */
     selec *= temporal_sel_period(&vardata, &period, cachedOp);

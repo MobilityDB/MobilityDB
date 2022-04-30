@@ -1791,7 +1791,7 @@ Stbox_to_period(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_T_stbox(box);
-  Period *result = period_make(box->tmin, box->tmax, true, true);
+  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
   PG_RETURN_POINTER(result);
 }
 

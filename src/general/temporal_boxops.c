@@ -201,7 +201,7 @@ tinstant_make_bbox(const TInstant *inst, void *box)
   ensure_temporal_type(inst->temptype);
   memset(box, 0, temporal_bbox_size(inst->temptype));
   if (talpha_type(inst->temptype))
-    period_set(inst->t, inst->t, true, true, (Period *) box);
+    span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
     double dvalue = tnumberinst_double(inst);
@@ -251,8 +251,8 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    period_set(instants[0]->t, instants[count - 1]->t, true, true,
-      (Period *) box);
+    span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
+      (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (tgeo_type(instants[0]->temptype))
@@ -282,8 +282,8 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    period_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
-      (Period *) box);
+    span_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
+      T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (instants[0]->temptype == T_TGEOMPOINT)
@@ -311,8 +311,8 @@ tseqarr_to_period(const TSequence **sequences, int count,
 {
   const Period *first = &sequences[0]->period;
   const Period *last = &sequences[count - 1]->period;
-  period_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
-    period);
+  span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
+    T_TIMESTAMPTZ, period);
   return;
 }
 
@@ -377,7 +377,7 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
 {
   Period p1, p2;
   temporal_period(temp, &p1);
-  period_set(t, t, true, true, &p2);
+  span_set(t, t, true, true, T_TIMESTAMPTZ, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }

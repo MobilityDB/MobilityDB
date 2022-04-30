@@ -215,13 +215,14 @@ periodset_make(const Period **periods, int count, bool normalize)
   result->count = newcount;
 
   /* Compute the bounding box */
-  period_set(newperiods[0]->lower, newperiods[newcount - 1]->upper,
+  span_set(newperiods[0]->lower, newperiods[newcount - 1]->upper,
     newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc,
-    &result->period);
+    T_TIMESTAMPTZ, &result->period);
   /* Copy the period array */
   for (int i = 0; i < newcount; i++)
-    period_set(newperiods[i]->lower, newperiods[i]->upper,
-      newperiods[i]->lower_inc, newperiods[i]->upper_inc, &result->elems[i]);
+    span_set(newperiods[i]->lower, newperiods[i]->upper,
+      newperiods[i]->lower_inc, newperiods[i]->upper_inc, T_TIMESTAMPTZ,
+      &result->elems[i]);
   /* Free after normalization */
   if (normalize && count > 1)
     pfree_array((void **) newperiods, newcount);
@@ -274,8 +275,8 @@ periodset_copy(const PeriodSet *ps)
 PeriodSet *
 timestamp_periodset(TimestampTz t)
 {
-  Period p;
-  period_set(t, t, true, true, &p);
+  Span p;
+  span_set(t, t, true, true, T_TIMESTAMPTZ, &p);
   PeriodSet *result = period_periodset(&p);
   return result;
 }
@@ -291,7 +292,7 @@ timestampset_periodset(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    periods[i] = period_make(t, t, true, true);
+    periods[i] = span_make(t, t, true, true, T_TIMESTAMPTZ);
   }
   PeriodSet *result = periodset_make_free(periods, ts->count, NORMALIZE_NO);
   return result;
@@ -315,7 +316,7 @@ void
 periodset_period(const PeriodSet *ps, Period *p)
 {
   const Period *p1 = (Period *) &ps->period;
-  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
   return;
 }
 
@@ -396,7 +397,7 @@ periodset_num_periods(const PeriodSet *ps)
 Period *
 periodset_start_period(const PeriodSet *ps)
 {
-  Period *result = period_copy(periodset_per_n(ps, 0));
+  Period *result = span_copy(periodset_per_n(ps, 0));
   return result;
 }
 
@@ -407,7 +408,7 @@ periodset_start_period(const PeriodSet *ps)
 Period *
 periodset_end_period(const PeriodSet *ps)
 {
-  Period *result = period_copy(periodset_per_n(ps, ps->count - 1));
+  Period *result = span_copy(periodset_per_n(ps, ps->count - 1));
   return result;
 }
 
@@ -420,7 +421,7 @@ periodset_period_n(const PeriodSet *ps, int i)
 {
   Period *result = NULL;
   if (i >= 1 && i <= ps->count)
-    result = period_copy(periodset_per_n(ps, i - 1));
+    result = span_copy(periodset_per_n(ps, i - 1));
   return result;
 }
 
