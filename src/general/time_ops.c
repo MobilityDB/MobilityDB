@@ -40,6 +40,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/span.h"
+#include "general/span_ops.h"
 #include "general/periodset.h"
 #include "general/timestampset.h"
 #include "general/temporal_util.h"
@@ -102,7 +103,7 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
     /* Bounding box test */
     const Period *p1 = timestampset_period_ptr(ts1);
     const Period *p2 = timestampset_period_ptr(ts2);
-    if (! overlaps_period_period(p1, p2))
+    if (! overlaps_span_span(p1, p2))
       return setop == INTER ? NULL : timestampset_copy(ts1);
   }
 
@@ -171,7 +172,7 @@ setop_timestampset_period(const TimestampSet *ts, const Period *p,
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(p1, p))
+  if (! overlaps_span_span(p1, p))
     return (setop == INTER) ? NULL : timestampset_copy(ts);
 
   TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
@@ -197,7 +198,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts);
   const Period *p2 = periodset_period_ptr(ps);
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return (setop == INTER) ? NULL : timestampset_copy(ts);
 
   TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
@@ -274,7 +275,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts1);
   const Period *p2 = timestampset_period_ptr(ts2);
-  if (! contains_period_period(p1, p2))
+  if (! contains_span_span(p1, p2))
     return false;
 
   int i = 0, j = 0;
@@ -322,26 +323,9 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   /* It is sufficient to do a bounding box test */
   const Period *p1 = timestampset_period_ptr(ts);
-  if (! contains_period_period(p, p1))
+  if (! contains_span_span(p, p1))
     return false;
   return true;
-}
-
-/**
- * @ingroup libmeos_time_topo
- * @brief Return true if the first time value contains the second one.
- */
-bool
-contains_period_period(const Period *p1, const Period *p2)
-{
-  int c1 = timestamp_cmp_internal(p1->lower, p2->lower);
-  int c2 = timestamp_cmp_internal(p1->upper, p2->upper);
-  if (
-    (c1 < 0 || (c1 == 0 && (p1->lower_inc || ! p2->lower_inc))) &&
-    (c2 > 0 || (c2 == 0 && (p1->upper_inc || ! p2->upper_inc)))
-  )
-    return true;
-  return false;
 }
 
 /**
@@ -372,7 +356,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
   const Period *p2 = timestampset_period_ptr(ts);
-  if (! contains_period_period(p1, p2))
+  if (! contains_span_span(p1, p2))
     return false;
 
   int i = 0, j = 0;
@@ -402,13 +386,13 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
 {
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
-  if (! contains_period_period(p1, p))
+  if (! contains_span_span(p1, p))
     return false;
 
   int loc;
   periodset_find_timestamp(ps, p->lower, &loc);
   p1 = periodset_per_n(ps, loc);
-  return contains_period_period(p1, p);
+  return contains_span_span(p1, p);
 }
 
 /**
@@ -416,10 +400,10 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
  * @brief Return true if the first time value contains the second one.
  */
 bool
-contains_period_periodset(const Period *p, const PeriodSet *ps)
+contains_span_spanset(const Period *p, const PeriodSet *ps)
 {
   const Period *p1 = periodset_period_ptr(ps);
-  return contains_period_period(p, p1);
+  return contains_span_span(p, p1);
 }
 
 /**
@@ -432,7 +416,7 @@ contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps1);
   const Period *p2 = periodset_period_ptr(ps2);
-  if (! contains_period_period(p1, p2))
+  if (! contains_span_span(p1, p2))
     return false;
 
   int i = 0, j = 0;
@@ -440,14 +424,14 @@ contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   {
     p1 = periodset_per_n(ps1, i);
     p2 = periodset_per_n(ps2, j);
-    if (before_period_period(p1, p2))
+    if (left_span_span(p1, p2))
       i++;
-    else if (before_period_period(p2, p1))
+    else if (left_span_span(p2, p1))
       return false;
     else
     {
       /* p1 and p2 overlap */
-      if (contains_period_period(p1, p2))
+      if (contains_span_span(p1, p2))
       {
         if (p1->upper == p2->upper)
         {
@@ -534,16 +518,6 @@ contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
  * @brief Return true if the first time value is contained by the second one
  */
 bool
-contained_period_period(const Period *p1, const Period *p2)
-{
-  return contains_period_period(p2, p1);
-}
-
-/**
- * @ingroup libmeos_time_topo
- * @brief Return true if the first time value is contained by the second one
- */
-bool
 contained_period_periodset(const Period *p, const PeriodSet *ps)
 {
   return contains_periodset_period(ps, p);
@@ -556,7 +530,7 @@ contained_period_periodset(const Period *p, const PeriodSet *ps)
 bool
 contained_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  return contains_period_periodset(p, ps);
+  return contains_span_spanset(p, ps);
 }
 
 /**
@@ -583,7 +557,7 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts1);
   const Period *p2 = timestampset_period_ptr(ts2);
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return false;
 
   int i = 0, j = 0;
@@ -611,7 +585,7 @@ overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(p, p1))
+  if (! overlaps_span_span(p, p1))
     return false;
 
   for (int i = 0; i < ts->count; i++)
@@ -633,7 +607,7 @@ overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
   const Period *p2 = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return false;
 
   int i = 0, j = 0;
@@ -666,28 +640,11 @@ overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return true if the two time values overlap.
  */
 bool
-overlaps_period_period(const Period *p1, const Period *p2)
-{
-  int c1 = timestamp_cmp_internal(p1->lower, p2->upper);
-  int c2 = timestamp_cmp_internal(p2->lower, p1->upper);
-  if (
-    (c1 < 0 || (c1 == 0 && p1->lower_inc && p2->upper_inc)) &&
-    (c2 < 0 || (c2 == 0 && p2->lower_inc && p1->upper_inc))
-  )
-    return true;
-  return false;
-}
-
-/**
- * @ingroup libmeos_time_topo
- * @brief Return true if the two time values overlap.
- */
-bool
 overlaps_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
-  if (! overlaps_period_period(p, p1))
+  if (! overlaps_span_span(p, p1))
     return false;
 
   /* Binary search of lower bound of period */
@@ -696,7 +653,7 @@ overlaps_period_periodset(const Period *p, const PeriodSet *ps)
   for (int i = loc; i < ps->count; i++)
   {
     p1 = periodset_per_n(ps, i);
-    if (overlaps_period_period(p1, p))
+    if (overlaps_span_span(p1, p))
       return true;
     if (p->upper < p1->upper)
       break;
@@ -734,7 +691,7 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps1);
   const Period *p2 = periodset_period_ptr(ps2);
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return false;
 
   int i = 0, j = 0;
@@ -742,7 +699,7 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   {
     p1 = periodset_per_n(ps1, i);
     p2 = periodset_per_n(ps2, j);
-    if (overlaps_period_period(p1, p2))
+    if (overlaps_span_span(p1, p2))
       return true;
     int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
     if (cmp == 0)
@@ -846,21 +803,6 @@ bool
 adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   return adjacent_timestampset_period(ts, p);
-}
-
-/**
- * @ingroup libmeos_time_topo
- * @brief Return true if the two time value are adjacent.
- */
-bool
-adjacent_period_period(const Period *p1, const Period *p2)
-{
-  /*
-   * Two periods A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
-   */
-  return (p1->upper == p2->lower && p1->upper_inc != p2->lower_inc) ||
-       (p2->upper == p1->lower && p2->upper_inc != p1->lower_inc);
 }
 
 /**
@@ -1040,21 +982,10 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
-before_period_period(const Period *p1, const Period *p2)
-{
-  int cmp = timestamp_cmp_internal(p1->upper, p2->lower);
-  return (cmp < 0 || (cmp == 0 && (! p1->upper_inc || ! p2->lower_inc)));
-}
-
-/**
- * @ingroup libmeos_time_pos
- * @brief Return true if the first time value is strictly before the second one.
- */
-bool
 before_period_periodset(const Period *p, const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, 0);
-  return before_period_period(p, p1);
+  return left_span_span(p, p1);
 }
 
 /**
@@ -1088,7 +1019,7 @@ bool
 before_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, ps->count - 1);
-  return before_period_period(p1, p);
+  return left_span_span(p1, p);
 }
 
 /**
@@ -1100,7 +1031,7 @@ before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   const Period *p1 = periodset_per_n(ps1, ps1->count - 1);
   const Period *p2 = periodset_per_n(ps2, 0);
-  return before_period_period(p1, p2);
+  return left_span_span(p1, p2);
 }
 
 /*****************************************************************************/
@@ -1214,21 +1145,10 @@ after_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
-after_period_period(const Period *p1, const Period *p2)
-{
-  int cmp = timestamp_cmp_internal(p2->upper, p1->lower);
-  return (cmp < 0 || (cmp == 0 && (! p2->upper_inc || ! p1->lower_inc)));
-}
-
-/**
- * @ingroup libmeos_time_pos
- * @brief Return true if the first time value is strictly after the second one.
- */
-bool
 after_period_periodset(const Period *p, const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, ps->count - 1);
-  return after_period_period(p, p1);
+  return right_span_span(p, p1);
 }
 
 /**
@@ -1262,7 +1182,7 @@ bool
 after_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, 0);
-  return after_period_period(p1, p);
+  return right_span_span(p1, p);
 }
 
 /**
@@ -1274,7 +1194,7 @@ after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   const Period *p1 = periodset_per_n(ps1, 0);
   const Period *p2 = periodset_per_n(ps2, ps2->count - 1);
-  return after_period_period(p1, p2);
+  return right_span_span(p1, p2);
 }
 
 /*****************************************************************************/
@@ -1386,21 +1306,10 @@ overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return true if the first time value is not after the second one.
  */
 bool
-overbefore_period_period(const Period *p1, const Period *p2)
-{
-  int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
-  return (cmp < 0 || (cmp == 0 && (! p1->upper_inc || p2->upper_inc)));
-}
-
-/**
- * @ingroup libmeos_time_pos
- * @brief Return true if the first time value is not after the second one.
- */
-bool
 overbefore_period_periodset(const Period *p, const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, ps->count - 1);
-  return overbefore_period_period(p, p1);
+  return overleft_span_span(p, p1);
 }
 
 /**
@@ -1434,7 +1343,7 @@ bool
 overbefore_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, ps->count - 1);
-  return overbefore_period_period(p1, p);
+  return overleft_span_span(p1, p);
 }
 
 /**
@@ -1446,7 +1355,7 @@ overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   const Period *p1 = periodset_per_n(ps1, ps1->count - 1);
   const Period *p2 = periodset_per_n(ps2, ps2->count - 1);
-  return overbefore_period_period(p1, p2);
+  return overleft_span_span(p1, p2);
 }
 
 /*****************************************************************************/
@@ -1558,21 +1467,10 @@ overafter_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return true if the first time value is not before the second one.
  */
 bool
-overafter_period_period(const Period *p1, const Period *p2)
-{
-  int cmp = timestamp_cmp_internal(p2->lower, p1->lower);
-  return (cmp < 0 || (cmp == 0 && (! p1->lower_inc || p2->lower_inc)));
-}
-
-/**
- * @ingroup libmeos_time_pos
- * @brief Return true if the first time value is not before the second one.
- */
-bool
 overafter_period_periodset(const Period *p, const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, 0);
-  return overafter_period_period(p, p1);
+  return overright_span_span(p, p1);
 }
 
 /**
@@ -1606,7 +1504,7 @@ bool
 overafter_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, 0);
-  return overafter_period_period(p1, p);
+  return overright_span_span(p1, p);
 }
 
 /**
@@ -1618,7 +1516,7 @@ overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   const Period *p1 = periodset_per_n(ps1, 0);
   const Period *p2 = periodset_per_n(ps2, 0);
-  return overafter_period_period(p1, p2);
+  return overright_span_span(p1, p2);
 }
 
 /*****************************************************************************
@@ -1796,8 +1694,8 @@ PeriodSet *
 union_period_period(const Period *p1, const Period *p2)
 {
   /* If the periods do not overlap */
-  if (! overlaps_period_period(p1, p2) &&
-    !adjacent_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2) &&
+    !adjacent_span_span(p1, p2))
   {
     const Period *periods[2];
     if (p1->lower < p2->lower)
@@ -1894,9 +1792,9 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
     const Period *p1 = periodset_per_n(ps1, i);
     const Period *p2 = periodset_per_n(ps2, j);
     /* The periods do not overlap, copy the earliest period */
-    if (! overlaps_period_period(p1, p2))
+    if (! overlaps_span_span(p1, p2))
     {
-      if (before_period_period(p1, p2))
+      if (left_span_span(p1, p2))
       {
         periods[k++] = (Period *) p1;
         i++;
@@ -1920,15 +1818,15 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
       {
         p1 = periodset_per_n(ps1, i);
         p2 = periodset_per_n(ps2, j);
-        if (! overlaps_period_period(p1, q) &&
-          !overlaps_period_period(p2, q))
+        if (! overlaps_span_span(p1, q) &&
+          !overlaps_span_span(p2, q))
           break;
-        if (overlaps_period_period(p1, q))
+        if (overlaps_span_span(p1, q))
         {
           span_expand(p1, q);
           i++;
         }
-        if (overlaps_period_period(p2, q))
+        if (overlaps_span_span(p2, q))
         {
           span_expand(p2, q);
           j++;
@@ -1939,7 +1837,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
       while (i < ps1->count)
       {
         p1 = periodset_per_n(ps1, i);
-        if (overlaps_period_period(p1, q))
+        if (overlaps_span_span(p1, q))
         {
           span_expand(p1, q);
           i++;
@@ -1950,7 +1848,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
       while (j < ps2->count)
       {
         p2 = periodset_per_n(ps2, j);
-        if (overlaps_period_period(p2, q))
+        if (overlaps_span_span(p2, q))
         {
           span_expand(p2, q);
           j++;
@@ -2119,7 +2017,7 @@ bool
 inter_period_period(const Period *p1, const Period *p2, Period *result)
 {
   /* Bounding box test */
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return false;
 
   TimestampTz lower = Max(p1->lower, p2->lower);
@@ -2140,7 +2038,7 @@ Period *
 intersection_period_period(const Period *p1, const Period *p2)
 {
   /* Bounding box test */
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return NULL;
 
   Period *result = palloc0(sizeof(Period));
@@ -2158,11 +2056,11 @@ intersection_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
-  if (! overlaps_period_period(p, p1))
+  if (! overlaps_span_span(p, p1))
     return NULL;
 
   /* Is the period set fully contained in the period? */
-  if (contains_period_periodset(p, ps))
+  if (contains_span_spanset(p, ps))
     return periodset_copy(ps);
 
   /* General case */
@@ -2439,7 +2337,7 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
   PeriodSet *ps = period_periodset(p);
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(p, p1))
+  if (! overlaps_span_span(p, p1))
     return ps;
 
   /* Call the function for the period set */
@@ -2587,7 +2485,7 @@ minus_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
-  if (! overlaps_period_period(p, p1))
+  if (! overlaps_span_span(p, p1))
     return periodset_make((const Period **) &p, 1, false);
 
   Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
@@ -2632,7 +2530,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
   const Period *p2 = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return periodset_copy(ps);
 
   /* Each timestamp will split at most one composing period into two */
@@ -2740,7 +2638,7 @@ minus_periodset_period(const PeriodSet *ps, const Period *p)
 {
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps);
-  if (! overlaps_period_period(p1, p))
+  if (! overlaps_span_span(p1, p))
     return periodset_copy(ps);
 
   /* At most one composing period can be split into two */
@@ -2765,7 +2663,7 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   /* Bounding box test */
   const Period *p1 = periodset_period_ptr(ps1);
   const Period *p2 = periodset_period_ptr(ps2);
-  if (! overlaps_period_period(p1, p2))
+  if (! overlaps_span_span(p1, p2))
     return periodset_copy(ps1);
 
   Period **periods = palloc(sizeof(const Period *) * (ps1->count + ps2->count));
@@ -2775,7 +2673,7 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
     p1 = periodset_per_n(ps1, i);
     p2 = periodset_per_n(ps2, j);
     /* The periods do not overlap, copy the first period */
-    if (! overlaps_period_period(p1, p2))
+    if (! overlaps_span_span(p1, p2))
     {
       periods[k++] = period_copy(p1);
       i++;
@@ -2792,7 +2690,7 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
       for (l = j; l < ps2->count; l++)
       {
         const Period *p3 = periodset_per_n(ps2, l);
-        if (! overlaps_period_period(p1, p3))
+        if (! overlaps_span_span(p1, p3))
           break;
       }
       int to = Min(l, ps2->count);
@@ -2900,7 +2798,7 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
   Period p1, p2;
   timestampset_period(ts1, &p1);
   timestampset_period(ts2, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   return result;
 }
 #endif
@@ -2915,7 +2813,7 @@ distance_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   Period p1;
   timestampset_period(ts, &p1);
-  double result = distance_period_period(&p1, p);
+  double result = distance_span_span(&p1, p);
   return result;
 }
 #endif
@@ -2932,7 +2830,7 @@ distance_timestampset_periodset(const TimestampSet *ts,
   Period p1, p2;
   timestampset_period(ts, &p1);
   periodset_period(ps, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   return result;
 }
 #endif
@@ -2974,27 +2872,6 @@ distance_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_time_dist
- * @brief Return the distance in seconds between two periods.
- */
-double
-distance_period_period(const Period *p1, const Period *p2)
-{
-  /* If the periods intersect return 0 */
-  if (overlaps_period_period(p1, p2))
-    return 0.0;
-
-  /* If the first period is to the left of the second return the distance
-   * between the upper bound of the first and lower bound of the second */
-  if (p2->lower >= p1->upper)
-    return ((float8) p2->lower - (float8) p1->upper) / USECS_PER_SEC;
-
-  /* If the first period is to the right of the seconde return the distance
-   * between the upper bound of the second and lower bound of the first */
-    return ((float8) p1->lower - (float8) p2->upper) / USECS_PER_SEC;
-}
-
-/**
- * @ingroup libmeos_time_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -3003,7 +2880,7 @@ distance_period_periodset(const Period *p, const PeriodSet *ps)
 {
   Period p1;
   periodset_period(ps, &p1);
-  double result = distance_period_period(&p1, p);
+  double result = distance_span_span(&p1, p);
   return result;
 }
 #endif
@@ -3058,7 +2935,7 @@ distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   Period p1, p2;
   periodset_period(ps1, &p1);
   periodset_period(ps2, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   return result;
 }
 #endif
@@ -3150,7 +3027,7 @@ Contains_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(contains_period_period(p1, p2));
+  PG_RETURN_BOOL(contains_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Contains_periodset_timestamp);
@@ -3205,7 +3082,7 @@ Contains_period_periodset(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_period_periodset(p, ps);
+  bool result = contains_span_spanset(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
 }
@@ -3321,7 +3198,7 @@ Contained_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(contained_period_period(p1, p2));
+  PG_RETURN_BOOL(contained_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Contained_period_periodset);
@@ -3437,7 +3314,7 @@ Overlaps_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overlaps_period_period(p1, p2));
+  PG_RETURN_BOOL(overlaps_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_period_periodset);
@@ -3591,7 +3468,7 @@ Adjacent_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(adjacent_period_period(p1, p2));
+  PG_RETURN_BOOL(adjacent_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_period_periodset);
@@ -3802,7 +3679,7 @@ Before_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(before_period_period(p1, p2));
+  PG_RETURN_BOOL(left_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Before_period_periodset);
@@ -4013,7 +3890,7 @@ After_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(after_period_period(p1, p2));
+  PG_RETURN_BOOL(right_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(After_period_periodset);
@@ -4224,7 +4101,7 @@ Overbefore_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overbefore_period_period(p1, p2));
+  PG_RETURN_BOOL(overleft_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_period_periodset);
@@ -4435,7 +4312,7 @@ Overafter_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overafter_period_period(p1, p2));
+  PG_RETURN_BOOL(overright_span_span(p1, p2));
 }
 
 PG_FUNCTION_INFO_V1(Overafter_period_periodset);
@@ -5374,7 +5251,7 @@ Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
   Period p1, p2;
   timestampset_period_slice(ts1, &p1);
   timestampset_period_slice(ts2, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5389,7 +5266,7 @@ Distance_timestampset_period(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
   timestampset_period_slice(ts, &p1);
-  double result = distance_period_period(&p1, p);
+  double result = distance_span_span(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5405,7 +5282,7 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
   Period p1, p2;
   timestampset_period_slice(ts, &p1);
   periodset_period_slice(ps, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5433,7 +5310,7 @@ Distance_period_timestampset(PG_FUNCTION_ARGS)
   Datum ts = PG_GETARG_DATUM(1);
   Period p1;
   timestampset_period_slice(ts, &p1);
-  double result = distance_period_period(p, &p1);
+  double result = distance_span_span(p, &p1);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5446,7 +5323,7 @@ Distance_period_period(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_GETARG_PERIOD_P(1);
-  double result = distance_period_period(p1, p2);
+  double result = distance_span_span(p1, p2);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5461,7 +5338,7 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(1);
   Period p1;
   periodset_period_slice(ps, &p1);
-  double result = distance_period_period(&p1, p);
+  double result = distance_span_span(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5492,7 +5369,7 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
   Period p1, p2;
   periodset_period_slice(ps, &p1);
   timestampset_period_slice(ts, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5507,7 +5384,7 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
   periodset_period_slice(ps, &p1);
-  double result = distance_period_period(&p1, p);
+  double result = distance_span_span(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -5523,7 +5400,7 @@ Distance_periodset_periodset(PG_FUNCTION_ARGS)
   Period p1, p2;
   periodset_period_slice(ps1, &p1);
   periodset_period_slice(ps2, &p2);
-  double result = distance_period_period(&p1, &p2);
+  double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
 

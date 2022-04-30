@@ -74,7 +74,7 @@
 bool
 contains_timestamp_temporal(TimestampTz t, const Temporal *temp)
 {
-  return boxop_temporal_timestamp(temp, t, &contains_period_period, INVERT);
+  return boxop_temporal_timestamp(temp, t, &contains_span_span, INVERT);
 }
 
 /**
@@ -85,7 +85,7 @@ contains_timestamp_temporal(TimestampTz t, const Temporal *temp)
 bool
 contains_temporal_timestamp(const Temporal *temp, TimestampTz t)
 {
-  return boxop_temporal_timestamp(temp, t, &contains_period_period, INVERT_NO);
+  return boxop_temporal_timestamp(temp, t, &contains_span_span, INVERT_NO);
 }
 
 /**
@@ -96,7 +96,7 @@ contains_temporal_timestamp(const Temporal *temp, TimestampTz t)
 bool
 contains_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &contains_period_period, INVERT);
+  return boxop_temporal_timestampset(temp, ts, &contains_span_span, INVERT);
 }
 
 /**
@@ -107,7 +107,7 @@ contains_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 bool
 contains_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &contains_period_period,
+  return boxop_temporal_timestampset(temp, ts, &contains_span_span,
     INVERT_NO);
 }
 
@@ -119,7 +119,7 @@ contains_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 bool
 contains_period_temporal(const Period *p, const Temporal *temp)
 {
-  return boxop_temporal_period(temp, p, &contains_period_period, INVERT);
+  return boxop_temporal_period(temp, p, &contains_span_span, INVERT);
 }
 
 /**
@@ -130,7 +130,7 @@ contains_period_temporal(const Period *p, const Temporal *temp)
 bool
 contains_temporal_period(const Temporal *temp, const Period *p)
 {
-  return boxop_temporal_period(temp, p, &contains_period_period, INVERT_NO);
+  return boxop_temporal_period(temp, p, &contains_span_span, INVERT_NO);
 }
 
 /**
@@ -141,7 +141,7 @@ contains_temporal_period(const Temporal *temp, const Period *p)
 bool
 contains_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 {
-  return boxop_temporal_periodset(temp, ps, &contains_period_period, INVERT);
+  return boxop_temporal_periodset(temp, ps, &contains_span_span, INVERT);
 }
 
 /**
@@ -152,7 +152,7 @@ contains_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 bool
 contains_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 {
-  return boxop_temporal_periodset(temp, ps, &contains_period_period, INVERT_NO);
+  return boxop_temporal_periodset(temp, ps, &contains_span_span, INVERT_NO);
 }
 
 /**
@@ -163,7 +163,7 @@ contains_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 bool
 contains_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  return boxop_temporal_temporal(temp1, temp2, &contains_period_period);
+  return boxop_temporal_temporal(temp1, temp2, &contains_span_span);
 }
 
 /*****************************************************************************/

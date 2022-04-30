@@ -154,6 +154,7 @@
 /* PostgreSQL */
 #include <assert.h>
 /* MobilityDB */
+#include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -1553,7 +1554,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Period p1, p2;
   temporal_period(temp1, &p1);
   temporal_period(temp2, &p2);
-  if (! overlaps_period_period(&p1, &p2))
+  if (! overlaps_span_span(&p1, &p2))
     return NULL;
 
   Temporal *result = NULL;
@@ -2140,7 +2141,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Period p1, p2;
   temporal_period(temp1, &p1);
   temporal_period(temp2, &p2);
-  if (! overlaps_period_period(&p1, &p2))
+  if (! overlaps_span_span(&p1, &p2))
     return -1;
 
   int result;

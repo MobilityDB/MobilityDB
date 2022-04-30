@@ -53,6 +53,7 @@
 #include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
+#include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tbox.h"
@@ -720,7 +721,7 @@ PG_FUNCTION_INFO_V1(Contains_timestamp_temporal);
 PGDLLEXPORT Datum
 Contains_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_timestamp);
@@ -731,7 +732,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_timestamp);
 PGDLLEXPORT Datum
 Contains_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
@@ -742,7 +743,7 @@ PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
 PGDLLEXPORT Datum
 Contains_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
@@ -753,7 +754,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
 PGDLLEXPORT Datum
 Contains_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_period_temporal);
@@ -763,7 +764,7 @@ PG_FUNCTION_INFO_V1(Contains_period_temporal);
 PGDLLEXPORT Datum
 Contains_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_period_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_period);
@@ -773,7 +774,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_period);
 PGDLLEXPORT Datum
 Contains_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_period_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_periodset_temporal);
@@ -784,7 +785,7 @@ PG_FUNCTION_INFO_V1(Contains_periodset_temporal);
 PGDLLEXPORT Datum
 Contains_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_periodset);
@@ -795,7 +796,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_periodset);
 PGDLLEXPORT Datum
 Contains_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
@@ -806,7 +807,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
 PGDLLEXPORT Datum
 Contains_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &contains_span_span);
 }
 
 /*****************************************************************************/
@@ -819,7 +820,7 @@ PG_FUNCTION_INFO_V1(Contained_timestamp_temporal);
 PGDLLEXPORT Datum
 Contained_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_timestamp);
@@ -830,7 +831,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_timestamp);
 PGDLLEXPORT Datum
 Contained_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
@@ -841,7 +842,7 @@ PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
 PGDLLEXPORT Datum
 Contained_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
@@ -852,7 +853,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
 PGDLLEXPORT Datum
 Contained_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_period_temporal);
@@ -863,7 +864,7 @@ PG_FUNCTION_INFO_V1(Contained_period_temporal);
 PGDLLEXPORT Datum
 Contained_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_period_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_period);
@@ -874,7 +875,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_period);
 PGDLLEXPORT Datum
 Contained_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_period_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_periodset_temporal);
@@ -885,7 +886,7 @@ PG_FUNCTION_INFO_V1(Contained_periodset_temporal);
 PGDLLEXPORT Datum
 Contained_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_periodset);
@@ -896,7 +897,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_periodset);
 PGDLLEXPORT Datum
 Contained_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
@@ -907,7 +908,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
 PGDLLEXPORT Datum
 Contained_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &contained_span_span);
 }
 
 /*****************************************************************************/
@@ -920,7 +921,7 @@ PG_FUNCTION_INFO_V1(Overlaps_timestamp_temporal);
 PGDLLEXPORT Datum
 Overlaps_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_timestamp);
@@ -931,7 +932,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_timestamp);
 PGDLLEXPORT Datum
 Overlaps_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
@@ -942,7 +943,7 @@ PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
 PGDLLEXPORT Datum
 Overlaps_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
@@ -953,7 +954,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
 PGDLLEXPORT Datum
 Overlaps_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
@@ -964,7 +965,7 @@ PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
 PGDLLEXPORT Datum
 Overlaps_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_period_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
@@ -975,7 +976,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
 PGDLLEXPORT Datum
 Overlaps_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_period_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_temporal);
@@ -986,7 +987,7 @@ PG_FUNCTION_INFO_V1(Overlaps_periodset_temporal);
 PGDLLEXPORT Datum
 Overlaps_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_periodset);
@@ -997,7 +998,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_periodset);
 PGDLLEXPORT Datum
 Overlaps_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
@@ -1007,7 +1008,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
 PGDLLEXPORT Datum
 Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 /*****************************************************************************/
@@ -1120,7 +1121,7 @@ PG_FUNCTION_INFO_V1(Adjacent_timestamp_temporal);
 PGDLLEXPORT Datum
 Adjacent_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_timestamp);
@@ -1131,7 +1132,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_timestamp);
 PGDLLEXPORT Datum
 Adjacent_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
@@ -1142,7 +1143,7 @@ PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
 PGDLLEXPORT Datum
 Adjacent_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
@@ -1153,7 +1154,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
 PGDLLEXPORT Datum
 Adjacent_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
@@ -1164,7 +1165,7 @@ PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
 PGDLLEXPORT Datum
 Adjacent_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_period_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
@@ -1175,7 +1176,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
 PGDLLEXPORT Datum
 Adjacent_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_period_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_temporal);
@@ -1186,7 +1187,7 @@ PG_FUNCTION_INFO_V1(Adjacent_periodset_temporal);
 PGDLLEXPORT Datum
 Adjacent_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_periodset);
@@ -1197,7 +1198,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_periodset);
 PGDLLEXPORT Datum
 Adjacent_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
@@ -1207,7 +1208,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
 PGDLLEXPORT Datum
 Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 /*****************************************************************************

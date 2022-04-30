@@ -86,13 +86,13 @@ span_index_consistent_leaf(const Span *key, const Span *query,
     case RTOverRightStrategyNumber:
       return overright_span_span(key, query);
     case RTBeforeStrategyNumber:
-      return before_period_period(key, query);
+      return left_span_span(key, query);
     case RTOverBeforeStrategyNumber:
-      return overbefore_period_period(key, query);
+      return overleft_span_span(key, query);
     case RTAfterStrategyNumber:
-      return after_period_period(key, query);
+      return right_span_span(key, query);
     case RTOverAfterStrategyNumber:
-      return overafter_period_period(key, query);
+      return overright_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -130,13 +130,13 @@ span_gist_consistent(const Span *key, const Span *query,
     case RTOverRightStrategyNumber:
       return ! left_span_span(key, query);
     case RTBeforeStrategyNumber:
-      return ! overafter_period_period(key, query);
+      return ! overright_span_span(key, query);
     case RTOverBeforeStrategyNumber:
-      return ! after_period_period(key, query);
+      return ! right_span_span(key, query);
     case RTAfterStrategyNumber:
-      return ! overbefore_period_period(key, query);
+      return ! overleft_span_span(key, query);
     case RTOverAfterStrategyNumber:
-      return ! before_period_period(key, query);
+      return ! left_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */

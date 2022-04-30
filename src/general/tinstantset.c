@@ -42,16 +42,14 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/span.h"
-#include "general/timetypes.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
+#include "general/span_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temp_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * General functions
@@ -1227,7 +1225,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti, const TimestampSet *ts,
   Period p1;
   tinstantset_period(ti, &p1);
   const Period *p2 = timestampset_period_ptr(ts);
-  if (!overlaps_period_period(&p1, p2))
+  if (!overlaps_span_span(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
 
 
@@ -1286,7 +1284,7 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period,
   /* Bounding box test */
   Period p;
   tinstantset_period(ti, &p);
-  if (!overlaps_period_period(&p, period))
+  if (!overlaps_span_span(&p, period))
     return atfunc ? NULL : tinstantset_copy(ti);
 
   /* Singleton instant set */
@@ -1327,7 +1325,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
   Period p1;
   tinstantset_period(ti, &p1);
   const Period *p2 = periodset_period_ptr(ps);
-  if (!overlaps_period_period(&p1, p2))
+  if (!overlaps_span_span(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
 
   /* Singleton instant set */
@@ -1481,7 +1479,7 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
   Period p1, p2;
   tinstantset_period(ti1, &p1);
   tinstantset_period(ti2, &p2);
-  if (!overlaps_period_period(&p1, &p2))
+  if (!overlaps_span_span(&p1, &p2))
     return false;
 
   int count = Min(ti1->count, ti2->count);

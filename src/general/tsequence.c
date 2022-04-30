@@ -1238,7 +1238,7 @@ intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
   tinstantset_period(ti, &p);
-  if (! overlaps_period_period(&seq->period, &p))
+  if (! overlaps_span_span(&seq->period, &p))
     return false;
 
   TInstant **instants1 = palloc(sizeof(TInstant *) * ti->count);
@@ -3499,7 +3499,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 
   /* Bounding box test */
   const Period *p = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(&seq->period, p))
+  if (! overlaps_span_span(&seq->period, p))
     return NULL;
 
   inst = (TInstant *) tsequence_inst_n(seq, 0);
@@ -3550,7 +3550,7 @@ tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
 
   /* Bounding box test */
   const Period *p = timestampset_period_ptr(ts);
-  if (! overlaps_period_period(&seq->period, p))
+  if (! overlaps_span_span(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -3748,7 +3748,7 @@ tsequence_minus_period1(const TSequence *seq, const Period *p,
   TSequence **result)
 {
   /* Bounding box test */
-  if (! overlaps_period_period(&seq->period, p))
+  if (! overlaps_span_span(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -3815,7 +3815,7 @@ tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
 
   /* Bounding box test */
   const Period *p = periodset_period_ptr(ps);
-  if (! overlaps_period_period(&seq->period, p))
+  if (! overlaps_span_span(&seq->period, p))
     return 0;
 
   /* Instantaneous sequence */
@@ -3914,7 +3914,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
 {
   /* Bounding box test */
   const Period *p = periodset_period_ptr(ps);
-  if (! overlaps_period_period(&seq->period, p))
+  if (! overlaps_span_span(&seq->period, p))
     return atfunc ? NULL : tsequence_tsequenceset(seq);
 
   /* Instantaneous sequence */
@@ -3968,7 +3968,7 @@ tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ts)
 bool
 tsequence_intersects_period(const TSequence *seq, const Period *p)
 {
-  return overlaps_period_period(&seq->period, p);
+  return overlaps_span_span(&seq->period, p);
 }
 
 /**

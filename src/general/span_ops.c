@@ -43,13 +43,6 @@
 #include "general/span.h"
 #include "general/temporal_util.h"
 
-typedef enum
-{
-  UNION,
-  INTER,
-  MINUS
-} SetOper;
-
 /*****************************************************************************/
 
 /**

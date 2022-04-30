@@ -240,7 +240,7 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 static bool
 before2D(const SpanNode *nodebox, const Period *query)
 {
-  return before_period_period(&nodebox->right, query);
+  return left_span_span(&nodebox->right, query);
 }
 
 /**
@@ -249,7 +249,7 @@ before2D(const SpanNode *nodebox, const Period *query)
 static bool
 overBefore2D(const SpanNode *nodebox, const Period *query)
 {
-  return overbefore_period_period(&nodebox->right, query);
+  return overleft_span_span(&nodebox->right, query);
 }
 
 /**
@@ -258,7 +258,7 @@ overBefore2D(const SpanNode *nodebox, const Period *query)
 static bool
 after2D(const SpanNode *nodebox, const Period *query)
 {
-  return after_period_period(&nodebox->left, query);
+  return right_span_span(&nodebox->left, query);
 }
 
 /**
@@ -267,7 +267,7 @@ after2D(const SpanNode *nodebox, const Period *query)
 static bool
 overAfter2D(const SpanNode *nodebox, const Period *query)
 {
-  return overafter_period_period(&nodebox->left, query);
+  return overright_span_span(&nodebox->left, query);
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000

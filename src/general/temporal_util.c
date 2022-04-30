@@ -318,6 +318,107 @@ datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /*****************************************************************************
+ * Arithmetic functions on datums
+ * N.B. The validity of the Oids must be done in the calling function.
+ *****************************************************************************/
+
+/**
+ * Return the addition of the two numbers
+ */
+Datum
+datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
+{
+  Datum result = 0;
+  if (typel == T_INT4)
+  {
+    if (typer == T_INT4)
+      result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
+  }
+  else /* typel == T_FLOAT8 */
+  {
+    if (typer == T_INT4)
+      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Return the subtraction of the two numbers
+ */
+Datum
+datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
+{
+  Datum result = 0;
+  if (typel == T_INT4)
+  {
+    if (typer == T_INT4)
+      result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
+  }
+  else /* typel == T_FLOAT8 */
+  {
+    if (typer == T_INT4)
+      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Return the multiplication of the two numbers
+ */
+Datum
+datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
+{
+  Datum result = 0;
+  if (typel == T_INT4)
+  {
+    if (typer == T_INT4)
+      result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
+  }
+  else /* typel == T_FLOAT8 */
+  {
+    if (typer == T_INT4)
+      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Return the division of the two numbers
+ */
+Datum
+datum_div(Datum l, Datum r, CachedType typel, CachedType typer)
+{
+  Datum result;
+  if (typel == T_INT4)
+  {
+    if (typer == T_INT4)
+      result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
+  }
+  else /* typel == T_FLOAT8 */
+  {
+    if (typer == T_INT4)
+      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
 
@@ -362,6 +463,191 @@ datum_double(Datum d, CachedType basetype)
     return DatumGetFloat8(d);
 }
 
+/*****************************************************************************
+ * Sort functions
+ *****************************************************************************/
+
+/**
+ * Comparator function for datums
+ */
+static int
+datum_sort_cmp(const Datum *l, const Datum *r, const CachedType *type)
+{
+  Datum x = *l;
+  Datum y = *r;
+  CachedType t = *type;
+  if (datum_eq(x, y, t))
+    return 0;
+  else if (datum_lt(x, y, t))
+    return -1;
+  else
+    return 1;
+}
+
+/**
+ * Comparator function for timestamps
+ */
+static int
+timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
+{
+  TimestampTz x = *l;
+  TimestampTz y = *r;
+  return timestamp_cmp_internal(x, y);
+}
+
+/**
+ * Comparator function for spans
+ */
+static int
+span_sort_cmp(const Span **l, const Span **r)
+{
+  return span_cmp(*l, *r);
+}
+
+/**
+ * Comparator function for temporal instants
+ */
+static int
+tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
+{
+  return timestamp_cmp_internal((*l)->t, (*r)->t);
+}
+
+/**
+ * Comparator function for temporal sequences
+ */
+static int
+tseqarr_sort_cmp(TSequence **l, TSequence **r)
+{
+  Period lp = (*l)->period;
+  Period rp = (*r)->period;
+  return span_cmp(&lp, &rp);
+}
+
+/*****************************************************************************/
+
+/**
+ * Sort function for datums
+ */
+void
+datumarr_sort(Datum *values, int count, CachedType type)
+{
+  qsort_arg(values, (size_t) count, sizeof(Datum),
+    (qsort_arg_comparator) &datum_sort_cmp, &type);
+}
+
+/**
+ * Sort function for timestamps
+ */
+void
+timestamparr_sort(TimestampTz *times, int count)
+{
+  qsort(times, (size_t) count, sizeof(TimestampTz),
+    (qsort_comparator) &timestamp_sort_cmp);
+}
+
+#if 0 /* Not used */
+/**
+ * Sort function for double2
+ */
+void
+double2arr_sort(double2 *doubles, int count)
+{
+  qsort(doubles, count, sizeof(double2), (qsort_comparator) &double2_cmp);
+}
+
+/**
+ * Sort function for double3
+ */
+void
+double3arr_sort(double3 *triples, int count)
+{
+  qsort(triples, count, sizeof(double3),
+    (qsort_comparator) &double3_cmp);
+}
+#endif
+
+/**
+ * Sort function for spans
+ */
+void
+spanarr_sort(Span **spans, int count)
+{
+  qsort(spans, (size_t) count, sizeof(Span *),
+    (qsort_comparator) &span_sort_cmp);
+}
+
+/**
+ * Sort function for temporal instants
+ */
+void
+tinstarr_sort(TInstant **instants, int count)
+{
+  qsort(instants, (size_t) count, sizeof(TInstant *),
+    (qsort_comparator) &tinstarr_sort_cmp);
+}
+
+/**
+ * Sort function for temporal sequences
+ */
+void
+tseqarr_sort(TSequence **sequences, int count)
+{
+  qsort(sequences, (size_t) count, sizeof(TSequence *),
+    (qsort_comparator) &tseqarr_sort_cmp);
+}
+
+/*****************************************************************************
+ * Remove duplicate functions
+ * These functions assume that the array has been sorted before
+ *****************************************************************************/
+
+/**
+ * Remove duplicates from an array of datums
+ */
+int
+datumarr_remove_duplicates(Datum *values, int count, CachedType type)
+{
+  assert (count > 0);
+  int newcount = 0;
+  for (int i = 1; i < count; i++)
+    if (datum_ne(values[newcount], values[i], type))
+      values[++ newcount] = values[i];
+  return newcount + 1;
+}
+
+/**
+ * Remove duplicates from an array of timestamps
+ */
+int
+timestamparr_remove_duplicates(TimestampTz *values, int count)
+{
+  assert (count > 0);
+  int newcount = 0;
+  for (int i = 1; i < count; i++)
+    if (values[newcount] != values[i])
+      values[++ newcount] = values[i];
+  return newcount + 1;
+}
+
+/**
+ * Remove duplicates from an array of temporal instants
+ */
+int
+tinstarr_remove_duplicates(const TInstant **instants, int count)
+{
+  assert(count != 0);
+  int newcount = 0;
+  for (int i = 1; i < count; i++)
+    if (! tinstant_eq(instants[newcount], instants[i]))
+      instants[++ newcount] = instants[i];
+  return newcount + 1;
+}
+
+/*****************************************************************************
+ * Text functions
+ *****************************************************************************/
+
 /**
  * Convert a C string into a text value
  *
@@ -393,6 +679,153 @@ text2cstring(const text *textptr)
   memcpy(str, VARDATA(textptr), size);
   str[size]='\0';
   return str;
+}
+
+/**
+ * Comparison function for text values
+ *
+ * @note Function copied from PostgreSQL since it is not exported
+ */
+int
+text_cmp(text *arg1, text *arg2, Oid collid)
+{
+  char  *a1p,
+      *a2p;
+  int    len1,
+      len2;
+
+  a1p = VARDATA_ANY(arg1);
+  a2p = VARDATA_ANY(arg2);
+
+  len1 = (int) VARSIZE_ANY_EXHDR(arg1);
+  len2 = (int) VARSIZE_ANY_EXHDR(arg2);
+
+  return varstr_cmp(a1p, len1, a2p, len2, collid);
+}
+
+/*****************************************************************************
+ * Hypotenuse functions
+ *****************************************************************************/
+
+/**
+ * Determine the 3D hypotenuse.
+ *
+ * If required, x, y, and z are swapped to make x the larger number. The
+ * traditional formula of x^2+y^2+z^2 is rearranged to factor x outside the
+ * sqrt. This allows computation of the hypotenuse for significantly
+ * larger values, and with a higher precision than when using the naive
+ * formula. In particular, this cannot overflow unless the final result
+ * would be out-of-range.
+ * @code
+ * sqrt( x^2 + y^2 + z^2 ) = sqrt( x^2( 1 + y^2/x^2 + z^2/x^2) )
+ *                         = x * sqrt( 1 + y^2/x^2 + z^2/x^2)
+ *                         = x * sqrt( 1 + y/x * y/x + z/x * z/x)
+ * @endcode
+ */
+double
+hypot3d(double x, double y, double z)
+{
+  double yx;
+  double zx;
+  double temp;
+
+  /* Handle INF and NaN properly */
+  if (isinf(x) || isinf(y) || isinf(z))
+    return get_float8_infinity();
+
+  if (isnan(x) || isnan(y) || isnan(z))
+    return get_float8_nan();
+
+  /* Else, drop any minus signs */
+  x = fabs(x);
+  y = fabs(y);
+  z = fabs(z);
+
+  /* Swap x, y and z if needed to make x the larger one */
+  if (x < y)
+  {
+    temp = x;
+    x = y;
+    y = temp;
+  }
+  if (x < z)
+  {
+    temp = x;
+    x = z;
+    z = temp;
+  }
+  /*
+   * If x is zero, the hypotenuse is computed with the 2D case.
+   * This test saves a few cycles in such cases, but more importantly
+   * it also protects against divide-by-zero errors, since now x >= y.
+   */
+  if (x == 0)
+    return hypot(y, z);
+
+  /* Determine the hypotenuse */
+  yx = y / x;
+  zx = z / x;
+  return x * sqrt(1.0 + (yx * yx) + (zx * zx));
+}
+
+/**
+ * Determine the 4D hypotenuse.
+ *
+ * @see The function is a generalization of the 3D case in function hypot3d
+ */
+double
+hypot4d(double x, double y, double z, double m)
+{
+  double yx;
+  double zx;
+  double mx;
+  double temp;
+
+  /* Handle INF and NaN properly */
+  if (isinf(x) || isinf(y) || isinf(z) || isinf(m))
+    return get_float8_infinity();
+
+  if (isnan(x) || isnan(y) || isnan(z) || isnan(m))
+    return get_float8_nan();
+
+  /* Else, drop any minus signs */
+  x = fabs(x);
+  y = fabs(y);
+  z = fabs(z);
+  m = fabs(m);
+
+  /* Swap x, y, z, and m if needed to make x the larger one */
+  if (x < y)
+  {
+    temp = x;
+    x = y;
+    y = temp;
+  }
+  if (x < z)
+  {
+    temp = x;
+    x = z;
+    z = temp;
+  }
+  if (x < m)
+  {
+    temp = x;
+    x = m;
+    m = temp;
+  }
+  /*
+   * If x is zero, the hypotenuse is computed with the 3D case.
+   * This test saves a few cycles in such cases, but more importantly
+   * it also protects against divide-by-zero errors, since now x >= y.
+   */
+  if (x == 0)
+    return hypot3d(y, z, m);
+
+  /* Determine the hypotenuse */
+  yx = y / x;
+  zx = z / x;
+  mx = m / x;
+  return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
 }
 
 /*****************************************************************************
@@ -650,437 +1083,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
     return result;
 }
 #endif
-
-/*****************************************************************************
- * Sort functions
- *****************************************************************************/
-
-/**
- * Comparator function for datums
- */
-static int
-datum_sort_cmp(const Datum *l, const Datum *r, const CachedType *type)
-{
-  Datum x = *l;
-  Datum y = *r;
-  CachedType t = *type;
-  if (datum_eq(x, y, t))
-    return 0;
-  else if (datum_lt(x, y, t))
-    return -1;
-  else
-    return 1;
-}
-
-/**
- * Comparator function for timestamps
- */
-static int
-timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
-{
-  TimestampTz x = *l;
-  TimestampTz y = *r;
-  return timestamp_cmp_internal(x, y);
-}
-
-/**
- * Comparator function for spans
- */
-static int
-span_sort_cmp(const Span **l, const Span **r)
-{
-  return span_cmp(*l, *r);
-}
-
-/**
- * Comparator function for temporal instants
- */
-static int
-tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
-{
-  return timestamp_cmp_internal((*l)->t, (*r)->t);
-}
-
-/**
- * Comparator function for temporal sequences
- */
-static int
-tseqarr_sort_cmp(TSequence **l, TSequence **r)
-{
-  Period lp = (*l)->period;
-  Period rp = (*r)->period;
-  return span_cmp(&lp, &rp);
-}
-
-/*****************************************************************************/
-
-/**
- * Sort function for datums
- */
-void
-datumarr_sort(Datum *values, int count, CachedType type)
-{
-  qsort_arg(values, (size_t) count, sizeof(Datum),
-    (qsort_arg_comparator) &datum_sort_cmp, &type);
-}
-
-/**
- * Sort function for timestamps
- */
-void
-timestamparr_sort(TimestampTz *times, int count)
-{
-  qsort(times, (size_t) count, sizeof(TimestampTz),
-    (qsort_comparator) &timestamp_sort_cmp);
-}
-
-#if 0 /* Not used */
-/**
- * Sort function for double2
- */
-void
-double2arr_sort(double2 *doubles, int count)
-{
-  qsort(doubles, count, sizeof(double2), (qsort_comparator) &double2_cmp);
-}
-
-/**
- * Sort function for double3
- */
-void
-double3arr_sort(double3 *triples, int count)
-{
-  qsort(triples, count, sizeof(double3),
-    (qsort_comparator) &double3_cmp);
-}
-#endif
-
-/**
- * Sort function for spans
- */
-void
-spanarr_sort(Span **spans, int count)
-{
-  qsort(spans, (size_t) count, sizeof(Span *),
-    (qsort_comparator) &span_sort_cmp);
-}
-
-/**
- * Sort function for temporal instants
- */
-void
-tinstarr_sort(TInstant **instants, int count)
-{
-  qsort(instants, (size_t) count, sizeof(TInstant *),
-    (qsort_comparator) &tinstarr_sort_cmp);
-}
-
-/**
- * Sort function for temporal sequences
- */
-void
-tseqarr_sort(TSequence **sequences, int count)
-{
-  qsort(sequences, (size_t) count, sizeof(TSequence *),
-    (qsort_comparator) &tseqarr_sort_cmp);
-}
-
-/*****************************************************************************
- * Remove duplicate functions
- * These functions assume that the array has been sorted before
- *****************************************************************************/
-
-/**
- * Remove duplicates from an array of datums
- */
-int
-datumarr_remove_duplicates(Datum *values, int count, CachedType type)
-{
-  assert (count > 0);
-  int newcount = 0;
-  for (int i = 1; i < count; i++)
-    if (datum_ne(values[newcount], values[i], type))
-      values[++ newcount] = values[i];
-  return newcount + 1;
-}
-
-/**
- * Remove duplicates from an array of timestamps
- */
-int
-timestamparr_remove_duplicates(TimestampTz *values, int count)
-{
-  assert (count > 0);
-  int newcount = 0;
-  for (int i = 1; i < count; i++)
-    if (values[newcount] != values[i])
-      values[++ newcount] = values[i];
-  return newcount + 1;
-}
-
-/**
- * Remove duplicates from an array of temporal instants
- */
-int
-tinstarr_remove_duplicates(const TInstant **instants, int count)
-{
-  assert(count != 0);
-  int newcount = 0;
-  for (int i = 1; i < count; i++)
-    if (! tinstant_eq(instants[newcount], instants[i]))
-      instants[++ newcount] = instants[i];
-  return newcount + 1;
-}
-
-/*****************************************************************************
- * Text functions
- *****************************************************************************/
-
-/**
- * Comparison function for text values
- *
- * @note Function copied from PostgreSQL since it is not exported
- */
-int
-text_cmp(text *arg1, text *arg2, Oid collid)
-{
-  char  *a1p,
-      *a2p;
-  int    len1,
-      len2;
-
-  a1p = VARDATA_ANY(arg1);
-  a2p = VARDATA_ANY(arg2);
-
-  len1 = (int) VARSIZE_ANY_EXHDR(arg1);
-  len2 = (int) VARSIZE_ANY_EXHDR(arg2);
-
-  return varstr_cmp(a1p, len1, a2p, len2, collid);
-}
-
-/*****************************************************************************
- * Arithmetic functions on datums
- * N.B. The validity of the Oids must be done in the calling function.
- *****************************************************************************/
-
-/**
- * Return the addition of the two numbers
- */
-Datum
-datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
-{
-  Datum result = 0;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
-  }
-  return result;
-}
-
-/**
- * Return the subtraction of the two numbers
- */
-Datum
-datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
-{
-  Datum result = 0;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
-  }
-  return result;
-}
-
-/**
- * Return the multiplication of the two numbers
- */
-Datum
-datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
-{
-  Datum result = 0;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
-  }
-  return result;
-}
-
-/**
- * Return the division of the two numbers
- */
-Datum
-datum_div(Datum l, Datum r, CachedType typel, CachedType typer)
-{
-  Datum result;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
-  }
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Determine the 3D hypotenuse.
- *
- * If required, x, y, and z are swapped to make x the larger number. The
- * traditional formula of x^2+y^2+z^2 is rearranged to factor x outside the
- * sqrt. This allows computation of the hypotenuse for significantly
- * larger values, and with a higher precision than when using the naive
- * formula. In particular, this cannot overflow unless the final result
- * would be out-of-range.
- * @code
- * sqrt( x^2 + y^2 + z^2 ) = sqrt( x^2( 1 + y^2/x^2 + z^2/x^2) )
- *                         = x * sqrt( 1 + y^2/x^2 + z^2/x^2)
- *                         = x * sqrt( 1 + y/x * y/x + z/x * z/x)
- * @endcode
- */
-double
-hypot3d(double x, double y, double z)
-{
-  double yx;
-  double zx;
-  double temp;
-
-  /* Handle INF and NaN properly */
-  if (isinf(x) || isinf(y) || isinf(z))
-    return get_float8_infinity();
-
-  if (isnan(x) || isnan(y) || isnan(z))
-    return get_float8_nan();
-
-  /* Else, drop any minus signs */
-  x = fabs(x);
-  y = fabs(y);
-  z = fabs(z);
-
-  /* Swap x, y and z if needed to make x the larger one */
-  if (x < y)
-  {
-    temp = x;
-    x = y;
-    y = temp;
-  }
-  if (x < z)
-  {
-    temp = x;
-    x = z;
-    z = temp;
-  }
-  /*
-   * If x is zero, the hypotenuse is computed with the 2D case.
-   * This test saves a few cycles in such cases, but more importantly
-   * it also protects against divide-by-zero errors, since now x >= y.
-   */
-  if (x == 0)
-    return hypot(y, z);
-
-  /* Determine the hypotenuse */
-  yx = y / x;
-  zx = z / x;
-  return x * sqrt(1.0 + (yx * yx) + (zx * zx));
-}
-
-/**
- * Determine the 4D hypotenuse.
- *
- * @see The function is a generalization of the 3D case in function hypot3d
- */
-double
-hypot4d(double x, double y, double z, double m)
-{
-  double yx;
-  double zx;
-  double mx;
-  double temp;
-
-  /* Handle INF and NaN properly */
-  if (isinf(x) || isinf(y) || isinf(z) || isinf(m))
-    return get_float8_infinity();
-
-  if (isnan(x) || isnan(y) || isnan(z) || isnan(m))
-    return get_float8_nan();
-
-  /* Else, drop any minus signs */
-  x = fabs(x);
-  y = fabs(y);
-  z = fabs(z);
-  m = fabs(m);
-
-  /* Swap x, y, z, and m if needed to make x the larger one */
-  if (x < y)
-  {
-    temp = x;
-    x = y;
-    y = temp;
-  }
-  if (x < z)
-  {
-    temp = x;
-    x = z;
-    z = temp;
-  }
-  if (x < m)
-  {
-    temp = x;
-    x = m;
-    m = temp;
-  }
-  /*
-   * If x is zero, the hypotenuse is computed with the 3D case.
-   * This test saves a few cycles in such cases, but more importantly
-   * it also protects against divide-by-zero errors, since now x >= y.
-   */
-  if (x == 0)
-    return hypot3d(y, z, m);
-
-  /* Determine the hypotenuse */
-  yx = y / x;
-  zx = z / x;
-  mx = m / x;
-  return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
-}
 
 /*****************************************************************************/
 /*****************************************************************************/
