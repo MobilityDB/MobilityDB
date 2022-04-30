@@ -50,10 +50,9 @@
 #endif
 /* MobilityDB */
 #include "general/lifting.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/span.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
@@ -4685,10 +4684,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
     return periods;
   }
 
-  /* It is necessary to sort and normalize the periods due to roundoff errors */
-  periodarr_sort(periods, k);
   int newcount;
-  result = periodarr_normalize(periods, k, &newcount);
+  result = spanarr_normalize(periods, k, &newcount);
   *count = newcount;
   return result;
 }
@@ -4764,7 +4761,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
         pfree(periods[i]);
     }
     /* It is necessary to sort the periods */
-    periodarr_sort(allperiods, totalcount);
+    spanarr_sort(allperiods, totalcount);
   }
   PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);

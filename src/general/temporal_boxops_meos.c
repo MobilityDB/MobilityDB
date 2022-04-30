@@ -50,13 +50,12 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/span.h"
 #include "general/tbox.h"
 #include "point/tpoint.h"
 #include "point/stbox.h"
@@ -380,7 +379,7 @@ overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 bool
 same_timestamp_temporal(TimestampTz t, const Temporal *temp)
 {
-  return boxop_temporal_timestamp(temp, t, &period_eq, INVERT);
+  return boxop_temporal_timestamp(temp, t, &span_eq, INVERT);
 }
 
 /**
@@ -391,7 +390,7 @@ same_timestamp_temporal(TimestampTz t, const Temporal *temp)
 bool
 same_temporal_timestamp(const Temporal *temp, TimestampTz t)
 {
-  return boxop_temporal_timestamp(temp, t, &period_eq, INVERT_NO);
+  return boxop_temporal_timestamp(temp, t, &span_eq, INVERT_NO);
 }
 
 /**
@@ -402,7 +401,7 @@ same_temporal_timestamp(const Temporal *temp, TimestampTz t)
 bool
 same_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &period_eq, INVERT);
+  return boxop_temporal_timestampset(temp, ts, &span_eq, INVERT);
 }
 
 /**
@@ -413,7 +412,7 @@ same_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 bool
 same_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &period_eq, INVERT_NO);
+  return boxop_temporal_timestampset(temp, ts, &span_eq, INVERT_NO);
 }
 
 /**
@@ -424,7 +423,7 @@ same_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 bool
 same_period_temporal(const Period *p, const Temporal *temp)
 {
-  return boxop_temporal_period(temp, p, &period_eq, INVERT);
+  return boxop_temporal_period(temp, p, &span_eq, INVERT);
 }
 
 /**
@@ -435,7 +434,7 @@ same_period_temporal(const Period *p, const Temporal *temp)
 bool
 same_temporal_period(const Temporal *temp, const Period *p)
 {
-  return boxop_temporal_period(temp, p, &period_eq, INVERT_NO);
+  return boxop_temporal_period(temp, p, &span_eq, INVERT_NO);
 }
 
 /**
@@ -446,7 +445,7 @@ same_temporal_period(const Temporal *temp, const Period *p)
 bool
 same_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 {
-  return boxop_temporal_periodset(temp, ps, &period_eq, INVERT);
+  return boxop_temporal_periodset(temp, ps, &span_eq, INVERT);
 }
 
 /**
@@ -457,7 +456,7 @@ same_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 bool
 same_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 {
-  return boxop_temporal_periodset(temp, ps, &period_eq, INVERT_NO);
+  return boxop_temporal_periodset(temp, ps, &span_eq, INVERT_NO);
 }
 
 /**
@@ -467,7 +466,7 @@ same_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 bool
 same_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  return boxop_temporal_temporal(temp1, temp2, &period_eq);
+  return boxop_temporal_temporal(temp1, temp2, &span_eq);
 }
 
 /*****************************************************************************/

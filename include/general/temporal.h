@@ -532,7 +532,7 @@ extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 extern char *temporal_to_string(const Temporal *temp,
   char *(*value_out)(Oid, Datum));
 extern void temporal_write(const Temporal* temp, StringInfo buf);
-extern Temporal* temporal_read(StringInfo buf, CachedType temptype);
+extern Temporal* temporal_read(StringInfo buf);
 
 /* Constructor functions */
 

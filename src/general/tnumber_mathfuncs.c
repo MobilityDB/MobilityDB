@@ -44,7 +44,7 @@
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"

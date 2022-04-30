@@ -44,9 +44,9 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
-#include "general/time_ops.h"
+#include "general/span.h"
 #include "general/temporaltypes.h"
+#include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 

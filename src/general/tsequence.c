@@ -44,7 +44,6 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/doublen.h"
@@ -4057,7 +4056,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
   assert(seq1->temptype == seq2->temptype);
   /* If number of sequences, flags, or periods are not equal */
   if (seq1->count != seq2->count || seq1->flags != seq2->flags ||
-      ! period_eq(&seq1->period, &seq2->period))
+      ! span_eq(&seq1->period, &seq2->period))
     return false;
 
   /* If bounding boxes are not equal */

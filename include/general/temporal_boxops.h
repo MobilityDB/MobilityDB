@@ -40,7 +40,6 @@
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/temporal.h"
-#include "general/period.h"
 #include "general/span.h"
 #include "general/tbox.h"
 #include "point/stbox.h"

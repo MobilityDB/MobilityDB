@@ -108,7 +108,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporal.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"

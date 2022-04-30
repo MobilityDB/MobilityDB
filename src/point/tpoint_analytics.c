@@ -53,7 +53,7 @@
 #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"

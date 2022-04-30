@@ -49,12 +49,6 @@
 /*****************************************************************************/
 
 /**
- * Make the Period type as a specialized Span type for faster manipulation
- * of the time dimension
- */
-typedef Span Period;
-
-/**
  * Structure to represent timestamp sets
  */
 typedef struct

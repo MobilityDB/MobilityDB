@@ -39,7 +39,6 @@
 #include <postgres.h>
 #include <commands/vacuum.h>
 /* MobilityDB */
-#include "general/period.h"
 #include "general/span_ops.h"
 #include "general/span_analyze.h"
 #include "general/temporal.h"

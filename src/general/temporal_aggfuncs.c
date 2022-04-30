@@ -44,7 +44,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/skiplist.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
@@ -220,7 +220,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   {
     const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
-    if (period_cmp(&seq1->period, &seq2->period) < 0)
+    if (span_cmp(&seq1->period, &seq2->period) < 0)
     {
       sequences[0] = (TSequence *) seq1;
       sequences[1] = (TSequence *) seq2;
@@ -994,7 +994,7 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
 
   Period p1;
   temporal_bbox(temp, &p1);
-  result = period_super_union(p, &p1);
+  result = span_super_union(p, &p1);
 
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1017,7 +1017,7 @@ Temporal_extent_combinefn(PG_FUNCTION_ARGS)
   if (p2 && !p1)
     PG_RETURN_POINTER(p2);
 
-  Period *result = period_super_union(p1, p2);
+  Period *result = span_super_union(p1, p2);
   PG_RETURN_POINTER(result);
 }
 

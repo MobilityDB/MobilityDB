@@ -40,8 +40,8 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -164,7 +164,7 @@ periodset_read(StringInfo buf)
   int count = (int) pq_getmsgint(buf, 4);
   Period **periods = palloc(sizeof(Period *) * count);
   for (int i = 0; i < count; i++)
-    periods[i] = span_read(buf, T_PERIOD);
+    periods[i] = span_read(buf);
   PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
   return result;
 }
@@ -207,7 +207,7 @@ periodset_make(const Period **periods, int count, bool normalize)
   Period **newperiods = (Period **) periods;
   int newcount = count;
   if (normalize && count > 1)
-    newperiods = periodarr_normalize((Period **) periods, count, &newcount);
+    newperiods = spanarr_normalize((Period **) periods, count, &newcount);
   /* Notice that the first period is already declared in the struct */
   size_t memsize = double_pad(sizeof(PeriodSet)) + double_pad(sizeof(Period)) * (newcount - 1);
   PeriodSet *result = palloc0(memsize);
@@ -644,7 +644,7 @@ periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
   {
     const Period *p1 = periodset_per_n(ps1, i);
     const Period *p2 = periodset_per_n(ps2, i);
-    result = period_cmp(p1, p2);
+    result = span_cmp(p1, p2);
     if (result)
       break;
   }
@@ -677,7 +677,7 @@ periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
   {
     const Period *p1 = periodset_per_n(ps1, i);
     const Period *p2 = periodset_per_n(ps2, i);
-    if (period_ne(p1, p2))
+    if (span_ne(p1, p2))
       return false;
   }
   /* All periods of the two PeriodSet are equal */
@@ -759,7 +759,7 @@ periodset_hash(const PeriodSet *ps)
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    uint32 per_hash = period_hash(p);
+    uint32 per_hash = span_hash(p);
     result = (result << 5) - result + per_hash;
   }
   return result;
@@ -776,7 +776,7 @@ periodset_hash_extended(const PeriodSet *ps, Datum seed)
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    uint64 per_hash = period_hash_extended(p, seed);
+    uint64 per_hash = span_hash_extended(p, seed);
     result = (result << 5) - result + per_hash;
   }
   return result;

@@ -50,7 +50,6 @@
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/span_ops.h"

@@ -44,7 +44,7 @@
 #include "general/timetypes.h"
 #include "general/temporal.h"
 #include "general/tempcache.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_gist.h"
 #include "general/time_spgist.h"
 #include "general/temporaltypes.h"

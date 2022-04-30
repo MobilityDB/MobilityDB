@@ -44,7 +44,7 @@
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/temporaltypes.h"
 #include "general/doublen.h"
 #include "point/tpoint.h"
@@ -956,15 +956,6 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 }
 
 /**
- * Comparator function for periods
- */
-static int
-period_sort_cmp(const Period **l, const Period **r)
-{
-  return period_cmp(*l, *r);
-}
-
-/**
  * Comparator function for spans
  */
 static int
@@ -990,7 +981,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Period lp = (*l)->period;
   Period rp = (*r)->period;
-  return period_cmp(&lp, &rp);
+  return span_cmp(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -1035,16 +1026,6 @@ double3arr_sort(double3 *triples, int count)
     (qsort_comparator) &double3_cmp);
 }
 #endif
-
-/**
- * Sort function for periods
- */
-void
-periodarr_sort(Period **periods, int count)
-{
-  qsort(periods, (size_t) count, sizeof(Period *),
-    (qsort_comparator) &period_sort_cmp);
-}
 
 /**
  * Sort function for spans

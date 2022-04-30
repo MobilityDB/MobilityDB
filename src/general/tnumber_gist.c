@@ -47,7 +47,6 @@
 #endif
 /* MobilityDB */
 #include "general/span.h"
-#include "general/period.h"
 #include "general/time_ops.h"
 #include "general/time_gist.h"
 #include "general/temporal_util.h"

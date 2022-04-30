@@ -40,7 +40,7 @@
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/span_selfuncs.h"
 #include "general/temporal.h"

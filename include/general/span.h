@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
+#include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/tempcache.h"
 
@@ -56,6 +57,12 @@ typedef struct
   uint8 spantype;       /**< span type */
   uint8 basetype;       /**< span basetype */
 } Span;
+
+/**
+ * Make the Period type as a specialized Span type for faster manipulation
+ * of the time dimension
+ */
+typedef Span Period;
 
 /**
  * Internal representation of either bound of a span (not what's on disk)
@@ -101,7 +108,7 @@ extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
 extern char *span_to_string(const Span *s);
 extern void span_write(const Span *s, StringInfo buf);
-extern Span *span_read(StringInfo buf, CachedType spantype);
+extern Span *span_read(StringInfo buf);
 
 /* Constructors */
 
@@ -110,10 +117,16 @@ extern Span *span_make(Datum lower, Datum upper, bool lower_inc,
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   CachedType basetype, Span *s);
 extern Span *span_copy(const Span *s);
+extern Period *period_make(TimestampTz lower, TimestampTz upper,
+  bool lower_inc, bool upper_inc);
+  extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc, Period *p);
+extern Period *period_copy(const Period *p);
 
 /* Casting */
 
 extern Span *elem_span(Datum d, CachedType basetype);
+extern Period *timestamp_period(TimestampTz t);
 
 /* Accessor functions */
 
@@ -122,11 +135,14 @@ extern Datum span_upper(Span *s);
 extern bool span_lower_inc(Span *s);
 extern bool span_upper_inc(Span *s);
 extern double span_distance(const Span *s);
+extern Interval *period_duration(const Period *p);
 
 /* Transformation functions */
 
 extern void span_expand(const Span *s1, Span *s2);
 extern Span *floatspan_round(Span *span, Datum size);
+extern void period_shift_tscale(const Interval *start,
+  const Interval *duration, Period *result);
 
 /* Comparison functions */
 

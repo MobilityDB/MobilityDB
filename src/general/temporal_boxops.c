@@ -50,13 +50,12 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/span.h"
 #include "general/tbox.h"
 #include "point/tpoint.h"
 #include "point/stbox.h"
@@ -92,7 +91,7 @@ temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype)
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    return period_eq((Period *) box1, (Period *) box2);
+    return span_eq((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_eq((TBOX *) box1, (TBOX *) box2);
   if (tspatial_type(temptype))
@@ -119,7 +118,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    return period_cmp((Period *) box1, (Period *) box2);
+    return span_cmp((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_cmp((TBOX *) box1, (TBOX *) box2);
   if (tspatial_type(temptype))
@@ -1022,7 +1021,7 @@ PG_FUNCTION_INFO_V1(Same_timestamp_temporal);
 PGDLLEXPORT Datum
 Same_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &period_eq);
+  return boxop_timestamp_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_timestamp);
@@ -1033,7 +1032,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_timestamp);
 PGDLLEXPORT Datum
 Same_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &period_eq);
+  return boxop_temporal_timestamp_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
@@ -1044,7 +1043,7 @@ PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
 PGDLLEXPORT Datum
 Same_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &period_eq);
+  return boxop_timestampset_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
@@ -1055,7 +1054,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
 PGDLLEXPORT Datum
 Same_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &period_eq);
+  return boxop_temporal_timestampset_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_period_temporal);
@@ -1066,7 +1065,7 @@ PG_FUNCTION_INFO_V1(Same_period_temporal);
 PGDLLEXPORT Datum
 Same_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &period_eq);
+  return boxop_period_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_period);
@@ -1077,7 +1076,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_period);
 PGDLLEXPORT Datum
 Same_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &period_eq);
+  return boxop_temporal_period_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_periodset_temporal);
@@ -1088,7 +1087,7 @@ PG_FUNCTION_INFO_V1(Same_periodset_temporal);
 PGDLLEXPORT Datum
 Same_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &period_eq);
+  return boxop_periodset_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_periodset);
@@ -1099,7 +1098,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_periodset);
 PGDLLEXPORT Datum
 Same_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &period_eq);
+  return boxop_temporal_periodset_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_temporal);
@@ -1109,7 +1108,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_temporal);
 PGDLLEXPORT Datum
 Same_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &period_eq);
+  return boxop_temporal_temporal_ext(fcinfo, &span_eq);
 }
 
 /*****************************************************************************/

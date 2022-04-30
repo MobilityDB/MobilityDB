@@ -39,7 +39,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/timestampset.h"
 #include "general/temporal_util.h"
@@ -1840,7 +1840,7 @@ union_period_period(const Period *p1, const Period *p2)
   /* Compute the union of the overlapping periods */
   Period p;
   period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, &p);
-  period_expand(p2, &p);
+  span_expand(p2, &p);
   PeriodSet *result = period_periodset(&p);
   return result;
 }
@@ -1938,7 +1938,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
        *       |---------|  |-----|
        *            j          j
        */
-      Period *q = period_super_union(p1, p2);
+      Period *q = span_super_union(p1, p2);
       while (i < ps1->count && j < ps2->count)
       {
         p1 = periodset_per_n(ps1, i);
@@ -1948,12 +1948,12 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
           break;
         if (overlaps_period_period(p1, q))
         {
-          period_expand(p1, q);
+          span_expand(p1, q);
           i++;
         }
         if (overlaps_period_period(p2, q))
         {
-          period_expand(p2, q);
+          span_expand(p2, q);
           j++;
         }
       }
@@ -1964,7 +1964,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
         p1 = periodset_per_n(ps1, i);
         if (overlaps_period_period(p1, q))
         {
-          period_expand(p1, q);
+          span_expand(p1, q);
           i++;
         }
         else
@@ -1975,7 +1975,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
         p2 = periodset_per_n(ps2, j);
         if (overlaps_period_period(p2, q))
         {
-          period_expand(p2, q);
+          span_expand(p2, q);
           j++;
         }
         else

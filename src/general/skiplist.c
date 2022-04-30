@@ -44,9 +44,8 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 /* MobilityDB */
-#include "general/skiplist.h"
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
@@ -609,8 +608,6 @@ aggstate_write(SkipList *state, StringInfo buf)
   }
   else /* state->elemtype == TEMPORAL */
   {
-    if (state->length > 0)
-      pq_sendint32(buf, ((Temporal *) values[0])->temptype);
     for (i = 0; i < state->length; i ++)
     {
       SPI_connect();
@@ -648,15 +645,14 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   else if (elemtype == PERIOD)
   {
     for (int i = 0; i < length; i ++)
-      values[i] = span_read(buf, T_PERIOD);
+      values[i] = span_read(buf);
     result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }
   else /* elemtype == TEMPORAL */
   {
-    CachedType temptype = pq_getmsgint(buf, 4);
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_read(buf, temptype);
+      values[i] = temporal_read(buf);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

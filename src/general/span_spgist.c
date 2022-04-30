@@ -46,11 +46,10 @@
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_ops.h"
-#include "general/span_gist.h"
-#include "general/period.h"
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
+#include "general/span_gist.h"
 
 /*****************************************************************************
  * Data structures

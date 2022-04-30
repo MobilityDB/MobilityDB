@@ -53,7 +53,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/doxygen_libmeos_api.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"

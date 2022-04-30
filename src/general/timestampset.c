@@ -41,10 +41,10 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
-#include "general/period.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************

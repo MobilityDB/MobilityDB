@@ -42,7 +42,7 @@
 /* MobilityDB */
 #include "general/skiplist.h"
 #include "general/timestampset.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
@@ -126,7 +126,7 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
   int i = 0, j = 0, k = 0;
   while (i < count1 && j < count2)
   {
-    int cmp = period_cmp(periods1[i], periods2[j]);
+    int cmp = span_cmp(periods1[i], periods2[j]);
     if (cmp == 0)
     {
       periods[k++] = periods1[i++];
@@ -141,7 +141,7 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
     periods[k++] = periods1[i++];
   while (j < count2)
     periods[k++] = periods2[j++];
-  Period **result = periodarr_normalize(periods, k, newcount);
+  Period **result = spanarr_normalize(periods, k, newcount);
   pfree(periods);
   return result;
 }
@@ -289,7 +289,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
 
   Period p1;
   timestampset_period(ts, &p1);
-  result = period_super_union(p, &p1);
+  result = span_super_union(p, &p1);
 
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -320,7 +320,7 @@ Period_extent_transfn(PG_FUNCTION_ARGS)
   {
     Period p;
     period_set(p2->lower, p2->upper, p2->lower_inc, p2->upper_inc, &p);
-    result = period_super_union(p1, &p);
+    result = span_super_union(p1, &p);
   }
   PG_RETURN_POINTER(result);
 }
@@ -357,7 +357,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
 
   Period p1;
   periodset_period(ps, &p1);
-  result = period_super_union(p, &p1);
+  result = span_super_union(p, &p1);
 
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
@@ -630,7 +630,7 @@ Time_extent_combinefn(PG_FUNCTION_ARGS)
   if (p2 && !p1)
     PG_RETURN_POINTER(p2);
 
-  Period *result = period_super_union(p1, p2);
+  Period *result = span_super_union(p1, p2);
   PG_RETURN_POINTER(result);
 }
 

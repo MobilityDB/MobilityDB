@@ -39,11 +39,10 @@
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/tempcache.h"
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/span.h"
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"

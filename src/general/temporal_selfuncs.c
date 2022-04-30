@@ -65,7 +65,7 @@
 /* MobilityDB */
 #include "general/timetypes.h"
 #include "general/timestampset.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/span_selfuncs.h"

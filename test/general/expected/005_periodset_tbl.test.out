@@ -1536,12 +1536,12 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
 SELECT MAX(periodset_hash(ps)) FROM tbl_periodset;
     max     
 ------------
- 2099764345
+ 2120952255
 (1 row)
 
 SELECT MAX(periodset_hash_extended(ps, 1)) FROM tbl_periodset;
          max         
 ---------------------
- 9020441736822412044
+ 8819800551271229943
 (1 row)
 

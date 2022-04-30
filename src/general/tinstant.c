@@ -44,7 +44,6 @@
 /* MobilityDB */
 #include "general/timetypes.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"

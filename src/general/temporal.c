@@ -53,14 +53,13 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/doxygen_libmeos_api.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
-#include "general/span.h"
 #include "general/tnumber_distance.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
@@ -612,8 +611,9 @@ temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 void
 temporal_write(const Temporal *temp, StringInfo buf)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  pq_sendbyte(buf, temp->temptype);
   pq_sendbyte(buf, temp->subtype);
+  ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     tinstant_write((TInstant *) temp, buf);
   else if (temp->subtype == INSTANTSET)
@@ -634,8 +634,9 @@ temporal_write(const Temporal *temp, StringInfo buf)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_read(StringInfo buf, CachedType temptype)
+temporal_read(StringInfo buf)
 {
+  uint8 temptype = pq_getmsgbyte(buf);
   uint8 subtype = pq_getmsgbyte(buf);
   Temporal *result;
   ensure_valid_tempsubtype(subtype);
@@ -3033,7 +3034,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   Period p1, p2;
   temporal_period(temp1, &p1);
   temporal_period(temp2, &p2);
-  int result = period_cmp(&p1, &p2);
+  int result = span_cmp(&p1, &p2);
   if (result)
     return result;
 
@@ -3497,8 +3498,7 @@ PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = temporal_read(buf, oid_type(temptypid));
+  Temporal *result = temporal_read(buf);
   PG_RETURN_POINTER(result);
 }
 

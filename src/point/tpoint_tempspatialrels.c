@@ -75,7 +75,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/lifting.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
@@ -305,7 +305,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   else
   {
     /* It is necessary to sort the periods */
-    periodarr_sort(periods, countper);
+    spanarr_sort(periods, countper);
     PeriodSet *ps1 = periodset_make((const Period **) periods, countper, NORMALIZE);
     ps = minus_period_periodset(&seq->period, ps1);
     pfree(ps1);

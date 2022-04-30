@@ -47,7 +47,6 @@
 #include <utils/selfuncs.h>
 /* MobilityDB */
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/span_ops.h"

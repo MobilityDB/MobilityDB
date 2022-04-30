@@ -127,7 +127,6 @@ extern void datumarr_sort(Datum *values, int count, CachedType basetype);
 extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
-extern void periodarr_sort(Period **periods, int count);
 extern void spanarr_sort(Span **spans, int count);
 extern void tinstarr_sort(TInstant **instants, int count);
 extern void tseqarr_sort(TSequence **sequences, int count);

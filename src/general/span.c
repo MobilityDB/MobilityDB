@@ -416,6 +416,7 @@ span_to_string(const Span *s)
 void
 span_write(const Span *s, StringInfo buf)
 {
+  pq_sendbyte(buf, s->spantype);
   Oid basetypid = type_oid(s->basetype);
   bytea *lower = call_send(basetypid, s->lower);
   bytea *upper = call_send(basetypid, s->upper);
@@ -433,12 +434,14 @@ span_write(const Span *s, StringInfo buf)
  * read from the buffer.
  */
 Span *
-span_read(StringInfo buf, CachedType spantype)
+span_read(StringInfo buf)
 {
-  Oid spantypid = type_oid(spantype_basetype(spantype));
   Span *result = (Span *) palloc0(sizeof(Span));
-  result->lower = call_recv(spantypid, buf);
-  result->upper = call_recv(spantypid, buf);
+  result->spantype = (char) pq_getmsgbyte(buf);
+  result->basetype = spantype_basetype(result->spantype);
+  Oid basetypid = type_oid(result->basetype);
+  result->lower = call_recv(basetypid, buf);
+  result->upper = call_recv(basetypid, buf);
   result->lower_inc = (char) pq_getmsgbyte(buf);
   result->upper_inc = (char) pq_getmsgbyte(buf);
   return result;
@@ -507,6 +510,37 @@ span_copy(const Span *s)
   return result;
 }
 
+/**
+ * @ingroup libmeos_time_constructor
+ * @brief Construct a period from the bounds.
+ */
+Period *
+period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
+{
+  return span_make(lower, upper, lower_inc, upper_inc, T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_time_constructor
+ * @brief Set the period from the argument values.
+ */
+void
+period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc, Period *p)
+{
+  return span_set(lower, upper, lower_inc, upper_inc, T_TIMESTAMPTZ, p);
+}
+
+/**
+ * @ingroup libmeos_time_constructor
+ * @brief Return a copy of the period.
+ */
+Period *
+period_copy(const Period *p)
+{
+  return span_copy(p);
+}
+
 /*****************************************************************************
  * Casting
  *****************************************************************************/
@@ -520,6 +554,17 @@ elem_span(Datum d, CachedType basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_cast
+ * @brief Cast a timestamp value as a period
+ */
+Period *
+timestamp_period(TimestampTz t)
+{
+  Period *result = span_make(t, t, true, true, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -579,6 +624,16 @@ span_distance(const Span *s)
   return distance_elem_elem(s->lower, s->upper, s->basetype, s->basetype);
 }
 
+/**
+ * @ingroup libmeos_time_accessor
+ * @brief Return the duration of the period as an interval.
+ */
+Interval *
+period_duration(const Span *s)
+{
+  return DatumGetIntervalP(call_function2(timestamp_mi, s->upper, s->lower));
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -590,8 +645,9 @@ span_distance(const Span *s)
 void
 span_expand(const Span *s1, Span *s2)
 {
-  int cmp1 = datum_cmp2(s2->lower, s1->lower, s2->basetype, s1->basetype);
-  int cmp2 = datum_cmp2(s2->upper, s1->upper, s2->basetype, s1->basetype);
+  assert(s1->spantype == s2->spantype);
+  int cmp1 = datum_cmp(s2->lower, s1->lower, s1->basetype);
+  int cmp2 = datum_cmp(s2->upper, s1->upper, s1->basetype);
   bool lower1 = cmp1 < 0 || (cmp1 == 0 && (s2->lower_inc || ! s1->lower_inc));
   bool upper1 = cmp2 > 0 || (cmp2 == 0 && (s2->upper_inc || ! s1->upper_inc));
   s2->lower = lower1 ? s2->lower : s1->lower;
@@ -617,6 +673,38 @@ floatspan_round(Span *span, Datum size)
   return result;
 }
 
+/**
+ * @ingroup libmeos_time_transf
+ * @brief Shift and/or scale the period by the two intervals.
+ */
+void
+period_shift_tscale(const Interval *start, const Interval *duration,
+  Period *result)
+{
+  assert(start != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+  bool instant = (result->lower == result->upper);
+
+  if (start != NULL)
+  {
+    result->lower = DatumGetTimestampTz(DirectFunctionCall2(
+      timestamptz_pl_interval, TimestampTzGetDatum(result->lower),
+      PointerGetDatum(start)));
+    if (instant)
+      result->upper = result->lower;
+    else
+      result->upper = DatumGetTimestampTz(DirectFunctionCall2(
+        timestamptz_pl_interval, TimestampTzGetDatum(result->upper),
+        PointerGetDatum(start)));
+  }
+  if (duration != NULL && ! instant)
+    result->upper =
+      DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+         TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
+  return;
+}
+
 /*****************************************************************************
  * Btree support
  *****************************************************************************/
@@ -630,6 +718,7 @@ floatspan_round(Span *span, Datum size)
 bool
 span_eq(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   if (s1->lower != s2->lower || s1->upper != s2->upper ||
     s1->lower_inc != s2->lower_inc || s1->upper_inc != s2->upper_inc)
     return false;
@@ -853,8 +942,7 @@ PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  Oid spantypid = PG_GETARG_OID(1);
-  PG_RETURN_POINTER(span_read(buf, oid_type(spantypid)));
+  PG_RETURN_POINTER(span_read(buf));
 }
 
 /*****************************************************************************
@@ -913,50 +1001,62 @@ Elem_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-// PG_FUNCTION_INFO_V1(Span_to_tstzrange);
-// /**
- // * Convert the span as a tstzrange value
- // */
-// PGDLLEXPORT Datum
-// Span_to_tstzrange(PG_FUNCTION_ARGS)
-// {
-  // Span *span = PG_GETARG_SPAN_P(0);
-  // RangeType *range;
-  // range = range_make(TimestampTzGetDatum(span->lower),
-    // TimestampTzGetDatum(span->upper), span->lower_inc,
-    // span->upper_inc, T_TIMESTAMPTZ);
-  // PG_RETURN_POINTER(range);
-// }
+PG_FUNCTION_INFO_V1(Timestamp_to_period);
+/**
+ * Cast the timestamp value as a period
+ */
+PGDLLEXPORT Datum
+Timestamp_to_period(PG_FUNCTION_ARGS)
+{
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Period *result = timestamp_period(t);
+  PG_RETURN_POINTER(result);
+}
 
-// PG_FUNCTION_INFO_V1(Tstzrange_to_period);
-// /**
- // * Convert the tstzrange value as a span
- // */
-// PGDLLEXPORT Datum
-// Tstzrange_to_period(PG_FUNCTION_ARGS)
-// {
-  // RangeType *range = PG_GETARG_RANGE_P(0);
-  // TypeCacheEntry *typcache;
-  // char flags = range_get_flags(range);
-  // RangeBound lower;
-  // RangeBound upper;
-  // bool empty;
-  // Span *span;
+PG_FUNCTION_INFO_V1(Period_to_tstzrange);
+/**
+ * Convert the period as a tstzrange value
+ */
+PGDLLEXPORT Datum
+Period_to_tstzrange(PG_FUNCTION_ARGS)
+{
+  Period *period = PG_GETARG_PERIOD_P(0);
+  RangeType *range;
+  range = range_make(TimestampTzGetDatum(period->lower),
+    TimestampTzGetDatum(period->upper), period->lower_inc,
+    period->upper_inc, T_TIMESTAMPTZ);
+  PG_RETURN_POINTER(range);
+}
 
-  // typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  // assert(typcache->rngelemtype->type_id == TIMESTAMPTZOID);
-  // if (flags & RANGE_EMPTY)
-    // ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      // errmsg("Range cannot be empty")));
-  // if ((flags & RANGE_LB_INF) || (flags & RANGE_UB_INF))
-    // ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      // errmsg("Range bounds cannot be infinite")));
+PG_FUNCTION_INFO_V1(Tstzrange_to_period);
+/**
+ * Convert the tstzrange value as a period
+ */
+PGDLLEXPORT Datum
+Tstzrange_to_period(PG_FUNCTION_ARGS)
+{
+  RangeType *range = PG_GETARG_RANGE_P(0);
+  TypeCacheEntry *typcache;
+  char flags = range_get_flags(range);
+  RangeBound lower;
+  RangeBound upper;
+  bool empty;
+  Period *period;
 
-  // range_deserialize(typcache, range, &lower, &upper, &empty);
-  // span = span_make(DatumGetTimestampTz(lower.val),
-    // DatumGetTimestampTz(upper.val), lower.inclusive, upper.inclusive);
-  // PG_RETURN_POINTER(span);
-// }
+  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  assert(typcache->rngelemtype->type_id == TIMESTAMPTZOID);
+  if (flags & RANGE_EMPTY)
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Range cannot be empty")));
+  if ((flags & RANGE_LB_INF) || (flags & RANGE_UB_INF))
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Range bounds cannot be infinite")));
+
+  range_deserialize(typcache, range, &lower, &upper, &empty);
+  period = period_make(DatumGetTimestampTz(lower.val),
+    DatumGetTimestampTz(upper.val), lower.inclusive, upper.inclusive);
+  PG_RETURN_POINTER(period);
+}
 
 /*****************************************************************************
  * Accessor functions
@@ -1010,64 +1110,64 @@ Span_upper_inc(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(s->upper_inc != 0);
 }
 
-// PG_FUNCTION_INFO_V1(Span_duration);
-// /**
- // * Return the duration of the span
- // */
-// PGDLLEXPORT Datum
-// Span_duration(PG_FUNCTION_ARGS)
-// {
-  // Span *s = PG_GETARG_SPAN_P(0);
-  // Interval *result = span_duration(s);
-  // PG_RETURN_POINTER(result);
-// }
+PG_FUNCTION_INFO_V1(Period_duration);
+/**
+ * Return the duration of the period
+ */
+PGDLLEXPORT Datum
+Period_duration(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Interval *result = period_duration(s);
+  PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 
-// PG_FUNCTION_INFO_V1(Span_shift);
-// /**
- // * Shift the span value by the interval
- // */
-// PGDLLEXPORT Datum
-// Span_shift(PG_FUNCTION_ARGS)
-// {
-  // Span *s = PG_GETARG_SPAN_P(0);
-  // Interval *start = PG_GETARG_INTERVAL_P(1);
-  // Span *result = span_copy(s);
-  // span_shift_tscale(start, NULL, result);
-  // PG_RETURN_POINTER(result);
-// }
+PG_FUNCTION_INFO_V1(Period_shift);
+/**
+ * Shift the period value by the interval
+ */
+PGDLLEXPORT Datum
+Period_shift(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Period *result = period_copy(p);
+  period_shift_tscale(start, NULL, result);
+  PG_RETURN_POINTER(result);
+}
 
-// PG_FUNCTION_INFO_V1(Span_tscale);
-// /**
- // * Shift the span  value by the interval
- // */
-// PGDLLEXPORT Datum
-// Span_tscale(PG_FUNCTION_ARGS)
-// {
-  // Span *s = PG_GETARG_SPAN_P(0);
-  // Interval *duration = PG_GETARG_INTERVAL_P(1);
-  // Span *result = span_copy(s);
-  // span_shift_tscale(NULL, duration, result);
-  // PG_RETURN_POINTER(result);
-// }
+PG_FUNCTION_INFO_V1(Period_tscale);
+/**
+ * Shift the period  value by the interval
+ */
+PGDLLEXPORT Datum
+Period_tscale(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  Period *result = period_copy(p);
+  period_shift_tscale(NULL, duration, result);
+  PG_RETURN_POINTER(result);
+}
 
-// PG_FUNCTION_INFO_V1(Span_shift_tscale);
-// /**
- // * Shift the span value by the interval
- // */
-// PGDLLEXPORT Datum
-// Span_shift_tscale(PG_FUNCTION_ARGS)
-// {
-  // Span *s = PG_GETARG_SPAN_P(0);
-  // Interval *start = PG_GETARG_INTERVAL_P(1);
-  // Interval *duration = PG_GETARG_INTERVAL_P(2);
-  // Span *result = span_copy(s);
-  // span_shift_tscale(start, duration, result);
-  // PG_RETURN_POINTER(result);
-// }
+PG_FUNCTION_INFO_V1(Period_shift_tscale);
+/**
+ * Shift the period value by the interval
+ */
+PGDLLEXPORT Datum
+Period_shift_tscale(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  Period *result = period_copy(p);
+  period_shift_tscale(start, duration, result);
+  PG_RETURN_POINTER(result);
+}
 
 /******************************************************************************/
 

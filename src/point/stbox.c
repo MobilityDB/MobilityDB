@@ -38,7 +38,7 @@
 #include <assert.h>
 #include <utils/builtins.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"

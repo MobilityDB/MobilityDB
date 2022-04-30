@@ -24,7 +24,6 @@ else()
   set(temporal_tile.c temporal_tile.c)
   set(temporal_waggfuncs.c temporal_waggfuncs.c)
   set(time_aggfuncs.c time_aggfuncs.c)
-
   set(tnumber_gist.c tnumber_gist.c)
   set(tnumber_selfuncs.c tnumber_selfuncs.c)
   set(tnumber_spgist.c tnumber_spgist.c)
@@ -34,7 +33,6 @@ add_library(general OBJECT
   doublen.c
   ${geo_constructors.c}
   lifting.c
-  period.c
   periodset.c
   ${skiplist.c}
   span.c

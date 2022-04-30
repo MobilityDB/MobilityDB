@@ -36,7 +36,7 @@
 #define __TIME_AGGFUNCS_H__
 
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 
 /*****************************************************************************/
 
