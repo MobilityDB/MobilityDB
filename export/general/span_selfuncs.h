@@ -32,18 +32,20 @@
  * Functions for selectivity estimation of time types operators
  */
 
-#ifndef __TIME_SELFUNCS_H__
-#define __TIME_SELFUNCS_H__
+#ifndef __SPAN_SELFUNCS_H__
+#define __SPAN_SELFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 
 /*****************************************************************************/
 
+extern Datum Span_sel(PG_FUNCTION_ARGS);
 extern Datum Period_sel(PG_FUNCTION_ARGS);
-extern Datum Period_joinsel(PG_FUNCTION_ARGS);
-extern Datum _mobdb_period_sel(PG_FUNCTION_ARGS);
-extern Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS);
+extern Datum Span_joinsel(PG_FUNCTION_ARGS);
+
+extern Datum _mobdb_span_sel(PG_FUNCTION_ARGS);
+extern Datum _mobdb_span_joinsel(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

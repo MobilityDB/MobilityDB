@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temp_catalog.h
+ * @file temporal_catalog.h
  * Functions for building a cache of type and operator Oids.
  */
 
@@ -56,10 +56,9 @@ typedef enum
   T_DOUBLE3,
   T_DOUBLE4,
   T_FLOAT8,
-  T_FLOATRANGE,
   T_FLOATSPAN,
   T_INT4,
-  T_INTRANGE,
+  T_INT4RANGE,
   T_INTSPAN,
   T_PERIOD,
   T_PERIODSET,

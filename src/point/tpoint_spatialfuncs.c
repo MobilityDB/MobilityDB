@@ -54,7 +54,7 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/postgis.h"
 #include "point/stbox.h"

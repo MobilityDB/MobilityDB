@@ -65,7 +65,7 @@
 #include "general/span_ops.h"
 #include "general/span_analyze.h"
 #include "general/temporal.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_analyze.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"

@@ -141,9 +141,9 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
-DROP FUNCTION IF EXISTS random_intrange;
-CREATE FUNCTION random_intrange(lowvalue int, highvalue int, maxdelta int)
-  RETURNS intrange AS $$
+DROP FUNCTION IF EXISTS random_int4range;
+CREATE FUNCTION random_int4range(lowvalue int, highvalue int, maxdelta int)
+  RETURNS int4range AS $$
 DECLARE
   v int;
 BEGIN
@@ -152,12 +152,12 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_int(lowvalue, highvalue - maxdelta);
-  RETURN intrange(v, v + random_int(1, maxdelta));
+  RETURN int4range(v, v + random_int(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_intrange(-100, 100, 10) AS ir
+SELECT k, random_int4range(-100, 100, 10) AS ir
 FROM generate_series(1,10) k;
 */
 

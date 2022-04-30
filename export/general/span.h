@@ -42,8 +42,6 @@
 
 /* Generic functions */
 
-// extern Datum intrange_canonical(PG_FUNCTION_ARGS);
-
 extern Datum span_left_elem(PG_FUNCTION_ARGS);
 extern Datum span_overleft_elem(PG_FUNCTION_ARGS);
 extern Datum span_right_elem(PG_FUNCTION_ARGS);

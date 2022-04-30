@@ -46,7 +46,7 @@
 #include <liblwgeom.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/lifting.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"

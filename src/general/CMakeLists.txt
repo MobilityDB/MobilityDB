@@ -44,11 +44,11 @@ add_library(general OBJECT
   ${span_selfuncs.c}
   tbool_boolops.c
   tbox.c
-  temp_catalog.c
   temporal.c
   ${temporal_aggfuncs.c}
   ${temporal_analyze.c}
   temporal_boxops.c
+  temporal_catalog.c
   temporal_compops.c
   ${temporal_gist.c}
   temporal_parser.c

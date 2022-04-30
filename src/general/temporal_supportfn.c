@@ -57,7 +57,7 @@
 #include <utils/numeric.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_selfuncs.h"
 #include "general/tnumber_selfuncs.h"
 #include "point/tpoint_selfuncs.h"

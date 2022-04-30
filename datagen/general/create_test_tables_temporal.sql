@@ -106,12 +106,12 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_timestamptz('2001-01-01', '2001-12-31')
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_intrange;
-CREATE TABLE tbl_intrange AS
+DROP TABLE IF EXISTS tbl_int4range;
+CREATE TABLE tbl_int4range AS
 /* Add perc NULL values */
 SELECT k, NULL AS i
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_intrange(0, 100, 10)
+SELECT k, random_int4range(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatrange;

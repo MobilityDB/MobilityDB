@@ -111,7 +111,7 @@
 #include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/tnumber_spgist.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"

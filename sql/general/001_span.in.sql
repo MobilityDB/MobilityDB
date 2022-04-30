@@ -131,28 +131,6 @@ CREATE TYPE period (
 );
 
 /******************************************************************************
- * Constructors for ranges equivalent to the spans
- ******************************************************************************/
-
-CREATE TYPE intrange;
-
-CREATE FUNCTION intrange_canonical(r intrange)
-  RETURNS intrange
-  AS 'MODULE_PATHNAME', 'intrange_canonical'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE TYPE intrange AS RANGE (
-  subtype = integer,
-  SUBTYPE_DIFF = int4range_subdiff,
-  CANONICAL = intrange_canonical
-);
-
-CREATE TYPE floatrange AS RANGE (
-  subtype = float8,
-  SUBTYPE_DIFF = float8mi
-);
-
-/******************************************************************************
  * Constructors
  ******************************************************************************/
 
@@ -247,19 +225,39 @@ CREATE FUNCTION duration(period)
  * Casting
  ******************************************************************************/
 
+CREATE FUNCTION intspan(integer)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Elem_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspan(float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Elem_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestamptz)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'Timestamp_to_period'
+  AS 'MODULE_PATHNAME', 'Elem_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(tstzrange)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Tstzrange_to_period'
+
+CREATE FUNCTION int4range(intspan)
+  RETURNS int4range
+  AS 'MODULE_PATHNAME', 'Span_to_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzrange(period)
   RETURNS tstzrange
-  AS 'MODULE_PATHNAME', 'Period_to_tstzrange'
+  AS 'MODULE_PATHNAME', 'Span_to_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION intspan(int4range)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Range_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION period(tstzrange)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Range_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (int4range AS intspan) WITH FUNCTION intspan(int4range);
+CREATE CAST (intspan AS int4range) WITH FUNCTION int4range(intspan);
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
 CREATE CAST (tstzrange AS period) WITH FUNCTION period(tstzrange);
 CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);

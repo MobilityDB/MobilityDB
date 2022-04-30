@@ -40,7 +40,7 @@
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/span.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "point/postgis.h"
 
 /*****************************************************************************/

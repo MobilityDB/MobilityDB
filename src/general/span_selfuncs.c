@@ -52,7 +52,7 @@
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_ops.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/span_analyze.h"
 
 /*****************************************************************************/
@@ -889,14 +889,14 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * If expression is not (variable op something) or (something op
    * variable), then punt and return a default estimate.
    */
-  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
+  if (! get_restriction_variable(root, args, varRelid, &vardata, &other,
       &varonleft))
     return span_sel_default(operid);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
    */
-  if (!IsA(other, Const))
+  if (! IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
     return span_sel_default(operid);
@@ -916,11 +916,11 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * If var is on the right, commute the operator, so that we can assume the
    * var is on the left in what follows.
    */
-  if (!varonleft)
+  if (! varonleft)
   {
     /* we have other Op var, commute to make var Op other */
     operid = get_commutator(operid);
-    if (!operid)
+    if (! operid)
     {
       /* TODO: check whether there might still be a way to estimate.
        * Use default selectivity (should we raise an error instead?) */

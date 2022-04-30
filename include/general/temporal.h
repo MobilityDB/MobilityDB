@@ -43,7 +43,7 @@
 #include <utils/lsyscache.h>
 /* MobilityDB */
 #include "general/span.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
 #include "point/stbox.h"

@@ -1318,12 +1318,9 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   CachedType basetype)
 {
   Oid rangetypid = 0;
-  assert (basetype == T_INT4 || basetype == T_FLOAT8 ||
-    basetype == T_TIMESTAMPTZ);
+  assert (basetype == T_INT4 || basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
-    rangetypid = type_oid(T_INTRANGE);
-  else if (basetype == T_FLOAT8)
-    rangetypid = type_oid(T_FLOATRANGE);
+    rangetypid = type_oid(T_INT4RANGE);
   else /* basetype == T_TIMESTAMPTZ */
     rangetypid = type_oid(T_TSTZRANGE);
 
@@ -1339,35 +1336,6 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   upper.inclusive = upper_inc;
   upper.lower = false;
   return make_range(typcache, &lower, &upper, false);
-}
-
-PG_FUNCTION_INFO_V1(intrange_canonical);
-/**
- * Canonical function for defining the intrange type
- */
-PGDLLEXPORT Datum
-intrange_canonical(PG_FUNCTION_ARGS)
-{
-  RangeType *range = PG_GETARG_RANGE_P(0);
-  TypeCacheEntry *typcache;
-  RangeBound lower_bound;
-  RangeBound upper_bound;
-  bool empty;
-  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
-  if (empty)
-    PG_RETURN_RANGE_P(range);
-  if (!lower_bound.infinite && !lower_bound.inclusive)
-  {
-    lower_bound.val = DirectFunctionCall2(int4pl, lower_bound.val, Int32GetDatum(1));
-    lower_bound.inclusive = true;
-  }
-  if (!upper_bound.infinite && upper_bound.inclusive)
-  {
-    upper_bound.val = DirectFunctionCall2(int4pl, upper_bound.val, Int32GetDatum(1));
-    upper_bound.inclusive = false;
-  }
-  PG_RETURN_RANGE_P(range_serialize(typcache, &lower_bound, &upper_bound, false));
 }
 
 #endif /* #ifndef MEOS */

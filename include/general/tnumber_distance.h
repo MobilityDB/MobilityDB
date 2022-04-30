@@ -36,7 +36,7 @@
 #define __TNUMBER_DISTANCE_H__
 
 /* MobilityDB */
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/

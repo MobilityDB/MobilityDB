@@ -47,7 +47,7 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/span_ops.h"

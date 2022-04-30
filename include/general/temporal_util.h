@@ -50,7 +50,6 @@
 extern size_t double_pad(size_t size);
 extern Datum datum_copy(Datum value, Oid typid);
 extern double datum_double(Datum d, CachedType basetype);
-extern double tnumberinst_double(const TInstant *inst);
 extern text *cstring2text(const char *cstring);
 extern char *text2cstring(const text *textptr);
 

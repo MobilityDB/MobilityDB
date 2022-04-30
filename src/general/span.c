@@ -922,50 +922,38 @@ Elem_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestamp_to_period);
+PG_FUNCTION_INFO_V1(Span_to_range);
 /**
- * Cast the timestamp value as a period
+ * Convert the integer span as a integer range value
  */
 PGDLLEXPORT Datum
-Timestamp_to_period(PG_FUNCTION_ARGS)
+Span_to_range(PG_FUNCTION_ARGS)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *result = timestamp_period(t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Period_to_tstzrange);
-/**
- * Convert the period as a tstzrange value
- */
-PGDLLEXPORT Datum
-Period_to_tstzrange(PG_FUNCTION_ARGS)
-{
-  Period *period = PG_GETARG_PERIOD_P(0);
+  Span *span = PG_GETARG_SPAN_P(0);
+  assert(span->basetype == T_INT4 || span->basetype == T_TIMESTAMPTZ);
   RangeType *range;
-  range = range_make(TimestampTzGetDatum(period->lower),
-    TimestampTzGetDatum(period->upper), period->lower_inc,
-    period->upper_inc, T_TIMESTAMPTZ);
+  range = range_make(span->lower, span->upper, span->lower_inc,
+    span->upper_inc, span->basetype);
   PG_RETURN_POINTER(range);
 }
 
-PG_FUNCTION_INFO_V1(Tstzrange_to_period);
+PG_FUNCTION_INFO_V1(Range_to_span);
 /**
- * Convert the tstzrange value as a period
+ * Convert the integer range value as a integer span
  */
 PGDLLEXPORT Datum
-Tstzrange_to_period(PG_FUNCTION_ARGS)
+Range_to_span(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
   TypeCacheEntry *typcache;
   char flags = range_get_flags(range);
-  RangeBound lower;
-  RangeBound upper;
+  RangeBound lower, upper;
   bool empty;
-  Period *period;
+  Span *span;
 
   typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  assert(typcache->rngelemtype->type_id == TIMESTAMPTZOID);
+  assert(typcache->rngelemtype->type_id == INT4OID ||
+    typcache->rngelemtype->type_id == TIMESTAMPTZOID);
   if (flags & RANGE_EMPTY)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Range cannot be empty")));
@@ -973,10 +961,12 @@ Tstzrange_to_period(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Range bounds cannot be infinite")));
 
+  CachedType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
+    T_INT4 : T_TIMESTAMPTZ;
   range_deserialize(typcache, range, &lower, &upper, &empty);
-  period = span_make(lower.val, upper.val, lower.inclusive, upper.inclusive,
-    T_TIMESTAMPTZ);
-  PG_RETURN_POINTER(period);
+  span = span_make(lower.val, upper.val, lower.inclusive, upper.inclusive,
+    basetype);
+  PG_RETURN_POINTER(span);
 }
 
 /*****************************************************************************

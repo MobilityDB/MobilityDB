@@ -45,7 +45,7 @@
 /* MobilityDB */
 #include "general/time_gist.h"
 #include "general/temporaltypes.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "point/tpoint.h"
 #include "general/tnumber_gist.h"
 #include "point/tpoint_boxops.h"

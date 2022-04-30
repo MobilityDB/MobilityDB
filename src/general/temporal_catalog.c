@@ -47,7 +47,7 @@
  * The invalid combinations will be initialized to 0.
  */
 
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -493,10 +493,9 @@ const char *_type_names[] =
   [T_DOUBLE3] = "double3",
   [T_DOUBLE4] = "double4",
   [T_FLOAT8] = "float8",
-  [T_FLOATRANGE] = "floatrange",
   [T_FLOATSPAN] = "floatspan",
   [T_INT4] = "int4",
-  [T_INTRANGE] = "intrange",
+  [T_INT4RANGE] = "int4range",
   [T_INTSPAN] = "intspan",
   [T_PERIOD] = "period",
   [T_PERIODSET] = "periodset",

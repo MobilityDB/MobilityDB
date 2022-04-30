@@ -40,7 +40,7 @@
 #include <utils/selfuncs.h>
 /* MobilityDB */
 #include "general/temporal.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 
 /*****************************************************************************/
 

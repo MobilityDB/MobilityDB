@@ -1023,12 +1023,12 @@ SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
 SELECT MAX(period_hash(p)) FROM tbl_period;
     max     
 ------------
- 2034063717
+ 2054606119
 (1 row)
 
 SELECT MAX(period_hash_extended(p, 1)) FROM tbl_period;
          max         
 ---------------------
- 9176714045555019126
+ 9088361626626731395
 (1 row)
 

@@ -40,7 +40,7 @@
 #include <assert.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/temp_catalog.h"
+#include "general/temporal_catalog.h"
 #include "general/doublen.h"
 #include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
