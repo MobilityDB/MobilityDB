@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#if POSTGRESQL_VERSION_NUMBER < 120000
+#if POSTGRESQL_VERSION_NUMBER < 130000
   #include <access/hash.h>
 #else
   #include <common/hashfn.h>
