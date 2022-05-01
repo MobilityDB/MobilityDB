@@ -53,10 +53,10 @@
  */
 typedef struct
 {
-  int32 vl_len_;        /**< varlena header (do not touch directly!) */
-  int32 count;          /**< number of TimestampTz elements */
-  Period period;        /**< bounding period */
-  TimestampTz elems[1]; /**< beginning of variable-length data */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 count;          /**< Number of TimestampTz elements */
+  Period period;        /**< Bounding period */
+  TimestampTz elems[1]; /**< Beginning of variable-length data */
 } TimestampSet;
 
 /**
@@ -64,10 +64,10 @@ typedef struct
  */
 typedef struct
 {
-  int32 vl_len_;        /**< varlena header (do not touch directly!) */
-  int32 count;          /**< number of Period elements */
-  Period period;        /**< bounding period */
-  Period elems[1];      /**< beginning of variable-length data */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 count;          /**< Number of Period elements */
+  Period period;        /**< Bounding period */
+  Period elems[1];      /**< Beginning of variable-length data */
 } PeriodSet;
 
 /*

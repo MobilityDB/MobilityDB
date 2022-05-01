@@ -65,9 +65,9 @@ extern int contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp);
 extern int disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern int dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param);
+extern int dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist);
 extern int dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum dist);
+  double dist);
 
 /*****************************************************************************/
 

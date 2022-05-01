@@ -114,7 +114,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return the string representation of the period set value.
  */
 char *
@@ -133,7 +133,7 @@ periodset_to_string(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Write the binary representation of the time value into the buffer.
  *
  * @param[in] ps Time value
@@ -152,7 +152,7 @@ periodset_write(const PeriodSet *ps, StringInfo buf)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return a new time value from its binary representation
  * read from the buffer.
  *
@@ -174,7 +174,7 @@ periodset_read(StringInfo buf)
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a period set from an array of disjoint periods.
  *
  * For example, the memory structure of a PeriodSet with 3 periods is as
@@ -229,7 +229,7 @@ periodset_make(const Period **periods, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a period set from an array of periods and free the array
  * and the periods after the creation.
  *
@@ -252,7 +252,7 @@ periodset_make_free(Period **periods, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Return a copy of the period set.
  */
 PeriodSet *
@@ -268,7 +268,7 @@ periodset_copy(const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Cast the timestamp value as a period set value.
  */
 PeriodSet *
@@ -281,7 +281,7 @@ timestamp_periodset(TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Cast the timestamp set value as a period set value.
  */
 PeriodSet *
@@ -298,7 +298,7 @@ timestampset_periodset(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Construct a period set from a period.
  */
 PeriodSet *
@@ -308,7 +308,7 @@ period_periodset(const Period *period)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Copy in the second argument the bounding period of the period set value
  */
 void
@@ -324,7 +324,7 @@ periodset_period(const PeriodSet *ps, Period *p)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th period of the period set value.
  */
 const Period *
@@ -334,7 +334,7 @@ periodset_per_n(const PeriodSet *ps, int index)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the size in bytes of the period set value
  */
 int
@@ -344,7 +344,7 @@ periodset_mem_size(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the timespan of the period set value
  */
 Interval *
@@ -358,7 +358,7 @@ periodset_timespan(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of the period set value
  */
 Interval *
@@ -380,7 +380,7 @@ periodset_duration(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the number of periods of the period set value
  */
 int
@@ -390,7 +390,7 @@ periodset_num_periods(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the end period of the period set value
  */
 Period *
@@ -401,7 +401,7 @@ periodset_start_period(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the end period of the period set value
  */
 Period *
@@ -412,7 +412,7 @@ periodset_end_period(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th period of the period set value
  */
 Period *
@@ -425,7 +425,7 @@ periodset_period_n(const PeriodSet *ps, int i)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the periods of the period set value.
  */
 const Period **
@@ -438,7 +438,7 @@ periodset_periods(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of the period set value
  */
 int
@@ -473,7 +473,7 @@ periodset_num_timestamps(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the start timestamp of the period set value.
  */
 TimestampTz
@@ -484,7 +484,7 @@ periodset_start_timestamp(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the end timestamp of the period set value.
  */
 TimestampTz
@@ -495,7 +495,7 @@ periodset_end_timestamp(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of the period set value.
  *
  * @param[in] ps Period set
@@ -549,7 +549,7 @@ periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the timestamps of the period set value
  */
 TimestampTz *
@@ -578,7 +578,7 @@ periodset_timestamps(const PeriodSet *ps, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_transf
+ * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale the period set value by the two intervals.
  */
 PeriodSet *
@@ -627,7 +627,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first period set value
  * is less than, equal, or greater than the second temporal value.
  *
@@ -662,7 +662,7 @@ periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first period set value is equal to the second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -685,7 +685,7 @@ periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first period set value is different from the
  * second one.
  */
@@ -696,7 +696,7 @@ periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first period set value is less than the second one
  */
 bool
@@ -707,7 +707,7 @@ periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first period set value is less than or equal to
  * the second one
  */
@@ -719,7 +719,7 @@ periodset_le(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first period set value is greater than or equal to
  * the second one
  */
@@ -731,7 +731,7 @@ periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first period set value is greater than the second
  * one
  */
@@ -749,7 +749,7 @@ periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a period set value.
  */
 uint32
@@ -766,7 +766,7 @@ periodset_hash(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a period set using a seed
  */
 uint64

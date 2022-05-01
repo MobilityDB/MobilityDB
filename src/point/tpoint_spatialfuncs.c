@@ -1997,9 +1997,9 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TInstant *
-tpointinst_transform(const TInstant *inst, Datum srid)
+tpointinst_transform(const TInstant *inst, int srid)
 {
-  Datum geo = datum_transform(tinstant_value(inst), srid);
+  Datum geo = datum_transform(tinstant_value(inst), Int32GetDatum(srid));
   TInstant *result = tinstant_make(geo, inst->t, inst->temptype);
   pfree(DatumGetPointer(geo));
   return result;
@@ -2010,13 +2010,15 @@ tpointinst_transform(const TInstant *inst, Datum srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TInstantSet *
-tpointinstset_transform(const TInstantSet *ti, Datum srid)
+tpointinstset_transform(const TInstantSet *ti, int srid)
 {
   /* Singleton instant set */
   if (ti->count == 1)
   {
-    TInstant *inst = tpointinst_transform(tinstantset_inst_n(ti, 0), srid);
-    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
+    TInstant *inst = tpointinst_transform(tinstantset_inst_n(ti, 0),
+      Int32GetDatum(srid));
+    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1,
+      MERGE_NO);
     pfree(inst);
     return result;
   }
@@ -2046,14 +2048,15 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TSequence *
-tpointseq_transform(const TSequence *seq, Datum srid)
+tpointseq_transform(const TSequence *seq, int srid)
 {
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0), srid);
+    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
+      Int32GetDatum(srid));
     TSequence *result = tinstant_tsequence(inst, linear);
     pfree(inst);
     return result;
@@ -2102,12 +2105,13 @@ tpointseq_transform(const TSequence *seq, Datum srid)
  * not iterate through the sequences and call the transform for the sequence
  */
 TSequenceSet *
-tpointseqset_transform(const TSequenceSet *ts, Datum srid)
+tpointseqset_transform(const TSequenceSet *ts, int srid)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ts, 0), srid);
+    TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ts, 0),
+      Int32GetDatum(srid));
     TSequenceSet *result = tsequence_tsequenceset(seq);
     pfree(seq);
     return result;
@@ -2169,7 +2173,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 Temporal *
-tpoint_transform(const Temporal *temp, Datum srid)
+tpoint_transform(const Temporal *temp, int srid)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2339,7 +2343,7 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
  * Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_point(POINTARRAY *points, uint32_t i, Datum prec, bool hasz,
+round_point(POINTARRAY *points, uint32_t i, int prec, bool hasz,
   bool hasm)
 {
   /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
@@ -2436,8 +2440,8 @@ datum_round_triangle(GSERIALIZED *gs, Datum prec)
  * Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec,
-  bool hasz, bool hasm)
+round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz,
+  bool hasm)
 {
   int npoints = lwcircstring->points->npoints;
   for (int i = 0; i < npoints; i++)
@@ -2628,7 +2632,6 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the precision of the coordinates to the number of decimal places.
  *
  * @note Currently not all geometry types are allowed
@@ -2668,14 +2671,14 @@ datum_round_geo(Datum value, Datum prec)
  * number of decimal places.
  */
 Temporal *
-tpoint_round(const Temporal *temp, Datum prec)
+tpoint_round(const Temporal *temp, int prec)
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_round_geo;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = prec;
+  lfinfo.param[0] = Int32GetDatum(prec);
   lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
@@ -5315,7 +5318,7 @@ PGDLLEXPORT Datum
 Tpoint_transform(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum srid = PG_GETARG_DATUM(1);
+  int srid = PG_GETARG_INT32(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_transform(temp, srid);
@@ -5365,8 +5368,8 @@ PGDLLEXPORT Datum
 Geo_round(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), prec));
+  int prec = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), Int32GetDatum(prec)));
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_round);
@@ -5378,7 +5381,7 @@ PGDLLEXPORT Datum
 Tpoint_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
+  int prec = PG_GETARG_INT32(1);
   Temporal *result = tpoint_round(temp, prec);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

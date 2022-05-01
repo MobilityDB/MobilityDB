@@ -260,10 +260,10 @@ extern double get_float8_infinity(void);
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -272,11 +272,11 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  TimestampTz   t;            /**< timestamp (8 bytes) */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  TimestampTz   t;            /**< Timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
 
@@ -285,12 +285,12 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  int32         count;        /**< number of TInstant elements */
-  int16         bboxsize;     /**< size of the bounding box */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  int32         count;        /**< Number of TInstant elements */
+  int16         bboxsize;     /**< Size of the bounding box */
   /**< beginning of variable-length data */
 } TInstantSet;
 
@@ -299,13 +299,13 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  int32         count;        /**< number of TInstant elements */
-  int16         bboxsize;     /**< size of the bounding box */
-  Period        period;       /**< time span (24 bytes) */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  int32         count;        /**< Number of TInstant elements */
+  int16         bboxsize;     /**< Size of the bounding box */
+  Period        period;       /**< Time span (24 bytes) */
   /**< beginning of variable-length data */
 } TSequence;
 
@@ -314,13 +314,13 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  int32         count;        /**< number of TSequence elements */
-  int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
-  int16         bboxsize;     /**< size of the bounding box */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  int32         count;        /**< Number of TSequence elements */
+  int32         totalcount;   /**< Total number of TInstant elements in all TSequence elements */
+  int16         bboxsize;     /**< Size of the bounding box */
   /**< beginning of variable-length data */
 } TSequenceSet;
 
@@ -329,9 +329,9 @@ typedef struct
  */
 typedef union bboxunion
 {
-  Period    p;
-  TBOX      b;
-  STBOX     g;
+  Period    p;      /**< Period */
+  TBOX      b;      /**< Temporal box */
+  STBOX     g;      /**< Spatiotemporal box */
 } bboxunion;
 
 /**
@@ -503,6 +503,8 @@ extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 
 /* Version functions */
 
+extern char *mobilitydb_version(void);
+extern char *mobilitydb_full_version(void);
 
 /* Input/output functions */
 

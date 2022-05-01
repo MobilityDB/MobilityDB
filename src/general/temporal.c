@@ -640,7 +640,6 @@ temporal_write(const Temporal *temp, StringInfo buf)
  * the buffer.
  *
  * @param[in] buf Buffer
- * @param[in] temptype Temporal type
  */
 Temporal *
 temporal_read(StringInfo buf)

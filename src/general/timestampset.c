@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of the timestamp set value
  */
 TimestampTz
@@ -71,7 +71,7 @@ timestampset_period_ptr(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a timestamp set from an array of timestamps.
  *
  * For example, the memory structure of a timestamp set with 3
@@ -114,7 +114,7 @@ timestampset_make(const TimestampTz *times, int count)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a timestamp set from the array of timestamps and free the
  * array after the creation.
  *
@@ -135,7 +135,7 @@ timestampset_make_free(TimestampTz *times, int count)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Return a copy of the timestamp set.
  */
 TimestampSet *
@@ -202,7 +202,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return the string representation of the timestamp set value.
  */
 char *
@@ -220,7 +220,7 @@ timestampset_to_string(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Write the binary representation of the time value into the buffer.
  *
  * @param[in] ts Time value
@@ -241,7 +241,7 @@ timestampset_write(const TimestampSet *ts, StringInfo buf)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return a new time value from its binary representation
  * read from the buffer.
  *
@@ -267,7 +267,7 @@ timestampset_read(StringInfo buf)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp value as a timestamp set value
  */
 TimestampSet *
@@ -278,7 +278,7 @@ timestamp_timestampset(TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Copy in the second argument the bounding period of the timestamp
  * set value
  */
@@ -295,7 +295,7 @@ timestampset_period(const TimestampSet *ts, Period *p)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the size in bytes of the timestamp set value.
  */
 int
@@ -305,7 +305,7 @@ timestampset_mem_size(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the timespan of the timestamp set value.
  */
 Interval *
@@ -319,7 +319,7 @@ timestampset_timespan(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of the timestamp set value.
  */
 int
@@ -329,7 +329,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the start timestamp of the timestamp set value.
  */
 TimestampTz
@@ -340,7 +340,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the end timestamp of the timestamp set value.
  */
 TimestampTz
@@ -351,7 +351,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of the timestamp set value.
  *
  * @param[in] ts Timestamp set
@@ -370,7 +370,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the array of timestamps of the timestamp set value.
  */
 TimestampTz *
@@ -387,7 +387,7 @@ timestampset_timestamps(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_transf
+ * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale the timestamp set value by the two intervals
  */
 TimestampSet *
@@ -434,7 +434,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  *
@@ -467,7 +467,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is equal to the
  * second one.
  *
@@ -491,7 +491,7 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is different from the
  * second one.
  *
@@ -504,7 +504,7 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is less than the second one
  */
 bool
@@ -515,7 +515,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is less than
  * or equal to the second one
  */
@@ -527,7 +527,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is greater than
  * or equal to the second one
  */
@@ -539,7 +539,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is greater than the second one
  */
 bool
@@ -556,7 +556,7 @@ timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a timestamp set.
  */
 uint32
@@ -574,7 +574,7 @@ timestampset_hash(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed.
  */
 uint64

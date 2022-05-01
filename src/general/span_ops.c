@@ -83,7 +83,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
 /* contains? */
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span value contains the second one.
  */
 bool
@@ -101,7 +101,7 @@ contains_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span value contains the second one.
  */
 bool
@@ -122,7 +122,7 @@ contains_span_span(const Span *s1, const Span *s2)
 /* contained? */
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span value is contained by the second one
  */
 bool
@@ -132,7 +132,7 @@ contained_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span value is contained by the second one
  */
 bool
@@ -145,7 +145,7 @@ contained_span_span(const Span *s1, const Span *s2)
 /* overlaps? */
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two span values overlap.
  */
 bool
@@ -166,7 +166,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
 /* adjacent to (but not overlapping)? */
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two span values are adjacent.
  */
 bool
@@ -181,7 +181,7 @@ adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two span values are adjacent
  */
 bool
@@ -191,7 +191,7 @@ adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two span values are adjacent.
  */
 bool
@@ -213,7 +213,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
 /* strictly left of? */
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is strictly left the second one.
  */
 bool
@@ -224,7 +224,7 @@ left_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is strictly left the second one.
  */
 bool
@@ -236,7 +236,7 @@ left_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is strictly left the second one.
  */
 bool
@@ -251,7 +251,7 @@ left_span_span(const Span *s1, const Span *s2)
 /* strictly right of? */
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is strictly right the second one.
  */
 bool
@@ -262,7 +262,7 @@ right_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is strictly right the
  * second one.
  */
@@ -274,7 +274,7 @@ right_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is strictly right the second one.
  */
 bool
@@ -289,7 +289,7 @@ right_span_span(const Span *s1, const Span *s2)
 /* does not extend to right of? */
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is not right the second one.
  */
 bool
@@ -300,7 +300,7 @@ overleft_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is not right the second one.
  */
 bool
@@ -310,7 +310,7 @@ overleft_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is not right the second one.
  */
 bool
@@ -325,7 +325,7 @@ overleft_span_span(const Span *s1, const Span *s2)
 /* does not extend to left of? */
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is not left the second one.
  */
 bool
@@ -336,7 +336,7 @@ overright_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is not left the second one.
  */
 bool
@@ -346,7 +346,7 @@ overright_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span value is not left the second one.
  */
 bool
@@ -362,7 +362,7 @@ overright_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two span values.
  */
 Span *
@@ -408,7 +408,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 }
 
 /**
- * @ingroup libmeos_span_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two span values.
  */
 Span *
@@ -429,7 +429,7 @@ intersection_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two span values.
  */
 Span *
@@ -493,7 +493,7 @@ minus_span_span(const Span *s1, const Span *s2)
  ******************************************************************************/
 
 /**
- * @ingroup libmeos_span_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance between the two span values
  */
 double
@@ -519,7 +519,7 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * @ingroup libmeos_span_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance between the two span values.
  */
 double
@@ -529,7 +529,7 @@ distance_elem_span(Datum d, CachedType basetype, const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance between the span and the element.
  */
 double
@@ -552,7 +552,7 @@ distance_span_elem(const Span *s, Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_span_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between two spans.
  */
 double

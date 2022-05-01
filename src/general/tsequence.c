@@ -43,7 +43,6 @@
   #include <common/hashfn.h>
 #endif
 #include <libpq/pqformat.h>
-// #include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
@@ -1082,21 +1081,21 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 /**
  * Compute the intersection, if any, of two segments of temporal sequences.
  * These functions suppose that the instants are synchronized, i.e.,
- * start1->t = start2->t and end1->t = end2->t.
+ * `start1->t = start2->t` and `end1->t = end2->t`.
  * The functions return true if there is an intersection at the middle of
  * the segments, i.e., they return false if they intersect at a bound. If
  * they return true, they also return in the output parameter t the
  * intersection timestamp. The two values taken by the segments at the
  * intersection timestamp t are equal up to the floating point precision.
  * For the temporal point case we cannot use the PostGIS functions
- * lw_dist2d_seg_seg and lw_dist3d_seg_seg since they do not take time into
- * consideration and would return, e.g., that the two segments
- * [Point(1 1)@t1, Point(3 3)@t2] and [Point(3 3)@t1, Point(1 1)@t2]
- * intersect at Point(1 1), instead of Point(2 2).
+ * `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg` since they do not take time
+ * into consideration and would return, e.g., that the two segments
+ * `[Point(1 1)@t1, Point(3 3)@t2]` and `[Point(3 3)@t1, Point(1 1)@t2]`
+ * intersect at `Point(1 1)`, instead of `Point(2 2)`.
  * These functions are used to add intermediate points when lifting
  * operators, in particular for temporal comparisons such as
- * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison
- * changes its value before/at/after the intersection point.
+ * `tfloat <comp> tfloat` where `<comp>` is `<`, `<=`, ... since the
+ * comparison changes its value before/at/after the intersection point.
  */
 
 /**

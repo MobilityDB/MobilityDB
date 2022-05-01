@@ -234,6 +234,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
+ * @param[in] type Type of the column for which the stats are generated
  */
 static void
 span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,

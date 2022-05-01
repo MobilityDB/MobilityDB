@@ -345,7 +345,7 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_span_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return the string representation of the span.
  */
 char *
@@ -367,7 +367,7 @@ span_to_string(const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Write the binary representation of the time value into the buffer.
  */
 void
@@ -386,7 +386,7 @@ span_write(const Span *s, StringInfo buf)
 }
 
 /**
- * @ingroup libmeos_span_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return a new time value from its binary representation
  * read from the buffer.
  */
@@ -409,7 +409,7 @@ span_read(StringInfo buf)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a span from the bounds.
  */
 Span *
@@ -423,7 +423,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 }
 
 /**
- * @ingroup libmeos_span_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Set the span from the argument values.
  */
 void
@@ -454,7 +454,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 }
 
 /**
- * @ingroup libmeos_span_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Return a copy of the span.
  */
 Span *
@@ -470,7 +470,7 @@ span_copy(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Cast an element value as a span
  */
 Span *
@@ -482,7 +482,7 @@ elem_span(Datum d, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp value as a period
  */
 Period *
@@ -498,7 +498,7 @@ timestamp_period(TimestampTz t)
 
 #ifdef MEOS
 /**
- * @ingroup libmeos_span_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Return the lower bound value
  */
 Datum
@@ -508,7 +508,7 @@ span_lower(Span *s)
 }
 
 /**
- * @ingroup libmeos_span_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the upper bound value
  */
 Datum
@@ -518,7 +518,7 @@ span_upper(Span *s)
 }
 
 /**
- * @ingroup libmeos_span_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return true if the lower bound value is inclusive
  */
 bool
@@ -528,7 +528,7 @@ span_lower_inc(Span *s)
 }
 
 /**
- * @ingroup libmeos_span_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return true if the upper bound value is inclusive
  */
 bool
@@ -539,7 +539,7 @@ span_upper_inc(Span *s)
 #endif
 
 /**
- * @ingroup libmeos_span_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of the span as an interval.
  */
 double
@@ -549,7 +549,7 @@ span_distance(const Span *s)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of the period as an interval.
  */
 Interval *
@@ -563,7 +563,7 @@ period_duration(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_transf
+ * @ingroup libmeos_spantime_transf
  * @brief Expand the second span with the first one
  */
 void
@@ -582,7 +582,7 @@ span_expand(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_span_transf
+ * @ingroup libmeos_spantime_transf
  * @brief Set the precision of the float span to the number of decimal places.
  */
 Span *
@@ -598,7 +598,7 @@ floatspan_round(Span *span, Datum size)
 }
 
 /**
- * @ingroup libmeos_time_transf
+ * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale the period by the two intervals.
  */
 void
@@ -634,7 +634,7 @@ period_shift_tscale(const Interval *start, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is equal to the second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -650,7 +650,7 @@ span_eq(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is different from the second one.
  */
 bool
@@ -662,7 +662,7 @@ span_ne(const Span *s1, const Span *s2)
 /* B-tree comparator */
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal, or greater than the second one.
  *
@@ -687,7 +687,7 @@ span_cmp(const Span *s1, const Span *s2)
 /* Inequality operators using the span_cmp function */
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than the second one.
  */
 bool
@@ -698,7 +698,7 @@ span_lt(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than or equal to the
  * second one.
  */
@@ -710,7 +710,7 @@ span_le(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than or equal to the
  * second one.
  */
@@ -722,7 +722,7 @@ span_ge(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_span_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than the second one.
  */
 bool
@@ -737,7 +737,7 @@ span_gt(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_span_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a span.
  */
 uint32
@@ -770,7 +770,7 @@ span_hash(const Span *s)
 }
 
 /**
- * @ingroup libmeos_span_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a span obtained with a seed.
  */
 uint64

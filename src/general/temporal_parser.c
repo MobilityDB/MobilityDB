@@ -329,7 +329,7 @@ timestamp_parse(char **str)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Parse a timestamp set value from the buffer.
  */
 TimestampSet *
@@ -362,7 +362,7 @@ timestampset_parse(char **str)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Parse a period set value from the buffer.
  */
 PeriodSet *
@@ -419,7 +419,7 @@ elem_parse(char **str, CachedType basetypid)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Parse a span value from the buffer.
  */
 Span *

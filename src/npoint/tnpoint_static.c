@@ -243,7 +243,6 @@ npoint_remove_duplicates(Npoint **values, int count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Output function for network points
  */
 char *
@@ -258,7 +257,6 @@ npoint_to_string(const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Return a new network point value from its binary representation read
  * from the buffer.
  */
@@ -272,7 +270,6 @@ npoint_read(StringInfo buf)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Write the binary representation of the network point value into the
  * buffer.
  *
@@ -290,7 +287,6 @@ npoint_write(const Npoint *np, StringInfo buf)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Output function for network segments
  */
 char *
@@ -301,7 +297,6 @@ nsegment_to_string(Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Receive function for network segments
  */
 Nsegment *
@@ -315,7 +310,6 @@ nsegment_read(StringInfo buf)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Send function for network segments
  */
 void
@@ -332,7 +326,6 @@ nsegment_write(Nsegment *ns, StringInfo buf)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_constructor
  * @brief Construct an network point value from the arguments
  */
 Npoint *
@@ -345,7 +338,6 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
  * @brief Set a network point value from the arguments.
  */
 void
@@ -363,7 +355,6 @@ npoint_set(int64 rid, double pos, Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
  * @brief Construct an network segment value from the arguments
  */
 Nsegment *
@@ -376,7 +367,6 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
  * @brief Set a network segment value from the arguments.
  */
 void
@@ -399,7 +389,6 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_cast
  * @brief Construct an network segment value from the arguments
  */
 Nsegment *
@@ -413,7 +402,6 @@ npoint_nsegment(const Npoint *np)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the route of the network point
  */
 int64
@@ -423,7 +411,6 @@ npoint_route(Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the position of the network point
  */
 double
@@ -433,7 +420,6 @@ npoint_position(Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the route of the network segment
  */
 int64
@@ -443,7 +429,6 @@ nsegment_route(Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the start position of the network segment
  */
 double
@@ -453,7 +438,6 @@ nsegment_start_position(Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the end position of the network segment
  */
 double
@@ -482,7 +466,6 @@ datum_npoint_round(Datum npoint, Datum size)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
  * @brief Set the precision of the position of a network point to the number of
  * decimal places
  */
@@ -496,7 +479,6 @@ npoint_round(Npoint *np, Datum size)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
  * @brief Set the precision of the position of a network point to the number of
  * decimal places
  */
@@ -637,7 +619,6 @@ rid_from_geom(Datum geom)
 #endif
 
 /**
- * @ingroup libmeos_temporal_cast
  * @brief Transforms the network point into a geometry
  */
 Datum
@@ -650,7 +631,6 @@ npoint_geom(const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
  * @brief Transforms the geometry into a network point
  */
 Npoint *
@@ -697,7 +677,6 @@ geom_npoint(Datum geom)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
  * @brief Transforms the network segment into a geometry
  */
 Datum
@@ -716,7 +695,6 @@ nsegment_geom(const Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
  * @brief Transforms the geometry into a network segment
  */
 Nsegment *
@@ -782,7 +760,6 @@ geom_nsegment(Datum geom)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the SRID of the network point
  */
 int
@@ -796,7 +773,6 @@ npoint_srid(const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the SRID of the network segment.
  */
 int
@@ -814,7 +790,6 @@ nsegment_srid(const Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is equal to the second one
  */
 bool
@@ -824,7 +799,6 @@ npoint_eq(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is not equal to the second one
  */
 bool
@@ -834,7 +808,6 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
  *
@@ -856,7 +829,6 @@ npoint_cmp(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is less than the second one
  */
 bool
@@ -867,7 +839,6 @@ npoint_lt(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is less than or equal to the
  * second one
  */
@@ -879,7 +850,6 @@ npoint_le(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is greater than the second one
  */
 bool
@@ -890,7 +860,6 @@ npoint_gt(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is greater than or equal to
  * the second one
  */
@@ -904,7 +873,6 @@ npoint_ge(const Npoint *np1, const Npoint *np2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network segment is equal to the second one
  */
 bool
@@ -915,7 +883,6 @@ nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network segment is not equal to the second one
  */
 bool
@@ -925,7 +892,6 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal, or greater than the second one
  *
@@ -952,7 +918,6 @@ nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network segment is less than the second one
  */
 bool
@@ -963,7 +928,6 @@ nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network segment is less than or equal to the
  * second one
  */
@@ -975,7 +939,6 @@ nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network segment is greater than the second one
  */
 bool
@@ -986,7 +949,6 @@ nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network segment is greater than or equal to
  * the second one
  */

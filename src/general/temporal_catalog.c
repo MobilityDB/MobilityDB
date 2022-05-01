@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tempcache.c
+ * @file temporal_catalog.c
  * @brief Create a cache of information about temporal types and PostgreSQL
  * OIDs in global arrays in order to avoid (slow) lookups. These arrays are
  * initialized at the loading of the extension.

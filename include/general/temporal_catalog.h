@@ -43,45 +43,46 @@
  *****************************************************************************/
 
 /**
- * Enumeration that defines the built-in and temporal types used in
- * MobilityDB. The Oids of these types are cached in a global array and
+ * @brief Enumeration that defines the built-in and temporal types used in
+ * MobilityDB.
+ *
+ * The Oids of these types are cached in a global array and
  * the enum values are used in the global array for the operator cache.
- * The temporal types should be first to accelerate the search for them.
  */
 typedef enum
 {
   // T_UNKNOWN = 0,
-  T_BOOL,
-  T_DOUBLE2,
-  T_DOUBLE3,
-  T_DOUBLE4,
-  T_FLOAT8,
-  T_FLOATSPAN,
-  T_INT4,
-  T_INT4RANGE,
-  T_INTSPAN,
-  T_PERIOD,
-  T_PERIODSET,
-  T_STBOX,
-  T_TBOOL,
-  T_TBOX,
-  T_TDOUBLE2,
-  T_TDOUBLE3,
-  T_TDOUBLE4,
-  T_TEXT,
-  T_TFLOAT,
-  T_TIMESTAMPSET,
-  T_TIMESTAMPTZ,
-  T_TINT,
-  T_TSTZRANGE,
-  T_TTEXT,
-  T_GEOMETRY,
-  T_GEOGRAPHY,
-  T_TGEOMPOINT,
-  T_TGEOGPOINT,
-  T_NPOINT,
-  T_NSEGMENT,
-  T_TNPOINT,
+  T_BOOL,          /**< boolean type */
+  T_DOUBLE2,       /**< double2 type */
+  T_DOUBLE3,       /**< double3 type */
+  T_DOUBLE4,       /**< double4 type */
+  T_FLOAT8,        /**< float8 type */
+  T_FLOATSPAN,     /**< float8 span type */
+  T_INT4,          /**< int4 type */
+  T_INT4RANGE,     /**< int4 range type */
+  T_INTSPAN,       /**< int4 span type */
+  T_PERIOD,        /**< period type */
+  T_PERIODSET,     /**< period set type */
+  T_STBOX,         /**< spatiotemporal box type */
+  T_TBOOL,         /**< temporal boolean type */
+  T_TBOX,          /**< temporal box type */
+  T_TDOUBLE2,      /**< temporal double2 type */
+  T_TDOUBLE3,      /**< temporal double3 type */
+  T_TDOUBLE4,      /**< temporal double4 type */
+  T_TEXT,          /**< text type */
+  T_TFLOAT,        /**< temporal float type */
+  T_TIMESTAMPSET,  /**< timestamp set type */
+  T_TIMESTAMPTZ,   /**< timestamp with time zone type */
+  T_TINT,          /**< temporal integer type */
+  T_TSTZRANGE,     /**< timestamp with time zone rabge type */
+  T_TTEXT,         /**< temporal text type */
+  T_GEOMETRY,      /**< geometry type */
+  T_GEOGRAPHY,     /**< geography type */
+  T_TGEOMPOINT,    /**< temporal geometry point type */
+  T_TGEOGPOINT,    /**< temporal geography point type */
+  T_NPOINT,        /**< network point type */
+  T_NSEGMENT,      /**< network segment type */
+  T_TNPOINT,       /**< temporal network point type */
 } CachedType;
 
 /**
@@ -92,36 +93,36 @@ typedef enum
 typedef enum
 {
   // UNKNOWN_OP = 0,
-  EQ_OP,
-  NE_OP,
-  LT_OP,
-  LE_OP,
-  GT_OP,
-  GE_OP,
-  ADJACENT_OP,
-  UNION_OP,
-  MINUS_OP,
-  INTERSECT_OP,
-  OVERLAPS_OP,
-  CONTAINS_OP,
-  CONTAINED_OP,
-  SAME_OP,
-  LEFT_OP,
-  OVERLEFT_OP,
-  RIGHT_OP,
-  OVERRIGHT_OP,
-  BELOW_OP,
-  OVERBELOW_OP,
-  ABOVE_OP,
-  OVERABOVE_OP,
-  FRONT_OP,
-  OVERFRONT_OP,
-  BACK_OP,
-  OVERBACK_OP,
-  BEFORE_OP,
-  OVERBEFORE_OP,
-  AFTER_OP,
-  OVERAFTER_OP,
+  EQ_OP,           /**< Equality `=` operator */
+  NE_OP,           /**< Distinct `!=` operator */
+  LT_OP,           /**< Less than `<` operator */
+  LE_OP,           /**< Less than or equal to `<=` operator */
+  GT_OP,           /**< Greater than `<` operator */
+  GE_OP,           /**< Greater than or equal to `>=` operator */
+  ADJACENT_OP,     /**< Adjacent `-|-` operator */
+  UNION_OP,        /**< Union `+` operator */
+  MINUS_OP,        /**< Minus `-` operator */
+  INTERSECT_OP,    /**< Intersection `*` operator */
+  OVERLAPS_OP,     /**< Overlaps `&&` operator */
+  CONTAINS_OP,     /**< Contains `@>` operator */
+  CONTAINED_OP,    /**< Contained `<@` operator */
+  SAME_OP,         /**< Same `~=` operator */
+  LEFT_OP,         /**< Left `<<` operator */
+  OVERLEFT_OP,     /**< Overleft `&<` operator */
+  RIGHT_OP,        /**< Right `>>` operator */
+  OVERRIGHT_OP,    /**< Overright `&>` operator */
+  BELOW_OP,        /**< Below `<<|` operator */
+  OVERBELOW_OP,    /**< Overbelow `&<|` operator */
+  ABOVE_OP,        /**< Above `|>>` operator */
+  OVERABOVE_OP,    /**< Overbove `|&>` operator */
+  FRONT_OP,        /**< Front `<</` operator */
+  OVERFRONT_OP,    /**< Overfront `&</` operator */
+  BACK_OP,         /**< Back `/>>` operator */
+  OVERBACK_OP,     /**< Overback `/&>` operator */
+  BEFORE_OP,       /**< Before `<<#` operator */
+  OVERBEFORE_OP,   /**< Overbefore `&<#` operator */
+  AFTER_OP,        /**< After `#>>` operator */
+  OVERAFTER_OP,    /**< Overafter `#&>` operator */
 } CachedOp;
 
 /**

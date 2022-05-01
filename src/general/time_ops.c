@@ -249,7 +249,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 /* contains? */
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -265,7 +265,7 @@ contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -297,7 +297,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -315,7 +315,7 @@ contains_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -329,7 +329,7 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -347,7 +347,7 @@ contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -378,7 +378,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -396,7 +396,7 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -407,7 +407,7 @@ contains_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value contains the second one.
  */
 bool
@@ -453,7 +453,7 @@ contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* contained? */
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -463,7 +463,7 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -473,7 +473,7 @@ contained_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -483,7 +483,7 @@ contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -494,7 +494,7 @@ contained_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -504,7 +504,7 @@ contained_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -514,7 +514,7 @@ contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -524,7 +524,7 @@ contained_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -534,7 +534,7 @@ contained_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first time value is contained by the second one
  */
 bool
@@ -547,7 +547,7 @@ contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* overlaps? */
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap.
  */
 bool
@@ -577,7 +577,7 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap.
  */
 bool
@@ -598,7 +598,7 @@ overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap.
  */
 bool
@@ -626,7 +626,7 @@ overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap
  */
 bool
@@ -636,7 +636,7 @@ overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap.
  */
 bool
@@ -662,7 +662,7 @@ overlaps_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap
  */
 bool
@@ -672,7 +672,7 @@ overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap
  */
 bool
@@ -682,7 +682,7 @@ overlaps_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time values overlap.
  */
 bool
@@ -718,7 +718,7 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* adjacent to (but not overlapping)? */
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent.
  */
 bool
@@ -733,7 +733,7 @@ adjacent_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent.
  */
 bool
@@ -750,7 +750,7 @@ adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent.
  */
 bool
@@ -767,7 +767,7 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent.
  */
 bool
@@ -786,7 +786,7 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent
  */
 bool
@@ -796,7 +796,7 @@ adjacent_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent
  */
 bool
@@ -806,7 +806,7 @@ adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent.
  */
 bool
@@ -823,7 +823,7 @@ adjacent_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent
  */
 bool
@@ -833,7 +833,7 @@ adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent
  */
 bool
@@ -843,7 +843,7 @@ adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent
  */
 bool
@@ -853,7 +853,7 @@ adjacent_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_topo
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the two time value are adjacent.
  */
 bool
@@ -875,7 +875,7 @@ adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* strictly before of? */
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second
  * one.
  */
@@ -887,7 +887,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -898,7 +898,7 @@ before_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -909,7 +909,7 @@ before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -920,7 +920,7 @@ before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -933,7 +933,7 @@ before_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -944,7 +944,7 @@ before_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -956,7 +956,7 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -978,7 +978,7 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -989,7 +989,7 @@ before_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -1000,7 +1000,7 @@ before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -1012,7 +1012,7 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -1023,7 +1023,7 @@ before_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly before the second one.
  */
 bool
@@ -1038,7 +1038,7 @@ before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* strictly after of? */
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1049,7 +1049,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1060,7 +1060,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1071,7 +1071,7 @@ after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1082,7 +1082,7 @@ after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1095,7 +1095,7 @@ after_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1106,7 +1106,7 @@ after_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1118,7 +1118,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the
  * second one.
  */
@@ -1130,7 +1130,7 @@ after_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1141,7 +1141,7 @@ after_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1152,7 +1152,7 @@ after_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1163,7 +1163,7 @@ after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1175,7 +1175,7 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1186,7 +1186,7 @@ after_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is strictly after the second one.
  */
 bool
@@ -1201,7 +1201,7 @@ after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* does not extend to right of? */
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1212,7 +1212,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1223,7 +1223,7 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1234,7 +1234,7 @@ overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1245,7 +1245,7 @@ overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1258,7 +1258,7 @@ overbefore_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1269,7 +1269,7 @@ overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1281,7 +1281,7 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1291,7 +1291,7 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1302,7 +1302,7 @@ overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1313,7 +1313,7 @@ overbefore_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1324,7 +1324,7 @@ overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1336,7 +1336,7 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1347,7 +1347,7 @@ overbefore_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not after the second one.
  */
 bool
@@ -1362,7 +1362,7 @@ overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /* does not extend to left of? */
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1373,7 +1373,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1384,7 +1384,7 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1395,7 +1395,7 @@ overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1406,7 +1406,7 @@ overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1419,7 +1419,7 @@ overafter_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1430,7 +1430,7 @@ overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1442,7 +1442,7 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1452,7 +1452,7 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1463,7 +1463,7 @@ overafter_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1474,7 +1474,7 @@ overafter_period_periodset(const Period *p, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1485,7 +1485,7 @@ overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1497,7 +1497,7 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1508,7 +1508,7 @@ overafter_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_pos
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first time value is not before the second one.
  */
 bool
@@ -1524,7 +1524,7 @@ overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * Return the union of the two time values
  */
 TimestampSet *
@@ -1553,7 +1553,7 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 TimestampSet *
@@ -1584,7 +1584,7 @@ union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1597,7 +1597,7 @@ union_timestamp_period(TimestampTz t, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1612,7 +1612,7 @@ union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 TimestampSet *
@@ -1622,7 +1622,7 @@ union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 TimestampSet *
@@ -1633,7 +1633,7 @@ union_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1646,7 +1646,7 @@ union_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1661,7 +1661,7 @@ union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1674,7 +1674,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1687,7 +1687,7 @@ union_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 PeriodSet *
@@ -1721,7 +1721,7 @@ union_period_period(const Period *p1, const Period *p2)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 PeriodSet *
@@ -1738,7 +1738,7 @@ union_period_periodset(const Period *p, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 PeriodSet *
@@ -1751,7 +1751,7 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 PeriodSet *
@@ -1764,7 +1764,7 @@ union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values
  */
 PeriodSet *
@@ -1774,7 +1774,7 @@ union_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of the two time values.
  */
 PeriodSet *
@@ -1880,7 +1880,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -1894,7 +1894,7 @@ intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -1908,7 +1908,7 @@ intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -1922,7 +1922,7 @@ intersection_timestamp_period(TimestampTz t, const Period *p,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -1938,7 +1938,7 @@ intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -1952,7 +1952,7 @@ intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values.
  */
 TimestampSet *
@@ -1963,7 +1963,7 @@ intersection_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values.
  */
 TimestampSet *
@@ -1973,7 +1973,7 @@ intersection_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values.
  */
 TimestampSet *
@@ -1985,7 +1985,7 @@ intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -1999,7 +1999,7 @@ intersection_period_timestamp(const Period *p, TimestampTz t,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 TimestampSet *
@@ -2009,7 +2009,7 @@ intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values.
  */
 PeriodSet *
@@ -2045,7 +2045,7 @@ intersection_period_periodset(const Period *p, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 bool
@@ -2059,7 +2059,7 @@ intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 TimestampSet *
@@ -2069,7 +2069,7 @@ intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values
  */
 PeriodSet *
@@ -2079,7 +2079,7 @@ intersection_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the two time values.
  */
 PeriodSet *
@@ -2125,7 +2125,7 @@ intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values
  */
 bool
@@ -2138,7 +2138,7 @@ minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values
  */
 bool
@@ -2152,7 +2152,7 @@ minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values
  */
 bool
@@ -2165,7 +2165,7 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values
  */
 bool
@@ -2181,7 +2181,7 @@ minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 TimestampSet *
@@ -2204,7 +2204,7 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 TimestampSet *
@@ -2215,7 +2215,7 @@ minus_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 TimestampSet *
@@ -2225,7 +2225,7 @@ minus_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 TimestampSet *
@@ -2237,7 +2237,7 @@ minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 static int
@@ -2272,7 +2272,7 @@ minus_period_timestamp1(const Period *p, TimestampTz t, Period **result)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2290,7 +2290,7 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2310,7 +2310,7 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  * @note This function generalizes the function minus_span_span by enabling
  * the result to be two periods
@@ -2379,7 +2379,7 @@ minus_period_period1(const Period *p1, const Period *p2, Period **result)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2440,7 +2440,7 @@ minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2460,7 +2460,7 @@ minus_period_periodset(const Period *p, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2484,7 +2484,7 @@ minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2597,7 +2597,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2621,7 +2621,7 @@ minus_periodset_period(const PeriodSet *ps, const Period *p)
 }
 
 /**
- * @ingroup libmeos_time_set
+ * @ingroup libmeos_spantime_set
  * @brief Return the difference of the two time values.
  */
 PeriodSet *
@@ -2680,7 +2680,7 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
  ******************************************************************************/
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 double
@@ -2695,7 +2695,7 @@ distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 }
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values.
  */
 #ifdef MEOS
@@ -2710,7 +2710,7 @@ distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values.
  */
 #ifdef MEOS
@@ -2722,7 +2722,7 @@ distance_timestamp_period(TimestampTz t, const Period *p)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2739,7 +2739,7 @@ distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /******************************************************************************/
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2754,7 +2754,7 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2771,7 +2771,7 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values.
  */
 #ifdef MEOS
@@ -2786,7 +2786,7 @@ distance_timestampset_period(const TimestampSet *ts, const Period *p)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2805,7 +2805,7 @@ distance_timestampset_periodset(const TimestampSet *ts,
 /******************************************************************************/
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between the period and the timestamp.
  */
 double
@@ -2826,7 +2826,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2838,7 +2838,7 @@ distance_period_timestampset(const Period *p, const TimestampSet *ts)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2855,7 +2855,7 @@ distance_period_periodset(const Period *p, const PeriodSet *ps)
 /******************************************************************************/
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2867,7 +2867,7 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2880,7 +2880,7 @@ distance_periodset_timestampset(const PeriodSet *ps,
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
@@ -2892,7 +2892,7 @@ distance_periodset_period(const PeriodSet *ps, const Period *p)
 #endif
 
 /**
- * @ingroup libmeos_time_dist
+ * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
 #ifdef MEOS
