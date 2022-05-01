@@ -37,7 +37,11 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <common/hashfn.h>
+#if POSTGRESQL_VERSION_NUMBER < 120000
+  #include <access/hash.h>
+#else
+  #include <common/hashfn.h>
+#endif
 #include <libpq/pqformat.h>
 #include <utils/fmgrprotos.h>
 /* MobilityDB */
