@@ -36,12 +36,14 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <catalog/pg_collation.h>
-#include <utils/builtins.h>
+#include <catalog/pg_collation_d.h>
 #include <utils/lsyscache.h>
 #include <utils/varlena.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
+  #include <utils/float.h>
+#endif
+#ifndef MEOS
+  #include <utils/builtins.h>
 #endif
 /* MobilityDB */
 #include "general/span.h"
@@ -49,7 +51,9 @@
 #include "general/doublen.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_static.h"
+#ifndef MEOS
+  #include "npoint/tnpoint_static.h"
+#endif
 
 /*****************************************************************************
  * Comparison functions on datums
@@ -187,8 +191,10 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_GEOGRAPHY && typel == typer)
     //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
+#ifndef MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
 }
 
@@ -228,8 +234,10 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
     return DatumGetBool(call_function2(lwgeom_lt, l, r));
   if (typel == T_GEOGRAPHY && typel == typer)
     return DatumGetBool(call_function2(geography_lt, l, r));
+#ifndef MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
   elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
 }
 

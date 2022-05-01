@@ -79,11 +79,6 @@ typedef struct
 #define PG_GETARG_TIMESTAMPSET_P(X)  ((TimestampSet *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_TIMESTAMPSET_P(X)  PG_RETURN_POINTER(X)
 
-#define DatumGetPeriodP(X)           ((Period *) DatumGetPointer(X))
-#define PeriodPGetDatum(X)           PointerGetDatum(X)
-#define PG_GETARG_PERIOD_P(X)        DatumGetPeriodP(PG_GETARG_POINTER(X))
-#define PG_RETURN_PERIOD_P(X)        PG_RETURN_POINTER(X)
-
 #define DatumGetPeriodSetP(X)        ((PeriodSet *) PG_DETOAST_DATUM(X))
 #define PeriodSetPGetDatum(X)        PointerGetDatum(X)
 #define PG_GETARG_PERIODSET_P(X)     ((PeriodSet *) PG_GETARG_VARLENA_P(X))

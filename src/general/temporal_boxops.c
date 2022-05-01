@@ -45,39 +45,19 @@
 
 #include "general/temporal_boxops.h"
 
-/* PostgreSQL */
-#include <assert.h>
-#include <utils/builtins.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_ops.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/tbox.h"
-#include "point/tpoint.h"
-#include "point/stbox.h"
 #include "point/tpoint_boxops.h"
-#include "npoint/tnpoint_boxops.h"
+#ifndef MEOS
+  #include "npoint/tnpoint_boxops.h"
+#endif
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
  *****************************************************************************/
-
-/**
- * Return the size in bytes to read from toast to get the basic
- * information from a temporal: Temporal struct (i.e., TInstant,
- * TInstantSet, TSequence, or TSequenceSet) and bounding box size
-*/
-uint32_t
-temporal_max_header_size(void)
-{
-  size_t sz1 = Max(sizeof(TInstant), sizeof(TInstantSet));
-  size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
-  return double_pad(Max(sz1, sz2)) + double_pad(sizeof(bboxunion));
-}
 
 /**
  * Return true if the bounding boxes are equal
@@ -209,8 +189,10 @@ tinstant_make_bbox(const TInstant *inst, void *box)
   }
   else if (tgeo_type(inst->temptype))
     tpointinst_stbox(inst, (STBOX *) box);
+#ifndef MEOS
   else if (inst->temptype == T_TNPOINT)
     tnpointinst_make_stbox(inst, (STBOX *) box);
+#endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       inst->temptype);
@@ -257,8 +239,10 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (tgeo_type(instants[0]->temptype))
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
+#ifndef MEOS
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointinstarr_stbox(instants, count, (STBOX *) box);
+#endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       instants[0]->temptype);
@@ -277,7 +261,11 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  */
 void
 tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
+#ifndef MEOS
   bool upper_inc, bool linear, void *box)
+#else
+  bool upper_inc, bool linear  __attribute__((unused)), void *box)
+#endif
 {
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
@@ -290,8 +278,10 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->temptype == T_TGEOGPOINT)
     tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
+#ifndef MEOS
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
+#endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       instants[0]->temptype);
@@ -546,6 +536,19 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
 #ifndef MEOS
 
+/**
+ * Return the size in bytes to read from toast to get the basic
+ * information from a temporal: Temporal struct (i.e., TInstant,
+ * TInstantSet, TSequence, or TSequenceSet) and bounding box size
+*/
+uint32_t
+temporal_max_header_size(void)
+{
+  size_t sz1 = Max(sizeof(TInstant), sizeof(TInstantSet));
+  size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
+  return double_pad(Max(sz1, sz2)) + double_pad(sizeof(bboxunion));
+}
+
 /*****************************************************************************
  * Bounding box operators for temporal types: Generic functions
  * The inclusive/exclusive bounds are taken into account for the comparisons
@@ -631,7 +634,7 @@ Datum
 boxop_period_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_period(temp, p, func, true);
   PG_FREE_IF_COPY(temp, 1);
@@ -649,7 +652,7 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   bool result = boxop_temporal_period(temp, p, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);

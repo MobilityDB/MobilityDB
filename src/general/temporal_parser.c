@@ -68,8 +68,7 @@ ensure_end_input(char **str, bool end)
   {
     p_whitespace(str);
     if (**str != 0)
-      ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-        errmsg("Could not parse temporal value")));
+      elog(ERROR, "Could not parse temporal value");
   }
 }
 
@@ -190,8 +189,7 @@ double_parse(char **str)
   char *nextstr = *str;
   double result = strtod(*str, &nextstr);
   if (*str == nextstr)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Invalid input syntax for type double")));
+    elog(ERROR, "Invalid input syntax for type double");
   *str = nextstr;
   return result;
 }
@@ -221,8 +219,7 @@ basetype_parse(char **str, Oid basetypid)
       delim++;
   }
   if ((*str)[delim] == '\0')
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse element value")));
+    elog(ERROR, "Could not parse element value");
   (*str)[delim] = '\0';
   Datum result = call_input(basetypid, *str);
   if (isttext)
@@ -256,13 +253,11 @@ tbox_parse(char **str)
     p_whitespace(str);
   }
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse TBOX")));
+    elog(ERROR, "Could not parse TBOX");
 
   /* Parse double opening parenthesis */
   if (!p_oparen(str) || !p_oparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse TBOX: Missing opening parenthesis")));
+    elog(ERROR, "Could not parse TBOX: Missing opening parenthesis");
 
   /* Determine whether there is an X dimension */
   p_whitespace(str);
@@ -284,21 +279,18 @@ tbox_parse(char **str)
   }
 
   if (! hasx && ! hast)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse TBOX: Both value and time dimensions are empty")));
+    elog(ERROR, "Could not parse TBOX: Both value and time dimensions are empty");
 
   p_whitespace(str);
   if (!p_cparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse TBOX: Missing closing parenthesis")));
+    elog(ERROR, "Could not parse TBOX: Missing closing parenthesis");
   p_whitespace(str);
   p_comma(str);
   p_whitespace(str);
 
   /* Parse upper bounds */
   if (!p_oparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse TBOX: Missing opening parenthesis")));
+    elog(ERROR, "Could not parse TBOX: Missing opening parenthesis");
 
   if (hasx)
     xmax = double_parse(str);
@@ -309,8 +301,7 @@ tbox_parse(char **str)
     tmax = timestamp_parse(str);
   p_whitespace(str);
   if (!p_cparen(str) || !p_cparen(str) )
-  ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse TBOX: Missing closing parenthesis")));
+  elog(ERROR, "Could not parse TBOX: Missing closing parenthesis");
 
   return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
 }
@@ -345,8 +336,7 @@ TimestampSet *
 timestampset_parse(char **str)
 {
   if (!p_obrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse timestamp set")));
+    elog(ERROR, "Could not parse timestamp set");
 
   /* First parsing */
   char *bak = *str;
@@ -358,8 +348,7 @@ timestampset_parse(char **str)
     timestamp_parse(str);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse timestamp set")));
+    elog(ERROR, "Could not parse timestamp set");
 
   *str = bak;
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
@@ -380,8 +369,7 @@ PeriodSet *
 periodset_parse(char **str)
 {
   if (!p_obrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period set")));
+    elog(ERROR, "Could not parse period set");
 
   /* First parsing */
   char *bak = *str;
@@ -393,8 +381,7 @@ periodset_parse(char **str)
     span_parse(str, T_PERIOD, false);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period set")));
+    elog(ERROR, "Could not parse period set");
 
   /* Second parsing */
   *str = bak;
@@ -444,8 +431,7 @@ span_parse(char **str, CachedType spantype, bool make)
   else if (p_oparen(str))
     lower_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse span")));
+    elog(ERROR, "Could not parse span");
 
   CachedType basetype = spantype_basetype(spantype);
   Oid basetypid = type_oid(basetype);
@@ -459,8 +445,7 @@ span_parse(char **str, CachedType spantype, bool make)
   else if (p_cparen(str))
     upper_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse span")));
+    elog(ERROR, "Could not parse span");
 
   if (! make)
     return NULL;
@@ -519,8 +504,7 @@ tinstantset_parse(char **str, CachedType temptype)
     tinstant_parse(str, temptype, false, false);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse temporal value")));
+    elog(ERROR, "Could not parse temporal value");
   ensure_end_input(str, true);
 
   /* Second parsing */
@@ -573,8 +557,7 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
   else if (p_cparen(str))
     upper_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse temporal value")));
+    elog(ERROR, "Could not parse temporal value");
   ensure_end_input(str, end);
   if (! make)
     return NULL;
@@ -619,8 +602,7 @@ tsequenceset_parse(char **str, CachedType temptype, bool linear)
     tsequence_parse(str, temptype, linear, false, false);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse temporal value")));
+    elog(ERROR, "Could not parse temporal value");
   ensure_end_input(str, true);
 
   /* Second parsing */

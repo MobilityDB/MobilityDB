@@ -200,8 +200,7 @@ periodset_make(const Period **periods, int count, bool normalize)
     int cmp = timestamp_cmp_internal(periods[i]->upper, periods[i + 1]->lower);
     if (cmp > 0 ||
       (cmp == 0 && periods[i]->upper_inc && periods[i + 1]->lower_inc))
-      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Invalid value for period set")));
+      elog(ERROR, "Invalid value for period set");
   }
 
   Period **newperiods = (Period **) periods;
@@ -903,7 +902,7 @@ PG_FUNCTION_INFO_V1(Period_to_periodset);
 PGDLLEXPORT Datum
 Period_to_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   PeriodSet *result = period_periodset(p);
   PG_RETURN_POINTER(result);
 }

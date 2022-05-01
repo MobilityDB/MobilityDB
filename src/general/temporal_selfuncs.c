@@ -364,11 +364,11 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
   {
     Oid operid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operid, PeriodPGetDatum(period),
+    selec = var_eq_const(vardata, operid, SpanPGetDatum(period),
       false, false, false);
 #else
     selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
-      PeriodPGetDatum(period), false, false, false);
+      SpanPGetDatum(period), false, false, false);
 #endif
   }
   else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||

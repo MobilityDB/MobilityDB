@@ -366,7 +366,7 @@ PGDLLEXPORT Datum
 Npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_period_to_stbox(np, p, result);
   PG_RETURN_POINTER(result);

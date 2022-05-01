@@ -469,7 +469,7 @@ tpoint_const_stbox(Node *other, STBOX *box)
   else if (type == T_TIMESTAMPSET)
     timestampset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_PERIOD)
-    period_stbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+    period_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
   else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_STBOX)

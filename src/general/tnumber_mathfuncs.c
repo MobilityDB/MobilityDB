@@ -196,15 +196,13 @@ arithop_tnumber_number(const Temporal *temp, Datum value, CachedType basetype,
     if (invert)
     {
       if (temporal_ever_eq(temp, Float8GetDatum(0.0)))
-        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Division by zero")));
+        elog(ERROR, "Division by zero");
     }
     else
     {
       double d = datum_double(value, basetype);
       if (fabs(d) < MOBDB_EPSILON)
-        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Division by zero")));
+        elog(ERROR, "Division by zero");
     }
   }
 
@@ -252,8 +250,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     if (projtemp2 == NULL)
       return NULL;
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Division by zero")));
+      elog(ERROR, "Division by zero");
   }
 
   LiftedFunctionInfo lfinfo;

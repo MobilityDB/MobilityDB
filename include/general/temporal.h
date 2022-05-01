@@ -38,9 +38,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-#include <lib/stringinfo.h>
-#include <utils/array.h>
-#include <utils/lsyscache.h>
+// #include <lib/stringinfo.h>
+// #include <utils/lsyscache.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/temporal_catalog.h"
@@ -152,21 +151,6 @@ typedef enum
 #define INSTANTSET      2
 #define SEQUENCE        3
 #define SEQUENCESET     4
-
-#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
-
-/**
- * Structure to represent the temporal subtype array
- */
-struct tempsubtype_struct
-{
-  char *subtypeName;   /**< string representing the temporal type */
-  int16 subtype;       /**< subtype */
-};
-
-#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
-  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
-#define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
@@ -445,9 +429,6 @@ typedef struct
 
 #define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
 
-#define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
-  PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
-
 #define DATUM_FREE(value, basetype) \
   do { \
     if (! basetype_byvalue(basetype)) \
@@ -509,7 +490,6 @@ extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, CachedType basetype);
 extern void ensure_valid_duration(const Interval *duration);
-extern void ensure_non_empty_array(ArrayType *array);
 
 /* General functions */
 
@@ -670,6 +650,45 @@ extern bool temporal_ge(const Temporal *temp1, const Temporal *temp2);
 /* Functions for defining hash index */
 
 extern uint32 temporal_hash(const Temporal *temp);
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+#include <utils/array.h>
+#include <utils/lsyscache.h>
+
+#define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
+  PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
+
+/*****************************************************************************
+ * Typmod definitions
+ *****************************************************************************/
+
+#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
+
+/**
+ * Structure to represent the temporal subtype array
+ */
+struct tempsubtype_struct
+{
+  char *subtypeName;   /**< string representing the temporal type */
+  int16 subtype;       /**< subtype */
+};
+
+#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
+  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
+#define TEMPSUBTYPE_MAX_LEN   13
+
+/* Parameter tests */
+
+extern void ensure_non_empty_array(ArrayType *array);
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/
 

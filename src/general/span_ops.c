@@ -894,7 +894,7 @@ Intersection_span_span(PG_FUNCTION_ARGS)
   Span *result = intersection_span_span(s1, s2);
   if (result == NULL)
     PG_RETURN_NULL();
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************

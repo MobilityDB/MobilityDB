@@ -74,8 +74,7 @@ findMemberByName(json_object *poObj, const char *pszName )
   {
     if (json_object_get_object(poTmp)->head == NULL)
     {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid MFJSON string")));
+      elog(ERROR, "Invalid MFJSON string");
       return NULL;
     }
     for (it.entry = json_object_get_object(poTmp)->head;
@@ -100,16 +99,13 @@ static Datum
 parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
 {
   if (json_type_array != json_object_get_type(poObj))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid value of the 'coordinates' array in MFJSON string")));
+    elog(ERROR, "Invalid value of the 'coordinates' array in MFJSON string");
 
   const int numcoord = json_object_array_length(poObj);
   if (numcoord < 2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Too few elements in 'coordinates' values in MFJSON string")));
+    elog(ERROR, "Too few elements in 'coordinates' values in MFJSON string");
   else if (numcoord > 3)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Too many elements in 'coordinates' values in MFJSON string")));
+    elog(ERROR, "Too many elements in 'coordinates' values in MFJSON string");
 
   double x, y;
   json_object *poObjCoord = NULL;
@@ -153,16 +149,13 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
   json_object *coordinates = NULL;
   coordinates = findMemberByName(mfjsonTmp, "coordinates");
   if (coordinates == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Unable to find 'coordinates' in MFJSON string")));
+    elog(ERROR, "Unable to find 'coordinates' in MFJSON string");
   if (json_object_get_type(coordinates) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid 'coordinates' array in MFJSON string")));
+    elog(ERROR, "Invalid 'coordinates' array in MFJSON string");
 
   int numpoints = json_object_array_length(coordinates);
   if (numpoints < 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid value of 'coordinates' array in MFJSON string")));
+    elog(ERROR, "Invalid value of 'coordinates' array in MFJSON string");
 
   Datum *values = palloc(sizeof(Datum) * numpoints);
   for (int i = 0; i < numpoints; ++i)
@@ -184,16 +177,13 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
   json_object *datetimes = NULL;
   datetimes = findMemberByName(mfjson, "datetimes");
   if (datetimes == NULL)
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Unable to find 'datetimes' in MFJSON string")));
+      elog(ERROR, "Unable to find 'datetimes' in MFJSON string");
   if (json_object_get_type(datetimes) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid 'datetimes' array in MFJSON string")));
+    elog(ERROR, "Invalid 'datetimes' array in MFJSON string");
 
   int numdates = json_object_array_length(datetimes);
   if (numdates < 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid value of 'datetimes' array in MFJSON string")));
+    elog(ERROR, "Invalid value of 'datetimes' array in MFJSON string");
 
   TimestampTz *times = palloc(sizeof(TimestampTz) * numdates);
   for (int i = 0; i < numdates; i++)
@@ -227,8 +217,7 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
   /* Get coordinates */
   json_object *coordinates = findMemberByName(mfjson, "coordinates");
   if (coordinates == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Unable to find 'coordinates' in MFJSON string")));
+    elog(ERROR, "Unable to find 'coordinates' in MFJSON string");
   Datum value = parse_mfjson_coord(coordinates, srid, geodetic);
 
   /* Get datetimes
@@ -243,8 +232,7 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
   const char *strdatetimes = json_object_get_string(datetimes);
   if (strdatetimes == NULL)
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid 'datetimes' value in MFJSON string")));
+    elog(ERROR, "Invalid 'datetimes' value in MFJSON string");
     return NULL; /* make Codacy quiet */
   }
   strcpy(str, strdatetimes);
@@ -269,8 +257,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   Datum *values = parse_mfjson_points(mfjson, srid, geodetic, &numpoints);
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
   if (numpoints != numdates)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
+    elog(ERROR, "Distinct number of elements in 'coordinates' and 'datetimes' arrays");
 
   /* Construct the array of temporal instant points */
   TInstant **result = palloc(sizeof(TInstant *) * numpoints);
@@ -314,16 +301,14 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   json_object *lowerinc = NULL;
   lowerinc = findMemberByName(mfjson, "lower_inc");
   if (lowerinc == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Unable to find 'lower_inc' in MFJSON string")));
+    elog(ERROR, "Unable to find 'lower_inc' in MFJSON string");
   bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
   /* Get upper bound flag */
   json_object *upperinc = NULL;
   upperinc = findMemberByName(mfjson, "upper_inc");
   if (upperinc == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Unable to find 'upper_inc' in MFJSON string")));
+    elog(ERROR, "Unable to find 'upper_inc' in MFJSON string");
   bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
   /* Construct the temporal point */
@@ -345,12 +330,10 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
    * a sequence and a sequence set we look for the "sequences" member and
    * then call this function */
   if (json_object_get_type(seqs) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid 'sequences' array in MFJSON string")));
+    elog(ERROR, "Invalid 'sequences' array in MFJSON string");
   int numseqs = json_object_array_length(seqs);
   if (numseqs < 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid value of 'sequences' array in MFJSON string")));
+    elog(ERROR, "Invalid value of 'sequences' array in MFJSON string");
 
   /* Construct the temporal point */
   TSequence **sequences = palloc(sizeof(TSequence *) * numseqs);
@@ -394,8 +377,7 @@ tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
       json_tokener_error_desc(jstok->err), jstok->char_offset);
     json_tokener_free(jstok);
     json_object_put(poObj);
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Error while processing MFJSON string")));
+    elog(ERROR, "Error while processing MFJSON string");
   }
   json_tokener_free(jstok);
 
@@ -404,30 +386,25 @@ tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
    */
   poObjType = findMemberByName(poObj, "type");
   if (poObjType == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Unable to find 'type' in MFJSON string")));
+    elog(ERROR, "Unable to find 'type' in MFJSON string");
 
   const char *pszType = json_object_get_string(poObjType);
   if (strcmp(pszType, "MovingPoint") != 0)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid 'type' value in MFJSON string")));
+    elog(ERROR, "Invalid 'type' value in MFJSON string");
 
   /*
    * Determine type of temporal point and call the corresponding parse function
    */
   poObjInterp = findMemberByName(poObj, "interpolations");
   if (poObjInterp == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Unable to find 'interpolations' in MFJSON string")));
+    elog(ERROR, "Unable to find 'interpolations' in MFJSON string");
 
   if (json_object_get_type(poObjInterp) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid 'interpolations' value in MFJSON string")));
+    elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
 
   const int nSize = json_object_array_length(poObjInterp);
   if (nSize != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Multiple 'interpolations' values in MFJSON string")));
+    elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
 
   /* Parse crs and set SRID of temporal point */
   poObjSrs = findMemberByName(poObj, "crs");
@@ -484,8 +461,7 @@ tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
         result = (Temporal *) tpointseq_from_mfjson(poObj, srid, temptype, linear);
     }
     else
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid 'interpolations' value in MFJSON string")));
+      elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
   }
 
   return result;

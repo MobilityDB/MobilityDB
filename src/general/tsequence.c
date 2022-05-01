@@ -37,9 +37,9 @@
 /* PostgreSQL */
 #include <assert.h>
 #include <float.h>
-#include <access/hash.h>
+#include <common/hashfn.h>
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
@@ -54,7 +54,10 @@
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#ifndef MEOS
+  #include "npoint/tnpoint_spatialfuncs.h"
+#endif
+
 
 /*****************************************************************************
  * Collinear functions
@@ -141,6 +144,7 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
   return result;
 }
 
+#ifndef MEOS
 /**
  * Return true if the three values are collinear
  *
@@ -154,6 +158,7 @@ npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
 {
   return float_collinear(np1->pos, np2->pos, np3->pos, ratio);
 }
+#endif
 
 /**
  * Return true if the three values are collinear
@@ -188,9 +193,11 @@ datum_collinear(CachedType basetype, Datum value1, Datum value2, Datum value3,
   if (basetype == T_DOUBLE4)
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
+#ifndef MEOS
   if (basetype == T_NPOINT)
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value3), ratio);
+#endif
   elog(ERROR, "unknown collinear operation for base type: %d", basetype);
 }
 
@@ -254,14 +261,12 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   assert(count > 0);
   ensure_tinstarr(instants, count);
   if (count == 1 && (!lower_inc || !upper_inc))
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Instant sequence must have inclusive bounds")));
+    elog(ERROR, "Instant sequence must have inclusive bounds");
   CachedType basetype = temptype_basetype(instants[0]->temptype);
   if (! linear && count > 1 && !upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
       tinstant_value(instants[count - 2]), basetype))
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-      errmsg("Invalid end value for temporal sequence")));
+    elog(ERROR, "Invalid end value for temporal sequence");
   return;
 }
 
@@ -552,18 +557,18 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->temptype == inst->temptype);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-  bool isnpoint = inst1->temptype == T_TNPOINT;
   CachedType basetype = temptype_basetype(seq->temptype);
-  if (isnpoint)
+#ifndef MEOS
+  if (inst1->temptype == T_TNPOINT)
     ensure_same_rid_tnpointinst(inst, inst1);
+#endif
   /* Notice that we cannot call ensure_increasing_timestamps since we must
    * take into account the inclusive/exclusive bounds */
   if (inst1->t > inst->t)
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
     char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (inst1->t == inst->t)
   {
@@ -572,8 +577,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
     if (seq->period.upper_inc && ! seqresult)
     {
       char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("The temporal values have different value at their common instant %s", t1)));
+      elog(ERROR, "The temporal values have different value at their common instant %s", t1);
     }
     /* The result is a sequence set */
     if (linear && ! seqresult)
@@ -787,8 +791,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
       char *t2;
       t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
       t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("The temporal values cannot overlap on time: %s, %s", t1, t2)));
+      elog(ERROR, "The temporal values cannot overlap on time: %s, %s", t1, t2);
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
       seq2->period.lower_inc)
@@ -796,8 +799,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
       {
         t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-          errmsg("The temporal values have different value at their common instant %s", t1)));
+        elog(ERROR, "The temporal values have different value at their common instant %s", t1);
       }
     }
     seq1 = seq2;
@@ -1057,8 +1059,10 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
   else if (tgeo_type(inst1->temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
+#ifndef MEOS
   else if (inst1->temptype == T_TNPOINT)
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);
+#endif
   else
     elog(ERROR, "unknown intersection function for continuous temporal type: %d",
       inst1->temptype);
@@ -1490,8 +1494,7 @@ TSequence *
 tfloatseq_tintseq(const TSequence *seq)
 {
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+    elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
   TSequence *result = tsequence_copy(seq);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
@@ -1529,8 +1532,7 @@ TSequence *
 tinstantset_tsequence(const TInstantSet *ti, bool linear)
 {
   if (ti->count != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot transform input value to a temporal sequence")));
+    elog(ERROR, "Cannot transform input value to a temporal sequence");
   return tinstant_tsequence(tinstantset_inst_n(ti, 0), linear);
 }
 
@@ -1543,8 +1545,7 @@ TSequence *
 tsequenceset_tsequence(const TSequenceSet *ts)
 {
   if (ts->count != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot transform input to a temporal sequence")));
+    elog(ERROR, "Cannot transform input to a temporal sequence");
   return tsequence_copy(tsequenceset_seq_n(ts, 0));
 }
 
@@ -2132,6 +2133,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
+#ifndef MEOS
   if (inst1->temptype == T_TNPOINT)
   {
     Npoint *np1 = DatumGetNpointP(value1);
@@ -2140,6 +2142,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
     Npoint *result = npoint_make(np1->rid, pos);
     return PointerGetDatum(result);
   }
+#endif
   elog(ERROR, "unknown interpolation function for continuous temporal type: %d",
     inst1->temptype);
 }

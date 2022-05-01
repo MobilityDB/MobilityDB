@@ -857,7 +857,7 @@ time_const_to_period(Node *other, Period *period)
   else if (timetype == T_PERIOD)
   {
     /* Just copy the value */
-    p = DatumGetPeriodP(((Const *) other)->constvalue);
+    p = DatumGetSpanP(((Const *) other)->constvalue);
     memcpy(period, p, sizeof(Period));
   }
   else /* timetype == T_PERIODSET */
@@ -1038,7 +1038,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   Oid table_oid = PG_GETARG_OID(0);
   text *att_text = PG_GETARG_TEXT_P(1);
   Oid operid = PG_GETARG_OID(2);
-  Period *p = PG_GETARG_PERIOD_P(3);
+  Period *p = PG_GETARG_SPAN_P(3);
   float8 selec = 0.0;
 
   /* Test input parameters */

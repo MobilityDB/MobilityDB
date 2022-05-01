@@ -16,13 +16,6 @@ option(MEOS
   "
   OFF
 )
-if(MEOS)
-  add_definitions(-DMEOS)
-  message(STATUS "Building the MEOS library")
-else()
-  message(STATUS "Building the MobilityDB library")
-endif()
-unset(MEOS CACHE)
 
 file(READ mobdb_version.txt ver)
 string(REGEX MATCH "MOBILITYDB_MAJOR_VERSION=([0-9]+)" _ ${ver})
@@ -37,9 +30,12 @@ project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSIO
 set(MOBILITYDB_VERSION "${MobilityDB_VERSION}")
 set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 if(MEOS)
-set(MOBILITYDB_LIB_NAME "MEOS-${MOBILITYDB_LIB_VERSION}")
+  add_definitions(-DMEOS)
+  message(STATUS "Building the MEOS library")
+  set(MOBILITYDB_LIB_NAME "MEOS-${MOBILITYDB_LIB_VERSION}")
 else()
-set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
+  message(STATUS "Building MobilityDB")
+  set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
 endif()
 set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION}${PROJECT_VERSION_DEV}")
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
@@ -103,15 +99,20 @@ math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL
 
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
-include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
-
-if(WIN32)
-  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
-  if(MSVC)
-      include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+if(MEOS)
+  message(STATUS "Building MEOS: Including embedded PostgreSQL files")
+  include_directories("postgresql")
+  # add_subdirectory("postgresql")
+else()
+  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
+  if(WIN32)
+    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
+    if(MSVC)
+        include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+    endif()
+    link_directories(${POSTGRESQL_LIBRARIES})
+    link_libraries(postgres)
   endif()
-  link_directories(${POSTGRESQL_LIBRARIES})
-  link_libraries(postgres)
 endif()
 
 #-------------------------------------
@@ -176,10 +177,20 @@ add_subdirectory("src")
 
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+if(MEOS)
+  message(STATUS "Building MEOS: Network points not included")
+else()
+  message(STATUS "Building MobilityDB: Including network points")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+endif()
 if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
+  if(MEOS)
+    message(STATUS "Building MEOS: postgis/libpgcommon not included")
+  else()
+    message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
+    set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
+  endif()
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 endif()
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
@@ -204,18 +215,21 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 #--------------------------------
 # Belongs to MobilityDB
 
-if(NOT DEFINED MEOS)
+if(MEOS)
+  message(STATUS "Building MEOS: SQL definitions and tests not included")
+  install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
+  message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
+else()
+  message(STATUS "Building MobilityDB: Including SQL definitions and tests")
   add_subdirectory(sql)
   add_subdirectory(test)
+  add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
+  add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
+  install(
+    FILES "${CMAKE_BINARY_DIR}/mobilitydb.control"  "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
+    DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
+  install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
 endif()
-
-add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
-add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
-
-install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
-install(
-  FILES "${CMAKE_BINARY_DIR}/mobilitydb.control"  "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
-  DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
 
 #-----------------------------------------------------------------------------
 # Documentation

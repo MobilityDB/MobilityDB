@@ -51,17 +51,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <access/heapam.h>
-#include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <access/tableam.h>
-#endif
-#include <catalog/namespace.h>
 #include <utils/builtins.h>
-#include <utils/rel.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "npoint/tnpoint_static.h"
+#ifndef MEOS
+  #include "npoint/tnpoint_static.h"
+#endif
 
 /*****************************************************************************
  * Global variables
@@ -83,7 +78,9 @@ temptype_cache_struct _temptype_cache[] =
   {T_TTEXT,       T_TEXT,      false},
   {T_TGEOMPOINT, T_GEOMETRY,  true},
   {T_TGEOGPOINT, T_GEOGRAPHY, true},
+#ifndef MEOS
   {T_TNPOINT,    T_NPOINT,    true},
+#endif
 };
 
 /**
@@ -320,8 +317,10 @@ basetype_length(CachedType basetype)
     return -1;
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return -1;
+#ifndef MEOS
   if (basetype == T_NPOINT)
     return sizeof(Npoint);
+#endif
   elog(ERROR, "unknown basetype_length function for base type: %d", basetype);
 }
 
@@ -476,6 +475,14 @@ ensure_tgeo_type(CachedType temptype)
 /*****************************************************************************/
 
 #ifndef MEOS
+
+#include <access/heapam.h>
+#include <access/htup_details.h>
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+#include <access/tableam.h>
+#endif
+#include <catalog/namespace.h>
+#include <utils/rel.h>
 
 /*****************************************************************************
  * Global variables

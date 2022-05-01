@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
+#include <libpq/pqformat.h>
 /* MobilityDB */
 #include "general/temporal_catalog.h"
 #include "general/span.h"
@@ -62,8 +63,7 @@ void
 ensure_has_X_tbox(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have value dimension")));
+    elog(ERROR, "The box must have value dimension");
 }
 
 /**
@@ -73,8 +73,7 @@ void
 ensure_has_T_tbox(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have time dimension")));
+    elog(ERROR, "The box must have time dimension");
 }
 
 /**
@@ -85,8 +84,7 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must be of the same dimensionality")));
+    elog(ERROR, "The boxes must be of the same dimensionality");
 }
 
 /*****************************************************************************
@@ -1323,7 +1321,7 @@ PG_FUNCTION_INFO_V1(Period_to_tbox);
 PGDLLEXPORT Datum
 Period_to_tbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   period_tbox(p, result);
   PG_RETURN_POINTER(result);
@@ -1394,7 +1392,7 @@ PGDLLEXPORT Datum
 Int_period_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   TBOX *result = int_period_to_tbox(i, p);
   PG_RETURN_POINTER(result);
 }
@@ -1407,7 +1405,7 @@ PGDLLEXPORT Datum
 Float_period_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   TBOX *result = float_period_to_tbox(d, p);
   PG_RETURN_POINTER(result);
 }
@@ -1433,7 +1431,7 @@ PGDLLEXPORT Datum
 Span_period_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   TBOX *result = span_period_to_tbox(span, p);
   PG_RETURN_POINTER(result);
 }

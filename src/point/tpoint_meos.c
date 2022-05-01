@@ -35,7 +35,6 @@
 #include "point/tpoint.h"
 
 /* PostgreSQL */
-#include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"

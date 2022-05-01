@@ -228,7 +228,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = PG_GETARG_PERIOD_P(1);
+    Period *p = PG_GETARG_SPAN_P(1);
     period_tbox(p, result);
   }
   else if (type == T_PERIODSET)
@@ -326,7 +326,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_expand_rt(result, DatumGetTboxP(ent[i].key));
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************

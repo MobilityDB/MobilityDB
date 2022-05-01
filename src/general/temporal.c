@@ -36,34 +36,21 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <access/heapam.h>
-#include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER < 130000
-#include <access/tuptoaster.h>
-#else
-#include <access/heaptoast.h>
-#include <access/detoast.h>
-#endif
-#include <catalog/namespace.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-#include <utils/fmgroids.h>
-#include <utils/lsyscache.h>
-#include <utils/rel.h>
-#include <utils/timestamp.h>
+// #include <utils/lsyscache.h>
 /* MobilityDB */
 #include "general/doxygen_libmeos_api.h"
-#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
 #include "general/tnumber_distance.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#ifndef MEOS
+  #include "npoint/tnpoint_spatialfuncs.h"
+#endif
 
 /*****************************************************************************
  * Parameter tests
@@ -105,8 +92,7 @@ void
 ensure_seq_subtypes(int16 subtype)
 {
   if (subtype != SEQUENCE && subtype != SEQUENCESET)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal sequence (set)")));
+    elog(ERROR, "Input must be a temporal sequence (set)");
   return;
 }
 
@@ -121,8 +107,7 @@ ensure_tinstarr(const TInstant **instants, int count)
     if (instants[i]->subtype != INSTANT)
     {
       pfree(instants);
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input values must be temporal instants")));
+      elog(ERROR, "Input values must be temporal instants");
     }
   }
   return;
@@ -135,8 +120,7 @@ void
 ensure_linear_interpolation(int16 flags)
 {
   if (! MOBDB_FLAGS_GET_LINEAR(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must have linear interpolation")));
+    elog(ERROR, "The temporal value must have linear interpolation");
   return;
 }
 
@@ -148,8 +132,7 @@ ensure_common_dimension(int16 flags1, int16 flags2)
 {
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) &&
     MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal values must have at least one common dimension")));
+    elog(ERROR, "The temporal values must have at least one common dimension");
   return;
 }
 
@@ -160,8 +143,7 @@ void
 ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 {
   if (temp1->temptype != temp2->temptype)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must be of the same temporal type")));
+    elog(ERROR, "The temporal values must be of the same temporal type");
   return;
 }
 
@@ -171,9 +153,9 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
-  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must have the same interpolation")));
+  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) !=
+      MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+    elog(ERROR, "The temporal values must have the same interpolation");
   return;
 }
 
@@ -191,16 +173,14 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
     char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
         temptype_basetype(inst1->temptype)))
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
   }
   return;
 }
@@ -217,13 +197,19 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  */
 void
 ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
+#ifndef MEOS
   bool merge, int16 subtype)
+#else
+  bool merge, int16 subtype __attribute__((unused)))
+#endif
 {
   ensure_same_interpolation((Temporal *) inst1, (Temporal *) inst2);
   ensure_increasing_timestamps(inst1, inst2, merge);
   ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
+#ifndef MEOS
   if (subtype == SEQUENCE && inst1->temptype == T_TNPOINT)
     ensure_same_rid_tnpointinst(inst1, inst2);
+#endif
   return;
 }
 
@@ -272,19 +258,25 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   CachedType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
+#ifndef MEOS
   Datum geom1 = 0; /* Used only for temporal network points */
+#endif
   datum_func2 point_distance = NULL;
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     point_distance = pt_distance_fn(instants[0]->flags);
+#ifndef MEOS
   else if (basetype == T_NPOINT)
     geom1 = npoint_geom(DatumGetNpointP(value1));
+#endif
   int k = 0;
   for (int i = 1; i < count; i++)
   {
     ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, subtype);
     bool split = false;
     Datum value2 = tinstant_value(instants[i]);
+#ifndef MEOS
     Datum geom2 = 0; /* Used only for temporal network points */
+#endif
     if (maxdist > 0 && ! datum_eq(value1, value2, basetype))
     {
       double dist = -1;
@@ -294,11 +286,13 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
       else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
         dist = DatumGetFloat8(point_distance(value1, value2));
+#ifndef MEOS
       else if (basetype == T_NPOINT)
       {
         geom2 = npoint_geom(DatumGetNpointP(value2));
         dist = DatumGetFloat8(pt_distance2d(geom1, geom2));
       }
+#endif
       if (dist > maxdist)
         split = true;
     }
@@ -315,7 +309,9 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     if (split)
       result[k++] = i;
     value1 = value2;
+#ifndef MEOS
     geom1 = geom2;
+#endif
   }
   *countsplits = k;
   return result;
@@ -338,8 +334,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
     {
       char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
       char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
-      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+      elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
     }
     ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
   }
@@ -378,8 +373,7 @@ ensure_valid_duration(const Interval *duration)
 {
   if (duration->month != 0)
   {
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("Interval defined in terms of month, year, century etc. not supported")));
+    elog(ERROR, "Interval defined in terms of month, year, century etc. not supported");
   }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
@@ -390,20 +384,6 @@ ensure_valid_duration(const Interval *duration)
     char *t = call_output(INTERVALOID, PointerGetDatum(duration));
     elog(ERROR, "The interval must be positive: %s", t);
   }
-  return;
-}
-
-/**
- * Ensures that the array is not empty
- *
- * @note Used for the constructor functions
- */
-void
-ensure_non_empty_array(ArrayType *array)
-{
-  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The input array cannot be empty")));
   return;
 }
 
@@ -574,6 +554,35 @@ tinstarr_inst_n(const Temporal *temp, int n)
 }
 
 /*****************************************************************************
+ * Version functions
+ *****************************************************************************/
+
+#define MOBDB_VERSION_STR_MAXLEN 128
+/**
+ * Version of the MobilityDB extension
+ */
+char *
+mobilitydb_version(void)
+{
+  char *result = MOBILITYDB_VERSION_STR;
+  return result;
+}
+
+/**
+ * Versions of the MobilityDB extension and its dependencies
+ */
+char *
+mobilitydb_full_version(void)
+{
+  char *result = palloc(sizeof(char) * MOBDB_VERSION_STR_MAXLEN);
+  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN, "%s, %s, %s",
+    MOBILITYDB_VERSION_STR, POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
+  result[len] = '\0';
+  return result;
+}
+
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -716,8 +725,7 @@ temporal_append_tinstant(const Temporal *temp, const Temporal *inst)
 {
   /* Validity tests */
   if (inst->subtype != INSTANT)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The second argument must be of instant subtype")));
+    elog(ERROR, "The second argument must be of instant subtype");
   ensure_same_temptype(temp, (Temporal *) inst);
   /* The test to ensure the increasing timestamps must be done in the
    * specific function since the inclusive/exclusive bounds must be
@@ -936,8 +944,7 @@ temporal_merge_array(Temporal **temparr, int count)
   {
     if (MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags) != interpolation)
     {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input values must be of the same interpolation")));
+      elog(ERROR, "Input values must be of the same interpolation");
     }
     uint8 subtype1 = temparr[i]->subtype;
     if (subtype != subtype1)
@@ -1259,6 +1266,9 @@ temporal_shift_tscale(const Temporal *temp, bool shift, bool tscale,
  * Accessor functions
  *****************************************************************************/
 
+#define MOBDB_SUBTYPE_STR_MAXLEN 12
+#define MOBDB_INTERPOLATION_STR_MAXLEN 12
+
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the temporal type.
@@ -1266,7 +1276,7 @@ temporal_shift_tscale(const Temporal *temp, bool shift, bool tscale,
 char *
 temporal_subtype(const Temporal *temp)
 {
-  char *result = palloc(sizeof(char) * 12);
+  char *result = palloc(sizeof(char) * MOBDB_SUBTYPE_STR_MAXLEN);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     strcpy(result, "Instant");
@@ -1286,7 +1296,7 @@ temporal_subtype(const Temporal *temp)
 char *
 temporal_interpolation(const Temporal *temp)
 {
-  char *result = palloc(sizeof(char) * 12);
+  char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     strcpy(result, "Discrete");
@@ -2019,12 +2029,14 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     temporal_bbox(temp, &box1);
     if (tgeo_type(temp->temptype))
       geo_stbox((GSERIALIZED *) DatumGetPointer(value), &box2);
+#ifndef MEOS
     else if (temp->temptype == T_TNPOINT)
     {
       Datum geom = npoint_geom(DatumGetNpointP(value));
       geo_stbox((GSERIALIZED *) DatumGetPointer(geom), &box2);
       pfree(DatumGetPointer(geom));
     }
+#endif
     return (ever && contains_stbox_stbox(&box1, &box2)) ||
       (!ever && same_stbox_stbox(&box1, &box2));
   }
@@ -3169,6 +3181,13 @@ temporal_hash(const Temporal *temp)
 
 #ifndef MEOS
 
+#if POSTGRESQL_VERSION_NUMBER < 130000
+#include <access/tuptoaster.h>
+#else
+#include <access/heaptoast.h>
+#include <access/detoast.h>
+#endif
+
 /*
  * This is required in a SINGLE file for builds against pgsql
  */
@@ -3186,6 +3205,24 @@ _PG_init(void)
 {
   /* elog(WARNING, "This is MobilityDB."); */
   temporalgeom_init();
+}
+
+/*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+/**
+ * Ensures that the array is not empty
+ *
+ * @note Used for the constructor functions
+ */
+void
+ensure_non_empty_array(ArrayType *array)
+{
+  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("The input array cannot be empty")));
+  return;
 }
 
 /*****************************************************************************
@@ -3411,8 +3448,8 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
 PGDLLEXPORT Datum
 Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
-  char *ver = MOBILITYDB_VERSION_STR;
-  text *result = cstring_to_text(ver);
+  char *version = mobilitydb_version();
+  text *result = cstring_to_text(version);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -3423,14 +3460,9 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 PGDLLEXPORT Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
-  char ver[128];
-  text *result;
-
-  snprintf(ver, 128, "%s, %s, %s", MOBILITYDB_VERSION_STR,
-    POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
-  ver[127] = '\0';
-
-  result = cstring_to_text(ver);
+  char *version = mobilitydb_full_version();
+  text *result = cstring_to_text(version);
+  pfree(version);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -3686,7 +3718,7 @@ PGDLLEXPORT Datum
 Tsequence_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   bool linear;
   if (PG_NARGS() == 2)
     linear = false;
@@ -3844,7 +3876,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
   Period *result = (Period *) palloc(sizeof(Period));
   temporal_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
@@ -4960,7 +4992,7 @@ static Datum
 temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   Temporal *result = temporal_restrict_period(temp, p, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -5103,7 +5135,7 @@ PGDLLEXPORT Datum
 Temporal_intersects_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   bool result = temporal_intersects_period(temp, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);

@@ -191,7 +191,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = PG_GETARG_PERIOD_P(1);
+    Period *p = PG_GETARG_SPAN_P(1);
     if (p == NULL)
       PG_RETURN_BOOL(false);
     memcpy(result, p, sizeof(Period));

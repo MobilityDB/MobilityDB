@@ -459,8 +459,7 @@ void
 ensure_same_srid(int32_t srid1, int32_t srid2)
 {
   if (srid1 != srid2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -472,8 +471,7 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     box1->srid != box2->srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -485,8 +483,7 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tpoint_srid(temp) != box->srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -497,8 +494,7 @@ void
 ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -511,8 +507,7 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2) ||
     MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal values must be of the same dimensionality")));
+    elog(ERROR, "The temporal values must be of the same dimensionality");
   return;
 }
 
@@ -524,8 +519,7 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed 2D/3D dimensions")));
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
 
@@ -536,8 +530,7 @@ void
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (FLAGS_GET_Z(GS_FLAGS(gs1)) != FLAGS_GET_Z(GS_FLAGS(gs2)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed 2D/3D dimensions")));
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
 
@@ -548,8 +541,7 @@ void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed 2D/3D dimensions")));
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
 
@@ -561,8 +553,7 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED 
 {
   if (! MOBDB_FLAGS_GET_X(box->flags) ||
       MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The spatiotemporal box and the geometry must be of the same dimensionality")));
+    elog(ERROR, "The spatiotemporal box and the geometry must be of the same dimensionality");
   return;
 }
 
@@ -573,8 +564,7 @@ void
 ensure_has_Z(int16 flags)
 {
   if (! MOBDB_FLAGS_GET_Z(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must have Z dimension")));
+    elog(ERROR, "The temporal value must have Z dimension");
   return;
 }
 
@@ -585,8 +575,7 @@ void
 ensure_has_not_Z(int16 flags)
 {
   if (MOBDB_FLAGS_GET_Z(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value cannot have Z dimension")));
+    elog(ERROR, "The temporal value cannot have Z dimension");
   return;
 }
 
@@ -597,8 +586,7 @@ void
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
   if (! FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The geometry must have Z dimension")));
+    elog(ERROR, "The geometry must have Z dimension");
   return;
 }
 
@@ -609,8 +597,7 @@ void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The geometry cannot have Z dimension")));
+    elog(ERROR, "The geometry cannot have Z dimension");
   return;
 }
 
@@ -621,8 +608,7 @@ void
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
   if (! FLAGS_GET_M(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only geometries with M dimension accepted")));
+    elog(ERROR, "Only geometries with M dimension accepted");
   return;
 }
 
@@ -633,8 +619,7 @@ void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_M(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only geometries without M dimension accepted")));
+    elog(ERROR, "Only geometries without M dimension accepted");
   return;
 }
 
@@ -645,8 +630,7 @@ void
 ensure_point_type(const GSERIALIZED *gs)
 {
   if (gserialized_get_type(gs) != POINTTYPE)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only point geometries accepted")));
+    elog(ERROR, "Only point geometries accepted");
   return;
 }
 
@@ -657,8 +641,7 @@ void
 ensure_non_empty(const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only non-empty geometries accepted")));
+    elog(ERROR, "Only non-empty geometries accepted");
   return;
 }
 

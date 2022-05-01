@@ -551,13 +551,11 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
   {
     if (sequences[i]->subtype != SEQUENCE)
     {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input values must be temporal sequences")));
+      elog(ERROR, "Input values must be temporal sequences");
     }
     if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
     {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input sequences must have the same interpolation")));
+      elog(ERROR, "Input sequences must have the same interpolation");
     }
   }
   return;
@@ -1469,8 +1467,7 @@ TSequenceSet *
 tfloatseqset_tintseqset(const TSequenceSet *ts)
 {
   if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+    elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
   TSequenceSet *result = tsequenceset_copy(ts);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);

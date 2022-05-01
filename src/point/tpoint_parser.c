@@ -89,8 +89,7 @@ stbox_parse(char **str)
       srid = 4326;
   }
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse STBOX")));
+    elog(ERROR, "Could not parse STBOX");
 
   if (strncasecmp(*str, "ZT", 2) == 0)
   {
@@ -111,20 +110,17 @@ stbox_parse(char **str)
 
   /* Parse double opening parenthesis */
   if (!p_oparen(str) || !p_oparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse STBOX: Missing opening parenthesis")));
+    elog(ERROR, "Could not parse STBOX: Missing opening parenthesis");
 
   /* Determine whether there is an XY(Z) dimension */
   p_whitespace(str);
   if (((*str)[0]) != ',')
     hasx = true;
 
-  if (!hasx && !hast)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse STBOX")));
-  if (!hasx && hassrid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("An SRID is specified but not coordinates are given")));
+  if (! hasx && ! hast)
+    elog(ERROR, "Could not parse STBOX");
+  if (! hasx && hassrid)
+    elog(ERROR, "An SRID is specified but not coordinates are given");
 
   if (hasx)
   {
@@ -161,16 +157,14 @@ stbox_parse(char **str)
   }
   p_whitespace(str);
   if (!p_cparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse STBOX: Missing closing parenthesis")));
+    elog(ERROR, "Could not parse STBOX: Missing closing parenthesis");
   p_whitespace(str);
   p_comma(str);
   p_whitespace(str);
 
   /* Parse upper bounds */
   if (!p_oparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse STBOX: Missing opening parenthesis")));
+    elog(ERROR, "Could not parse STBOX: Missing opening parenthesis");
 
   if (hasx)
   {
@@ -204,8 +198,7 @@ stbox_parse(char **str)
   }
   p_whitespace(str);
   if (!p_cparen(str) || !p_cparen(str) )
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse STBOX: Missing closing parenthesis")));
+    elog(ERROR, "Could not parse STBOX: Missing closing parenthesis");
 
   return stbox_make(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
     zmin, zmax, tmin, tmax);
@@ -246,9 +239,8 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
   /* If the SRID of the temporal point and of the geometry do not match */
   else if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
     *tpoint_srid != geo_srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)",
-      geo_srid, *tpoint_srid)));
+    elog(ERROR, "Geometry SRID (%d) does not match temporal type SRID (%d)",
+      geo_srid, *tpoint_srid);
   /* The next instruction will throw an exception if it fails */
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
@@ -284,8 +276,7 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
     tpointinst_parse(str, temptype, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse temporal value")));
+    elog(ERROR, "Could not parse temporal value");
   ensure_end_input(str, true);
 
   /* Second parsing */
@@ -339,8 +330,7 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
   else if (p_cparen(str))
     upper_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse temporal value")));
+    elog(ERROR, "Could not parse temporal value");
   ensure_end_input(str, end);
   if (! make)
     return NULL;
@@ -387,8 +377,7 @@ tpointseqset_parse(char **str, CachedType temptype, bool linear,
     tpointseq_parse(str, temptype, linear, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse temporal value")));
+    elog(ERROR, "Could not parse temporal value");
   ensure_end_input(str, true);
 
   /* Second parsing */

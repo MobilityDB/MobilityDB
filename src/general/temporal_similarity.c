@@ -38,11 +38,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
-#include <funcapi.h>
 #include <math.h>
-#if POSTGRESQL_VERSION_NUMBER < 120000
-#include <access/htup_details.h>
-#endif
 /* PostgreGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -439,6 +435,11 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
 /*****************************************************************************/
 
 #ifndef MEOS
+
+#include <funcapi.h>
+#if POSTGRESQL_VERSION_NUMBER < 120000
+  #include <access/htup_details.h>
+#endif
 
 /*****************************************************************************
  * Linear space computation of the similarity distance

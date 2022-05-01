@@ -37,8 +37,9 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <access/hash.h>
-#include <utils/builtins.h>
+#include <common/hashfn.h>
+#include <libpq/pqformat.h>
+#include <utils/fmgrprotos.h>
 /* MobilityDB */
 #include "general/periodset.h"
 #include "general/span_ops.h"
@@ -429,13 +430,11 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   int cmp = datum_cmp2(lower, upper, basetype, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Span lower bound must be less than or equal to span upper bound")));
+    elog(ERROR, "Span lower bound must be less than or equal to span upper bound");
 
   /* error check: if bounds are equal, and not both inclusive, span is empty */
   if (cmp == 0 && !(lower_inc && upper_inc))
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Span cannot be empty")));
+    elog(ERROR, "Span cannot be empty");
 
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(s, 0, sizeof(Span));
@@ -883,7 +882,7 @@ Span_constructor2(PG_FUNCTION_ARGS)
   CachedType basetype = spantype_basetype(spantype);
   Span *span;
   span = span_make(lower, upper, true, false, basetype);
-  PG_RETURN_PERIOD_P(span);
+  PG_RETURN_SPAN_P(span);
 }
 
 
@@ -902,7 +901,7 @@ Span_constructor4(PG_FUNCTION_ARGS)
   CachedType basetype = spantype_basetype(spantype);
   Span *span;
   span = span_make(lower, upper, lower_inc, upper_inc, basetype);
-  PG_RETURN_PERIOD_P(span);
+  PG_RETURN_SPAN_P(span);
 }
 
 /*****************************************************************************
@@ -1044,7 +1043,7 @@ PG_FUNCTION_INFO_V1(Period_shift);
 PGDLLEXPORT Datum
 Period_shift(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Period *result = span_copy(p);
   period_shift_tscale(start, NULL, result);
@@ -1058,7 +1057,7 @@ PG_FUNCTION_INFO_V1(Period_tscale);
 PGDLLEXPORT Datum
 Period_tscale(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   Period *result = span_copy(p);
   period_shift_tscale(NULL, duration, result);
@@ -1072,7 +1071,7 @@ PG_FUNCTION_INFO_V1(Period_shift_tscale);
 PGDLLEXPORT Datum
 Period_shift_tscale(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   Period *result = span_copy(p);

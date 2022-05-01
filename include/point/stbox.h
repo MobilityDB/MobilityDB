@@ -37,8 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <libpq/pqformat.h>
+#include <catalog/pg_type_d.h>
+// #include <libpq/pqformat.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */

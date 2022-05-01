@@ -94,8 +94,7 @@ timestampset_make(const TimestampTz *times, int count)
   for (int i = 0; i < count - 1; i++)
   {
     if (times[i] >= times[i + 1])
-      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Invalid value for timestamp set")));
+      elog(ERROR, "Invalid value for timestamp set");
   }
   /* Notice that the first timestamp is already declared in the struct */
   size_t memsize = double_pad(sizeof(TimestampSet)) +

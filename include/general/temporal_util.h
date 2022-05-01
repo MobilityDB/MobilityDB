@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/array.h>
-#include <utils/rangetypes.h>
 /* PostgreSQL */
 #include "general/temporal.h"
 #include "general/span.h"
@@ -78,19 +76,6 @@ extern void pfree_array(void **array, int count);
 extern void pfree_datumarr(Datum *array, int count);
 extern char *stringarr_to_string(char **strings, int count, int outlen,
   char *prefix, char open, char close);
-extern Datum *datumarr_extract(ArrayType *array, int *count);
-extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
-extern Period **periodarr_extract(ArrayType *array, int *count);
-extern Span **spanarr_extract(ArrayType *array, int *count);
-extern Temporal **temporalarr_extract(ArrayType *array, int *count);
-
-extern ArrayType *datumarr_to_array(Datum *values, int count, CachedType type);
-extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
-extern ArrayType *periodarr_to_array(const Period **periods, int count);
-extern ArrayType *spanarr_to_array(Span **spans, int count);
-extern ArrayType *strarr_to_textarray(char **strarr, int count);
-extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
-extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 
 /* Sort functions */
 
@@ -150,10 +135,39 @@ extern Datum datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer);
 extern double hypot3d(double x, double y, double z);
 extern double hypot4d(double x, double y, double z, double m);
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+#include <utils/array.h>
+#include <utils/rangetypes.h>
+
 /* Range  functions */
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
   bool upper_inc, CachedType basetype);
+
+/* Array functions */
+
+extern Datum *datumarr_extract(ArrayType *array, int *count);
+extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
+extern Period **periodarr_extract(ArrayType *array, int *count);
+extern Span **spanarr_extract(ArrayType *array, int *count);
+extern Temporal **temporalarr_extract(ArrayType *array, int *count);
+
+extern ArrayType *datumarr_to_array(Datum *values, int count, CachedType type);
+extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
+extern ArrayType *periodarr_to_array(const Period **periods, int count);
+extern ArrayType *spanarr_to_array(Span **spans, int count);
+extern ArrayType *strarr_to_textarray(char **strarr, int count);
+extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
+extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/
 

@@ -465,8 +465,7 @@ geo_to_tpointinstset(const GSERIALIZED *geo)
     if (m1 >= m2)
     {
       lwgeom_free(lwgeom);
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Trajectory must be valid")));
+      elog(ERROR, "Trajectory must be valid");
     }
     m1 = m2;
   }
@@ -512,8 +511,7 @@ geo_to_tpointseq(const GSERIALIZED *geo)
     if (m1 >= m2)
     {
       lwgeom_free(lwgeom);
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Trajectory must be valid")));
+      elog(ERROR, "Trajectory must be valid");
     }
     m1 = m2;
   }
@@ -548,8 +546,7 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
     if (lwgeom1->type != POINTTYPE && lwgeom1->type != LINETYPE)
     {
       lwgeom_free(lwgeom);
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Component geometry/geography must be of type Point(Z)M or Linestring(Z)M")));
+      elog(ERROR, "Component geometry/geography must be of type Point(Z)M or Linestring(Z)M");
     }
   }
 
@@ -595,8 +592,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
   else if (geomtype == MULTILINETYPE || geomtype == COLLECTIONTYPE)
     result = (Temporal *)geo_to_tpointseqset(geo);
   else
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Invalid geometry type for trajectory")));
+    elog(ERROR, "Invalid geometry type for trajectory");
   return result;
 }
 

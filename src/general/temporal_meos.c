@@ -34,37 +34,9 @@
 
 #include "general/temporal.h"
 
-/* PostgreSQL */
-#include <assert.h>
-#include <access/heapam.h>
-#include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER < 130000
-#include <access/tuptoaster.h>
-#else
-#include <access/heaptoast.h>
-#include <access/detoast.h>
-#endif
-#include <catalog/namespace.h>
-#include <libpq/pqformat.h>
-#include <utils/builtins.h>
-#include <utils/fmgroids.h>
-#include <utils/lsyscache.h>
-#include <utils/rel.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/doxygen_libmeos_api.h"
-#include "general/span.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
-#include "general/temporal_util.h"
-#include "general/temporal_boxops.h"
-#include "general/temporal_parser.h"
-#include "general/rangetypes_ext.h"
-#include "general/tnumber_distance.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Restriction Functions

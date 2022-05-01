@@ -251,6 +251,8 @@ double4_eq(const double4 *d1, const double4 *d2)
 
 #ifndef MEOS
 
+#include <libpq/pqformat.h>
+
 /*****************************************************************************
  * Input/Output functions
  * Although doubleN are internal types, the doubleN_out function are

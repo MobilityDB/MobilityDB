@@ -402,7 +402,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    Period *p = DatumGetSpanP(scankey->sk_argument);
     period_tbox(p, result);
   }
   else if (type == T_PERIODSET)

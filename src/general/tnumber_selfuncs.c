@@ -148,7 +148,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   }
   else if (type == T_PERIOD)
   {
-    Period *period = DatumGetPeriodP(((Const *) other)->constvalue);
+    Period *period = DatumGetSpanP(((Const *) other)->constvalue);
     *p = span_copy(period);
   }
   else if (type == T_PERIODSET)
@@ -265,11 +265,11 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Period *period,
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, PeriodPGetDatum(period),
+      selec *= var_eq_const(vardata, period_oprid, SpanPGetDatum(period),
         false, false, false);
 #else
       selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
-        PeriodPGetDatum(period), false, false, false);
+        SpanPGetDatum(period), false, false, false);
 #endif
     }
   }

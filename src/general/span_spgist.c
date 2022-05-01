@@ -316,7 +316,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    Period *p = DatumGetSpanP(scankey->sk_argument);
     memcpy(result, p, sizeof(Period));
   }
   else if (type == T_PERIODSET)
@@ -740,7 +740,7 @@ Timestampset_spgist_compress(PG_FUNCTION_ARGS)
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
   timestampset_period_slice(tsdatum, result);
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_spgist_compress);
@@ -753,7 +753,7 @@ Periodset_spgist_compress(PG_FUNCTION_ARGS)
   Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
   periodset_period_slice(psdatum, result);
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************/

@@ -36,7 +36,8 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <utils/builtins.h>
+#include <libpq/pqformat.h>
+#include <utils/fmgrprotos.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/timestampset.h"
@@ -142,8 +143,7 @@ void
 ensure_has_X_stbox(const STBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have XY(Z) dimension")));
+    elog(ERROR, "The box must have XY(Z) dimension");
   return;
 }
 
@@ -154,8 +154,7 @@ void
 ensure_has_T_stbox(const STBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have time dimension")));
+    elog(ERROR, "The box must have time dimension");
   return;
 }
 
@@ -1933,7 +1932,7 @@ PG_FUNCTION_INFO_V1(Period_to_stbox);
 PGDLLEXPORT Datum
 Period_to_stbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   period_stbox(p, result);
   PG_RETURN_POINTER(result);
@@ -1994,7 +1993,7 @@ PGDLLEXPORT Datum
 Geo_period_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   STBOX *result = geo_period_to_stbox(gs, p);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)

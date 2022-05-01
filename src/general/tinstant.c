@@ -440,8 +440,7 @@ TInstant *
 tinstantset_tinstant(const TInstantSet *ti)
 {
   if (ti->count != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot transform input to a temporal instant")));
+    elog(ERROR, "Cannot transform input to a temporal instant");
 
   return tinstant_copy(tinstantset_inst_n(ti, 0));
 }
@@ -454,8 +453,7 @@ TInstant *
 tsequence_tinstant(const TSequence *seq)
 {
   if (seq->count != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot transform input to a temporal instant")));
+    elog(ERROR, "Cannot transform input to a temporal instant");
 
   return tinstant_copy(tsequence_inst_n(seq, 0));
 }
@@ -469,8 +467,7 @@ tsequenceset_tinstant(const TSequenceSet *ts)
 {
   const TSequence *seq = tsequenceset_seq_n(ts, 0);
   if (ts->count != 1 || seq->count != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot transform input to a temporal instant")));
+    elog(ERROR, "Cannot transform input to a temporal instant");
 
    return tinstant_copy(tsequence_inst_n(seq, 0));
 }
