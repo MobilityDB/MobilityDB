@@ -1213,7 +1213,7 @@ intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
     return false;
 
   *inter1 = inst1;
-  *inter2 = tinstant_copy(inst1);
+  *inter2 = tinstant_copy(inst);
   return true;
 }
 

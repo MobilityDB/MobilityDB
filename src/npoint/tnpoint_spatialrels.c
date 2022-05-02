@@ -191,7 +191,7 @@ dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 
   Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
   Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
-  bool result = dwithin_tpoint_tpoint(tpoint1, tpoint2, dist);
+  bool result = dwithin_tpoint_tpoint1(tpoint1, tpoint2, dist);
   pfree(tpoint1); pfree(tpoint2);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;

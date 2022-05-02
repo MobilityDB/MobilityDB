@@ -54,6 +54,8 @@ extern Temporal *ttouches_tpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool atvalue, Datum value);
 extern Temporal *tdwithin_tpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs, Datum dist, bool atvalue, Datum value);
+extern Temporal *tdwithin_tpoint_tpoint1(const Temporal *sync1,
+  const Temporal *sync2, Datum dist, bool atvalue, Datum value);
 extern Temporal *tdwithin_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2, Datum dist, bool atvalue, Datum value);
 

@@ -8,15 +8,15 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="time_types_span_types">
-	<title>Tipos de tiempo y tipos de rango</title>
+<chapter id="time_span_types">
+	<title>Tipos de tiempo y de rango</title>
 
 	<para>
 		Los tipos temporales se basan en cuatro tipos de tiempo: el tipo <varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos tipos que son <varname>period</varname>, <varname>timestampset</varname> y <varname>periodset</varname>. Además, hay dos tipos de rango <varname>intspan</varname> y <varname>floatspan</varname> para representar, respectivamente, rangos de valores enteros y flotantes.
 	</para>
 
 	<para>
-		Los tipos <varname>period</varname>, <varname>intspan</varname> y <varname>floatspan</varname> en MobilityDB corresponden, respectivamente, a los tipos <varname>tstzrange</varname>, <varname>int4range </varname> y <varname>float8range</varname> en PostgreSQL. Los tipos de rango en MobilityDB tienen una funcionalidad similar a los tipos de rango en PostgreSQL pero tienen una implementación más eficiente. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, los rangos vacíos y los límites infinitos no están permitidos en los valores de rango en MobilityDB, mientras que sí lo están en los valores de rango en PostgreSQL.
+		Los tipos <varname>period</varname>, <varname>intspan</varname> y <varname>floatspan</varname> en MobilityDB corresponden, respectivamente, a los tipos <varname>tstzrange</varname>, <varname>int4range </varname> y <varname>float8range</varname> en PostgreSQL. Los tipos de rango en MobilityDB tienen una funcionalidad similar a los tipos de rango en PostgreSQL pero tienen una implementación más eficiente. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, se permiten rangos vacíos y límites infinitos en valores de rango en PostgreSQL, mientras que esto no está permitido para valores de rango en MobilityDB.
 	</para>
 
 	<para>
@@ -156,7 +156,7 @@ SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
 
 		<sect2>
 			<title>Conversión de tipos</title>
-			<para>Los valores de los tipos <varname>timestamptz</varname>, <varname>tstzrange</varname> o los tipos de tiempo se pueden convertir entre sí utilizando la función <varname>CAST</varname> o utilizando la notación <varname>::</varname>.
+			<para>Los valores de los tipos de tiempo, los tipos de intervalo de MobilityDB y los tipos de intervalo de PostgreSQL se pueden convertir entre sí utilizando la función <varname>CAST</varname> o utilizando la notación <varname>::</varname>. Sin embargo, como se indicó antes, no se permiten rangos vacíos o rangos con límites infinitos en MobilityDB.
 			</para>
 
 			<itemizedlist>
@@ -199,6 +199,15 @@ SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::tstzrange;
 -- "["2012-01-01 08:00:00+01","2012-01-01 08:30:00+01")"
 </programlisting>
 				</listitem>
+				<listitem id="intspan_cast">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Cast an <varname>intspan</varname> to an <varname>int4range</varname></para>
+					<para><varname>intspan::int4range</varname></para>
+					<programlisting xml:space="preserve">
+SELECT intspan '[10, 20)'::int4range;
+-- "[10,20)"
+</programlisting>
+				</listitem>
 				<listitem id="tstzrange_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Convertir un <varname>tstzrange</varname> a un <varname>period</varname></para>
@@ -206,6 +215,19 @@ SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::tstzrange;
 					<programlisting xml:space="preserve">
 SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 -- "[2012-01-01 08:00:00+01, 2012-01-01 08:30:00+01)"
+</programlisting>
+				</listitem>
+				<listitem id="int4range_cast">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Convertir un <varname>int4range</varname> a un <varname>intspan</varname></para>
+					<para><varname>int4range::intspan</varname></para>
+					<programlisting xml:space="preserve">
+SELECT int4range '[10, 20)'::intspan;
+-- "[10,20)"
+SELECT int4range 'empty'::intspan;
+-- ERROR:  Range cannot be empty
+SELECT int4range '[10,)'::intspan;
+-- ERROR:  Range bounds cannot be infinite
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -912,7 +934,7 @@ SELECT tunion(ps) FROM periods;
 	</sect1>
 
 	<sect1 id ="indexing_time_types">
-		<title>Indexación de tipos de tiempo</title>
+		<title>Indexación de tipos de tiempo y de rango</title>
 
 		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname>. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>period</varname> en una tabla <varname>Reservation</varname> es como sigue:
 			<programlisting xml:space="preserve">

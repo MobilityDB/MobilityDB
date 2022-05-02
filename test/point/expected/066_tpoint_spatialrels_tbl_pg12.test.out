@@ -89,7 +89,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(geography 'Linestring(0 0,5 5)
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
  count 
 -------
-     2
+     0
 (1 row)
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
@@ -187,7 +187,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(geography 'Linestring(0 0,5 5)
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
  count 
 -------
-     2
+     0
 (1 row)
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;

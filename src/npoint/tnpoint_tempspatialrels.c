@@ -167,14 +167,13 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
  * temporal network point are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, double dist, bool restr,
+tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, Datum dist, bool restr,
   Datum atvalue)
 {
   if (gserialized_is_empty(geo))
     return NULL;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, geo, Float8GetDatum(dist),
-    restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, geo, dist, restr, atvalue);
   pfree(tempgeom);
   return result;
 }
@@ -184,10 +183,10 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, double dist, bool restr,
  * temporal network point are within the given distance
  */
 Temporal *
-tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, double dist, bool restr,
+tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, Datum dist, bool restr,
   Datum atvalue)
 {
-  return tdwithin_tnpoint_geo(temp, geo, Float8GetDatum(dist), restr, atvalue);
+  return tdwithin_tnpoint_geo(temp, geo, dist, restr, atvalue);
 }
 
 /**
@@ -195,14 +194,13 @@ tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, double dist, bool restr,
  * the temporal network point are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
+tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, Datum dist, bool restr,
   Datum atvalue)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *geo = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, geo, Float8GetDatum(dist),
-    restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, geo, dist, restr, atvalue);
   pfree(geo);
   return result;
 }
@@ -212,10 +210,10 @@ tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
  * the temporal network point are within the given distance
  */
 Temporal *
-tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
+tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, Datum dist, bool restr,
   Datum atvalue)
 {
-  return tdwithin_tnpoint_npoint(temp, np, Float8GetDatum(dist), restr, atvalue);
+  return tdwithin_tnpoint_npoint(temp, np, dist, restr, atvalue);
 }
 
 /**
@@ -223,7 +221,7 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
  * points are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
+tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, Datum dist,
   bool restr, Datum atvalue)
 {
   Temporal *sync1, *sync2;
@@ -235,8 +233,9 @@ tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
 
   Temporal *tempgeom1 = tnpoint_tgeompoint(sync1);
   Temporal *tempgeom2 = tnpoint_tgeompoint(sync2);
-  Temporal *result = tdwithin_tpoint_tpoint(tempgeom1, tempgeom2,
-    Float8GetDatum(dist), restr, atvalue);
+  Temporal *result = tdwithin_tpoint_tpoint1(tempgeom1, tempgeom2, dist, restr,
+    atvalue);
+  pfree(sync1); pfree(sync2);
   pfree(tempgeom1); pfree(tempgeom2);
   return result;
 }

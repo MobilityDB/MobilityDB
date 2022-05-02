@@ -14,7 +14,7 @@
 <!ENTITY last_release_version "1.0">
 
 <!ENTITY introduction SYSTEM "introduction.xml">
-<!ENTITY time_types_span_types SYSTEM "time_types_span_types.xml">
+<!ENTITY time_span_types SYSTEM "time_span_types.xml">
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
 <!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
 <!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
@@ -108,7 +108,7 @@
 	</bookinfo>
 
 	&introduction;
-	&time_types_span_types;
+	&time_span_types;
 	&temporal_types;
 	&manipulating_box_types;
 	&manipulating_temporal_types;

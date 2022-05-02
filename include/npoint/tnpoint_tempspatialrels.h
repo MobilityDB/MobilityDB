@@ -61,15 +61,15 @@ extern Temporal *ttouches_tnpoint_npoint(const Temporal *temp,
 extern Temporal *ttouches_npoint_tnpoint(const Npoint *np,
   const Temporal *temp, bool restr, Datum atvalue);
 extern Temporal *tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo,
-  double dist, bool restr, Datum atvalue);
+  Datum dist, bool restr, Datum atvalue);
 extern Temporal *tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp,
-  double dist, bool restr, Datum atvalue);
+  Datum dist, bool restr, Datum atvalue);
 extern Temporal *tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np,
-  double dist, bool restr, Datum atvalue);
+  Datum dist, bool restr, Datum atvalue);
 extern Temporal *tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp,
-  double dist, bool restr, Datum atvalue);
+  Datum dist, bool restr, Datum atvalue);
 extern Temporal *tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2,
-  double dist, bool restr, Datum atvalue);
+  Datum dist, bool restr, Datum atvalue);
 
 
 /*****************************************************************************/
