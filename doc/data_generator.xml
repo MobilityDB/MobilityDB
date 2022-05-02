@@ -31,16 +31,13 @@
 					<para><varname>random_int_array</varname>: Generate a random array of integers</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_intrange</varname>: Generate a random integer range</para>
+					<para><varname>random_int4range</varname>: Generate a random integer range</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_float</varname>: Generate a random float</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_float_array</varname>: Generate a random array of floats</para>
-				</listitem>
-				<listitem>
-					<para><varname>random_floatrange</varname>: Generate a random float range</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_text</varname>: Generate a random text</para>
@@ -154,11 +151,14 @@
 	</sect1>
 
 	<sect1>
-		<title>Generator for MobilityDB Time, Span, and Box Types</title>
+		<title>Generator for MobilityDB Span, Time, and Box Types</title>
 
 			<itemizedlist>
 				<listitem>
-					<para><varname>random_timestampset</varname>: Generate a random <varname>timestampset</varname></para>
+					<para><varname>random_intspan</varname>: Generate a random integer span</para>
+				</listitem>
+				<listitem>
+					<para><varname>random_floatspan</varname>: Generate a random float span</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_period</varname>: Generate a random <varname>period</varname></para>
@@ -167,13 +167,10 @@
 					<para><varname>random_period_array</varname>: Generate a random array of <varname>period</varname> values</para>
 				</listitem>
 				<listitem>
+					<para><varname>random_timestampset</varname>: Generate a random <varname>timestampset</varname></para>
+				</listitem>
+				<listitem>
 					<para><varname>random_periodset</varname>: Generate a random <varname>periodset</varname></para>
-				</listitem>
-				<listitem>
-					<para><varname>random_intspan</varname>: Generate a random integer span</para>
-				</listitem>
-				<listitem>
-					<para><varname>random_floatspan</varname>: Generate a random float span</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbox</varname>: Generate a random <varname>tbox</varname></para>

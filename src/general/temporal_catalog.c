@@ -68,18 +68,18 @@
  */
 temptype_cache_struct _temptype_cache[] =
 {
-  /* temptype    basetype     basecont */
-  {T_TDOUBLE2,   T_DOUBLE2,   true},
-  {T_TDOUBLE3,   T_DOUBLE3,   true},
-  {T_TDOUBLE4,   T_DOUBLE4,   true},
-  {T_TBOOL,      T_BOOL,      false},
-  {T_TINT,       T_INT4,      false},
-  {T_TFLOAT,     T_FLOAT8,    true},
-  {T_TTEXT,       T_TEXT,      false},
-  {T_TGEOMPOINT, T_GEOMETRY,  true},
-  {T_TGEOGPOINT, T_GEOGRAPHY, true},
+  /* temptype    basetype */
+  {T_TDOUBLE2,   T_DOUBLE2},
+  {T_TDOUBLE3,   T_DOUBLE3},
+  {T_TDOUBLE4,   T_DOUBLE4},
+  {T_TBOOL,      T_BOOL},
+  {T_TINT,       T_INT4},
+  {T_TFLOAT,     T_FLOAT8},
+  {T_TTEXT,      T_TEXT},
+  {T_TGEOMPOINT, T_GEOMETRY},
+  {T_TGEOGPOINT, T_GEOGRAPHY},
 #ifndef MEOS
-  {T_TNPOINT,    T_NPOINT,    true},
+  {T_TNPOINT,    T_NPOINT},
 #endif
 };
 
@@ -89,10 +89,10 @@ temptype_cache_struct _temptype_cache[] =
  */
 spantype_cache_struct _spantype_cache[] =
 {
-  /* spantype       basetype       basecont */
-  {T_INTSPAN,       T_INT4,        false},
-  {T_FLOATSPAN,     T_FLOAT8,      true},
-  {T_PERIOD,        T_TIMESTAMPTZ, false},
+  /* spantype       basetype */
+  {T_INTSPAN,       T_INT4},
+  {T_FLOATSPAN,     T_FLOAT8},
+  {T_PERIOD,        T_TIMESTAMPTZ},
 };
 
 /*****************************************************************************

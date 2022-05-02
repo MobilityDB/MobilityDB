@@ -18,6 +18,14 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="period"><varname>intspan</varname></link>: Constructor para <varname>intspan</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="period"><varname>floatspan</varname></link>: Constructor para <varname>floatspan</varname></para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="period"><varname>period</varname></link>: Constructor para <varname>period</varname></para>
 				</listitem>
 
@@ -47,7 +55,15 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="intspan_cast"><varname>instspan::int4range</varname></link>: Convertir un <varname>instspan</varname> a un <varname>int4range</varname></para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Convertir un <varname>tstzrange</varname> a un <varname>period</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="int4range_cast"><varname>int4range::instspan</varname></link>: Convertir un <varname>int4range</varname> a un <varname>instspan</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -157,27 +173,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_eq"><varname>=</varname></link>: ¿Son iguales los valores de tiempo?</para>
+					<para><link linkend="time_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores de tiempo?</para>
+					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_lt"><varname>&lt;</varname></link>: ¿Es el primer valor de tiempo menor que el segundo?</para>
+					<para><link linkend="time_lt"><varname>&lt;</varname></link>: ¿Es el primer valor menor que el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_gt"><varname>&gt;</varname></link>: ¿Es el primer valor de tiempo mayor que el segundo?</para>
+					<para><link linkend="time_gt"><varname>&gt;</varname></link>: ¿Es el primer valor mayor que el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_le"><varname>&lt;=</varname></link>: ¿Es el primer valor de tiempo menor o igual que el segundo?</para>
+					<para><link linkend="time_le"><varname>&lt;=</varname></link>: ¿Es el primer valor menor o igual que el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor de tiempo mayor o igual que el segundo?</para>
+					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor mayor o igual que el segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -187,15 +203,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_union"><varname>+</varname></link>: Unión de valores de tiempo</para>
+					<para><link linkend="time_union"><varname>+</varname></link>: Unión de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersección de valores de tiempo</para>
+					<para><link linkend="time_difference"><varname>-</varname></link>: Diferencia de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_difference"><varname>-</varname></link>: Diferencia de valores de tiempo</para>
+					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersección de valores</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -205,69 +221,61 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores de tiempo (tienen instantes en común)?</para>
+					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor de tiempo el segundo?</para>
+					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor de tiempo contenido en el segundo?</para>
+					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor de tiempo adyacente al segundo?</para>
+					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
+					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
+					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer número o valor de rango a la derecha del segundo?</para>
+					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer número o valor de rango a la izquierda del segundo?</para>
+					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_adjacent"><varname>-|-</varname></link>: ¿Es el primer número o valor de rango adyacente al segundo?</para>
+					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor estrictamente anterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor de tiempo estrictamente anterior al segundo?</para>
+					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor estrictamente posterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor de tiempo estrictamente posterior al segundo?</para>
+					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor posterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor de tiempo posterior al segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor de tiempo anterior al segundo?</para>
+					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor anterior al segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
-			<title>Operadores de distancia</title>
+			<title>Operador de distancia</title>
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia mínima en un intervalo</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="smallest_distance_secs"><varname>|=|</varname></link>: Obtener la distancia mínima en número de segundos</para>
+					<para><link linkend="smallest_distance_time"><varname>&lt;-&gt;</varname></link>: Obtener la distancia mínima</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -281,11 +289,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_extent"><varname>extent</varname></link>: Extensión del período delimitador</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="span_extent"><varname>extent</varname></link>: Extensión del rango delimitador</para>
+					<para><link linkend="time_extent"><varname>extent</varname></link>: rango o período delimitador</para>
 				</listitem>
 
 				<listitem>

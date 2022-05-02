@@ -532,8 +532,8 @@ Period_tcount_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_timetype_skiplist(state, SEQUENCE);
-    skiplist_splice(fcinfo, state, (void **) &seq, 1,
-      &datum_sum_int32, CROSSINGS_NO);
+    skiplist_splice(fcinfo, state, (void **) &seq, 1, &datum_sum_int32,
+      CROSSINGS_NO);
   }
   else
   {

@@ -262,34 +262,6 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random float range
- *
- * @param[in] lowvalue, highvalue Inclusive bounds of the range
- * @param[in] maxdelta Maximum difference between two consecutive values
- */
-DROP FUNCTION IF EXISTS random_floatrange;
-CREATE FUNCTION random_floatrange(lowvalue float, highvalue float, maxdelta int)
-  RETURNS floatrange AS $$
-DECLARE
-  v float;
-BEGIN
-  IF lowvalue > highvalue - maxdelta THEN
-    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
-      lowvalue, highvalue, maxdelta;
-  END IF;
-  v = random_float(lowvalue, highvalue - maxdelta);
-  RETURN floatrange(v, v + random_float(1, maxdelta));
-END;
-$$ LANGUAGE PLPGSQL STRICT;
-
-/*
-SELECT k, random_floatrange(-100, 100, 10) AS fr
-FROM generate_series(1,10) k;
-*/
-
--------------------------------------------------------------------------------
-
-/**
  * Generate a random float span
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the span

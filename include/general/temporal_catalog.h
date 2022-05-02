@@ -132,7 +132,6 @@ typedef struct
 {
   CachedType temptype;    /**< Enum value of the temporal type */
   CachedType basetype;    /**< Enum value of the base type */
-  bool basecont;          /**< True if the base type is continuous */
 } temptype_cache_struct;
 
 /**
@@ -142,7 +141,6 @@ typedef struct
 {
   CachedType spantype;    /**< Enum value of the span type */
   CachedType basetype;    /**< Enum value of the base type */
-  bool basecont;          /**< True if the base type is continuous */
 } spantype_cache_struct;
 
 /*****************************************************************************/
