@@ -311,13 +311,24 @@ CREATE FUNCTION period_sel(internal, oid, internal, integer)
 
 -- Functions for debugging the selectivity code
 
--- Given a table, column, and period returns the estimate of what proportion
+-- Given a table, column, and span returns the estimate of what proportion
 -- of the table would be returned by a query using the given operator.
+CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
+    i intspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
+    f floatspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
     p period)
   RETURNS float
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- Given two tables and columns, returns estimate of the proportion of rows a
 -- given join operator will return relative to the number of rows an
 -- unconstrained table join would return

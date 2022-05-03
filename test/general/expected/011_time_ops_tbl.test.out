@@ -505,10 +505,64 @@ SELECT COUNT(*) FROM tbl_period t1, tbl_period_temp t2 WHERE t1.p <@ t2.p;
      0
 (1 row)
 
+SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator, intspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.127551
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator, intspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.010803
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator, floatspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.104515
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator, floatspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.008010
+(1 row)
+
 SELECT round(_mobdb_span_sel('tbl_period'::regclass, 'p', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
   round   
 ----------
  0.103015
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_period'::regclass, 'p', '@>(period,period)'::regoperator, period '[2001-06-01 00:00:00, 2001-06-01:00:00:03]')::numeric, 6);
+  round   
+----------
+ 0.000026
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.102886
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.017055
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.115721
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.014657
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator)::numeric, 6);
@@ -517,10 +571,10 @@ SELECT round(_mobdb_span_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regc
  0.000202
 (1 row)
 
-SELECT round(_mobdb_span_sel('tbl_period'::regclass, 'p', '@>(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
+SELECT round(_mobdb_span_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'p', '@>(period,period)'::regoperator)::numeric, 6);
   round   
 ----------
- 0.000000
+ 0.000074
 (1 row)
 
 /* Errors */

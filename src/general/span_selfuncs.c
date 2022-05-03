@@ -83,7 +83,7 @@ span_joinsel_default(CachedOp cachedOp __attribute__((unused)))
  * Get the enum associated to the operator from different cases
  */
 static bool
-span_cachedop(Oid operid, CachedOp *cachedOp)
+value_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
@@ -910,7 +910,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
   bool found = (spansel == SPANSEL) ?
-    span_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
+    value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
   if (! found)
     /* Unknown operator */
     return span_sel_default(operid);
@@ -1001,7 +1001,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   Oid table_oid = PG_GETARG_OID(0);
   text *att_text = PG_GETARG_TEXT_P(1);
   Oid operid = PG_GETARG_OID(2);
-  Period *p = PG_GETARG_SPAN_P(3);
+  Span *s = PG_GETARG_SPAN_P(3);
   float8 selec = 0.0;
 
   /* Test input parameters */
@@ -1022,9 +1022,13 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
+  /* Determine whether we target the value or the time dimension */
+  bool value = (s->basetype != T_TIMESTAMPTZ);
+
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  bool found = time_cachedop(operid, &cachedOp);
+  bool found = value ?
+    value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
   if (! found)
     /* In case of unknown operator */
     elog(ERROR, "Unknown span operator %d", operid);
@@ -1039,7 +1043,9 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table_oid) ?
       get_rel_name(table_oid) : "NULL");
 
-  int stats_kind = STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM; // TODO
+  int stats_kind = value ?
+    STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
+    STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   if (! get_attstatsslot(&hslot, stats_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
@@ -1055,7 +1061,9 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   {
     memset(&lslot, 0, sizeof(lslot));
 
-   stats_kind = STATISTIC_KIND_TIME_LENGTH_HISTOGRAM; // TODO
+   stats_kind = value ?
+    STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+    STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
    if (!(HeapTupleIsValid(stats_tuple) &&
         get_attstatsslot(&lslot, stats_tuple, stats_kind, InvalidOid,
           ATTSTATSSLOT_VALUES)))
@@ -1072,7 +1080,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, (Span *) p, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, s, cachedOp);
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
@@ -1489,7 +1497,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! span_cachedop(operid, &cachedOp))
+  if (! value_cachedop(operid, &cachedOp))
     /* Unknown operator */
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
@@ -1532,6 +1540,9 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
+  /* Get the attribute type */
+  CachedType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
+
   char *table2_name = get_rel_name(table2_oid);
   if (table2_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
@@ -1549,16 +1560,25 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
-  /* Get enumeration value associated to the operator */
+  /* Get the attribute type */
+  CachedType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+
+  /* Determine whether we target the value or the time dimension */
+  bool value = (atttype1 != T_PERIOD && atttype2 != T_PERIOD);
+
   CachedOp cachedOp;
-  if (! time_cachedop(operid, &cachedOp))
+  bool found = value ?
+    value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
+  if (! found)
     /* In case of unknown operator */
     elog(ERROR, "Unknown span operator %d", operid);
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
   AttStatsSlot hslot1, hslot2, lslot;
-  int stats_kind = STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM; // TODO
+  int stats_kind = value ?
+    STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
+    STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
@@ -1600,7 +1620,9 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
      * join selectivity we loop over values of the first histogram assuming
      * they are constant and call the restriction selectivity over the
      * second histogram */
-    stats_kind = STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM; // TODO
+    stats_kind = value ?
+      STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+      STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
     memset(&lslot, 0, sizeof(lslot));
 
     if (! get_attstatsslot(&lslot, stats2_tuple, stats_kind, InvalidOid,
