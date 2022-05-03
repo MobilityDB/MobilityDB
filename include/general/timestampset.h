@@ -37,8 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <libpq/pqformat.h>
+#include <lib/stringinfo.h>
 /* MobilityDB */
 #include "general/timetypes.h"
 
@@ -51,9 +50,9 @@ extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
 
-extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
-extern void timestampset_bbox(const TimestampSet *ts, Period *p);
-extern void timestampset_bbox_slice(Datum tsdatum, Period *p);
+extern const Period *timestampset_period_ptr(const TimestampSet *ts);
+extern void timestampset_period(const TimestampSet *ts, Period *p);
+extern void timestampset_period_slice(Datum tsdatum, Period *p);
 extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t,
   int *loc);
 

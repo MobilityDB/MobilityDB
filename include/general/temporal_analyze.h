@@ -37,11 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <commands/vacuum.h>
-#include <utils/rangetypes.h>
-#include <parser/parse_oper.h>
 #include <statistics/extended_stats_internal.h>
+#include <fmgr.h>
 
 /*****************************************************************************/
 
@@ -113,11 +110,11 @@ typedef struct
 
 extern void temporal_extra_info(VacAttrStats *stats);
 
-extern void tinstant_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows);
+extern void tinstant_compute_stats(VacAttrStats *stats,
+  AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 
-extern void tsequenceset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows);
+extern void tsequenceset_compute_stats(VacAttrStats *stats,
+  AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 
 /*****************************************************************************/
 

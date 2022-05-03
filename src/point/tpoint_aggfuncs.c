@@ -40,8 +40,7 @@
 #include <assert.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temporal_catalog.h"
 #include "general/doublen.h"
 #include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
@@ -244,31 +243,6 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
   temporal_bbox(temp, result);
   stbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_extent_combinefn);
-/**
- * Combine function for temporal extent aggregation of temporal point values
- */
-PGDLLEXPORT Datum
-Tpoint_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-  if (! box2 && ! box1)
-    PG_RETURN_NULL();
-  if (box1 && ! box2)
-    PG_RETURN_POINTER(box1);
-  if (box2 && ! box1)
-    PG_RETURN_POINTER(box2);
-
-  /* Both boxes are not null */
-  ensure_same_srid_stbox(box1, box2);
-  ensure_same_dimensionality(box1->flags, box2->flags);
-  ensure_same_geodetic(box1->flags, box2->flags);
-  STBOX *result = stbox_copy(box1);
-  stbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

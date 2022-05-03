@@ -35,12 +35,10 @@
 #include "point/tpoint.h"
 
 /* PostgreSQL */
-#include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temporal_catalog.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"
 #include "point/stbox.h"
@@ -48,46 +46,12 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 
+/* To avoid including <utils/builtins.h> */
+extern int32 pg_atoi(const char *s, int size, int c);
+
 /*****************************************************************************
  * General functions
  *****************************************************************************/
-
-#define PGC_ERRMSG_MAXLEN 2048
-
-/**
- * Output an error message
- */
-static void
-pg_error(const char *fmt, va_list ap)
-{
-  char errmsg[PGC_ERRMSG_MAXLEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAXLEN]='\0';
-  ereport(ERROR, (errmsg_internal("%s", errmsg)));
-  return;
-}
-
-/**
- * Output a notice message
- */
-static void
-pg_notice(const char *fmt, va_list ap)
-{
-  char errmsg[PGC_ERRMSG_MAXLEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAXLEN]='\0';
-  ereport(NOTICE, (errmsg_internal("%s", errmsg)));
-  return;
-}
-
-/**
- * Set the handlers for initializing the liblwgeom library
- */
-void
-temporalgeom_init()
-{
-  lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
-}
 
 /**
  * Copy a GSERIALIZED. This function is not available anymore in PostGIS 3
@@ -179,6 +143,47 @@ tcomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 #ifndef MEOS
+
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+#define PGC_ERRMSG_MAXLEN 2048
+
+/**
+ * Output an error message
+ */
+static void
+pg_error(const char *fmt, va_list ap)
+{
+  char errmsg[PGC_ERRMSG_MAXLEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+  errmsg[PGC_ERRMSG_MAXLEN]='\0';
+  ereport(ERROR, (errmsg_internal("%s", errmsg)));
+  return;
+}
+
+/**
+ * Output a notice message
+ */
+static void
+pg_notice(const char *fmt, va_list ap)
+{
+  char errmsg[PGC_ERRMSG_MAXLEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+  errmsg[PGC_ERRMSG_MAXLEN]='\0';
+  ereport(NOTICE, (errmsg_internal("%s", errmsg)));
+  return;
+}
+
+/**
+ * Set the handlers for initializing the liblwgeom library
+ */
+void
+temporalgeom_init()
+{
+  lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
+}
 
 /*****************************************************************************
  * Input/output functions

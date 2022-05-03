@@ -43,15 +43,9 @@
 
 /* Input/output functions */
 
-extern Datum Period_in(PG_FUNCTION_ARGS);
-extern Datum Period_out(PG_FUNCTION_ARGS);
-extern Datum Period_recv(PG_FUNCTION_ARGS);
-extern Datum Period_send(PG_FUNCTION_ARGS);
 
 /* Constructors */
 
-extern Datum Period_constructor2(PG_FUNCTION_ARGS);
-extern Datum Period_constructor4(PG_FUNCTION_ARGS);
 
 /* Casting */
 

@@ -44,11 +44,10 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/skiplist.h"
-#include "general/period.h"
+#include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temporal_catalog.h"
 #include "general/tbool_boolops.h"
 #include "general/temporal_boxops.h"
 #include "general/doublen.h"
@@ -215,12 +214,12 @@ static int
 tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   datum_func2 func, bool crossings, TSequence **result)
 {
-  Period *intersect = intersection_period_period(&seq1->period, &seq2->period);
-  if (intersect == NULL)
+  Period inter;
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
   {
     const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
-    if (period_cmp(&seq1->period, &seq2->period) < 0)
+    if (span_cmp(&seq1->period, &seq2->period) < 0)
     {
       sequences[0] = (TSequence *) seq1;
       sequences[1] = (TSequence *) seq2;
@@ -263,10 +262,10 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   bool lower2_inc = seq2->period.lower_inc;
   bool upper2_inc = seq2->period.upper_inc;
 
-  TimestampTz lower = intersect->lower;
-  TimestampTz upper = intersect->upper;
-  bool lower_inc = intersect->lower_inc;
-  bool upper_inc = intersect->upper_inc;
+  TimestampTz lower = inter.lower;
+  TimestampTz upper = inter.upper;
+  bool lower_inc = inter.lower_inc;
+  bool upper_inc = inter.upper_inc;
   TSequence *sequences[3];
   int k = 0;
 
@@ -276,12 +275,12 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   int cmp2 = timestamp_cmp_internal(lower2, lower);
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
   {
-    period_set(lower1, lower, lower1_inc, !lower_inc, &period);
+    span_set(lower1, lower, lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
-    period_set(lower2, lower, lower2_inc, !lower_inc, &period);
+    span_set(lower2, lower, lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
 
@@ -309,15 +308,14 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   cmp2 = timestamp_cmp_internal(upper, upper2);
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
   {
-    period_set(upper, upper1, !upper_inc, upper1_inc, &period);
+    span_set(upper, upper1, ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (!upper_inc && upper2_inc && cmp2 == 0))
   {
-    period_set(upper, upper2, !upper_inc, upper2_inc, &period);
+    span_set(upper, upper2, ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
-  pfree(intersect);
 
   /* Normalization */
   if (k == 1)
@@ -970,22 +968,22 @@ PG_FUNCTION_INFO_V1(Temporal_extent_transfn);
 PGDLLEXPORT Datum
 Temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
+  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   Period *result;
 
   /* Can't do anything with null inputs */
-  if (!p && !temp)
+  if (! p && ! temp)
     PG_RETURN_NULL();
   /* Null period and non-null temporal, return the bbox of the temporal */
-  if (!p)
+  if (! p)
   {
     result = palloc0(sizeof(Period));
     temporal_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
-  if (!temp)
+  if (! temp)
   {
     result = palloc0(sizeof(Period));
     memcpy(result, p, sizeof(Period));
@@ -994,30 +992,9 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
 
   Period p1;
   temporal_bbox(temp, &p1);
-  result = period_super_union(p, &p1);
+  result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_extent_combinefn);
-/**
- * Combine function for temporal extent aggregation
- */
-PGDLLEXPORT Datum
-Temporal_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
-
-  if (!p2 && !p1)
-    PG_RETURN_NULL();
-  if (p1 && !p2)
-    PG_RETURN_POINTER(p1);
-  if (p2 && !p1)
-    PG_RETURN_POINTER(p2);
-
-  Period *result = period_super_union(p1, p2);
   PG_RETURN_POINTER(result);
 }
 
@@ -1054,29 +1031,6 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
   temporal_bbox(temp, result);
   tbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tnumber_extent_combinefn);
-/**
- * Combine function for temporal extent aggregation for temporal numbers
- */
-PGDLLEXPORT Datum
-Tnumber_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
-
-  if (!box2 && !box1)
-    PG_RETURN_NULL();
-  if (box1 && !box2)
-    PG_RETURN_POINTER(box1);
-  if (box2 && !box1)
-    PG_RETURN_POINTER(box2);
-  /* Both boxes are not null */
-  ensure_same_dimensionality_tbox(box1, box2);
-  TBOX *result = tbox_copy(box1);
-  tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -97,6 +97,7 @@
 
 /* PostgreSQL */
 #include <assert.h>
+#include <float.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -105,8 +106,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_gist.h"
 #include "general/tnumber_distance.h"
@@ -386,10 +386,10 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
     Datum value = scankey->sk_argument;
     number_tbox(value, type, result);
   }
-  else if (tnumber_rangetype(type))
+  else if (tnumber_spantype(type))
   {
-    RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
-    range_tbox(range, result);
+    Span *span = DatumGetSpanP(scankey->sk_argument);
+    span_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
@@ -402,7 +402,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    Period *p = DatumGetSpanP(scankey->sk_argument);
     period_tbox(p, result);
   }
   else if (type == T_PERIODSET)
@@ -523,8 +523,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
   /*
-   * Assign ranges to corresponding nodes according to quadrants relative to
-   * the "centroid" range
+   * Assign spans to corresponding nodes according to quadrants relative to
+   * the "centroid" span
    */
   for (i = 0; i < in->nTuples; i++)
   {

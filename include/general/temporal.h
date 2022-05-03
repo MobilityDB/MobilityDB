@@ -37,13 +37,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <lib/stringinfo.h>
-#include <utils/array.h>
-#include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
+#include <fmgr.h>
+// #include <lib/stringinfo.h>
+// #include <utils/lsyscache.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/span.h"
+#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
 #include "point/stbox.h"
@@ -120,9 +119,9 @@
 #define WITH_Z          true
 #define NO_Z            false
 
-/* Determine whether reduce the roundoff errors with the range operations
+/* Determine whether reduce the roundoff errors with the span operations
  * by taking the bounds instead of the projected value at the timestamp */
-#define RANGE_ROUNDOFF  false
+#define SPAN_ROUNDOFF  false
 
 /** Enumeration for the intersection/synchronization functions */
 typedef enum
@@ -152,21 +151,6 @@ typedef enum
 #define INSTANTSET      2
 #define SEQUENCE        3
 #define SEQUENCESET     4
-
-#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
-
-/**
- * Structure to represent the temporal subtype array
- */
-struct tempsubtype_struct
-{
-  char *subtypeName;   /**< string representing the temporal type */
-  int16 subtype;       /**< subtype */
-};
-
-#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
-  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
-#define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
@@ -223,13 +207,13 @@ struct tempsubtype_struct
 
 /*
  * The default origin is Monday 2000-01-03. We don't use PG epoch since it
- * starts on a saturday. This makes time-buckets by a week more intuitive and
+ * starts on a Saturday. This makes time-buckets by a week more intuitive and
  * aligns it with date_trunc.
  */
 #define JAN_3_2000 (2 * USECS_PER_DAY)
 #define DEFAULT_TIME_ORIGIN (JAN_3_2000)
-#define DEFAULT_FLOATRANGE_ORIGIN (0.0)
-#define DEFAULT_INTRANGE_ORIGIN (0)
+#define DEFAULT_FLOATSPAN_ORIGIN (0.0)
+#define DEFAULT_INTSPAN_ORIGIN (0)
 
 /*****************************************************************************
  * Definitions for GiST indexes
@@ -238,12 +222,17 @@ struct tempsubtype_struct
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
+extern int float8_cmp_internal(float8 a, float8 b);
+extern double get_float8_infinity(void);
+#endif
+
 /* Convenience macros for NaN-aware comparisons */
-#define FLOAT8_EQ(a,b)  (float8_cmp_internal(a, b) == 0)
-#define FLOAT8_LT(a,b)  (float8_cmp_internal(a, b) < 0)
-#define FLOAT8_LE(a,b)  (float8_cmp_internal(a, b) <= 0)
-#define FLOAT8_GT(a,b)  (float8_cmp_internal(a, b) > 0)
-#define FLOAT8_GE(a,b)  (float8_cmp_internal(a, b) >= 0)
+#define FLOAT8_EQ(a,b)   (float8_cmp_internal(a, b) == 0)
+#define FLOAT8_LT(a,b)   (float8_cmp_internal(a, b) < 0)
+#define FLOAT8_LE(a,b)   (float8_cmp_internal(a, b) <= 0)
+#define FLOAT8_GT(a,b)   (float8_cmp_internal(a, b) > 0)
+#define FLOAT8_GE(a,b)   (float8_cmp_internal(a, b) >= 0)
 #define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
 #define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
@@ -271,10 +260,10 @@ struct tempsubtype_struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -283,11 +272,11 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  TimestampTz   t;            /**< timestamp (8 bytes) */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  TimestampTz   t;            /**< Timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
 
@@ -296,12 +285,12 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  int32         count;        /**< number of TInstant elements */
-  int16         bboxsize;     /**< size of the bounding box */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  int32         count;        /**< Number of TInstant elements */
+  int16         bboxsize;     /**< Size of the bounding box */
   /**< beginning of variable-length data */
 } TInstantSet;
 
@@ -310,13 +299,13 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  int32         count;        /**< number of TInstant elements */
-  int16         bboxsize;     /**< size of the bounding box */
-  Period        period;       /**< time span (24 bytes) */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  int32         count;        /**< Number of TInstant elements */
+  int16         bboxsize;     /**< Size of the bounding box */
+  Period        period;       /**< Time span (24 bytes) */
   /**< beginning of variable-length data */
 } TSequence;
 
@@ -325,13 +314,13 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  uint8         temptype;     /**< temporal type */
-  uint8         subtype;      /**< temporal subtype */
-  int16         flags;        /**< flags */
-  int32         count;        /**< number of TSequence elements */
-  int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
-  int16         bboxsize;     /**< size of the bounding box */
+  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
+  uint8         temptype;     /**< Temporal type */
+  uint8         subtype;      /**< Temporal subtype */
+  int16         flags;        /**< Flags */
+  int32         count;        /**< Number of TSequence elements */
+  int32         totalcount;   /**< Total number of TInstant elements in all TSequence elements */
+  int16         bboxsize;     /**< Size of the bounding box */
   /**< beginning of variable-length data */
 } TSequenceSet;
 
@@ -340,9 +329,9 @@ typedef struct
  */
 typedef union bboxunion
 {
-  Period    p;
-  TBOX      b;
-  STBOX     g;
+  Period    p;      /**< Period */
+  TBOX      b;      /**< Temporal box */
+  STBOX     g;      /**< Spatiotemporal box */
 } bboxunion;
 
 /**
@@ -440,9 +429,6 @@ typedef struct
 
 #define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
 
-#define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
-  PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
-
 #define DATUM_FREE(value, basetype) \
   do { \
     if (! basetype_byvalue(basetype)) \
@@ -488,9 +474,6 @@ extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
 extern void ensure_seq_subtypes(int16 subtype);
 extern void ensure_tinstarr(const TInstant **instants, int count);
-extern int *tsequenceset_make_valid_gaps(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear, double maxdist, Interval *maxt,
-  int *countsplits);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 extern void ensure_same_temptype(const Temporal *temp1,
@@ -507,7 +490,6 @@ extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, CachedType basetype);
 extern void ensure_valid_duration(const Interval *duration);
-extern void ensure_non_empty_array(ArrayType *array);
 
 /* General functions */
 
@@ -521,13 +503,15 @@ extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 
 /* Version functions */
 
+extern char *mobilitydb_version(void);
+extern char *mobilitydb_full_version(void);
 
 /* Input/output functions */
 
 extern char *temporal_to_string(const Temporal *temp,
   char *(*value_out)(Oid, Datum));
 extern void temporal_write(const Temporal* temp, StringInfo buf);
-extern Temporal* temporal_read(StringInfo buf, CachedType temptype);
+extern Temporal* temporal_read(StringInfo buf);
 
 /* Constructor functions */
 
@@ -543,8 +527,8 @@ extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 
 /* Cast functions */
 
-extern RangeType *tint_range(const Temporal *temp);
-extern RangeType *tfloat_range(const Temporal *temp);
+extern Span *tint_span(const Temporal *temp);
+extern Span *tfloat_span(const Temporal *temp);
 extern Temporal *tint_tfloat(const Temporal *temp);
 extern Temporal *tfloat_tint(const Temporal *temp);
 extern void temporal_period(const Temporal *temp, Period *p);
@@ -565,9 +549,9 @@ extern Temporal *temporal_shift_tscale(const Temporal *temp, bool shift,
 extern char *temporal_subtype(const Temporal *temp);
 extern char *temporal_interpolation(const Temporal *temp);
 extern Datum *temporal_values(const Temporal *temp, int *count);
-extern RangeType **tfloat_ranges(const Temporal *temp, int *count);
+extern Span **tfloat_spans(const Temporal *temp, int *count);
 extern PeriodSet *temporal_time(const Temporal *temp);
-extern RangeType *tnumber_range(const Temporal *temp);
+extern Span *tnumber_span(const Temporal *temp);
 extern Datum temporal_start_value(Temporal *temp);
 extern Datum temporal_end_value(Temporal *temp);
 extern const TInstant *temporal_min_instant(const Temporal *temp);
@@ -612,8 +596,8 @@ extern bool temporal_always_le(const Temporal *temp, Datum value);
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
-extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
-  RangeType **ranges, int count, int *newcount);
+extern Span **tnumber_bbox_restrict_spans(const Temporal *temp,
+  Span **spans, int count, int *newcount);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
   bool atfunc);
 
@@ -621,10 +605,10 @@ extern Temporal *temporal_restrict_value(const Temporal *temp,
   Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values,
   int count, bool atfunc);
-extern Temporal *tnumber_restrict_range(const Temporal *temp,
- RangeType *range, bool atfunc);
-extern Temporal *tnumber_restrict_ranges(const Temporal *temp,
-  RangeType **ranges, int count, bool atfunc);
+extern Temporal *tnumber_restrict_span(const Temporal *temp,
+ Span *span, bool atfunc);
+extern Temporal *tnumber_restrict_spans(const Temporal *temp,
+  Span **spans, int count, bool atfunc);
 extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
   TimestampTz t, Datum *value);
 extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t,
@@ -668,6 +652,45 @@ extern bool temporal_ge(const Temporal *temp1, const Temporal *temp2);
 /* Functions for defining hash index */
 
 extern uint32 temporal_hash(const Temporal *temp);
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+#include <utils/array.h>
+#include <utils/lsyscache.h>
+
+#define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
+  PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
+
+/*****************************************************************************
+ * Typmod definitions
+ *****************************************************************************/
+
+#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
+
+/**
+ * Structure to represent the temporal subtype array
+ */
+struct tempsubtype_struct
+{
+  char *subtypeName;   /**< string representing the temporal type */
+  int16 subtype;       /**< subtype */
+};
+
+#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
+  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
+#define TEMPSUBTYPE_MAX_LEN   13
+
+/* Parameter tests */
+
+extern void ensure_non_empty_array(ArrayType *array);
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/
 

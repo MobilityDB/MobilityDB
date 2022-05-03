@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_supportfn.h
+ * @file time_supportfn.h
  * Support functions for temporal types.
  */
 
@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 
 /*****************************************************************************/
 

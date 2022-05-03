@@ -90,16 +90,16 @@ SELECT extent(temp::period) FROM tbl_ttext;
  (2001-01-01 13:49:00+00, 2001-12-03 07:20:00+00]
 (1 row)
 
-SELECT extent(temp::intrange) FROM tbl_tint;
- extent  
----------
- [1,100)
+SELECT extent(temp::intspan) FROM tbl_tint;
+  extent  
+----------
+ [1, 100)
 (1 row)
 
-SELECT round(extent(temp::floatrange)) FROM tbl_tfloat;
-  round  
----------
- [1,100]
+SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
+  round   
+----------
+ [1, 100]
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
@@ -718,13 +718,13 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
   54
 (1 row)
 
-SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tint;
+SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tint;
    round    
 ------------
  100.000000
 (1 row)
 
-SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tfloat;
    round   
 -----------
  99.917602
@@ -1823,27 +1823,27 @@ WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_intrange WHERE temp != merge(atRange(temp, i), minusRange(temp, i));
+SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp != merge(atSpan(temp, i), minusSpan(temp, i));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange WHERE temp != merge(atRange(temp, f), minusRange(temp, f));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, f), minusSpan(temp, f));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intrange WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intspan WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatrange WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatspan WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
  count 
 -------
      0

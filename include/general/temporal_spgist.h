@@ -35,13 +35,6 @@
 #ifndef __TEMPORAL_SPGIST_H__
 #define __TEMPORAL_SPGIST_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
-
 /*****************************************************************************/
 
 /*****************************************************************************/

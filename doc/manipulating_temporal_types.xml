@@ -66,7 +66,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>numrange</varname> represents any number range type, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
+			<para><varname>numspan</varname> represents any number span type, that is, either <varname>intspan</varname> or <varname>floatspan</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -383,16 +383,16 @@ SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::period;
 </programlisting>
 			</listitem>
 
-			<listitem id="tnumber_range">
+			<listitem id="tnumber_span">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a temporal number to a range</para>
-				<para><varname>tnumber::range</varname></para>
+				<para>Cast a temporal number to a span</para>
+				<para><varname>tnumber::span</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intrange;
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- "[1, 3)"
-SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatrange;
+SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- "(1, 3]"
-SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatrange;
+SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- "[1, 3]"
 </programlisting>
 			</listitem>
@@ -575,7 +575,7 @@ SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2012-01-01'));
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Get the values</para>
-				<para><varname>getValues(ttype): {base[],floatrange[],geo}</varname></para>
+				<para><varname>getValues(ttype): {base[],floatspan[],geo}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT getValues(tint '[1@2012-01-01, 2@2012-01-03]');
 -- "{1,2}"
@@ -670,15 +670,15 @@ SELECT maxInstant(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-0
 </programlisting>
 			</listitem>
 
-			<listitem id="valueRange">
-				<indexterm><primary><varname>valueRange</varname></primary></indexterm>
-				<para>Get the value range</para>
-				<para><varname>valueRange(tnumber): numrange</varname></para>
+			<listitem id="valueSpan">
+				<indexterm><primary><varname>valueSpan</varname></primary></indexterm>
+				<para>Get the value span</para>
+				<para><varname>valueSpan(tnumber): numspan</varname></para>
 				<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				<programlisting xml:space="preserve">
-SELECT valueRange(tfloat '{[2@2012-01-01, 1@2012-01-03), [4@2012-01-03, 6@2012-01-05)}');
+SELECT valueSpan(tfloat '{[2@2012-01-01, 1@2012-01-03), [4@2012-01-03, 6@2012-01-05)}');
 -- "[1,6]"
-SELECT valueRange(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+SELECT valueSpan(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "[1,3])"
 </programlisting>
 			</listitem>
@@ -1180,23 +1180,23 @@ SELECT asText(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03
 </programlisting>
 			</listitem>
 
-				<listitem id="atRange">
-					<indexterm><primary><varname>atRange</varname></primary></indexterm>
-					<para>Restrict to a range</para>
-					<para><varname>atRange(tnumber,numrange): ttype</varname></para>
+				<listitem id="atSpan">
+					<indexterm><primary><varname>atSpan</varname></primary></indexterm>
+					<para>Restrict to a span</para>
+					<para><varname>atSpan(tnumber,numspan): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT atRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[1,3]');
+SELECT atSpan(tfloat '[1@2012-01-01, 4@2012-01-4)', floatspan '[1,3]');
 -- "[1@2012-01-01, 3@2012-01-03]"
 </programlisting>
 				</listitem>
 
-				<listitem id="atRanges">
-					<indexterm><primary><varname>atRanges</varname></primary></indexterm>
-					<para>Restrict to an array of ranges</para>
-					<para><varname>atRanges(tnumber,numrange[]): ttype</varname></para>
+				<listitem id="atSpans">
+					<indexterm><primary><varname>atSpans</varname></primary></indexterm>
+					<para>Restrict to an array of spans</para>
+					<para><varname>atSpans(tnumber,numspan[]): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
-  ARRAY[floatrange '[1,2]', '[3,4]']);
+SELECT atSpans(tfloat '[1@2012-01-01, 5@2012-01-05)',
+  ARRAY[floatspan '[1,2]', '[3,4]']);
 -- "{[1@2012-01-01, 2@2012-01-02],[3@2012-01-03, 4@2012-01-04]}"
 </programlisting>
 				</listitem>
@@ -1351,23 +1351,23 @@ SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@201
 </programlisting>
 				</listitem>
 
-				<listitem id="minusRange">
-					<indexterm><primary><varname>minusRange</varname></primary></indexterm>
-					<para>Difference with a range</para>
-					<para><varname>minusRange(tnumber,numrange): ttype</varname></para>
+				<listitem id="minusSpan">
+					<indexterm><primary><varname>minusSpan</varname></primary></indexterm>
+					<para>Difference with a span</para>
+					<para><varname>minusSpan(tnumber,numspan): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT minusRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[2,3]');
+SELECT minusSpan(tfloat '[1@2012-01-01, 4@2012-01-4)', floatspan '[2,3]');
 -- "{[1@2012-01-01, 2@2012-01-02), (3@2012-01-03, 4@2012-01-04)}"
 </programlisting>
 				</listitem>
 
-				<listitem id="minusRanges">
-					<indexterm><primary><varname>minusRanges</varname></primary></indexterm>
-					<para>Difference with an array of ranges</para>
-					<para><varname>minusRanges(tnumber,numrange[]): ttype</varname></para>
+				<listitem id="minusSpans">
+					<indexterm><primary><varname>minusSpans</varname></primary></indexterm>
+					<para>Difference with an array of spans</para>
+					<para><varname>minusSpans(tnumber,numspan[]): ttype</varname></para>
 					<programlisting xml:space="preserve">
-SELECT minusRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
-  ARRAY[floatrange '[1,2]', '[3,4]']);
+SELECT minusSpans(tfloat '[1@2012-01-01, 5@2012-01-05)',
+  ARRAY[floatspan '[1,2]', '[3,4]']);
 -- "{(2@2012-01-02, 3@2012-01-03), (4@2012-01-04, 5@2012-01-05)}"
 </programlisting>
 				</listitem>
@@ -1822,7 +1822,7 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 	<sect1>
 		<title>Bounding Box Operators</title>
 
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and span types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
 		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
 
@@ -2132,19 +2132,19 @@ SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-0
 			<itemizedlist>
 				<listitem id="bucketList">
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
-					<para>Returns a set of couples (index, bucket) that cover the range or period with buckets of the same size or duration aligned with the origin. &SRF;</para>
-					<para>If the origin is not specified, it is set by default to 0 for ranges and Monday, January 3, 2000 for periods. The indices start by 1.</para>
-					<para><varname>bucketList(bounds range,size number,origin number=0): setof index_range</varname></para>
+					<para>Returns a set of couples (index, bucket) that cover the span or period with buckets of the same size or duration aligned with the origin. &SRF;</para>
+					<para>If the origin is not specified, it is set by default to 0 for spans and Monday, January 3, 2000 for periods. The indices start by 1.</para>
+					<para><varname>bucketList(bounds span,size number,origin number=0): setof index_span</varname></para>
 					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof index_period</varname></para>
 					<programlisting xml:space="preserve">
-SELECT (bl).index, (bl).range
-FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intrange, 2) AS bl) t;
+SELECT (bl).index, (bl).span
+FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intspan, 2) AS bl) t;
 -- 1 | [14,16)
    2 | [16,18)
    3 | [18,20)
    ...
-SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatrange, 2, -7);
+SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatspan, 2, -7);
 -- (1,"[-11,-9)")
    (2,"[-9,-7)")
    (3,"[-7,-5)")
@@ -2176,19 +2176,19 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 </programlisting>
 				</listitem>
 
-				<listitem id="rangeBucket">
-					<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
-					<para>Returns the range in the bucket space that contains the input number.</para>
+				<listitem id="spanBucket">
+					<indexterm><primary><varname>spanBucket</varname></primary></indexterm>
+					<para>Returns the span in the bucket space that contains the input number.</para>
 					<para>If the origin is not specified, it is set by default to 0.</para>
-					<para><varname>rangeBucket(value number,size number,origin number=0): range</varname></para>
+					<para><varname>spanBucket(value number,size number,origin number=0): span</varname></para>
 					<programlisting xml:space="preserve">
-SELECT rangeBucket(2, 2);
+SELECT spanBucket(2, 2);
 -- [2,4)
-SELECT rangeBucket(2, 2, 1);
+SELECT spanBucket(2, 2, 1);
 -- [1,3)
-SELECT rangeBucket(2, 2.5);
+SELECT spanBucket(2, 2.5);
 -- [0,2.5)
-SELECT rangeBucket(2, 2.5, 1.5);
+SELECT spanBucket(2, 2.5, 1.5);
 -- [1.5,4)
 </programlisting>
 				</listitem>
@@ -2318,7 +2318,7 @@ SELECT multidimTile(geometry 'Point(1 1)', '2000-01-01', 2.0, '2 days', 'Point(1
 			<itemizedlist>
 				<listitem id="valueSplit">
 					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
-					<para>Fragment the temporal number with respect to range buckets. &SRF;</para>
+					<para>Fragment the temporal number with respect to span buckets. &SRF;</para>
 					<para><varname>valueSplit(value tnumber,size number,origin number=0): setof number_tnumber</varname></para>
 					<para>If the origin of values is not specified, it is set by default to 0.</para>
 					<programlisting xml:space="preserve">
@@ -2705,14 +2705,14 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</itemizedlist>
 		</para>
 
-		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float range, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/range and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
+		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float span, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/span and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
 			<programlisting xml:space="preserve">
 SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
-SELECT * FROM Department WHERE NoEmps &amp;&amp; intrange '[1, 5)';
+SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2012-04-01';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; period '[2012-04-01, 2012-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
-tbox(intrange '[1, 5)', period '[2012-04-01, 2012-05-01)');
+tbox(intspan '[1, 5)', period '[2012-04-01, 2012-05-01)');
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
 tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
 </programlisting>
@@ -2757,7 +2757,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<title>Statistics Collection</title>
 			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
 
-			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and range types. For scalar types, such as <varname>float</varname>, the following statistics are collected:
+			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and span types. For scalar types, such as <varname>float</varname>, the following statistics are collected:
 				<orderedlist numeration="arabic">
 					<listitem>
 						<para>fraction of null values,</para>
@@ -2802,7 +2802,7 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>The statistics collected for columns of the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the statistics for the <varname>period</varname> type are collected.</para>
+			<para>The statistics collected for columns of the time and span types <varname>timestampset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname>, and <varname>floatspan</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the span types in MobilityDB, which are more efficient versions of the range types in PostgreSQL. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding period, then the statistics for the <varname>period</varname> type are collected.</para>
 
 			<para>The statistics collected for columns of temporal types depend on their subtype and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
 				<itemizedlist>
@@ -2839,7 +2839,7 @@ WHERE intersects(T.Trip, R.Geom);
 									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
 								</listitem>
 								<listitem>
-									<para>For all other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
+									<para>For all other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding) value spans.</para>
 								</listitem>
 							</itemizedlist>
 						</para>
@@ -2859,7 +2859,7 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a PostgreSQL type (such as <varname>integer</varname>, <varname>timestamptz</varname>, etc.) or a MobilityDB type (such as <varname>period</varname>, <varname>tint</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and time dimensions. The classes correspond to the type of statistics collected as explained in the previous section.</para>
 
-			<para>MobilityDB estimates restriction and join selectivity for temporal types, altough join selectivity for temporal numbers uses a default selectivity value for the value dimension since PostgreSQL currently does not provide join selectivity for range types.</para>
+			<para>MobilityDB estimates both restriction and join selectivity for time, span, and temporal types.</para>
 		</sect2>
 	</sect1>
 </chapter>

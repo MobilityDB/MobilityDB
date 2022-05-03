@@ -196,11 +196,11 @@ extern TSequence *tpointseq_set_srid(const TSequence *seq, int32 srid);
 extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ts, int32 srid);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 
-extern TInstant *tpointinst_transform(const TInstant *inst, Datum srid);
-extern TInstantSet *tpointinstset_transform(const TInstantSet *ti, Datum srid);
-extern TSequence *tpointseq_transform(const TSequence *seq, Datum srid);
-extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ts, Datum srid);
-extern Temporal *tpoint_transform(const Temporal *temp, Datum srid);
+extern TInstant *tpointinst_transform(const TInstant *inst, int srid);
+extern TInstantSet *tpointinstset_transform(const TInstantSet *ti, int srid);
+extern TSequence *tpointseq_transform(const TSequence *seq, int srid);
+extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ts, int srid);
+extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 
 /* Cast functions */
 
@@ -215,7 +215,7 @@ extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 /* Set precision of the coordinates */
 
 extern Datum datum_round_geo(Datum value, Datum prec);
-extern Temporal *tpoint_round(const Temporal *temp, Datum prec);
+extern Temporal *tpoint_round(const Temporal *temp, int prec);
 
 /* Functions for extracting coordinates */
 

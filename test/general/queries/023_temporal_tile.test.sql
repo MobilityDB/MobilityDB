@@ -31,11 +31,11 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
-SELECT bucketList(intrange '[1, 10]', 2, 1) LIMIT 3;
+SELECT bucketList(intspan '[1, 10]', 2) LIMIT 3;
+SELECT bucketList(intspan '[1, 10]', 2, 1) LIMIT 3;
 
-SELECT bucketList(floatrange '(1, 10)', 2.5) LIMIT 3;
-SELECT bucketList(floatrange '(1, 10)', 2.5, 1.5) LIMIT 3;
+SELECT bucketList(floatspan '(1, 10)', 2.5) LIMIT 3;
+SELECT bucketList(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
 
 SELECT valueBucket(3, 2);
 SELECT valueBucket(3, 2, 1);
@@ -56,10 +56,10 @@ SELECT valueBucket(3.5, -2.5);
 SELECT valueBucket(-2147483647, 3, 2);
 SELECT valueBucket(2147483646, 3, -2);
 
-SELECT rangeBucket(3, 2);
-SELECT rangeBucket(3, 2, 1);
-SELECT rangeBucket(3.5, 2.5);
-SELECT rangeBucket(3.5, 2.5, 1.5);
+SELECT spanBucket(3, 2);
+SELECT spanBucket(3, 2, 1);
+SELECT spanBucket(3.5, 2.5);
+SELECT spanBucket(3.5, 2.5, 1.5);
 
 -------------------------------------------------------------------------------
 

@@ -37,15 +37,13 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
 #include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
 #include <utils/selfuncs.h>
 #include <utils/typcache.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal.h"
 
 #define BTREE_AM_OID   403

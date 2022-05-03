@@ -41,8 +41,7 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temporal_catalog.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"
 #include "point/tpoint_boxops.h"
@@ -130,7 +129,6 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * obtained from the bounding box. */
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the SRID of a temporal network point of subtype instant.
  */
 int
@@ -145,7 +143,6 @@ tnpointinst_srid(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the SRID of a temporal network point
  */
 int
@@ -242,7 +239,6 @@ tnpointseqset_step_npoints(const TSequenceSet *ts, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] inst Temporal network point
@@ -255,7 +251,6 @@ tnpointinst_geom(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] ti Temporal network point
@@ -276,7 +271,6 @@ tnpointinstset_geom(const TInstantSet *ti)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] seq Temporal network point
@@ -307,7 +301,6 @@ tnpointseq_geom(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] ts Temporal network point
@@ -337,7 +330,6 @@ tnpointseqset_geom(const TSequenceSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
  * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] temp Temporal network point

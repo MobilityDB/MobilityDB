@@ -36,14 +36,16 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <utils/builtins.h>
+#include <libpq/pqformat.h>
+#include <utils/fmgrprotos.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -141,8 +143,7 @@ void
 ensure_has_X_stbox(const STBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have XY(Z) dimension")));
+    elog(ERROR, "The box must have XY(Z) dimension");
   return;
 }
 
@@ -153,8 +154,7 @@ void
 ensure_has_T_stbox(const STBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have time dimension")));
+    elog(ERROR, "The box must have time dimension");
   return;
 }
 
@@ -557,7 +557,7 @@ timestamp_stbox(TimestampTz t, STBOX *box)
 void
 timestampset_stbox(const TimestampSet *ts, STBOX *box)
 {
-  const Period *p = timestampset_bbox_ptr(ts);
+  const Period *p = timestampset_period_ptr(ts);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
   box->tmin = p->lower;
@@ -590,7 +590,7 @@ periodset_stbox(const PeriodSet *ps, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  const Period *p = periodset_bbox_ptr(ps);
+  const Period *p = periodset_period_ptr(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -1790,7 +1790,7 @@ Stbox_to_period(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_T_stbox(box);
-  Period *result = period_make(box->tmin, box->tmax, true, true);
+  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
   PG_RETURN_POINTER(result);
 }
 
@@ -1932,7 +1932,7 @@ PG_FUNCTION_INFO_V1(Period_to_stbox);
 PGDLLEXPORT Datum
 Period_to_stbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   period_stbox(p, result);
   PG_RETURN_POINTER(result);
@@ -1993,7 +1993,7 @@ PGDLLEXPORT Datum
 Geo_period_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   STBOX *result = geo_period_to_stbox(gs, p);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
@@ -2551,22 +2551,25 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
 
   /* Can't do anything with null inputs */
-  if (!box1 && !box2)
+  if (! box1 && ! box2)
     PG_RETURN_NULL();
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   /* One of the boxes is null, return the other one */
-  if (!box1)
+  if (! box1)
   {
     memcpy(result, box2, sizeof(STBOX));
     PG_RETURN_POINTER(result);
   }
-  if (!box2)
+  if (! box2)
   {
     memcpy(result, box1, sizeof(STBOX));
     PG_RETURN_POINTER(result);
   }
 
   /* Both boxes are not null */
+  ensure_same_srid_stbox(box1, box2);
+  ensure_same_dimensionality(box1->flags, box2->flags);
+  ensure_same_geodetic(box1->flags, box2->flags);
   memcpy(result, box1, sizeof(STBOX));
   stbox_expand(box2, result);
   PG_RETURN_POINTER(result);

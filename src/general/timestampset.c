@@ -41,10 +41,10 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
-#include "general/period.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************
@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of the timestamp set value
  */
 TimestampTz
@@ -65,42 +65,13 @@ timestampset_time_n(const TimestampSet *ts, int index)
  * Return a pointer to the precomputed bounding box of the timestamp set value
  */
 const Period *
-timestampset_bbox_ptr(const TimestampSet *ts)
+timestampset_period_ptr(const TimestampSet *ts)
 {
   return (Period *)&ts->period;
 }
 
 /**
- * Copy in the second argument the bounding box of the timestamp set value
- */
-void
-timestampset_bbox(const TimestampSet *ts, Period *p)
-{
-  const Period *p1 = (Period *)&ts->period;
-  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
-  return;
-}
-
-/**
- * Peak into a timestamp set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-timestampset_bbox_slice(Datum tsdatum, Period *p)
-{
-  TimestampSet *ts = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
-    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
-      time_max_header_size());
-  else
-    ts = (TimestampSet *) tsdatum;
-  timestampset_bbox(ts, p);
-  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
-  return;
-}
-
-/**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a timestamp set from an array of timestamps.
  *
  * For example, the memory structure of a timestamp set with 3
@@ -123,18 +94,19 @@ timestampset_make(const TimestampTz *times, int count)
   for (int i = 0; i < count - 1; i++)
   {
     if (times[i] >= times[i + 1])
-      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Invalid value for timestamp set")));
+      elog(ERROR, "Invalid value for timestamp set");
   }
   /* Notice that the first timestamp is already declared in the struct */
-  size_t memsize = double_pad(sizeof(TimestampSet)) + sizeof(TimestampTz) * (count - 1);
+  size_t memsize = double_pad(sizeof(TimestampSet)) +
+    sizeof(TimestampTz) * (count - 1);
   /* Create the TimestampSet */
   TimestampSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
 
   /* Compute the bounding box */
-  period_set(times[0], times[count - 1], true, true, &result->period);
+  span_set(times[0], times[count - 1], true, true, T_TIMESTAMPTZ,
+    &result->period);
   /* Copy the timestamp array */
   for (int i = 0; i < count; i++)
     result->elems[i] = times[i];
@@ -142,7 +114,7 @@ timestampset_make(const TimestampTz *times, int count)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Construct a timestamp set from the array of timestamps and free the
  * array after the creation.
  *
@@ -163,7 +135,7 @@ timestampset_make_free(TimestampTz *times, int count)
 }
 
 /**
- * @ingroup libmeos_time_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Return a copy of the timestamp set.
  */
 TimestampSet *
@@ -230,7 +202,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return the string representation of the timestamp set value.
  */
 char *
@@ -248,7 +220,7 @@ timestampset_to_string(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Write the binary representation of the time value into the buffer.
  *
  * @param[in] ts Time value
@@ -269,7 +241,7 @@ timestampset_write(const TimestampSet *ts, StringInfo buf)
 }
 
 /**
- * @ingroup libmeos_time_input_output
+ * @ingroup libmeos_spantime_input_output
  * @brief Return a new time value from its binary representation
  * read from the buffer.
  *
@@ -295,7 +267,7 @@ timestampset_read(StringInfo buf)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp value as a timestamp set value
  */
 TimestampSet *
@@ -306,17 +278,15 @@ timestamp_timestampset(TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_time_cast
- * @brief Return the bounding period of the timestamp set value.
+ * @ingroup libmeos_spantime_cast
+ * @brief Copy in the second argument the bounding period of the timestamp
+ * set value
  */
 void
 timestampset_period(const TimestampSet *ts, Period *p)
 {
-  TimestampTz start = timestampset_time_n(ts, 0);
-  TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(p, 0, sizeof(Period));
-  period_set(start, end, true, true, p);
+  const Period *p1 = &ts->period;
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
   return;
 }
 
@@ -325,7 +295,7 @@ timestampset_period(const TimestampSet *ts, Period *p)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the size in bytes of the timestamp set value.
  */
 int
@@ -335,7 +305,7 @@ timestampset_mem_size(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the timespan of the timestamp set value.
  */
 Interval *
@@ -349,7 +319,7 @@ timestampset_timespan(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of the timestamp set value.
  */
 int
@@ -359,7 +329,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the start timestamp of the timestamp set value.
  */
 TimestampTz
@@ -370,7 +340,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the end timestamp of the timestamp set value.
  */
 TimestampTz
@@ -381,7 +351,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of the timestamp set value.
  *
  * @param[in] ts Timestamp set
@@ -400,7 +370,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the array of timestamps of the timestamp set value.
  */
 TimestampTz *
@@ -417,7 +387,7 @@ timestampset_timestamps(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_transf
+ * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale the timestamp set value by the two intervals
  */
 TimestampSet *
@@ -464,7 +434,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  *
@@ -497,7 +467,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is equal to the
  * second one.
  *
@@ -521,7 +491,7 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is different from the
  * second one.
  *
@@ -534,7 +504,7 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is less than the second one
  */
 bool
@@ -545,7 +515,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is less than
  * or equal to the second one
  */
@@ -557,7 +527,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is greater than
  * or equal to the second one
  */
@@ -569,7 +539,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_comp
+ * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is greater than the second one
  */
 bool
@@ -586,7 +556,7 @@ timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a timestamp set.
  */
 uint32
@@ -596,14 +566,15 @@ timestampset_hash(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    uint32 time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(t)));
+    uint32 time_hash = DatumGetUInt32(call_function1(hashint8,
+      TimestampTzGetDatum(t)));
     result = (result << 5) - result + time_hash;
   }
   return result;
 }
 
 /**
- * @ingroup libmeos_time_accessor
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed.
  */
 uint64
@@ -720,6 +691,24 @@ Timestamp_to_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_period_slice(Datum tsdatum, Period *p)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_period(ts, p);
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(Timestampset_to_period);
 /**
  * Return the bounding period on which the timestamp set value is defined
@@ -729,7 +718,7 @@ Timestampset_to_period(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  timestampset_bbox_slice(tsdatum, result);
+  timestampset_period_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 

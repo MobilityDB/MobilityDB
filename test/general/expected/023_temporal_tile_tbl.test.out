@@ -1,4 +1,4 @@
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -6,7 +6,7 @@ SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tb
      3 |    66
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -14,7 +14,7 @@ SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM
      3 |    65
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -22,7 +22,7 @@ SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2) AS bl FROM tb
      3 |    75
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -66,36 +66,36 @@ SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
  4706
 (1 row)
 
-SELECT rangeBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- rangebucket | count 
--------------+-------
- [74,76)     |     6
- [2,4)       |     5
- [24,26)     |     5
+SELECT spanBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ spanbucket | count 
+------------+-------
+ [74, 76)   |     6
+ [2, 4)     |     5
+ [24, 26)   |     5
 (3 rows)
 
-SELECT rangeBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- rangebucket | count 
--------------+-------
- [73,75)     |     6
- [1,3)       |     5
- [21,23)     |     5
+SELECT spanBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ spanbucket | count 
+------------+-------
+ [73, 75)   |     6
+ [1, 3)     |     5
+ [21, 23)   |     5
 (3 rows)
 
-SELECT rangeBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- rangebucket | count 
--------------+-------
- [15,17.5)   |     6
- [45,47.5)   |     6
- [10,12.5)   |     5
+SELECT spanBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ spanbucket | count 
+------------+-------
+ [15, 17.5) |     6
+ [45, 47.5) |     6
+ [10, 12.5) |     5
 (3 rows)
 
-SELECT rangeBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- rangebucket | count 
--------------+-------
- [14,16.5)   |     7
- [9,11.5)    |     6
- [46.5,49)   |     6
+SELECT spanBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ spanbucket | count 
+------------+-------
+ [14, 16.5) |     7
+ [9, 11.5)  |     6
+ [46.5, 49) |     6
 (3 rows)
 
 SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

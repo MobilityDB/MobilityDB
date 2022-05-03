@@ -44,11 +44,9 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
-#include "general/time_ops.h"
-#include "general/rangetypes_ext.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "general/span_ops.h"
+#include "general/time_ops.h"
 #include "general/lifting.h"
 
 /*****************************************************************************
@@ -225,8 +223,8 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
   if (hast)
   {
     temporal_period(temp, &p1);
-    period_set(box->tmin, box->tmax, true, true, &p2);
-    if (! inter_period_period(&p1, &p2, &inter))
+    span_set(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ, &p2);
+    if (! inter_span_span(&p1, &p2, &inter))
       return DBL_MAX;
   }
 

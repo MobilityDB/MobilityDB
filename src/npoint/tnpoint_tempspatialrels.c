@@ -39,7 +39,7 @@
 #include "npoint/tnpoint_tempspatialrels.h"
 
 /* MobilityDB */
-#include "general/temporal_util.h"
+#include "point/postgis.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 #include "npoint/tnpoint_spatialfuncs.h"
@@ -49,7 +49,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal disjoint/intersection relationship between the
  * temporal network point and the network point
  */
@@ -69,7 +68,6 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal disjoint/intersection relationship between the
  * temporal network point and the geometry
  */
@@ -91,7 +89,6 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool tinter,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal contains relationship between the geometry and
  * the temporal network point
  */
@@ -108,7 +105,6 @@ tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal touches relationship between the temporal network
  * point and the geometry
  */
@@ -127,7 +123,6 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal touches relationship between the temporal network
  * point and the geometry
  */
@@ -139,7 +134,6 @@ ttouches_geo_tnpoint(const GSERIALIZED *geo, const Temporal *temp, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal touches relationship between the temporal network
  * point and the network point
  */
@@ -158,7 +152,6 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal touches relationship between the temporal network
  * point and the network point
  */
@@ -170,7 +163,6 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the geometry and the
  * temporal network point are within the given distance
  */
@@ -187,7 +179,6 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, Datum dist, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the geometry and the
  * temporal network point are within the given distance
  */
@@ -199,7 +190,6 @@ tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, Datum dist, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the network point and
  * the temporal network point are within the given distance
  */
@@ -216,7 +206,6 @@ tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, Datum dist, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the network point and
  * the temporal network point are within the given distance
  */
@@ -228,7 +217,6 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, Datum dist, bool restr,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the temporal network
  * points are within the given distance
  */
@@ -245,8 +233,9 @@ tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, Datum dist,
 
   Temporal *tempgeom1 = tnpoint_tgeompoint(sync1);
   Temporal *tempgeom2 = tnpoint_tgeompoint(sync2);
-  Temporal *result = tdwithin_tpoint_tpoint(tempgeom1, tempgeom2, dist,
-    restr, atvalue);
+  Temporal *result = tdwithin_tpoint_tpoint1(tempgeom1, tempgeom2, dist, restr,
+    atvalue);
+  pfree(sync1); pfree(sync2);
   pfree(tempgeom1); pfree(tempgeom2);
   return result;
 }

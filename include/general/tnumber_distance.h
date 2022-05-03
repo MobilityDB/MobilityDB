@@ -35,12 +35,8 @@
 #ifndef __TNUMBER_DISTANCE_H__
 #define __TNUMBER_DISTANCE_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <float.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/

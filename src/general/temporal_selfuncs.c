@@ -65,12 +65,10 @@
 /* MobilityDB */
 #include "general/timetypes.h"
 #include "general/timestampset.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/periodset.h"
-#include "general/time_selfuncs.h"
 #include "general/time_ops.h"
-#include "general/rangetypes_ext.h"
-#include "general/temporal_util.h"
+#include "general/span_selfuncs.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_analyze.h"
 #include "general/tnumber_selfuncs.h"
@@ -366,11 +364,11 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
   {
     Oid operid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operid, PeriodPGetDatum(period),
+    selec = var_eq_const(vardata, operid, SpanPGetDatum(period),
       false, false, false);
 #else
     selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
-      PeriodPGetDatum(period), false, false, false);
+      SpanPGetDatum(period), false, false, false);
 #endif
   }
   else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
@@ -385,7 +383,8 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
     cachedOp == LT_OP || cachedOp == LE_OP ||
     cachedOp == GT_OP || cachedOp == GE_OP)
   {
-    selec = period_sel_hist(vardata, period, cachedOp);
+    /* Cast the period as a span to call the span selectivity functions */
+    selec = span_sel_hist(vardata, (Span *) period, cachedOp, PERIODSEL);
   }
   else /* Unknown operator */
   {
@@ -495,17 +494,21 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else /* tempfamily == TNUMBERTYPE */
   {
-    TBOX box;
-    if (! tnumber_const_to_tbox(other, &box))
+    /* Get the base type of the temporal column */
+    CachedType basetype = temptype_basetype(oid_type(vardata.atttype));
+    /* Transform the constant into a span and/or a period */
+    Span *s = NULL;
+    Period *p = NULL;
+    if (! tnumber_const_to_span_period(other, &s, &p, basetype))
       /* In the case of unknown constant */
       return tnumber_sel_default(cachedOp);
 
-    assert(MOBDB_FLAGS_GET_X(box.flags) ||
-      MOBDB_FLAGS_GET_T(box.flags));
-    /* Get the base type of the temporal column */
-    Oid basetypid = temptypid_basetypid(vardata.atttype);
     /* Compute the selectivity */
-    selec = tnumber_sel_box(&vardata, &box, cachedOp, basetypid);
+    selec = tnumber_sel_span_period(&vardata, s, p, cachedOp,
+      type_oid(basetype));
+    /* Free variables */
+    if (s) pfree(s);
+    if (p) pfree(p);
   }
 
   ReleaseVariableStats(vardata);
@@ -616,10 +619,10 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
      */
     if (cachedOp == SAME_OP)
       // TODO
-      selec *= period_joinsel_default(cachedOp);
+      selec *= span_joinsel_default(cachedOp);
     else
       /* Estimate join selectivity */
-      selec *= period_joinsel(root, cachedOp, args, jointype, sjinfo);
+      selec *= span_joinsel(root, cachedOp, args, jointype, sjinfo);
   }
 
   CLAMP_PROBABILITY(selec);

@@ -200,25 +200,25 @@ CREATE OPERATOR < (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS timestampset_ops
@@ -242,7 +242,7 @@ CREATE FUNCTION timestampset_hash_extended(timestampset, bigint)
   AS 'MODULE_PATHNAME', 'Timestampset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS period_hash_ops
+CREATE OPERATOR CLASS timestampset_hash_ops
   DEFAULT FOR TYPE timestampset USING hash AS
     OPERATOR    1   = ,
     FUNCTION    1   timestampset_hash(timestampset),

@@ -43,10 +43,9 @@
 #include <liblwgeom.h>
 /* MobilityDB */
 #include "point/tpoint_tile.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
 #include "general/temporal_tile.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"

@@ -1,6 +1,7 @@
 # Postgres version dependant files
 if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
-  set(FILE_015 015_time_spgist)
+  set(FILE_013 013_span_spgist)
+  set(FILE_014 014_time_spgist)
   set(FILE_044 044_temporal_spgist)
   if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 120000)
     set(FILE_019 019_geo_constructors)
@@ -8,14 +9,16 @@ if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
 endif()
 
 SET(LOCAL_FILES
-  000_catalog
-  001_period
+  001_span
   003_timestampset
   005_periodset
-  007_rangetypes_ext
-  011_time_ops
-  013_time_gist
-  ${FILE_015}
+  007_span_ops
+  009_time_ops
+  011_span_gist
+  012_time_gist
+  ${FILE_013}
+  ${FILE_014}
+  015_span_aggfuncs
   017_time_aggfuncs
   ${FILE_019}
   020_doublen

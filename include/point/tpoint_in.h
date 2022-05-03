@@ -37,12 +37,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 /* JSON-C */
 #include <json-c/json.h>
 /* MobilityDB */
 #include "general/temporal.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 
 /*****************************************************************************/
 

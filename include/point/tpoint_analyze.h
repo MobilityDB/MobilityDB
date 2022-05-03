@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 #include <commands/vacuum.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -120,8 +118,8 @@ extern double nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndim
 extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_stats_value_index(const ND_STATS *stats, const int *indexes);
 
-extern void gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int sample_rows, double total_rows, int mode);
+extern void tpoint_compute_stats(VacAttrStats *stats,
+  AnalyzeAttrFetchFunc fetchfunc, int sample_rows, double total_rows);
 
 /*****************************************************************************/
 

@@ -35,12 +35,10 @@
 #ifndef __TEMPORAL_PARSER_H__
 #define __TEMPORAL_PARSER_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
+#include "general/span.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/
@@ -63,6 +61,8 @@ extern TBOX *tbox_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
+extern Span *span_parse(char **str, CachedType spantype, bool make);
+
 extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end,
   bool make);
 extern TInstantSet *tinstantset_parse(char **str, CachedType temptype);

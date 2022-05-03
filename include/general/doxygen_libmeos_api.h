@@ -44,53 +44,53 @@
  */
 
 /**
- * @defgroup libmeos_time Functions for time types
+ * @defgroup libmeos_spantime Functions for span and time types
  * @ingroup libmeos_api
- * @brief Functions for time types.
+ * @brief Functions for span and time types.
  *
- * @defgroup libmeos_time_input_output Input/output functions
- * @ingroup libmeos_time
- * @brief Input/output functions for time types.
+ * @defgroup libmeos_spantime_input_output Input/output functions
+ * @ingroup libmeos_spantime
+ * @brief Input/output functions for span and time types.
  *
- * @defgroup libmeos_time_constructor Constructors functions
- * @ingroup libmeos_time
- * @brief Constructor functions for time types.
+ * @defgroup libmeos_spantime_constructor Constructors functions
+ * @ingroup libmeos_spantime
+ * @brief Constructor functions for span and time types.
  *
- * @defgroup libmeos_time_cast Cast functions
- * @ingroup libmeos_time
- * @brief Cast functions for time types.
+ * @defgroup libmeos_spantime_cast Cast functions
+ * @ingroup libmeos_spantime
+ * @brief Cast functions for span and time types.
  *
- * @defgroup libmeos_time_accessor Accessor functions
- * @ingroup libmeos_time
- * @brief Accessor functions for time types.
+ * @defgroup libmeos_spantime_accessor Accessor functions
+ * @ingroup libmeos_spantime
+ * @brief Accessor functions for span and time types.
  *
- * @defgroup libmeos_time_transf Transformation functions
- * @ingroup libmeos_time
- * @brief Transformation functions for time types.
+ * @defgroup libmeos_spantime_transf Transformation functions
+ * @ingroup libmeos_spantime
+ * @brief Transformation functions for span and time types.
  *
- * @defgroup libmeos_time_bbox Bounding box functions
- * @ingroup libmeos_time
- * @brief Bounding box functions for time types.
+ * @defgroup libmeos_spantime_bbox Bounding box functions
+ * @ingroup libmeos_spantime
+ * @brief Bounding box functions for span and time types.
  *
- * @defgroup libmeos_time_topo Topological functions
- * @ingroup libmeos_time_bbox
- * @brief Topological functions for time types.
+ * @defgroup libmeos_spantime_topo Topological functions
+ * @ingroup libmeos_spantime_bbox
+ * @brief Topological functions for span and time types.
  *
- * @defgroup libmeos_time_pos Position functions
- * @ingroup libmeos_time_bbox
- * @brief Position functions for time types.
+ * @defgroup libmeos_spantime_pos Position functions
+ * @ingroup libmeos_spantime_bbox
+ * @brief Position functions for span and time types.
  *
- * @defgroup libmeos_time_set Set functions
- * @ingroup libmeos_time
- * @brief Set functions for time types.
+ * @defgroup libmeos_spantime_set Set functions
+ * @ingroup libmeos_spantime
+ * @brief Set functions for span and time types.
  *
- * @defgroup libmeos_time_dist Distance functions
- * @ingroup libmeos_time
- * @brief Distance functions for time types.
+ * @defgroup libmeos_spantime_dist Distance functions
+ * @ingroup libmeos_spantime
+ * @brief Distance functions for span and time types.
  *
- * @defgroup libmeos_time_comp Comparison functions
- * @ingroup libmeos_time
- * @brief Comparison functions for time types.
+ * @defgroup libmeos_spantime_comp Comparison functions
+ * @ingroup libmeos_spantime
+ * @brief Comparison functions for span and time types.
  */
 
 /**

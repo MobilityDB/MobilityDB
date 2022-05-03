@@ -42,42 +42,21 @@
 #define __TIMETYPES_H__
 
 /* PostgreSQL */
-#include <postgres.h>
-#include <access/stratnum.h>
 #include <utils/timestamp.h>
+/* MobilityDB */
+#include "general/span.h"
 
 /*****************************************************************************/
-
-/**
- * Structure to represent periods
- */
-typedef struct
-{
-  TimestampTz lower;    /**< lower bound value */
-  TimestampTz upper;    /**< upper bound value */
-  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
-} Period;
-
-/**
- * Internal representation of either bound of a period (not what's on disk)
- */
-typedef struct
-{
-  TimestampTz t;        /**< bound value */
-  bool inclusive;       /**< bound is inclusive (vs exclusive) */
-  bool lower;           /**< this is the lower (vs upper) bound */
-} PeriodBound;
 
 /**
  * Structure to represent timestamp sets
  */
 typedef struct
 {
-  int32 vl_len_;        /**< varlena header (do not touch directly!) */
-  int32 count;          /**< number of TimestampTz elements */
-  Period period;        /**< bounding period */
-  TimestampTz elems[1]; /**< beginning of variable-length data */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 count;          /**< Number of TimestampTz elements */
+  Period period;        /**< Bounding period */
+  TimestampTz elems[1]; /**< Beginning of variable-length data */
 } TimestampSet;
 
 /**
@@ -85,10 +64,10 @@ typedef struct
  */
 typedef struct
 {
-  int32 vl_len_;        /**< varlena header (do not touch directly!) */
-  int32 count;          /**< number of Period elements */
-  Period period;        /**< bounding period */
-  Period elems[1];      /**< beginning of variable-length data */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 count;          /**< Number of Period elements */
+  Period period;        /**< Bounding period */
+  Period elems[1];      /**< Beginning of variable-length data */
 } PeriodSet;
 
 /*
@@ -99,11 +78,6 @@ typedef struct
 #define TimestampSetPGetDatum(X)     PointerGetDatum(X)
 #define PG_GETARG_TIMESTAMPSET_P(X)  ((TimestampSet *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_TIMESTAMPSET_P(X)  PG_RETURN_POINTER(X)
-
-#define DatumGetPeriodP(X)           ((Period *) DatumGetPointer(X))
-#define PeriodPGetDatum(X)           PointerGetDatum(X)
-#define PG_GETARG_PERIOD_P(X)        DatumGetPeriodP(PG_GETARG_POINTER(X))
-#define PG_RETURN_PERIOD_P(X)        PG_RETURN_POINTER(X)
 
 #define DatumGetPeriodSetP(X)        ((PeriodSet *) PG_DETOAST_DATUM(X))
 #define PeriodSetPGetDatum(X)        PointerGetDatum(X)

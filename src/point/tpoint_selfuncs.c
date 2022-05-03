@@ -40,11 +40,12 @@
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
-#include "general/time_selfuncs.h"
+#include "general/span_selfuncs.h"
 #include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
+#include "point/postgis.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_analyze.h"
@@ -468,7 +469,7 @@ tpoint_const_stbox(Node *other, STBOX *box)
   else if (type == T_TIMESTAMPSET)
     timestampset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_PERIOD)
-    period_stbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+    period_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
   else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_STBOX)
@@ -912,7 +913,7 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   if (MOBDB_FLAGS_GET_T(box.flags))
   {
     /* Transform the STBOX into a Period */
-    period_set(box.tmin, box.tmax, true, true, &period);
+    span_set(box.tmin, box.tmax, true, true, T_TIMESTAMPTZ, &period);
 
     /* Compute the selectivity */
     selec *= temporal_sel_period(&vardata, &period, cachedOp);
@@ -1341,10 +1342,10 @@ tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
      */
     if (cachedOp == SAME_OP ||
       (cachedOp == OVERLAPS_OP && list_length(args) != 2))
-      selec *= period_joinsel_default(cachedOp);
+      selec *= span_joinsel_default(cachedOp);
     else
       /* Estimate join selectivity */
-      selec *= period_joinsel(root, cachedOp, args, jointype, sjinfo);
+      selec *= span_joinsel(root, cachedOp, args, jointype, sjinfo);
   }
   return selec;
 }

@@ -35,13 +35,9 @@
 #ifndef __TBOX_H__
 #define __TBOX_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <libpq/pqformat.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/span.h"
+#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
 
 /*****************************************************************************/
@@ -57,6 +53,12 @@ typedef struct
   TimestampTz tmax;   /**< maximum timestamp */
   int16       flags;  /**< flags */
 } TBOX;
+
+// typedef struct
+// {
+  // Span      xspan;   /**< span for the values */
+  // Period    tspan;   /**< period for the timestamps */
+// } TBOXNew;
 
 /* fmgr macros temporal types */
 
@@ -99,7 +101,7 @@ extern TBOX *tbox_read(StringInfo buf);
 extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
 extern void int_tbox(int i, TBOX *box);
 extern void float_tbox(double d, TBOX *box);
-extern void range_tbox(const RangeType *r, TBOX *box);
+extern void span_tbox(const Span *r, TBOX *box);
 extern void timestamp_tbox(TimestampTz t, TBOX *box);
 extern void timestampset_tbox(const TimestampSet *ts, TBOX *box);
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
@@ -109,12 +111,13 @@ extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
 extern TBOX *float_timestamp_to_tbox(double d, TimestampTz t);
-extern TBOX *int_period_to_tbox(int i, Period *p);
-extern TBOX *float_period_to_tbox(double d, Period *p);
-extern TBOX *range_timestamp_to_tbox(RangeType *range, TimestampTz t);
-extern TBOX *range_period_to_tbox(RangeType *range, Period *p);
-extern RangeType *tbox_to_floatrange(TBOX *box);
-extern Period *tbox_to_period(TBOX *box);
+extern TBOX *int_period_to_tbox(int i, const Period *p);
+extern TBOX *float_period_to_tbox(double d, const Period *p);
+extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
+extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
+extern Span *tbox_intspan(const TBOX *box);
+extern Span *tbox_floatspan(const TBOX *box);
+extern Period *tbox_period(const TBOX *box);
 
 /* Accessor functions */
 

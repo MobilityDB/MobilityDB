@@ -63,7 +63,7 @@ CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
 
 CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbool_gist_compress(internal)
   RETURNS internal
@@ -90,7 +90,7 @@ CREATE FUNCTION tfloat_gist_compress(internal)
 
 CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_gist_compress(internal)
   RETURNS internal
@@ -222,11 +222,11 @@ CREATE OPERATOR CLASS tbool_rtree_ops
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
   FUNCTION  1  tbool_gist_consistent(internal, tbool, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
   FUNCTION  3  tbool_gist_compress(internal),
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(period, period, internal);
 
 /******************************************************************************/
 
@@ -235,19 +235,19 @@ CREATE OPERATOR CLASS tint_rtree_ops
   STORAGE tbox,
   -- strictly left
   OPERATOR  1    << (tint, int),
-  OPERATOR  1    << (tint, intrange),
+  OPERATOR  1    << (tint, intspan),
   OPERATOR  1    << (tint, tbox),
   OPERATOR  1    << (tint, tint),
   OPERATOR  1    << (tint, tfloat),
    -- overlaps or left
   OPERATOR  2    &< (tint, int),
-  OPERATOR  2    &< (tint, intrange),
+  OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
   OPERATOR  2    &< (tint, tfloat),
   -- overlaps
   OPERATOR  3    && (tint, int),
-  OPERATOR  3    && (tint, intrange),
+  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, timestamptz),
   OPERATOR  3    && (tint, timestampset),
   OPERATOR  3    && (tint, period),
@@ -257,19 +257,19 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  3    && (tint, tfloat),
   -- overlaps or right
   OPERATOR  4    &> (tint, int),
-  OPERATOR  4    &> (tint, intrange),
+  OPERATOR  4    &> (tint, intspan),
   OPERATOR  4    &> (tint, tbox),
   OPERATOR  4    &> (tint, tint),
   OPERATOR  4    &> (tint, tfloat),
   -- strictly right
   OPERATOR  5    >> (tint, int),
-  OPERATOR  5    >> (tint, intrange),
+  OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
   OPERATOR  5    >> (tint, tfloat),
     -- same
   OPERATOR  6    ~= (tint, int),
-  OPERATOR  6    ~= (tint, intrange),
+  OPERATOR  6    ~= (tint, intspan),
   OPERATOR  6    ~= (tint, timestamptz),
   OPERATOR  6    ~= (tint, timestampset),
   OPERATOR  6    ~= (tint, period),
@@ -279,7 +279,7 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  6    ~= (tint, tfloat),
   -- contains
   OPERATOR  7    @> (tint, int),
-  OPERATOR  7    @> (tint, intrange),
+  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, timestamptz),
   OPERATOR  7    @> (tint, timestampset),
   OPERATOR  7    @> (tint, period),
@@ -289,7 +289,7 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  7    @> (tint, tfloat),
   -- contained by
   OPERATOR  8    <@ (tint, int),
-  OPERATOR  8    <@ (tint, intrange),
+  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, timestamptz),
   OPERATOR  8    <@ (tint, timestampset),
   OPERATOR  8    <@ (tint, period),
@@ -299,7 +299,7 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  8    <@ (tint, tfloat),
   -- adjacent
   OPERATOR  17    -|- (tint, int),
-  OPERATOR  17    -|- (tint, intrange),
+  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, timestamptz),
   OPERATOR  17    -|- (tint, timestampset),
   OPERATOR  17    -|- (tint, period),
@@ -362,21 +362,21 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   -- strictly left
   OPERATOR  1    << (tfloat, int),
   OPERATOR  1    << (tfloat, float),
-  OPERATOR  1    << (tfloat, floatrange),
+  OPERATOR  1    << (tfloat, floatspan),
   OPERATOR  1    << (tfloat, tbox),
   OPERATOR  1    << (tfloat, tint),
   OPERATOR  1    << (tfloat, tfloat),
    -- overlaps or left
   OPERATOR  2    &< (tfloat, int),
   OPERATOR  2    &< (tfloat, float),
-  OPERATOR  2    &< (tfloat, floatrange),
+  OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tint),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
   OPERATOR  3    && (tfloat, int),
   OPERATOR  3    && (tfloat, float),
-  OPERATOR  3    && (tfloat, floatrange),
+  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, timestamptz),
   OPERATOR  3    && (tfloat, timestampset),
   OPERATOR  3    && (tfloat, period),
@@ -387,21 +387,21 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tfloat, int),
   OPERATOR  4    &> (tfloat, float),
-  OPERATOR  4    &> (tfloat, floatrange),
+  OPERATOR  4    &> (tfloat, floatspan),
   OPERATOR  4    &> (tfloat, tbox),
   OPERATOR  4    &> (tfloat, tint),
   OPERATOR  4    &> (tfloat, tfloat),
   -- strictly right
   OPERATOR  5    >> (tfloat, int),
   OPERATOR  5    >> (tfloat, float),
-  OPERATOR  5    >> (tfloat, floatrange),
+  OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tint),
   OPERATOR  5    >> (tfloat, tfloat),
     -- same
   OPERATOR  6    ~= (tfloat, int),
   OPERATOR  6    ~= (tfloat, float),
-  OPERATOR  6    ~= (tfloat, floatrange),
+  OPERATOR  6    ~= (tfloat, floatspan),
   OPERATOR  6    ~= (tfloat, timestamptz),
   OPERATOR  6    ~= (tfloat, timestampset),
   OPERATOR  6    ~= (tfloat, period),
@@ -412,7 +412,7 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   -- contains
   OPERATOR  7    @> (tfloat, int),
   OPERATOR  7    @> (tfloat, float),
-  OPERATOR  7    @> (tfloat, floatrange),
+  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, timestamptz),
   OPERATOR  7    @> (tfloat, timestampset),
   OPERATOR  7    @> (tfloat, period),
@@ -423,7 +423,7 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   -- contained by
   OPERATOR  8    <@ (tfloat, int),
   OPERATOR  8    <@ (tfloat, float),
-  OPERATOR  8    <@ (tfloat, floatrange),
+  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, timestamptz),
   OPERATOR  8    <@ (tfloat, timestampset),
   OPERATOR  8    <@ (tfloat, period),
@@ -434,7 +434,7 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   -- adjacent
   OPERATOR  17    -|- (tfloat, int),
   OPERATOR  17    -|- (tfloat, float),
-  OPERATOR  17    -|- (tfloat, floatrange),
+  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, timestamptz),
   OPERATOR  17    -|- (tfloat, timestampset),
   OPERATOR  17    -|- (tfloat, period),
@@ -550,10 +550,10 @@ CREATE OPERATOR CLASS ttext_rtree_ops
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
   FUNCTION  1  ttext_gist_consistent(internal, ttext, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
   FUNCTION  3  ttext_gist_compress(internal),
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(period, period, internal);
 
 /******************************************************************************/

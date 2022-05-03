@@ -1,33 +1,33 @@
-SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
- bucketlist  
--------------
- (1,"[0,2)")
- (2,"[2,4)")
- (3,"[4,6)")
+SELECT bucketList(intspan '[1, 10]', 2) LIMIT 3;
+  bucketlist  
+--------------
+ (1,"[0, 2)")
+ (2,"[2, 4)")
+ (3,"[4, 6)")
 (3 rows)
 
-SELECT bucketList(intrange '[1, 10]', 2, 1) LIMIT 3;
- bucketlist  
--------------
- (1,"[1,3)")
- (2,"[3,5)")
- (3,"[5,7)")
+SELECT bucketList(intspan '[1, 10]', 2, 1) LIMIT 3;
+  bucketlist  
+--------------
+ (1,"[1, 3)")
+ (2,"[3, 5)")
+ (3,"[5, 7)")
 (3 rows)
 
-SELECT bucketList(floatrange '(1, 10)', 2.5) LIMIT 3;
-  bucketlist   
----------------
- (1,"[0,2.5)")
- (2,"[2.5,5)")
- (3,"[5,7.5)")
-(3 rows)
-
-SELECT bucketList(floatrange '(1, 10)', 2.5, 1.5) LIMIT 3;
+SELECT bucketList(floatspan '(1, 10)', 2.5) LIMIT 3;
    bucketlist   
 ----------------
- (1,"[-1,1.5)")
- (2,"[1.5,4)")
- (3,"[4,6.5)")
+ (1,"[0, 2.5)")
+ (2,"[2.5, 5)")
+ (3,"[5, 7.5)")
+(3 rows)
+
+SELECT bucketList(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
+   bucketlist    
+-----------------
+ (1,"[-1, 1.5)")
+ (2,"[1.5, 4)")
+ (3,"[4, 6.5)")
 (3 rows)
 
 SELECT valueBucket(3, 2);
@@ -72,31 +72,31 @@ ERROR:  The value must be positive: -2
 SELECT valueBucket(3.5, -2.5);
 ERROR:  The value must be positive: -2.500000
 SELECT valueBucket(-2147483647, 3, 2);
-ERROR:  number out of range
+ERROR:  number out of span
 SELECT valueBucket(2147483646, 3, -2);
-ERROR:  number out of range
-SELECT rangeBucket(3, 2);
- rangebucket 
--------------
- [2,4)
+ERROR:  number out of span
+SELECT spanBucket(3, 2);
+ spanbucket 
+------------
+ [2, 4)
 (1 row)
 
-SELECT rangeBucket(3, 2, 1);
- rangebucket 
--------------
- [3,5)
+SELECT spanBucket(3, 2, 1);
+ spanbucket 
+------------
+ [3, 5)
 (1 row)
 
-SELECT rangeBucket(3.5, 2.5);
- rangebucket 
--------------
- [2.5,5)
+SELECT spanBucket(3.5, 2.5);
+ spanbucket 
+------------
+ [2.5, 5)
 (1 row)
 
-SELECT rangeBucket(3.5, 2.5, 1.5);
- rangebucket 
--------------
- [1.5,4)
+SELECT spanBucket(3.5, 2.5, 1.5);
+ spanbucket 
+------------
+ [1.5, 4)
 (1 row)
 
 SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;

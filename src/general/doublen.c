@@ -44,8 +44,7 @@
 #include "general/doublen.h"
 
 /* PostgreSQL */
-#include <libpq/pqformat.h>
-#include <utils/builtins.h>
+#include <float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
@@ -251,6 +250,8 @@ double4_eq(const double4 *d1, const double4 *d2)
 /*****************************************************************************/
 
 #ifndef MEOS
+
+#include <libpq/pqformat.h>
 
 /*****************************************************************************
  * Input/Output functions

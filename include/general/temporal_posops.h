@@ -35,12 +35,6 @@
 #ifndef __TEMPORAL_POSOPS_H__
 #define __TEMPORAL_POSOPS_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
-
 /*****************************************************************************/
 
 

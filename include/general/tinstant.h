@@ -37,25 +37,21 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/array.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/temporal.h"
-#include "general/tempcache.h"
+#include "general/span.h"
+#include "general/temporal_catalog.h"
 #include "point/postgis.h"
 
 /*****************************************************************************/
 
 /* General functions */
 
-extern TInstant *tinstant_make(Datum value, TimestampTz t, CachedType temptype);
-extern TInstant *tinstant_copy(const TInstant *inst);
-
 extern Datum *tinstant_value_ptr(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
 extern Datum tinstant_value_copy(const TInstant *inst);
 extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
+extern double tnumberinst_double(const TInstant *inst);
 
 /* Input/output functions */
 
@@ -64,10 +60,15 @@ extern char *tinstant_to_string(const TInstant *inst,
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 extern TInstant *tinstant_read(StringInfo buf, CachedType temptype);
 
+/* Constructor functions */
+
+extern TInstant *tinstant_make(Datum value, TimestampTz t, CachedType temptype);
+extern TInstant *tinstant_copy(const TInstant *inst);
+
 /* Accessor functions */
 
 extern Datum *tinstant_values(const TInstant *inst);
-extern RangeType **tfloatinst_ranges(const TInstant *inst);
+extern Span **tfloatinst_spans(const TInstant *inst);
 extern PeriodSet *tinstant_time(const TInstant *inst);
 extern void tinstant_period(const TInstant *inst, Period *p);
 extern TSequence **tinstant_sequences(const TInstant *inst);
@@ -104,10 +105,10 @@ extern TInstant *tinstant_restrict_value(const TInstant *inst, Datum value,
   bool atfunc);
 extern TInstant *tinstant_restrict_values(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
-extern TInstant *tnumberinst_restrict_range(const TInstant *inst,
-  const RangeType *range, bool atfunc);
-extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst,
-  RangeType **normranges, int count, bool atfunc);
+extern TInstant *tnumberinst_restrict_span(const TInstant *inst,
+  const Span *span, bool atfunc);
+extern TInstant *tnumberinst_restrict_spans(const TInstant *inst,
+  Span **normspans, int count, bool atfunc);
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
   TimestampTz t, bool atfunc);
 extern TInstant *tinstant_restrict_timestampset(const TInstant *inst,
@@ -119,10 +120,10 @@ extern TInstant *tinstant_restrict_periodset(const TInstant *inst,
 
 extern bool tinstant_restrict_values_test(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
-extern bool tnumberinst_restrict_range_test(const TInstant *inst,
-  const RangeType *range, bool atfunc);
-extern bool tnumberinst_restrict_ranges_test(const TInstant *inst,
-  RangeType **normranges, int count, bool atfunc);
+extern bool tnumberinst_restrict_span_test(const TInstant *inst,
+  const Span *span, bool atfunc);
+extern bool tnumberinst_restrict_spans_test(const TInstant *inst,
+  Span **normspans, int count, bool atfunc);
 extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
   const TimestampSet *ts, bool atfunc);
 extern bool tinstant_restrict_periodset_test(const TInstant *inst,

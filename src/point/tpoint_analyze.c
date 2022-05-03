@@ -55,17 +55,17 @@
 #include "point/tpoint_analyze.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <float.h>
 #include <access/htup_details.h>
 #include <executor/spi.h>
 #include <utils/lsyscache.h>
 /* MobilityDB */
-#include "general/period.h"
-#include "general/time_analyze.h"
+#include "general/span_ops.h"
+#include "general/span_analyze.h"
 #include "general/temporal.h"
-#include "general/tempcache.h"
-#include "general/temporal_util.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_analyze.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"
@@ -956,7 +956,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 /**
  * Compute the statistics for temporal point columns (callback function)
  */
-static void
+void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows)
 {
@@ -965,8 +965,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int slot_idx = 2;         /* Starting slot for storing temporal statistics */
   double total_width = 0;   /* # of bytes used by sample */
 
-  PeriodBound *time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
-  PeriodBound *time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
+  SpanBound *time_lowers = (SpanBound *) palloc(sizeof(SpanBound) * sample_rows);
+  SpanBound *time_uppers = (SpanBound *) palloc(sizeof(SpanBound) * sample_rows);
   float8 *time_lengths = (float8 *) palloc(sizeof(float8) * sample_rows);
 
   /*
@@ -978,7 +978,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     Datum value;
     Temporal *temp;
     Period period;
-    PeriodBound period_lower, period_upper;
+    SpanBound period_lower, period_upper;
     bool is_null, is_copy;
 
     value = fetchfunc(stats, i, &is_null);
@@ -1003,11 +1003,11 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     temporal_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
-    period_deserialize(&period, &period_lower, &period_upper);
+    span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[notnull_cnt] = period_lower;
     time_uppers[notnull_cnt] = period_upper;
-    time_lengths[notnull_cnt] = period_to_secs(period_upper.t,
-      period_lower.t);
+    time_lengths[notnull_cnt] = distance_elem_elem(period_upper.val,
+      period_lower.val, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
     /* Increment our "good feature" count */
     notnull_cnt++;
@@ -1038,8 +1038,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     gserialized_compute_stats(stats, fetchfunc, sample_rows, total_rows, 0);
 
     /* Compute statistics for time dimension */
-    period_compute_stats1(stats, notnull_cnt, &slot_idx, time_lowers,
-      time_uppers, time_lengths);
+    span_compute_stats(stats, notnull_cnt, &slot_idx, time_lowers, time_uppers,
+      time_lengths, T_PERIOD);
   }
   else if (null_cnt > 0)
   {

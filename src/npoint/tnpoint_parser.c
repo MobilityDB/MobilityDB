@@ -43,7 +43,6 @@
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a network point value from the buffer.
  */
 Npoint *
@@ -80,7 +79,6 @@ npoint_parse(char **str)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a network segment value from the buffer.
  */
 Nsegment *

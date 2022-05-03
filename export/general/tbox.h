@@ -70,7 +70,7 @@ extern Datum Range_timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum Range_period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 
-extern Datum Tbox_to_floatrange(PG_FUNCTION_ARGS);
+extern Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
 extern Datum Tbox_to_period(PG_FUNCTION_ARGS);
 
 /* Accessor functions */

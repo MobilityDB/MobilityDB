@@ -46,12 +46,10 @@
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/rangetypes_ext.h"
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/time_gist.h"
-#include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_posops.h"
 #include "general/tnumber_distance.h"
@@ -211,17 +209,12 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
     Datum value = PG_GETARG_DATUM(1);
     number_tbox(value, type, result);
   }
-  else if (tnumber_rangetype(type))
+  else if (tnumber_spantype(type))
   {
-    RangeType *range = PG_GETARG_RANGE_P(1);
-    if (range == NULL)
+    Span *span = PG_GETARG_SPAN_P(1);
+    if (span == NULL)
       return false;
-    /* Return false on empty range */
-    char flags = range_get_flags(range);
-    if (flags & RANGE_EMPTY)
-      return false;
-    range_tbox(range, result);
-    PG_FREE_IF_COPY(range, 1);
+    span_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
@@ -235,7 +228,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = PG_GETARG_PERIOD_P(1);
+    Period *p = PG_GETARG_SPAN_P(1);
     period_tbox(p, result);
   }
   else if (type == T_PERIODSET)
@@ -333,7 +326,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_expand_rt(result, DatumGetTboxP(ent[i].key));
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************

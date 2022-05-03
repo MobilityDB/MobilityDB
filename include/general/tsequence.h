@@ -37,11 +37,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/array.h>
-#include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/temporal.h"
+#include "general/span.h"
 
 /*****************************************************************************/
 
@@ -132,8 +130,8 @@ extern TSequenceSet *tstepseq_tlinearseq(const TSequence *seq);
 /* Accessor functions */
 
 extern Datum *tsequence_values(const TSequence *seq, int *count);
-extern RangeType *tfloatseq_range(const TSequence *seq);
-extern RangeType **tfloatseq_ranges(const TSequence *seq, int *count);
+extern Span *tfloatseq_span(const TSequence *seq);
+extern Span **tfloatseq_spans(const TSequence *seq, int *count);
 extern PeriodSet *tsequence_time(const TSequence *seq);
 extern const TInstant *tsequence_min_instant(const TSequence *seq);
 extern const TInstant *tsequence_max_instant(const TSequence *seq);
@@ -152,7 +150,7 @@ extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t,
 extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,
   Datum *result);
 
-extern int tfloatseq_ranges1(const TSequence *seq, RangeType **result);
+extern int tfloatseq_spans1(const TSequence *seq, Span **result);
 extern int tsequence_segments1(const TSequence *seq, TSequence **result);
 extern int tsequence_timestamps1(const TSequence *seq, TimestampTz *result);
 extern int tsequence_values1(const TSequence *seq, Datum *result);
@@ -174,10 +172,10 @@ extern TSequenceSet *tsequence_restrict_value(const TSequence *seq,
   Datum value, bool atfunc);
 extern TSequenceSet *tsequence_restrict_values(const TSequence *seq,
   const Datum *values, int count, bool atfunc);
-extern TSequenceSet *tnumberseq_restrict_range(const TSequence *seq,
-  const RangeType *range, bool atfunc);
-extern TSequenceSet *tnumberseq_restrict_ranges(const TSequence *seq,
-  RangeType **normranges, int count, bool atfunc, bool bboxtest);
+extern TSequenceSet *tnumberseq_restrict_span(const TSequence *seq,
+  const Span *span, bool atfunc);
+extern TSequenceSet *tnumberseq_restrict_spans(const TSequence *seq,
+  Span **normspans, int count, bool atfunc, bool bboxtest);
 extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq,
   bool min, bool atfunc);
 extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);
@@ -197,10 +195,10 @@ extern int tsequence_restrict_value1(const TSequence *seq, Datum value,
   bool atfunc, TSequence **result);
 extern int tsequence_at_values1(const TSequence *seq, const Datum *values,
   int count, TSequence **result);
-extern int tnumberseq_restrict_range2(const TSequence *seq,
-  const RangeType *range, bool atfunc, TSequence **result);
-extern int tnumberseq_restrict_ranges1(const TSequence *seq,
-  RangeType **normranges, int count, bool atfunc, bool bboxtest,
+extern int tnumberseq_restrict_span2(const TSequence *seq,
+  const Span *span, bool atfunc, TSequence **result);
+extern int tnumberseq_restrict_spans1(const TSequence *seq,
+  Span **normspans, int count, bool atfunc, bool bboxtest,
   TSequence **result);
 extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);

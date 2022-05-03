@@ -8,6 +8,12 @@ if(MEOS)
   set(ttext_textfuncs_meos.c ttext_textfuncs_meos.c)
 else()
   set(geo_constructors.c geo_constructors.c)
+  set(skiplist.c skiplist.c)
+  set(span_aggfuncs.c span_aggfuncs.c)
+  set(span_analyze.c span_analyze.c)
+  set(span_gist.c span_gist.c)
+  set(span_selfuncs.c span_selfuncs.c)
+  set(span_spgist.c span_spgist.c)
   set(temporal_aggfuncs.c temporal_aggfuncs.c)
   set(temporal_analyze.c temporal_analyze.c)
   set(temporal_gist.c temporal_gist.c)
@@ -15,12 +21,9 @@ else()
   set(temporal_selfuncs.c temporal_selfuncs.c)
   set(temporal_spgist.c temporal_spgist.c)
   set(temporal_supportfn.c temporal_supportfn.c)
+  set(temporal_tile.c temporal_tile.c)
   set(temporal_waggfuncs.c temporal_waggfuncs.c)
   set(time_aggfuncs.c time_aggfuncs.c)
-  set(time_analyze.c time_analyze.c)
-  set(time_gist.c time_gist.c)
-  set(time_selfuncs.c time_selfuncs.c)
-  set(time_spgist.c time_spgist.c)
   set(tnumber_gist.c tnumber_gist.c)
   set(tnumber_selfuncs.c tnumber_selfuncs.c)
   set(tnumber_spgist.c tnumber_spgist.c)
@@ -30,17 +33,22 @@ add_library(general OBJECT
   doublen.c
   ${geo_constructors.c}
   lifting.c
-  period.c
   periodset.c
-  rangetypes_ext.c
-  skiplist.c
+  ${skiplist.c}
+  span.c
+  ${span_aggfuncs.c}
+  ${span_analyze.c}
+  ${span_gist.c}
+  ${span_spgist.c}
+  span_ops.c
+  ${span_selfuncs.c}
   tbool_boolops.c
   tbox.c
-  tempcache.c
   temporal.c
   ${temporal_aggfuncs.c}
   ${temporal_analyze.c}
   temporal_boxops.c
+  temporal_catalog.c
   temporal_compops.c
   ${temporal_gist.c}
   temporal_parser.c
@@ -49,15 +57,11 @@ add_library(general OBJECT
   temporal_similarity.c
   ${temporal_spgist.c}
   ${temporal_supportfn.c}
-  temporal_tile.c
+  ${temporal_tile.c}
   temporal_util.c
   ${temporal_waggfuncs.c}
   ${time_aggfuncs.c}
-  ${time_analyze.c}
-  ${time_gist.c}
   time_ops.c
-  ${time_selfuncs.c}
-  ${time_spgist.c}
   timestampset.c
   tinstant.c
   tinstantset.c

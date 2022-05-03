@@ -37,8 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/builtins.h>
+#include <access/stratnum.h>
 /* MobilityDB */
 #include "general/temporal.h"
 

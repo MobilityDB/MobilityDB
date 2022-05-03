@@ -55,7 +55,7 @@ extern Temporal *tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp,
 extern Temporal *ttouches_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *geo, bool restr, Datum atvalue);
 extern Temporal *ttouches_geo_tnpoint(const GSERIALIZED *geo,
-  const Temporal *temp,  bool restr, Datum atvalue);
+  const Temporal *temp, bool restr, Datum atvalue);
 extern Temporal *ttouches_tnpoint_npoint(const Temporal *temp,
   const Npoint *np, bool restr, Datum atvalue);
 extern Temporal *ttouches_npoint_tnpoint(const Npoint *np,

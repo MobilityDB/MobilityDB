@@ -43,7 +43,6 @@
 #include <float.h>
 #include <fmgr.h>
 #include <utils/array.h>
-#include <utils/builtins.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000

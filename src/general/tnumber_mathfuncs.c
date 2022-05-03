@@ -40,8 +40,11 @@
 #include <assert.h>
 #include <math.h>
 #include <utils/builtins.h>
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+#include <utils/float.h>
+#endif
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -57,9 +60,15 @@
 Datum
 datum_round_float(Datum value, Datum prec)
 {
-  Datum number = call_function1(float8_numeric, value);
-  Datum round = call_function2(numeric_round, number, prec);
-  return call_function1(numeric_float8, round);
+  Datum result = value;
+  if (DatumGetFloat8(value) != -1 * get_float8_infinity() &&
+      DatumGetFloat8(value) != get_float8_infinity())
+  {
+    Datum number = call_function1(float8_numeric, value);
+    Datum round = call_function2(numeric_round, number, prec);
+    result = call_function1(numeric_float8, round);
+  }
+  return result;
 }
 
 /**
@@ -187,15 +196,13 @@ arithop_tnumber_number(const Temporal *temp, Datum value, CachedType basetype,
     if (invert)
     {
       if (temporal_ever_eq(temp, Float8GetDatum(0.0)))
-        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Division by zero")));
+        elog(ERROR, "Division by zero");
     }
     else
     {
       double d = datum_double(value, basetype);
       if (fabs(d) < MOBDB_EPSILON)
-        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Division by zero")));
+        elog(ERROR, "Division by zero");
     }
   }
 
@@ -243,8 +250,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     if (projtemp2 == NULL)
       return NULL;
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Division by zero")));
+      elog(ERROR, "Division by zero");
   }
 
   LiftedFunctionInfo lfinfo;

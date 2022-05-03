@@ -36,9 +36,7 @@
 #include "npoint/tnpoint_selfuncs.h"
 
 /* MobilityDB */
-#include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
-#include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************/
 

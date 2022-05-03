@@ -46,7 +46,7 @@
 #include <liblwgeom.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/lifting.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"
@@ -204,8 +204,8 @@ gk(Datum point)
 /**
  * Transform a geometry into the Gauss-Kruger projection used in Secondo
  */
-static GSERIALIZED *
-geometry_transform_gk(GSERIALIZED *gs)
+GSERIALIZED *
+geometry_transform_gk(const GSERIALIZED *gs)
 {
   GSERIALIZED *result = NULL; /* keep compiler quiet */
   int geotype = gserialized_get_type(gs);
@@ -266,7 +266,7 @@ geometry_transform_gk(GSERIALIZED *gs)
  * Transform a temporal point into the Gauss-Krueger projection used in Secondo
  */
 Temporal *
-tgeompoint_transform_gk(Temporal *temp)
+tgeompoint_transform_gk(const Temporal *temp)
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -285,8 +285,6 @@ tgeompoint_transform_gk(Temporal *temp)
 /*                        MobilityDB - PostgreSQL                            */
 /*****************************************************************************/
 /*****************************************************************************/
-
-#ifndef MEOS
 
 PG_FUNCTION_INFO_V1(Geometry_transform_gk);
 /**
@@ -313,7 +311,5 @@ Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
-
-#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

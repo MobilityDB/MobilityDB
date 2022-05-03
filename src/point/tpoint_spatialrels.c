@@ -49,8 +49,9 @@
 /* PostgreSQL */
 #include <assert.h>
 /* MobilityDB */
+#include "general/lifting.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -583,12 +584,12 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * given distance, 0 if not, -1 if the geometry is empty
  */
 int
-dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param)
+dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
   if (gserialized_is_empty(gs))
     return -1;
   datum_func3 func = get_dwithin_fn_gs(temp->flags, GS_FLAGS(gs));
-  bool result = spatialrel_tpoint_geo(temp, gs, param, (varfunc) func, 3,
+  bool result = spatialrel_tpoint_geo(temp, gs, dist, (varfunc) func, 3,
     INVERT, false);
   return result ? 1 : 0;
 }
@@ -664,7 +665,6 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   bool hasz = MOBDB_FLAGS_GET_Z(seq1->flags);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
-  double dist_d = DatumGetFloat8(dist);
   for (int i = 1; i < seq1->count; i++)
   {
     const TInstant *end1 = tsequence_inst_n(seq1, i);
@@ -678,7 +678,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
     if ((datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2)) ||
       (! linear1 && ! linear2))
     {
-      if (DatumGetBool(func(sv1,sv2, dist)))
+      if (DatumGetBool(func(sv1, sv2, dist)))
         return true;
       if (! linear1 && ! linear2 && upper_inc &&
           DatumGetBool(func(ev1, ev2, dist)))
@@ -693,7 +693,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
       int solutions = tdwithin_tpointsegm_tpointsegm(sv1, sev1, sv2, sev2,
-        lower, upper, dist_d, hasz, func, &t1, &t2);
+        lower, upper, DatumGetFloat8(dist), hasz, func, &t1, &t2);
       if (solutions == 2 ||
       (solutions == 1 && ((t1 != lower || lower_inc) &&
         (t1 != upper || upper_inc))))
@@ -732,6 +732,32 @@ dwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
 /*****************************************************************************/
 
 /**
+ * @brief Return 1 if the temporal points are ever within the given distance,
+ * 0 if not, -1 if the temporal points do not intersect on time
+ * @pre The temporal points are synchronized
+ */
+int
+dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2, Datum dist)
+{
+  datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
+  bool result;
+  ensure_valid_tempsubtype(sync1->subtype);
+  if (sync1->subtype == INSTANT)
+    result = dwithin_tpointinst_tpointinst(
+      (TInstant *) sync1, (TInstant *) sync2, dist, func);
+  else if (sync1->subtype == INSTANTSET)
+    result = dwithin_tpointinstset_tpointinstset(
+      (TInstantSet *) sync1, (TInstantSet *) sync2, dist, func);
+  else if (sync1->subtype == SEQUENCE)
+    result = dwithin_tpointseq_tpointseq(
+      (TSequence *) sync1, (TSequence *) sync2, dist, func);
+  else /* sync1->subtype == SEQUENCESET */
+    result = dwithin_tpointseqset_tpointseqset(
+      (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
+  return result;
+}
+
+/**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if the temporal points are ever within the given distance,
  * 0 if not, -1 if the temporal points do not intersect on time
@@ -747,22 +773,7 @@ dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, Datum dist)
     &sync1, &sync2))
     return -1;
 
-  datum_func3 func = get_dwithin_fn(temp1->flags, temp2->flags);
-  bool result;
-  ensure_valid_tempsubtype(sync1->subtype);
-  if (sync1->subtype == INSTANT)
-    result = dwithin_tpointinst_tpointinst(
-      (TInstant *) sync1, (TInstant *) sync2, dist, func);
-  else if (sync1->subtype == INSTANTSET)
-    result = dwithin_tpointinstset_tpointinstset(
-      (TInstantSet *) sync1, (TInstantSet *) sync2, dist, func);
-  else if (sync1->subtype == SEQUENCE)
-    result = dwithin_tpointseq_tpointseq(
-      (TSequence *) sync1, (TSequence *) sync2, dist, func);
-  else /* sync1->subtype == SEQUENCESET */
-    result = dwithin_tpointseqset_tpointseqset(
-      (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
-
+  bool result = dwithin_tpoint_tpoint1(sync1, sync2, dist);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;
 }
@@ -986,10 +997,10 @@ Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum param = PG_GETARG_DATUM(2);
+  Datum dist = PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = dwithin_tpoint_geo(temp, gs, param);
+  int result = dwithin_tpoint_geo(temp, gs, dist);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -1007,10 +1018,10 @@ Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum param = PG_GETARG_DATUM(2);
+  Datum dist = PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = dwithin_tpoint_geo(temp, gs, param);
+  int result = dwithin_tpoint_geo(temp, gs, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)

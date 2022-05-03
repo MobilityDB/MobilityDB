@@ -38,10 +38,12 @@
 #include "point/tpoint_datagen.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <access/htup_details.h>
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */
 #include <utils/builtins.h>
+#include <utils/typcache.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #else
@@ -55,7 +57,7 @@
 #include <gsl/gsl_randist.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"

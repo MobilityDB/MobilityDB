@@ -49,12 +49,12 @@
 #include <lwgeodetic.h>
 #endif
 /* MobilityDB */
-#include "general/period.h"
+#include "general/lifting.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/rangetypes_ext.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/postgis.h"
 #include "point/stbox.h"
@@ -459,8 +459,7 @@ void
 ensure_same_srid(int32_t srid1, int32_t srid2)
 {
   if (srid1 != srid2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -472,8 +471,7 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     box1->srid != box2->srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -485,8 +483,7 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tpoint_srid(temp) != box->srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -497,8 +494,7 @@ void
 ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
+    elog(ERROR, "Operation on mixed SRID");
   return;
 }
 
@@ -511,8 +507,7 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2) ||
     MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal values must be of the same dimensionality")));
+    elog(ERROR, "The temporal values must be of the same dimensionality");
   return;
 }
 
@@ -524,8 +519,7 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed 2D/3D dimensions")));
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
 
@@ -536,8 +530,7 @@ void
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (FLAGS_GET_Z(GS_FLAGS(gs1)) != FLAGS_GET_Z(GS_FLAGS(gs2)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed 2D/3D dimensions")));
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
 
@@ -548,8 +541,7 @@ void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed 2D/3D dimensions")));
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
 
@@ -561,8 +553,7 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED 
 {
   if (! MOBDB_FLAGS_GET_X(box->flags) ||
       MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The spatiotemporal box and the geometry must be of the same dimensionality")));
+    elog(ERROR, "The spatiotemporal box and the geometry must be of the same dimensionality");
   return;
 }
 
@@ -573,8 +564,7 @@ void
 ensure_has_Z(int16 flags)
 {
   if (! MOBDB_FLAGS_GET_Z(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must have Z dimension")));
+    elog(ERROR, "The temporal value must have Z dimension");
   return;
 }
 
@@ -585,8 +575,7 @@ void
 ensure_has_not_Z(int16 flags)
 {
   if (MOBDB_FLAGS_GET_Z(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value cannot have Z dimension")));
+    elog(ERROR, "The temporal value cannot have Z dimension");
   return;
 }
 
@@ -597,8 +586,7 @@ void
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
   if (! FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The geometry must have Z dimension")));
+    elog(ERROR, "The geometry must have Z dimension");
   return;
 }
 
@@ -609,8 +597,7 @@ void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The geometry cannot have Z dimension")));
+    elog(ERROR, "The geometry cannot have Z dimension");
   return;
 }
 
@@ -621,8 +608,7 @@ void
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
   if (! FLAGS_GET_M(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only geometries with M dimension accepted")));
+    elog(ERROR, "Only geometries with M dimension accepted");
   return;
 }
 
@@ -633,8 +619,7 @@ void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_M(GS_FLAGS(gs)))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only geometries without M dimension accepted")));
+    elog(ERROR, "Only geometries without M dimension accepted");
   return;
 }
 
@@ -645,8 +630,7 @@ void
 ensure_point_type(const GSERIALIZED *gs)
 {
   if (gserialized_get_type(gs) != POINTTYPE)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only point geometries accepted")));
+    elog(ERROR, "Only point geometries accepted");
   return;
 }
 
@@ -657,8 +641,7 @@ void
 ensure_non_empty(const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only non-empty geometries accepted")));
+    elog(ERROR, "Only non-empty geometries accepted");
   return;
 }
 
@@ -2014,9 +1997,9 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TInstant *
-tpointinst_transform(const TInstant *inst, Datum srid)
+tpointinst_transform(const TInstant *inst, int srid)
 {
-  Datum geo = datum_transform(tinstant_value(inst), srid);
+  Datum geo = datum_transform(tinstant_value(inst), Int32GetDatum(srid));
   TInstant *result = tinstant_make(geo, inst->t, inst->temptype);
   pfree(DatumGetPointer(geo));
   return result;
@@ -2027,13 +2010,15 @@ tpointinst_transform(const TInstant *inst, Datum srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TInstantSet *
-tpointinstset_transform(const TInstantSet *ti, Datum srid)
+tpointinstset_transform(const TInstantSet *ti, int srid)
 {
   /* Singleton instant set */
   if (ti->count == 1)
   {
-    TInstant *inst = tpointinst_transform(tinstantset_inst_n(ti, 0), srid);
-    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
+    TInstant *inst = tpointinst_transform(tinstantset_inst_n(ti, 0),
+      Int32GetDatum(srid));
+    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1,
+      MERGE_NO);
     pfree(inst);
     return result;
   }
@@ -2063,14 +2048,15 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TSequence *
-tpointseq_transform(const TSequence *seq, Datum srid)
+tpointseq_transform(const TSequence *seq, int srid)
 {
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0), srid);
+    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
+      Int32GetDatum(srid));
     TSequence *result = tinstant_tsequence(inst, linear);
     pfree(inst);
     return result;
@@ -2119,12 +2105,13 @@ tpointseq_transform(const TSequence *seq, Datum srid)
  * not iterate through the sequences and call the transform for the sequence
  */
 TSequenceSet *
-tpointseqset_transform(const TSequenceSet *ts, Datum srid)
+tpointseqset_transform(const TSequenceSet *ts, int srid)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ts, 0), srid);
+    TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ts, 0),
+      Int32GetDatum(srid));
     TSequenceSet *result = tsequence_tsequenceset(seq);
     pfree(seq);
     return result;
@@ -2186,7 +2173,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 Temporal *
-tpoint_transform(const Temporal *temp, Datum srid)
+tpoint_transform(const Temporal *temp, int srid)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2356,7 +2343,7 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
  * Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_point(POINTARRAY *points, uint32_t i, Datum prec, bool hasz,
+round_point(POINTARRAY *points, uint32_t i, int prec, bool hasz,
   bool hasm)
 {
   /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
@@ -2453,8 +2440,8 @@ datum_round_triangle(GSERIALIZED *gs, Datum prec)
  * Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec,
-  bool hasz, bool hasm)
+round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz,
+  bool hasm)
 {
   int npoints = lwcircstring->points->npoints;
   for (int i = 0; i < npoints; i++)
@@ -2645,7 +2632,6 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the precision of the coordinates to the number of decimal places.
  *
  * @note Currently not all geometry types are allowed
@@ -2685,14 +2671,14 @@ datum_round_geo(Datum value, Datum prec)
  * number of decimal places.
  */
 Temporal *
-tpoint_round(const Temporal *temp, Datum prec)
+tpoint_round(const Temporal *temp, int prec)
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_round_geo;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = prec;
+  lfinfo.param[0] = Int32GetDatum(prec);
   lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
@@ -4566,8 +4552,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * the intersection is non empty
  */
 Period **
-tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
-  int *count)
+tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 {
   /* The temporal sequence has at least 2 instants since
    * (1) the test for instantaneous full sequence is done in the calling function
@@ -4583,8 +4568,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   if (seq->count == 2 &&
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
-    result = palloc(sizeof(Period *));
-    result[0] = period_copy(&seq->period);
+    result = palloc(sizeof(Span *));
+    result[0] = span_copy(&seq->period);
     *count = 1;
     return result;
   }
@@ -4639,7 +4624,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       if ((seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        periods[k++] = period_make(t1, t1, true, true);
+        periods[k++] = span_make(t1, t1, true, true, T_TIMESTAMPTZ);
       }
     }
     else
@@ -4658,7 +4643,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       if (t1 == t2 && (seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        periods[k++] = period_make(t1, t1, true, true);
+        periods[k++] = span_make(t1, t1, true, true, T_TIMESTAMPTZ);
       }
       else
       {
@@ -4666,7 +4651,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
         TimestampTz upper1 = Max(t1, t2);
         bool lower_inc1 = (lower1 == start->t) ? seq->period.lower_inc : true;
         bool upper_inc1 = (upper1 == end->t) ? seq->period.upper_inc : true;
-        periods[k++] = period_make(lower1, upper1, lower_inc1, upper_inc1);
+        periods[k++] = span_make(lower1, upper1, lower_inc1, upper_inc1,
+          T_TIMESTAMPTZ);
       }
     }
   }
@@ -4684,10 +4670,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
     return periods;
   }
 
-  /* It is necessary to sort and normalize the periods due to roundoff errors */
-  periodarr_sort(periods, k);
   int newcount;
-  result = periodarr_normalize(periods, k, &newcount);
+  result = spanarr_normalize(periods, k, &newcount);
   *count = newcount;
   return result;
 }
@@ -4763,7 +4747,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
         pfree(periods[i]);
     }
     /* It is necessary to sort the periods */
-    periodarr_sort(allperiods, totalcount);
+    spanarr_sort(allperiods, totalcount);
   }
   PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
@@ -5089,7 +5073,7 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
   if (hast)
   {
     Period p;
-    period_set(box->tmin, box->tmax, true, upper_inc, &p);
+    span_set(box->tmin, box->tmax, true, upper_inc, T_TIMESTAMPTZ, &p);
     temp1 = temporal_restrict_period(temp, &p, REST_AT);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */
@@ -5108,19 +5092,19 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
     Temporal *temp_z = NULL;
     if (hasz)
       temp_z = tpoint_get_coord(temp1, 2);
-    RangeType *range_x = range_make(Float8GetDatum(box->xmin),
+    Span *span_x = span_make(Float8GetDatum(box->xmin),
       Float8GetDatum(box->xmax), true, upper_inc, T_FLOAT8);
-    RangeType *range_y = range_make(Float8GetDatum(box->ymin),
+    Span *span_y = span_make(Float8GetDatum(box->ymin),
       Float8GetDatum(box->ymax), true, upper_inc, T_FLOAT8);
-    RangeType *range_z = NULL;
+    Span *span_z = NULL;
     if (hasz)
-      range_z = range_make(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
+      span_z = span_make(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
         true, upper_inc, T_FLOAT8);
-    Temporal *at_temp_x = tnumber_restrict_range(temp_x, range_x, REST_AT);
-    Temporal *at_temp_y = tnumber_restrict_range(temp_y, range_y, REST_AT);
+    Temporal *at_temp_x = tnumber_restrict_span(temp_x, span_x, REST_AT);
+    Temporal *at_temp_y = tnumber_restrict_span(temp_y, span_y, REST_AT);
     Temporal *at_temp_z = NULL;
     if (hasz)
-      at_temp_z = tnumber_restrict_range(temp_z, range_z, REST_AT);
+      at_temp_z = tnumber_restrict_span(temp_z, span_z, REST_AT);
     Temporal *result2D = NULL;
     if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
     {
@@ -5132,12 +5116,12 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
       result = (result2D != NULL && hasz) ?
         tpoint_add_z(result2D, at_temp_z, srid) : result2D;
     }
-    pfree(temp_x); pfree(range_x); pfree(temp_y); pfree(range_y);
+    pfree(temp_x); pfree(span_x); pfree(temp_y); pfree(span_y);
     if (at_temp_x != NULL) pfree(at_temp_x);
     if (at_temp_y != NULL) pfree(at_temp_y);
     if (hasz)
     {
-      pfree(temp_z); pfree(range_z);
+      pfree(temp_z); pfree(span_z);
       if (at_temp_z != NULL) pfree(at_temp_z);
       if (result2D != NULL) pfree(result2D);
     }
@@ -5334,7 +5318,7 @@ PGDLLEXPORT Datum
 Tpoint_transform(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum srid = PG_GETARG_DATUM(1);
+  int srid = PG_GETARG_INT32(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_transform(temp, srid);
@@ -5384,8 +5368,8 @@ PGDLLEXPORT Datum
 Geo_round(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), prec));
+  int prec = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), Int32GetDatum(prec)));
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_round);
@@ -5397,7 +5381,7 @@ PGDLLEXPORT Datum
 Tpoint_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
+  int prec = PG_GETARG_INT32(1);
   Temporal *result = tpoint_round(temp, prec);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

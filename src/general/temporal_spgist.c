@@ -37,13 +37,14 @@
 #include "general/temporal_spgist.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <access/spgist.h>
-#include <utils/builtins.h>
 /* MobilityDB */
 #include "general/timetypes.h"
-#include "general/tempcache.h"
-#include "general/period.h"
+#include "general/temporal.h"
+#include "general/temporal_catalog.h"
+#include "general/span.h"
 #include "general/time_gist.h"
 #include "general/time_spgist.h"
 #include "general/temporaltypes.h"
@@ -62,7 +63,7 @@ Temporal_spgist_compress(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
   temporal_bbox_slice(tempdatum, result);
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************/

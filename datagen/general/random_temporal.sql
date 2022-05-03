@@ -141,9 +141,9 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
-DROP FUNCTION IF EXISTS random_intrange;
-CREATE FUNCTION random_intrange(lowvalue int, highvalue int, maxdelta int)
-  RETURNS intrange AS $$
+DROP FUNCTION IF EXISTS random_int4range;
+CREATE FUNCTION random_int4range(lowvalue int, highvalue int, maxdelta int)
+  RETURNS int4range AS $$
 DECLARE
   v int;
 BEGIN
@@ -152,12 +152,40 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_int(lowvalue, highvalue - maxdelta);
-  RETURN intrange(v, v + random_int(1, maxdelta));
+  RETURN int4range(v, v + random_int(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_intrange(-100, 100, 10) AS ir
+SELECT k, random_int4range(-100, 100, 10) AS ir
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate a random integer span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between the lower and upper bounds
+ */
+DROP FUNCTION IF EXISTS random_intspan;
+CREATE FUNCTION random_intspan(lowvalue int, highvalue int, maxdelta int)
+  RETURNS intspan AS $$
+DECLARE
+  v int;
+BEGIN
+  IF lowvalue > highvalue - maxdelta THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
+      lowvalue, highvalue, maxdelta;
+  END IF;
+  v = random_int(lowvalue, highvalue - maxdelta);
+  RETURN intspan(v, v + random_int(1, maxdelta));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_intspan(-100, 100, 10) AS ir
 FROM generate_series(1,10) k;
 */
 
@@ -234,14 +262,14 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random float range
+ * Generate a random float span
  *
- * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowvalue, highvalue Inclusive bounds of the span
  * @param[in] maxdelta Maximum difference between two consecutive values
  */
-DROP FUNCTION IF EXISTS random_floatrange;
-CREATE FUNCTION random_floatrange(lowvalue float, highvalue float, maxdelta int)
-  RETURNS floatrange AS $$
+DROP FUNCTION IF EXISTS random_floatspan;
+CREATE FUNCTION random_floatspan(lowvalue float, highvalue float, maxdelta int)
+  RETURNS floatspan AS $$
 DECLARE
   v float;
 BEGIN
@@ -250,12 +278,12 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_float(lowvalue, highvalue - maxdelta);
-  RETURN floatrange(v, v + random_float(1, maxdelta));
+  RETURN floatspan(v, v + random_float(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_floatrange(-100, 100, 10) AS fr
+SELECT k, random_floatspan(-100, 100, 10) AS fr
 FROM generate_series(1,10) k;
 */
 

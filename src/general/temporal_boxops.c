@@ -45,40 +45,19 @@
 
 #include "general/temporal_boxops.h"
 
-/* PostgreSQL */
-#include <assert.h>
-#include <utils/builtins.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
-#include "general/time_ops.h"
+#include "general/span_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
-#include "general/rangetypes_ext.h"
-#include "general/tbox.h"
-#include "point/tpoint.h"
-#include "point/stbox.h"
 #include "point/tpoint_boxops.h"
-#include "npoint/tnpoint_boxops.h"
+#ifndef MEOS
+  #include "npoint/tnpoint_boxops.h"
+#endif
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
  *****************************************************************************/
-
-/**
- * Return the size in bytes to read from toast to get the basic
- * information from a temporal: Temporal struct (i.e., TInstant,
- * TInstantSet, TSequence, or TSequenceSet) and bounding box size
-*/
-uint32_t
-temporal_max_header_size(void)
-{
-  size_t sz1 = Max(sizeof(TInstant), sizeof(TInstantSet));
-  size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
-  return double_pad(Max(sz1, sz2)) + double_pad(sizeof(bboxunion));
-}
 
 /**
  * Return true if the bounding boxes are equal
@@ -92,7 +71,7 @@ temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype)
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    return period_eq((Period *) box1, (Period *) box2);
+    return span_eq((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_eq((TBOX *) box1, (TBOX *) box2);
   if (tspatial_type(temptype))
@@ -119,7 +98,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    return period_cmp((Period *) box1, (Period *) box2);
+    return span_cmp((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_cmp((TBOX *) box1, (TBOX *) box2);
   if (tspatial_type(temptype))
@@ -202,7 +181,7 @@ tinstant_make_bbox(const TInstant *inst, void *box)
   ensure_temporal_type(inst->temptype);
   memset(box, 0, temporal_bbox_size(inst->temptype));
   if (talpha_type(inst->temptype))
-    period_set(inst->t, inst->t, true, true, (Period *) box);
+    span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
     double dvalue = tnumberinst_double(inst);
@@ -210,8 +189,10 @@ tinstant_make_bbox(const TInstant *inst, void *box)
   }
   else if (tgeo_type(inst->temptype))
     tpointinst_stbox(inst, (STBOX *) box);
+#ifndef MEOS
   else if (inst->temptype == T_TNPOINT)
     tnpointinst_make_stbox(inst, (STBOX *) box);
+#endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       inst->temptype);
@@ -252,14 +233,16 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    period_set(instants[0]->t, instants[count - 1]->t, true, true,
-      (Period *) box);
+    span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
+      (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (tgeo_type(instants[0]->temptype))
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
+#ifndef MEOS
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointinstarr_stbox(instants, count, (STBOX *) box);
+#endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       instants[0]->temptype);
@@ -278,21 +261,27 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  */
 void
 tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
+#ifndef MEOS
   bool upper_inc, bool linear, void *box)
+#else
+  bool upper_inc, bool linear  __attribute__((unused)), void *box)
+#endif
 {
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    period_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
-      (Period *) box);
+    span_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
+      T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (instants[0]->temptype == T_TGEOMPOINT)
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->temptype == T_TGEOGPOINT)
     tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
+#ifndef MEOS
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
+#endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       instants[0]->temptype);
@@ -312,8 +301,8 @@ tseqarr_to_period(const TSequence **sequences, int count,
 {
   const Period *first = &sequences[0]->period;
   const Period *last = &sequences[count - 1]->period;
-  period_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
-    period);
+  span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
+    T_TIMESTAMPTZ, period);
   return;
 }
 
@@ -378,7 +367,7 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
 {
   Period p1, p2;
   temporal_period(temp, &p1);
-  period_set(t, t, true, true, &p2);
+  span_set(t, t, true, true, T_TIMESTAMPTZ, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }
@@ -485,26 +474,22 @@ boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
 }
 
 /**
- * Generic bounding box operator for a temporal number and a range
+ * Generic bounding box operator for a temporal number and a span
  *
  * @param[in] temp Temporal number
- * @param[in] range Range
+ * @param[in] span Span
  * @param[in] func Bounding box function
- * @param[in] invert True when the range is the first argument of the function.
+ * @param[in] invert True when the span is the first argument of the function.
  */
-int
-boxop_tnumber_range(const Temporal *temp, const RangeType *range,
+bool
+boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
-  /* Return false on empty range excepted for contains */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
-    return -1;
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  range_tbox(range, &box2);
+  span_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return (result ? 1 : 0);
+  return (result);
 }
 
 /**
@@ -550,6 +535,19 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 #ifndef MEOS
+
+/**
+ * Return the size in bytes to read from toast to get the basic
+ * information from a temporal: Temporal struct (i.e., TInstant,
+ * TInstantSet, TSequence, or TSequenceSet) and bounding box size
+*/
+uint32_t
+temporal_max_header_size(void)
+{
+  size_t sz1 = Max(sizeof(TInstant), sizeof(TInstantSet));
+  size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
+  return double_pad(Max(sz1, sz2)) + double_pad(sizeof(bboxunion));
+}
 
 /*****************************************************************************
  * Bounding box operators for temporal types: Generic functions
@@ -636,7 +634,7 @@ Datum
 boxop_period_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_period(temp, p, func, true);
   PG_FREE_IF_COPY(temp, 1);
@@ -654,7 +652,7 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   bool result = boxop_temporal_period(temp, p, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -726,7 +724,7 @@ PG_FUNCTION_INFO_V1(Contains_timestamp_temporal);
 PGDLLEXPORT Datum
 Contains_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_timestamp);
@@ -737,7 +735,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_timestamp);
 PGDLLEXPORT Datum
 Contains_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
@@ -748,7 +746,7 @@ PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
 PGDLLEXPORT Datum
 Contains_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
@@ -759,7 +757,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
 PGDLLEXPORT Datum
 Contains_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_period_temporal);
@@ -769,7 +767,7 @@ PG_FUNCTION_INFO_V1(Contains_period_temporal);
 PGDLLEXPORT Datum
 Contains_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_period_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_period);
@@ -779,7 +777,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_period);
 PGDLLEXPORT Datum
 Contains_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_period_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_periodset_temporal);
@@ -790,7 +788,7 @@ PG_FUNCTION_INFO_V1(Contains_periodset_temporal);
 PGDLLEXPORT Datum
 Contains_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_periodset);
@@ -801,7 +799,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_periodset);
 PGDLLEXPORT Datum
 Contains_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
@@ -812,7 +810,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
 PGDLLEXPORT Datum
 Contains_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &contains_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &contains_span_span);
 }
 
 /*****************************************************************************/
@@ -825,7 +823,7 @@ PG_FUNCTION_INFO_V1(Contained_timestamp_temporal);
 PGDLLEXPORT Datum
 Contained_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_timestamp);
@@ -836,7 +834,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_timestamp);
 PGDLLEXPORT Datum
 Contained_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
@@ -847,7 +845,7 @@ PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
 PGDLLEXPORT Datum
 Contained_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
@@ -858,7 +856,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
 PGDLLEXPORT Datum
 Contained_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_period_temporal);
@@ -869,7 +867,7 @@ PG_FUNCTION_INFO_V1(Contained_period_temporal);
 PGDLLEXPORT Datum
 Contained_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_period_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_period);
@@ -880,7 +878,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_period);
 PGDLLEXPORT Datum
 Contained_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_period_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_periodset_temporal);
@@ -891,7 +889,7 @@ PG_FUNCTION_INFO_V1(Contained_periodset_temporal);
 PGDLLEXPORT Datum
 Contained_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_periodset);
@@ -902,7 +900,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_periodset);
 PGDLLEXPORT Datum
 Contained_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
@@ -913,7 +911,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
 PGDLLEXPORT Datum
 Contained_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &contained_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &contained_span_span);
 }
 
 /*****************************************************************************/
@@ -926,7 +924,7 @@ PG_FUNCTION_INFO_V1(Overlaps_timestamp_temporal);
 PGDLLEXPORT Datum
 Overlaps_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_timestamp);
@@ -937,7 +935,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_timestamp);
 PGDLLEXPORT Datum
 Overlaps_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
@@ -948,7 +946,7 @@ PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
 PGDLLEXPORT Datum
 Overlaps_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
@@ -959,7 +957,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
 PGDLLEXPORT Datum
 Overlaps_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
@@ -970,7 +968,7 @@ PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
 PGDLLEXPORT Datum
 Overlaps_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_period_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
@@ -981,7 +979,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
 PGDLLEXPORT Datum
 Overlaps_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_period_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_temporal);
@@ -992,7 +990,7 @@ PG_FUNCTION_INFO_V1(Overlaps_periodset_temporal);
 PGDLLEXPORT Datum
 Overlaps_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_periodset);
@@ -1003,7 +1001,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_periodset);
 PGDLLEXPORT Datum
 Overlaps_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
@@ -1013,7 +1011,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
 PGDLLEXPORT Datum
 Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &overlaps_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
 /*****************************************************************************/
@@ -1026,7 +1024,7 @@ PG_FUNCTION_INFO_V1(Same_timestamp_temporal);
 PGDLLEXPORT Datum
 Same_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &period_eq);
+  return boxop_timestamp_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_timestamp);
@@ -1037,7 +1035,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_timestamp);
 PGDLLEXPORT Datum
 Same_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &period_eq);
+  return boxop_temporal_timestamp_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
@@ -1048,7 +1046,7 @@ PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
 PGDLLEXPORT Datum
 Same_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &period_eq);
+  return boxop_timestampset_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
@@ -1059,7 +1057,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
 PGDLLEXPORT Datum
 Same_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &period_eq);
+  return boxop_temporal_timestampset_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_period_temporal);
@@ -1070,7 +1068,7 @@ PG_FUNCTION_INFO_V1(Same_period_temporal);
 PGDLLEXPORT Datum
 Same_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &period_eq);
+  return boxop_period_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_period);
@@ -1081,7 +1079,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_period);
 PGDLLEXPORT Datum
 Same_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &period_eq);
+  return boxop_temporal_period_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_periodset_temporal);
@@ -1092,7 +1090,7 @@ PG_FUNCTION_INFO_V1(Same_periodset_temporal);
 PGDLLEXPORT Datum
 Same_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &period_eq);
+  return boxop_periodset_temporal_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_periodset);
@@ -1103,7 +1101,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_periodset);
 PGDLLEXPORT Datum
 Same_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &period_eq);
+  return boxop_temporal_periodset_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_temporal_temporal);
@@ -1113,7 +1111,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_temporal);
 PGDLLEXPORT Datum
 Same_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &period_eq);
+  return boxop_temporal_temporal_ext(fcinfo, &span_eq);
 }
 
 /*****************************************************************************/
@@ -1126,7 +1124,7 @@ PG_FUNCTION_INFO_V1(Adjacent_timestamp_temporal);
 PGDLLEXPORT Datum
 Adjacent_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_timestamp_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_timestamp);
@@ -1137,7 +1135,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_timestamp);
 PGDLLEXPORT Datum
 Adjacent_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_timestamp_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
@@ -1148,7 +1146,7 @@ PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
 PGDLLEXPORT Datum
 Adjacent_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_timestampset_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
@@ -1159,7 +1157,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
 PGDLLEXPORT Datum
 Adjacent_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_timestampset_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
@@ -1170,7 +1168,7 @@ PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
 PGDLLEXPORT Datum
 Adjacent_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_period_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
@@ -1181,7 +1179,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
 PGDLLEXPORT Datum
 Adjacent_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_period_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_temporal);
@@ -1192,7 +1190,7 @@ PG_FUNCTION_INFO_V1(Adjacent_periodset_temporal);
 PGDLLEXPORT Datum
 Adjacent_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_periodset_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_periodset);
@@ -1203,7 +1201,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_periodset);
 PGDLLEXPORT Datum
 Adjacent_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_periodset_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
@@ -1213,7 +1211,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
 PGDLLEXPORT Datum
 Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &adjacent_period_period);
+  return boxop_temporal_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
 /*****************************************************************************
@@ -1257,42 +1255,36 @@ boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic bounding box operator for a range and a temporal number
+ * Generic bounding box operator for a span and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
 Datum
-boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
+boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
+  Span *span = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = boxop_tnumber_range(temp, range, func, INVERT);
-  PG_FREE_IF_COPY(range, 0);
+  bool result = boxop_tnumber_span(temp, span, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
 /**
- * Generic bounding box operator for a temporal number and a range
+ * Generic bounding box operator for a temporal number and a span
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
+boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  RangeType *range = PG_GETARG_RANGE_P(1);
-  int result = boxop_tnumber_range(temp, range, func, INVERT_NO);
+  Span *span = PG_GETARG_SPAN_P(1);
+  bool result = boxop_tnumber_span(temp, span, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(range, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
@@ -1354,7 +1346,7 @@ boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Contains_number_tnumber);
 /**
- * Return true if the range contains the bounding box of the temporal number
+ * Return true if the span contains the bounding box of the temporal number
  */
 PGDLLEXPORT Datum
 Contains_number_tnumber(PG_FUNCTION_ARGS)
@@ -1365,7 +1357,7 @@ Contains_number_tnumber(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contains_tnumber_number);
 /**
  * Return true if the bounding box of the temporal number contains the
- * the range
+ * the span
  */
 PGDLLEXPORT Datum
 Contains_tnumber_number(PG_FUNCTION_ARGS)
@@ -1373,24 +1365,24 @@ Contains_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_range_tnumber);
+PG_FUNCTION_INFO_V1(Contains_span_tnumber);
 /**
- * Return true if the range contains the bounding box of the temporal number
+ * Return true if the span contains the bounding box of the temporal number
  */
 PGDLLEXPORT Datum
-Contains_range_tnumber(PG_FUNCTION_ARGS)
+Contains_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_tnumber_range);
+PG_FUNCTION_INFO_V1(Contains_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number contains the range
+ * Return true if the bounding box of the temporal number contains the span
  */
 PGDLLEXPORT Datum
-Contains_tnumber_range(PG_FUNCTION_ARGS)
+Contains_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &contains_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
@@ -1430,7 +1422,7 @@ Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_number_tnumber);
 /**
- * Return true if the range is contained in the bounding box of the temporal
+ * Return true if the span is contained in the bounding box of the temporal
  * number
  */
 PGDLLEXPORT Datum
@@ -1442,7 +1434,7 @@ Contained_number_tnumber(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contained_tnumber_number);
 /**
  * Return true if the bounding box of the temporal number is contained in the
- * the range
+ * the span
  */
 PGDLLEXPORT Datum
 Contained_tnumber_number(PG_FUNCTION_ARGS)
@@ -1450,26 +1442,26 @@ Contained_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_range_tnumber);
+PG_FUNCTION_INFO_V1(Contained_span_tnumber);
 /**
- * Return true if the range is contained in the bounding box of the temporal
+ * Return true if the span is contained in the bounding box of the temporal
  * number
  */
 PGDLLEXPORT Datum
-Contained_range_tnumber(PG_FUNCTION_ARGS)
+Contained_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_tnumber_range);
+PG_FUNCTION_INFO_V1(Contained_tnumber_span);
 /**
  * Return true if the bounding box of the temporal number is contained in
- * the range
+ * the span
  */
 PGDLLEXPORT Datum
-Contained_tnumber_range(PG_FUNCTION_ARGS)
+Contained_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &contained_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
@@ -1529,26 +1521,26 @@ Overlaps_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_range_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_span_tnumber);
 /**
- * Return true if the range and the bounding box of the temporal number
+ * Return true if the span and the bounding box of the temporal number
  * overlap
  */
 PGDLLEXPORT Datum
-Overlaps_range_tnumber(PG_FUNCTION_ARGS)
+Overlaps_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_tnumber_range);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number and the range
+ * Return true if the bounding box of the temporal number and the span
  * overlap
  */
 PGDLLEXPORT Datum
-Overlaps_tnumber_range(PG_FUNCTION_ARGS)
+Overlaps_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
@@ -1607,26 +1599,26 @@ Same_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_range_tnumber);
+PG_FUNCTION_INFO_V1(Same_span_tnumber);
 /**
- * Return true if the range and the bounding box of the temporal number are
+ * Return true if the span and the bounding box of the temporal number are
  * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-Same_range_tnumber(PG_FUNCTION_ARGS)
+Same_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &same_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_tnumber_range);
+PG_FUNCTION_INFO_V1(Same_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number and the range are
+ * Return true if the bounding box of the temporal number and the span are
  * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-Same_tnumber_range(PG_FUNCTION_ARGS)
+Same_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &same_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &same_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
@@ -1686,26 +1678,26 @@ Adjacent_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_range_tnumber);
+PG_FUNCTION_INFO_V1(Adjacent_span_tnumber);
 /**
- * Return true if the range and the bounding box of the temporal number are
+ * Return true if the span and the bounding box of the temporal number are
  * adjacent
  */
 PGDLLEXPORT Datum
-Adjacent_range_tnumber(PG_FUNCTION_ARGS)
+Adjacent_span_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_span_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_tnumber_range);
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_span);
 /**
- * Return true if the bounding box of the temporal number and the range are
+ * Return true if the bounding box of the temporal number and the span are
  * adjacent
  */
 PGDLLEXPORT Datum
-Adjacent_tnumber_range(PG_FUNCTION_ARGS)
+Adjacent_tnumber_span(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_tnumber_span_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);

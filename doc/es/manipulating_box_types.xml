@@ -132,9 +132,9 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-0
 			<listitem id="tbox_cast_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir un <varname>tbox</varname> a otro tipo</para>
-				<para><varname>tbox::{floatrange,period}</varname></para>
+				<para><varname>tbox::{floatspan,period}</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::floatrange;
+SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::floatspan;
 -- "[1,2]"
 SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::period;
 -- "[2000-01-01, 2000-01-02]"
@@ -144,10 +144,10 @@ SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::period;
 			<listitem id="tbox_cast_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir otro tipo a un <varname>tbox</varname></para>
-				<para><varname>{integer,float,numeric,intrange,floatrange}::tbox</varname>,</para>
+				<para><varname>{integer,float,numeric,intspan,floatspan}::tbox</varname>,</para>
 				<para><varname>{timestamptz,timestampset,period,periodset,tint,tfloat}::tbox</varname></para>
 				<programlisting xml:space="preserve">
-SELECT floatrange '(1.0, 2.0)'::tbox;
+SELECT floatspan '(1.0, 2.0)'::tbox;
 -- "TBOX((1,),(2,))"
 SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::tbox;
 -- "TBOX((,2001-01-01),(,2001-01-04))"

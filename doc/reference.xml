@@ -12,11 +12,19 @@
 	<title>MobilityDB Reference</title>
 
 	<sect1>
-		<title>Functions and Operators for Time Types and Range Types</title>
+		<title>Functions and Operators for Time Types and Span Types</title>
 
 		<sect2>
 			<title>Constructor Functions</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="period"><varname>intspan</varname></link>: Constructor for <varname>intspan</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="period"><varname>floatspan</varname></link>: Constructor for <varname>floatspan</varname></para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="period"><varname>period</varname></link>: Constructor for <varname>period</varname></para>
 				</listitem>
@@ -47,7 +55,15 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="intspan_cast"><varname>instspan::int4range</varname></link>: Cast an <varname>instspan</varname> to an <varname>int4range</varname></para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
+
+				<listitem>
+					<para><link linkend="int4range_cast"><varname>int4range::instspan</varname></link>: Cast an <varname>int4range</varname> to an <varname>instspan</varname></para>
+				</listitem>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -147,7 +163,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_round"><varname>round</varname></link>: Round the bounds of a float range to a number of decimal places</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Round the bounds of a float span to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -157,27 +173,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_eq"><varname>=</varname></link>: Are the time values equal?</para>
+					<para><link linkend="time_eq"><varname>=</varname></link>: Are the values equal?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: Are the time values different?</para>
+					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_lt"><varname>&lt;</varname></link>: Is the first time value less than the second one?</para>
+					<para><link linkend="time_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_gt"><varname>&gt;</varname></link>: Is the first time value greater than the second one?</para>
+					<para><link linkend="time_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_le"><varname>&lt;=</varname></link>: Is the first time value less than or equal to the second one?</para>
+					<para><link linkend="time_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: Is the first time value greater than or equal to the second one?</para>
+					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -187,15 +203,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_union"><varname>+</varname></link>: Union of the time values</para>
+					<para><link linkend="time_union"><varname>+</varname></link>: Union of values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersection of the time values</para>
+					<para><link linkend="time_difference"><varname>-</varname></link>: Difference of values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_difference"><varname>-</varname></link>: Difference of the time values</para>
+					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersection of values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -205,55 +221,51 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the time values overlap (have instants in common)?</para>
+					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the values overlap (have values in common)?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: Does the first time value contain the second one?</para>
+					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: Does the first value contain the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: Is the first time value contained by the second one?</para>
+					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: Is the first value contained by the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: Is the first time value adjacent to the second one?</para>
+					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: Is the first number or range value scritly left of the second one?</para>
+					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: Is the first value scritly left of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: Is the first number or range value strictly right of the second one?</para>
+					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: Is the first value strictly right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: Is the first number or range value not to the right of the second one?</para>
+					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: Is the first value not to the right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: Is the first number or range value not to the left of the second one?</para>
+					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: Is the first value not to the left of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_adjacent"><varname>-|-</varname></link>: Is the first number or range value adjacent to the second one?</para>
+					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: Is the first value scritly before the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: Is the first time value scritly before the second one?</para>
+					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: Is the first value strictly after the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: Is the first time value strictly after the second one?</para>
+					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first value not after the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first time value not after the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: Is the first time value not before the second one?</para>
+					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: Is the first value not before the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -263,11 +275,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Get the smallest distance ever in an interval</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="smallest_distance_secs"><varname>|=|</varname></link>: Get the smallest distance ever in number of seconds</para>
+					<para><link linkend="smallest_distance_time"><varname>&lt;-&gt;</varname></link>: Get the smallest distance ever</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -281,11 +289,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding period</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="range_extent"><varname>extent</varname></link>: Bounding range</para>
+					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding span or period</para>
 				</listitem>
 
 				<listitem>
@@ -620,7 +624,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Cast a temporal number to a range</para>
+					<para><link linkend="tnumber_span"><varname>tnumber::span</varname></link>: Cast a temporal number to a span</para>
 				</listitem>
 
 				<listitem>
@@ -705,7 +709,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueRange"><varname>valueRange</varname></link>: Get the value range</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname></link>: Get the value span</para>
 				</listitem>
 
 				<listitem>
@@ -869,11 +873,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atRange"><varname>atRange</varname></link>: Restrict to a range</para>
+						<para><link linkend="atSpan"><varname>atSpan</varname></link>: Restrict to a span</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atRanges"><varname>atRanges</varname></link>: Restrict to an array of ranges</para>
+						<para><link linkend="atSpans"><varname>atSpans</varname></link>: Restrict to an array of spans</para>
 					</listitem>
 
 					<listitem>
@@ -927,11 +931,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusRange"><varname>minusRange</varname></link>: Difference with a range</para>
+						<para><link linkend="minusSpan"><varname>minusSpan</varname></link>: Difference with a span</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusRanges"><varname>minusRanges</varname></link>: Difference with an array of ranges</para>
+						<para><link linkend="minusSpans"><varname>minusSpans</varname></link>: Difference with an array of spans</para>
 					</listitem>
 
 					<listitem>
@@ -1433,7 +1437,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the range or period with buckets of the same width or duration aligned with the origin</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the span or period with buckets of the same width or duration aligned with the origin</para>
 					</listitem>
 
 					<listitem>
@@ -1441,7 +1445,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Returns the range in the bucket space that contains the input number</para>
+						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Returns the span in the bucket space that contains the input number</para>
 					</listitem>
 
 					<listitem>

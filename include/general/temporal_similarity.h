@@ -30,10 +30,7 @@
 #ifndef __TEMPORAL_SIMILARITY_H__
 #define __TEMPORAL_SIMILARITY_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <fmgr.h>
-/* PostgreSQL */
+/* MobilityDB */
 #include "temporal.h"
 
 /*****************************************************************************/

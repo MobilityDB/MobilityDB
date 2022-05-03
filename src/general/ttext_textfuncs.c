@@ -47,6 +47,8 @@
 
 /**
  * Return the concatenation of the two text values
+ * @note PG internal function:
+ * static text *text_catenate(text *t1, text *t2);
  */
 Datum
 datum_textcat(Datum l, Datum r)
@@ -56,6 +58,8 @@ datum_textcat(Datum l, Datum r)
 
 /**
  * Convert the text value to lowercase
+ * @note PG internal function:
+ * char *str_tolower(const char *buff, size_t nbytes, Oid collid);
  */
 Datum
 datum_lower(Datum value)
@@ -65,6 +69,8 @@ datum_lower(Datum value)
 
 /**
  * Convert the text value to uppercase
+ * @note PG internal function:
+ * char *str_toupper(const char *buff, size_t nbytes, Oid collid);
  */
 Datum
 datum_upper(Datum value)

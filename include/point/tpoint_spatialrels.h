@@ -37,10 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 /* MobilityDB */
-#include "general/lifting.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -67,7 +65,9 @@ extern int contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp);
 extern int disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern int dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param);
+extern int dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum dist);
+extern int dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
+  Datum dist);
 extern int dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum dist);
 

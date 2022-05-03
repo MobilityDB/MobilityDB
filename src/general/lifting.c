@@ -153,9 +153,8 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -891,7 +890,7 @@ tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
       instants[k++] = tinstant_make(resvalue, inst->t, lfinfo->restype);
       DATUM_FREE(value1, basetype); DATUM_FREE(resvalue, resbasetype);
     }
-    if (seq->period.upper < inst->t)
+    if ((TimestampTz) seq->period.upper < inst->t)
       break;
   }
   return tinstantset_make_free(instants, k, MERGE_NO);
@@ -996,12 +995,12 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   TInstant *inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 0, j = 0, k = 0, l = 0;
-  if (inst1->t < inter->lower)
+  if (inst1->t < (TimestampTz) inter->lower)
   {
     i = tsequence_find_timestamp(seq1, inter->lower) + 1;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
-  else if (inst2->t < inter->lower)
+  else if (inst2->t < (TimestampTz) inter->lower)
   {
     j = tsequence_find_timestamp(seq2, inter->lower) + 1;
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
@@ -1012,7 +1011,8 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
   Datum value;
   CachedType resbasetype = temptype_basetype(lfinfo->restype);
   while (i < seq1->count && j < seq2->count &&
-    (inst1->t <= inter->upper || inst2->t <= inter->upper))
+    (inst1->t <= (TimestampTz) inter->upper ||
+     inst2->t <= (TimestampTz) inter->upper))
   {
     /* Synchronize the start instant */
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
@@ -1094,13 +1094,13 @@ tfunc_tsequence_tsequence_linearstep(const TSequence *seq1,
   TInstant *start2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 1, j = 1, k = 0, l = 0;
   /* Synchronize the start instant */
-  if (start1->t < inter->lower)
+  if (start1->t < (TimestampTz) inter->lower)
   {
     start1 = tsequence_at_timestamp(seq1, inter->lower);
     tofree[l++] = start1;
     i = tsequence_find_timestamp(seq1, inter->lower) + 1;
   }
-  else if (start2->t < inter->lower)
+  else if (start2->t < (TimestampTz) inter->lower)
   {
     start2 = tsequence_at_timestamp(seq2, inter->lower);
     tofree[l++] = start2;
@@ -1191,13 +1191,13 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
   TInstant *start2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 1, j = 1, k = 0, l = 0;
   /* Synchronize the start instant */
-  if (start1->t < inter->lower)
+  if (start1->t < (TimestampTz) inter->lower)
   {
     start1 = tsequence_at_timestamp(seq1, inter->lower);
     tofree[l++] = start1;
     i = tsequence_find_timestamp(seq1, inter->lower) + 1;
   }
-  else if (start2->t < inter->lower)
+  else if (start2->t < (TimestampTz) inter->lower)
   {
     start2 = tsequence_at_timestamp(seq2, inter->lower);
     tofree[l++] = start2;
@@ -1367,7 +1367,7 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period inter;
-  if (! inter_period_period(&seq1->period, &seq2->period, &inter))
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return 0;
 
   /* If the two sequences intersect at an instant */
@@ -1554,7 +1554,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Period p1, p2;
   temporal_period(temp1, &p1);
   temporal_period(temp2, &p2);
-  if (! overlaps_period_period(&p1, &p2))
+  if (! overlaps_span_span(&p1, &p2))
     return NULL;
 
   Temporal *result = NULL;
@@ -1814,7 +1814,7 @@ efunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
       if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
         return 1;
     }
-    if (seq->period.upper < inst->t)
+    if ((TimestampTz) seq->period.upper < inst->t)
       break;
   }
   return 0;
@@ -1908,13 +1908,13 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
   TInstant *start2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 1, j = 1, l = 0;
   /* Synchronize the start instant */
-  if (start1->t < inter->lower)
+  if (start1->t < (TimestampTz) inter->lower)
   {
     start1 = tsequence_at_timestamp(seq1, inter->lower);
     tofree[l++] = start1;
     i = tsequence_find_timestamp(seq1, inter->lower) + 1;
   }
-  else if (start2->t < inter->lower)
+  else if (start2->t < (TimestampTz) inter->lower)
   {
     start2 = tsequence_at_timestamp(seq2, inter->lower);
     tofree[l++] = start2;
@@ -2026,23 +2026,22 @@ efunc_tsequence_tsequence(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  Period *inter = intersection_period_period(&seq1->period,
-    &seq2->period);
-  if (inter == NULL)
+  Period inter;
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return -1;
 
   /* If the two sequences intersect at an instant */
-  if (inter->lower == inter->upper)
+  if (inter.lower == inter.upper)
   {
     Datum value1, value2;
-    tsequence_value_at_timestamp(seq1, inter->lower, &value1);
-    tsequence_value_at_timestamp(seq2, inter->lower, &value2);
+    tsequence_value_at_timestamp(seq1, inter.lower, &value1);
+    tsequence_value_at_timestamp(seq2, inter.lower, &value2);
     bool resvalue = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
     return resvalue ? 1 : 0;
   }
   /* Ever functions are always discontinuous */
   assert(lfinfo->discont);
-  return efunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, inter);
+  return efunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, &inter);
 }
 
 /*****************************************************************************/
@@ -2141,7 +2140,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Period p1, p2;
   temporal_period(temp1, &p1);
   temporal_period(temp2, &p2);
-  if (! overlaps_period_period(&p1, &p2))
+  if (! overlaps_span_span(&p1, &p2))
     return -1;
 
   int result;

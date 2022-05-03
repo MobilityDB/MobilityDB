@@ -96,6 +96,7 @@
 #include "point/tpoint_spgist.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <assert.h>
 #include <float.h>
 #include <access/spgist.h>
@@ -106,11 +107,11 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/temporal.h"
+#include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "general/tnumber_spgist.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
@@ -542,7 +543,7 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    Period *p = DatumGetSpanP(scankey->sk_argument);
     period_stbox(p, result);
   }
   else if (type == T_PERIODSET)

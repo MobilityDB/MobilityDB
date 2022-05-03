@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <assert.h>
+#include <math.h>
 #include <executor/spi.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
@@ -43,13 +44,11 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 /* MobilityDB */
-#include "general/skiplist.h"
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
-#include "general/temporal_util.h"
 #include "general/temporal_aggfuncs.h"
 
 /*****************************************************************************
@@ -233,12 +232,12 @@ skiplist_print(const SkipList *list)
       if (list->elemtype == TIMESTAMPTZ)
         val = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(e->value));
       else if (list->elemtype == PERIOD)
-        val = period_to_string(e->value);
+        val = span_to_string(e->value);
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
         temporal_period(e->value, &p);
-        val = period_to_string(&p);
+        val = span_to_string(&p);
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);
@@ -302,7 +301,7 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
   else if (elemtype == PERIOD)
   {
     for (int i = 0; i < count - 2; i ++)
-      result->elems[i + 1].value = period_copy((Period *) values[i]);
+      result->elems[i + 1].value = span_copy((Span *) values[i]);
   }
   else /* state->elemtype == TEMPORAL */
   {
@@ -384,27 +383,26 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   uint8 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
-    period_set((TimestampTz) values[0], (TimestampTz) values[count - 1],
-      true, true, &p);
+    span_set((TimestampTz) values[0], (TimestampTz) values[count - 1],
+      true, true, T_TIMESTAMPTZ, &p);
   }
   else if (list->elemtype == PERIOD)
   {
-    period_set(((Period *) values[0])->lower,
-      ((Period *) values[count - 1])->upper,
-      ((Period *) values[0])->lower_inc,
-      ((Period *) values[count - 1])->upper_inc, &p);
+    span_set(((Span *) values[0])->lower, ((Span *) values[count - 1])->upper,
+      ((Span *) values[0])->lower_inc, ((Span *) values[count - 1])->upper_inc,
+      T_TIMESTAMPTZ, &p);
   }
   else /* list->elemtype == TEMPORAL */
   {
     subtype = ((Temporal *) skiplist_headval(list))->subtype;
     if (subtype == INSTANT)
-      period_set(((TInstant *)values[0])->t,
-        ((TInstant *) values[count - 1])->t, true, true, &p);
+      span_set(((TInstant *) values[0])->t, ((TInstant *) values[count - 1])->t,
+        true, true, T_TIMESTAMPTZ, &p);
     else /* subtype == SEQUENCE */
-      period_set(((TSequence *)values[0])->period.lower,
+      span_set(((TSequence *)values[0])->period.lower,
         ((TSequence *) values[count - 1])->period.upper,
         ((TSequence *) values[0])->period.lower_inc,
-        ((TSequence *) values[count - 1])->period.upper_inc, &p);
+        ((TSequence *) values[count - 1])->period.upper_inc, T_TIMESTAMPTZ, &p);
   }
 
   int update[SKIPLIST_MAXLEVEL];
@@ -528,7 +526,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
     if (list->elemtype == TIMESTAMPTZ)
       newelm->value = values[i];
     else if (list->elemtype == PERIOD)
-      newelm->value = period_copy(values[i]);
+      newelm->value = span_copy(values[i]);
     else /* list->elemtype == TEMPORAL */
       newelm->value = temporal_copy(values[i]);
     unset_aggregation_context(ctx);
@@ -604,12 +602,10 @@ aggstate_write(SkipList *state, StringInfo buf)
   else if (state->elemtype == PERIOD)
   {
     for (i = 0; i < state->length; i ++)
-      period_write((const Period *) values[i], buf);
+      span_write((const Span *) values[i], buf);
   }
   else /* state->elemtype == TEMPORAL */
   {
-    if (state->length > 0)
-      pq_sendint32(buf, ((Temporal *) values[0])->temptype);
     for (i = 0; i < state->length; i ++)
     {
       SPI_connect();
@@ -647,15 +643,14 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   else if (elemtype == PERIOD)
   {
     for (int i = 0; i < length; i ++)
-      values[i] = period_read(buf);
+      values[i] = span_read(buf);
     result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }
   else /* elemtype == TEMPORAL */
   {
-    CachedType temptype = pq_getmsgint(buf, 4);
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_read(buf, temptype);
+      values[i] = temporal_read(buf);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

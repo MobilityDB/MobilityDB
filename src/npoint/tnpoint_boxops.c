@@ -58,7 +58,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
  * @brief Set the spatiotemporal box from the network point value.
  *
  * @param[out] box Spatiotemporal box
@@ -167,7 +166,6 @@ tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
 }
 
 /**
- * @ingroup libmeos_box_cast
  * @brief Return the bounding box of the network segment value
  */
 bool
@@ -182,7 +180,6 @@ nsegment_stbox(STBOX *box, const Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_box_constructor
  * @brief Transform a network point and a timestamp to a spatiotemporal box
  */
 bool
@@ -195,7 +192,6 @@ npoint_timestamp_to_stbox(const Npoint *np, TimestampTz t, STBOX *box)
 }
 
 /**
- * @ingroup libmeos_box_constructor
  * @brief Transform a network point and a period to a spatiotemporal box
  */
 bool
@@ -213,7 +209,6 @@ npoint_period_to_stbox(const Npoint *np, const Period *p, STBOX *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_box
  * @brief Generic box function for a temporal network point and a geometry.
  *
  * @param[in] temp Temporal network point
@@ -238,7 +233,6 @@ boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_temporal_box
  * @brief Generic box function for a temporal network point and an stbox.
  *
  * @param[in] temp Temporal network point
@@ -265,7 +259,6 @@ boxop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
 }
 
 /**
- * @ingroup libmeos_temporal_box
  * @brief Generic box function for a temporal network point and a network point.
  *
  * @param[in] temp Temporal network point
@@ -288,7 +281,6 @@ boxop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
 }
 
 /**
- * @ingroup libmeos_temporal_box
  * @brief Generic box function for two temporal network points
  *
  * @param[in] temp1,temp2 Temporal network points
@@ -366,7 +358,7 @@ PGDLLEXPORT Datum
 Npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_period_to_stbox(np, p, result);
   PG_RETURN_POINTER(result);

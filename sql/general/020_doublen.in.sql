@@ -135,11 +135,6 @@ CREATE TYPE tdouble2;
 CREATE TYPE tdouble3;
 CREATE TYPE tdouble4;
 
-/* temporal, base, contbase, box */
-SELECT register_temporal_type('tdouble2', 'double2', true, '');
-SELECT register_temporal_type('tdouble3', 'double3', true, '');
-SELECT register_temporal_type('tdouble4', 'double4', true, '');
-
 /******************************************************************************/
 
 CREATE FUNCTION tdouble2_in(cstring, oid, integer)

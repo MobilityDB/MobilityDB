@@ -74,7 +74,8 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/period.h"
+#include "general/lifting.h"
+#include "general/span.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
@@ -304,7 +305,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   else
   {
     /* It is necessary to sort the periods */
-    periodarr_sort(periods, countper);
+    spanarr_sort(periods, countper);
     PeriodSet *ps1 = periodset_make((const Period **) periods, countper, NORMALIZE);
     ps = minus_period_periodset(&seq->period, ps1);
     pfree(ps1);
@@ -791,7 +792,6 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
-  double dist_d = DatumGetFloat8(dist);
   for (int i = 1; i < seq1->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
@@ -826,7 +826,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
       int solutions = tdwithin_tpointsegm_tpointsegm(sv1, sev1, sv2, sev2,
-        lower, upper, dist_d, hasz, func, &t1, &t2);
+        lower, upper, DatumGetFloat8(dist), hasz, func, &t1, &t2);
 
       /* <  F  > */
       bool upper_inc1 = linear1 && linear2 && upper_inc;
@@ -856,8 +856,8 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
         tinstant_set(instants[j++], datum_true, t1);
         if (solutions == 2 && t1 != t2)
           tinstant_set(instants[j++], datum_true, t2);
-        result[k++] = tsequence_make((const TInstant **) instants, j, lower_inc,
-          (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, j,
+          lower_inc, (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
         if (t2 != upper)
         {
           tinstant_set(instants[0], datum_false, t2);
@@ -1097,7 +1097,8 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   Datum sv = tinstant_value(start);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(func(sv, point, dist), start->t, T_TBOOL);
+    TInstant *inst = tinstant_make(func(sv, point, dist),
+      start->t, T_TBOOL);
     result[0] = tinstant_tsequence(inst, STEP);
     pfree(inst);
     return 1;
@@ -1117,7 +1118,6 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
-  double dist_d = DatumGetFloat8(dist);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
@@ -1148,7 +1148,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
        * function is true */
       TimestampTz t1, t2;
       int solutions = tdwithin_tpointsegm_point(sv, ev, point,
-        lower, upper, dist_d, hasz, &t1, &t2);
+        lower, upper, DatumGetFloat8(dist), hasz, &t1, &t2);
 
       /* <  F  > */
       bool upper_inc1 = linear && upper_inc;
@@ -1386,6 +1386,50 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
 /*****************************************************************************/
 
 /**
+ * @brief Return a temporal Boolean that states whether the temporal points
+ * are within the given distance.
+ * @pre The temporal points are syncrhonized.
+ */
+Temporal *
+tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
+  Datum dist, bool restr, Datum atvalue)
+{
+  datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
+  Temporal *result;
+  ensure_valid_tempsubtype(sync1->subtype);
+  if (sync1->subtype == INSTANT || sync1->subtype == INSTANTSET)
+  {
+    LiftedFunctionInfo lfinfo;
+    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+    lfinfo.func = (varfunc) func;
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = dist;
+    lfinfo.restype = T_TBOOL;
+    if (sync1->subtype == INSTANT)
+      result = (Temporal *) tfunc_tinstant_tinstant(
+        (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
+    else if (sync1->subtype == INSTANTSET)
+      result = (Temporal *) tfunc_tinstantset_tinstantset(
+        (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
+  }
+  else if (sync1->subtype == SEQUENCE)
+    result = (Temporal *) tdwithin_tpointseq_tpointseq(
+      (TSequence *) sync1, (TSequence *) sync2, dist, func);
+  else /* sync1->subtype == SEQUENCESET */
+    result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
+      (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
+  /* Restrict the result to the Boolean value in the fourth argument if any */
+  if (result != NULL && restr)
+  {
+    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
+    pfree(result);
+    result = at_result;
+  }
+  return result;
+}
+
+
+/**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the temporal points
  * are within the given distance.
@@ -1402,34 +1446,8 @@ tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
     &sync1, &sync2))
     return NULL;
 
-  datum_func3 func = get_dwithin_fn(temp1->flags, temp2->flags);
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = dist;
-  lfinfo.restype = T_TBOOL;
-  Temporal *result;
-  ensure_valid_tempsubtype(sync1->subtype);
-  if (sync1->subtype == INSTANT)
-    result = (Temporal *) tfunc_tinstant_tinstant(
-      (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
-  else if (sync1->subtype == INSTANTSET)
-    result = (Temporal *) tfunc_tinstantset_tinstantset(
-      (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
-  else if (sync1->subtype == SEQUENCE)
-    result = (Temporal *) tdwithin_tpointseq_tpointseq(
-      (TSequence *) sync1, (TSequence *) sync2, dist, func);
-  else /* sync1->subtype == SEQUENCESET */
-    result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
-      (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
-  /* Restrict the result to the Boolean value in the fourth argument if any */
-  if (result != NULL && restr)
-  {
-    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = at_result;
-  }
+  Temporal *result = tdwithin_tpoint_tpoint1(sync1, sync2, dist, restr,
+    atvalue);
   pfree(sync1); pfree(sync2);
   return result;
 }

@@ -35,11 +35,6 @@
 #ifndef __TEMPORAL_WAGGFUNCS_H__
 #define __TEMPORAL_WAGGFUNCS_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
-
 /*****************************************************************************/
 
 

@@ -45,7 +45,7 @@
 /* MobilityDB */
 #include "general/time_gist.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
 #include "point/tpoint.h"
 #include "general/tnumber_gist.h"
 #include "point/tpoint_boxops.h"
@@ -296,7 +296,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
   }
   else if (type == T_PERIOD)
   {
-    Period *p = PG_GETARG_PERIOD_P(1);
+    Period *p = PG_GETARG_SPAN_P(1);
     period_stbox(p, result);
   }
   else if (type == T_PERIODSET)
@@ -390,7 +390,7 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
   STBOX *result = stbox_copy(DatumGetSTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     stbox_adjust(result, DatumGetSTboxP(ent[i].key));
-  PG_RETURN_PERIOD_P(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************

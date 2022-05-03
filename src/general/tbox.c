@@ -37,13 +37,13 @@
 /* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
+#include <libpq/pqformat.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temporal_catalog.h"
+#include "general/span.h"
 #include "general/timestampset.h"
-#include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/rangetypes_ext.h"
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
@@ -63,8 +63,7 @@ void
 ensure_has_X_tbox(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have value dimension")));
+    elog(ERROR, "The box must have value dimension");
 }
 
 /**
@@ -74,8 +73,7 @@ void
 ensure_has_T_tbox(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have time dimension")));
+    elog(ERROR, "The box must have time dimension");
 }
 
 /**
@@ -86,8 +84,7 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must be of the same dimensionality")));
+    elog(ERROR, "The boxes must be of the same dimensionality");
 }
 
 /*****************************************************************************
@@ -303,15 +300,15 @@ float_tbox(double d, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the range to a temporal box.
+ * @brief Transform the span to a temporal box.
  */
 void
-range_tbox(const RangeType *range, TBOX *box)
+span_tbox(const Span *span, TBOX *box)
 {
-  ensure_tnumber_rangetype(oid_type(range->rangetypid));
+  ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  range_bounds(range, &box->xmin, &box->xmax);
+  span_bounds(span, &box->xmin, &box->xmax);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -341,7 +338,7 @@ timestampset_tbox(const TimestampSet *ts, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  const Period *p = timestampset_bbox_ptr(ts);
+  const Period *p = timestampset_period_ptr(ts);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
@@ -374,7 +371,7 @@ periodset_tbox(const PeriodSet *ps, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  const Period *p = periodset_bbox_ptr(ps);
+  const Period *p = periodset_period_ptr(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
@@ -409,7 +406,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
  * @brief Transform the integer and the period to a temporal box
  */
 TBOX *
-int_period_to_tbox(int i, Period *p)
+int_period_to_tbox(int i, const Period *p)
 {
   TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
     p->upper);
@@ -421,7 +418,7 @@ int_period_to_tbox(int i, Period *p)
  * @brief Transform the float and the period to a temporal box
  */
 TBOX *
-float_period_to_tbox(double d, Period *p)
+float_period_to_tbox(double d, const Period *p)
 {
   TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
   return result;
@@ -429,34 +426,27 @@ float_period_to_tbox(double d, Period *p)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Transform the range and the timestamp to a temporal box
+ * @brief Transform the span and the timestamp to a temporal box
  */
 TBOX *
-range_timestamp_to_tbox(RangeType *range, TimestampTz t)
+span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
-  /* Return null on empty or unbounded range */
-  char flags = range_get_flags(range);
-  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
-    return NULL;
   double xmin, xmax;
-  range_bounds(range, &xmin, &xmax);
+  span_bounds(span, &xmin, &xmax);
   TBOX *result = tbox_make(true, true, xmin, xmax, t, t);
   return result;
 }
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Transform the range and the period to a temporal box
+ * @brief Transform the span and the period to a temporal box
  */
 TBOX *
-range_period_to_tbox(RangeType *range, Period *p)
+span_period_to_tbox(const Span *span, const Period *p)
 {
-  char flags = range_get_flags(range);
-  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
-    return NULL;
-  ensure_tnumber_rangetype(oid_type(range->rangetypid));
+  ensure_tnumber_spantype(span->spantype);
   double xmin, xmax;
-  range_bounds(range, &xmin, &xmax);
+  span_bounds(span, &xmin, &xmax);
   TBOX *result = tbox_make(true, true, xmin, xmax, p->lower, p->upper);
   return result;
 }
@@ -465,14 +455,28 @@ range_period_to_tbox(RangeType *range, Period *p)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a float range value.
+ * @brief Cast the temporal box value as a integer span value.
  */
-RangeType *
-tbox_floatrange(TBOX *box)
+Span *
+tbox_intspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
-  RangeType *result = range_make(Float8GetDatum(box->xmin),
+  Span *result = span_make(Int32GetDatum((int) box->xmin),
+    Int32GetDatum((int) box->xmax), true, true, T_INT4);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Cast the temporal box value as a float span value.
+ */
+Span *
+tbox_floatspan(const TBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    return NULL;
+  Span *result = span_make(Float8GetDatum(box->xmin),
     Float8GetDatum(box->xmax), true, true, T_FLOAT8);
   return result;
 }
@@ -482,11 +486,11 @@ tbox_floatrange(TBOX *box)
  * @brief Cast the temporal box value as a period value
  */
 Period *
-tbox_period(TBOX *box)
+tbox_period(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
-  Period *result = period_make(box->tmin, box->tmax, true, true);
+  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -1253,20 +1257,16 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Range_to_tbox);
+PG_FUNCTION_INFO_V1(Span_to_tbox);
 /**
- * Transform the range to a temporal box
+ * Transform the span to a temporal box
  */
 PGDLLEXPORT Datum
-Range_to_tbox(PG_FUNCTION_ARGS)
+Span_to_tbox(PG_FUNCTION_ARGS)
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return null on empty or unbounded range */
-  char flags = range_get_flags(range);
-  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
-    PG_RETURN_NULL();
+  Span *span = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  range_tbox(range, result);
+  span_tbox(span, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1321,7 +1321,7 @@ PG_FUNCTION_INFO_V1(Period_to_tbox);
 PGDLLEXPORT Datum
 Period_to_tbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
+  Period *p = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   period_tbox(p, result);
   PG_RETURN_POINTER(result);
@@ -1392,7 +1392,7 @@ PGDLLEXPORT Datum
 Int_period_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   TBOX *result = int_period_to_tbox(i, p);
   PG_RETURN_POINTER(result);
 }
@@ -1405,54 +1405,48 @@ PGDLLEXPORT Datum
 Float_period_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
+  Period *p = PG_GETARG_SPAN_P(1);
   TBOX *result = float_period_to_tbox(d, p);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Range_timestamp_to_tbox);
+PG_FUNCTION_INFO_V1(Span_timestamp_to_tbox);
 /**
- * Transform the range and the timestamp to a temporal box
+ * Transform the span and the timestamp to a temporal box
  */
 PGDLLEXPORT Datum
-Range_timestamp_to_tbox(PG_FUNCTION_ARGS)
+Span_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
+  Span *span = PG_GETARG_SPAN_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = range_timestamp_to_tbox(range, t);
-  PG_FREE_IF_COPY(range, 0);
-  if (! result)
-    PG_RETURN_NULL();
+  TBOX *result = span_timestamp_to_tbox(span, t);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Range_period_to_tbox);
+PG_FUNCTION_INFO_V1(Span_period_to_tbox);
 /**
- * Transform the range and the period to a temporal box
+ * Transform the span and the period to a temporal box
  */
 PGDLLEXPORT Datum
-Range_period_to_tbox(PG_FUNCTION_ARGS)
+Span_period_to_tbox(PG_FUNCTION_ARGS)
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  TBOX *result = range_period_to_tbox(range, p);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_FREE_IF_COPY(range, 0);
+  Span *span = PG_GETARG_SPAN_P(0);
+  Period *p = PG_GETARG_SPAN_P(1);
+  TBOX *result = span_period_to_tbox(span, p);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tbox_to_floatrange);
+PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
- * Cast the temporal box value as a float range value
+ * Cast the temporal box value as a float span value
  */
 PGDLLEXPORT Datum
-Tbox_to_floatrange(PG_FUNCTION_ARGS)
+Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  RangeType *result = tbox_floatrange(box);
+  Span *result = tbox_floatspan(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1806,16 +1800,16 @@ Tbox_extent_transfn(PG_FUNCTION_ARGS)
   TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
 
   /* Can't do anything with null inputs */
-  if (!box1 && !box2)
+  if (! box1 && ! box2)
     PG_RETURN_NULL();
   TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
   /* One of the boxes is null, return the other one */
-  if (!box1)
+  if (! box1)
   {
     memcpy(result, box2, sizeof(TBOX));
     PG_RETURN_POINTER(result);
   }
-  if (!box2)
+  if (! box2)
   {
     memcpy(result, box1, sizeof(TBOX));
     PG_RETURN_POINTER(result);
