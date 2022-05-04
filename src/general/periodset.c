@@ -40,6 +40,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/span.h"
 #include "general/timestampset.h"
 #include "general/time_ops.h"
@@ -352,8 +353,7 @@ periodset_timespan(const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, 0);
   const Period *p2 = periodset_per_n(ps, ps->count - 1);
-  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    TimestampTzGetDatum(p2->upper), TimestampTzGetDatum(p1->lower)));
+  Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
   return result;
 }
 
@@ -365,18 +365,16 @@ Interval *
 periodset_duration(const PeriodSet *ps)
 {
   const Period *p = periodset_per_n(ps, 0);
-  Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper),  TimestampTzGetDatum(p->lower));
+  Interval *result = pg_timestamp_mi(p->upper, p->lower);
   for (int i = 1; i < ps->count; i++)
   {
     p = periodset_per_n(ps, i);
-    Datum interval1 = call_function2(timestamp_mi,
-      TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
-    Datum interval2 = call_function2(interval_pl, result, interval1);
-    pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
+    Interval *interval1 = pg_timestamp_mi(p->upper, p->lower);
+    Interval *interval2 = pg_interval_pl(result, interval1);
+    pfree(result); pfree(interval1);
     result = interval2;
   }
-  return (Interval *) DatumGetPointer(result);
+  return result;
 }
 
 /**
@@ -770,7 +768,7 @@ periodset_hash(const PeriodSet *ps)
  * @brief Return the 64-bit hash value of a period set using a seed
  */
 uint64
-periodset_hash_extended(const PeriodSet *ps, Datum seed)
+periodset_hash_extended(const PeriodSet *ps, uint64 seed)
 {
   uint64 result = 1;
   for (int i = 0; i < ps->count; i++)
@@ -1311,7 +1309,7 @@ PGDLLEXPORT Datum
 Periodset_hash_extended(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Datum seed = PG_GETARG_DATUM(1);
+  uint64 seed = PG_GETARG_INT64(1);
   uint64 result = periodset_hash_extended(ps, seed);
   PG_RETURN_UINT64(result);
 }

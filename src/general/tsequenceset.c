@@ -41,6 +41,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -1033,9 +1034,7 @@ tsequenceset_timespan(const TSequenceSet *ts)
 {
   const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
   const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
-  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    TimestampTzGetDatum(seq2->period.upper),
-    TimestampTzGetDatum(seq1->period.lower)));
+  Interval *result = pg_timestamp_mi(seq2->period.upper, seq1->period.lower);
   return result;
 }
 
@@ -1047,18 +1046,16 @@ Interval *
 tsequenceset_duration(const TSequenceSet *ts)
 {
   const TSequence *seq = tsequenceset_seq_n(ts, 0);
-  Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
+  Interval *result = pg_timestamp_mi(seq->period.upper, seq->period.lower);
   for (int i = 1; i < ts->count; i++)
   {
     seq = tsequenceset_seq_n(ts, i);
-    Datum interval1 = call_function2(timestamp_mi,
-      TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
-    Datum interval2 = call_function2(interval_pl, result, interval1);
-    pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
+    Interval *interval1 = pg_timestamp_mi(seq->period.upper, seq->period.lower);
+    Interval *interval2 = pg_interval_pl(result, interval1);
+    pfree(result); pfree(interval1);
     result = interval2;
   }
-  return (Interval *) DatumGetPointer(result);
+  return result;
 }
 
 /**

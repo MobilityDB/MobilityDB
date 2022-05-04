@@ -41,6 +41,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/span.h"
 #include "general/time_ops.h"
 #include "general/temporal.h"
@@ -313,8 +314,7 @@ timestampset_timespan(const TimestampSet *ts)
 {
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    TimestampTzGetDatum(end), TimestampTzGetDatum(start)));
+  Interval *result = pg_timestamp_mi(end, start);
   return result;
 }
 
@@ -566,8 +566,7 @@ timestampset_hash(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    uint32 time_hash = DatumGetUInt32(call_function1(hashint8,
-      TimestampTzGetDatum(t)));
+    uint32 time_hash = pg_hashint8(t);
     result = (result << 5) - result + time_hash;
   }
   return result;
@@ -578,14 +577,13 @@ timestampset_hash(const TimestampSet *ts)
  * @brief Return the 64-bit hash value of a timestamp set using a seed.
  */
 uint64
-timestampset_hash_extended(const TimestampSet *ts, Datum seed)
+timestampset_hash_extended(const TimestampSet *ts, uint64 seed)
 {
   uint64 result = 1;
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    uint64 time_hash = DatumGetUInt64(call_function2(hashint8,
-      TimestampTzGetDatum(t), seed));
+    uint64 time_hash = pg_hashint8extended(t, seed);
     result = (result << 5) - result + time_hash;
   }
   return result;
@@ -1006,7 +1004,7 @@ PGDLLEXPORT Datum
 Timestampset_hash_extended(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Datum seed = PG_GETARG_DATUM(1);
+  uint64 seed = PG_GETARG_INT64(1);
   uint64 result = timestampset_hash_extended(ts, seed);
   PG_RETURN_UINT64(result);
 }

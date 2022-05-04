@@ -35,7 +35,9 @@
 #include "general/ttext_textfuncs.h"
 
 /* PostgreSQL */
+#include <catalog/pg_collation_d.h>
 #include <utils/builtins.h>
+#include "utils/formatting.h"
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/temporal_util.h"
@@ -45,37 +47,107 @@
  * Textual functions on datums
  *****************************************************************************/
 
+/*
+ * @brief Return the concatenation of the two text values.
+ *
+ * Arguments can be in short-header form, but not compressed or out-of-line
+ * @note Function adapted from the external function in varlena.c
+ */
+static text *
+text_catenate(text *t1, text *t2)
+{
+  text *result;
+  int len1, len2, len;
+  char *ptr;
+
+  len1 = VARSIZE_ANY_EXHDR(t1);
+  len2 = VARSIZE_ANY_EXHDR(t2);
+
+  /* paranoia ... probably should throw error instead? */
+  if (len1 < 0)
+    len1 = 0;
+  if (len2 < 0)
+    len2 = 0;
+
+  len = len1 + len2 + VARHDRSZ;
+  result = (text *) palloc(len);
+
+  /* Set size of result string... */
+  SET_VARSIZE(result, len);
+
+  /* Fill data field of result string... */
+  ptr = VARDATA(result);
+  if (len1 > 0)
+    memcpy(ptr, VARDATA_ANY(t1), len1);
+  if (len2 > 0)
+    memcpy(ptr + len1, VARDATA_ANY(t2), len2);
+
+  return result;
+}
+
 /**
- * Return the concatenation of the two text values
- * @note PG internal function:
- * static text *text_catenate(text *t1, text *t2);
+ * @brief Return the concatenation of the two text values.
  */
 Datum
 datum_textcat(Datum l, Datum r)
 {
-  return call_function2(textcat, l, r);
+  return PointerGetDatum(text_catenate(DatumGetTextP(l), DatumGetTextP(r)));
 }
 
 /**
- * Convert the text value to lowercase
- * @note PG internal function:
- * char *str_tolower(const char *buff, size_t nbytes, Oid collid);
+ * @brief Convert the text value to lowercase
+ * @note Function adapted from the external function lower() in varlena.c.
+ * Notice that `DEFAULT_COLLATION_OID` is used instead of `PG_GET_COLLATION()`.
+ */
+static Datum
+pg_lower(text *txt)
+{
+  char *out_string;
+  text *result;
+
+  out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+  result = cstring_to_text(out_string);
+  pfree(out_string);
+
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Convert the text value to lowercase
  */
 Datum
 datum_lower(Datum value)
 {
-  return call_function1(lower, value);
+  return PointerGetDatum(pg_lower(DatumGetTextP(value)));
 }
 
 /**
- * Convert the text value to uppercase
- * @note PG internal function:
- * char *str_toupper(const char *buff, size_t nbytes, Oid collid);
+ * @brief Convert the text value to uppercase
+ * @note Function adapted from the external function upper() in varlena.c.
+ * Notice that `DEFAULT_COLLATION_OID` is used instead of `PG_GET_COLLATION()`.
+ */
+Datum
+pg_upper(text *txt)
+{
+  char *out_string;
+  text *result;
+
+  out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+  result = cstring_to_text(out_string);
+  pfree(out_string);
+
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Convert the text value to uppercase
  */
 Datum
 datum_upper(Datum value)
 {
-  return call_function1(upper, value);
+  return PointerGetDatum(pg_upper(DatumGetTextP(value)));
 }
 
 /*****************************************************************************

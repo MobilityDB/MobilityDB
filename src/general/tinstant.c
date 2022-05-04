@@ -37,11 +37,13 @@
 
 /* PostgreSQL */
 #include <assert.h>
+#include <common/hashfn.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>  /* for get_typlenbyval */
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/timetypes.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -968,24 +970,24 @@ tinstant_hash(const TInstant *inst)
   uint32 value_hash = 0;
   ensure_temporal_type(inst->temptype);
   if (inst->temptype == T_TBOOL)
-    value_hash = DatumGetUInt32(call_function1(hashchar, value));
+    value_hash = hash_uint32((int32) value);
   else if (inst->temptype == T_TINT)
-    value_hash = DatumGetUInt32(call_function1(hashint4, value));
+    value_hash = hash_uint32((int32) value);
   else if (inst->temptype == T_TFLOAT)
-    value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
+    value_hash = pg_hashfloat8(DatumGetFloat8(value));
   else if (inst->temptype == T_TTEXT)
-    value_hash = DatumGetUInt32(call_function1(hashtext, value));
+    value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
-    value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
+    value_hash = gserialized_hash((GSERIALIZED *) DatumGetPointer(value));
   else if (inst->temptype == T_TNPOINT)
   {
-    value_hash = DatumGetUInt32(call_function1(hashint8, value));
-    value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
+    value_hash = pg_hashint8(value);
+    value_hash ^= pg_hashfloat8(value);
   }
   else
     elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
   /* Apply the hash function according to the timestamp */
-  time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
+  time_hash = pg_hashint8(inst->t);
 
   /* Merge hashes of value and timestamp */
   result = value_hash;

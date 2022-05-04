@@ -40,6 +40,7 @@
 #include <libpq/pqformat.h>
 /* MobilityDB */
 #include "general/temporal_catalog.h"
+#include "general/pg_call.h"
 #include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -639,10 +640,8 @@ tbox_expand_temporal(const TBOX *box, const Interval *interval)
 {
   ensure_has_T_tbox(box);
   TBOX *result = tbox_copy(box);
-  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
-    TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
-  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
-    TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+  result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
+  result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
   return result;
 }
 

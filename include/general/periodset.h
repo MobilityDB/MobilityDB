@@ -107,7 +107,7 @@ extern bool periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2);
 /* Hash functions */
 
 extern uint32 periodset_hash(const PeriodSet *ps);
-extern uint64 periodset_hash_extended(const PeriodSet *ps, Datum seed);
+extern uint64 periodset_hash_extended(const PeriodSet *ps, uint64 seed);
 
 #endif
 

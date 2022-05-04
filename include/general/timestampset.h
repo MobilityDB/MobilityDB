@@ -99,7 +99,7 @@ extern bool timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2);
 /* Hash functions */
 
 extern uint32 timestampset_hash(const TimestampSet *ts);
-extern uint64 timestampset_hash_extended(const TimestampSet *ts, Datum seed);
+extern uint64 timestampset_hash_extended(const TimestampSet *ts, uint64 seed);
 
 /*****************************************************************************/
 

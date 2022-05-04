@@ -4139,7 +4139,7 @@ tsequence_hash(const TSequence *seq)
     flags |= 0x01;
   if (seq->period.upper_inc)
     flags |= 0x02;
-  uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
+  uint32 result = hash_bytes_uint32((uint32) flags);
 
   /* Merge with hash of instants */
   for (int i = 0; i < seq->count; i++)

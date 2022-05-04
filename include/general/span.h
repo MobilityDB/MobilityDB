@@ -148,7 +148,7 @@ extern bool span_gt(const Span *s1, const Span *s2);
 /* Hash functions */
 
 extern uint32 span_hash(const Span *s);
-extern uint64 span_hash_extended(const Span *s, Datum seed);
+extern uint64 span_hash_extended(const Span *s, uint64 seed);
 
 /*****************************************************************************/
 

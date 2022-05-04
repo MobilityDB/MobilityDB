@@ -45,6 +45,7 @@
 #include <libpq/pqformat.h>
 #include <utils/fmgrprotos.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/periodset.h"
 #include "general/span_ops.h"
 #include "general/temporal.h"
@@ -555,7 +556,7 @@ span_distance(const Span *s)
 Interval *
 period_duration(const Span *s)
 {
-  return DatumGetIntervalP(call_function2(timestamp_mi, s->upper, s->lower));
+  return pg_timestamp_mi(s->upper, s->lower);
 }
 
 /*****************************************************************************
@@ -752,14 +753,14 @@ span_hash(const Span *s)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  uint32 type_hash = DatumGetUInt32(call_function1(hashint4, type));
+  uint32 type_hash = hash_uint32((int32) type);
 
   /* Apply the hash function to each bound */
-  uint32 lower_hash = DatumGetUInt32(call_function1(hashint8, s->lower));
-  uint32 upper_hash = DatumGetUInt32(call_function1(hashint8, s->upper));
+  uint32 lower_hash = pg_hashint8(s->lower);
+  uint32 upper_hash = pg_hashint8(s->upper);
 
   /* Merge hashes of flags, type, and bounds */
-  uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
+  uint32 result = hash_uint32((int32) flags);
   result ^= type_hash;
   result = (result << 1) | (result >> 31);
   result ^= lower_hash;
@@ -774,7 +775,7 @@ span_hash(const Span *s)
  * @brief Return the 64-bit hash value of a span obtained with a seed.
  */
 uint64
-span_hash_extended(const Span *s, Datum seed)
+span_hash_extended(const Span *s, uint64 seed)
 {
   uint64 result;
   char flags = '\0';
@@ -790,15 +791,14 @@ span_hash_extended(const Span *s, Datum seed)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  type_hash = DatumGetUInt64(call_function2(hashint4extended, type, seed));
+  type_hash = hash_uint32_extended(type, seed);
 
   /* Apply the hash function to each bound */
-  lower_hash = DatumGetUInt64(call_function2(hashint8extended, s->lower, seed));
-  upper_hash = DatumGetUInt64(call_function2(hashint8extended, s->upper, seed));
+  lower_hash = pg_hashint8extended(s->lower, seed);
+  upper_hash = pg_hashint8extended(s->upper, seed);
 
   /* Merge hashes of flags and bounds */
-  result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
-    DatumGetInt64(seed)));
+  result = hash_bytes_uint32_extended((uint32) flags, seed);
   result ^= type_hash;
   result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= lower_hash;
@@ -1211,7 +1211,7 @@ PGDLLEXPORT Datum
 Span_hash_extended(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum seed = PG_GETARG_DATUM(1);
+  uint64 seed = PG_GETARG_INT64(1);
   uint64 result = span_hash_extended(s, seed);
   PG_RETURN_UINT64(result);
 }

@@ -39,6 +39,7 @@
 #include <libpq/pqformat.h>
 #include <utils/fmgrprotos.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -883,14 +884,12 @@ stbox_expand_spatial(const STBOX *box, double d)
  * interval value
  */
 STBOX *
-stbox_expand_temporal(const STBOX *box, Datum interval)
+stbox_expand_temporal(const STBOX *box, const Interval *interval)
 {
   ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
-  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
-    TimestampTzGetDatum(box->tmin), interval));
-  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
-    TimestampTzGetDatum(box->tmax), interval));
+  result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
+  result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
   return result;
 }
 
@@ -2228,7 +2227,7 @@ PGDLLEXPORT Datum
 Stbox_expand_temporal(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum interval = PG_GETARG_DATUM(1);
+  Interval *interval = PG_GETARG_INTERVAL_P(1);
   PG_RETURN_POINTER(stbox_expand_temporal(box, interval));
 }
 

@@ -145,7 +145,7 @@ extern STBOX * stbox_transform(const STBOX *box, int32 srid);
 /* Transformation functions */
 
 extern STBOX *stbox_expand_spatial(const STBOX *box, double d);
-extern STBOX *stbox_expand_temporal(const STBOX *box, Datum interval);
+extern STBOX *stbox_expand_temporal(const STBOX *box, const Interval *interval);
 extern STBOX *stbox_round(const STBOX *box, Datum prec);
 
 /* Topological operators */

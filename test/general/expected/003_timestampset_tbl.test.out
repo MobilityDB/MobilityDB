@@ -819,6 +819,6 @@ SELECT MAX(timestampset_hash(ts)) FROM tbl_timestampset;
 SELECT MAX(timestampset_hash_extended(ts, 1)) FROM tbl_timestampset;
          max         
 ---------------------
- 8409326708344037750
+ 9173177012091756054
 (1 row)
 
