@@ -34,13 +34,14 @@
 
 #include "point/tpoint_spatialfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER < 120000
-#define M_PI 3.14159265358979323846
-#define RADIANS_PER_DEGREE 0.0174532925199432957692
+  #define M_PI 3.14159265358979323846
+  #define RADIANS_PER_DEGREE 0.0174532925199432957692
 #else
-#include <utils/float.h>
+  #include <utils/float.h>
 #endif
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000

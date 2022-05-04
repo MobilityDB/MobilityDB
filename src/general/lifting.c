@@ -151,7 +151,7 @@
 
 #include "general/lifting.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
 #include "general/span_ops.h"

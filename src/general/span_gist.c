@@ -36,8 +36,9 @@
 
 #include "general/span_gist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <access/gist.h>
 /* MobilityDB */
 #include "general/span.h"

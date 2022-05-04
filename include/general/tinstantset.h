@@ -55,8 +55,10 @@ extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
 
 /* Input/output functions */
 
-extern char *tinstantset_to_string(const TInstantSet *ti,
+extern TInstantSet *tinstantst_from_string(char *str);
+extern char *tinstantset_to_string1(const TInstantSet *ti,
   char *(*value_out)(Oid, Datum));
+extern char *tinstantset_to_string(const TInstantSet *ti);
 extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
 extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
 

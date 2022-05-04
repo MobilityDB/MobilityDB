@@ -38,17 +38,18 @@
 
 #include "point/geography_funcs.h"
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <float.h>
 #include <fmgr.h>
 #include <utils/array.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
-#include <liblwgeom_internal.h>
-#include <lwgeom_pg.h>
-#include <lwgeodetic_tree.h>
+  #include <liblwgeom_internal.h>
+  #include <lwgeom_pg.h>
+  #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
 #include "point/postgis.h"

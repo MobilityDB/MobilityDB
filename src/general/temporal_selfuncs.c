@@ -43,8 +43,9 @@
 
 #include "general/temporal_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <access/amapi.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>

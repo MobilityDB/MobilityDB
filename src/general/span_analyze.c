@@ -44,9 +44,10 @@
  */
 #include "general/span_analyze.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <catalog/pg_operator.h>
 /* MobilityDB */
 #include "general/timetypes.h"

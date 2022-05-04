@@ -35,9 +35,10 @@
 
 #include "general/tnumber_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
+/* PostgreSQL */
 #include <access/htup_details.h>
 #include <catalog/pg_collation_d.h>
 #include <utils/builtins.h>

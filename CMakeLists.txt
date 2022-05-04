@@ -99,11 +99,11 @@ math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL
 
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
-if(MEOS)
-  message(STATUS "Building MEOS: Including embedded PostgreSQL files")
-  include_directories("postgresql")
+# if(MEOS)
+  # message(STATUS "Building MEOS: Including embedded PostgreSQL files")
+  # include_directories("postgresql")
   # add_subdirectory("postgresql")
-else()
+# else()
   include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
   if(WIN32)
     include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
@@ -113,7 +113,7 @@ else()
     link_directories(${POSTGRESQL_LIBRARIES})
     link_libraries(postgres)
   endif()
-endif()
+# endif()
 
 #-------------------------------------
 # Verify PostGIS Version
@@ -185,12 +185,12 @@ else()
 endif()
 if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-  if(MEOS)
-    message(STATUS "Building MEOS: postgis/libpgcommon not included")
-  else()
-    message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
+  # if(MEOS)
+    # message(STATUS "Building MEOS: postgis/libpgcommon not included")
+  # else()
+    # message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
     set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
-  endif()
+  # endif()
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 endif()
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
@@ -215,11 +215,11 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 #--------------------------------
 # Belongs to MobilityDB
 
-if(MEOS)
-  message(STATUS "Building MEOS: SQL definitions and tests not included")
-  install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
-  message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
-else()
+# if(MEOS)
+  # message(STATUS "Building MEOS: SQL definitions and tests not included")
+  # install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
+  # message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
+# else()
   message(STATUS "Building MobilityDB: Including SQL definitions and tests")
   add_subdirectory(sql)
   add_subdirectory(test)
@@ -229,7 +229,7 @@ else()
     FILES "${CMAKE_BINARY_DIR}/mobilitydb.control"  "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
     DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
   install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
-endif()
+# endif()
 
 #-----------------------------------------------------------------------------
 # Documentation

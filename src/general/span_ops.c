@@ -34,9 +34,10 @@
 
 #include "general/span_ops.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */

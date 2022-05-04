@@ -34,7 +34,7 @@
 
 #include "npoint/tnpoint_spatialfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
 /* MobilityDB */

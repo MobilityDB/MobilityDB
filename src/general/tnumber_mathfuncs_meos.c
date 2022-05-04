@@ -35,9 +35,10 @@
 
 #include "general/tnumber_mathfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/span.h"

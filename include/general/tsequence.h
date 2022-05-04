@@ -101,8 +101,11 @@ extern bool intersection_tinstantset_tsequence(const TInstantSet *ti,
 
 /* Input/output functions */
 
-extern char *tsequence_to_string(const TSequence *seq, bool component,
+extern TSequence *tsequence_from_string(char *str, CachedType temptype,
+  bool linear);
+extern char *tsequence_to_string1(const TSequence *seq, bool component,
   char *(*value_out)(Oid, Datum));
+extern char *tsequence_to_string(const TSequence *seq);
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
 extern TSequence *tsequence_read(StringInfo buf, CachedType temptype);
 

@@ -34,11 +34,12 @@
 
 #include "point/tpoint_analytics.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
-#include <funcapi.h>
 #include <math.h>
+/* PostgreSQL */
+#include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif

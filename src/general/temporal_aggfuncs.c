@@ -34,10 +34,11 @@
 
 #include "general/temporal_aggfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
 #include <string.h>
+/* PostgreSQL */
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>

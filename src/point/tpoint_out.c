@@ -35,17 +35,22 @@
 
 #include "point/tpoint_out.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom_internal.h>
 #endif
 /* MobilityDB */
-#include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
+#include "general/temporal.h"
+#include "general/tinstant.h"
+#include "general/tinstantset.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
 #include "general/temporal_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -113,13 +118,13 @@ tpoint_as_text(const Temporal *temp)
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_to_string((TInstant *) temp, &wkt_out);
+    result = tinstant_to_string1((TInstant *) temp, &wkt_out);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
+    result = tinstantset_to_string1((TInstantSet *) temp, &wkt_out);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
+    result = tsequence_to_string1((TSequence *) temp, false, &wkt_out);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
+    result = tsequenceset_to_string1((TSequenceSet *) temp, &wkt_out);
   return result;
 }
 

@@ -35,8 +35,9 @@
 
 #include "general/span.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER < 130000
   #include <access/hash.h>
 #else
@@ -325,6 +326,16 @@ span_bounds(const Span *s, double *xmin, double *xmax)
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Return a span from its string representation.
+ */
+Span *
+span_from_string(char *str, CachedType spantype)
+{
+  return span_parse(&str, spantype, true);
+}
 
 /**
  * Remove the quotes from the string representation of a span
@@ -791,14 +802,14 @@ span_hash_extended(const Span *s, uint64 seed)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  type_hash = hash_uint32_extended(type, seed);
+  type_hash = DatumGetUInt64(hash_uint32_extended(type, seed));
 
   /* Apply the hash function to each bound */
   lower_hash = pg_hashint8extended(s->lower, seed);
   upper_hash = pg_hashint8extended(s->upper, seed);
 
   /* Merge hashes of flags and bounds */
-  result = hash_bytes_uint32_extended((uint32) flags, seed);
+  result = DatumGetUInt64(hash_uint32_extended((uint32) flags, seed));
   result ^= type_hash;
   result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= lower_hash;
@@ -829,7 +840,7 @@ Span_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid spantypid = PG_GETARG_OID(1);
-  Span *result = span_parse(&input, oid_type(spantypid), true);
+  Span *result = span_from_string(input, oid_type(spantypid));
   PG_RETURN_POINTER(result);
 }
 

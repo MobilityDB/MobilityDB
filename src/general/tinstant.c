@@ -35,9 +35,14 @@
 
 #include "general/tinstant.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
-#include <common/hashfn.h>
+/* PostgreSQL */
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
+#endif
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>  /* for get_typlenbyval */
@@ -51,6 +56,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
+#include "general/temporal_parser.h"
 #include "general/temporal_boxops.h"
 #include "general/span_ops.h"
 #include "point/tpoint.h"
@@ -136,8 +142,22 @@ tnumberinst_double(const TInstant *inst)
  * Intput/output functions
  *****************************************************************************/
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ *
+ * @param[in] str String
+ * @param[in] temptype Temporal type
+ */
+TInstant *
+tinstant_from_string(char *str, CachedType temptype)
+{
+  return tinstant_parse(&str, temptype, true, true);
+}
+#endif
+
+/**
  * @brief Return the string representation of the temporal value.
  *
  * @param[in] inst Temporal value
@@ -145,7 +165,7 @@ tnumberinst_double(const TInstant *inst)
  *    depending on its Oid
  */
 char *
-tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum))
+tinstant_to_string1(const TInstant *inst, char *(*value_out)(Oid, Datum))
 {
   char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
   CachedType basetype = temptype_basetype(inst->temptype);
@@ -164,6 +184,16 @@ tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum))
   pfree(t);
   pfree(value);
   return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ */
+char *
+tinstant_to_string(const TInstant *inst)
+{
+  return tinstant_to_string1(inst, &call_output);
 }
 
 /**
@@ -978,7 +1008,11 @@ tinstant_hash(const TInstant *inst)
   else if (inst->temptype == T_TTEXT)
     value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
+#if POSTGIS_VERSION_NUMBER < 30000
+    value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
+#else
     value_hash = gserialized_hash((GSERIALIZED *) DatumGetPointer(value));
+#endif
   else if (inst->temptype == T_TNPOINT)
   {
     value_hash = pg_hashint8(value);

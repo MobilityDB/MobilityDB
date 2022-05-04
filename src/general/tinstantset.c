@@ -34,8 +34,9 @@
 
 #include "general/tinstantset.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
@@ -49,6 +50,7 @@
 #include "general/span_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
+#include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 
@@ -230,8 +232,22 @@ tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *loc)
  * Input/output functions
  *****************************************************************************/
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ *
+ * @param[in] str String
+ * @param[in] temptype Temporal type
+ */
+TInstantSet *
+tinstantset_from_string(char *str, CachedType temptype)
+{
+  return tinstantset_parse(&str, temptype);
+}
+#endif
+
+/**
  * @brief Return the string representation of the temporal value.
  *
  * @param[in] ti Temporal value
@@ -239,7 +255,7 @@ tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *loc)
  * its Oid
  */
 char *
-tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
+tinstantset_to_string1(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
 {
   char **strings = palloc(sizeof(char *) * ti->count);
   size_t outlen = 0;
@@ -247,10 +263,20 @@ tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    strings[i] = tinstant_to_string(inst, value_out);
+    strings[i] = tinstant_to_string1(inst, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ti->count, outlen, "", '{', '}');
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ */
+char *
+tinstantset_to_string(const TInstantSet *ti)
+{
+  return tinstantset_to_string1(ti, &call_output);
 }
 
 /**

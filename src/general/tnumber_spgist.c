@@ -95,9 +95,10 @@
 
 #include "general/tnumber_spgist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <access/spgist.h>
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000

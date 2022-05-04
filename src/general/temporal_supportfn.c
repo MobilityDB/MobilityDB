@@ -36,9 +36,10 @@
 
 #include "general/temporal_supportfn.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <funcapi.h>
 #include <access/htup_details.h>
 #include <access/stratnum.h>

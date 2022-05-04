@@ -34,7 +34,7 @@
 
 #include "point/tpoint_in.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
 /* JSON-C */

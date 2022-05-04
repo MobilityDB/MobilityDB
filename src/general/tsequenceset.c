@@ -34,8 +34,9 @@
 
 #include "general/tsequenceset.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/lsyscache.h>
 #include <utils/builtins.h>
@@ -50,6 +51,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_catalog.h"
+#include "general/temporal_parser.h"
 #include "general/temporal_boxops.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -469,8 +471,23 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  * Input/output functions
  *****************************************************************************/
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ *
+ * @param[in] str String
+ * @param[in] temptype Temporal type
+ * @param[in] bool True when the temporal type has linear interpolation
+ */
+TSequenceSet *
+tsequenceset_from_string(char *str, CachedType temptype, bool linear)
+{
+  return tsequenceset_parse(&str, temptype, linear);
+}
+#endif
+
+/**
  * @brief Return the string representation of the temporal value.
  *
  * @param[in] ts Temporal value
@@ -478,7 +495,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  * depending on its Oid
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
+tsequenceset_to_string1(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
 {
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
@@ -491,10 +508,20 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    strings[i] = tsequence_to_string(seq, true, value_out);
+    strings[i] = tsequence_to_string1(seq, true, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ts->count, outlen, prefix, '{', '}');
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ */
+char *
+tsequenceset_to_string(const TSequenceSet *ts)
+{
+  return tsequenceset_to_string1(ts, &call_output);
 }
 
 /**

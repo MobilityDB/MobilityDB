@@ -43,10 +43,11 @@
 */
 #include "general/doublen.h"
 
-/* PostgreSQL */
+/* C */
 #include <float.h>
+/* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
+  #include <utils/float.h>
 #endif
 
 /*****************************************************************************

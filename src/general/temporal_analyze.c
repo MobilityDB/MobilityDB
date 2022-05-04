@@ -64,11 +64,12 @@
 
 #include "general/temporal_analyze.h"
 
+/* C */
+#include <assert.h>
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <fmgr.h>
-#include <math.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000
 #include <access/tuptoaster.h>
 #else

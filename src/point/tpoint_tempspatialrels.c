@@ -69,8 +69,9 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */

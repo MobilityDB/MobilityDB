@@ -44,8 +44,9 @@
 
 #include "point/tpoint_boxops.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* PostGIS */

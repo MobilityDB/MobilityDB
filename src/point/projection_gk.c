@@ -38,7 +38,7 @@
 
 #include "point/projection_gk.h"
 
-/* PostgreSQL */
+/* C */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <math.h>
 #endif

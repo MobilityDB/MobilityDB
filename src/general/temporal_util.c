@@ -34,8 +34,9 @@
 
 #include "general/temporal_util.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <catalog/pg_collation_d.h>
 #include <utils/lsyscache.h>
 #include <utils/varlena.h>

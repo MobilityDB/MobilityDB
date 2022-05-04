@@ -34,7 +34,7 @@
 
 #include "npoint/tnpoint_distance.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"

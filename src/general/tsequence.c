@@ -34,9 +34,10 @@
 
 #include "general/tsequence.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER < 130000
   #include <access/hash.h>
 #else
@@ -48,12 +49,13 @@
 /* MobilityDB */
 #include "general/timestampset.h"
 #include "general/periodset.h"
+#include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/doublen.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
 #include "general/temporal_boxops.h"
-#include "general/span_ops.h"
+#include "general/temporal_parser.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -1292,8 +1294,23 @@ intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
  * Input/output functions
  *****************************************************************************/
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ *
+ * @param[in] str String
+ * @param[in] temptype Temporal type
+ * @param[in] bool True when the temporal type has linear interpolation
+ */
+TSequence *
+tsequence_from_string(char *str, CachedType temptype, bool linear)
+{
+  return tsequence_parse(&str, temptype, linear, true, true);
+}
+#endif
+
+/**
  * @brief Return the string representation of the temporal value.
  *
  * @param[in] seq Temporal value
@@ -1304,7 +1321,7 @@ intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
  * depending on its Oid
  */
 char *
-tsequence_to_string(const TSequence *seq, bool component,
+tsequence_to_string1(const TSequence *seq, bool component,
   char *(*value_out)(Oid, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
@@ -1318,13 +1335,23 @@ tsequence_to_string(const TSequence *seq, bool component,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    strings[i] = tinstant_to_string(inst, value_out);
+    strings[i] = tinstant_to_string1(inst, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   char open = seq->period.lower_inc ? (char) '[' : (char) '(';
   char close = seq->period.upper_inc ? (char) ']' : (char) ')';
   return stringarr_to_string(strings, seq->count, outlen, prefix,
     open, close);
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
+ */
+char *
+tsequence_to_string(const TSequence *seq)
+{
+  return tsequence_to_string1(seq, false, &call_output);
 }
 
 /**
@@ -4139,7 +4166,7 @@ tsequence_hash(const TSequence *seq)
     flags |= 0x01;
   if (seq->period.upper_inc)
     flags |= 0x02;
-  uint32 result = hash_bytes_uint32((uint32) flags);
+  uint32 result = UInt32GetDatum(hash_uint32((uint32) flags));
 
   /* Merge with hash of instants */
   for (int i = 0; i < seq->count; i++)

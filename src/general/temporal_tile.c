@@ -37,13 +37,14 @@
 
 #include "general/temporal_tile.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
-#include <access/htup_details.h>
+  #include <access/htup_details.h>
 #endif
 #include <utils/builtins.h>
 #include <utils/datetime.h>

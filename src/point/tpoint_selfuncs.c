@@ -34,9 +34,10 @@
 
 #include "point/tpoint_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
 /* MobilityDB */

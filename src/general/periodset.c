@@ -34,8 +34,9 @@
 
 #include "general/periodset.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
@@ -113,6 +114,16 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Return the string representation of the period set value.
+ */
+PeriodSet *
+periodset_from_string(char *str)
+{
+  return periodset_parse(&str);
+}
 
 /**
  * @ingroup libmeos_spantime_input_output
@@ -800,7 +811,7 @@ PGDLLEXPORT Datum
 Periodset_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  PeriodSet *result = periodset_parse(&input);
+  PeriodSet *result = periodset_from_string(input);
   PG_RETURN_POINTER(result);
 }
 

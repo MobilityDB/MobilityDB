@@ -95,10 +95,11 @@
 
 #include "point/tpoint_spgist.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000

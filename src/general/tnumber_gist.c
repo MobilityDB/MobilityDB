@@ -36,10 +36,11 @@
 
 #include "general/tnumber_gist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+/* PostgreSQL */
 #include <access/gist.h>
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000

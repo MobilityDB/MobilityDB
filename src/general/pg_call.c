@@ -36,13 +36,21 @@
 
 #include "general/pg_call.h"
 
-/* PostgreSQL */
+/* C */
 #include <float.h>
+#include <math.h>
+/* PostgreSQL */
 #include <utils/datetime.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
+#else
+  #include <utils/builtins.h>
 #endif
-#include <common/hashfn.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
+#endif
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
@@ -265,7 +273,7 @@ pg_hashint8(int64 val)
   uint32 lohalf = (uint32) val;
   uint32 hihalf = (uint32) (val >> 32);
   lohalf ^= (val >= 0) ? hihalf : ~hihalf;
-  return hash_bytes_uint32(lohalf);
+  return DatumGetUInt32(hash_uint32(lohalf));
 }
 
 /*
@@ -303,7 +311,7 @@ pg_hashfloat8(float8 key)
    */
   if (isnan(key))
     key = get_float8_nan();
-  return hash_bytes((unsigned char *) &key, sizeof(key));
+  return DatumGetUInt32(hash_any((unsigned char *) &key, sizeof(key)));
 }
 
 /*
@@ -318,7 +326,8 @@ pg_hashfloat8extended(float8 key, uint64 seed)
     return seed;
   if (isnan(key))
     key = get_float8_nan();
-  return hash_bytes_extended((unsigned char *) &key, sizeof(key), seed);
+  return DatumGetUInt64(hash_any_extended((unsigned char *) &key, sizeof(key),
+    seed));
 }
 
 /*
@@ -329,8 +338,8 @@ pg_hashfloat8extended(float8 key, uint64 seed)
 uint32
 pg_hashtext(text *key)
 {
-  uint32 result = hash_bytes((unsigned char *) VARDATA_ANY(key),
-    VARSIZE_ANY_EXHDR(key));
+  uint32 result = UInt32GetDatum(hash_any((unsigned char *) VARDATA_ANY(key),
+    VARSIZE_ANY_EXHDR(key)));
   return result;
 }
 /*****************************************************************************/

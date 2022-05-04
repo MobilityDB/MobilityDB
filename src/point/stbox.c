@@ -34,8 +34,9 @@
 
 #include "point/stbox.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/fmgrprotos.h>
 /* MobilityDB */
@@ -162,6 +163,16 @@ ensure_has_T_stbox(const STBOX *box)
 /*****************************************************************************
  * Input/Ouput functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Return a temporal box from its string representation.
+ */
+STBOX *
+stbox_from_string(char *str)
+{
+  return stbox_parse(&str);
+}
 
 /**
  * @ingroup libmeos_box_input_output
@@ -1578,7 +1589,7 @@ PGDLLEXPORT Datum
 Stbox_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  STBOX *result = stbox_parse(&input);
+  STBOX *result = stbox_from_string(input);
   PG_RETURN_POINTER(result);
 }
 

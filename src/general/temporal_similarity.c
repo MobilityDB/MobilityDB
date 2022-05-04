@@ -35,11 +35,12 @@
 
 #include "general/temporal_similarity.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <math.h>
-/* PostgreGIS */
+/* PostgreSQL */
+#include <postgres.h>
+/* PostgGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
 #include "general/temporal_catalog.h"

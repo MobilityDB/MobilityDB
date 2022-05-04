@@ -37,9 +37,10 @@
 
 #include "general/span_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
+/* PostgreSQL */
 #include <port.h>
 #include <access/htup_details.h>
 #include <utils/builtins.h>

@@ -37,8 +37,9 @@
 
 #include "npoint/tnpoint_static.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */

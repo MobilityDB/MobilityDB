@@ -34,14 +34,15 @@
 
 #include "point/tpoint_distance.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
+  #include <utils/float.h>
 #endif
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000

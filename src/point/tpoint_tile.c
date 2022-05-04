@@ -32,9 +32,10 @@
  * @brief Functions for spatial and spatiotemporal tiles.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>

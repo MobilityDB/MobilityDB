@@ -508,8 +508,8 @@ extern char *mobilitydb_full_version(void);
 
 /* Input/output functions */
 
-extern char *temporal_to_string(const Temporal *temp,
-  char *(*value_out)(Oid, Datum));
+extern Temporal *temporal_from_string(char *str, CachedType temptype);
+extern char *temporal_to_string(const Temporal *temp);
 extern void temporal_write(const Temporal* temp, StringInfo buf);
 extern Temporal* temporal_read(StringInfo buf);
 

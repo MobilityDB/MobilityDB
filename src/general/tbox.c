@@ -34,8 +34,9 @@
 
 #include "general/tbox.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <libpq/pqformat.h>
 /* MobilityDB */
@@ -91,6 +92,16 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Return a temporal box from its string representation.
+ */
+TBOX *
+tbox_from_string(char *str)
+{
+  return tbox_parse(&str);
+}
 
 /**
  * @ingroup libmeos_box_input_output
@@ -1123,7 +1134,7 @@ PGDLLEXPORT Datum
 Tbox_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  TBOX *result = tbox_parse(&input);
+  TBOX *result = tbox_from_string(input);
   PG_RETURN_POINTER(result);
 }
 

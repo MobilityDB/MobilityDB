@@ -36,7 +36,7 @@
 
 #include "npoint/tnpoint_aggfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
 #include "general/temporal_aggfuncs.h"

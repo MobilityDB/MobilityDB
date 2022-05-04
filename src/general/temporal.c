@@ -34,8 +34,9 @@
 
 #include "general/temporal.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 // #include <utils/lsyscache.h>
@@ -590,23 +591,32 @@ mobilitydb_full_version(void)
  * @ingroup libmeos_temporal_input_output
  * @brief Return the string representation of the temporal value.
  *
- * @param[in] temp Temporal value
- * @param[in] value_out Function called to output the base value
- * depending on its Oid
+ * @param[in] str String
+ * @param[in] temptype Temporal type
+ */
+Temporal *
+temporal_from_string(char *str, CachedType temptype)
+{
+  return temporal_parse(&str, temptype);
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
  */
 char *
-temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
+temporal_to_string(const Temporal *temp)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_to_string((TInstant *) temp, value_out);
+    result = tinstant_to_string((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, value_out);
+    result = tinstantset_to_string((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, false, value_out);
+    result = tsequence_to_string((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, value_out);
+    result = tsequenceset_to_string((TSequenceSet *) temp);
   return result;
 }
 
@@ -3501,7 +3511,7 @@ PGDLLEXPORT Datum
 Temporal_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = temporal_to_string(temp, &call_output);
+  char *result = temporal_to_string(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

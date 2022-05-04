@@ -34,9 +34,10 @@
 
 #include "point/tpoint_gist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <access/gist.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>

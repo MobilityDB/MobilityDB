@@ -54,10 +54,11 @@
 
 #include "point/tpoint_analyze.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <access/htup_details.h>
 #include <executor/spi.h>
 #include <utils/lsyscache.h>

@@ -37,10 +37,11 @@
 
 #include "general/span_spgist.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <access/spgist.h>
 /* MobilityDB */
 #include "general/temporal_catalog.h"

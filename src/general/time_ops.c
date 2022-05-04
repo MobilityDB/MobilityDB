@@ -34,8 +34,9 @@
 
 #include "general/time_ops.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
@@ -2694,11 +2695,11 @@ distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
   return result;
 }
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values.
  */
-#ifdef MEOS
 double
 distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
@@ -2709,11 +2710,11 @@ distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values.
  */
-#ifdef MEOS
 double
 distance_timestamp_period(TimestampTz t, const Period *p)
 {
@@ -2721,11 +2722,11 @@ distance_timestamp_period(TimestampTz t, const Period *p)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
@@ -2738,11 +2739,11 @@ distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /******************************************************************************/
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
@@ -2753,11 +2754,11 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
@@ -2770,11 +2771,11 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values.
  */
-#ifdef MEOS
 double
 distance_timestampset_period(const TimestampSet *ts, const Period *p)
 {
@@ -2785,11 +2786,11 @@ distance_timestampset_period(const TimestampSet *ts, const Period *p)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps)
@@ -2825,11 +2826,11 @@ distance_period_timestamp(const Period *p, TimestampTz t)
     return ((float8) t - (float8) p->upper) / USECS_PER_SEC;
 }
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_period_timestampset(const Period *p, const TimestampSet *ts)
 {
@@ -2837,11 +2838,11 @@ distance_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_period_periodset(const Period *p, const PeriodSet *ps)
 {
@@ -2854,11 +2855,11 @@ distance_period_periodset(const Period *p, const PeriodSet *ps)
 
 /******************************************************************************/
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
@@ -2866,11 +2867,11 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_periodset_timestampset(const PeriodSet *ps,
   const TimestampSet *ts)
@@ -2879,11 +2880,11 @@ distance_periodset_timestampset(const PeriodSet *ps,
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_periodset_period(const PeriodSet *ps, const Period *p)
 {
@@ -2891,11 +2892,11 @@ distance_periodset_period(const PeriodSet *ps, const Period *p)
 }
 #endif
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds of the two time values
  */
-#ifdef MEOS
 double
 distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
