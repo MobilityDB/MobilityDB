@@ -39,9 +39,9 @@
 /* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-// #include <utils/lsyscache.h>
 /* MobilityDB */
 #include "general/doxygen_libmeos_api.h"
+#include "general/pg_call.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -378,8 +378,7 @@ ensure_valid_duration(const Interval *duration)
   }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
-    PointerGetDatum(&intervalzero));
+  int cmp = pg_interval_cmp(duration, &intervalzero);
   if (cmp <= 0)
   {
     char *t = call_output(INTERVALOID, PointerGetDatum(duration));

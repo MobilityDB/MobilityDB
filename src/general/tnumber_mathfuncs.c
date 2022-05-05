@@ -78,7 +78,7 @@ datum_round_float(Datum value, Datum prec)
 static Datum
 datum_degrees(Datum value)
 {
-  return call_function1(degrees, value);
+  return Float8GetDatum(pg_degrees(DatumGetFloat8(value)));
 }
 
 /**

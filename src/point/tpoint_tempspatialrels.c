@@ -74,6 +74,8 @@
 /* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MobilityDB */
 #include "general/lifting.h"
 #include "general/span.h"
@@ -82,6 +84,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tbool_boolops.h"
+#include "point/pgis_call.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
@@ -1263,7 +1266,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
+  Datum bound = PointerGetDatum(PGIS_boundary(gs));
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
@@ -1307,7 +1310,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
+  Datum bound = PointerGetDatum(PGIS_boundary(gs));
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))

@@ -55,6 +55,7 @@
 #include "general/span_ops.h"
 #include "general/time_ops.h"
 #include "general/temporaltypes.h"
+#include "point/pgis_call.h"
 #include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
@@ -789,22 +790,8 @@ nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
     return -1;
   ensure_same_srid_stbox_gs(box, gs);
   ensure_same_spatial_dimensionality_stbox_gs(box, gs);
-  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   datum_func2 func = distance_fn(box->flags);
-  GBOX gbox;
-  BOX3D box3d;
-  Datum geo;
-  if (hasz || geodetic)
-  {
-    stbox_box3d(box, &box3d);
-    geo = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d));
-  }
-  else
-  {
-    stbox_gbox(box, &gbox);
-    geo = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
-  }
+  Datum geo = stbox_geometry(box);
   double result = DatumGetFloat8(func(geo, PointerGetDatum(gs)));
   pfree(DatumGetPointer(geo));
   return result;
@@ -834,31 +821,10 @@ nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
     return 0.0;
 
   /* Select the distance function to be applied */
-  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
   datum_func2 func = distance_fn(box1->flags);
   /* Convert the boxes to geometries */
-  Datum geo1, geo2;
-  if (hasz)
-  {
-    /* BOX3D has SRID field */
-    BOX3D box3d1, box3d2;
-    stbox_box3d(box1, &box3d1);
-    stbox_box3d(box2, &box3d2);
-    geo1 = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d1));
-    geo2 = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d2));
-  }
-  else
-  {
-    /* GBOX DOES NOT HAVE SRID field */
-    GBOX gbox1, gbox2;
-    stbox_gbox(box1, &gbox1);
-    stbox_gbox(box2, &gbox2);
-    Datum geo11 = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
-    Datum geo22 = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox2));
-    geo1 = call_function2(LWGEOM_set_srid, geo11, Int32GetDatum(box1->srid));
-    geo2 = call_function2(LWGEOM_set_srid, geo22, Int32GetDatum(box2->srid));
-    pfree(DatumGetPointer(geo11)); pfree(DatumGetPointer(geo22));
-  }
+  Datum geo1 = stbox_geometry(box1);
+  Datum geo2 = stbox_geometry(box2);
   /* Compute the result */
   double result = DatumGetFloat8(func(geo1, geo2));
   pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
@@ -890,24 +856,18 @@ nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
   }
 
   /* Select the distance function to be applied */
-  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   datum_func2 func = distance_fn(box->flags);
   /* Convert the stbox to a geometry */
-  GBOX gbox;
-  stbox_gbox(box, &gbox);
-  Datum geo = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox)) :
-    call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
-  Datum geo1 = call_function2(LWGEOM_set_srid, geo,
-    Int32GetDatum(box->srid));
+  Datum geo = stbox_geometry(box);
   Temporal *temp1 = hast ?
     temporal_restrict_period(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
   Datum traj = tpoint_trajectory(temp1);
-  double result = DatumGetFloat8(func(traj, geo1));
+  double result = DatumGetFloat8(func(traj, geo));
 
   pfree(DatumGetPointer(traj));
-  pfree(DatumGetPointer(geo)); pfree(DatumGetPointer(geo1));
+  pfree(DatumGetPointer(geo));
   if (hast)
     pfree(temp1);
   return result;
@@ -952,12 +912,17 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Datum traj = tpoint_trajectory(temp);
+  GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
   if (geodetic)
-    *result = call_function2(geography_shortestline, traj, PointerGetDatum(gs));
+    /* Notice that geography_shortestline_internal is a MobilityDB function */
+    *result = PointerGetDatum(geography_shortestline_internal(gstraj, gs, true));
   else
+  {
     *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
-      call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
+      PointerGetDatum(PGIS_LWGEOM_shortestline3d(gstraj, gs)) :
+      PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, gs));
+  }
+  PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return true;
 }

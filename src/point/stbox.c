@@ -47,6 +47,7 @@
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "point/pgis_call.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_parser.h"
@@ -455,18 +456,13 @@ stbox_geometry(const STBOX *box)
   {
     BOX3D box3d;
     stbox_box3d(box, &box3d);
-    result = DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(&box3d));
+    result = PointerGetDatum(PGIS_BOX3D_to_LWGEOM(&box3d));
   }
   else
   {
     GBOX box2d;
     stbox_gbox(box, &box2d);
-    Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(&box2d));
-    GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-    gserialized_set_srid(g, box->srid);
-    result = PointerGetDatum(g);
-    PG_FREE_IF_COPY_P(g, DatumGetPointer(geom));
-    pfree(DatumGetPointer(geom));
+    result = PointerGetDatum(PGIS_BOX2D_to_LWGEOM(&box2d, box->srid));
   }
   return result;
 }

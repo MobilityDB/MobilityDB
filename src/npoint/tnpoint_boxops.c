@@ -46,6 +46,7 @@
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
+#include "point/pgis_call.h"
 #include "point/stbox.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -132,17 +133,17 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
   }
 
   Datum line = route_geom(rid);
-  Datum geom = (posmin == 0 && posmax == 1) ? line :
-    call_function3(LWGEOM_line_substring, line, Float8GetDatum(posmin),
-      Float8GetDatum(posmax));
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
+  GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? gsline :
+    PGIS_LWGEOM_line_substring(gsline, posmin, posmax);
   geo_stbox(gs, box);
   box->tmin = tmin;
   box->tmax = tmax;
   MOBDB_FLAGS_SET_T(box->flags, true);
+  PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
   pfree(DatumGetPointer(line));
   if (posmin != 0 || posmax != 1)
-    pfree(DatumGetPointer(geom));
+    pfree(gs);
   return;
 }
 

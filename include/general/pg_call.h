@@ -32,7 +32,6 @@
  * @brief MobilityDB functions pg_func(...) corresponding to external
  * PostgreSQL functions func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.
-
  */
 
 #ifndef PG_CALL_H
@@ -44,6 +43,14 @@
 
 /*****************************************************************************/
 
+/* Functions adapted from float.c */
+
+extern float8 pg_degrees(float8 arg1);
+extern float8 pg_dsin(float8 arg1);
+extern float8 pg_dcos(float8 arg1);
+extern float8 pg_datan(float8 arg1);
+extern float8 pg_datan2(float8 arg1, float8 arg2);
+
 /* Functions adadpted from timestamp.c */
 
 extern Interval *pg_interval_pl(const Interval *span1, const Interval *span2);
@@ -53,6 +60,8 @@ extern TimestampTz pg_timestamp_mi_interval(TimestampTz timestamp,
   const Interval *span);
 extern Interval *pg_interval_justify_hours(const Interval *span);
 extern Interval *pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2);
+extern int pg_interval_cmp(const Interval *interval1,
+  const Interval *interval2);
 
 /* Functions adapted from hashfn.h and hashfn.c */
 

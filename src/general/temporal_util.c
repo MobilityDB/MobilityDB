@@ -187,10 +187,8 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
   if (typel == T_GEOMETRY && typel == typer)
-    //  return DatumGetBool(call_function2(lwgeom_eq, l, r));
     return datum_point_eq(l, r);
   if (typel == T_GEOGRAPHY && typel == typer)
-    //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
 #ifndef MEOS
   if (typel == T_NPOINT && typel == typer)

@@ -53,6 +53,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
+#include "point/pgis_call.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"
@@ -557,7 +558,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
+  Datum bound = PointerGetDatum(PGIS_boundary(gs));
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
   bool result = false;
   if (! gserialized_is_empty(gsbound))

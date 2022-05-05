@@ -761,9 +761,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
   /* Set the interval to NULL if it is negative or zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(maxt),
-    PointerGetDatum(&intervalzero));
-  if (cmp <= 0)
+  if (pg_interval_cmp(maxt, &intervalzero) <= 0)
     maxt = NULL;
 
   TSequence *seq;

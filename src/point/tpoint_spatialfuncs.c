@@ -50,6 +50,7 @@
 #include <lwgeodetic.h>
 #endif
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/lifting.h"
 #include "general/span.h"
 #include "general/periodset.h"
@@ -57,6 +58,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
 #include "general/tnumber_mathfuncs.h"
+#include "point/pgis_call.h"
 #include "point/postgis.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
@@ -316,6 +318,7 @@ pt_distance_fn(int16 flags)
 
 /**
  * Return the 2D distance between the two geometries
+ * @pre For PostGIS version > 3 the geometries are NOT toasted
  */
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
@@ -323,7 +326,10 @@ geom_distance2d(Datum geom1, Datum geom2)
 #if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(distance, geom1, geom2);
 #else
-  return call_function2(ST_Distance, geom1, geom2);
+  Datum result = Float8GetDatum(PGIS_ST_Distance(
+    (GSERIALIZED *) DatumGetPointer(geom1),
+    (GSERIALIZED *) DatumGetPointer(geom2)));
+  return result;
 #endif
 }
 
@@ -336,7 +342,10 @@ geom_distance3d(Datum geom1, Datum geom2)
 #if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(distance3d, geom1, geom2);
 #else
-  return call_function2(ST_3DDistance, geom1, geom2);
+  Datum result = Float8GetDatum(PGIS_ST_3DDistance(
+    (GSERIALIZED *) DatumGetPointer(geom1),
+    (GSERIALIZED *) DatumGetPointer(geom2)));
+  return result;
 #endif
 }
 
@@ -381,7 +390,9 @@ geom_intersection2d(Datum geom1, Datum geom2)
 #if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(intersection, geom1, geom2);
 #else
-  return call_function2(ST_Intersection, geom1, geom2);
+  return PointerGetDatum(PGIS_ST_Intersection(
+    (GSERIALIZED *) DatumGetPointer(geom1),
+    (GSERIALIZED *) DatumGetPointer(geom2)));
 #endif
 }
 
@@ -2202,9 +2213,10 @@ tpoint_transform(const Temporal *temp, int srid)
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
+  GSERIALIZED *value = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst));
   Datum point = (oper == GEOM_TO_GEOG) ?
-    call_function1(geography_from_geometry, tinstant_value(inst)) :
-    call_function1(geometry_from_geography, tinstant_value(inst));
+    PointerGetDatum(PGIS_geography_from_geometry(value)) :
+    PointerGetDatum(PGIS_geometry_from_geography(value));
   return tinstant_make(point, inst->t, (oper == GEOM_TO_GEOG) ?
     T_TGEOGPOINT : T_TGEOMPOINT);
 }
@@ -2228,16 +2240,15 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
       points[0]->srid, NULL, (uint32_t) ti->count, (LWGEOM **) points);
-  Datum mpoint_orig = PointerGetDatum(geo_serialize(lwresult));
+  GSERIALIZED *mpoint_orig = geo_serialize(lwresult);
   for (int i = 0; i < ti->count; i++)
     lwpoint_free(points[i]);
   pfree(points);
   /* Convert the multipoint geometry/geography */
-  Datum mpoint_trans = (oper == GEOM_TO_GEOG) ?
-    call_function1(geography_from_geometry, mpoint_orig) :
-    call_function1(geometry_from_geography, mpoint_orig);
+  gs = (oper == GEOM_TO_GEOG) ?
+    PGIS_geography_from_geometry(mpoint_orig) :
+    PGIS_geometry_from_geography(mpoint_orig);
   /* Construct the resulting tpoint from the multipoint geometry/geography */
-  gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   CachedType restype = (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT;
@@ -2271,16 +2282,15 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
       points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
-  Datum mpoint_orig = PointerGetDatum(geo_serialize(lwresult));
+  GSERIALIZED *mpoint_orig = geo_serialize(lwresult);
   for (int i = 0; i < seq->count; i++)
     lwpoint_free(points[i]);
   pfree(points);
   /* Convert the multipoint geometry/geography */
-  Datum mpoint_trans = (oper == GEOM_TO_GEOG) ?
-      call_function1(geography_from_geometry, mpoint_orig) :
-      call_function1(geometry_from_geography, mpoint_orig);
+  gs = (oper == GEOM_TO_GEOG) ?
+      PGIS_geography_from_geometry(mpoint_orig) :
+      PGIS_geometry_from_geography(mpoint_orig);
   /* Construct the resulting tpoint from the multipoint geometry/geography */
-  gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   CachedType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
@@ -2826,9 +2836,11 @@ tpointseq_length(const TSequence *seq)
   else
   {
     Datum traj = tpointseq_trajectory(seq);
+    GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
     /* We are sure that the trajectory is a line */
-    double result = DatumGetFloat8(call_function2(geography_length, traj,
-      BoolGetDatum(true)));
+    double result = PGIS_geography_length(gstraj, true);
+    PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
+    pfree(DatumGetPointer(traj));
     return result;
   }
 }
@@ -3429,8 +3441,8 @@ geom_bearing(Datum point1, Datum point2)
     return 0.0;
   if (fabs(p1->y - p2->y) > MOBDB_EPSILON)
   {
-    double bearing = DatumGetFloat8(call_function1(datan,
-      Float8GetDatum((p1->x - p2->x) / (p1->y - p2->y)))) + alpha(p1, p2);
+    double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
+      alpha(p1, p2);
     if (fabs(bearing) <= MOBDB_EPSILON)
       bearing = 0.0;
     return Float8GetDatum(bearing);
@@ -3468,17 +3480,11 @@ geog_bearing(Datum point1, Datum point2)
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
   double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);
 #endif
-  double lat = DatumGetFloat8(call_function1(dsin, Float8GetDatum(diffLong))) *
-    DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2)));
-  double lgt =
-    ( DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat1))) *
-      DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat2))) ) -
-    ( DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat1))) *
-      DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2))) *
-      DatumGetFloat8(call_function1(dcos, Float8GetDatum(diffLong))) );
+  double lat = pg_dsin(diffLong) * pg_dcos(lat2);
+  double lgt = ( pg_dcos(lat1) * pg_dsin(lat2) ) -
+    ( pg_dsin(lat1) * pg_dcos(lat2) * pg_dcos(diffLong) );
   /* Notice that the arguments are inverted, e.g., wrt the atan2 in Python */
-  double initial_bearing = DatumGetFloat8(call_function2(datan2,
-    Float8GetDatum(lat), Float8GetDatum(lgt)));
+  double initial_bearing = pg_datan2(lat, lgt);
   /* Normalize the bearing from -180° to + 180° (in radians) to
    * 0° to 360° (in radians) */
   double bearing = fmod(initial_bearing + M_PI * 2.0, M_PI * 2.0);

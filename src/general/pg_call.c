@@ -40,6 +40,7 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
+#include <common/int128.h>
 #include <utils/datetime.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
@@ -51,6 +52,135 @@
 #else
   #include <access/hash.h>
 #endif
+
+/*****************************************************************************
+ * Functions adapted from float.c
+ *****************************************************************************/
+
+/**
+ * @brief Return degrees converted from radians
+ * @note PostgreSQL function: Datum dsin(PG_FUNCTION_ARGS)
+ */
+float8
+pg_degrees(float8 arg1)
+{
+  return float8_div(arg1, RADIANS_PER_DEGREE);
+}
+
+/**
+ * @brief Return the sine of arg1 (radians)
+ * @note PostgreSQL function: Datum dsin(PG_FUNCTION_ARGS)
+ */
+float8
+pg_dsin(float8 arg1)
+{
+  float8    result;
+
+  /* Per the POSIX spec, return NaN if the input is NaN */
+  if (isnan(arg1))
+    return get_float8_nan();
+
+  /* Be sure to throw an error if the input is infinite --- see dcos() */
+  errno = 0;
+  result = sin(arg1);
+  if (errno != 0 || isinf(arg1))
+    ereport(ERROR,
+        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+         errmsg("input is out of range")));
+  if (unlikely(isinf(result)))
+    float_overflow_error();
+
+  return result;
+}
+
+/**
+ * @brief Return the cosine of arg1 (radians)
+ * @note PostgreSQL function: Datum dcos(PG_FUNCTION_ARGS)
+ */
+float8
+pg_dcos(float8 arg1)
+{
+  float8    result;
+
+  /* Per the POSIX spec, return NaN if the input is NaN */
+  if (isnan(arg1))
+    return get_float8_nan();
+
+  /*
+   * cos() is periodic and so theoretically can work for all finite inputs,
+   * but some implementations may choose to throw error if the input is so
+   * large that there are no significant digits in the result.  So we should
+   * check for errors.  POSIX allows an error to be reported either via
+   * errno or via fetestexcept(), but currently we only support checking
+   * errno.  (fetestexcept() is rumored to report underflow unreasonably
+   * early on some platforms, so it's not clear that believing it would be a
+   * net improvement anyway.)
+   *
+   * For infinite inputs, POSIX specifies that the trigonometric functions
+   * should return a domain error; but we won't notice that unless the
+   * platform reports via errno, so also explicitly test for infinite
+   * inputs.
+   */
+  errno = 0;
+  result = cos(arg1);
+  if (errno != 0 || isinf(arg1))
+    ereport(ERROR,
+        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+         errmsg("input is out of range")));
+  if (unlikely(isinf(result)))
+    float_overflow_error();
+
+  return result;
+}
+
+/**
+ * @brief Return the arctan of arg1 (radians)
+ * @note PostgreSQL function: Datum datan(PG_FUNCTION_ARGS)
+ */
+float8
+pg_datan(float8 arg1)
+{
+  float8 result;
+
+  /* Per the POSIX spec, return NaN if the input is NaN */
+  if (isnan(arg1))
+    return get_float8_nan();
+
+  /*
+   * The principal branch of the inverse tangent function maps all inputs to
+   * values in the range [-Pi/2, Pi/2], so the result should always be
+   * finite, even if the input is infinite.
+   */
+  result = atan(arg1);
+  if (unlikely(isinf(result)))
+    float_overflow_error();
+
+  return result;
+}
+
+/**
+ * @brief Return the arctan of arg1/arg2 (radians)
+ * @note PostgreSQL function: Datum datan2d(PG_FUNCTION_ARGS)
+ */
+float8
+pg_datan2(float8 arg1, float8 arg2)
+{
+  float8 result;
+
+  /* Per the POSIX spec, return NaN if either input is NaN */
+  if (isnan(arg1) || isnan(arg2))
+    return get_float8_nan();
+
+  /*
+   * atan2 maps all inputs to values in the range [-Pi, Pi], so the result
+   * should always be finite, even if the inputs are infinite.
+   */
+  result = atan2(arg1, arg2);
+  if (unlikely(isinf(result)))
+    float_overflow_error();
+
+  return result;
+}
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
@@ -249,6 +379,53 @@ pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2)
   interval.day = 0;
   Interval *result = pg_interval_justify_hours(&interval);
   return result;
+}
+
+/*
+ *    interval_relop  - is interval1 relop interval2
+ *
+ * Interval comparison is based on converting interval values to a linear
+ * representation expressed in the units of the time field (microseconds,
+ * in the case of integer timestamps) with days assumed to be always 24 hours
+ * and months assumed to be always 30 days.  To avoid overflow, we need a
+ * wider-than-int64 datatype for the linear representation, so use INT128.
+ */
+
+static inline INT128
+interval_cmp_value(const Interval *interval)
+{
+  INT128 span;
+  int64 dayfraction;
+  int64 days;
+
+  /*
+   * Separate time field into days and dayfraction, then add the month and
+   * day fields to the days part.  We cannot overflow int64 days here.
+   */
+  dayfraction = interval->time % USECS_PER_DAY;
+  days = interval->time / USECS_PER_DAY;
+  days += interval->month * INT64CONST(30);
+  days += interval->day;
+
+  /* Widen dayfraction to 128 bits */
+  span = (INT128) dayfraction;
+
+  /* Scale up days to microseconds, forming a 128-bit product */
+  span += (int128) days * (int128) USECS_PER_DAY;
+
+  return span;
+}
+
+/*
+ * @brief Compare the two intervals
+ * @note PostgreSQL function: Datum interval_cmp(PG_FUNCTION_ARGS)
+ */
+int
+pg_interval_cmp(const Interval *interval1, const Interval *interval2)
+{
+  INT128 span1 = interval_cmp_value(interval1);
+  INT128 span2 = interval_cmp_value(interval2);
+  return int128_compare(span1, span2);
 }
 
 /*****************************************************************************

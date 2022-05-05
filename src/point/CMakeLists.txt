@@ -22,6 +22,7 @@ endif()
 add_library(point OBJECT
   ${geography_functions.c}
   ${projection_gk.c}
+  pgis_call.c
   stbox.c
   tpoint.c
   ${tpoint_aggfuncs.c}

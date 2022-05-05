@@ -60,6 +60,9 @@ extern Datum geography_line_substring(PG_FUNCTION_ARGS);
 extern Datum geography_line_interpolate_point(PG_FUNCTION_ARGS);
 extern Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 
+extern GSERIALIZED *geography_shortestline_internal(const GSERIALIZED *g1,
+  const GSERIALIZED *g2, bool use_spheroid);
+
 /*****************************************************************************/
 
 #endif
