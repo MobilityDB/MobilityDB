@@ -92,7 +92,15 @@ extern GSERIALIZED *PGIS_ST_Intersection(GSERIALIZED *geom1,
 
 extern double PGIS_geography_length(GSERIALIZED *g, bool use_spheroid);
 
-/* Functions adapted from geography_measurement.c */
+/* Functions adapted from lwgeom_inout.c */
+
+extern GSERIALIZED *PGIS_LWGEOM_in(char *input, int32 geom_typmod);
+extern char *PGIS_LWGEOM_out(GSERIALIZED *geom);
+
+/* Functions adapted from geography_inout.c */
+
+extern GSERIALIZED *PGIS_geography_in(char *str, int32 geog_typmod);
+extern char *PGIS_geography_out(GSERIALIZED *g);
 
 extern GSERIALIZED *PGIS_geography_from_geometry(GSERIALIZED *geom);
 extern GSERIALIZED *PGIS_geometry_from_geography(GSERIALIZED *g_ser);

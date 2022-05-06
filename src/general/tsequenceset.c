@@ -495,7 +495,8 @@ tsequenceset_from_string(char *str, CachedType temptype, bool linear)
  * depending on its Oid
  */
 char *
-tsequenceset_to_string1(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
+tsequenceset_to_string1(const TSequenceSet *ts,
+  char *(*value_out)(CachedType, Datum))
 {
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
@@ -521,7 +522,7 @@ tsequenceset_to_string1(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
 char *
 tsequenceset_to_string(const TSequenceSet *ts)
 {
-  return tsequenceset_to_string1(ts, &call_output);
+  return tsequenceset_to_string1(ts, &basetype_output);
 }
 
 /**

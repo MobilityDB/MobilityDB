@@ -40,6 +40,8 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
+#include <miscadmin.h>
+#include <utils/int8.h>
 #include <common/int128.h>
 #include <utils/datetime.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -53,19 +55,77 @@
   #include <access/hash.h>
 #endif
 
+/* Definitions from builtins.h to avoid including it */
+
+/* Sign + the most decimal digits an 8-byte number could have */
+#define MAXINT8LEN 20
+extern int32 pg_strtoint32(const char *s);
+extern bool parse_bool_with_len(const char *value, size_t len, bool *result);
+extern int pg_ltoa(int32 l, char *a);
+extern int pg_lltoa(int64 ll, char *a);
+
 /*****************************************************************************
- * Functions adapted from float.c
+ * Functions adapted from int.c and int8.c
  *****************************************************************************/
 
 /**
- * @brief Return degrees converted from radians
- * @note PostgreSQL function: Datum dsin(PG_FUNCTION_ARGS)
+ * @brief Return an int4 from a string
+ * @note PostgreSQL function: Datum int4in(PG_FUNCTION_ARGS)
  */
-float8
-pg_degrees(float8 arg1)
+int32
+pg_int4in(char *str)
 {
-  return float8_div(arg1, RADIANS_PER_DEGREE);
+  return pg_strtoint32(str);
 }
+
+/**
+ * @brief Return a string from an int4
+ * @note PostgreSQL function: Datum int4out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_int4out(int32 val)
+{
+  char *result = (char *) palloc(12);  /* sign, 10 digits, '\0' */
+  pg_ltoa(val, result);
+  return result;
+}
+
+/**
+ * @brief Return an int8 from a string
+ * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
+ */
+int64
+pg_int8in(char *str)
+{
+  int64 result;
+  (void) scanint8(str, false, &result);
+  return result;
+}
+
+/**
+ * @brief Return a string from an int8
+ * @note PostgreSQL function: Datum int8out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_int8out(int64 val)
+{
+  char buf[MAXINT8LEN + 1];
+  char *result;
+  int len;
+
+  len = pg_lltoa(val, buf) + 1;
+  /*
+   * Since the length is already known, we do a manual palloc() and memcpy()
+   * to avoid the strlen() call that would otherwise be done in pstrdup().
+   */
+  result = palloc(len);
+  memcpy(result, buf, len);
+  return result;
+}
+
+/*****************************************************************************
+ * Functions adapted from float.c
+ *****************************************************************************/
 
 /**
  * @brief Return the sine of arg1 (radians)
@@ -100,7 +160,7 @@ pg_dsin(float8 arg1)
 float8
 pg_dcos(float8 arg1)
 {
-  float8    result;
+  float8 result;
 
   /* Per the POSIX spec, return NaN if the input is NaN */
   if (isnan(arg1))
@@ -183,8 +243,151 @@ pg_datan2(float8 arg1, float8 arg2)
 }
 
 /*****************************************************************************
+ * Functions adapted from bool.c
+ *****************************************************************************/
+
+/**
+ * @brief Convert "t" or "f" to 1 or 0
+ *
+ * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
+ * Reject other values.
+ *
+ * In the switch statement, check the most-used possibilities first.
+ * @note PostgreSQL function: Datum boolin(PG_FUNCTION_ARGS)
+ */
+bool
+pg_boolin(const char *in_str)
+{
+  const char *str;
+  size_t len;
+  bool result;
+
+  /*
+   * Skip leading and trailing whitespace
+   */
+  str = in_str;
+  while (isspace((unsigned char) *str))
+    str++;
+
+  len = strlen(str);
+  while (len > 0 && isspace((unsigned char) str[len - 1]))
+    len--;
+
+  if (parse_bool_with_len(str, len, &result))
+    return result;
+
+  ereport(ERROR,
+      (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+       errmsg("invalid input syntax for type %s: \"%s\"",
+          "boolean", in_str)));
+
+  /* not reached */
+  return false;
+}
+
+/**
+ * @brief Convert 1 or 0 to "t" or "f"
+ * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
+ */
+char *
+pg_boolout(bool b)
+{
+  char *result = (char *) palloc(2);
+  result[0] = (b) ? 't' : 'f';
+  result[1] = '\0';
+  return result;
+}
+
+/*****************************************************************************
  * Functions adapted from timestamp.c
  *****************************************************************************/
+
+/**
+ * @brief Convert a string to a timestamp.
+ * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
+ */
+TimestampTz
+pg_timestamptz_in(char *str, int32 typmod)
+{
+  TimestampTz result;
+  fsec_t    fsec;
+  struct pg_tm tt,
+         *tm = &tt;
+  int      tz;
+  int      dtype;
+  int      nf;
+  int      dterr;
+  char     *field[MAXDATEFIELDS];
+  int      ftype[MAXDATEFIELDS];
+  char    workbuf[MAXDATELEN + MAXDATEFIELDS];
+
+  dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
+              field, ftype, MAXDATEFIELDS, &nf);
+  if (dterr == 0)
+    dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz);
+  if (dterr != 0)
+    DateTimeParseError(dterr, str, "timestamp with time zone");
+
+  switch (dtype)
+  {
+    case DTK_DATE:
+      if (tm2timestamp(tm, fsec, &tz, &result) != 0)
+        ereport(ERROR,
+            (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+             errmsg("timestamp out of range: \"%s\"", str)));
+      break;
+
+    case DTK_EPOCH:
+      result = SetEpochTimestamp();
+      break;
+
+    case DTK_LATE:
+      TIMESTAMP_NOEND(result);
+      break;
+
+    case DTK_EARLY:
+      TIMESTAMP_NOBEGIN(result);
+      break;
+
+    default:
+      elog(ERROR, "unexpected dtype %d while parsing timestamptz \"%s\"",
+         dtype, str);
+      TIMESTAMP_NOEND(result);
+  }
+
+  AdjustTimestampForTypmod(&result, typmod);
+
+  return result;
+}
+
+/**
+ * @brief Convert a timestamp to a string.
+ * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_timestamptz_out(TimestampTz dt)
+{
+  char *result;
+  int tz;
+  struct pg_tm tt,
+         *tm = &tt;
+  fsec_t fsec;
+  const char *tzn;
+  char buf[MAXDATELEN + 1];
+
+  if (TIMESTAMP_NOT_FINITE(dt))
+    EncodeSpecialTimestamp(dt, buf);
+  else if (timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
+    EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
+  else
+    ereport(ERROR,
+        (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+         errmsg("timestamp out of range")));
+
+  result = pstrdup(buf);
+  return result;
+}
+
 
 #define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 

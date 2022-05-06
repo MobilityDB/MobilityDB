@@ -231,7 +231,7 @@ skiplist_print(const SkipList *list)
     {
       char *val;
       if (list->elemtype == TIMESTAMPTZ)
-        val = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(e->value));
+        val = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(e->value));
       else if (list->elemtype == PERIOD)
         val = span_to_string(e->value);
       else /* list->elemtype == TEMPORAL */

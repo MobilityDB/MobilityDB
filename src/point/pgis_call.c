@@ -643,7 +643,7 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
 {
   LWGEOM *olwgeom;
   POINTARRAY *ipa, *opa;
-  GSERIALIZED *ret;
+  GSERIALIZED *result;
   int type = gserialized_get_type(geom);
 
   if ( from < 0 || from > 1 )
@@ -767,9 +767,9 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
     return NULL;
   }
 
-  ret = geometry_serialize(olwgeom);
+  result = geometry_serialize(olwgeom);
   lwgeom_free(olwgeom);
-  return ret;
+  return result;
 
 }
 
@@ -893,6 +893,232 @@ PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
 }
 
 /*****************************************************************************
+ * Functions adapted from lwgeom_inout.c
+ *****************************************************************************/
+
+/**
+* Check the consistency of the metadata we want to enforce in the typmod:
+* srid, type and dimensionality. If things are inconsistent, shut down the query.
+* @note Function from gserialized_typmod.c
+*/
+GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
+{
+  int32 geom_srid = gserialized_get_srid(gser);
+  int32 geom_type = gserialized_get_type(gser);
+  int32 geom_z = gserialized_has_z(gser);
+  int32 geom_m = gserialized_has_m(gser);
+  int32 typmod_srid = TYPMOD_GET_SRID(typmod);
+  int32 typmod_type = TYPMOD_GET_TYPE(typmod);
+  int32 typmod_z = TYPMOD_GET_Z(typmod);
+  int32 typmod_m = TYPMOD_GET_M(typmod);
+
+  POSTGIS_DEBUG(2, "Entered function");
+
+  /* No typmod (-1) => no preferences */
+  if (typmod < 0) return gser;
+
+  /*
+  * #3031: If a user is handing us a MULTIPOINT EMPTY but trying to fit it into
+  * a POINT geometry column, there's a strong chance the reason she has
+  * a MULTIPOINT EMPTY because we gave it to her during data dump,
+  * converting the internal POINT EMPTY into a EWKB MULTIPOINT EMPTY
+  * (because EWKB doesn't have a clean way to represent POINT EMPTY).
+  * In such a case, it makes sense to turn the MULTIPOINT EMPTY back into a
+  * point EMPTY, rather than throwing an error.
+  */
+  if ( typmod_type == POINTTYPE && geom_type == MULTIPOINTTYPE &&
+       gserialized_is_empty(gser) )
+  {
+    LWPOINT *empty_point = lwpoint_construct_empty(geom_srid, geom_z, geom_m);
+    geom_type = POINTTYPE;
+    pfree(gser);
+    if ( gserialized_is_geodetic(gser) )
+      gser = geography_serialize(lwpoint_as_lwgeom(empty_point));
+    else
+      gser = geometry_serialize(lwpoint_as_lwgeom(empty_point));
+  }
+
+  /* Typmod has a preference for SRID, but geometry does not? Harmonize the geometry SRID. */
+  if ( typmod_srid > 0 && geom_srid == 0 )
+  {
+    gserialized_set_srid(gser, typmod_srid);
+    geom_srid = typmod_srid;
+  }
+
+  /* Typmod has a preference for SRID? Geometry SRID had better match. */
+  if ( typmod_srid > 0 && typmod_srid != geom_srid )
+  {
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Geometry SRID (%d) does not match column SRID (%d)", geom_srid, typmod_srid) ));
+  }
+
+  /* Typmod has a preference for geometry type. */
+  if ( typmod_type > 0 &&
+          /* GEOMETRYCOLLECTION column can hold any kind of collection */
+          ( (typmod_type == COLLECTIONTYPE && !
+              (geom_type == COLLECTIONTYPE || geom_type == MULTIPOLYGONTYPE ||
+               geom_type == MULTIPOINTTYPE || geom_type == MULTILINETYPE )) ||
+           /* Other types must be strictly equal. */
+           (typmod_type != geom_type)) )
+  {
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Geometry type (%s) does not match column type (%s)", lwtype_name(geom_type), lwtype_name(typmod_type)) ));
+  }
+
+  /* Mismatched Z dimensionality. */
+  if ( typmod_z && ! geom_z )
+  {
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Column has Z dimension but geometry does not" )));
+  }
+
+  /* Mismatched Z dimensionality (other way). */
+  if ( geom_z && ! typmod_z )
+  {
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Geometry has Z dimension but column does not" )));
+  }
+
+  /* Mismatched M dimensionality. */
+  if ( typmod_m && ! geom_m )
+  {
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Column has M dimension but geometry does not" )));
+  }
+
+  /* Mismatched M dimensionality (other way). */
+  if ( geom_m && ! typmod_m )
+  {
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Geometry has M dimension but column does not" )));
+  }
+
+  return gser;
+}
+
+/*
+ * LWGEOM_in(cstring)
+ * format is '[SRID=#;]wkt|wkb'
+ *  LWGEOM_in( 'SRID=99;POINT(0 0)')
+ *  LWGEOM_in( 'POINT(0 0)')            --> assumes SRID=SRID_UNKNOWN
+ *  LWGEOM_in( 'SRID=99;0101000000000000000000F03F000000000000004')
+ *  LWGEOM_in( '0101000000000000000000F03F000000000000004')
+ *  LWGEOM_in( '{"type":"Point","coordinates":[1,1]}')
+ *  returns a GSERIALIZED object
+ */
+/**
+ * @brief Get a geometry from a string
+ * @note PostGIS function: Datum LWGEOM_in(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_LWGEOM_in(char *input, int32 geom_typmod)
+{
+  char *str = input;
+  LWGEOM_PARSER_RESULT lwg_parser_result;
+  LWGEOM *lwgeom;
+  GSERIALIZED *result;
+  int32_t srid = 0;
+
+  lwgeom_parser_result_init(&lwg_parser_result);
+
+  /* Empty string. */
+  if ( str[0] == '\0' ) {
+    ereport(ERROR,(errmsg("parse error - invalid geometry")));
+  }
+
+  /* Starts with "SRID=" */
+  if( strncasecmp(str,"SRID=",5) == 0 )
+  {
+    /* Roll forward to semi-colon */
+    char *tmp = str;
+    while ( tmp && *tmp != ';' )
+      tmp++;
+
+    /* Check next character to see if we have WKB  */
+    if ( tmp && *(tmp+1) == '0' )
+    {
+      /* Null terminate the SRID= string */
+      *tmp = '\0';
+      /* Set str to the start of the real WKB */
+      str = tmp + 1;
+      /* Move tmp to the start of the numeric part */
+      tmp = input + 5;
+      /* Parse out the SRID number */
+      srid = atoi(tmp);
+    }
+  }
+
+  /* WKB? Let's find out. */
+  if ( str[0] == '0' )
+  {
+    size_t hexsize = strlen(str);
+    unsigned char *wkb = bytes_from_hexbytes(str, hexsize);
+    /* TODO: 20101206: No parser checks! This is inline with current 1.5 behavior, but needs discussion */
+    lwgeom = lwgeom_from_wkb(wkb, hexsize/2, LW_PARSER_CHECK_NONE);
+    /* If we picked up an SRID at the head of the WKB set it manually */
+    if ( srid ) lwgeom_set_srid(lwgeom, srid);
+    /* Add a bbox if necessary */
+    if ( lwgeom_needs_bbox(lwgeom) ) lwgeom_add_bbox(lwgeom);
+    lwfree(wkb);
+    result = geometry_serialize(lwgeom);
+    lwgeom_free(lwgeom);
+  }
+  else if (str[0] == '{')
+  {
+    char *srs = NULL;
+    lwgeom = lwgeom_from_geojson(str, &srs);
+    if (srs)
+    {
+      srid = SRID_DEFAULT; // TODO
+      // srid = GetSRIDCacheBySRS(fcinfo, srs);
+      lwfree(srs);
+      lwgeom_set_srid(lwgeom, srid);
+    }
+    result = geometry_serialize(lwgeom);
+    lwgeom_free(lwgeom);
+  }
+  /* WKT then. */
+  else
+  {
+    if ( lwgeom_parse_wkt(&lwg_parser_result, str, LW_PARSER_CHECK_ALL) == LW_FAILURE )
+    {
+      PG_PARSER_ERROR(lwg_parser_result);
+    }
+    lwgeom = lwg_parser_result.geom;
+    if ( lwgeom_needs_bbox(lwgeom) )
+      lwgeom_add_bbox(lwgeom);
+    result = geometry_serialize(lwgeom);
+    lwgeom_parser_result_free(&lwg_parser_result);
+  }
+
+  if ( geom_typmod >= 0 )
+  {
+    result = postgis_valid_typmod(result, geom_typmod);
+  }
+
+  /* Don't free the parser result (and hence lwgeom) until we have done */
+  /* the typemod check with lwgeom */
+  return result;
+}
+
+/**
+ * @brief Output function for geometries
+ *
+ * LWGEOM_out(lwgeom) --> cstring
+ * output is 'SRID=#;<wkb in hex form>'
+ * ie. 'SRID=-99;0101000000000000000000F03F0000000000000040'
+ * WKB is machine endian
+ * if SRID=-1, the 'SRID=-1;' will probably not be present.
+ * @note PostGIS function: Datum LWGEOM_out(PG_FUNCTION_ARGS)
+ */
+char *
+PGIS_LWGEOM_out(GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
+}
+
+/*****************************************************************************
  * Functions adapted from geography_inout.c
  *****************************************************************************/
 
@@ -901,7 +1127,8 @@ PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
 * of same, and GEOMETRYCOLLECTION. If the input type is not one of those, shut
 * down the query.
 */
-void geography_valid_type(uint8_t type)
+void
+geography_valid_type(uint8_t type)
 {
   if ( ! (type == POINTTYPE || type == LINETYPE || type == POLYGONTYPE ||
           type == MULTIPOINTTYPE || type == MULTILINETYPE ||
@@ -910,6 +1137,102 @@ void geography_valid_type(uint8_t type)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Geography type does not support %s", lwtype_name(type) )));
   }
+}
+
+GSERIALIZED *
+gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
+{
+  GSERIALIZED *g_ser = NULL;
+
+  /* Set geodetic flag */
+  lwgeom_set_geodetic(lwgeom, true);
+
+  /* Check that this is a type we can handle */
+  geography_valid_type(lwgeom->type);
+
+  /* Force the geometry to have valid geodetic coordinate range. */
+  lwgeom_nudge_geodetic(lwgeom);
+  if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
+  {
+    ereport(NOTICE, (errmsg_internal(
+      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY" ))
+    );
+  }
+
+  /* Force default SRID to the default */
+  if ( (int)lwgeom->srid <= 0 )
+    lwgeom->srid = SRID_DEFAULT;
+
+  /*
+  ** Serialize our lwgeom and set the geodetic flag so subsequent
+  ** functions do the right thing.
+  */
+  g_ser = geography_serialize(lwgeom);
+
+  /* Check for typmod agreement */
+  if ( geog_typmod >= 0 )
+    g_ser = postgis_valid_typmod(g_ser, geog_typmod);
+
+  return g_ser;
+}
+
+/**
+ * @brief Get a geography from in string
+ * @note PostGIS function: Datum geography_in(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_geography_in(char *str, int32 geog_typmod)
+{
+  LWGEOM_PARSER_RESULT lwg_parser_result;
+  LWGEOM *lwgeom = NULL;
+  GSERIALIZED *g_ser = NULL;
+
+  lwgeom_parser_result_init(&lwg_parser_result);
+
+  /* Empty string. */
+  if ( str[0] == '\0' )
+    ereport(ERROR,(errmsg("parse error - invalid geometry")));
+
+  /* WKB? Let's find out. */
+  if ( str[0] == '0' )
+  {
+    /* TODO: 20101206: No parser checks! This is inline with current 1.5 behavior,
+     * but needs discussion */
+    lwgeom = lwgeom_from_hexwkb(str, LW_PARSER_CHECK_NONE);
+    /* Error out if something went sideways */
+    if ( ! lwgeom )
+      ereport(ERROR,(errmsg("parse error - invalid geometry")));
+  }
+  /* WKT then. */
+  else
+  {
+    if ( lwgeom_parse_wkt(&lwg_parser_result, str, LW_PARSER_CHECK_ALL) == LW_FAILURE )
+      PG_PARSER_ERROR(lwg_parser_result);
+
+    lwgeom = lwg_parser_result.geom;
+  }
+
+  /* Error on any SRID != default */
+  // srid_check_latlong(lwgeom->srid);
+
+  /* Convert to gserialized */
+  g_ser = gserialized_geography_from_lwgeom(lwgeom, geog_typmod);
+
+  /* Clean up temporary object */
+  lwgeom_free(lwgeom);
+
+  return g_ser;
+}
+
+/**
+ * @brief Output a geography in string format
+ * @note PostGIS function: Datum geography_out(PG_FUNCTION_ARGS)
+ */
+char *
+PGIS_geography_out(GSERIALIZED *g)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(g);
+  return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
 }
 
 /**

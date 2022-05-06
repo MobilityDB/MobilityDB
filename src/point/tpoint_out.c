@@ -267,7 +267,7 @@ static size_t
 datetimes_mfjson_buf(char *output, const TInstant *inst)
 {
   char *ptr = output;
-  char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+  char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   /* Replace ' ' by 'T' as separator between date and time parts */
   t[10] = 'T';
   ptr += sprintf(ptr, "\"%s\"", t);
@@ -338,8 +338,8 @@ bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
     ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f,%.*f,%.*f],",
       precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
       precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
-  char *begin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(bbox->tmin));
-  char *end = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(bbox->tmax));
+  char *begin = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(bbox->tmin));
+  char *end = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(bbox->tmax));
   ptr += sprintf(ptr, "\"period\":{\"begin\":\"%s\",\"end\":\"%s\"}},", begin, end);
   pfree(begin); pfree(end);
   return (ptr - output);

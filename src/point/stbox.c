@@ -200,20 +200,20 @@ stbox_to_string(const STBOX *box)
   assert(hasx || hast);
   if (hasx)
   {
-    xmin = call_output(FLOAT8OID, Float8GetDatum(box->xmin));
-    xmax = call_output(FLOAT8OID, Float8GetDatum(box->xmax));
-    ymin = call_output(FLOAT8OID, Float8GetDatum(box->ymin));
-    ymax = call_output(FLOAT8OID, Float8GetDatum(box->ymax));
+    xmin = basetype_output(T_FLOAT8, Float8GetDatum(box->xmin));
+    xmax = basetype_output(T_FLOAT8, Float8GetDatum(box->xmax));
+    ymin = basetype_output(T_FLOAT8, Float8GetDatum(box->ymin));
+    ymax = basetype_output(T_FLOAT8, Float8GetDatum(box->ymax));
     if (geodetic || hasz)
     {
-      zmin = call_output(FLOAT8OID, Float8GetDatum(box->zmin));
-      zmax = call_output(FLOAT8OID, Float8GetDatum(box->zmax));
+      zmin = basetype_output(T_FLOAT8, Float8GetDatum(box->zmin));
+      zmax = basetype_output(T_FLOAT8, Float8GetDatum(box->zmax));
     }
   }
   if (hast)
   {
-    tmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-    tmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+    tmin = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
+    tmax = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
   }
   if (hasx)
   {

@@ -250,6 +250,16 @@ npoint_remove_duplicates(Npoint **values, int count)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Return a span from its string representation.
+ */
+Npoint *
+npoint_from_string(char *str)
+{
+  return npoint_parse(&str);
+}
+
+/**
  * @brief Output function for network points
  */
 char *
@@ -257,8 +267,8 @@ npoint_to_string(const Npoint *np)
 {
   static size_t size = MAXNPOINTLEN + 1;
   char *result = (char *) palloc(size);
-  char *rid = call_output(INT8OID, Int64GetDatum(np->rid));
-  char *pos = call_output(FLOAT8OID, Float8GetDatum(np->pos));
+  char *rid = basetype_output(T_INT8, Int64GetDatum(np->rid));
+  char *pos = basetype_output(T_FLOAT8, Float8GetDatum(np->pos));
   snprintf(result, size, "NPoint(%s,%s)", rid, pos);
   return result;
 }
@@ -993,7 +1003,7 @@ PGDLLEXPORT Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(npoint_parse(&str));
+  PG_RETURN_POINTER(npoint_from_string(str));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_out);

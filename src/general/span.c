@@ -363,9 +363,8 @@ unquote(char *str)
 char *
 span_to_string(const Span *s)
 {
-  Oid basetypid = type_oid(s->basetype);
-  char *lower = call_output(basetypid, s->lower);
-  char *upper = call_output(basetypid, s->upper);
+  char *lower = basetype_output(s->basetype, s->lower);
+  char *upper = basetype_output(s->basetype, s->upper);
   StringInfoData buf;
   initStringInfo(&buf);
   appendStringInfoChar(&buf, s->lower_inc ? (char) '[' : (char) '(');

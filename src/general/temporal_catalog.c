@@ -504,6 +504,7 @@ const char *_type_names[] =
   [T_INT4] = "int4",
   [T_INT4RANGE] = "int4range",
   [T_INTSPAN] = "intspan",
+  [T_INT8] = "int8",
   [T_PERIOD] = "period",
   [T_PERIODSET] = "periodset",
   [T_STBOX] = "stbox",

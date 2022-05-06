@@ -255,7 +255,8 @@ tinstantset_from_string(char *str, CachedType temptype)
  * its Oid
  */
 char *
-tinstantset_to_string1(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
+tinstantset_to_string1(const TInstantSet *ti,
+  char *(*value_out)(CachedType, Datum))
 {
   char **strings = palloc(sizeof(char *) * ti->count);
   size_t outlen = 0;
@@ -276,7 +277,7 @@ tinstantset_to_string1(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
 char *
 tinstantset_to_string(const TInstantSet *ti)
 {
-  return tinstantset_to_string1(ti, &call_output);
+  return tinstantset_to_string1(ti, &basetype_output);
 }
 
 /**

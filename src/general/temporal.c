@@ -172,15 +172,15 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 {
   if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
   {
-    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+    char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst2->t));
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
         temptype_basetype(inst1->temptype)))
   {
-    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
     elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
   }
   return;
@@ -333,8 +333,8 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
       (sequences[i - 1]->period.upper == sequences[i]->period.lower &&
       sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
     {
-      char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
-      char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
+      char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(sequences[i - 1]->period.upper));
+      char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(sequences[i]->period.lower));
       elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
     }
     ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
@@ -380,10 +380,7 @@ ensure_valid_duration(const Interval *duration)
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = pg_interval_cmp(duration, &intervalzero);
   if (cmp <= 0)
-  {
-    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The interval must be positive: %s", t);
-  }
+    elog(ERROR, "The interval must be positive");
   return;
 }
 

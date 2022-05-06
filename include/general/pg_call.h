@@ -43,15 +43,30 @@
 
 /*****************************************************************************/
 
+/* Functions adapted from int8.c */
+
+extern int32 pg_int4in(char *str);
+extern char *pg_int4out(int32 val);
+
+extern int64 pg_int8in(char *str);
+extern char *pg_int8out(int64 val);
+
 /* Functions adapted from float.c */
 
-extern float8 pg_degrees(float8 arg1);
 extern float8 pg_dsin(float8 arg1);
 extern float8 pg_dcos(float8 arg1);
 extern float8 pg_datan(float8 arg1);
 extern float8 pg_datan2(float8 arg1, float8 arg2);
 
+/* Functions adadpted from bool.c */
+
+extern bool pg_boolin(const char *in_str);
+extern char *pg_boolout(bool b);
+
 /* Functions adadpted from timestamp.c */
+
+extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
+extern char *pg_timestamptz_out(TimestampTz dt);
 
 extern Interval *pg_interval_pl(const Interval *span1, const Interval *span2);
 extern TimestampTz pg_timestamp_pl_interval(TimestampTz timestamp,

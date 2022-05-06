@@ -53,6 +53,11 @@ extern char *text2cstring(const text *textptr);
 
 /* PostgreSQL call helpers */
 
+extern Datum basetype_input(CachedType type, char *str);
+extern char *basetype_output(CachedType type, Datum value);
+extern bytea *basetype_send(CachedType type, Datum value);
+extern Datum basetype_recv(CachedType type, StringInfo buf);
+
 extern Datum call_input(Oid typid, char *str);
 extern char *call_output(Oid typid, Datum value);
 extern bytea *call_send(Oid typid, Datum value);

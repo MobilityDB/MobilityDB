@@ -198,7 +198,7 @@ double_parse(char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(char **str, Oid basetypid)
+basetype_parse(char **str, CachedType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -221,7 +221,7 @@ basetype_parse(char **str, Oid basetypid)
   if ((*str)[delim] == '\0')
     elog(ERROR, "Could not parse element value");
   (*str)[delim] = '\0';
-  Datum result = call_input(basetypid, *str);
+  Datum result = basetype_input(basetype, *str);
   if (isttext)
     /* Replace the double quote */
     (*str)[delim++] = '"';
@@ -321,7 +321,7 @@ timestamp_parse(char **str)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = call_input(TIMESTAMPTZOID, *str);
+  Datum result = basetype_input(T_TIMESTAMPTZ, *str);
   (*str)[delim] = bak;
   *str += delim;
   return result;
@@ -400,7 +400,7 @@ periodset_parse(char **str)
  * Parse a timestamp value from the buffer.
  */
 Datum
-elem_parse(char **str, CachedType basetypid)
+elem_parse(char **str, CachedType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -409,7 +409,7 @@ elem_parse(char **str, CachedType basetypid)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = call_input(basetypid, *str);
+  Datum result = basetype_input(basetype, *str);
   (*str)[delim] = bak;
   *str += delim;
   return result;
@@ -430,11 +430,11 @@ span_parse(char **str, CachedType spantype, bool make)
     elog(ERROR, "Could not parse span");
 
   CachedType basetype = spantype_basetype(spantype);
-  Oid basetypid = type_oid(basetype);
+  // Oid basetypid = type_oid(basetype);
   /* The next two instructions will throw an exception if they fail */
-  Datum lower = elem_parse(str, basetypid);
+  Datum lower = elem_parse(str, basetype);
   p_comma(str);
-  Datum upper = elem_parse(str, basetypid);
+  Datum upper = elem_parse(str, basetype);
 
   if (p_cbracket(str))
     upper_inc = true;
@@ -464,9 +464,9 @@ TInstant *
 tinstant_parse(char **str, CachedType temptype, bool end, bool make)
 {
   p_whitespace(str);
-  Oid basetypid = type_oid(temptype_basetype(temptype));
+  CachedType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
-  Datum elem = basetype_parse(str, basetypid);
+  Datum elem = basetype_parse(str, basetype);
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   if (! make)

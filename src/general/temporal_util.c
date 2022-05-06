@@ -47,9 +47,11 @@
   #include <utils/builtins.h>
 #endif
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/span.h"
 #include "general/temporaltypes.h"
 #include "general/doublen.h"
+#include "point/pgis_call.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #ifndef MEOS
@@ -836,36 +838,133 @@ hypot4d(double x, double y, double z, double m)
 }
 
 /*****************************************************************************
- * Call PostgreSQL functions
+ * Input/output PostgreSQL functions
  *****************************************************************************/
 
 /**
  * Call input function of the base type
  */
 Datum
-call_input(Oid typid, char *str)
+basetype_input(CachedType basetype, char *str)
 {
-  Oid infunc;
-  Oid basetypid;
-  FmgrInfo infuncinfo;
-  getTypeInputInfo(typid, &infunc, &basetypid);
-  fmgr_info(infunc, &infuncinfo);
-  return InputFunctionCall(&infuncinfo, str, basetypid, -1);
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
+  if (basetype == T_BOOL)
+    return BoolGetDatum(pg_boolin(str));
+  if (basetype == T_INT4)
+    return Int32GetDatum(pg_int4in(str));
+  if (basetype == T_INT8)
+    return Int64GetDatum(pg_int8in(str));
+  if (basetype == T_FLOAT8)
+    return Float8GetDatum(float8in_internal(str, NULL, "double precision",
+      str));
+  if (basetype == T_TEXT)
+    return PointerGetDatum(cstring_to_text(str));
+  if (basetype == T_GEOMETRY)
+    return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
+  if (basetype == T_GEOGRAPHY)
+    return PointerGetDatum(PGIS_geography_in(str, -1));
+#ifndef MEOS
+  if (basetype == T_NPOINT)
+    return PointerGetDatum(npoint_from_string(str));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
 /**
  * Call output function of the base type
  */
 char *
-call_output(Oid typid, Datum value)
+basetype_output(CachedType basetype, Datum value)
 {
-  Oid outfunc;
-  bool isvarlena;
-  FmgrInfo outfuncinfo;
-  getTypeOutputInfo(typid, &outfunc, &isvarlena);
-  fmgr_info(outfunc, &outfuncinfo);
-  return OutputFunctionCall(&outfuncinfo, value);
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return pg_timestamptz_out(DatumGetTimestampTz(value));
+  if (basetype == T_BOOL)
+    return pg_boolout(DatumGetBool(value));
+  if (basetype == T_INT4)
+    return pg_int4out(DatumGetInt32(value));
+  if (basetype == T_INT8)
+    return pg_int8out(DatumGetInt64(value));
+  if (basetype == T_FLOAT8)
+    return float8out_internal(DatumGetFloat8(value));
+  if (basetype == T_TEXT)
+    return text_to_cstring(DatumGetTextP(value));
+  if (basetype == T_GEOMETRY)
+    return PGIS_LWGEOM_out((GSERIALIZED *) DatumGetPointer(value));
+  if (basetype == T_GEOGRAPHY)
+    return PGIS_geography_out((GSERIALIZED *) DatumGetPointer(value));
+#ifndef MEOS
+  if (basetype == T_NPOINT)
+    return npoint_to_string(DatumGetNpointP(value));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
+
+/**
+ * Call send function of the base type
+ */
+// bytea *
+// basetype_send(CachedType type, Datum value)
+// {
+  // ensure_temporal_basetype(type);
+
+  // Oid sendfunc;
+  // bool isvarlena;
+  // FmgrInfo sendfuncinfo;
+  // getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
+  // fmgr_info(sendfunc, &sendfuncinfo);
+  // return SendFunctionCall(&sendfuncinfo, value);
+// }
+
+/**
+ * Call receive function of the base type
+ */
+// Datum
+// basetype_recv(CachedType type, StringInfo buf)
+// {
+  // ensure_temporal_basetype(type);
+
+  // Oid recvfunc;
+  // Oid basetypid;
+  // FmgrInfo recvfuncinfo;
+  // getTypeBinaryInputInfo(typid, &recvfunc, &basetypid);
+  // fmgr_info(recvfunc, &recvfuncinfo);
+  // return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
+// }
+
+/*****************************************************************************
+ * Call PostgreSQL functions
+ *****************************************************************************/
+
+/**
+ * Call input function of the base type
+ */
+// Datum
+// call_ input(Oid typid, char *str)
+// {
+  // Oid infunc;
+  // Oid basetypid;
+  // FmgrInfo infuncinfo;
+  // getTypeInputInfo(typid, &infunc, &basetypid);
+  // fmgr_info(infunc, &infuncinfo);
+  // return InputFunctionCall(&infuncinfo, str, basetypid, -1);
+// }
+
+/**
+ * Call output function of the base type
+ */
+// char *
+// call_output(Oid typid, Datum value)
+// {
+  // Oid outfunc;
+  // bool isvarlena;
+  // FmgrInfo outfuncinfo;
+  // getTypeOutputInfo(typid, &outfunc, &isvarlena);
+  // fmgr_info(outfunc, &outfuncinfo);
+  // return OutputFunctionCall(&outfuncinfo, value);
+// }
 
 /**
  * Call send function of the base type

@@ -165,11 +165,11 @@ tinstant_from_string(char *str, CachedType temptype)
  *    depending on its Oid
  */
 char *
-tinstant_to_string1(const TInstant *inst, char *(*value_out)(Oid, Datum))
+tinstant_to_string1(const TInstant *inst, char *(*value_out)(CachedType, Datum))
 {
-  char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+  char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   CachedType basetype = temptype_basetype(inst->temptype);
-  char *value = value_out(type_oid(basetype), tinstant_value(inst));
+  char *value = value_out(basetype, tinstant_value(inst));
   char *result;
   if (inst->temptype == T_TTEXT)
   {
@@ -193,7 +193,7 @@ tinstant_to_string1(const TInstant *inst, char *(*value_out)(Oid, Datum))
 char *
 tinstant_to_string(const TInstant *inst)
 {
-  return tinstant_to_string1(inst, &call_output);
+  return tinstant_to_string1(inst, &basetype_output);
 }
 
 /**

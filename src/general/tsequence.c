@@ -571,8 +571,8 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
    * take into account the inclusive/exclusive bounds */
   if (inst1->t > inst->t)
   {
-    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+    char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (inst1->t == inst->t)
@@ -581,7 +581,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
       basetype);
     if (seq->period.upper_inc && ! seqresult)
     {
-      char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+      char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
       elog(ERROR, "The temporal values have different value at their common instant %s", t1);
     }
     /* The result is a sequence set */
@@ -794,8 +794,8 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     if (inst1->t > inst2->t)
     {
       char *t2;
-      t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-      t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+      t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+      t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst2->t));
       elog(ERROR, "The temporal values cannot overlap on time: %s, %s", t1, t2);
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
@@ -803,7 +803,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     {
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
       {
-        t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+        t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
         elog(ERROR, "The temporal values have different value at their common instant %s", t1);
       }
     }
@@ -1322,7 +1322,7 @@ tsequence_from_string(char *str, CachedType temptype, bool linear)
  */
 char *
 tsequence_to_string1(const TSequence *seq, bool component,
-  char *(*value_out)(Oid, Datum))
+  char *(*value_out)(CachedType, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
@@ -1351,7 +1351,7 @@ tsequence_to_string1(const TSequence *seq, bool component,
 char *
 tsequence_to_string(const TSequence *seq)
 {
-  return tsequence_to_string1(seq, false, &call_output);
+  return tsequence_to_string1(seq, false, &basetype_output);
 }
 
 /**
