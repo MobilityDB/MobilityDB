@@ -99,7 +99,7 @@ extern char *tsequenceset_to_string(const TSequenceSet *ts);
 extern char *tsequenceset_to_string1(const TSequenceSet *ts,
   char *(*value_out)(Oid, Datum));
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
-extern TSequenceSet *tsequenceset_read(StringInfo buf, CachedType temptype);
+extern TSequenceSet *tsequenceset_recv(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 

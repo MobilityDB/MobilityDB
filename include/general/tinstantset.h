@@ -60,7 +60,7 @@ extern char *tinstantset_to_string1(const TInstantSet *ti,
   char *(*value_out)(Oid, Datum));
 extern char *tinstantset_to_string(const TInstantSet *ti);
 extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
-extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
+extern TInstantSet *tinstantset_recv(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 

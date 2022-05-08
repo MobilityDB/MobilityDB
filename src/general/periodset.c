@@ -120,7 +120,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  * @brief Return the string representation of the period set value.
  */
 PeriodSet *
-periodset_from_string(char *str)
+periodset_in(char *str)
 {
   return periodset_parse(&str);
 }
@@ -130,7 +130,7 @@ periodset_from_string(char *str)
  * @brief Return the string representation of the period set value.
  */
 char *
-periodset_to_string(const PeriodSet *ps)
+periodset_out(const PeriodSet *ps)
 {
   char **strings = palloc(sizeof(char *) * ps->count);
   size_t outlen = 0;
@@ -138,7 +138,7 @@ periodset_to_string(const PeriodSet *ps)
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    strings[i] = span_to_string(p);
+    strings[i] = span_out(p);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');
@@ -146,6 +146,23 @@ periodset_to_string(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_input_output
+ * @brief Return a new time value from its binary representation
+ * read from the buffer.
+ *
+ * @param[in] buf Buffer
+ */
+PeriodSet *
+periodset_recv(StringInfo buf)
+{
+  int count = (int) pq_getmsgint(buf, 4);
+  Period **periods = palloc(sizeof(Period *) * count);
+  for (int i = 0; i < count; i++)
+    periods[i] = span_recv(buf);
+  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
+  return result;
+}
+
+/**
  * @brief Write the binary representation of the time value into the buffer.
  *
  * @param[in] ps Time value
@@ -165,22 +182,16 @@ periodset_write(const PeriodSet *ps, StringInfo buf)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
- *
- * @param[in] buf Buffer
+ * @brief Send function for period set values
  */
-PeriodSet *
-periodset_read(StringInfo buf)
+bytea *
+periodset_send(const PeriodSet *ps)
 {
-  int count = (int) pq_getmsgint(buf, 4);
-  Period **periods = palloc(sizeof(Period *) * count);
-  for (int i = 0; i < count; i++)
-    periods[i] = span_read(buf);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  periodset_write(ps, &buf) ;
+  return (bytea *) pq_endtypsend(&buf);
 }
-
 /*****************************************************************************
  * Constructor function
  ****************************************************************************/
@@ -811,7 +822,7 @@ PGDLLEXPORT Datum
 Periodset_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  PeriodSet *result = periodset_from_string(input);
+  PeriodSet *result = periodset_in(input);
   PG_RETURN_POINTER(result);
 }
 
@@ -823,7 +834,7 @@ PGDLLEXPORT Datum
 Periodset_out(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  char *result = periodset_to_string(ps);
+  char *result = periodset_out(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -836,11 +847,9 @@ PGDLLEXPORT Datum
 Periodset_send(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  periodset_write(ps, &buf) ;
+  bytea *result = periodset_send(ps);
   PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(result);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_recv);
@@ -850,8 +859,8 @@ PG_FUNCTION_INFO_V1(Periodset_recv);
 PGDLLEXPORT Datum
 Periodset_recv(PG_FUNCTION_ARGS)
 {
-  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  PeriodSet *result = periodset_read(buf);
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PeriodSet *result = periodset_recv(buf);
   PG_RETURN_POINTER(result);
 }
 

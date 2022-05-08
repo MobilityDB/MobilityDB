@@ -874,7 +874,7 @@ basetype_input(CachedType basetype, char *str)
 #endif
 #ifndef MEOS
   if (basetype == T_NPOINT)
-    return PointerGetDatum(npoint_from_string(str));
+    return PointerGetDatum(npoint_in(str));
 #endif
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
@@ -904,7 +904,7 @@ basetype_output(CachedType basetype, Datum value)
     return PGIS_geography_out((GSERIALIZED *) DatumGetPointer(value));
 #ifndef MEOS
   if (basetype == T_NPOINT)
-    return npoint_to_string(DatumGetNpointP(value));
+    return npoint_out(DatumGetNpointP(value));
 #endif
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }

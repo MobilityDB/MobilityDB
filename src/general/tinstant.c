@@ -223,7 +223,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_read(StringInfo buf, CachedType temptype)
+tinstant_recv(StringInfo buf, CachedType temptype)
 {
   TimestampTz t = basetype_recv(T_TIMESTAMPTZ, buf);
   int size = pq_getmsgint(buf, 4) ;

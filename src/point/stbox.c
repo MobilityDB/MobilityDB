@@ -170,7 +170,7 @@ ensure_has_T_stbox(const STBOX *box)
  * @brief Return a temporal box from its string representation.
  */
 STBOX *
-stbox_from_string(char *str)
+stbox_in(char *str)
 {
   return stbox_parse(&str);
 }
@@ -180,7 +180,7 @@ stbox_from_string(char *str)
  * @brief Return the string representation of the spatiotemporal box.
  */
 char *
-stbox_to_string(const STBOX *box)
+stbox_out(const STBOX *box)
 {
   static size_t size = MAXSTBOXLEN + 1;
   char *str, *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL,
@@ -1598,8 +1598,7 @@ PGDLLEXPORT Datum
 Stbox_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  STBOX *result = stbox_from_string(input);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_POINTER(stbox_in(input));
 }
 
 PG_FUNCTION_INFO_V1(Stbox_out);
@@ -1610,8 +1609,7 @@ PGDLLEXPORT Datum
 Stbox_out(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  char *result = stbox_to_string(box);
-  PG_RETURN_CSTRING(result);
+  PG_RETURN_CSTRING(stbox_out(box));
 }
 
 PG_FUNCTION_INFO_V1(Stbox_send);

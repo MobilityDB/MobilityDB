@@ -591,7 +591,7 @@ mobilitydb_full_version(void)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_from_string(char *str, CachedType temptype)
+temporal_in(char *str, CachedType temptype)
 {
   return temporal_parse(&str, temptype);
 }
@@ -601,7 +601,7 @@ temporal_from_string(char *str, CachedType temptype)
  * @brief Return the string representation of the temporal value.
  */
 char *
-temporal_to_string(const Temporal *temp)
+temporal_out(const Temporal *temp)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -618,6 +618,30 @@ temporal_to_string(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_input_output
+ * @brief Return a new temporal value from its binary representation read from
+ * the buffer.
+ *
+ * @param[in] buf Buffer
+ */
+Temporal *
+temporal_recv(StringInfo buf)
+{
+  uint8 temptype = pq_getmsgbyte(buf);
+  uint8 subtype = pq_getmsgbyte(buf);
+  Temporal *result;
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
+    result = (Temporal *) tinstant_recv(buf, temptype);
+  else if (subtype == INSTANTSET)
+    result = (Temporal *) tinstantset_recv(buf, temptype);
+  else if (subtype == SEQUENCE)
+    result = (Temporal *) tsequence_recv(buf, temptype);
+  else /* subtype == SEQUENCESET */
+    result = (Temporal *) tsequenceset_recv(buf, temptype);
+  return result;
+}
+
+/**
  * @brief Write the binary representation of the temporal value into the buffer.
  *
  * @param[in] temp Temporal value
@@ -640,29 +664,17 @@ temporal_write(const Temporal *temp, StringInfo buf)
   return;
 }
 
-/**
+/*
  * @ingroup libmeos_temporal_input_output
- * @brief Return a new temporal value from its binary representation read from
- * the buffer.
- *
- * @param[in] buf Buffer
+ * @brief Generic send function for temporal types
  */
-Temporal *
-temporal_read(StringInfo buf)
+bytea *
+temporal_send(const Temporal *temp)
 {
-  uint8 temptype = pq_getmsgbyte(buf);
-  uint8 subtype = pq_getmsgbyte(buf);
-  Temporal *result;
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
-    result = (Temporal *) tinstant_read(buf, temptype);
-  else if (subtype == INSTANTSET)
-    result = (Temporal *) tinstantset_read(buf, temptype);
-  else if (subtype == SEQUENCE)
-    result = (Temporal *) tsequence_read(buf, temptype);
-  else /* subtype == SEQUENCESET */
-    result = (Temporal *) tsequenceset_read(buf, temptype);
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  temporal_write(temp, &buf) ;
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -3490,7 +3502,7 @@ Temporal_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = temporal_parse(&input, oid_type(temptypid));
+  Temporal *result = temporal_in(input, oid_type(temptypid));
   int32 temp_typmod = -1;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     temp_typmod = PG_GETARG_INT32(2);
@@ -3507,24 +3519,9 @@ PGDLLEXPORT Datum
 Temporal_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = temporal_to_string(temp);
+  char *result = temporal_out(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_send);
-/*
- * Generic send function for temporal types
- */
-PGDLLEXPORT Datum
-Temporal_send(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  temporal_write(temp, &buf) ;
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 PG_FUNCTION_INFO_V1(Temporal_recv);
@@ -3535,8 +3532,21 @@ PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  Temporal *result = temporal_read(buf);
+  Temporal *result = temporal_recv(buf);
   PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_send);
+/*
+ * Generic send function for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_send(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  bytea *result = temporal_send(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************

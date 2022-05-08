@@ -254,7 +254,7 @@ npoint_remove_duplicates(Npoint **values, int count)
  * @brief Return a span from its string representation.
  */
 Npoint *
-npoint_from_string(char *str)
+npoint_in(char *str)
 {
   return npoint_parse(&str);
 }
@@ -263,7 +263,7 @@ npoint_from_string(char *str)
  * @brief Output function for network points
  */
 char *
-npoint_to_string(const Npoint *np)
+npoint_out(const Npoint *np)
 {
   static size_t size = MAXNPOINTLEN + 1;
   char *result = (char *) palloc(size);
@@ -1005,7 +1005,7 @@ PGDLLEXPORT Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(npoint_from_string(str));
+  PG_RETURN_POINTER(npoint_in(str));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_out);
@@ -1016,7 +1016,7 @@ PGDLLEXPORT Datum
 Npoint_out(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_CSTRING(npoint_to_string(np));
+  PG_RETURN_CSTRING(npoint_out(np));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_recv);

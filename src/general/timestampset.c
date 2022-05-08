@@ -208,7 +208,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  * @brief Return the string representation of the period set value.
  */
 TimestampSet *
-timestampset_from_string(char *str)
+timestampset_in(char *str)
 {
   return timestampset_parse(&str);
 }
@@ -218,7 +218,7 @@ timestampset_from_string(char *str)
  * @brief Return the string representation of the timestamp set value.
  */
 char *
-timestampset_to_string(const TimestampSet *ts)
+timestampset_out(const TimestampSet *ts)
 {
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
@@ -239,7 +239,7 @@ timestampset_to_string(const TimestampSet *ts)
  * @param[in] buf Buffer
  */
 TimestampSet *
-timestampset_read(StringInfo buf)
+timestampset_recv(StringInfo buf)
 {
   int count = (int) pq_getmsgint(buf, 4);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
@@ -274,7 +274,7 @@ timestampset_write(const TimestampSet *ts, StringInfo buf)
  * @brief Send function for timestamp set values
  */
 bytea *
-timestampset_send(TimestampSet *ts)
+timestampset_send(const TimestampSet *ts)
 {
   StringInfoData buf;
   pq_begintypsend(&buf);
@@ -632,7 +632,7 @@ PGDLLEXPORT Datum
 Timestampset_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  TimestampSet *result = timestampset_from_string(input);
+  TimestampSet *result = timestampset_in(input);
   PG_RETURN_POINTER(result);
 }
 
@@ -644,7 +644,7 @@ PGDLLEXPORT Datum
 Timestampset_out(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  char *result = timestampset_to_string(ts);
+  char *result = timestampset_out(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -657,11 +657,9 @@ PGDLLEXPORT Datum
 Timestampset_send(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  timestampset_write(ts, &buf) ;
+  bytea *result = timestampset_send(ts);
   PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(result);
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_recv);
@@ -671,9 +669,8 @@ PG_FUNCTION_INFO_V1(Timestampset_recv);
 PGDLLEXPORT Datum
 Timestampset_recv(PG_FUNCTION_ARGS)
 {
-  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  TimestampSet *result = timestampset_read(buf);
-  PG_RETURN_POINTER(result);
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PG_RETURN_POINTER(timestampset_recv(buf));
 }
 
 /*****************************************************************************

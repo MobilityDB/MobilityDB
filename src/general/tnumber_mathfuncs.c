@@ -44,8 +44,6 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-/* PostGIS */
-#include <liblwgeom_internal.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/time_ops.h"

@@ -332,7 +332,7 @@ span_bounds(const Span *s, double *xmin, double *xmax)
  * @brief Return a span from its string representation.
  */
 Span *
-span_from_string(char *str, CachedType spantype)
+span_in(char *str, CachedType spantype)
 {
   return span_parse(&str, spantype, true);
 }
@@ -361,7 +361,7 @@ unquote(char *str)
  * @brief Return the string representation of the span.
  */
 char *
-span_to_string(const Span *s)
+span_out(const Span *s)
 {
   char *lower = basetype_output(s->basetype, s->lower);
   char *upper = basetype_output(s->basetype, s->upper);
@@ -379,7 +379,24 @@ span_to_string(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Write the binary representation of the time value into the buffer.
+ * @brief Return a span from its binary representation
+ * read from the buffer.
+ */
+Span *
+span_recv(StringInfo buf)
+{
+  Span *result = (Span *) palloc0(sizeof(Span));
+  result->spantype = (char) pq_getmsgbyte(buf);
+  result->basetype = spantype_basetype(result->spantype);
+  result->lower = basetype_recv(result->basetype, buf);
+  result->upper = basetype_recv(result->basetype, buf);
+  result->lower_inc = (char) pq_getmsgbyte(buf);
+  result->upper_inc = (char) pq_getmsgbyte(buf);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of the span into the buffer.
  */
 void
 span_write(const Span *s, StringInfo buf)
@@ -396,20 +413,15 @@ span_write(const Span *s, StringInfo buf)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
+ * @brief Get the binary representation of the span.
  */
-Span *
-span_read(StringInfo buf)
+bytea *
+span_send(const Span *s)
 {
-  Span *result = (Span *) palloc0(sizeof(Span));
-  result->spantype = (char) pq_getmsgbyte(buf);
-  result->basetype = spantype_basetype(result->spantype);
-  result->lower = basetype_recv(result->basetype, buf);
-  result->upper = basetype_recv(result->basetype, buf);
-  result->lower_inc = (char) pq_getmsgbyte(buf);
-  result->upper_inc = (char) pq_getmsgbyte(buf);
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  span_write(s, &buf);
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -900,7 +912,7 @@ Span_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid spantypid = PG_GETARG_OID(1);
-  Span *result = span_from_string(input, oid_type(spantypid));
+  Span *result = span_in(input, oid_type(spantypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -912,7 +924,7 @@ PGDLLEXPORT Datum
 Span_out(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_CSTRING(span_to_string(s));
+  PG_RETURN_CSTRING(span_out(s));
 }
 
 PG_FUNCTION_INFO_V1(Span_send);
@@ -923,10 +935,7 @@ PGDLLEXPORT Datum
 Span_send(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  span_write(s, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(span_send(s));
 }
 
 PG_FUNCTION_INFO_V1(Span_recv);
@@ -937,7 +946,7 @@ PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(span_read(buf));
+  PG_RETURN_POINTER(span_recv(buf));
 }
 
 /*****************************************************************************

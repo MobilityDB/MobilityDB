@@ -1385,7 +1385,7 @@ tsequence_write(const TSequence *seq, StringInfo buf)
  * @param[in] temptype Temporal type
  */
 TSequence *
-tsequence_read(StringInfo buf, CachedType temptype)
+tsequence_recv(StringInfo buf, CachedType temptype)
 {
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);
@@ -1393,7 +1393,7 @@ tsequence_read(StringInfo buf, CachedType temptype)
   bool linear = (char) pq_getmsgbyte(buf);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
-    instants[i] = tinstant_read(buf, temptype);
+    instants[i] = tinstant_recv(buf, temptype);
   return tsequence_make_free(instants, count, lower_inc,
     upper_inc, linear, NORMALIZE);
 }

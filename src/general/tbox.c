@@ -98,7 +98,7 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
  * @brief Return a temporal box from its string representation.
  */
 TBOX *
-tbox_from_string(char *str)
+tbox_in(char *str)
 {
   return tbox_parse(&str);
 }
@@ -108,7 +108,7 @@ tbox_from_string(char *str)
  * @brief Return the string representation of the temporal box.
  */
 char *
-tbox_to_string(const TBOX *box)
+tbox_out(const TBOX *box)
 {
   static size_t size = MAXTBOXLEN + 1;
   char *result = (char *) palloc(size);
@@ -154,7 +154,7 @@ tbox_to_string(const TBOX *box)
  * the buffer.
  */
 TBOX *
-tbox_read(StringInfo buf)
+tbox_recv(StringInfo buf)
 {
   TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
   bool hasx = (char) pq_getmsgbyte(buf);
@@ -1146,8 +1146,7 @@ PGDLLEXPORT Datum
 Tbox_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  TBOX *result = tbox_from_string(input);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_POINTER(tbox_in(input));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_out);
@@ -1158,8 +1157,7 @@ PGDLLEXPORT Datum
 Tbox_out(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  char *result = tbox_to_string(box);
-  PG_RETURN_CSTRING(result);
+  PG_RETURN_CSTRING(tbox_out(box));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_send);
@@ -1170,10 +1168,7 @@ PGDLLEXPORT Datum
 Tbox_send(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  tbox_write(box, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(tbox_send(box));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_recv);
@@ -1184,7 +1179,7 @@ PGDLLEXPORT Datum
 Tbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(tbox_read(buf));
+  PG_RETURN_POINTER(tbox_recv(buf));
 }
 
 /*****************************************************************************

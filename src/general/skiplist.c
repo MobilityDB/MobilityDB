@@ -233,12 +233,12 @@ skiplist_print(const SkipList *list)
       if (list->elemtype == TIMESTAMPTZ)
         val = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(e->value));
       else if (list->elemtype == PERIOD)
-        val = span_to_string(e->value);
+        val = span_out(e->value);
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
         temporal_period(e->value, &p);
-        val = span_to_string(&p);
+        val = span_out(&p);
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);
@@ -645,14 +645,14 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   else if (elemtype == PERIOD)
   {
     for (int i = 0; i < length; i ++)
-      values[i] = span_read(buf);
+      values[i] = span_recv(buf);
     result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }
   else /* elemtype == TEMPORAL */
   {
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_read(buf);
+      values[i] = temporal_recv(buf);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

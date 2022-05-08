@@ -102,9 +102,12 @@ extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
 /* Input/output functions */
 
-extern char *span_to_string(const Span *s);
+extern Span *span_in(char *str, CachedType spantype);
+extern char *span_out(const Span *s);
+extern Span *span_recv(StringInfo buf);
+extern bytea *span_send(const Span *s);
+
 extern void span_write(const Span *s, StringInfo buf);
-extern Span *span_read(StringInfo buf);
 
 /* Constructors */
 
