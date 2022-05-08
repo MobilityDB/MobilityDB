@@ -987,6 +987,8 @@ basetype_send(CachedType basetype, Datum value)
 
 /*****************************************************************************
  * Call PostgreSQL functions
+ * The call_input and call_output functions are needed for the geography
+ * type to call the function srid_is_latlong(fcinfo, srid)
  *****************************************************************************/
 
 /**
@@ -1001,34 +1003,6 @@ call_input(Oid typid, char *str)
   getTypeInputInfo(typid, &infunc, &basetypid);
   fmgr_info(infunc, &infuncinfo);
   return InputFunctionCall(&infuncinfo, str, basetypid, -1);
-}
-
-/**
- * Call output function of the base type
- */
-char *
-call_output(Oid typid, Datum value)
-{
-  Oid outfunc;
-  bool isvarlena;
-  FmgrInfo outfuncinfo;
-  getTypeOutputInfo(typid, &outfunc, &isvarlena);
-  fmgr_info(outfunc, &outfuncinfo);
-  return OutputFunctionCall(&outfuncinfo, value);
-}
-
-/**
- * Call send function of the base type
- */
-bytea *
-call_send(Oid typid, Datum value)
-{
-  Oid sendfunc;
-  bool isvarlena;
-  FmgrInfo sendfuncinfo;
-  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
-  fmgr_info(sendfunc, &sendfuncinfo);
-  return SendFunctionCall(&sendfuncinfo, value);
 }
 
 /**

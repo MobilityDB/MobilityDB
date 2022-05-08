@@ -61,9 +61,7 @@ extern bytea *basetype_send(CachedType type, Datum value);
 /* PostgreSQL call helpers */
 
 extern Datum call_input(Oid typid, char *str);
-extern char *call_output(Oid typid, Datum value);
 extern Datum call_recv(Oid typid, StringInfo buf);
-extern bytea *call_send(Oid typid, Datum value);
 
 extern Datum call_function1(PGFunction func, Datum arg1);
 extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);

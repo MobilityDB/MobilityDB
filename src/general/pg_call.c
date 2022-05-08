@@ -656,7 +656,7 @@ pg_timestamptz_recv(StringInfo buf)
     ereport(ERROR, (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
          errmsg("timestamp out of range")));
 
-  AdjustTimestampForTypmod(&timestamp, typmod);
+  PG_AdjustTimestampForTypmod(&timestamp, typmod);
 
   return timestamp;
 }
