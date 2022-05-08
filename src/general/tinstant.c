@@ -207,8 +207,8 @@ void
 tinstant_write(const TInstant *inst, StringInfo buf)
 {
   CachedType basetype = temptype_basetype(inst->temptype);
-  bytea *bt = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
-  bytea *bv = call_send(type_oid(basetype), tinstant_value(inst));
+  bytea *bt = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
+  bytea *bv = basetype_send(basetype, tinstant_value(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
   pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
   pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
@@ -225,7 +225,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
 TInstant *
 tinstant_read(StringInfo buf, CachedType temptype)
 {
-  TimestampTz t = call_recv(TIMESTAMPTZOID, buf);
+  TimestampTz t = basetype_recv(T_TIMESTAMPTZ, buf);
   int size = pq_getmsgint(buf, 4) ;
   StringInfoData buf2 =
   {
@@ -234,8 +234,8 @@ tinstant_read(StringInfo buf, CachedType temptype)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  Oid basetypid = type_oid(temptype_basetype(temptype));
-  Datum value = call_recv(basetypid, &buf2);
+  CachedType basetype = temptype_basetype(temptype);
+  Datum value = basetype_recv(basetype, &buf2);
   buf->cursor += size ;
   return tinstant_make(value, t, temptype);
 }

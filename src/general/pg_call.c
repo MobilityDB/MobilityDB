@@ -43,7 +43,9 @@
 #include <miscadmin.h>
 #include <utils/int8.h>
 #include <common/int128.h>
+#include <libpq/pqformat.h>
 #include <utils/datetime.h>
+#include <utils/numeric.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
 #else
@@ -63,9 +65,93 @@ extern int32 pg_strtoint32(const char *s);
 extern bool parse_bool_with_len(const char *value, size_t len, bool *result);
 extern int pg_ltoa(int32 l, char *a);
 extern int pg_lltoa(int64 ll, char *a);
+extern int pg_ulltoa_n(uint64 l, char *a);
+extern text *cstring_to_text_with_len(const char *s, int len);
 
 /*****************************************************************************
- * Functions adapted from int.c and int8.c
+ * Functions adapted from bool.c
+ *****************************************************************************/
+
+/**
+ * @brief Convert "t" or "f" to 1 or 0
+ *
+ * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
+ * Reject other values.
+ *
+ * In the switch statement, check the most-used possibilities first.
+ * @note PostgreSQL function: Datum boolin(PG_FUNCTION_ARGS)
+ */
+bool
+pg_boolin(const char *in_str)
+{
+  const char *str;
+  size_t len;
+  bool result;
+
+  /*
+   * Skip leading and trailing whitespace
+   */
+  str = in_str;
+  while (isspace((unsigned char) *str))
+    str++;
+
+  len = strlen(str);
+  while (len > 0 && isspace((unsigned char) str[len - 1]))
+    len--;
+
+  if (parse_bool_with_len(str, len, &result))
+    return result;
+
+  ereport(ERROR,(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+    errmsg("invalid input syntax for type %s: \"%s\"", "boolean", in_str)));
+
+  /* not reached */
+  return false;
+}
+
+/**
+ * @brief Convert 1 or 0 to "t" or "f"
+ * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
+ */
+char *
+pg_boolout(bool b)
+{
+  char *result = (char *) palloc(2);
+  result[0] = (b) ? 't' : 'f';
+  result[1] = '\0';
+  return result;
+}
+
+/**
+ * @brief Convert external binary format to bool
+ *
+ * The external representation is one byte.  Any nonzero value is taken
+ * as "true".
+ * @note PostgreSQL function: Datum boolrecv(PG_FUNCTION_ARGS)
+ */
+bool
+pg_boolrecv(StringInfo buf)
+{
+  int ext;
+  ext = pq_getmsgbyte(buf);
+  return ((ext != 0) ? true : false);
+}
+
+/**
+ * @brief Convert bool to binary format
+ * @note PostgreSQL function: Datum boolsend(PG_FUNCTION_ARGS)
+ */
+bytea *
+pg_boolsend(bool arg1)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbyte(&buf, arg1 ? 1 : 0);
+  return pq_endtypsend(&buf);
+}
+
+/*****************************************************************************
+ * Functions adapted from int.c
  *****************************************************************************/
 
 /**
@@ -91,6 +177,33 @@ pg_int4out(int32 val)
 }
 
 /**
+ * @brief CConvert an int4 to binary format
+ * @note PostgreSQL function: Datum int4send(PG_FUNCTION_ARGS)
+ */
+bytea *
+pg_int4send(int32 arg1)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint32(&buf, arg1);
+  return pq_endtypsend(&buf);
+}
+
+/**
+ * @brief Convert external binary format to int4
+ * @note PostgreSQL function: Datum int4recv(PG_FUNCTION_ARGS)
+ */
+int32
+pg_int4recv(StringInfo buf)
+{
+ return (int32) pq_getmsgint(buf, sizeof(int32));
+}
+
+/*****************************************************************************
+ * Functions adapted from int8.c
+ *****************************************************************************/
+
+/**
  * @brief Return an int8 from a string
  * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
  */
@@ -100,6 +213,31 @@ pg_int8in(char *str)
   int64 result;
   (void) scanint8(str, false, &result);
   return result;
+}
+
+/**
+ * @brief convert a signed 64-bit integer to its string representation
+ *
+ * Caller must ensure that 'a' points to enough memory to hold the result
+ * (at least MAXINT8LEN + 1 bytes, counting a leading sign and trailing NUL).
+ * @note We need to copy this function since this function has been fixed in
+ * PG version 14, previouly the function returned void
+ */
+static int
+mobdb_lltoa(int64 value, char *a)
+{
+  uint64 uvalue = value;
+  int len = 0;
+
+  if (value < 0)
+  {
+    uvalue = (uint64) 0 - uvalue;
+    a[len++] = '-';
+  }
+
+  len += pg_ulltoa_n(uvalue, a + len);
+  a[len] = '\0';
+  return len;
 }
 
 /**
@@ -113,7 +251,7 @@ pg_int8out(int64 val)
   char *result;
   int len;
 
-  len = pg_lltoa(val, buf) + 1;
+  len = mobdb_lltoa(val, buf) + 1;
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()
    * to avoid the strlen() call that would otherwise be done in pstrdup().
@@ -123,9 +261,57 @@ pg_int8out(int64 val)
   return result;
 }
 
+/**
+ * @brief Convert an int8 to binary format
+ * @note PostgreSQL function: Datum int8send(PG_FUNCTION_ARGS)
+ */
+bytea *
+pg_int8send(int64 arg1)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, arg1);
+  return pq_endtypsend(&buf);
+}
+
+/**
+ * @brief Convert external binary format to int8
+ * @note PostgreSQL function: Datum int8recv(PG_FUNCTION_ARGS)
+ */
+int64
+pg_int8recv(StringInfo buf)
+{
+  return pq_getmsgint64(buf);
+}
+
 /*****************************************************************************
  * Functions adapted from float.c
  *****************************************************************************/
+
+/**
+ * @brief Convert external binary format to float8
+ * @note PostgreSQL function: Datum float8recv(PG_FUNCTION_ARGS)
+ */
+float8
+pg_float8recv(StringInfo buf)
+{
+  return pq_getmsgfloat8(buf);
+}
+
+/**
+ * @brief Convert float8 to binary format
+ * @note PostgreSQL function: Datum float8send(PG_FUNCTION_ARGS)
+ */
+bytea *
+pg_float8send(float8 num)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendfloat8(&buf, num);
+  return pq_endtypsend(&buf);
+}
+
+/*****************************************************************************/
 
 /**
  * @brief Return the sine of arg1 (radians)
@@ -134,7 +320,7 @@ pg_int8out(int64 val)
 float8
 pg_dsin(float8 arg1)
 {
-  float8    result;
+  float8 result;
 
   /* Per the POSIX spec, return NaN if the input is NaN */
   if (isnan(arg1))
@@ -144,9 +330,8 @@ pg_dsin(float8 arg1)
   errno = 0;
   result = sin(arg1);
   if (errno != 0 || isinf(arg1))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("input is out of range")));
+    ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+      errmsg("input is out of range")));
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -243,64 +428,109 @@ pg_datan2(float8 arg1, float8 arg2)
 }
 
 /*****************************************************************************
- * Functions adapted from bool.c
+ * Functions adapted from varlena.c
  *****************************************************************************/
 
 /**
- * @brief Convert "t" or "f" to 1 or 0
- *
- * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
- * Reject other values.
- *
- * In the switch statement, check the most-used possibilities first.
- * @note PostgreSQL function: Datum boolin(PG_FUNCTION_ARGS)
+ * @brief Convert external binary format to text
+ * @note PostgreSQL function: Datum textrecv(PG_FUNCTION_ARGS)
  */
-bool
-pg_boolin(const char *in_str)
+text *
+pg_textrecv(StringInfo buf)
 {
-  const char *str;
-  size_t len;
-  bool result;
-
-  /*
-   * Skip leading and trailing whitespace
-   */
-  str = in_str;
-  while (isspace((unsigned char) *str))
-    str++;
-
-  len = strlen(str);
-  while (len > 0 && isspace((unsigned char) str[len - 1]))
-    len--;
-
-  if (parse_bool_with_len(str, len, &result))
-    return result;
-
-  ereport(ERROR,
-      (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-       errmsg("invalid input syntax for type %s: \"%s\"",
-          "boolean", in_str)));
-
-  /* not reached */
-  return false;
+  text *result;
+  char *str;
+  int nbytes;
+  str = pq_getmsgtext(buf, buf->len - buf->cursor, &nbytes);
+  result = cstring_to_text_with_len(str, nbytes);
+  pfree(str);
+  return result;
 }
 
 /**
- * @brief Convert 1 or 0 to "t" or "f"
- * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
+ * @brief Convert text to binary format
+ * @note PostgreSQL function: Datum textsend(PG_FUNCTION_ARGS)
  */
-char *
-pg_boolout(bool b)
+bytea *
+pg_textsend(text *t)
 {
-  char *result = (char *) palloc(2);
-  result[0] = (b) ? 't' : 'f';
-  result[1] = '\0';
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendtext(&buf, VARDATA_ANY(t), VARSIZE_ANY_EXHDR(t));
+  return pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
  *****************************************************************************/
+
+
+/**
+ * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
+ * Works for either timestamp or timestamptz.
+ * @note The functions AdjustTimestampForTypmod and
+ * AdjustTimestampForTypmodError are not exported in PG versions < 13
+ */
+bool
+PG_AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
+{
+  static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
+
+  static const int64 TimestampOffsets[MAX_TIMESTAMP_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
+
+  if (!TIMESTAMP_NOT_FINITE(*time)
+    && (typmod != -1) && (typmod != MAX_TIMESTAMP_PRECISION))
+  {
+    if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
+    {
+      if (error)
+      {
+        *error = true;
+        return false;
+      }
+
+      ereport(ERROR,
+          (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+           errmsg("timestamp(%d) precision must be between %d and %d",
+              typmod, 0, MAX_TIMESTAMP_PRECISION)));
+    }
+
+    if (*time >= INT64CONST(0))
+    {
+      *time = ((*time + TimestampOffsets[typmod]) / TimestampScales[typmod]) *
+        TimestampScales[typmod];
+    }
+    else
+    {
+      *time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
+            * TimestampScales[typmod]);
+    }
+  }
+
+  return true;
+}
+
+void
+PG_AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
+{
+  (void) AdjustTimestampForTypmodError(time, typmod, NULL);
+}
 
 /**
  * @brief Convert a string to a timestamp.
@@ -355,7 +585,7 @@ pg_timestamptz_in(char *str, int32 typmod)
       TIMESTAMP_NOEND(result);
   }
 
-  AdjustTimestampForTypmod(&result, typmod);
+  PG_AdjustTimestampForTypmod(&result, typmod);
 
   return result;
 }
@@ -388,6 +618,50 @@ pg_timestamptz_out(TimestampTz dt)
   return result;
 }
 
+/**
+ * @brief Convert timestamptz to binary format
+ * @note PostgreSQL function: Datum timestamptz_send(PG_FUNCTION_ARGS)
+ */
+bytea *
+pg_timestamptz_send(TimestampTz timestamp)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, timestamp);
+  return pq_endtypsend(&buf);
+}
+
+/**
+ * @brief Convert external binary format to timestamptz
+ * @note PostgreSQL function: Datum timestamptz_recv(PG_FUNCTION_ARGS)
+ */
+TimestampTz
+pg_timestamptz_recv(StringInfo buf)
+{
+  // We do not use typmod
+  int32 typmod = -1;
+  TimestampTz timestamp;
+  int tz;
+  struct pg_tm tt,
+         *tm = &tt;
+  fsec_t fsec;
+
+  timestamp = (TimestampTz) pq_getmsgint64(buf);
+
+  /* range check: see if timestamptz_out would like it */
+  if (TIMESTAMP_NOT_FINITE(timestamp))
+     /* ok */ ;
+  else if (timestamp2tm(timestamp, &tz, tm, &fsec, NULL, NULL) != 0 ||
+       ! IS_VALID_TIMESTAMP(timestamp))
+    ereport(ERROR, (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+         errmsg("timestamp out of range")));
+
+  AdjustTimestampForTypmod(&timestamp, typmod);
+
+  return timestamp;
+}
+
+/*****************************************************************************/
 
 #define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 

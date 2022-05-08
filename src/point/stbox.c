@@ -267,6 +267,37 @@ stbox_to_string(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_input_output
+ * @brief Return a new box value from its binary representation read from
+ * the buffer.
+ */
+STBOX *
+stbox_recv(StringInfo buf)
+{
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  result->flags = (int) pq_getmsgint(buf, 4);
+  if (MOBDB_FLAGS_GET_X(result->flags))
+  {
+    result->xmin = pq_getmsgfloat8(buf);
+    result->xmax = pq_getmsgfloat8(buf);
+    result->ymin = pq_getmsgfloat8(buf);
+    result->ymax = pq_getmsgfloat8(buf);
+    if (MOBDB_FLAGS_GET_Z(result->flags))
+    {
+      result->zmin = pq_getmsgfloat8(buf);
+      result->zmax = pq_getmsgfloat8(buf);
+    }
+    result->srid = (int) pq_getmsgint(buf, 4);
+  }
+  if (MOBDB_FLAGS_GET_T(result->flags))
+  {
+    result->tmin = basetype_recv(T_TIMESTAMPTZ, buf);
+    result->tmax = basetype_recv(T_TIMESTAMPTZ, buf);
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_input_output
  * @brief Write the binary representation of the box value into the buffer.
  */
 void
@@ -288,8 +319,8 @@ stbox_write(const STBOX *box, StringInfo buf)
   }
   if (MOBDB_FLAGS_GET_T(box->flags))
   {
-    bytea *tmin = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-    bytea *tmax = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+    bytea *tmin = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
+    bytea *tmax = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
     pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
     pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
     pfree(tmin); pfree(tmax);
@@ -299,33 +330,15 @@ stbox_write(const STBOX *box, StringInfo buf)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Return a new box value from its binary representation read from
- * the buffer.
+ * @brief Send function for TBOX
  */
-STBOX *
-stbox_read(StringInfo buf)
+bytea *
+stbox_send(STBOX *box)
 {
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  result->flags = (int) pq_getmsgint(buf, 4);
-  if (MOBDB_FLAGS_GET_X(result->flags))
-  {
-    result->xmin = pq_getmsgfloat8(buf);
-    result->xmax = pq_getmsgfloat8(buf);
-    result->ymin = pq_getmsgfloat8(buf);
-    result->ymax = pq_getmsgfloat8(buf);
-    if (MOBDB_FLAGS_GET_Z(result->flags))
-    {
-      result->zmin = pq_getmsgfloat8(buf);
-      result->zmax = pq_getmsgfloat8(buf);
-    }
-    result->srid = (int) pq_getmsgint(buf, 4);
-  }
-  if (MOBDB_FLAGS_GET_T(result->flags))
-  {
-    result->tmin = call_recv(TIMESTAMPTZOID, buf);
-    result->tmax = call_recv(TIMESTAMPTZOID, buf);
-  }
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  stbox_write(box, &buf);
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -1609,10 +1622,7 @@ PGDLLEXPORT Datum
 Stbox_send(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  stbox_write(box, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(stbox_send(box));
 }
 
 PG_FUNCTION_INFO_V1(Stbox_recv);
@@ -1623,7 +1633,7 @@ PGDLLEXPORT Datum
 Stbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(stbox_read(buf));
+  PG_RETURN_POINTER(stbox_recv(buf));
 }
 
 /*****************************************************************************

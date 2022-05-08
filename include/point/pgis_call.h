@@ -71,6 +71,10 @@ extern bool PGIS_ST_3DIntersects(GSERIALIZED *geom1, GSERIALIZED *geom2);
 extern bool PGIS_LWGEOM_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
   double *result);
 
+/* Functions adapted from lwgeom_btree.c */
+
+extern bool PGIS_lwgeom_lt(GSERIALIZED *g1, GSERIALIZED *g2);
+
 /* Functions adapted from lwgeom_functions_lrs.c */
 
 extern double PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1,
@@ -96,11 +100,15 @@ extern double PGIS_geography_length(GSERIALIZED *g, bool use_spheroid);
 
 extern GSERIALIZED *PGIS_LWGEOM_in(char *input, int32 geom_typmod);
 extern char *PGIS_LWGEOM_out(GSERIALIZED *geom);
+extern GSERIALIZED *PGIS_LWGEOM_recv(StringInfo buf);
+extern bytea *PGIS_LWGEOM_send(GSERIALIZED *geo);
 
 /* Functions adapted from geography_inout.c */
 
 extern GSERIALIZED *PGIS_geography_in(char *str, int32 geog_typmod);
 extern char *PGIS_geography_out(GSERIALIZED *g);
+extern GSERIALIZED *PGIS_geography_recv(StringInfo buf);
+extern bytea *PGIS_geography_send(GSERIALIZED *g);
 
 extern GSERIALIZED *PGIS_geography_from_geometry(GSERIALIZED *geom);
 extern GSERIALIZED *PGIS_geometry_from_geography(GSERIALIZED *g_ser);

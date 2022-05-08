@@ -278,7 +278,7 @@ npoint_to_string(const Npoint *np)
  * from the buffer.
  */
 Npoint *
-npoint_read(StringInfo buf)
+npoint_recv(StringInfo buf)
 {
   Npoint *result = (Npoint *) palloc0(sizeof(Npoint));
   result->rid = pq_getmsgint64(buf);
@@ -293,12 +293,14 @@ npoint_read(StringInfo buf)
  * @param[in] np Network point value
  * @param[in] buf Buffer
  */
-void
-npoint_write(const Npoint *np, StringInfo buf)
+bytea *
+npoint_send(const Npoint *np)
 {
-  pq_sendint64(buf, (uint64) np->rid);
-  pq_sendfloat8(buf, np->pos);
-  return;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, (uint64) np->rid);
+  pq_sendfloat8(&buf, np->pos);
+  return pq_endtypsend(&buf);
 }
 
 /*****************************************************************************/
@@ -1025,7 +1027,7 @@ PGDLLEXPORT Datum
 Npoint_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(npoint_read(buf));
+  PG_RETURN_POINTER(npoint_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_send);
@@ -1036,10 +1038,7 @@ PGDLLEXPORT Datum
 Npoint_send(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  npoint_write(np, &buf) ;
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(npoint_send(np));
 }
 
 /*****************************************************************************

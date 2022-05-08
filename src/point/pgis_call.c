@@ -44,7 +44,7 @@
 #include <utils/elog.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include <lwgeom_pg.h>
+#include "lwgeom_pg.h"
 #include <lwgeom_log.h>
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"
@@ -996,8 +996,9 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
   return gser;
 }
 
-/*
- * LWGEOM_in(cstring)
+/**
+ * @brief Get a geometry from a string
+ *
  * format is '[SRID=#;]wkt|wkb'
  *  LWGEOM_in( 'SRID=99;POINT(0 0)')
  *  LWGEOM_in( 'POINT(0 0)')            --> assumes SRID=SRID_UNKNOWN
@@ -1005,9 +1006,7 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
  *  LWGEOM_in( '0101000000000000000000F03F000000000000004')
  *  LWGEOM_in( '{"type":"Point","coordinates":[1,1]}')
  *  returns a GSERIALIZED object
- */
-/**
- * @brief Get a geometry from a string
+
  * @note PostGIS function: Datum LWGEOM_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
@@ -1117,6 +1116,87 @@ PGIS_LWGEOM_out(GSERIALIZED *geom)
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
 }
+
+/**
+ * @brief Get a geometry from its binary representation
+ *
+ * This function must advance the StringInfo.cursor pointer
+ * and leave it at the end of StringInfo.buf. If it fails
+ * to do so the backend will raise an exception with message:
+ * ERROR:  incorrect binary data format in bind parameter #
+ * @note PostGIS function: Datum LWGEOM_send(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_LWGEOM_recv(StringInfo buf)
+{
+  // We do not use the typmod
+  int32 geom_typmod = -1;
+  GSERIALIZED *geom;
+  LWGEOM *lwgeom;
+
+  lwgeom = lwgeom_from_wkb((uint8_t*)buf->data, buf->len, LW_PARSER_CHECK_ALL);
+
+  if ( lwgeom_needs_bbox(lwgeom) )
+    lwgeom_add_bbox(lwgeom);
+
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+
+  geom = geometry_serialize(lwgeom);
+  lwgeom_free(lwgeom);
+
+  if ( geom_typmod >= 0 )
+  {
+    geom = postgis_valid_typmod(geom, geom_typmod);
+  }
+
+  return geom;
+}
+
+/*
+ * WKBFromLWGEOM(lwgeom) --> wkb
+ * this will have no 'SRID=#;'
+ */
+bytea *
+PGIS_WKBFromLWGEOM(GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom;
+  uint8_t variant = 0;
+
+  // We do not accept user specified endianness
+
+  /* Create WKB hex string */
+  lwgeom = lwgeom_from_gserialized(geom);
+  return (bytea *) lwgeom_to_wkb_varlena(lwgeom, variant | WKB_EXTENDED);
+}
+
+/**
+ * @brief Get the binary representation of a geometry
+ * @note PostGIS function: Datum LWGEOM_send(PG_FUNCTION_ARGS)
+ */
+bytea *
+PGIS_LWGEOM_send(GSERIALIZED *geo)
+{
+  return PGIS_WKBFromLWGEOM(geo);
+}
+
+/*****************************************************************************
+ * Functions adapted from lwgeom_btree.c
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the first geometry is less than the second one
+ * @note PostGIS function: Datum lwgeom_lt(PG_FUNCTION_ARGS)
+ */
+// bool
+// PGIS_lwgeom_lt(GSERIALIZED *g1, GSERIALIZED *g2)
+// {
+  // int cmp = gserialized_cmp(g1, g2);
+  // if (cmp < 0)
+    // return true;
+  // else
+    // return false;
+// }
 
 /*****************************************************************************
  * Functions adapted from geography_inout.c
@@ -1234,6 +1314,48 @@ PGIS_geography_out(GSERIALIZED *g)
   LWGEOM *lwgeom = lwgeom_from_gserialized(g);
   return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
 }
+
+/**
+ * @brief Get a geography from its binary representation
+ * @note PostGIS function: Datum geography_recv(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_geography_recv(StringInfo buf)
+{
+  // We do not use typmod
+  int32 geog_typmod = -1;
+  LWGEOM *lwgeom = NULL;
+  GSERIALIZED *g_ser = NULL;
+
+  lwgeom = lwgeom_from_wkb((uint8_t*)buf->data, buf->len, LW_PARSER_CHECK_ALL);
+
+  // We cannot perform the following check
+  /* Error on any SRID != default */
+  // srid_check_latlong(lwgeom->srid);
+
+  g_ser = gserialized_geography_from_lwgeom(lwgeom, geog_typmod);
+
+  /* Clean up temporary object */
+  lwgeom_free(lwgeom);
+
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+
+  return g_ser;
+}
+
+/**
+ * @brief Get the binary representation of a geography
+ * @note PostGIS function: Datum geography_send(PG_FUNCTION_ARGS)
+ */
+bytea *
+PGIS_geography_send(GSERIALIZED *g)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(g);
+  return (bytea *) (lwgeom_to_wkb_varlena(lwgeom, WKB_EXTENDED));
+}
+
+/*****************************************************************************/
 
 /**
  * @brief Get a geography from a geometry

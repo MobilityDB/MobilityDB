@@ -240,13 +240,14 @@ ensure_temporal_type(CachedType temptype)
 
 /**
  * Ensure that the base type is supported by MobilityDB
- * @note The TimestampTz type is added to cope with base types for spans
+ * @note The TimestampTz type is added to cope with base types for spans.
+ * Also, the int8 type is added to cope with the rid in network points.
  */
 void
 ensure_temporal_basetype(CachedType basetype)
 {
   if (basetype != T_TIMESTAMPTZ &&
-    basetype != T_BOOL && basetype != T_INT4 &&
+    basetype != T_BOOL && basetype != T_INT4 && basetype != T_INT8 &&
     basetype != T_FLOAT8 && basetype != T_TEXT &&
     basetype != T_DOUBLE2 && basetype != T_DOUBLE3 &&
     basetype != T_DOUBLE4 && basetype != T_GEOMETRY &&

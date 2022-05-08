@@ -150,31 +150,6 @@ tbox_to_string(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Write the binary representation of the box value into the buffer.
- */
-void
-tbox_write(const TBOX *box, StringInfo buf)
-{
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_T(box->flags) ? (uint8) 1 : (uint8) 0);
-  if (MOBDB_FLAGS_GET_X(box->flags))
-  {
-    pq_sendfloat8(buf, box->xmin);
-    pq_sendfloat8(buf, box->xmax);
-  }
-  if (MOBDB_FLAGS_GET_T(box->flags))
-  {
-    bytea *tmin = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-    bytea *tmax = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
-    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
-    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
-    pfree(tmin); pfree(tmax);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_box_input_output
  * @brief Return a new box value from its binary representation read from
  * the buffer.
  */
@@ -193,10 +168,47 @@ tbox_read(StringInfo buf)
   }
   if (hast)
   {
-    result->tmin = call_recv(TIMESTAMPTZOID, buf);
-    result->tmax = call_recv(TIMESTAMPTZOID, buf);
+    result->tmin = basetype_recv(T_TIMESTAMPTZ, buf);
+    result->tmax = basetype_recv(T_TIMESTAMPTZ, buf);
   }
   return result;
+}
+
+/**
+ * @brief Write the binary representation of the box value into the buffer.
+ */
+void
+tbox_write(const TBOX *box, StringInfo buf)
+{
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_T(box->flags) ? (uint8) 1 : (uint8) 0);
+  if (MOBDB_FLAGS_GET_X(box->flags))
+  {
+    pq_sendfloat8(buf, box->xmin);
+    pq_sendfloat8(buf, box->xmax);
+  }
+  if (MOBDB_FLAGS_GET_T(box->flags))
+  {
+    bytea *tmin = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
+    bytea *tmax = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
+    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
+    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
+    pfree(tmin); pfree(tmax);
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Send function for TBOX
+ */
+bytea *
+tbox_send(TBOX *box)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  tbox_write(box, &buf);
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************

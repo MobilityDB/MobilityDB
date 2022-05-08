@@ -44,6 +44,8 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
+/* PostGIS */
+#include <liblwgeom_internal.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/time_ops.h"
@@ -55,6 +57,8 @@
  * Miscellaneous functions on datums
  *****************************************************************************/
 
+int lwprint_double(double d, int maxdd, char *buf);
+
 /**
  * Round the number to the number of decimal places
  */
@@ -62,14 +66,36 @@ Datum
 datum_round_float(Datum value, Datum prec)
 {
   Datum result = value;
-  if (DatumGetFloat8(value) != -1 * get_float8_infinity() &&
-      DatumGetFloat8(value) != get_float8_infinity())
+  // Datum newresult = value;
+  // Datum newresult2 = value;
+  double d = DatumGetFloat8(value);
+  double inf = get_float8_infinity();
+  if (d != -1 * inf && d != inf)
   {
     Datum number = call_function1(float8_numeric, value);
-    Datum round = call_function2(numeric_round, number, prec);
-    result = call_function1(numeric_float8, round);
+    Datum roundnumber = call_function2(numeric_round, number, prec);
+    result = call_function1(numeric_float8, roundnumber);
+    /* Failed attemp to round */
+    // int n = DatumGetInt32(prec);
+    // double b = pow(10, n);
+    // double fractpart, intpart, fractround;
+    // fractpart = modf(d, &intpart);
+    // /* fractround = round(fractpart * b); */
+    // fractround = rint(fractpart * b);
+    // fractround /= b;
+    // newresult = Float8GetDatum(intpart + fractround);
+    // if (DatumGetFloat8(result) != DatumGetFloat8(newresult))
+      // elog(WARNING, "Round of %f in C: %f vs %f", d, DatumGetFloat8(result),
+        // DatumGetFloat8(newresult));
+    /* Failed attemp to round */
+    // char x[OUT_DOUBLE_BUFFER_SIZE];
+    // lwprint_double(d, n, x);
+    // newresult2 = basetype_input(T_FLOAT8, x);
+    // if (DatumGetFloat8(result) != DatumGetFloat8(newresult2))
+      // elog(WARNING, "Round of %f in ryu: %f vs %f", d, DatumGetFloat8(result),
+        // DatumGetFloat8(newresult2));
   }
-  return result;
+  return newresult2;
 }
 
 /**

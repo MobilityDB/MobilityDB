@@ -233,27 +233,6 @@ timestampset_to_string(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Write the binary representation of the time value into the buffer.
- *
- * @param[in] ts Time value
- * @param[in] buf Buffer
- */
-void
-timestampset_write(const TimestampSet *ts, StringInfo buf)
-{
-  pq_sendint32(buf, ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TimestampTz t = timestampset_time_n(ts, i);
-    bytea *t1 = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(t));
-    pq_sendbytes(buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
-    pfree(t1);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
  * @brief Return a new time value from its binary representation
  * read from the buffer.
  *
@@ -265,9 +244,42 @@ timestampset_read(StringInfo buf)
   int count = (int) pq_getmsgint(buf, 4);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
   for (int i = 0; i < count; i++)
-    times[i] = DatumGetTimestampTz(call_recv(TIMESTAMPTZOID, buf));
+    times[i] = DatumGetTimestampTz(basetype_recv(T_TIMESTAMPTZ, buf));
   TimestampSet *result = timestampset_make_free(times, count);
   return result;
+}
+
+/**
+ * Write the binary representation of the time value into the buffer.
+ *
+ * @param[in] ts Time value
+ * @param[in] buf Buffer
+ */
+void
+timestampset_write(const TimestampSet *ts, StringInfo buf)
+{
+  pq_sendint32(buf, ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    TimestampTz t = timestampset_time_n(ts, i);
+    bytea *t1 = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(t));
+    pq_sendbytes(buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
+    pfree(t1);
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Send function for timestamp set values
+ */
+bytea *
+timestampset_send(TimestampSet *ts)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  timestampset_write(ts, &buf) ;
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************

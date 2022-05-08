@@ -39,34 +39,53 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <lib/stringinfo.h>
 #include <utils/timestamp.h>
 
 /*****************************************************************************/
 
-/* Functions adapted from int8.c */
+/* Functions adadpted from bool.c */
+
+extern bool pg_boolin(const char *in_str);
+extern char *pg_boolout(bool b);
+extern bool pg_boolrecv(StringInfo buf);
+extern bytea *pg_boolsend(bool arg1);
+
+/* Functions adapted from int.c */
 
 extern int32 pg_int4in(char *str);
 extern char *pg_int4out(int32 val);
+extern int32 pg_int4recv(StringInfo buf);
+extern bytea *pg_int4send(int32 arg1);
+
+/* Functions adapted from int8.c */
 
 extern int64 pg_int8in(char *str);
 extern char *pg_int8out(int64 val);
+extern int64 pg_int8recv(StringInfo buf);
+extern bytea *pg_int8send(int64 arg1);
 
 /* Functions adapted from float.c */
+
+extern float8 pg_float8recv(StringInfo buf);
+extern bytea *pg_float8send(float8 num);
 
 extern float8 pg_dsin(float8 arg1);
 extern float8 pg_dcos(float8 arg1);
 extern float8 pg_datan(float8 arg1);
 extern float8 pg_datan2(float8 arg1, float8 arg2);
 
-/* Functions adadpted from bool.c */
+/* Functions adadpted from varlena.c */
 
-extern bool pg_boolin(const char *in_str);
-extern char *pg_boolout(bool b);
+extern text *pg_textrecv(StringInfo buf);
+extern bytea *pg_textsend(text *t);
 
 /* Functions adadpted from timestamp.c */
 
 extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
+extern bytea *pg_timestamptz_send(TimestampTz timestamp);
+extern TimestampTz pg_timestamptz_recv(StringInfo buf);
 
 extern Interval *pg_interval_pl(const Interval *span1, const Interval *span2);
 extern TimestampTz pg_timestamp_pl_interval(TimestampTz timestamp,

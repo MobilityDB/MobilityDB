@@ -385,15 +385,13 @@ void
 span_write(const Span *s, StringInfo buf)
 {
   pq_sendbyte(buf, s->spantype);
-  Oid basetypid = type_oid(s->basetype);
-  bytea *lower = call_send(basetypid, s->lower);
-  bytea *upper = call_send(basetypid, s->upper);
+  bytea *lower = basetype_send(s->basetype, s->lower);
+  bytea *upper = basetype_send(s->basetype, s->upper);
   pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
   pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
   pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, s->upper_inc ? (uint8) 1 : (uint8) 0);
-  pfree(lower);
-  pfree(upper);
+  pfree(lower); pfree(upper);
 }
 
 /**
@@ -407,9 +405,8 @@ span_read(StringInfo buf)
   Span *result = (Span *) palloc0(sizeof(Span));
   result->spantype = (char) pq_getmsgbyte(buf);
   result->basetype = spantype_basetype(result->spantype);
-  Oid basetypid = type_oid(result->basetype);
-  result->lower = call_recv(basetypid, buf);
-  result->upper = call_recv(basetypid, buf);
+  result->lower = basetype_recv(result->basetype, buf);
+  result->upper = basetype_recv(result->basetype, buf);
   result->lower_inc = (char) pq_getmsgbyte(buf);
   result->upper_inc = (char) pq_getmsgbyte(buf);
   return result;
@@ -751,6 +748,73 @@ span_gt(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a span.
  */
+// uint32
+// span_hash(const Span *s)
+// {
+  // /* Create flags from the lower_inc and upper_inc values */
+  // char flags = '\0';
+  // if (s->lower_inc)
+    // flags |= 0x01;
+  // if (s->upper_inc)
+    // flags |= 0x02;
+
+  // /* Create type from the spantype and basetype values */
+  // uint16 type = (((uint16) (s->spantype)) << 8) | (uint16) (s->basetype);
+  // uint32 type_hash = hash_uint32((int32) type);
+
+  // /* Apply the hash function to each bound */
+  // uint32 lower_hash = pg_hashint8(s->lower);
+  // uint32 upper_hash = pg_hashint8(s->upper);
+
+  // /* Merge hashes of flags, type, and bounds */
+  // uint32 result = hash_uint32((int32) flags);
+  // result ^= type_hash;
+  // result = (result << 1) | (result >> 31);
+  // result ^= lower_hash;
+  // result = (result << 1) | (result >> 31);
+  // result ^= upper_hash;
+
+  // return result;
+// }
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the 64-bit hash value of a span obtained with a seed.
+ */
+// uint64
+// span_hash_extended(const Span *s, uint64 seed)
+// {
+  // uint64 result;
+  // char flags = '\0';
+  // uint64 type_hash;
+  // uint64 lower_hash;
+  // uint64 upper_hash;
+
+  // /* Create flags from the lower_inc and upper_inc values */
+  // if (s->lower_inc)
+    // flags |= 0x01;
+  // if (s->upper_inc)
+    // flags |= 0x02;
+
+  // /* Create type from the spantype and basetype values */
+  // uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
+  // type_hash = DatumGetUInt64(hash_uint32_extended(type, seed));
+
+  // /* Apply the hash function to each bound */
+  // lower_hash = pg_hashint8extended(s->lower, seed);
+  // upper_hash = pg_hashint8extended(s->upper, seed);
+
+  // /* Merge hashes of flags and bounds */
+  // result = DatumGetUInt64(hash_uint32_extended((uint32) flags, seed));
+  // result ^= type_hash;
+  // result = ROTATE_HIGH_AND_LOW_32BITS(result);
+  // result ^= lower_hash;
+  // result = ROTATE_HIGH_AND_LOW_32BITS(result);
+  // result ^= upper_hash;
+
+  // return result;
+// }
+
 uint32
 span_hash(const Span *s)
 {
@@ -770,7 +834,7 @@ span_hash(const Span *s)
   uint32 upper_hash = pg_hashint8(s->upper);
 
   /* Merge hashes of flags, type, and bounds */
-  uint32 result = hash_uint32((int32) flags);
+  uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
   result ^= type_hash;
   result = (result << 1) | (result >> 31);
   result ^= lower_hash;
@@ -780,12 +844,8 @@ span_hash(const Span *s)
   return result;
 }
 
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the 64-bit hash value of a span obtained with a seed.
- */
 uint64
-span_hash_extended(const Span *s, uint64 seed)
+span_hash_extended(const Span *s, Datum seed)
 {
   uint64 result;
   char flags = '\0';
@@ -808,7 +868,8 @@ span_hash_extended(const Span *s, uint64 seed)
   upper_hash = pg_hashint8extended(s->upper, seed);
 
   /* Merge hashes of flags and bounds */
-  result = DatumGetUInt64(hash_uint32_extended((uint32) flags, seed));
+  result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
+    DatumGetInt64(seed)));
   result ^= type_hash;
   result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= lower_hash;

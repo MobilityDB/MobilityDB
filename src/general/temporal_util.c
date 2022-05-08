@@ -230,11 +230,14 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return MOBDB_FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == T_TEXT && typel == typer)
-    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
+      DEFAULT_COLLATION_OID) < 0;
   if (typel == T_GEOMETRY && typel == typer)
-    return DatumGetBool(call_function2(lwgeom_lt, l, r));
+    return gserialized_cmp((GSERIALIZED *) DatumGetPointer(l),
+      (GSERIALIZED *) DatumGetPointer(r)) < 0;
   if (typel == T_GEOGRAPHY && typel == typer)
-    return DatumGetBool(call_function2(geography_lt, l, r));
+    return gserialized_cmp((GSERIALIZED *) DatumGetPointer(l),
+      (GSERIALIZED *) DatumGetPointer(r)) < 0;
 #ifndef MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -864,7 +867,11 @@ basetype_input(CachedType basetype, char *str)
   if (basetype == T_GEOMETRY)
     return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
   if (basetype == T_GEOGRAPHY)
+#ifndef MEOS
+    return call_input(type_oid(T_GEOGRAPHY), str);
+#else
     return PointerGetDatum(PGIS_geography_in(str, -1));
+#endif
 #ifndef MEOS
   if (basetype == T_NPOINT)
     return PointerGetDatum(npoint_from_string(str));
@@ -903,36 +910,80 @@ basetype_output(CachedType basetype, Datum value)
 }
 
 /**
- * Call send function of the base type
- */
-// bytea *
-// basetype_send(CachedType type, Datum value)
-// {
-  // ensure_temporal_basetype(type);
-
-  // Oid sendfunc;
-  // bool isvarlena;
-  // FmgrInfo sendfuncinfo;
-  // getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
-  // fmgr_info(sendfunc, &sendfuncinfo);
-  // return SendFunctionCall(&sendfuncinfo, value);
-// }
-
-/**
  * Call receive function of the base type
  */
-// Datum
-// basetype_recv(CachedType type, StringInfo buf)
-// {
-  // ensure_temporal_basetype(type);
+Datum
+basetype_recv(CachedType basetype, StringInfo buf)
+{
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(pg_timestamptz_recv(buf));
+  if (basetype == T_BOOL)
+    return BoolGetDatum(pg_boolrecv(buf));
+  if (basetype == T_INT4)
+    return Int32GetDatum(pg_int4recv(buf));
+  if (basetype == T_INT8)
+    return Int64GetDatum(pg_int8recv(buf));
+  if (basetype == T_FLOAT8)
+    return Float8GetDatum(pg_float8recv(buf));
+  if (basetype == T_TEXT)
+    return PointerGetDatum(pg_textrecv(buf));
+  if (basetype == T_DOUBLE2)
+    return PointerGetDatum(double2_recv(buf));
+  if (basetype == T_DOUBLE3)
+    return PointerGetDatum(double3_recv(buf));
+  if (basetype == T_DOUBLE4)
+    return PointerGetDatum(double4_recv(buf));
+  if (basetype == T_GEOMETRY)
+    return PointerGetDatum(PGIS_LWGEOM_recv(buf));
+  if (basetype == T_GEOGRAPHY)
+#ifndef MEOS
+    return call_recv(type_oid(T_GEOGRAPHY), buf);
+#else
+    return PointerGetDatum(PGIS_geography_recv(buf));
+#endif
+#ifndef MEOS
+  if (basetype == T_NPOINT)
+    return PointerGetDatum(npoint_recv(buf));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+}
 
-  // Oid recvfunc;
-  // Oid basetypid;
-  // FmgrInfo recvfuncinfo;
-  // getTypeBinaryInputInfo(typid, &recvfunc, &basetypid);
-  // fmgr_info(recvfunc, &recvfuncinfo);
-  // return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
-// }
+/**
+ * Call send function of the base type
+ */
+bytea *
+basetype_send(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return pg_timestamptz_send(DatumGetTimestampTz(value));
+  if (basetype == T_BOOL)
+    return pg_boolsend(DatumGetBool(value));
+  if (basetype == T_INT4)
+    return pg_int4send(DatumGetInt32(value));
+  if (basetype == T_INT8)
+    return pg_int8send(DatumGetInt64(value));
+  if (basetype == T_FLOAT8)
+    return pg_float8send(DatumGetFloat8(value));
+  if (basetype == T_TEXT)
+    return pg_textsend(DatumGetTextP(value));
+  if (basetype == T_DOUBLE2)
+    return double2_send(DatumGetDouble2P(value));
+  if (basetype == T_DOUBLE3)
+    return double3_send(DatumGetDouble3P(value));
+  if (basetype == T_DOUBLE4)
+    return double4_send(DatumGetDouble4P(value));
+  if (basetype == T_GEOMETRY)
+    return PGIS_LWGEOM_send((GSERIALIZED *) DatumGetPointer(value));
+  if (basetype == T_GEOGRAPHY)
+    return PGIS_geography_send((GSERIALIZED *) DatumGetPointer(value));
+#ifndef MEOS
+  if (basetype == T_NPOINT)
+    return npoint_send(DatumGetNpointP(value));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+}
 
 /*****************************************************************************
  * Call PostgreSQL functions
@@ -941,30 +992,30 @@ basetype_output(CachedType basetype, Datum value)
 /**
  * Call input function of the base type
  */
-// Datum
-// call_ input(Oid typid, char *str)
-// {
-  // Oid infunc;
-  // Oid basetypid;
-  // FmgrInfo infuncinfo;
-  // getTypeInputInfo(typid, &infunc, &basetypid);
-  // fmgr_info(infunc, &infuncinfo);
-  // return InputFunctionCall(&infuncinfo, str, basetypid, -1);
-// }
+Datum
+call_input(Oid typid, char *str)
+{
+  Oid infunc;
+  Oid basetypid;
+  FmgrInfo infuncinfo;
+  getTypeInputInfo(typid, &infunc, &basetypid);
+  fmgr_info(infunc, &infuncinfo);
+  return InputFunctionCall(&infuncinfo, str, basetypid, -1);
+}
 
 /**
  * Call output function of the base type
  */
-// char *
-// call_output(Oid typid, Datum value)
-// {
-  // Oid outfunc;
-  // bool isvarlena;
-  // FmgrInfo outfuncinfo;
-  // getTypeOutputInfo(typid, &outfunc, &isvarlena);
-  // fmgr_info(outfunc, &outfuncinfo);
-  // return OutputFunctionCall(&outfuncinfo, value);
-// }
+char *
+call_output(Oid typid, Datum value)
+{
+  Oid outfunc;
+  bool isvarlena;
+  FmgrInfo outfuncinfo;
+  getTypeOutputInfo(typid, &outfunc, &isvarlena);
+  fmgr_info(outfunc, &outfuncinfo);
+  return OutputFunctionCall(&outfuncinfo, value);
+}
 
 /**
  * Call send function of the base type

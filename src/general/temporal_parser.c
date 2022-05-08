@@ -23,7 +23,7 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
@@ -404,8 +404,8 @@ elem_parse(char **str, CachedType basetype)
 {
   p_whitespace(str);
   int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' &&
-    (*str)[delim] != '\0')
+  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
+    (*str)[delim] != ')' &&  (*str)[delim] != '\0')
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';

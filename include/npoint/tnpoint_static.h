@@ -56,8 +56,8 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
 extern Npoint *npoint_from_string(char *str);
 extern char *npoint_to_string(const Npoint *np);
-extern Npoint *npoint_read(StringInfo buf);
-extern void npoint_write(const Npoint *np, StringInfo buf);
+extern Npoint *npoint_recv(StringInfo buf);
+extern bytea *npoint_send(const Npoint *np);
 
 /* Constructor functions */
 
