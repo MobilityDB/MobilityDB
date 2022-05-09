@@ -102,8 +102,8 @@ npointarr_geom(Npoint **points, int count)
   {
     Datum line = route_geom(points[i]->rid);
     GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-    geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(gsline,
-      points[i]->pos));
+    geoms[i] = call_function2(LWGEOM_line_interpolate_point, line,
+      Float8GetDatum(points[i]->pos));
     PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
     pfree(DatumGetPointer(line));
   }
@@ -132,16 +132,14 @@ nsegmentarr_geom(Nsegment **segments, int count)
   for (int i = 0; i < count; i++)
   {
     Datum line = route_geom(segments[i]->rid);
-    GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
-      geoms[i] = PointerGetDatum(gserialized_copy(gsline));
+      geoms[i] = PointerGetDatum(gserialized_copy((GSERIALIZED *) PG_DETOAST_DATUM(line)));
     else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(gsline,
-        segments[i]->pos1));
+      geoms[i] = call_function2(LWGEOM_line_interpolate_point, line,
+        Float8GetDatum(segments[i]->pos1));
     else
-      geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_substring(gsline,
-        segments[i]->pos1, segments[i]->pos2));
-    PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
+      geoms[i] = call_function3(LWGEOM_line_substring, line,
+        Float8GetDatum(segments[i]->pos1), Float8GetDatum(segments[i]->pos2));
     pfree(DatumGetPointer(line));
   }
   Datum result;
@@ -601,8 +599,8 @@ npoint_geom(const Npoint *np)
 {
   Datum line = route_geom(np->rid);
   GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-  Datum result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(gsline,
-    np->pos));
+  Datum result = call_function2(LWGEOM_line_interpolate_point, line,
+    Float8GetDatum(np->pos));
   PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
   pfree(DatumGetPointer(line));
   return result;
@@ -661,15 +659,13 @@ Datum
 nsegment_geom(const Nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
-  GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
   Datum result;
   if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
-    result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(gsline,
-      ns->pos1));
+    result = call_function2(LWGEOM_line_interpolate_point, line,
+      Float8GetDatum(ns->pos1));
   else
-    result = PointerGetDatum(PGIS_LWGEOM_line_substring(gsline, ns->pos1,
-      ns->pos2));
-  PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
+    result = call_function3(LWGEOM_line_substring, line,
+      Float8GetDatum(ns->pos1), Float8GetDatum(ns->pos2));
   pfree(DatumGetPointer(line));
   return result;
 }

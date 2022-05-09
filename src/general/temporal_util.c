@@ -844,6 +844,8 @@ hypot4d(double x, double y, double z, double m)
  * Input/output PostgreSQL functions
  *****************************************************************************/
 
+#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+
 /**
  * Call input function of the base type
  */
@@ -865,11 +867,7 @@ basetype_input(CachedType basetype, char *str)
   if (basetype == T_TEXT)
     return PointerGetDatum(cstring_to_text(str));
   if (basetype == T_GEOMETRY)
-#if POSTGIS_VERSION_NUMBER < 30000
-    return call_input(type_oid(T_GEOMETRY), str);
-#else
     return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
-#endif
   if (basetype == T_GEOGRAPHY)
 #ifndef MEOS
     return call_input(type_oid(T_GEOGRAPHY), str);
@@ -989,6 +987,54 @@ basetype_send(CachedType basetype, Datum value)
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
+#else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 AND POSTGIS_VERSION_NUMBER >= 30000 */
+
+/**
+ * Call input function of the base type
+ */
+Datum
+basetype_input(CachedType basetype, char *str)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_input(basetypid, str);
+}
+
+/**
+ * Call output function of the base type
+ */
+char *
+basetype_output(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_output(basetypid, value);
+}
+
+/**
+ * Call receive function of the base type
+ */
+Datum
+basetype_recv(CachedType basetype, StringInfo buf)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_recv(basetypid, buf);
+}
+
+/**
+ * Call send function of the base type
+ */
+bytea *
+basetype_send(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_send(basetypid, value);
+}
+
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 AND POSTGIS_VERSION_NUMBER >= 30000 */
+
 /*****************************************************************************
  * Call PostgreSQL functions
  * The call_input and call_output functions are needed for the geography
@@ -1009,6 +1055,22 @@ call_input(Oid typid, char *str)
   return InputFunctionCall(&infuncinfo, str, basetypid, -1);
 }
 
+#if POSTGRESQL_VERSION_NUMBER < 140000
+/**
+ * Call output function of the base type
+ */
+char *
+call_output(Oid typid, Datum value)
+{
+  Oid outfunc;
+  bool isvarlena;
+  FmgrInfo outfuncinfo;
+  getTypeOutputInfo(typid, &outfunc, &isvarlena);
+  fmgr_info(outfunc, &outfuncinfo);
+  return OutputFunctionCall(&outfuncinfo, value);
+}
+#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
+
 /**
  * Call receive function of the base type
  */
@@ -1022,6 +1084,22 @@ call_recv(Oid typid, StringInfo buf)
   fmgr_info(recvfunc, &recvfuncinfo);
   return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
 }
+
+#if POSTGRESQL_VERSION_NUMBER < 140000
+/**
+ * Call send function of the base type
+ */
+bytea *
+call_send(Oid typid, Datum value)
+{
+  Oid sendfunc;
+  bool isvarlena;
+  FmgrInfo sendfuncinfo;
+  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
+  fmgr_info(sendfunc, &sendfuncinfo);
+  return SendFunctionCall(&sendfuncinfo, value);
+}
+#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
 
 /**
  * Call PostgreSQL function with 1 argument

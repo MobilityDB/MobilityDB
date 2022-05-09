@@ -663,8 +663,15 @@ tbox_expand_temporal(const TBOX *box, const Interval *interval)
 {
   ensure_has_T_tbox(box);
   TBOX *result = tbox_copy(box);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
   result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
+#else
+  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
+    TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
+  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
+    TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+#endif
   return result;
 }
 

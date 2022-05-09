@@ -195,9 +195,7 @@ nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo)
   if (gserialized_is_empty(geo))
     return -1;
   Datum traj = tnpoint_geom(temp);
-  GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-  double result = PGIS_ST_Distance(gstraj, geo);
-  PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
+  double result = DatumGetFloat8(geom_distance2d(traj, PointerGetDatum(geo)));
   pfree(DatumGetPointer(traj));
   return result;
 }
@@ -249,7 +247,7 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
     return false;
   Datum traj = tnpoint_geom(temp);
   GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-  *result = PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, geo));
+  *result = call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(geo));
   PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return true;
@@ -265,9 +263,8 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
-  GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-  Datum result = PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, gs));
-  PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
+  Datum result = call_function2(LWGEOM_shortestline2d, traj,
+    PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));

@@ -378,7 +378,15 @@ ensure_valid_duration(const Interval *duration)
   }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   int cmp = pg_interval_cmp(duration, &intervalzero);
+#else
+  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
+    PointerGetDatum(&intervalzero));
+#endif
+
+
+
   if (cmp <= 0)
     elog(ERROR, "The interval must be positive");
   return;

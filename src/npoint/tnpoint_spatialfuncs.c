@@ -365,17 +365,16 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
   if ((np1->pos == 0 && np2->pos == 1) || (np2->pos == 0 && np1->pos == 1))
     return line;
 
-  GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
   Datum traj;
   if (np1->pos < np2->pos)
-    traj = PointerGetDatum(PGIS_LWGEOM_line_substring(gsline, np1->pos,
-      np2->pos));
+    traj = call_function3(LWGEOM_line_substring, line,
+      Float8GetDatum(np1->pos), Float8GetDatum(np2->pos));
   else /* np1->pos < np2->pos */
   {
-    GSERIALIZED *traj1 = PGIS_LWGEOM_line_substring(gsline, np2->pos,
-      np1->pos);
-    traj = PointerGetDatum(PGIS_LWGEOM_reverse(traj1));
-    pfree(traj1);
+    Datum traj2 = call_function3(LWGEOM_line_substring, line,
+      Float8GetDatum(np2->pos), Float8GetDatum(np1->pos));
+    traj = call_function1(LWGEOM_reverse, traj2);
+    pfree(DatumGetPointer(traj2));
   }
   pfree(DatumGetPointer(line));
   return traj;

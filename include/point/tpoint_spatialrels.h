@@ -56,6 +56,9 @@ extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 
 extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
 
+/* The implementation of this function changed in PostGIS version 3.2 */
+extern GSERIALIZED *PGIS_boundary(const GSERIALIZED *geom1);
+
 /*****************************************************************************/
 
 extern int spatialrel_tpoint_tpoint(const Temporal *temp1,

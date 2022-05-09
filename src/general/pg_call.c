@@ -32,7 +32,10 @@
  * @brief MobilityDB functions pg_func(...) corresponding to external
  * PostgreSQL functions func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.
+ * @note These functions are only available for PG version >= 14.
  */
+
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 
 #include "general/pg_call.h"
 
@@ -46,16 +49,8 @@
 #include <libpq/pqformat.h>
 #include <utils/datetime.h>
 #include <utils/numeric.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  #include <utils/float.h>
-#else
-  #include <utils/builtins.h>
-#endif
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+#include <utils/float.h>
+#include <common/hashfn.h>
 
 /* Definitions from builtins.h to avoid including it */
 
@@ -230,6 +225,34 @@ static const char DIGIT_TABLE[200] =
 "70" "71" "72" "73" "74" "75" "76" "77" "78" "79"
 "80" "81" "82" "83" "84" "85" "86" "87" "88" "89"
 "90" "91" "92" "93" "94" "95" "96" "97" "98" "99";
+
+/*
+ * Array giving the position of the left-most set bit for each possible
+ * byte value.  We count the right-most position as the 0th bit, and the
+ * left-most the 7th bit.  The 0th entry of the array should not be used.
+ *
+ * Note: this is not used by the functions in pg_bitutils.h when
+ * HAVE__BUILTIN_CLZ is defined, but we provide it anyway, so that
+ * extensions possibly compiled with a different compiler can use it.
+ */
+const uint8 pg_leftmost_one_pos[256] = {
+	0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
+};
 
 /*
  * pg_leftmost_one_pos64
@@ -1154,3 +1177,5 @@ pg_hashtext(text *key)
   return result;
 }
 /*****************************************************************************/
+
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */

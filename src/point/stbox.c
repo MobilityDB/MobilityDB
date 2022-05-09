@@ -460,6 +460,7 @@ stbox_box3d(const STBOX *box, BOX3D *box3d)
  * @ingroup libmeos_box_cast
  * @brief Cast the spatiotemporal box as a GBOX value for PostGIS
  */
+#if POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000
 Datum
 stbox_geometry(const STBOX *box)
 {
@@ -479,6 +480,33 @@ stbox_geometry(const STBOX *box)
   }
   return result;
 }
+#else
+Datum
+stbox_geometry(const STBOX *box)
+{
+  ensure_has_X_stbox(box);
+  Datum result;
+  if (MOBDB_FLAGS_GET_Z(box->flags))
+  {
+    BOX3D box3d;
+    stbox_box3d(box, &box3d);
+    result = DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(&box3d));
+  }
+  else
+  {
+    GBOX box2d;
+    stbox_gbox(box, &box2d);
+    Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(&box2d));
+    GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+    gserialized_set_srid(g, box->srid);
+    result = PointerGetDatum(g);
+    /* We cannot do the following
+    PG_FREE_IF_COPY_P(g, DatumGetPointer(geom));
+    pfree(DatumGetPointer(geom)); */
+  }
+  return result;
+}
+#endif
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX
@@ -908,8 +936,15 @@ stbox_expand_temporal(const STBOX *box, const Interval *interval)
 {
   ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
   result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
+#else
+  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
+    TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
+  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
+    TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+#endif
   return result;
 }
 

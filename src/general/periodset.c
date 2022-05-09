@@ -375,7 +375,12 @@ periodset_timespan(const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, 0);
   const Period *p2 = periodset_per_n(ps, ps->count - 1);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
+#else
+  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
+    p2->upper, p1->lower));
+#endif
   return result;
 }
 
@@ -383,6 +388,7 @@ periodset_timespan(const PeriodSet *ps)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of the period set value
  */
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 Interval *
 periodset_duration(const PeriodSet *ps)
 {
@@ -398,6 +404,25 @@ periodset_duration(const PeriodSet *ps)
   }
   return result;
 }
+#else
+Interval *
+periodset_duration(const PeriodSet *ps)
+{
+  const Period *p = periodset_per_n(ps, 0);
+  Datum result = call_function2(timestamp_mi,
+    TimestampTzGetDatum(p->upper),  TimestampTzGetDatum(p->lower));
+  for (int i = 1; i < ps->count; i++)
+  {
+    p = periodset_per_n(ps, i);
+    Datum interval1 = call_function2(timestamp_mi,
+      TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
+    Datum interval2 = call_function2(interval_pl, result, interval1);
+    pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
+    result = interval2;
+  }
+  return (Interval *) DatumGetPointer(result);
+}
+#endif
 
 /**
  * @ingroup libmeos_spantime_accessor

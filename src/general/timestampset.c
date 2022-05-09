@@ -337,7 +337,12 @@ timestampset_timespan(const TimestampSet *ts)
 {
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   Interval *result = pg_timestamp_mi(end, start);
+#else
+  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
+    TimestampTzGetDatum(end), TimestampTzGetDatum(start)));
+#endif
   return result;
 }
 
@@ -589,7 +594,12 @@ timestampset_hash(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
     uint32 time_hash = pg_hashint8(t);
+#else
+    uint32 time_hash = DatumGetUInt32(call_function1(hashint8,
+      TimestampTzGetDatum(t)));
+#endif
     result = (result << 5) - result + time_hash;
   }
   return result;
@@ -606,7 +616,12 @@ timestampset_hash_extended(const TimestampSet *ts, uint64 seed)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
     uint64 time_hash = pg_hashint8extended(t, seed);
+#else
+    uint64 time_hash = DatumGetUInt64(call_function2(hashint8extended,
+      TimestampTzGetDatum(t), seed));
+#endif
     result = (result << 5) - result + time_hash;
   }
   return result;

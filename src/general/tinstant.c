@@ -989,6 +989,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the hash value of the temporal value.
  */
+#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
 uint32
 tinstant_hash(const TInstant *inst)
 {
@@ -1008,11 +1009,7 @@ tinstant_hash(const TInstant *inst)
   else if (inst->temptype == T_TTEXT)
     value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
-#if POSTGIS_VERSION_NUMBER < 30000
-    value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
-#else
     value_hash = gserialized_hash((GSERIALIZED *) DatumGetPointer(value));
-#endif
   else if (inst->temptype == T_TNPOINT)
   {
     value_hash = pg_hashint8(value);
@@ -1030,5 +1027,44 @@ tinstant_hash(const TInstant *inst)
 
   return result;
 }
+#else
+uint32
+tinstant_hash(const TInstant *inst)
+{
+  uint32 result;
+  uint32 time_hash;
+
+  Datum value = tinstant_value(inst);
+  /* Apply the hash function according to the base type */
+  uint32 value_hash = 0;
+  ensure_temporal_type(inst->temptype);
+  if (inst->temptype == T_TBOOL)
+    value_hash = DatumGetUInt32(call_function1(hashchar, value));
+  else if (inst->temptype == T_TINT)
+    value_hash = DatumGetUInt32(call_function1(hashint4, value));
+  else if (inst->temptype == T_TFLOAT)
+    value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
+  else if (inst->temptype == T_TTEXT)
+    value_hash = DatumGetUInt32(call_function1(hashtext, value));
+  else if (tgeo_type(inst->temptype))
+    value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
+  else if (inst->temptype == T_TNPOINT)
+  {
+    value_hash = DatumGetUInt32(call_function1(hashint8, value));
+    value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
+  }
+  else
+    elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
+  /* Apply the hash function according to the timestamp */
+  time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
+
+  /* Merge hashes of value and timestamp */
+  result = value_hash;
+  result = (result << 1) | (result >> 31);
+  result ^= time_hash;
+
+  return result;
+}
+#endif
 
 /*****************************************************************************/
