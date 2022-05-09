@@ -865,7 +865,11 @@ basetype_input(CachedType basetype, char *str)
   if (basetype == T_TEXT)
     return PointerGetDatum(cstring_to_text(str));
   if (basetype == T_GEOMETRY)
+#if POSTGIS_VERSION_NUMBER < 30000
+    return call_input(type_oid(T_GEOMETRY), str);
+#else
     return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
+#endif
   if (basetype == T_GEOGRAPHY)
 #ifndef MEOS
     return call_input(type_oid(T_GEOGRAPHY), str);

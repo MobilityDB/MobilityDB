@@ -44,7 +44,9 @@
 #include <utils/elog.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include "lwgeom_pg.h"
+#if POSTGIS_VERSION_NUMBER >= 30000
+  #include "lwgeom_pg.h"
+#endif
 #include <lwgeom_log.h>
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"

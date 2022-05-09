@@ -686,7 +686,7 @@ PG_AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
 void
 PG_AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
-  (void) AdjustTimestampForTypmodError(time, typmod, NULL);
+  (void) PG_AdjustTimestampForTypmodError(time, typmod, NULL);
 }
 
 /**
