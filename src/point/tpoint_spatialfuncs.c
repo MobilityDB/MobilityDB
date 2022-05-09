@@ -2350,353 +2350,6 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
  * Set precision of the coordinates
  *****************************************************************************/
 
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_point(POINTARRAY *points, uint32_t i, int prec, bool hasz,
-  bool hasm)
-{
-  /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
-   * the values of the arguments hasz and hasm !!! */
-  POINT4D *pt = (POINT4D *) getPoint_internal(points, i);
-  pt->x = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->x), prec));
-  pt->y = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->y), prec));
-  if (hasz && hasm)
-  {
-    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), prec));
-    pt->m = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->m), prec));
-  }
-  else if (hasz)
-    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), prec));
-  else if (hasm)
-    /* The m coordinate is located at the third double of the point */
-    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), prec));
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_point(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == POINTTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  round_point(lwpoint->point, 0, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
-  pfree(lwpoint);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_linestring(LWLINE *lwline, Datum prec, bool hasz, bool hasm)
-{
-  int npoints = lwline->points->npoints;
-  for (int i = 0; i < npoints; i++)
-    round_point(lwline->points, i, prec, hasz, hasm);
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_linestring(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == LINETYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
-  round_linestring(lwline, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwline);
-  lwfree(lwline);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_triangle(LWTRIANGLE *lwtriangle, Datum prec, bool hasz, bool hasm)
-{
-  int npoints = lwtriangle->points->npoints;
-  for (int i = 0; i < npoints; i++)
-    round_point(lwtriangle->points, i, prec, hasz, hasm);
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_triangle(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == TRIANGLETYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWTRIANGLE *lwtriangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
-  round_triangle(lwtriangle, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwtriangle);
-  lwfree(lwtriangle);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz,
-  bool hasm)
-{
-  int npoints = lwcircstring->points->npoints;
-  for (int i = 0; i < npoints; i++)
-    round_point(lwcircstring->points, i, prec, hasz, hasm);
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_circularstring(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWCIRCSTRING *lwcircstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
-  round_circularstring(lwcircstring, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcircstring);
-  lwfree(lwcircstring);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_polygon(LWPOLY *lwpoly, Datum prec, bool hasz, bool hasm)
-{
-  int nrings = lwpoly->nrings;
-  for (int i = 0; i < nrings; i++)
-  {
-    POINTARRAY *points = lwpoly->rings[i];
-    int npoints = points->npoints;
-    for (int j = 0; j < npoints; j++)
-      round_point(points, j, prec, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_polygon(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == POLYGONTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWPOLY *lwpoly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
-  round_polygon(lwpoly, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoly);
-  lwfree(lwpoly);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz, bool hasm)
-{
-  int ngeoms = lwmpoint->ngeoms;
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWPOINT *lwpoint = lwmpoint->geoms[i];
-    round_point(lwpoint->point, 0, prec, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_multipoint(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWMPOINT *lwmpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  round_multipoint(lwmpoint, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoint);
-  lwfree(lwmpoint);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz, bool hasm)
-{
-  int ngeoms = lwmline->ngeoms;
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWLINE *lwline = lwmline->geoms[i];
-    int npoints = lwline->points->npoints;
-    for (int j = 0; j < npoints; j++)
-      round_point(lwline->points, j, prec, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_multilinestring(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == MULTILINETYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
-  round_multilinestring(lwmline, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmline);
-  lwfree(lwmline);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_multipolygon(LWMPOLY *lwmpoly, Datum prec, bool hasz, bool hasm)
-{
-  int ngeoms = lwmpoly->ngeoms;
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWPOLY *lwpoly = lwmpoly->geoms[i];
-    round_polygon(lwpoly, prec, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_multipolygon(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  LWMPOLY *lwmpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
-  round_multipolygon(lwmpoly, prec, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoly);
-  lwfree(lwmpoly);
-  return PointerGetDatum(result);
-}
-
-/**
- * Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
-{
-  assert(gserialized_get_type(gs) == COLLECTIONTYPE);
-  LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
-  int ngeoms = lwcol->ngeoms;
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWGEOM *lwgeom = lwcol->geoms[i];
-    if (lwgeom->type == POINTTYPE)
-      round_point((lwgeom_as_lwpoint(lwgeom))->point, 0, prec, hasz, hasm);
-    else if (lwgeom->type == LINETYPE)
-      round_linestring(lwgeom_as_lwline(lwgeom), prec, hasz, hasm);
-    else if (lwgeom->type == TRIANGLETYPE)
-      round_triangle(lwgeom_as_lwtriangle(lwgeom), prec, hasz, hasm);
-    else if (lwgeom->type == CIRCSTRINGTYPE)
-      round_circularstring(lwgeom_as_lwcircstring(lwgeom), prec, hasz, hasm);
-    else if (lwgeom->type == POLYGONTYPE)
-      round_polygon(lwgeom_as_lwpoly(lwgeom), prec, hasz, hasm);
-    else if (lwgeom->type == MULTIPOINTTYPE)
-      round_multipoint(lwgeom_as_lwmpoint(lwgeom), prec, hasz, hasm);
-    else if (lwgeom->type == MULTILINETYPE)
-      round_multilinestring(lwgeom_as_lwmline(lwgeom), prec, hasz, hasm);
-    else if (lwgeom->type == MULTIPOLYGONTYPE)
-      round_multipolygon(lwgeom_as_lwmpoly(lwgeom), prec, hasz, hasm);
-    else
-      elog(ERROR, "Unsupported geometry type");
-  }
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcol);
-  lwfree(lwcol);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places.
- *
- * @note Currently not all geometry types are allowed
- */
-Datum
-datum_round_geo(Datum value, Datum prec)
-{
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-  if (gserialized_is_empty(gs))
-    return PointerGetDatum(gserialized_copy(gs));
-
-  uint32_t type = gserialized_get_type(gs);
-  if (type == POINTTYPE)
-    return datum_round_point(gs, prec);
-  if (type == LINETYPE)
-    return datum_round_linestring(gs, prec);
-  if (type == TRIANGLETYPE)
-    return datum_round_triangle(gs, prec);
-  if (type == CIRCSTRINGTYPE)
-    return datum_round_circularstring(gs, prec);
-  if (type == POLYGONTYPE)
-    return datum_round_polygon(gs, prec);
-  if (type == MULTIPOINTTYPE)
-    return datum_round_multipoint(gs, prec);
-  if (type == MULTILINETYPE)
-    return datum_round_multilinestring(gs, prec);
-  if (type == MULTIPOLYGONTYPE)
-    return datum_round_multipolygon(gs, prec);
-  if (type == COLLECTIONTYPE)
-    return datum_round_geometrycollection(gs, prec);
-  elog(ERROR, "Unsupported geometry type");
-}
-
-/**
- * @ingroup libmeos_temporal_spatial_transf
- * @brief Set the precision of the coordinates of the temporal point to the
- * number of decimal places.
- */
-Temporal *
-tpoint_round(const Temporal *temp, int prec)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_geo;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum(prec);
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
 /*****************************************************************************
  * Functions for extracting coordinates
  *****************************************************************************/
@@ -5366,6 +5019,353 @@ Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Set precision of the coordinates
  *****************************************************************************/
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_point(POINTARRAY *points, uint32_t i, int prec, bool hasz,
+  bool hasm)
+{
+  /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
+   * the values of the arguments hasz and hasm !!! */
+  POINT4D *pt = (POINT4D *) getPoint_internal(points, i);
+  pt->x = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->x), prec));
+  pt->y = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->y), prec));
+  if (hasz && hasm)
+  {
+    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), prec));
+    pt->m = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->m), prec));
+  }
+  else if (hasz)
+    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), prec));
+  else if (hasm)
+    /* The m coordinate is located at the third double of the point */
+    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), prec));
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_point(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == POINTTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  round_point(lwpoint->point, 0, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
+  pfree(lwpoint);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_linestring(LWLINE *lwline, Datum prec, bool hasz, bool hasm)
+{
+  int npoints = lwline->points->npoints;
+  for (int i = 0; i < npoints; i++)
+    round_point(lwline->points, i, prec, hasz, hasm);
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_linestring(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == LINETYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
+  round_linestring(lwline, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwline);
+  lwfree(lwline);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_triangle(LWTRIANGLE *lwtriangle, Datum prec, bool hasz, bool hasm)
+{
+  int npoints = lwtriangle->points->npoints;
+  for (int i = 0; i < npoints; i++)
+    round_point(lwtriangle->points, i, prec, hasz, hasm);
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_triangle(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == TRIANGLETYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWTRIANGLE *lwtriangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
+  round_triangle(lwtriangle, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwtriangle);
+  lwfree(lwtriangle);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz,
+  bool hasm)
+{
+  int npoints = lwcircstring->points->npoints;
+  for (int i = 0; i < npoints; i++)
+    round_point(lwcircstring->points, i, prec, hasz, hasm);
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_circularstring(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWCIRCSTRING *lwcircstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
+  round_circularstring(lwcircstring, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcircstring);
+  lwfree(lwcircstring);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_polygon(LWPOLY *lwpoly, Datum prec, bool hasz, bool hasm)
+{
+  int nrings = lwpoly->nrings;
+  for (int i = 0; i < nrings; i++)
+  {
+    POINTARRAY *points = lwpoly->rings[i];
+    int npoints = points->npoints;
+    for (int j = 0; j < npoints; j++)
+      round_point(points, j, prec, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_polygon(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == POLYGONTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWPOLY *lwpoly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
+  round_polygon(lwpoly, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoly);
+  lwfree(lwpoly);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz, bool hasm)
+{
+  int ngeoms = lwmpoint->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWPOINT *lwpoint = lwmpoint->geoms[i];
+    round_point(lwpoint->point, 0, prec, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_multipoint(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWMPOINT *lwmpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  round_multipoint(lwmpoint, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoint);
+  lwfree(lwmpoint);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz, bool hasm)
+{
+  int ngeoms = lwmline->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWLINE *lwline = lwmline->geoms[i];
+    int npoints = lwline->points->npoints;
+    for (int j = 0; j < npoints; j++)
+      round_point(lwline->points, j, prec, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_multilinestring(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == MULTILINETYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
+  round_multilinestring(lwmline, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmline);
+  lwfree(lwmline);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+round_multipolygon(LWMPOLY *lwmpoly, Datum prec, bool hasz, bool hasm)
+{
+  int ngeoms = lwmpoly->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWPOLY *lwpoly = lwmpoly->geoms[i];
+    round_polygon(lwpoly, prec, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_multipolygon(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  LWMPOLY *lwmpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
+  round_multipolygon(lwmpoly, prec, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoly);
+  lwfree(lwmpoly);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static Datum
+datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
+{
+  assert(gserialized_get_type(gs) == COLLECTIONTYPE);
+  LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
+  int ngeoms = lwcol->ngeoms;
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWGEOM *lwgeom = lwcol->geoms[i];
+    if (lwgeom->type == POINTTYPE)
+      round_point((lwgeom_as_lwpoint(lwgeom))->point, 0, prec, hasz, hasm);
+    else if (lwgeom->type == LINETYPE)
+      round_linestring(lwgeom_as_lwline(lwgeom), prec, hasz, hasm);
+    else if (lwgeom->type == TRIANGLETYPE)
+      round_triangle(lwgeom_as_lwtriangle(lwgeom), prec, hasz, hasm);
+    else if (lwgeom->type == CIRCSTRINGTYPE)
+      round_circularstring(lwgeom_as_lwcircstring(lwgeom), prec, hasz, hasm);
+    else if (lwgeom->type == POLYGONTYPE)
+      round_polygon(lwgeom_as_lwpoly(lwgeom), prec, hasz, hasm);
+    else if (lwgeom->type == MULTIPOINTTYPE)
+      round_multipoint(lwgeom_as_lwmpoint(lwgeom), prec, hasz, hasm);
+    else if (lwgeom->type == MULTILINETYPE)
+      round_multilinestring(lwgeom_as_lwmline(lwgeom), prec, hasz, hasm);
+    else if (lwgeom->type == MULTIPOLYGONTYPE)
+      round_multipolygon(lwgeom_as_lwmpoly(lwgeom), prec, hasz, hasm);
+    else
+      elog(ERROR, "Unsupported geometry type");
+  }
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcol);
+  lwfree(lwcol);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the coordinates to the number of decimal places.
+ *
+ * @note Currently not all geometry types are allowed
+ */
+Datum
+datum_round_geo(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  if (gserialized_is_empty(gs))
+    return PointerGetDatum(gserialized_copy(gs));
+
+  uint32_t type = gserialized_get_type(gs);
+  if (type == POINTTYPE)
+    return datum_round_point(gs, prec);
+  if (type == LINETYPE)
+    return datum_round_linestring(gs, prec);
+  if (type == TRIANGLETYPE)
+    return datum_round_triangle(gs, prec);
+  if (type == CIRCSTRINGTYPE)
+    return datum_round_circularstring(gs, prec);
+  if (type == POLYGONTYPE)
+    return datum_round_polygon(gs, prec);
+  if (type == MULTIPOINTTYPE)
+    return datum_round_multipoint(gs, prec);
+  if (type == MULTILINETYPE)
+    return datum_round_multilinestring(gs, prec);
+  if (type == MULTIPOLYGONTYPE)
+    return datum_round_multipolygon(gs, prec);
+  if (type == COLLECTIONTYPE)
+    return datum_round_geometrycollection(gs, prec);
+  elog(ERROR, "Unsupported geometry type");
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the precision of the coordinates of the temporal point to the
+ * number of decimal places.
+ */
+Temporal *
+tpoint_round(const Temporal *temp, int prec)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_round_geo;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(prec);
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(Geo_round);
 /**

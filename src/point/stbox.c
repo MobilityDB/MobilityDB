@@ -913,27 +913,6 @@ stbox_expand_temporal(const STBOX *box, const Interval *interval)
   return result;
 }
 
-/**
- * @ingroup libmeos_box_transf
- * @brief Sets the precision of the coordinates of the spatiotemporal box.
- */
-STBOX *
-stbox_round(const STBOX *box, Datum prec)
-{
-  ensure_has_X_stbox(box);
-  STBOX *result = stbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), prec));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), prec));
-  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), prec));
-  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), prec));
-  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
-  {
-    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), prec));
-    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), prec));
-  }
-  return result;
-}
-
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/
@@ -2244,6 +2223,27 @@ Stbox_expand_temporal(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   PG_RETURN_POINTER(stbox_expand_temporal(box, interval));
+}
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Sets the precision of the coordinates of the spatiotemporal box.
+ */
+STBOX *
+stbox_round(const STBOX *box, Datum prec)
+{
+  ensure_has_X_stbox(box);
+  STBOX *result = stbox_copy(box);
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), prec));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), prec));
+  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), prec));
+  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), prec));
+  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
+  {
+    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), prec));
+    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), prec));
+  }
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Stbox_round);

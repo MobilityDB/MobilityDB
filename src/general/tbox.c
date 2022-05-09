@@ -668,23 +668,6 @@ tbox_expand_temporal(const TBOX *box, const Interval *interval)
   return result;
 }
 
-/**
- * @ingroup libmeos_box_transf
- * @brief Set the precision of the value dimension of the temporal box to
- * the number of decimal places.
- */
-TBOX *
-tbox_round(const TBOX *box, int size)
-{
-  ensure_has_X_tbox(box);
-  TBOX *result = tbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
-    size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
-    size));
-  return result;
-}
-
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/
@@ -1591,6 +1574,23 @@ Tbox_expand_temporal(PG_FUNCTION_ARGS)
   TBOX *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   PG_RETURN_POINTER(tbox_expand_temporal(box, interval));
+}
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Set the precision of the value dimension of the temporal box to
+ * the number of decimal places.
+ */
+TBOX *
+tbox_round(const TBOX *box, int size)
+{
+  ensure_has_X_tbox(box);
+  TBOX *result = tbox_copy(box);
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
+    size));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
+    size));
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Tbox_round);

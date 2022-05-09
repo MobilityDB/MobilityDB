@@ -603,22 +603,6 @@ span_expand(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Set the precision of the float span to the number of decimal places.
- */
-Span *
-floatspan_round(Span *span, Datum size)
-{
-  /* Set precision of bounds */
-  Datum lower = datum_round_float(span->lower, size);
-  Datum upper = datum_round_float(span->upper, size);
-  /* Create resulting span */
-  Span *result = span_make(lower, upper, span->lower_inc, span->upper_inc,
-    span->basetype);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale the period by the two intervals.
  */
 void
@@ -1164,6 +1148,22 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_transf
+ * @brief Set the precision of the float span to the number of decimal places.
+ */
+Span *
+floatspan_round(Span *span, Datum size)
+{
+  /* Set precision of bounds */
+  Datum lower = datum_round_float(span->lower, size);
+  Datum upper = datum_round_float(span->upper, size);
+  /* Create resulting span */
+  Span *result = span_make(lower, upper, span->lower_inc, span->upper_inc,
+    span->basetype);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**

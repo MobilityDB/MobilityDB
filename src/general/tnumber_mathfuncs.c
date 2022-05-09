@@ -55,26 +55,6 @@
  * Miscellaneous functions on datums
  *****************************************************************************/
 
-int lwprint_double(double d, int maxdd, char *buf);
-
-/**
- * Round the number to the number of decimal places
- */
-Datum
-datum_round_float(Datum value, Datum prec)
-{
-  Datum result = value;
-  double d = DatumGetFloat8(value);
-  double inf = get_float8_infinity();
-  if (d != -1 * inf && d != inf)
-  {
-    Datum number = call_function1(float8_numeric, value);
-    Datum roundnumber = call_function2(numeric_round, number, prec);
-    result = call_function1(numeric_float8, roundnumber);
-  }
-  return result;
-}
-
 /**
  * Convert the number from radians to degrees
  */
@@ -279,29 +259,6 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************
  * Miscellaneous temporal functions
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_math
- * @brief Round the temporal number to the number of decimal places
- */
-Temporal *
-tnumber_round(const Temporal *temp, Datum digits)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_float;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = digits;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.argtype[1] = T_INT4;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
 
 /**
  * @ingroup libmeos_temporal_math
@@ -622,6 +579,47 @@ Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Miscellaneous temporal functions
  *****************************************************************************/
+
+/**
+ * Round the number to the number of decimal places
+ */
+Datum
+datum_round_float(Datum value, Datum prec)
+{
+  Datum result = value;
+  double d = DatumGetFloat8(value);
+  double inf = get_float8_infinity();
+  if (d != -1 * inf && d != inf)
+  {
+    Datum number = call_function1(float8_numeric, value);
+    Datum roundnumber = call_function2(numeric_round, number, prec);
+    result = call_function1(numeric_float8, roundnumber);
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Round the temporal number to the number of decimal places
+ */
+Temporal *
+tnumber_round(const Temporal *temp, Datum digits)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_round_float;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = digits;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = T_INT4;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(Tnumber_round);
 /**

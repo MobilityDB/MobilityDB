@@ -266,26 +266,6 @@ tgeompoint_tnpoint(const Temporal *temp)
  * Transformation functions
  *****************************************************************************/
 
-/**
- * @brief Set the precision of the fraction of the temporal network point to the
- * number of decimal places.
- */
-Temporal *
-tnpoint_round(const Temporal *temp, Datum size)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_npoint_round;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = size;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -667,6 +647,26 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @brief Set the precision of the fraction of the temporal network point to the
+ * number of decimal places.
+ */
+Temporal *
+tnpoint_round(const Temporal *temp, Datum size)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_npoint_round;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = size;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(Tnpoint_round);
 /**
