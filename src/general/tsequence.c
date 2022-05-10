@@ -1432,6 +1432,7 @@ tsequence_make(const TInstant **instants, int count, bool lower_inc,
  * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
  * @param[in] linear True when the interpolation is linear
  * @param[in] normalize True when the resulting value should be normalized
+ * @see tsequence_make
  */
 TSequence *
 tsequence_make_free(TInstant **instants, int count, bool lower_inc,

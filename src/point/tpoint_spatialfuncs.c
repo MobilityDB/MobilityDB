@@ -329,7 +329,11 @@ geom_distance2d(Datum geom1, Datum geom2)
     (GSERIALIZED *) DatumGetPointer(geom2)));
   return result;
 #else
+#if POSTGIS_VERSION_NUMBER >= 30000
+  return call_function2(ST_Distance, geom1, geom2);
+#else
   return call_function2(distance, geom1, geom2);
+#endif
 #endif
 }
 

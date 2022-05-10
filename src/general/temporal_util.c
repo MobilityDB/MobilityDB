@@ -58,6 +58,9 @@
   #include "npoint/tnpoint_static.h"
 #endif
 
+extern text *cstring_to_text(const char *s);
+extern char *text_to_cstring(const text *t);
+
 /*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/

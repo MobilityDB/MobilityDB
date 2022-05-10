@@ -360,6 +360,7 @@ tinstantset_make(const TInstant **instants, int count, bool merge)
  * @param[in] count Number of elements in the array
  * @param[in] merge True when overlapping instants are allowed as required in
  * merge operations
+ * @see tinstantset_make
  */
 TInstantSet *
 tinstantset_make_free(TInstant **instants, int count, bool merge)

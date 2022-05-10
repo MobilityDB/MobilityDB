@@ -122,6 +122,7 @@ timestampset_make(const TimestampTz *times, int count)
  *
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
+ * @see timestampset_make
  */
 TimestampSet *
 timestampset_make_free(TimestampTz *times, int count)

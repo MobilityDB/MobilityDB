@@ -715,6 +715,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
  * @param[in] normalize True when the resulting value should be normalized.
+ * @see tsequenceset_make
  */
 TSequenceSet *
 tsequenceset_make_free(TSequence **sequences, int count, bool normalize)

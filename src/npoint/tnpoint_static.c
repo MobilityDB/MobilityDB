@@ -248,7 +248,6 @@ npoint_remove_duplicates(Npoint **values, int count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_input_output
  * @brief Return a span from its string representation.
  */
 Npoint *
@@ -289,7 +288,6 @@ npoint_recv(StringInfo buf)
  * buffer.
  *
  * @param[in] np Network point value
- * @param[in] buf Buffer
  */
 bytea *
 npoint_send(const Npoint *np)

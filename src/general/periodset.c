@@ -208,7 +208,7 @@ periodset_send(const PeriodSet *ps)
  * ---------------------------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, and `bbox` is the
- * bounding box which is also period.
+ * bounding box which is also a period.
  *
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
@@ -259,6 +259,7 @@ periodset_make(const Period **periods, int count, bool normalize)
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
  * @param[in] normalize True when the resulting value should be normalized.
+ * @see periodset_make
  */
 PeriodSet *
 periodset_make_free(Period **periods, int count, bool normalize)

@@ -57,9 +57,6 @@ extern GSERIALIZED *PGIS_BOX3D_to_LWGEOM(BOX3D *box);
 
 /* Functions adapted from lwgeom_functions_basic.c */
 
-/* The implementation of this function changed in PostGIS version 3.2 */
-extern GSERIALIZED *PGIS_boundary(const GSERIALIZED *geom1);
-
 extern GSERIALIZED *PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern GSERIALIZED *PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1,
