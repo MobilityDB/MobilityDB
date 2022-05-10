@@ -848,7 +848,7 @@ tsequence_transform_tcount(const TSequence *seq)
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(datum_one, seq->period.lower, T_TINT);
-    result = tinstant_tsequence(inst, STEP);
+    result = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return result;
   }

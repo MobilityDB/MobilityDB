@@ -105,7 +105,7 @@ extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
   CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
 extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
+extern bool boxop_tnumber_to_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
 extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *));

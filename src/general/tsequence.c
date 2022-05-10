@@ -589,7 +589,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
     {
       TSequence *sequences[2];
       sequences[0] = (TSequence *) seq;
-      sequences[1] = tinstant_tsequence(inst, linear);
+      sequences[1] = tinstant_to_tsequence(inst, linear);
       TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
         2, NORMALIZE_NO);
       pfree(sequences[1]);
@@ -875,8 +875,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   {
     inst1 = tsequence_at_timestamp(seq1, inter.lower);
     inst2 = tsequence_at_timestamp(seq2, inter.lower);
-    *sync1 = tinstant_tsequence(inst1, linear1);
-    *sync2 = tinstant_tsequence(inst2, linear2);
+    *sync1 = tinstant_to_tsequence(inst1, linear1);
+    *sync2 = tinstant_to_tsequence(inst2, linear2);
     pfree(inst1); pfree(inst2);
     return true;
   }
@@ -1207,7 +1207,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
+intersection_tsequence_to_tinstant(const TSequence *seq, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
   TInstant *inst1 = tsequence_at_timestamp(seq, inst->t);
@@ -1227,10 +1227,10 @@ intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
+intersection_tinstant_to_tsequence(const TInstant *inst, const TSequence *seq,
   TInstant **inter1, TInstant **inter2)
 {
-  return intersection_tsequence_tinstant(seq, inst, inter2, inter1);
+  return intersection_tsequence_to_tinstant(seq, inst, inter2, inter1);
 }
 
 /**
@@ -1241,7 +1241,7 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
+intersection_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
   TInstantSet **inter1, TInstantSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -1284,10 +1284,10 @@ intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
+intersection_tinstantset_to_tsequence(const TInstantSet *ti, const TSequence *seq,
   TInstantSet **inter1, TInstantSet **inter2)
 {
-  return intersection_tsequence_tinstantset(seq, ti, inter2, inter1);
+  return intersection_tsequence_to_tinstantset(seq, ti, inter2, inter1);
 }
 
 /*****************************************************************************
@@ -1501,7 +1501,7 @@ tsequence_from_base(Datum value, CachedType temptype, const Period *p,
  * @brief Cast the temporal integer value as a temporal float value.
  */
 TSequence *
-tintseq_tfloatseq(const TSequence *seq)
+tintseq_to_tfloatseq(const TSequence *seq)
 {
   TSequence *result = tsequence_copy(seq);
   result->temptype = T_TFLOAT;
@@ -1522,7 +1522,7 @@ tintseq_tfloatseq(const TSequence *seq)
  * @brief Cast the temporal float value as a temporal integer value.
  */
 TSequence *
-tfloatseq_tintseq(const TSequence *seq)
+tfloatseq_to_tintseq(const TSequence *seq)
 {
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
     elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
@@ -1549,7 +1549,7 @@ tfloatseq_tintseq(const TSequence *seq)
  * @brief Transform the temporal instant value into a temporal sequence value.
  */
 TSequence *
-tinstant_tsequence(const TInstant *inst, bool linear)
+tinstant_to_tsequence(const TInstant *inst, bool linear)
 {
   return tsequence_make(&inst, 1, true, true, linear, NORMALIZE_NO);
 }
@@ -1560,11 +1560,11 @@ tinstant_tsequence(const TInstant *inst, bool linear)
  * value.
  */
 TSequence *
-tinstantset_tsequence(const TInstantSet *ti, bool linear)
+tinstantset_to_tsequence(const TInstantSet *ti, bool linear)
 {
   if (ti->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal sequence");
-  return tinstant_tsequence(tinstantset_inst_n(ti, 0), linear);
+  return tinstant_to_tsequence(tinstantset_inst_n(ti, 0), linear);
 }
 
 /**
@@ -1573,7 +1573,7 @@ tinstantset_tsequence(const TInstantSet *ti, bool linear)
  * value.
  */
 TSequence *
-tsequenceset_tsequence(const TSequenceSet *ts)
+tsequenceset_to_tsequence(const TSequenceSet *ts)
 {
   if (ts->count != 1)
     elog(ERROR, "Cannot transform input to a temporal sequence");
@@ -1627,7 +1627,7 @@ tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
     value1 = tinstant_value(tsequence_inst_n(seq, seq->count - 2));
     value2 = tinstant_value(inst2);
     if (datum_ne(value1, value2, basetype))
-      result[k++] = tinstant_tsequence(inst2, LINEAR);
+      result[k++] = tinstant_to_tsequence(inst2, LINEAR);
   }
   return k;
 }
@@ -1641,7 +1641,7 @@ tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
  * @return Resulting temporal sequence set value
  */
 TSequenceSet *
-tstepseq_tlinearseq(const TSequence *seq)
+tsequence_step_to_linear(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tstepseq_tlinearseq1(seq, sequences);
@@ -1829,7 +1829,7 @@ tfloatseq_spans(const TSequence *seq, int *count)
 PeriodSet *
 tsequence_time(const TSequence *seq)
 {
-  return period_periodset(&seq->period);
+  return period_to_periodset(&seq->period);
 }
 
 /**
@@ -2598,14 +2598,14 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
       pfree(instants[1]);
     }
     if (upper_inc && upper)
-      result[k++] = tinstant_tsequence(inst2, linear);
+      result[k++] = tinstant_to_tsequence(inst2, linear);
     return k;
   }
 
   /* Linear interpolation: Test of bounds */
   if (atfunc && ((lower && lower_inc) || (upper && upper_inc)))
   {
-    result[0] = tinstant_tsequence(lower ? inst1 : inst2, linear);
+    result[0] = tinstant_to_tsequence(lower ? inst1 : inst2, linear);
     return 1;
   }
   /* Interpolation */
@@ -2613,7 +2613,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   if (atfunc)
   {
     TInstant *inst = tinstant_make(projvalue, t, inst1->temptype);
-    result[0] = tinstant_tsequence(inst, linear);
+    result[0] = tinstant_to_tsequence(inst, linear);
     pfree(inst);
     DATUM_FREE(projvalue, basetype);
     return 1;
@@ -2839,7 +2839,7 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
    * Compute the complement of the previous value.
    */
   if (newcount == 0)
-    return tsequence_tsequenceset(seq);
+    return tsequence_to_tsequenceset(seq);
 
   PeriodSet *ps1 = tsequenceset_time(atresult);
   PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
@@ -2909,7 +2909,7 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
     if (upper_inclu &&
       ((atfunc && contains) || (! atfunc && ! contains)))
     {
-      result[k++] = tinstant_tsequence(inst2, linear);
+      result[k++] = tinstant_to_tsequence(inst2, linear);
     }
     return k;
   }
@@ -2952,7 +2952,7 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
     {
       t1 = (dlower == dvalue1) ? inst1->t : inst2->t;
       instants[0] = tinstant_make(lower, t1, inst1->temptype);
-      result[0] = tinstant_tsequence(instants[0], linear);
+      result[0] = tinstant_to_tsequence(instants[0], linear);
       pfree(instants[0]);
       return 1;
     }
@@ -3059,9 +3059,9 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
   if (instbounds[0] == NULL && instbounds[1] == NULL)
   {
     if (lower_inclu && lower_inc1)
-      result[k++] = tinstant_tsequence(inst1, linear);
+      result[k++] = tinstant_to_tsequence(inst1, linear);
     if (upper_inclu && upper_inc1)
-      result[k++] = tinstant_tsequence(inst2, linear);
+      result[k++] = tinstant_to_tsequence(inst2, linear);
   }
   else if (instbounds[0] != NULL && instbounds[1] != NULL)
   {
@@ -3081,12 +3081,12 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
     result[k++] = tsequence_make((const TInstant **) instants, 2,
       lower_inclu, lower_inc1, linear, NORMALIZE_NO);
     if (upper_inclu && upper_inc1)
-      result[k++] = tinstant_tsequence(inst2, linear);
+      result[k++] = tinstant_to_tsequence(inst2, linear);
   }
   else /* if (instbounds[1] != NULL) */
   {
     if (lower_inclu && lower_inc1)
-      result[k++] = tinstant_tsequence(inst1, linear);
+      result[k++] = tinstant_to_tsequence(inst1, linear);
     instants[0] = instbounds[1];
     instants[1] = (TInstant *) inst2;
     result[k++] = tsequence_make((const TInstant **) instants, 2,
@@ -3120,7 +3120,7 @@ tnumberseq_restrict_span2(const TSequence *seq, const Span *span, bool atfunc,
   /* Bounding box test */
   TBOX box1, box2;
   tsequence_bbox(seq, &box1);
-  span_tbox(span, &box2);
+  span_to_tbox(span, &box2);
   if (! overlaps_tbox_tbox(&box1, &box2))
   {
     if (atfunc)
@@ -3719,7 +3719,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
   if (inter.lower == inter.upper)
   {
     TInstant *inst = tsequence_at_timestamp(seq, inter.lower);
-    result = tinstant_tsequence(inst, linear);
+    result = tinstant_to_tsequence(inst, linear);
     pfree(inst);
     return result;
   }
@@ -3949,15 +3949,15 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   /* Bounding box test */
   const Period *p = periodset_period_ptr(ps);
   if (! overlaps_span_span(&seq->period, p))
-    return atfunc ? NULL : tsequence_tsequenceset(seq);
+    return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     const TInstant *inst = tsequence_inst_n(seq, 0);
     if (contains_periodset_timestamp(ps, inst->t))
-      return atfunc ? tsequence_tsequenceset(seq) : NULL;
-    return atfunc ? NULL : tsequence_tsequenceset(seq);
+      return atfunc ? tsequence_to_tsequenceset(seq) : NULL;
+    return atfunc ? NULL : tsequence_to_tsequenceset(seq);
   }
 
   /* General case */

@@ -76,14 +76,14 @@ extern Datum Overbefore_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum After_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum Overafter_tbox_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum Left_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overleft_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Right_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overright_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Before_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overbefore_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum After_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overafter_tnumber_tbox(PG_FUNCTION_ARGS);
+extern Datum Left_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Overleft_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Right_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Overright_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Before_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Overbefore_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum After_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Overafter_tnumber_to_tbox(PG_FUNCTION_ARGS);
 
 extern Datum Left_tnumber_tnumber(PG_FUNCTION_ARGS);
 extern Datum Overleft_tnumber_tnumber(PG_FUNCTION_ARGS);

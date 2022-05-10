@@ -820,7 +820,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       count, buckets, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
     for (int i = 0; i < *newcount; i++)
-      result[i] = tsequence_tsequenceset(sequences[i]);
+      result[i] = tsequence_to_tsequenceset(sequences[i]);
     pfree_array((void **) sequences, *newcount);
     return result;
   }
@@ -873,12 +873,12 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       }
       else
       {
-        result[m++] = tsequence_tsequenceset(sequences[0]);
+        result[m++] = tsequence_to_tsequenceset(sequences[0]);
         pfree(sequences[0]);
       }
       for (int j = 1; j < l - 1; j++)
       {
-        result[m++] = tsequence_tsequenceset(sequences[j]);
+        result[m++] = tsequence_to_tsequenceset(sequences[j]);
         pfree(sequences[j]);
       }
     }
@@ -1628,7 +1628,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   {
     TSequenceSet **result = palloc(sizeof(TSequenceSet *));
     Datum *values = palloc(sizeof(Datum));
-    result[0] = tsequence_tsequenceset(seq);
+    result[0] = tsequence_to_tsequenceset(seq);
     Datum value = tinstant_value(tsequence_inst_n(seq, 0));
     values[0] = number_bucket(value, size, start_bucket, basetype);
     *buckets = values;

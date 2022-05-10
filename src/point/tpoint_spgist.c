@@ -530,13 +530,13 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
     /* The geometry can be empty */
-    if (! geo_stbox(gs, result))
+    if (! geo_to_stbox(gs, result))
       return false;
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_stbox(t, result);
+    timestamp_to_stbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -545,7 +545,7 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   else if (type == T_PERIOD)
   {
     Period *p = DatumGetSpanP(scankey->sk_argument);
-    period_stbox(p, result);
+    period_to_stbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

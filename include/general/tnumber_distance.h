@@ -56,7 +56,7 @@ extern Datum number_distance(Datum l, Datum r, CachedType typel,
 extern double nad_tnumber_number(const Temporal *temp, Datum value,
   CachedType basetype);
 extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern double nad_tnumber_tbox(const Temporal *temp, const TBOX *box);
+extern double nad_tnumber_to_tbox(const Temporal *temp, const TBOX *box);
 
 // NAI and shortestline functions are not yet implemented
 // Are they useful ?

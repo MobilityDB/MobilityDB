@@ -89,14 +89,14 @@ extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti);
 
 /* Cast functions */
 
-TInstantSet *tintinstset_tfloatinstset(const TInstantSet *ti);
-TInstantSet *tfloatinstset_tintinstset(const TInstantSet *ti);
+TInstantSet *tintinstset_to_tfloatinstset(const TInstantSet *ti);
+TInstantSet *tfloatinstset_to_tintinstset(const TInstantSet *ti);
 
 /* Transformation functions */
 
-extern TInstantSet *tinstant_tinstantset(const TInstant *inst);
-extern TInstantSet *tsequence_tinstantset(const TSequence *seq);
-extern TInstantSet *tsequenceset_tinstantset(const TSequenceSet *ts);
+extern TInstantSet *tinstant_to_tinstantset(const TInstant *inst);
+extern TInstantSet *tsequence_to_tinstantset(const TSequence *seq);
+extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
 extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
   const Interval *start, const Interval *duration);
 
@@ -145,9 +145,9 @@ extern Temporal *tinstantset_merge_array(const TInstantSet **tis, int count);
 
 /* Intersection functions */
 
-extern bool intersection_tinstantset_tinstant(const TInstantSet *ti,
+extern bool intersection_tinstantset_to_tinstant(const TInstantSet *ti,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_tinstantset(const TInstant *inst,
+extern bool intersection_tinstant_to_tinstantset(const TInstant *inst,
   const TInstantSet *ti, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1,
   const TInstantSet *ti2, TInstantSet **inter1, TInstantSet **inter2);

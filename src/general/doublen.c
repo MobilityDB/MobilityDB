@@ -67,6 +67,16 @@ double2_make(double a, double b)
   double2_set(a, b, result);
   return result;
 }
+
+/**
+ * @brief Output function for double2 values
+ */
+char *
+double2_out(double2 *d)
+{
+  char *result = psprintf("(%g,%g)", d->a, d->b);
+  return result;
+}
 #endif
 
 /**
@@ -157,6 +167,16 @@ double3_make(double a, double b, double c)
   double3_set(a, b, c, result);
   return result;
 }
+
+/**
+ * @brief Output function for double3 values
+ */
+char *
+double3_out(double3 *d)
+{
+  char *result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
+  return result;
+}
 #endif
 
 /**
@@ -243,7 +263,7 @@ double3_cmp(double3 *d1, double3 *d2)
 
 #ifdef MEOS
 /**
- * Create a double2 value from the double values
+ * @brief Create a double2 value from the double values
  */
 double4 *
 double4_make(double a, double b, double c, double d)
@@ -251,6 +271,16 @@ double4_make(double a, double b, double c, double d)
   /* Note: zero-fill is done in function double4_set */
   double4 *result = (double4 *) palloc(sizeof(double4));
   double4_set(a, b, c, d, result);
+  return result;
+}
+
+/**
+ * @brief Output function for double4 values
+ */
+char *
+double4_out(double4 *d)
+{
+  char *result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
   return result;
 }
 #endif
@@ -350,9 +380,9 @@ PG_FUNCTION_INFO_V1(Double2_out);
 PGDLLEXPORT Datum
 Double2_out(PG_FUNCTION_ARGS)
 {
-  double2 *d = (double2 *) PG_GETARG_POINTER(0);
-  char *result = psprintf("(%g,%g)", d->a, d->b);
-  PG_RETURN_CSTRING(result);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type double2 is an internal type")));
+  PG_RETURN_POINTER(NULL);
 }
 
 PG_FUNCTION_INFO_V1(Double2_recv);
@@ -363,10 +393,7 @@ PGDLLEXPORT Datum
 Double2_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  double2 *result = palloc(sizeof(double2));
-  const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
-  memcpy(result, bytes, sizeof(double2));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_POINTER(double2_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Double2_send);
@@ -377,10 +404,7 @@ PGDLLEXPORT Datum
 Double2_send(PG_FUNCTION_ARGS)
 {
   double2 *d = (double2 *) PG_GETARG_POINTER(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (void *) d, sizeof(double2));
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(double2_send(d));
 }
 
 /*****************************************************************************
@@ -406,9 +430,9 @@ PG_FUNCTION_INFO_V1(Double3_out);
 PGDLLEXPORT Datum
 Double3_out(PG_FUNCTION_ARGS)
 {
-  double3 *d = (double3 *) PG_GETARG_POINTER(0);
-  char *result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
-  PG_RETURN_CSTRING(result);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type double3 is an internal type")));
+  PG_RETURN_POINTER(NULL);
 }
 
 PG_FUNCTION_INFO_V1(Double3_recv);
@@ -419,10 +443,7 @@ PGDLLEXPORT Datum
 Double3_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  double3 *result = palloc(sizeof(double3));
-  const char *bytes = pq_getmsgbytes(buf, sizeof(double3));
-  memcpy(result, bytes, sizeof(double3));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_POINTER(double3_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Double3_send);
@@ -433,10 +454,7 @@ PGDLLEXPORT Datum
 Double3_send(PG_FUNCTION_ARGS)
 {
   double3 *d = (double3 *) PG_GETARG_POINTER(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (void *) d, sizeof(double3));
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(double3_send(d));
 }
 
 /*****************************************************************************
@@ -462,9 +480,9 @@ PG_FUNCTION_INFO_V1(Double4_out);
 PGDLLEXPORT Datum
 Double4_out(PG_FUNCTION_ARGS)
 {
-  double4 *d = (double4 *) PG_GETARG_POINTER(0);
-  char *result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
-  PG_RETURN_CSTRING(result);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type double4 is an internal type")));
+  PG_RETURN_POINTER(NULL);
 }
 
 PG_FUNCTION_INFO_V1(Double4_recv);
@@ -475,10 +493,7 @@ PGDLLEXPORT Datum
 Double4_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  double4 *result = palloc(sizeof(double4));
-  const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
-  memcpy(result, bytes, sizeof(double4));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_POINTER(double4_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Double4_send);
@@ -489,10 +504,7 @@ PGDLLEXPORT Datum
 Double4_send(PG_FUNCTION_ARGS)
 {
   double4 *d = (double4 *) PG_GETARG_POINTER(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (void *) d, sizeof(double4));
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(double4_send(d));
 }
 
 /*****************************************************************************/

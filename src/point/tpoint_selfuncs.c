@@ -463,14 +463,14 @@ tpoint_const_stbox(Node *other, STBOX *box)
   Oid consttypid = ((Const *) other)->consttype;
   CachedType type = oid_type(consttypid);
   if (tgeo_basetype(type))
-    geo_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
+    geo_to_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
   else if (type == T_TIMESTAMPTZ)
-    timestamp_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+    timestamp_to_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
   else if (type == T_TIMESTAMPSET)
     timestampset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_PERIOD)
-    period_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
+    period_to_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
   else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_STBOX)

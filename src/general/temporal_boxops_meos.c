@@ -617,7 +617,7 @@ contains_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT);
 }
 
 /**
@@ -626,9 +626,9 @@ contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * temporal box
  */
 bool
-contains_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+contains_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -696,7 +696,7 @@ contained_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT);
 }
 
 /**
@@ -705,9 +705,9 @@ contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * in the temporal box
  */
 bool
-contained_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+contained_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -779,7 +779,7 @@ overlaps_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT);
 }
 
 /**
@@ -788,9 +788,9 @@ overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * temporal box overlap
  */
 bool
-overlaps_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overlaps_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -857,7 +857,7 @@ same_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &same_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &same_tbox_tbox, INVERT);
 }
 
 /**
@@ -866,9 +866,9 @@ same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * temporal box are equal in the common dimensions
  */
 bool
-same_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+same_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &same_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &same_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -940,7 +940,7 @@ adjacent_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT);
 }
 
 /**
@@ -949,9 +949,9 @@ adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * temporal box are adjacent
  */
 bool
-adjacent_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+adjacent_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT_NO);
 }
 
 /**

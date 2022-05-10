@@ -176,9 +176,9 @@ nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
   if (basetype == T_INT4)
-    int_tbox(DatumGetInt32(value), &box2);
+    int_to_tbox(DatumGetInt32(value), &box2);
   else /* basetype == T_FLOAT8 */
-    float_tbox(DatumGetFloat8(value), &box2);
+    float_to_tbox(DatumGetFloat8(value), &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
 

@@ -62,31 +62,31 @@ extern bool overlaps_span_span(const Span *s1, const Span *s2);
 
 /* left */
 
-extern bool left_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool left_elem_to_span(Datum d, CachedType basetype, const Span *s);
 extern bool left_span_elem(const Span *s, Datum d, CachedType basetype);
 extern bool left_span_span(const Span *s1, const Span *s2);
 
 /* right */
 
-extern bool right_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool right_elem_to_span(Datum d, CachedType basetype, const Span *s);
 extern bool right_span_elem(const Span *s, Datum d, CachedType basetype);
 extern bool right_span_span(const Span *s1, const Span *s2);
 
 /* overleft */
 
-extern bool overleft_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool overleft_elem_to_span(Datum d, CachedType basetype, const Span *s);
 extern bool overleft_span_elem(const Span *s, Datum d, CachedType basetype);
 extern bool overleft_span_span(const Span *s1, const Span *s2);
 
 /* overright */
 
-extern bool overright_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool overright_elem_to_span(Datum d, CachedType basetype, const Span *s);
 extern bool overright_span_elem(const Span *s, Datum d, CachedType basetype);
 extern bool overright_span_span(const Span *s1, const Span *s2);
 
 /* adjacent */
 
-extern bool adjacent_elem_span(Datum d, CachedType basetype, const Span *s);
+extern bool adjacent_elem_to_span(Datum d, CachedType basetype, const Span *s);
 extern bool adjacent_span_elem(const Span *s, Datum d, CachedType basetype);
 extern bool adjacent_span_span(const Span *s1, const Span *s2);
 

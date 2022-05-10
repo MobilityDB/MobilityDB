@@ -359,7 +359,7 @@ tfloatinst_spans(const TInstant *inst)
 PeriodSet *
 tinstant_time(const TInstant *inst)
 {
-  PeriodSet *result = timestamp_periodset(inst->t);
+  PeriodSet *result = timestamp_to_periodset(inst->t);
   return result;
 }
 
@@ -381,7 +381,7 @@ TSequence **
 tinstant_sequences(const TInstant *inst)
 {
   TSequence **result = palloc(sizeof(TSequence *));
-  result[0] = tinstant_tsequence(inst,
+  result[0] = tinstant_to_tsequence(inst,
     MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
   return result;
 }
@@ -435,13 +435,13 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
  * @brief Cast the temporal integer value as a temporal float value.
  */
 TInstant *
-tintinst_tfloatinst(const TInstant *inst)
+tintinst_to_tfloatinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_LINEAR(result->flags, true);
   Datum *value_ptr = tinstant_value_ptr(result);
-  *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
+  *value_ptr = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
   return result;
 }
 
@@ -450,13 +450,13 @@ tintinst_tfloatinst(const TInstant *inst)
  * @brief Cast the temporal float value as a temporal integer value.
  */
 TInstant *
-tfloatinst_tintinst(const TInstant *inst)
+tfloatinst_to_tintinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_LINEAR(result->flags, true);
   Datum *value_ptr = tinstant_value_ptr(result);
-  *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
+  *value_ptr = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
   return result;
 }
 
@@ -469,7 +469,7 @@ tfloatinst_tintinst(const TInstant *inst)
  * @brief Transform the temporal instant set value into a temporal instant value.
  */
 TInstant *
-tinstantset_tinstant(const TInstantSet *ti)
+tinstantset_to_tinstant(const TInstantSet *ti)
 {
   if (ti->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant");
@@ -482,7 +482,7 @@ tinstantset_tinstant(const TInstantSet *ti)
  * @brief Transform the temporal sequence value into a temporal instant value.
  */
 TInstant *
-tsequence_tinstant(const TSequence *seq)
+tsequence_to_tinstant(const TSequence *seq)
 {
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant");
@@ -495,7 +495,7 @@ tsequence_tinstant(const TSequence *seq)
  * @brief Transform the temporal sequence set value into a temporal instant value.
  */
 TInstant *
-tsequenceset_tinstant(const TSequenceSet *ts)
+tsequenceset_to_tinstant(const TSequenceSet *ts)
 {
   const TSequence *seq = tsequenceset_seq_n(ts, 0);
   if (ts->count != 1 || seq->count != 1)
@@ -1010,11 +1010,13 @@ tinstant_hash(const TInstant *inst)
     value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
     value_hash = gserialized_hash((GSERIALIZED *) DatumGetPointer(value));
+#ifndef MEOS
   else if (inst->temptype == T_TNPOINT)
   {
     value_hash = pg_hashint8(value);
     value_hash ^= pg_hashfloat8(value);
   }
+#endif
   else
     elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
   /* Apply the hash function according to the timestamp */

@@ -296,11 +296,11 @@ periodset_copy(const PeriodSet *ps)
  * @brief Cast the timestamp value as a period set value.
  */
 PeriodSet *
-timestamp_periodset(TimestampTz t)
+timestamp_to_periodset(TimestampTz t)
 {
   Span p;
   span_set(t, t, true, true, T_TIMESTAMPTZ, &p);
-  PeriodSet *result = period_periodset(&p);
+  PeriodSet *result = period_to_periodset(&p);
   return result;
 }
 
@@ -309,7 +309,7 @@ timestamp_periodset(TimestampTz t)
  * @brief Cast the timestamp set value as a period set value.
  */
 PeriodSet *
-timestampset_periodset(const TimestampSet *ts)
+timestampset_to_periodset(const TimestampSet *ts)
 {
   Period **periods = palloc(sizeof(Period *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -326,21 +326,9 @@ timestampset_periodset(const TimestampSet *ts)
  * @brief Construct a period set from a period.
  */
 PeriodSet *
-period_periodset(const Period *period)
+period_to_periodset(const Period *period)
 {
   return periodset_make((const Period **) &period, 1, NORMALIZE_NO);
-}
-
-/**
- * @ingroup libmeos_spantime_cast
- * @brief Copy in the second argument the bounding period of the period set value
- */
-void
-periodset_period(const PeriodSet *ps, Period *p)
-{
-  const Period *p1 = (Period *) &ps->period;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
-  return;
 }
 
 /*****************************************************************************
@@ -383,6 +371,18 @@ periodset_timespan(const PeriodSet *ps)
     p2->upper, p1->lower));
 #endif
   return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Copy in the second argument the bounding period of the period set value
+ */
+void
+periodset_period(const PeriodSet *ps, Period *p)
+{
+  const Period *p1 = (Period *) &ps->period;
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
+  return;
 }
 
 /**
@@ -674,6 +674,39 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
 
 /**
  * @ingroup libmeos_spantime_comp
+ * @brief Return true if the first period set value is equal to the second one.
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
+{
+  if (ps1->count != ps2->count)
+    return false;
+  /* ps1 and ps2 have the same number of PeriodSet */
+  for (int i = 0; i < ps1->count; i++)
+  {
+    const Period *p1 = periodset_per_n(ps1, i);
+    const Period *p2 = periodset_per_n(ps2, i);
+    if (span_ne(p1, p2))
+      return false;
+  }
+  /* All periods of the two PeriodSet are equal */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_comp
+ * @brief Return true if the first period set value is different from the
+ * second one.
+ */
+bool
+periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
+{
+  return ! periodset_eq(ps1, ps2);
+}
+/**
+ * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first period set value
  * is less than, equal, or greater than the second temporal value.
  *
@@ -705,40 +738,6 @@ periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
       result = 0;
   }
   return result;
-}
-
-/**
- * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is equal to the second one.
- *
- * @note The internal B-tree comparator is not used to increase efficiency
- */
-bool
-periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  if (ps1->count != ps2->count)
-    return false;
-  /* ps1 and ps2 have the same number of PeriodSet */
-  for (int i = 0; i < ps1->count; i++)
-  {
-    const Period *p1 = periodset_per_n(ps1, i);
-    const Period *p2 = periodset_per_n(ps2, i);
-    if (span_ne(p1, p2))
-      return false;
-  }
-  /* All periods of the two PeriodSet are equal */
-  return true;
-}
-
-/**
- * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is different from the
- * second one.
- */
-bool
-periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  return ! periodset_eq(ps1, ps2);
 }
 
 /**
@@ -923,7 +922,7 @@ PGDLLEXPORT Datum
 Timestamp_to_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *result = timestamp_periodset(t);
+  PeriodSet *result = timestamp_to_periodset(t);
   PG_RETURN_POINTER(result);
 }
 
@@ -935,7 +934,7 @@ PGDLLEXPORT Datum
 Timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *result = timestampset_periodset(ts);
+  PeriodSet *result = timestampset_to_periodset(ts);
   PG_RETURN_POINTER(result);
 }
 
@@ -947,7 +946,7 @@ PGDLLEXPORT Datum
 Period_to_periodset(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *result = period_periodset(p);
+  PeriodSet *result = period_to_periodset(p);
   PG_RETURN_POINTER(result);
 }
 

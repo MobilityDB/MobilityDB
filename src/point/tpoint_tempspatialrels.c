@@ -360,7 +360,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
     TInstant *inst = tinterrel_tpointinst_geom(tsequence_inst_n(seq, 0),
       geom, tinter, func);
     TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tinstant_tsequence(inst, STEP);
+    result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     *count = 1;
     return result;
@@ -475,7 +475,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   STBOX box1, box2;
   temporal_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_stbox(gs, &box2);
+  geo_to_stbox(gs, &box2);
   if (!overlaps_stbox_stbox(&box1, &box2))
     return temporal_from_base(temp, datum_no, T_TBOOL, STEP);
 
@@ -774,7 +774,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   {
     TInstant *inst = tinstant_make(func(tinstant_value(start1),
       tinstant_value(start2), dist), start1->t, T_TBOOL);
-    result[0] = tinstant_tsequence(inst, STEP);
+    result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
   }
@@ -875,7 +875,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
       {
         Datum value = func(ev1, ev2, dist);
         tinstant_set(instants[0], value, upper);
-        result[k++] = tinstant_tsequence(instants[0], STEP);
+        result[k++] = tinstant_to_tsequence(instants[0], STEP);
       }
     }
     sv1 = ev1;
@@ -1103,7 +1103,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   {
     TInstant *inst = tinstant_make(func(sv, point, dist),
       start->t, T_TBOOL);
-    result[0] = tinstant_tsequence(inst, STEP);
+    result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
   }

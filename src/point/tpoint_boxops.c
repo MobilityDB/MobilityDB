@@ -77,7 +77,7 @@ tpointinst_stbox(const TInstant *inst, STBOX *box)
   Datum value = tinstant_value(inst);
   GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
   /* Non-empty geometries have a bounding box */
-  geo_stbox(gs, box);
+  geo_to_stbox(gs, box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
 }
@@ -314,7 +314,7 @@ boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     return -1;
   STBOX box1, box2;
   temporal_bbox(temp, &box1);
-  geo_stbox(gs, &box2);
+  geo_to_stbox(gs, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return result ? 1 : 0;
 }

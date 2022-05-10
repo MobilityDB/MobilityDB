@@ -73,83 +73,6 @@ timestampset_period_ptr(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
- * @brief Construct a timestamp set from an array of timestamps.
- *
- * For example, the memory structure of a timestamp set with 3
- * timestamps is as follows
- * @code
- * ---------------------------------------------------------------------------
- * ( TimestampSet )_X | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2 |
- * ---------------------------------------------------------------------------
- * @endcode
- * where the `X` are unused bytes added for double padding, and bbox is the
- * bounding box which is a period.
- *
- * @param[in] times Array of timestamps
- * @param[in] count Number of elements in the array
- */
-TimestampSet *
-timestampset_make(const TimestampTz *times, int count)
-{
-  /* Test the validity of the timestamps */
-  for (int i = 0; i < count - 1; i++)
-  {
-    if (times[i] >= times[i + 1])
-      elog(ERROR, "Invalid value for timestamp set");
-  }
-  /* Notice that the first timestamp is already declared in the struct */
-  size_t memsize = double_pad(sizeof(TimestampSet)) +
-    sizeof(TimestampTz) * (count - 1);
-  /* Create the TimestampSet */
-  TimestampSet *result = palloc0(memsize);
-  SET_VARSIZE(result, memsize);
-  result->count = count;
-
-  /* Compute the bounding box */
-  span_set(times[0], times[count - 1], true, true, T_TIMESTAMPTZ,
-    &result->period);
-  /* Copy the timestamp array */
-  for (int i = 0; i < count; i++)
-    result->elems[i] = times[i];
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_constructor
- * @brief Construct a timestamp set from the array of timestamps and free the
- * array after the creation.
- *
- * @param[in] times Array of timestamps
- * @param[in] count Number of elements in the array
- * @see timestampset_make
- */
-TimestampSet *
-timestampset_make_free(TimestampTz *times, int count)
-{
-  if (count == 0)
-  {
-    pfree(times);
-    return NULL;
-  }
-  TimestampSet *result = timestampset_make(times, count);
-  pfree(times);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_constructor
- * @brief Return a copy of the timestamp set.
- */
-TimestampSet *
-timestampset_copy(const TimestampSet *ts)
-{
-  TimestampSet *result = palloc(VARSIZE(ts));
-  memcpy(result, ts, VARSIZE(ts));
-  return result;
-}
-
-/**
  * Return the location of the timestamp in the timestamp set value
  * using binary search
  *
@@ -287,6 +210,83 @@ timestampset_send(const TimestampSet *ts)
  * Constructor function
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_spantime_constructor
+ * @brief Construct a timestamp set from an array of timestamps.
+ *
+ * For example, the memory structure of a timestamp set with 3
+ * timestamps is as follows
+ * @code
+ * ---------------------------------------------------------------------------
+ * ( TimestampSet )_X | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2 |
+ * ---------------------------------------------------------------------------
+ * @endcode
+ * where the `X` are unused bytes added for double padding, and bbox is the
+ * bounding box which is a period.
+ *
+ * @param[in] times Array of timestamps
+ * @param[in] count Number of elements in the array
+ */
+TimestampSet *
+timestampset_make(const TimestampTz *times, int count)
+{
+  /* Test the validity of the timestamps */
+  for (int i = 0; i < count - 1; i++)
+  {
+    if (times[i] >= times[i + 1])
+      elog(ERROR, "Invalid value for timestamp set");
+  }
+  /* Notice that the first timestamp is already declared in the struct */
+  size_t memsize = double_pad(sizeof(TimestampSet)) +
+    sizeof(TimestampTz) * (count - 1);
+  /* Create the TimestampSet */
+  TimestampSet *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
+  result->count = count;
+
+  /* Compute the bounding box */
+  span_set(times[0], times[count - 1], true, true, T_TIMESTAMPTZ,
+    &result->period);
+  /* Copy the timestamp array */
+  for (int i = 0; i < count; i++)
+    result->elems[i] = times[i];
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_constructor
+ * @brief Construct a timestamp set from the array of timestamps and free the
+ * array after the creation.
+ *
+ * @param[in] times Array of timestamps
+ * @param[in] count Number of elements in the array
+ * @see timestampset_make
+ */
+TimestampSet *
+timestampset_make_free(TimestampTz *times, int count)
+{
+  if (count == 0)
+  {
+    pfree(times);
+    return NULL;
+  }
+  TimestampSet *result = timestampset_make(times, count);
+  pfree(times);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_constructor
+ * @brief Return a copy of the timestamp set.
+ */
+TimestampSet *
+timestampset_copy(const TimestampSet *ts)
+{
+  TimestampSet *result = palloc(VARSIZE(ts));
+  memcpy(result, ts, VARSIZE(ts));
+  return result;
+}
+
 /*****************************************************************************
  * Cast function
  *****************************************************************************/
@@ -296,23 +296,10 @@ timestampset_send(const TimestampSet *ts)
  * @brief Cast a timestamp value as a timestamp set value
  */
 TimestampSet *
-timestamp_timestampset(TimestampTz t)
+timestamp_to_timestampset(TimestampTz t)
 {
   TimestampSet *result = timestampset_make(&t, 1);
   return result;
-}
-
-/**
- * @ingroup libmeos_spantime_cast
- * @brief Copy in the second argument the bounding period of the timestamp
- * set value
- */
-void
-timestampset_period(const TimestampSet *ts, Period *p)
-{
-  const Period *p1 = &ts->period;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
-  return;
 }
 
 /*****************************************************************************
@@ -345,6 +332,19 @@ timestampset_timespan(const TimestampSet *ts)
     TimestampTzGetDatum(end), TimestampTzGetDatum(start)));
 #endif
   return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Copy in the second argument the bounding period of the timestamp
+ * set value
+ */
+void
+timestampset_period(const TimestampSet *ts, Period *p)
+{
+  const Period *p1 = &ts->period;
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
+  return;
 }
 
 /**
@@ -464,39 +464,6 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return -1, 0, or 1 depending on whether the first timestamp set
- * value is less than, equal, or greater than the second temporal value.
- *
- * @note Function used for B-tree comparison
- */
-int
-timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
-{
-  int count = Min(ts1->count, ts2->count);
-  int result = 0;
-  for (int i = 0; i < count; i++)
-  {
-    TimestampTz t1 = timestampset_time_n(ts1, i);
-    TimestampTz t2 = timestampset_time_n(ts2, i);
-    result = timestamp_cmp_internal(t1, t2);
-    if (result)
-      break;
-  }
-  /* The first count times of the two TimestampSet are equal */
-  if (! result)
-  {
-    if (count < ts1->count) /* ts1 has more timestamps than ts2 */
-      result = 1;
-    else if (count < ts2->count) /* ts2 has more timestamps than ts1 */
-      result = -1;
-    else
-      result = 0;
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set value is equal to the
  * second one.
  *
@@ -530,6 +497,39 @@ bool
 timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 {
   return ! timestampset_eq(ts1, ts2);
+}
+
+/**
+ * @ingroup libmeos_spantime_comp
+ * @brief Return -1, 0, or 1 depending on whether the first timestamp set
+ * value is less than, equal, or greater than the second temporal value.
+ *
+ * @note Function used for B-tree comparison
+ */
+int
+timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
+{
+  int count = Min(ts1->count, ts2->count);
+  int result = 0;
+  for (int i = 0; i < count; i++)
+  {
+    TimestampTz t1 = timestampset_time_n(ts1, i);
+    TimestampTz t2 = timestampset_time_n(ts2, i);
+    result = timestamp_cmp_internal(t1, t2);
+    if (result)
+      break;
+  }
+  /* The first count times of the two TimestampSet are equal */
+  if (! result)
+  {
+    if (count < ts1->count) /* ts1 has more timestamps than ts2 */
+      result = 1;
+    else if (count < ts2->count) /* ts2 has more timestamps than ts1 */
+      result = -1;
+    else
+      result = 0;
+  }
+  return result;
 }
 
 /**
@@ -721,7 +721,7 @@ PGDLLEXPORT Datum
 Timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *result = timestamp_timestampset(t);
+  TimestampSet *result = timestamp_to_timestampset(t);
   PG_RETURN_POINTER(result);
 }
 

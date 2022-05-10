@@ -649,7 +649,7 @@ overright_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 left_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &left_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &left_tbox_tbox, INVERT);
 }
 
 /**
@@ -660,7 +660,7 @@ left_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 overleft_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overleft_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overleft_tbox_tbox, INVERT);
 }
 
 /**
@@ -671,7 +671,7 @@ overleft_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 right_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &right_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &right_tbox_tbox, INVERT);
 }
 
 /**
@@ -682,7 +682,7 @@ right_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 overright_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overright_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overright_tbox_tbox, INVERT);
 }
 
 /**
@@ -693,7 +693,7 @@ overright_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 before_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &before_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &before_tbox_tbox, INVERT);
 }
 
 /**
@@ -704,7 +704,7 @@ before_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 overbefore_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overbefore_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overbefore_tbox_tbox, INVERT);
 }
 
 /**
@@ -715,7 +715,7 @@ overbefore_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 after_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &after_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &after_tbox_tbox, INVERT);
 }
 
 /**
@@ -726,7 +726,7 @@ after_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 bool
 overafter_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overafter_tbox_tbox, INVERT);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overafter_tbox_tbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -738,9 +738,9 @@ overafter_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * the temporal box value
  */
 bool
-left_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+left_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &left_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &left_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -749,9 +749,9 @@ left_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * the temporal box value
  */
 bool
-overleft_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overleft_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overleft_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overleft_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -760,9 +760,9 @@ overleft_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * the temporal box value
  */
 bool
-right_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+right_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &right_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &right_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -771,9 +771,9 @@ right_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * temporal box value
  */
 bool
-overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overright_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overright_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overright_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -782,9 +782,9 @@ overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * temporal box value
  */
 bool
-before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+before_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &before_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &before_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -793,9 +793,9 @@ before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * temporal box value
  */
 bool
-overbefore_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overbefore_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overbefore_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overbefore_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -804,9 +804,9 @@ overbefore_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * temporal box value
  */
 bool
-after_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+after_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &after_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &after_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -815,9 +815,9 @@ after_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * temporal box value
  */
 bool
-overafter_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overafter_tnumber_to_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &overafter_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_to_tbox(tnumber, tbox, &overafter_tbox_tbox, INVERT_NO);
 }
 
 /*****************************************************************************/

@@ -385,17 +385,17 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
   if (tnumber_basetype(type))
   {
     Datum value = scankey->sk_argument;
-    number_tbox(value, type, result);
+    number_to_tbox(value, type, result);
   }
   else if (tnumber_spantype(type))
   {
     Span *span = DatumGetSpanP(scankey->sk_argument);
-    span_tbox(span, result);
+    span_to_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_tbox(t, result);
+    timestamp_to_tbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -404,7 +404,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
   else if (type == T_PERIOD)
   {
     Period *p = DatumGetSpanP(scankey->sk_argument);
-    period_tbox(p, result);
+    period_to_tbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

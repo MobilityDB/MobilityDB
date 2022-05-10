@@ -584,7 +584,7 @@ tinstantset_sequences(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    result[i] = tinstant_tsequence(inst, linear);
+    result[i] = tinstant_to_tsequence(inst, linear);
   }
   return result;
 }
@@ -644,7 +644,7 @@ tinstantset_timestamps(const TInstantSet *ti)
  * @brief Cast the temporal integer value as a temporal float value.
  */
 TInstantSet *
-tintinstset_tfloatinstset(const TInstantSet *ti)
+tintinstset_to_tfloatinstset(const TInstantSet *ti)
 {
   TInstantSet *result = tinstantset_copy(ti);
   result->temptype = T_TFLOAT;
@@ -663,7 +663,7 @@ tintinstset_tfloatinstset(const TInstantSet *ti)
  * @brief Cast the temporal float value as a temporal integer value.
  */
 TInstantSet *
-tfloatinstset_tintinstset(const TInstantSet *ti)
+tfloatinstset_to_tintinstset(const TInstantSet *ti)
 {
   TInstantSet *result = tinstantset_copy(ti);
   result->temptype = T_TINT;
@@ -686,7 +686,7 @@ tfloatinstset_tintinstset(const TInstantSet *ti)
  * @brief Transform the temporal instant value into a temporal instant set value.
  */
 TInstantSet *
-tinstant_tinstantset(const TInstant *inst)
+tinstant_to_tinstantset(const TInstant *inst)
 {
   return tinstantset_make(&inst, 1, MERGE_NO);
 }
@@ -698,13 +698,13 @@ tinstant_tinstantset(const TInstant *inst)
  * @return Return an error if the temporal sequence has more than one instant
  */
 TInstantSet *
-tsequence_tinstantset(const TSequence *seq)
+tsequence_to_tinstantset(const TSequence *seq)
 {
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant set");
 
   const TInstant *inst = tsequence_inst_n(seq, 0);
-  return tinstant_tinstantset(inst);
+  return tinstant_to_tinstantset(inst);
 }
 
 /**
@@ -716,7 +716,7 @@ tsequence_tinstantset(const TSequence *seq)
  * more than one instant
 */
 TInstantSet *
-tsequenceset_tinstantset(const TSequenceSet *ts)
+tsequenceset_to_tinstantset(const TSequenceSet *ts)
 {
   const TSequence *seq;
   for (int i = 0; i < ts->count; i++)
@@ -1469,7 +1469,7 @@ tinstantset_merge_array(const TInstantSet **instsets, int count)
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
+intersection_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
   TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti, inst->t, REST_AT);
@@ -1489,10 +1489,10 @@ intersection_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstant_tinstantset(const TInstant *inst, const TInstantSet *ti,
+intersection_tinstant_to_tinstantset(const TInstant *inst, const TInstantSet *ti,
   TInstant **inter1, TInstant **inter2)
 {
-  return intersection_tinstantset_tinstant(ti, inst, inter2, inter1);
+  return intersection_tinstantset_to_tinstant(ti, inst, inter2, inter1);
 }
 
 /**

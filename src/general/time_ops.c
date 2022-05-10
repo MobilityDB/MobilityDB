@@ -1640,7 +1640,7 @@ union_timestampset_timestampset(const TimestampSet *ts1,
 PeriodSet *
 union_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  PeriodSet *ps = timestampset_periodset(ts);
+  PeriodSet *ps = timestampset_to_periodset(ts);
   PeriodSet *result = union_period_periodset(p, ps);
   pfree(ps);
   return result;
@@ -1653,7 +1653,7 @@ union_timestampset_period(const TimestampSet *ts, const Period *p)
 PeriodSet *
 union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
-  PeriodSet *ps1 = timestampset_periodset(ts);
+  PeriodSet *ps1 = timestampset_to_periodset(ts);
   PeriodSet *result = union_periodset_periodset(ps, ps1);
   pfree(ps1);
   return result;
@@ -1681,7 +1681,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
 PeriodSet *
 union_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  PeriodSet *ps = timestampset_periodset(ts);
+  PeriodSet *ps = timestampset_to_periodset(ts);
   PeriodSet *result = union_period_periodset(p, ps);
   pfree(ps);
   return result;
@@ -1717,7 +1717,7 @@ union_period_period(const Period *p1, const Period *p2)
   Period p;
   span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, &p);
   span_expand(p2, &p);
-  PeriodSet *result = period_periodset(&p);
+  PeriodSet *result = period_to_periodset(&p);
   return result;
 }
 
@@ -1729,7 +1729,7 @@ PeriodSet *
 union_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Transform the period into a period set */
-  PeriodSet *ps1 = period_periodset(p);
+  PeriodSet *ps1 = period_to_periodset(p);
   /* Call the function for the period set */
   PeriodSet *result = union_periodset_periodset(ps1, ps);
   pfree(ps1);
@@ -1758,7 +1758,7 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
 PeriodSet *
 union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
 {
-  PeriodSet *ps1 = timestampset_periodset(ts);
+  PeriodSet *ps1 = timestampset_to_periodset(ts);
   PeriodSet *result = union_periodset_periodset(ps, ps1);
   pfree(ps1);
   return result;
@@ -2298,7 +2298,7 @@ PeriodSet *
 minus_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   /* Transform the period into a period set */
-  PeriodSet *ps = period_periodset(p);
+  PeriodSet *ps = period_to_periodset(p);
   /* Bounding box test */
   const Period *p1 = timestampset_period_ptr(ts);
   if (! overlaps_span_span(p, p1))

@@ -67,7 +67,7 @@ extern TimestampSet *timestampset_read(StringInfo buf);
 
 /* Cast function */
 
-extern TimestampSet *timestamp_timestampset(TimestampTz t);
+extern TimestampSet *timestamp_to_timestampset(TimestampTz t);
 extern void timestampset_period(const TimestampSet *ts, Period *p);
 
 /* Accessor functions */

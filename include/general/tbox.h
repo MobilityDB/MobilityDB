@@ -98,15 +98,15 @@ extern TBOX *tbox_read(StringInfo buf);
 
 /* Casting */
 
-extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
-extern void int_tbox(int i, TBOX *box);
-extern void float_tbox(double d, TBOX *box);
-extern void span_tbox(const Span *r, TBOX *box);
-extern void timestamp_tbox(TimestampTz t, TBOX *box);
-extern void timestampset_tbox(const TimestampSet *ts, TBOX *box);
+extern void number_to_tbox(Datum value, CachedType basetype, TBOX *box);
+extern void int_to_tbox(int i, TBOX *box);
+extern void float_to_tbox(double d, TBOX *box);
+extern void span_to_tbox(const Span *r, TBOX *box);
+extern void timestamp_to_tbox(TimestampTz t, TBOX *box);
+extern void timestampset_to_tbox(const TimestampSet *ts, TBOX *box);
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
-extern void period_tbox(const Period *p, TBOX *box);
-extern void periodset_tbox(const PeriodSet *ps, TBOX *box);
+extern void period_to_tbox(const Period *p, TBOX *box);
+extern void periodset_to_box(const PeriodSet *ps, TBOX *box);
 extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
@@ -115,9 +115,9 @@ extern TBOX *int_period_to_tbox(int i, const Period *p);
 extern TBOX *float_period_to_tbox(double d, const Period *p);
 extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
 extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
-extern Span *tbox_intspan(const TBOX *box);
-extern Span *tbox_floatspan(const TBOX *box);
-extern Period *tbox_period(const TBOX *box);
+extern Span *tbox_to_intspan(const TBOX *box);
+extern Span *tbox_to_floatspan(const TBOX *box);
+extern Period *tbox_to_period(const TBOX *box);
 
 /* Accessor functions */
 

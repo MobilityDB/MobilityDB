@@ -69,7 +69,7 @@ npoint_stbox(const Npoint *np, STBOX *box)
 {
   Datum geom = npoint_geom(DatumGetNpointP(np));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  bool result = geo_stbox(gs, box);
+  bool result = geo_to_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
@@ -137,7 +137,7 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
     call_function3(LWGEOM_line_substring, line, Float8GetDatum(posmin),
       Float8GetDatum(posmax));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  geo_stbox(gs, box);
+  geo_to_stbox(gs, box);
   box->tmin = tmin;
   box->tmax = tmax;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -174,7 +174,7 @@ nsegment_stbox(STBOX *box, const Nsegment *ns)
 {
   Datum geom = nsegment_geom(DatumGetNsegmentP(ns));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  bool result = geo_stbox(gs, box);
+  bool result = geo_to_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
@@ -227,7 +227,7 @@ boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  geo_stbox(gs, &box2);
+  geo_to_stbox(gs, &box2);
   temporal_bbox(temp, &box1);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return(result ? 1 : 0);

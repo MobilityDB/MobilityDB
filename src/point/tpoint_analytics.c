@@ -560,7 +560,7 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
     {
       TInstant *inst = geo_to_tpointinst(gs1);
       /* The resulting sequence assumes linear interpolation */
-      sequences[i] = tinstant_tsequence(inst, LINEAR);
+      sequences[i] = tinstant_to_tsequence(inst, LINEAR);
       pfree(inst);
     }
     else /* lwgeom1->type == LINETYPE */
@@ -1111,7 +1111,7 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
   {
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tfloatseq_simplify(seq, eps_dist, minpts);
-    TSequenceSet *result = tsequence_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1531,7 +1531,7 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   {
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
-    TSequenceSet *result = tsequence_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1715,7 +1715,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_remove_repeated_points(seq, tolerance,
       min_points);
-    TSequenceSet *result = tsequence_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1874,7 +1874,7 @@ tpointseqset_affine(const TSequenceSet *ts, const AFFINE *a)
   if (ts->count == 1)
   {
     TSequence *seq = tpointseq_affine(tsequenceset_seq_n(ts, 0), a);
-    TSequenceSet *result = tsequence_tsequenceset(seq);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -2058,7 +2058,7 @@ tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid, bool filter_pts)
     TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ts, 0), grid, filter_pts);
     if (seq == NULL)
       return NULL;
-    TSequenceSet *result = tsequence_tsequenceset(seq);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
   }

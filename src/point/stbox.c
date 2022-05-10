@@ -423,7 +423,7 @@ stbox_copy(const STBOX *box)
  * @brief Cast the spatiotemporal box as a GBOX value for PostGIS
  */
 void
-stbox_gbox(const STBOX *box, GBOX *gbox)
+stbox_to_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
   gbox_set(MOBDB_FLAGS_GET_Z(box->flags), false,
@@ -437,7 +437,7 @@ stbox_gbox(const STBOX *box, GBOX *gbox)
  * @brief Cast the spatiotemporal box as a BOX3D value for PostGIS
  */
 void
-stbox_box3d(const STBOX *box, BOX3D *box3d)
+stbox_to_box3d(const STBOX *box, BOX3D *box3d)
 {
   ensure_has_X_stbox(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -462,40 +462,40 @@ stbox_box3d(const STBOX *box, BOX3D *box3d)
  */
 #if POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000
 Datum
-stbox_geometry(const STBOX *box)
+stbox_to_geometry(const STBOX *box)
 {
   ensure_has_X_stbox(box);
   Datum result;
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     BOX3D box3d;
-    stbox_box3d(box, &box3d);
+    stbox_to_box3d(box, &box3d);
     result = PointerGetDatum(PGIS_BOX3D_to_LWGEOM(&box3d));
   }
   else
   {
     GBOX box2d;
-    stbox_gbox(box, &box2d);
+    stbox_to_gbox(box, &box2d);
     result = PointerGetDatum(PGIS_BOX2D_to_LWGEOM(&box2d, box->srid));
   }
   return result;
 }
 #else
 Datum
-stbox_geometry(const STBOX *box)
+stbox_to_geometry(const STBOX *box)
 {
   ensure_has_X_stbox(box);
   Datum result;
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     BOX3D box3d;
-    stbox_box3d(box, &box3d);
+    stbox_to_box3d(box, &box3d);
     result = DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(&box3d));
   }
   else
   {
     GBOX box2d;
-    stbox_gbox(box, &box2d);
+    stbox_to_gbox(box, &box2d);
     Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(&box2d));
     GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
     gserialized_set_srid(g, box->srid);
@@ -518,7 +518,7 @@ stbox_geometry(const STBOX *box)
  * @brief Transform a geometry/geography to a spatiotemporal box.
  */
 bool
-geo_stbox(const GSERIALIZED *gs, STBOX *box)
+geo_to_stbox(const GSERIALIZED *gs, STBOX *box)
 {
   if (gserialized_is_empty(gs))
     return false;
@@ -588,7 +588,7 @@ geo_stbox(const GSERIALIZED *gs, STBOX *box)
  * @brief Transform a timestamptz to a spatiotemporal box.
  */
 void
-timestamp_stbox(TimestampTz t, STBOX *box)
+timestamp_to_stbox(TimestampTz t, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -604,7 +604,7 @@ timestamp_stbox(TimestampTz t, STBOX *box)
  * @brief Transform a timestamp set to a spatiotemporal box.
  */
 void
-timestampset_stbox(const TimestampSet *ts, STBOX *box)
+timestampset_to_stbox(const TimestampSet *ts, STBOX *box)
 {
   const Period *p = timestampset_period_ptr(ts);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -620,7 +620,7 @@ timestampset_stbox(const TimestampSet *ts, STBOX *box)
  * @brief Transform a period to a spatiotemporal box.
  */
 void
-period_stbox(const Period *p, STBOX *box)
+period_to_stbox(const Period *p, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -635,7 +635,7 @@ period_stbox(const Period *p, STBOX *box)
  * @brief Transform a period set to a spatiotemporal box.
  */
 void
-periodset_stbox(const PeriodSet *ps, STBOX *box)
+periodset_to_stbox(const PeriodSet *ps, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -656,7 +656,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
   if (gserialized_is_empty(gs))
     return NULL;
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  geo_stbox(gs, result);
+  geo_to_stbox(gs, result);
   result->tmin = result->tmax = t;
   MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
@@ -672,7 +672,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
   if (gserialized_is_empty(gs))
     return NULL;
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  geo_stbox(gs, result);
+  geo_to_stbox(gs, result);
   result->tmin = p->lower;
   result->tmax = p->upper;
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -1832,7 +1832,7 @@ Stbox_to_box2d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
   GBOX *result = (GBOX *) palloc0(sizeof(GBOX));
-  stbox_gbox(box, result);
+  stbox_to_gbox(box, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1846,7 +1846,7 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
   BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
-  stbox_box3d(box, result);
+  stbox_to_box3d(box, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1858,7 +1858,7 @@ PGDLLEXPORT Datum
 Stbox_to_geometry(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum result = stbox_geometry(box);
+  Datum result = stbox_to_geometry(box);
   PG_RETURN_DATUM(result);
 }
 
@@ -1902,7 +1902,7 @@ Geo_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  bool found = geo_stbox(gs, result);
+  bool found = geo_to_stbox(gs, result);
   PG_FREE_IF_COPY(gs, 0);
   if (! found)
     PG_RETURN_NULL();
@@ -1918,7 +1918,7 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  timestamp_stbox(t, result);
+  timestamp_to_stbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1935,7 +1935,7 @@ timestampset_stbox_slice(Datum tsdatum, STBOX *box)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  timestampset_stbox(ts, box);
+  timestampset_to_stbox(ts, box);
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
@@ -1962,7 +1962,7 @@ Period_to_stbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  period_stbox(p, result);
+  period_to_stbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1979,7 +1979,7 @@ periodset_stbox_slice(Datum psdatum, STBOX *box)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  periodset_stbox(ps, box);
+  periodset_to_stbox(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }

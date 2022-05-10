@@ -119,8 +119,8 @@ extern Span *span_copy(const Span *s);
 
 /* Casting */
 
-extern Span *elem_span(Datum d, CachedType basetype);
-extern Period *timestamp_period(TimestampTz t);
+extern Span *elem_to_span(Datum d, CachedType basetype);
+extern Period *timestamp_to_period(TimestampTz t);
 
 /* Accessor functions */
 
@@ -128,7 +128,7 @@ extern Datum span_lower(Span *s);
 extern Datum span_upper(Span *s);
 extern bool span_lower_inc(Span *s);
 extern bool span_upper_inc(Span *s);
-extern double span_distance(const Span *s);
+extern double span_width(const Span *s);
 extern Interval *period_duration(const Period *p);
 
 /* Transformation functions */

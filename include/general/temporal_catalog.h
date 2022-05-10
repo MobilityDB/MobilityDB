@@ -59,7 +59,9 @@ typedef enum
   T_FLOAT8,        /**< float8 type */
   T_FLOATSPAN,     /**< float8 span type */
   T_INT4,          /**< int4 type */
+#ifndef MEOS
   T_INT4RANGE,     /**< int4 range type */
+#endif
   T_INTSPAN,       /**< int4 span type */
   T_INT8,          /**< int8 type */
   T_PERIOD,        /**< period type */
@@ -75,15 +77,19 @@ typedef enum
   T_TIMESTAMPSET,  /**< timestamp set type */
   T_TIMESTAMPTZ,   /**< timestamp with time zone type */
   T_TINT,          /**< temporal integer type */
+#ifndef MEOS
   T_TSTZRANGE,     /**< timestamp with time zone rabge type */
+#endif
   T_TTEXT,         /**< temporal text type */
   T_GEOMETRY,      /**< geometry type */
   T_GEOGRAPHY,     /**< geography type */
   T_TGEOMPOINT,    /**< temporal geometry point type */
   T_TGEOGPOINT,    /**< temporal geography point type */
+#ifndef MEOS
   T_NPOINT,        /**< network point type */
   T_NSEGMENT,      /**< network segment type */
   T_TNPOINT,       /**< temporal network point type */
+#endif
 } CachedType;
 
 /**

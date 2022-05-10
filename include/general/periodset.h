@@ -67,9 +67,9 @@ extern PeriodSet *periodset_read(StringInfo buf);
 
 /* Cast functions */
 
-extern PeriodSet *timestamp_periodset(TimestampTz t);
-extern PeriodSet *timestampset_periodset(const TimestampSet *ts);
-extern PeriodSet *period_periodset(const Period *p);
+extern PeriodSet *timestamp_to_periodset(TimestampTz t);
+extern PeriodSet *timestampset_to_periodset(const TimestampSet *ts);
+extern PeriodSet *period_to_periodset(const Period *p);
 extern void periodset_period(const PeriodSet *ps, Period *p);
 
 /* Accessor functions */

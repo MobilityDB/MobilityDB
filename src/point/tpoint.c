@@ -95,7 +95,7 @@ geo_expand_spatial(const GSERIALIZED *gs, double d)
   if (gserialized_is_empty(gs))
     return NULL;
   STBOX box;
-  geo_stbox(gs, &box);
+  geo_to_stbox(gs, &box);
   STBOX *result = stbox_expand_spatial(&box, d);
   return result;
 }

@@ -70,7 +70,7 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **ts,
 
 /* Synchronize functions */
 
-extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts,
+extern bool synchronize_tsequenceset_to_tsequence(const TSequenceSet *ts,
   const TSequence *seq, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
@@ -79,15 +79,15 @@ extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 
 /* Intersection functions */
 
-extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ts,
+extern bool intersection_tsequenceset_to_tinstant(const TSequenceSet *ts,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_tsequenceset(const TInstant *inst,
+extern bool intersection_tinstant_to_tsequenceset(const TInstant *inst,
   const TSequenceSet *ts, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
+extern bool intersection_tsequenceset_to_tinstantset(const TSequenceSet *ts,
   const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti,
+extern bool intersection_tinstantset_to_tsequenceset(const TInstantSet *ti,
   const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
+extern bool intersection_tsequence_to_tsequenceset(const TSequence *seq,
   const TSequenceSet *ts, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
@@ -140,18 +140,18 @@ extern int tsequenceset_timestamps1(const TSequenceSet *ts,
 
 /* Cast functions */
 
-extern Span *tfloatseqset_span(const TSequenceSet *ts);
-extern TSequenceSet *tintseqset_tfloatseqset(const TSequenceSet *ts);
-extern TSequenceSet *tfloatseqset_tintseqset(const TSequenceSet *ts);
+extern Span *tfloatseqset_to_span(const TSequenceSet *ts);
+extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ts);
+extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 
 /* Transformation functions */
 
-extern TSequenceSet *tinstant_tsequenceset(const TInstant *inst,
+extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst,
   bool linear);
-extern TSequenceSet *tinstantset_tsequenceset(const TInstantSet *ti,
+extern TSequenceSet *tinstantset_to_tsequenceset(const TInstantSet *ti,
   bool linear);
-extern TSequenceSet *tsequence_tsequenceset(const TSequence *seq);
-extern TSequenceSet *tstepseqset_tlinearseqset(const TSequenceSet *ts);
+extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
+extern TSequenceSet *tsequenceset_step_to_linear(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts,
   const Interval *start, const Interval *duration);
 

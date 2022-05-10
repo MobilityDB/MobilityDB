@@ -278,7 +278,7 @@ tbox_copy(const TBOX *box)
  * @brief Transform the number to a temporal box.
  */
 void
-number_tbox(Datum value, CachedType basetype, TBOX *box)
+number_to_tbox(Datum value, CachedType basetype, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -297,7 +297,7 @@ number_tbox(Datum value, CachedType basetype, TBOX *box)
  * @brief Transform the integer to a temporal box.
  */
 void
-int_tbox(int i, TBOX *box)
+int_to_tbox(int i, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -312,7 +312,7 @@ int_tbox(int i, TBOX *box)
  * @brief Transform the float to a temporal box.
  */
 void
-float_tbox(double d, TBOX *box)
+float_to_tbox(double d, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -327,7 +327,7 @@ float_tbox(double d, TBOX *box)
  * @brief Transform the span to a temporal box.
  */
 void
-span_tbox(const Span *span, TBOX *box)
+span_to_tbox(const Span *span, TBOX *box)
 {
   ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -343,7 +343,7 @@ span_tbox(const Span *span, TBOX *box)
  * @brief Transform the timestamp to a temporal box.
  */
 void
-timestamp_tbox(TimestampTz t, TBOX *box)
+timestamp_to_tbox(TimestampTz t, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -358,7 +358,7 @@ timestamp_tbox(TimestampTz t, TBOX *box)
  * @brief Transform the period set to a temporal box.
  */
 void
-timestampset_tbox(const TimestampSet *ts, TBOX *box)
+timestampset_to_tbox(const TimestampSet *ts, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -375,7 +375,7 @@ timestampset_tbox(const TimestampSet *ts, TBOX *box)
  * @brief Transform the period to a temporal box.
  */
 void
-period_tbox(const Period *p, TBOX *box)
+period_to_tbox(const Period *p, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -391,7 +391,7 @@ period_tbox(const Period *p, TBOX *box)
  * @brief Transform the period set to a temporal box.
  */
 void
-periodset_tbox(const PeriodSet *ps, TBOX *box)
+periodset_to_box(const PeriodSet *ps, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -482,7 +482,7 @@ span_period_to_tbox(const Span *span, const Period *p)
  * @brief Cast the temporal box value as a integer span value.
  */
 Span *
-tbox_intspan(const TBOX *box)
+tbox_to_intspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -496,7 +496,7 @@ tbox_intspan(const TBOX *box)
  * @brief Cast the temporal box value as a float span value.
  */
 Span *
-tbox_floatspan(const TBOX *box)
+tbox_to_floatspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -510,7 +510,7 @@ tbox_floatspan(const TBOX *box)
  * @brief Cast the temporal box value as a period value
  */
 Period *
-tbox_period(const TBOX *box)
+tbox_to_period(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
@@ -1233,7 +1233,7 @@ Int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  int_tbox(i, result);
+  int_to_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1246,7 +1246,7 @@ Float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  float_tbox(d, result);
+  float_to_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1260,7 +1260,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  float_tbox(d, result);
+  float_to_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1273,7 +1273,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  span_tbox(span, result);
+  span_to_tbox(span, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1286,7 +1286,7 @@ Timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  timestamp_tbox(t, result);
+  timestamp_to_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1303,7 +1303,7 @@ timestampset_tbox_slice(Datum tsdatum, TBOX *box)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  timestampset_tbox(ts, box);
+  timestampset_to_tbox(ts, box);
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
@@ -1330,7 +1330,7 @@ Period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  period_tbox(p, result);
+  period_to_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1347,7 +1347,7 @@ periodset_tbox_slice(Datum psdatum, TBOX *box)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  periodset_tbox(ps, box);
+  periodset_to_box(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
@@ -1453,7 +1453,7 @@ PGDLLEXPORT Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Span *result = tbox_floatspan(box);
+  Span *result = tbox_to_floatspan(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1467,7 +1467,7 @@ PGDLLEXPORT Datum
 Tbox_to_period(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Period *result = tbox_period(box);
+  Period *result = tbox_to_period(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

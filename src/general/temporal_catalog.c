@@ -221,8 +221,11 @@ bool
 temporal_type(CachedType temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
-    temptype == T_TTEXT || temptype == T_TGEOMPOINT ||
-    temptype == T_TGEOGPOINT || temptype == T_TNPOINT)
+    temptype == T_TTEXT || temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+#ifndef MEOS
+    || temptype == T_TNPOINT
+#endif
+    )
     return true;
   return false;
 }
@@ -249,9 +252,12 @@ ensure_temporal_basetype(CachedType basetype)
   if (basetype != T_TIMESTAMPTZ &&
     basetype != T_BOOL && basetype != T_INT4 && basetype != T_INT8 &&
     basetype != T_FLOAT8 && basetype != T_TEXT &&
-    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 &&
-    basetype != T_DOUBLE4 && basetype != T_GEOMETRY &&
-    basetype != T_GEOGRAPHY && basetype != T_NPOINT)
+    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 && basetype != T_DOUBLE4 &&
+    basetype != T_GEOMETRY && basetype != T_GEOGRAPHY
+#ifndef MEOS
+    && basetype != T_NPOINT
+#endif
+    )
     elog(ERROR, "unknown temporal base type: %d", basetype);
   return;
 }
@@ -264,8 +270,11 @@ temptype_continuous(CachedType temptype)
 {
   if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
     temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
-    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
-    temptype == T_TNPOINT)
+    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+#ifndef MEOS
+    || temptype == T_TNPOINT
+#endif
+    )
     return true;
   return false;
 }
@@ -415,8 +424,11 @@ ensure_tnumber_spantype(CachedType spantype)
 bool
 tspatial_type(CachedType temptype)
 {
-  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
-      temptype == T_TNPOINT)
+  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+#ifndef MEOS
+      || temptype == T_TNPOINT
+#endif
+      )
     return true;
   return false;
 }
@@ -430,8 +442,11 @@ tspatial_type(CachedType temptype)
 bool
 tspatial_basetype(CachedType basetype)
 {
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY ||
-    basetype == T_NPOINT)
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY
+#ifndef MEOS
+    || basetype == T_NPOINT
+#endif
+    )
     return true;
   return false;
 }

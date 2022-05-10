@@ -468,7 +468,7 @@ boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
 {
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  number_tbox(number, basetype, &box2);
+  number_to_tbox(number, basetype, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return result;
 }
@@ -487,7 +487,7 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
 {
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  span_tbox(span, &box2);
+  span_to_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return (result);
 }

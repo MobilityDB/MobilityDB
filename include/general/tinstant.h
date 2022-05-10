@@ -81,14 +81,14 @@ extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t,
 
 /* Cast functions */
 
-extern TInstant *tintinst_tfloatinst(const TInstant *inst);
-extern TInstant *tfloatinst_tintinst(const TInstant *inst);
+extern TInstant *tintinst_to_tfloatinst(const TInstant *inst);
+extern TInstant *tfloatinst_to_tintinst(const TInstant *inst);
 
 /* Transformation functions */
 
-extern TInstant *tinstantset_tinstant(const TInstantSet *ti);
-extern TInstant *tsequence_tinstant(const TSequence *seq);
-extern TInstant *tsequenceset_tinstant(const TSequenceSet *ts);
+extern TInstant *tinstantset_to_tinstant(const TInstantSet *ti);
+extern TInstant *tsequence_to_tinstant(const TSequence *seq);
+extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ts);
 extern TInstant *tinstant_shift(const TInstant *inst,
   const Interval *interval);
 

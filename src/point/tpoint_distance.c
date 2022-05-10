@@ -791,7 +791,7 @@ nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
   ensure_same_srid_stbox_gs(box, gs);
   ensure_same_spatial_dimensionality_stbox_gs(box, gs);
   datum_func2 func = distance_fn(box->flags);
-  Datum geo = stbox_geometry(box);
+  Datum geo = stbox_to_geometry(box);
   double result = DatumGetFloat8(func(geo, PointerGetDatum(gs)));
   pfree(DatumGetPointer(geo));
   return result;
@@ -823,8 +823,8 @@ nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
   /* Select the distance function to be applied */
   datum_func2 func = distance_fn(box1->flags);
   /* Convert the boxes to geometries */
-  Datum geo1 = stbox_geometry(box1);
-  Datum geo2 = stbox_geometry(box2);
+  Datum geo1 = stbox_to_geometry(box1);
+  Datum geo2 = stbox_to_geometry(box2);
   /* Compute the result */
   double result = DatumGetFloat8(func(geo1, geo2));
   pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
@@ -858,7 +858,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
   /* Select the distance function to be applied */
   datum_func2 func = distance_fn(box->flags);
   /* Convert the stbox to a geometry */
-  Datum geo = stbox_geometry(box);
+  Datum geo = stbox_to_geometry(box);
   Temporal *temp1 = hast ?
     temporal_restrict_period(temp, &inter, REST_AT) :
     (Temporal *) temp;

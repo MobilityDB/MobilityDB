@@ -494,7 +494,7 @@ span_copy(const Span *s)
  * @brief Cast an element value as a span
  */
 Span *
-elem_span(Datum d, CachedType basetype)
+elem_to_span(Datum d, CachedType basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);
@@ -506,7 +506,7 @@ elem_span(Datum d, CachedType basetype)
  * @brief Cast a timestamp value as a period
  */
 Period *
-timestamp_period(TimestampTz t)
+timestamp_to_period(TimestampTz t)
 {
   Period *result = span_make(t, t, true, true, T_TIMESTAMPTZ);
   return result;
@@ -559,11 +559,11 @@ span_upper_inc(Span *s)
 #endif
 
 /**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the duration of the span as an interval.
+ * @ingroup libmeos_spantime_distance
+ * @brief Return the width of the span as a double.
  */
 double
-span_distance(const Span *s)
+span_width(const Span *s)
 {
   return distance_elem_elem(s->lower, s->upper, s->basetype, s->basetype);
 }
@@ -933,7 +933,7 @@ Elem_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span *result = elem_span(d, basetype);
+  Span *result = elem_to_span(d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -1098,7 +1098,6 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
 /******************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_transf
  * @brief Set the precision of the float span to the number of decimal places.
  */
 Span *

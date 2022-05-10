@@ -90,13 +90,13 @@ extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
   TimestampTz *t);
 
-extern bool intersection_tsequence_tinstant(const TSequence *seq,
+extern bool intersection_tsequence_to_tinstant(const TSequence *seq,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_tsequence(const TInstant *inst,
+extern bool intersection_tinstant_to_tsequence(const TInstant *inst,
   const TSequence *seq, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequence_tinstantset(const TSequence *seq,
+extern bool intersection_tsequence_to_tinstantset(const TSequence *seq,
   const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequence(const TInstantSet *ti,
+extern bool intersection_tinstantset_to_tsequence(const TInstantSet *ti,
   const TSequence *seq, TInstantSet **inter1, TInstantSet **inter2);
 
 /* Input/output functions */
@@ -116,19 +116,19 @@ extern TSequence *tsequence_from_base(Datum value, CachedType temptype,
 
 /* Cast functions */
 
-extern TSequence *tintseq_tfloatseq(const TSequence *seq);
-extern TSequence *tfloatseq_tintseq(const TSequence *seq);
+extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
+extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
 
 /* Transformation functions */
 
-extern TSequence *tinstant_tsequence(const TInstant *inst, bool linear);
-extern TSequence *tinstantset_tsequence(const TInstantSet *ti, bool linear);
-extern TSequence *tsequenceset_tsequence(const TSequenceSet *ts);
+extern TSequence *tinstant_to_tsequence(const TInstant *inst, bool linear);
+extern TSequence *tinstantset_to_tsequence(const TInstantSet *ti, bool linear);
+extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ts);
 extern TSequence *tsequence_shift_tscale(const TSequence *seq,
   const Interval *start, const Interval *duration);
 
 extern int tstepseq_tlinearseq1(const TSequence *seq, TSequence **result);
-extern TSequenceSet *tstepseq_tlinearseq(const TSequence *seq);
+extern TSequenceSet *tsequence_step_to_linear(const TSequence *seq);
 
 /* Accessor functions */
 

@@ -2073,7 +2073,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
       Int32GetDatum(srid));
-    TSequence *result = tinstant_tsequence(inst, linear);
+    TSequence *result = tinstant_to_tsequence(inst, linear);
     pfree(inst);
     return result;
   }
@@ -2128,7 +2128,7 @@ tpointseqset_transform(const TSequenceSet *ts, int srid)
   {
     TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ts, 0),
       Int32GetDatum(srid));
-    TSequenceSet *result = tsequence_tsequenceset(seq);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -2604,7 +2604,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   {
     inst = tsequence_inst_n(seq, 0);
     TInstant *inst1 = tinstant_make(Float8GetDatum(0), inst->t, T_TFLOAT);
-    TSequence *result = tinstant_tsequence(inst1, linear);
+    TSequence *result = tinstant_to_tsequence(inst1, linear);
     pfree(inst1);
     return result;
   }
@@ -4653,7 +4653,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
   STBOX box1, box2;
   temporal_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_stbox(gs, &box2);
+  geo_to_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 

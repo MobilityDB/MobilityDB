@@ -527,20 +527,19 @@ extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 
 /* Cast functions */
 
-extern Span *tint_span(const Temporal *temp);
-extern Span *tfloat_span(const Temporal *temp);
-extern Temporal *tint_tfloat(const Temporal *temp);
-extern Temporal *tfloat_tint(const Temporal *temp);
-extern void temporal_period(const Temporal *temp, Period *p);
+extern Span *tint_to_span(const Temporal *temp);
+extern Span *tfloat_to_span(const Temporal *temp);
+extern Temporal *tint_to_tfloat(const Temporal *temp);
+extern Temporal *tfloat_to_tint(const Temporal *temp);
 extern TBOX *tnumber_to_tbox(Temporal *temp);
 
 /* Transformation functions */
 
-extern Temporal *temporal_tinstant(const Temporal *temp);
-extern Temporal *temporal_tinstantset(const Temporal *temp);
-extern Temporal *temporal_tsequence(const Temporal *temp);
-extern Temporal *temporal_tsequenceset(const Temporal *temp);
-extern Temporal *tempstep_templinear(const Temporal *temp);
+extern Temporal *temporal_to_tinstant(const Temporal *temp);
+extern Temporal *temporal_to_tinstantset(const Temporal *temp);
+extern Temporal *temporal_to_tsequence(const Temporal *temp);
+extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
+extern Temporal *temporal_step_to_linear(const Temporal *temp);
 extern Temporal *temporal_shift_tscale(const Temporal *temp, bool shift,
   bool tscale, Interval *start, Interval *duration);
 
@@ -560,6 +559,7 @@ extern Datum temporal_min_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
 extern Interval *temporal_timespan(const Temporal *temp);
 extern Interval *temporal_duration(const Temporal *temp);
+extern void temporal_period(const Temporal *temp, Period *p);
 extern int temporal_num_sequences(const Temporal *temp);
 extern TSequence *temporal_start_sequence(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
