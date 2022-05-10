@@ -118,13 +118,13 @@ tpoint_as_text(const Temporal *temp)
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_to_string1((TInstant *) temp, &wkt_out);
+    result = tinstant_to_string((TInstant *) temp, &wkt_out);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_to_string1((TInstantSet *) temp, &wkt_out);
+    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_to_string1((TSequence *) temp, false, &wkt_out);
+    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_to_string1((TSequenceSet *) temp, &wkt_out);
+    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
   return result;
 }
 

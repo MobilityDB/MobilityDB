@@ -95,9 +95,9 @@ extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
 
 extern TSequenceSet *tsequenceset_from_string(char *str, CachedType temptype,
   bool linear);
-extern char *tsequenceset_to_string(const TSequenceSet *ts);
-extern char *tsequenceset_to_string1(const TSequenceSet *ts,
+extern char *tsequenceset_to_string(const TSequenceSet *ts,
   char *(*value_out)(Oid, Datum));
+extern char *tsequenceset_out(const TSequenceSet *ts);
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
 extern TSequenceSet *tsequenceset_recv(StringInfo buf, CachedType temptype);
 

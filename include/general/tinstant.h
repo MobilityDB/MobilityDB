@@ -56,9 +56,9 @@ extern double tnumberinst_double(const TInstant *inst);
 /* Input/output functions */
 
 extern TInstant *tinstant_from_string(char *str, CachedType temptype);
-extern char *tinstant_to_string1(const TInstant *inst,
+extern char *tinstant_to_string(const TInstant *inst,
   char *(*value_out)(CachedType, Datum));
-extern char *tinstant_to_string(const TInstant *inst);
+extern char *tinstant_out(const TInstant *inst);
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 extern TInstant *tinstant_recv(StringInfo buf, CachedType temptype);
 

@@ -1,0 +1,12 @@
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE touches(g, temp);
+ count 
+-------
+  1164
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE touches(temp, g);
+ count 
+-------
+  1164
+(1 row)
+

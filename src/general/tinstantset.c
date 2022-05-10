@@ -255,7 +255,7 @@ tinstantset_from_string(char *str, CachedType temptype)
  * its Oid
  */
 char *
-tinstantset_to_string1(const TInstantSet *ti,
+tinstantset_to_string(const TInstantSet *ti,
   char *(*value_out)(CachedType, Datum))
 {
   char **strings = palloc(sizeof(char *) * ti->count);
@@ -264,7 +264,7 @@ tinstantset_to_string1(const TInstantSet *ti,
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    strings[i] = tinstant_to_string1(inst, value_out);
+    strings[i] = tinstant_to_string(inst, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ti->count, outlen, "", '{', '}');
@@ -275,9 +275,9 @@ tinstantset_to_string1(const TInstantSet *ti,
  * @brief Return the string representation of the temporal value.
  */
 char *
-tinstantset_to_string(const TInstantSet *ti)
+tinstantset_out(const TInstantSet *ti)
 {
-  return tinstantset_to_string1(ti, &basetype_output);
+  return tinstantset_to_string(ti, &basetype_output);
 }
 
 /**

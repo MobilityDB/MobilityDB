@@ -644,74 +644,6 @@ pg_textsend(text *t)
  * Functions adapted from timestamp.c
  *****************************************************************************/
 
-
-/**
- * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
- * Works for either timestamp or timestamptz.
- * @note The functions AdjustTimestampForTypmod and
- * AdjustTimestampForTypmodError are not exported in PG versions < 13
- */
-bool
-PG_AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
-{
-  static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
-    INT64CONST(1000000),
-    INT64CONST(100000),
-    INT64CONST(10000),
-    INT64CONST(1000),
-    INT64CONST(100),
-    INT64CONST(10),
-    INT64CONST(1)
-  };
-
-  static const int64 TimestampOffsets[MAX_TIMESTAMP_PRECISION + 1] = {
-    INT64CONST(500000),
-    INT64CONST(50000),
-    INT64CONST(5000),
-    INT64CONST(500),
-    INT64CONST(50),
-    INT64CONST(5),
-    INT64CONST(0)
-  };
-
-  if (!TIMESTAMP_NOT_FINITE(*time)
-    && (typmod != -1) && (typmod != MAX_TIMESTAMP_PRECISION))
-  {
-    if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
-    {
-      if (error)
-      {
-        *error = true;
-        return false;
-      }
-
-      ereport(ERROR,
-          (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-           errmsg("timestamp(%d) precision must be between %d and %d",
-              typmod, 0, MAX_TIMESTAMP_PRECISION)));
-    }
-
-    if (*time >= INT64CONST(0))
-    {
-      *time = ((*time + TimestampOffsets[typmod]) / TimestampScales[typmod]) *
-        TimestampScales[typmod];
-    }
-    else
-    {
-      *time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
-            * TimestampScales[typmod]);
-    }
-  }
-
-  return true;
-}
-
-void
-PG_AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
-{
-  (void) PG_AdjustTimestampForTypmodError(time, typmod, NULL);
-}
-
 /**
  * @brief Convert a string to a timestamp.
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
@@ -765,7 +697,7 @@ pg_timestamptz_in(char *str, int32 typmod)
       TIMESTAMP_NOEND(result);
   }
 
-  PG_AdjustTimestampForTypmod(&result, typmod);
+  AdjustTimestampForTypmod(&result, typmod);
 
   return result;
 }
@@ -836,7 +768,7 @@ pg_timestamptz_recv(StringInfo buf)
     ereport(ERROR, (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
          errmsg("timestamp out of range")));
 
-  PG_AdjustTimestampForTypmod(&timestamp, typmod);
+  AdjustTimestampForTypmod(&timestamp, typmod);
 
   return timestamp;
 }

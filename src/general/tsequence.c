@@ -1321,7 +1321,7 @@ tsequence_from_string(char *str, CachedType temptype, bool linear)
  * depending on its Oid
  */
 char *
-tsequence_to_string1(const TSequence *seq, bool component,
+tsequence_to_string(const TSequence *seq, bool component,
   char *(*value_out)(CachedType, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
@@ -1335,7 +1335,7 @@ tsequence_to_string1(const TSequence *seq, bool component,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    strings[i] = tinstant_to_string1(inst, value_out);
+    strings[i] = tinstant_to_string(inst, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   char open = seq->period.lower_inc ? (char) '[' : (char) '(';
@@ -1349,9 +1349,9 @@ tsequence_to_string1(const TSequence *seq, bool component,
  * @brief Return the string representation of the temporal value.
  */
 char *
-tsequence_to_string(const TSequence *seq)
+tsequence_out(const TSequence *seq)
 {
-  return tsequence_to_string1(seq, false, &basetype_output);
+  return tsequence_to_string(seq, false, &basetype_output);
 }
 
 /**

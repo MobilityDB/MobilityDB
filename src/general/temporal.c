@@ -614,13 +614,13 @@ temporal_out(const Temporal *temp)
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_to_string((TInstant *) temp);
+    result = tinstant_out((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp);
+    result = tinstantset_out((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_to_string((TSequence *) temp);
+    result = tsequence_out((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp);
+    result = tsequenceset_out((TSequenceSet *) temp);
   return result;
 }
 

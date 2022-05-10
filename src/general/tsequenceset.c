@@ -495,7 +495,7 @@ tsequenceset_from_string(char *str, CachedType temptype, bool linear)
  * depending on its Oid
  */
 char *
-tsequenceset_to_string1(const TSequenceSet *ts,
+tsequenceset_to_string(const TSequenceSet *ts,
   char *(*value_out)(CachedType, Datum))
 {
   char **strings = palloc(sizeof(char *) * ts->count);
@@ -509,7 +509,7 @@ tsequenceset_to_string1(const TSequenceSet *ts,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    strings[i] = tsequence_to_string1(seq, true, value_out);
+    strings[i] = tsequence_to_string(seq, true, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ts->count, outlen, prefix, '{', '}');
@@ -520,9 +520,9 @@ tsequenceset_to_string1(const TSequenceSet *ts,
  * @brief Return the string representation of the temporal value.
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ts)
+tsequenceset_out(const TSequenceSet *ts)
 {
-  return tsequenceset_to_string1(ts, &basetype_output);
+  return tsequenceset_to_string(ts, &basetype_output);
 }
 
 /**
