@@ -50,7 +50,6 @@
 #include <utils/datetime.h>
 #include <utils/float.h>
 #include <utils/int8.h>
-#include <utils/varlena.h>
 
 /* Definitions from builtins.h to avoid including it */
 
@@ -61,6 +60,7 @@ extern bool parse_bool_with_len(const char *value, size_t len, bool *result);
 extern int pg_ltoa(int32 l, char *a);
 extern int pg_lltoa(int64 ll, char *a);
 extern int pg_ulltoa_n(uint64 l, char *a);
+extern text *cstring_to_text_with_len(const char *s, int len);
 
 /*****************************************************************************
  * Functions adapted from bool.c
