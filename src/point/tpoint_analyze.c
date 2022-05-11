@@ -609,7 +609,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     is_copy = VARATT_IS_EXTENDED(temp);
 
     /* Get bounding box from temporal point */
-    temporal_bbox(temp, &box);
+    temporal_set_bbox(temp, &box);
     stbox_to_gbox(&box, &gbox);
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */

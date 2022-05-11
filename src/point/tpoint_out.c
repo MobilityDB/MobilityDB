@@ -110,7 +110,7 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point in Well-Known Text (WKT) format.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal point.
  */
 char *
 tpoint_as_text(const Temporal *temp)
@@ -130,8 +130,8 @@ tpoint_as_text(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID.
+ * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
+ * point, that is, the WKT representation prefixed with the SRID.
  */
 char *
 tpoint_as_ewkt(const Temporal *temp)
@@ -155,7 +155,8 @@ tpoint_as_ewkt(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output a geometry/geography array in Well-Known Text (WKT) format
+ * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
+ * representation of a geometry/geography array.
  */
 char **
 geoarr_as_text(const Datum *geoarr, int count, bool extended)
@@ -170,8 +171,8 @@ geoarr_as_text(const Datum *geoarr, int count, bool extended)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point array in Well-Known Text (WKT) or
- * Extended Well-Known Text (EWKT) format
+ * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
+ * representation of a temporal point array
  */
 char **
 tpointarr_as_text(const Temporal **temparr, int count, bool extended)
@@ -387,7 +388,7 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal instant point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal instant point.
  */
 char *
 tpointinst_as_mfjson(const TInstant *inst, int precision,
@@ -449,7 +450,7 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal instant set point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal instant set point.
  */
 char *
 tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox,
@@ -513,7 +514,7 @@ tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal sequence point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal sequence point.
  */
 char *
 tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
@@ -586,7 +587,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal sequence set point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal sequence set point.
  */
 char *
 tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
@@ -602,7 +603,7 @@ tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal point.
  */
 char *
 tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
@@ -611,7 +612,7 @@ tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
   STBOX *bbox = NULL, tmp;
   if (has_bbox)
   {
-    temporal_bbox(temp, &tmp);
+    temporal_set_bbox(temp, &tmp);
     bbox = &tmp;
   }
 
@@ -1154,26 +1155,8 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal point represented in
- * Well-Known Binary (WKB) format
- */
-static uint8_t *
-tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
-{
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    return tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
-  else if (temp->subtype == INSTANTSET)
-    return tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
-  else if (temp->subtype == SEQUENCE)
-    return tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
-  else /* temp->subtype == SEQUENCESET */
-    return tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
-}
-
-/**
  * @ingroup libmeos_temporal_input_output
- * @brief Convert the temporal value to a char * in WKB format.
+ * @brief Return the WKB representation of a temporal point.
  *
  * @param[in] temp Temporal value
  * @param[in] variant Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
@@ -1236,7 +1219,15 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   wkb_out = buf;
 
   /* Write the WKB into the output buffer */
-  buf = tpoint_to_wkb_buf(temp, buf, variant);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    buf = tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
+  else if (temp->subtype == INSTANTSET)
+    buf = tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
+  else if (temp->subtype == SEQUENCE)
+    buf = tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
+  else /* temp->subtype == SEQUENCESET */
+    buf = tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
 
   /* Null the last byte if this is a hex output */
   if (variant & WKB_HEX)
@@ -1262,7 +1253,7 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output the temporal point in HexEWKB format.
+ * @brief Return the HexEWKB representation of a temporal point.
  * @note This will have 'SRID=#;'
  */
 char *

@@ -559,7 +559,7 @@ span_upper_inc(Span *s)
 #endif
 
 /**
- * @ingroup libmeos_spantime_distance
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the width of the span as a double.
  */
 double

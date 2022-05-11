@@ -176,8 +176,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     if (cmp == 0)
     {
       result[count++] = tinstant_make(
-        func(tinstant_value(inst1), tinstant_value(inst2)), inst1->t,
-          inst1->temptype);
+        func(tinstant_value(inst1), tinstant_value(inst2)), inst1->temptype,
+        inst1->t);
       i++;
       j++;
     }
@@ -296,8 +296,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst1 = tsequence_inst_n(syncseq1, i);
     const TInstant *inst2 = tsequence_inst_n(syncseq2, i);
     instants[i] = tinstant_make(
-      func(tinstant_value(inst1), tinstant_value(inst2)), inst1->t,
-        seq1->temptype);
+      func(tinstant_value(inst1), tinstant_value(inst2)), seq1->temptype,
+      inst1->t);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
@@ -481,7 +481,8 @@ static SkipList *
 tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TInstantSet *ti, datum_func2 func)
 {
-  const TInstant **instants = tinstantset_instants(ti);
+  int count;
+  const TInstant **instants = tinstantset_instants(ti, &count);
   SkipList *result;
   if (! state)
     result = skiplist_make(fcinfo, (void **) instants, ti->count, TEMPORAL);
@@ -816,7 +817,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
 static TInstant *
 tinstant_transform_tcount(const TInstant *inst)
 {
-  return tinstant_make(Int32GetDatum(1), inst->t, T_TINT);
+  return tinstant_make(Int32GetDatum(1), T_TINT, inst->t);
 }
 
 /**
@@ -831,7 +832,7 @@ tinstantset_transform_tcount(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    result[i] = tinstant_make(datum_one, inst->t, T_TINT);
+    result[i] = tinstant_make(datum_one, T_TINT, inst->t);
   }
   return result;
 }
@@ -847,15 +848,15 @@ tsequence_transform_tcount(const TSequence *seq)
   Datum datum_one = Int32GetDatum(1);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(datum_one, seq->period.lower, T_TINT);
+    TInstant *inst = tinstant_make(datum_one, T_TINT, seq->period.lower);
     result = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return result;
   }
 
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, seq->period.lower, T_TINT);
-  instants[1] = tinstant_make(datum_one, seq->period.upper, T_TINT);
+  instants[0] = tinstant_make(datum_one, T_TINT, seq->period.lower);
+  instants[1] = tinstant_make(datum_one, T_TINT, seq->period.upper);
   result = tsequence_make((const TInstant **) instants, 2,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
@@ -980,7 +981,7 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
   if (! p)
   {
     result = palloc0(sizeof(Period));
-    temporal_bbox(temp, result);
+    temporal_set_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -992,7 +993,7 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  temporal_bbox(temp, &p1);
+  temporal_set_bbox(temp, &p1);
   result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(temp, 1);
@@ -1018,7 +1019,7 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (!box)
   {
-    temporal_bbox(temp, result);
+    temporal_set_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null box and null temporal, return the box */
@@ -1029,7 +1030,7 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   /* Both box and temporal are not null */
-  temporal_bbox(temp, result);
+  temporal_set_bbox(temp, result);
   tbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1257,8 +1258,8 @@ tnumberinst_transform_tavg(const TInstant *inst)
   double value = tnumberinst_double(inst);
   double2 dvalue;
   double2_set(value, 1, &dvalue);
-  TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
-    T_TDOUBLE2);
+  TInstant *result = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2,
+    inst->t);
   return result;
 }
 
@@ -1297,7 +1298,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
     TInstant *inst = instants[i];
     double2 *value = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
     double tavg = value->a / value->b;
-    newinstants[i] = tinstant_make(Float8GetDatum(tavg), inst->t, T_TFLOAT);
+    newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
   return tinstantset_make_free(newinstants, count, MERGE_NO);
 }
@@ -1318,7 +1319,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       const TInstant *inst = tsequence_inst_n(seq, j);
       double2 *value2 = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
       double value = value2->a / value2->b;
-      instants[j] = tinstant_make(Float8GetDatum(value), inst->t, T_TFLOAT);
+      instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,

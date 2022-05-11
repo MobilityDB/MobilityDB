@@ -72,12 +72,12 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  * Set the spatiotemporal box from the temporal point value
  */
 void
-tpointinst_stbox(const TInstant *inst, STBOX *box)
+tpointinst_set_stbox(const TInstant *inst, STBOX *box)
 {
   Datum value = tinstant_value(inst);
   GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
   /* Non-empty geometries have a bounding box */
-  geo_to_stbox(gs, box);
+  geo_set_stbox(gs, box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
 }
@@ -91,13 +91,13 @@ tpointinst_stbox(const TInstant *inst, STBOX *box)
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
-tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
+tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 {
-  tpointinst_stbox(instants[0], box);
+  tpointinst_set_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
     STBOX box1;
-    tpointinst_stbox(instants[i], &box1);
+    tpointinst_set_stbox(instants[i], &box1);
     stbox_expand(&box1, box);
   }
   return;
@@ -111,7 +111,7 @@ tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
  * @param[out] box Resulting bounding box
  */
 static void
-tpointinstarr_gbox(const TInstant **instants, int count, GBOX *box)
+tpointinstarr_set_gbox(const TInstant **instants, int count, GBOX *box)
 {
   assert(box);
   assert(count > 0);
@@ -155,14 +155,14 @@ tpointinstarr_gbox(const TInstant **instants, int count, GBOX *box)
  * gbox for a MultiPoint and a Linestring is around 2e-7
  */
 void
-tgeogpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
+tgeogpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 {
   GBOX gbox;
   gbox_init(&gbox);
   FLAGS_SET_Z(gbox.flags, 1);
   FLAGS_SET_M(gbox.flags, 0);
   FLAGS_SET_GEODETIC(gbox.flags, 1);
-  tpointinstarr_gbox(instants, count, &gbox);
+  tpointinstarr_set_gbox(instants, count, &gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   int32 srid = tpointinst_srid(instants[0]);
   stbox_set(true, hasz, true, true, srid, gbox.xmin, gbox.xmax,
@@ -179,7 +179,7 @@ tgeogpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
  * @param[in] count Number of elements in the array
  */
 void
-tpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
+tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(STBOX));
   for (int i = 1; i < count; i++)
@@ -214,7 +214,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    tpointinst_stbox(inst1, &result[0]);
+    tpointinst_set_stbox(inst1, &result[0]);
     return 1;
   }
 
@@ -222,10 +222,10 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
   inst1 = tsequence_inst_n(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
   {
-    tpointinst_stbox(inst1, &result[i]);
+    tpointinst_set_stbox(inst1, &result[i]);
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     STBOX box;
-    tpointinst_stbox(inst2, &box);
+    tpointinst_set_stbox(inst2, &box);
     stbox_expand(&box, &result[i]);
     inst1 = inst2;
   }
@@ -313,8 +313,8 @@ boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return -1;
   STBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  geo_to_stbox(gs, &box2);
+  temporal_set_bbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return result ? 1 : 0;
 }
@@ -333,7 +333,7 @@ boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
   STBOX box1;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   bool result = invert ? func(box, &box1) : func(&box1, box);
   return result;
 }
@@ -349,8 +349,8 @@ boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBOX *, const STBOX *))
 {
   STBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   return result;
 }

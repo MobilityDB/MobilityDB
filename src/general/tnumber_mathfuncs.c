@@ -315,12 +315,12 @@ tnumberseq_derivative(const TSequence *seq)
     derivative = datum_eq(value1, value2, basetype) ? 0.0 :
       (datum_double(value1, basetype) - datum_double(value2, basetype)) /
         ((double)(inst2->t - inst1->t) / 1000000);
-    instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t, T_TFLOAT);
+    instants[i] = tinstant_make(Float8GetDatum(derivative), T_TFLOAT, inst1->t);
     inst1 = inst2;
     value1 = value2;
   }
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
-    seq->period.upper, T_TFLOAT);
+    T_TFLOAT, seq->period.upper);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);

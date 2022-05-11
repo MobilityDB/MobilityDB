@@ -979,7 +979,7 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    temporal_bbox(temp, &bounds);
+    temporal_set_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
@@ -1117,7 +1117,7 @@ Tpoint_space_time_split(PG_FUNCTION_ARGS)
     int64 tunits = get_interval_units(duration);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    temporal_bbox(temp, &bounds);
+    temporal_set_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)

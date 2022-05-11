@@ -171,7 +171,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBOX box;
-    temporal_bbox(temp, &box);
+    temporal_set_bbox(temp, &box);
     if (basetype == T_INT4)
       *s = tbox_to_intspan(&box);
     else /* basetype == T_FLOAT8 */

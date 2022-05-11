@@ -150,7 +150,7 @@ tbox_out(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Return a new box value from its binary representation read from
+ * @brief Return a temporal box from its binary representation read from
  * the buffer.
  */
 TBOX *
@@ -200,7 +200,7 @@ tbox_write(const TBOX *box, StringInfo buf)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Send function for TBOX
+ * @brief Retun the binary representation of a temporal box
  */
 bytea *
 tbox_send(TBOX *box)
@@ -275,10 +275,10 @@ tbox_copy(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the number to a temporal box.
+ * @brief Cast a number to a temporal box.
  */
 void
-number_to_tbox(Datum value, CachedType basetype, TBOX *box)
+number_set_tbox(Datum value, CachedType basetype, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -294,10 +294,10 @@ number_to_tbox(Datum value, CachedType basetype, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the integer to a temporal box.
+ * @brief Cast an integer to a temporal box.
  */
 void
-int_to_tbox(int i, TBOX *box)
+int_set_tbox(int i, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -309,10 +309,10 @@ int_to_tbox(int i, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the float to a temporal box.
+ * @brief Cast a float to a temporal box.
  */
 void
-float_to_tbox(double d, TBOX *box)
+float_set_tbox(double d, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -324,10 +324,10 @@ float_to_tbox(double d, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the span to a temporal box.
+ * @brief Cast a span to a temporal box.
  */
 void
-span_to_tbox(const Span *span, TBOX *box)
+span_set_tbox(const Span *span, TBOX *box)
 {
   ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -340,10 +340,10 @@ span_to_tbox(const Span *span, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the timestamp to a temporal box.
+ * @brief Cast a timestamp to a temporal box.
  */
 void
-timestamp_to_tbox(TimestampTz t, TBOX *box)
+timestamp_set_tbox(TimestampTz t, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -355,10 +355,10 @@ timestamp_to_tbox(TimestampTz t, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the period set to a temporal box.
+ * @brief Cast a period set to a temporal box.
  */
 void
-timestampset_to_tbox(const TimestampSet *ts, TBOX *box)
+timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -372,10 +372,10 @@ timestampset_to_tbox(const TimestampSet *ts, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the period to a temporal box.
+ * @brief Cast a period to a temporal box.
  */
 void
-period_to_tbox(const Period *p, TBOX *box)
+period_set_tbox(const Period *p, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -388,10 +388,10 @@ period_to_tbox(const Period *p, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the period set to a temporal box.
+ * @brief Cast a period set to a temporal box.
  */
 void
-periodset_to_box(const PeriodSet *ps, TBOX *box)
+periodset_set_tbox(const PeriodSet *ps, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -404,8 +404,8 @@ periodset_to_box(const PeriodSet *ps, TBOX *box)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the integer and the timestamp to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from an integer and a timestamp
  */
 TBOX *
 int_timestamp_to_tbox(int i, TimestampTz t)
@@ -415,8 +415,8 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the integer and the timestamp to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a float and a timestamp
  */
 TBOX *
 float_timestamp_to_tbox(double d, TimestampTz t)
@@ -426,8 +426,8 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the integer and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from an integer and a period
  */
 TBOX *
 int_period_to_tbox(int i, const Period *p)
@@ -438,8 +438,8 @@ int_period_to_tbox(int i, const Period *p)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the float and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a float and a period
  */
 TBOX *
 float_period_to_tbox(double d, const Period *p)
@@ -449,8 +449,8 @@ float_period_to_tbox(double d, const Period *p)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the span and the timestamp to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a span and a timestamp
  */
 TBOX *
 span_timestamp_to_tbox(const Span *span, TimestampTz t)
@@ -462,8 +462,8 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the span and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a span and a period
  */
 TBOX *
 span_period_to_tbox(const Span *span, const Period *p)
@@ -479,7 +479,7 @@ span_period_to_tbox(const Span *span, const Period *p)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a integer span value.
+ * @brief Cast a temporal box to an integer span.
  */
 Span *
 tbox_to_intspan(const TBOX *box)
@@ -493,7 +493,7 @@ tbox_to_intspan(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a float span value.
+ * @brief Cast a temporal box as a float span.
  */
 Span *
 tbox_to_floatspan(const TBOX *box)
@@ -507,7 +507,7 @@ tbox_to_floatspan(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a period value
+ * @brief Cast a temporal box as a period
  */
 Period *
 tbox_to_period(const TBOX *box)
@@ -934,7 +934,7 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the intersection of the temporal boxes.
+ * @brief Return the intersection of the temporal boxes in the third argument.
  */
 bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -966,7 +966,7 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the union of the spatiotemporal boxes.
+ * @brief Return the intersection of the spatiotemporal boxes.
  */
 TBOX *
 intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -983,6 +983,35 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /*****************************************************************************
  * Comparison functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_box_comp
+ * @brief Return true if the two temporal boxes are equal
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+tbox_eq(const TBOX *box1, const TBOX *box2)
+{
+  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
+    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
+      return false;
+  if (box1->xmin != box2->xmin || box1->tmin != box2->tmin ||
+    box1->xmax != box2->xmax || box1->tmax != box2->tmax)
+    return false;
+  /* The two boxes are equal */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_comp
+ * @brief Return true if the two temporal boxes are different
+ */
+bool
+tbox_ne(const TBOX *box1, const TBOX *box2)
+{
+  return ! tbox_eq(box1, box2);
+}
 
 /**
  * @ingroup libmeos_box_comp
@@ -1031,35 +1060,6 @@ tbox_cmp(const TBOX *box1, const TBOX *box2)
     return 1;
   /* The two boxes are equal */
   return 0;
-}
-
-/**
- * @ingroup libmeos_box_comp
- * @brief Return true if the two temporal boxes are equal
- *
- * @note The internal B-tree comparator is not used to increase efficiency
- */
-bool
-tbox_eq(const TBOX *box1, const TBOX *box2)
-{
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-      return false;
-  if (box1->xmin != box2->xmin || box1->tmin != box2->tmin ||
-    box1->xmax != box2->xmax || box1->tmax != box2->tmax)
-    return false;
-  /* The two boxes are equal */
-  return true;
-}
-
-/**
- * @ingroup libmeos_box_comp
- * @brief Return true if the two temporal boxes are different
- */
-bool
-tbox_ne(const TBOX *box1, const TBOX *box2)
-{
-  return ! tbox_eq(box1, box2);
 }
 
 /**
@@ -1233,7 +1233,7 @@ Int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  int_to_tbox(i, result);
+  int_set_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1246,7 +1246,7 @@ Float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  float_to_tbox(d, result);
+  float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1260,7 +1260,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  float_to_tbox(d, result);
+  float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1273,7 +1273,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  span_to_tbox(span, result);
+  span_set_tbox(span, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1286,7 +1286,7 @@ Timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  timestamp_to_tbox(t, result);
+  timestamp_set_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1303,7 +1303,7 @@ timestampset_tbox_slice(Datum tsdatum, TBOX *box)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  timestampset_to_tbox(ts, box);
+  timestampset_set_tbox(ts, box);
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
@@ -1330,7 +1330,7 @@ Period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  period_to_tbox(p, result);
+  period_set_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1347,7 +1347,7 @@ periodset_tbox_slice(Datum psdatum, TBOX *box)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  periodset_to_box(ps, box);
+  periodset_set_tbox(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
@@ -1584,7 +1584,6 @@ Tbox_expand_temporal(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_transf
  * @brief Set the precision of the value dimension of the temporal box to
  * the number of decimal places.
  */

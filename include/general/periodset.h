@@ -47,7 +47,7 @@
 
 extern const Period *periodset_per_n(const PeriodSet *ps, int index);
 extern const Period *periodset_period_ptr(const PeriodSet *ps);
-extern void periodset_period(const PeriodSet *ps, Period *p);
+extern void periodset_set_period(const PeriodSet *ps, Period *p);
 extern void periodset_period_slice(Datum psdatum, Period *p);
 extern PeriodSet *periodset_make(const Period **periods, int count,
   bool normalize);
@@ -70,7 +70,7 @@ extern PeriodSet *periodset_read(StringInfo buf);
 extern PeriodSet *timestamp_to_periodset(TimestampTz t);
 extern PeriodSet *timestampset_to_periodset(const TimestampSet *ts);
 extern PeriodSet *period_to_periodset(const Period *p);
-extern void periodset_period(const PeriodSet *ps, Period *p);
+extern void periodset_set_period(const PeriodSet *ps, Period *p);
 
 /* Accessor functions */
 

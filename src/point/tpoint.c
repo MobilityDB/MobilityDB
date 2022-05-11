@@ -76,7 +76,7 @@ STBOX *
 tpoint_stbox(const Temporal *temp)
 {
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  temporal_bbox(temp, result);
+  temporal_set_bbox(temp, result);
   return result;
 }
 
@@ -95,7 +95,7 @@ geo_expand_spatial(const GSERIALIZED *gs, double d)
   if (gserialized_is_empty(gs))
     return NULL;
   STBOX box;
-  geo_to_stbox(gs, &box);
+  geo_set_stbox(gs, &box);
   STBOX *result = stbox_expand_spatial(&box, d);
   return result;
 }
@@ -109,7 +109,7 @@ STBOX *
 tpoint_expand_spatial(const Temporal *temp, double d)
 {
   STBOX box;
-  temporal_bbox(temp, &box);
+  temporal_set_bbox(temp, &box);
   STBOX *result = stbox_expand_spatial(&box, d);
   return result;
 }
@@ -495,8 +495,8 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
-    temptype);
+  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), temptype,
+    t);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }

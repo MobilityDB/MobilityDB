@@ -463,20 +463,20 @@ tpoint_const_stbox(Node *other, STBOX *box)
   Oid consttypid = ((Const *) other)->consttype;
   CachedType type = oid_type(consttypid);
   if (tgeo_basetype(type))
-    geo_to_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
+    geo_set_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
   else if (type == T_TIMESTAMPTZ)
-    timestamp_to_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+    timestamp_set_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
   else if (type == T_TIMESTAMPSET)
     timestampset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_PERIOD)
-    period_to_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
+    period_set_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
   else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
   else if (tspatial_type(type))
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
+    temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
   return true;

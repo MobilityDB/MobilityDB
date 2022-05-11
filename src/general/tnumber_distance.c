@@ -174,11 +174,11 @@ nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
 {
   ensure_tnumber_basetype(basetype);
   TBOX box1, box2;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   if (basetype == T_INT4)
-    int_to_tbox(DatumGetInt32(value), &box2);
+    int_set_tbox(DatumGetInt32(value), &box2);
   else /* basetype == T_FLOAT8 */
-    float_to_tbox(DatumGetFloat8(value), &box2);
+    float_set_tbox(DatumGetFloat8(value), &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
 
@@ -234,7 +234,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
     temporal_restrict_period(temp, &inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBOX box1;
-  temporal_bbox(temp1, &box1);
+  temporal_set_bbox(temp1, &box1);
   if (overlaps_tbox_tbox(box, &box1))
     return 0.0;
 

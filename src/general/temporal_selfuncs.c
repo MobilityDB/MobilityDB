@@ -255,7 +255,7 @@ temporal_const_to_period(Node *other, Period *period)
   if (time_type(type))
     time_const_to_period(other, period);
   else if (type == T_TBOOL || type == T_TTEXT)
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
+    temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
     return false;
   return true;

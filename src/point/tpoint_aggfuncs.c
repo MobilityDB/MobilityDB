@@ -108,14 +108,14 @@ tpointinst_transform_tcentroid(const TInstant *inst)
     const POINT3DZ *point = datum_point3dz_p(tinstant_value(inst));
     double4 dvalue;
     double4_set(point->x, point->y, point->z, 1, &dvalue);
-    result = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_TDOUBLE4);
+    result = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE4, inst->t);
   }
   else
   {
     const POINT2D *point = datum_point2d_p(tinstant_value(inst));
     double3 dvalue;
     double3_set(point->x, point->y, 1, &dvalue);
-    result = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_TDOUBLE3);
+    result = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE3, inst->t);
   }
   return result;
 }
@@ -226,7 +226,7 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (temp && ! box )
   {
-    temporal_bbox(temp, result);
+    temporal_set_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null box and null temporal, return the box */
@@ -240,7 +240,7 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
   ensure_same_srid_tpoint_stbox(temp, box);
   ensure_same_dimensionality(temp->flags, box->flags);
   ensure_same_geodetic(temp->flags, box->flags);
-  temporal_bbox(temp, result);
+  temporal_set_bbox(temp, result);
   stbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -373,7 +373,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
   {
     TInstant *inst = instants[i];
     Datum value = doublen_to_point(inst, srid);
-    newinstants[i] = tinstant_make(value, inst->t, T_TGEOMPOINT);
+    newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(value));
   }
   return tinstantset_make_free(newinstants, count, MERGE_NO);
@@ -399,7 +399,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
       Datum value = doublen_to_point(inst, srid);
-      instants[j] = tinstant_make(value, inst->t, T_TGEOMPOINT);
+      instants[j] = tinstant_make(value, T_TGEOMPOINT, inst->t);
       pfree(DatumGetPointer(value));
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,

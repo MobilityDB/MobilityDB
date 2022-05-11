@@ -208,19 +208,19 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   if (tnumber_basetype(type))
   {
     Datum value = PG_GETARG_DATUM(1);
-    number_to_tbox(value, type, result);
+    number_set_tbox(value, type, result);
   }
   else if (tnumber_spantype(type))
   {
     Span *span = PG_GETARG_SPAN_P(1);
     if (span == NULL)
       return false;
-    span_to_tbox(span, result);
+    span_set_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_to_tbox(t, result);
+    timestamp_set_tbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -230,7 +230,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   else if (type == T_PERIOD)
   {
     Period *p = PG_GETARG_SPAN_P(1);
-    period_to_tbox(p, result);
+    period_set_tbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

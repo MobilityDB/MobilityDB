@@ -494,7 +494,7 @@ extern void ensure_valid_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
-extern void temporal_bbox(const Temporal *temp, void *box);
+extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern void temporal_bbox_slice(Datum tempdatum, void *box);
 extern Temporal *temporal_copy(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
@@ -515,8 +515,8 @@ extern Temporal* temporal_recv(StringInfo buf);
 
 /* Constructor functions */
 
-extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
-  CachedType basetype, bool linear);
+extern Temporal *temporal_from_base(Datum value, CachedType basetype,
+  const Temporal *temp, bool linear);
 
 /* Append and merge functions */
 

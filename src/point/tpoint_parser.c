@@ -243,7 +243,7 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   TInstant *result = make ?
-    tinstant_make(PointerGetDatum(gs), t, temptype) : NULL;
+    tinstant_make(PointerGetDatum(gs), temptype, t) : NULL;
   pfree(gs);
   return result;
 }

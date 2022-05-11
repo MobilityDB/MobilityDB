@@ -744,7 +744,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value(instants[k - 1]);
-          tofree[l] = tinstant_make(value, upper, seq->temptype);
+          tofree[l] = tinstant_make(value, seq->temptype, upper);
         }
         instants[k++] = tofree[l++];
       }
@@ -1421,7 +1421,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     int k = 1;
     if (i < seq->count)
     {
-      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, seq->temptype);
+      tofree[l++] = bounds[1] = tinstant_make(value, seq->temptype, inst2->t);
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
@@ -1546,8 +1546,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetype,
           &projvalue, &t);
         tofree[l++] = bounds[last] =  SPAN_ROUNDOFF ?
-          tinstant_make(bucket_upper, t, seq->temptype) :
-          tinstant_make(projvalue, t, seq->temptype);
+          tinstant_make(bucket_upper, seq->temptype, t) :
+          tinstant_make(projvalue, seq->temptype, t);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;

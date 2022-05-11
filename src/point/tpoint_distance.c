@@ -661,7 +661,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   Datum value;
   bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, seq->temptype);
+  TInstant *result = tinstant_make(value, seq->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -692,7 +692,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
   Datum value;
   bool found = tsequenceset_value_at_timestamp_inc(ts, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, ts->temptype);
+  TInstant *result = tinstant_make(value, ts->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -749,7 +749,7 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
     Datum value;
     bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->temptype);
+    result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   return result;

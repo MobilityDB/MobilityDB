@@ -315,7 +315,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   if (! p)
   {
     result = palloc(sizeof(Period));
-    periodset_period(ps, result);
+    periodset_set_period(ps, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -327,7 +327,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  periodset_period(ps, &p1);
+  periodset_set_period(ps, &p1);
   result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(ps, 1);
@@ -418,7 +418,7 @@ timestampset_transform_tcount(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    result[i] = tinstant_make(datum_one, t, T_TINT);
+    result[i] = tinstant_make(datum_one, T_TINT, t);
   }
   return result;
 }
@@ -433,7 +433,7 @@ period_transform_tcount(const Period *p)
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, p->lower, T_TINT);
+  instants[0] = tinstant_make(datum_one, T_TINT, p->lower);
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1,
@@ -441,7 +441,7 @@ period_transform_tcount(const Period *p)
   }
   else
   {
-    instants[1] = tinstant_make(datum_one, p->upper, T_TINT);
+    instants[1] = tinstant_make(datum_one, T_TINT, p->upper);
     result = tsequence_make((const TInstant **) instants, 2,
       p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[1]);

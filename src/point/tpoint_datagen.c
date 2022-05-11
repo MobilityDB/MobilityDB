@@ -106,7 +106,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
       lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);  \
       point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));  \
       lwpoint_free(lwpoint);  \
-      instants[l++] = tinstant_make(point, t, T_TGEOMPOINT);  \
+      instants[l++] = tinstant_make(point, T_TGEOMPOINT, t);  \
       pfree(DatumGetPointer(point));  \
   } while (0)
 

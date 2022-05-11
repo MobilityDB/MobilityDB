@@ -54,7 +54,7 @@ extern TSequence *tsequence_copy(const TSequence *seq);
 extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
 
 extern void *tsequence_bbox_ptr(const TSequence *seq);
-extern void tsequence_bbox(const TSequence *seq, void *box);
+extern void tsequence_set_bbox(const TSequence *seq, void *box);
 extern void tsequence_make_valid1(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, bool linear);
 extern TSequence *tsequence_make1(const TInstant **instants, int count,
@@ -142,12 +142,12 @@ extern Datum tsequence_min_value(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern Interval *tsequence_duration(const TSequence *seq);
 extern void tsequence_period(const TSequence *seq, Period *p);
-extern TSequence **tsequence_sequences(const TSequence *seq);
+extern TSequence **tsequence_sequences(const TSequence *seq, int *count);
 extern TSequence **tsequence_segments(const TSequence *seq, int *count);
-extern const TInstant **tsequence_instants(const TSequence *seq);
+extern const TInstant **tsequence_instants(const TSequence *seq, int *count);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
-extern TimestampTz *tsequence_timestamps(const TSequence *seq);
+extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
 extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t,
   Datum *result);
 extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,

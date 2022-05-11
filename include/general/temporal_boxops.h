@@ -60,12 +60,12 @@ extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
 /* Compute the bounding box at the creation of temporal values */
 
 extern size_t temporal_bbox_size(CachedType tempype);
-extern void tinstant_make_bbox(const TInstant *inst, void *bbox);
-extern void tinstantset_make_bbox(const TInstant **inst, int count,
+extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
+extern void tinstantset_set_bbox1(const TInstant **inst, int count,
   void *bbox);
-extern void tsequence_make_bbox(const TInstant** inst, int count,
+extern void tsequence_set_bbox1(const TInstant** inst, int count,
   bool lower_inc, bool upper_inc, bool linear, void *bbox);
-extern void tsequenceset_make_bbox(const TSequence **seqs, int count,
+extern void tsequenceset_set_bbox1(const TSequence **seqs, int count,
   void *bbox);
 
 /* Bounding box operators for temporal types */

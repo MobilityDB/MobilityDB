@@ -60,7 +60,7 @@
  *****************************************************************************/
 
 /**
- * Return true if the bounding boxes are equal
+ * Return true if two bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
@@ -107,7 +107,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
 }
 
 /**
- * Shift and/or scale the time span of the bounding box with the two intervals
+ * Shift and/or scale the time span of the bounding box by two intervals
  *
  * @param[in] box Bounding box
  * @param[in] start Interval to shift
@@ -138,7 +138,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
  *****************************************************************************/
 
 /**
- * Return true if the base type does not have bounding box
+ * Return true if a temporal type does not have bounding box
  */
 static bool
 temptype_without_bbox(CachedType temptype)
@@ -150,7 +150,7 @@ temptype_without_bbox(CachedType temptype)
 }
 
 /**
- * Return the size of the bounding box
+ * Return the size of a bounding box
  */
 size_t
 temporal_bbox_size(CachedType temptype)
@@ -169,13 +169,13 @@ temporal_bbox_size(CachedType temptype)
 }
 
 /**
- * Set the bounding box from a temporal instant value
+ * Set a bounding box from a temporal instant
  *
  * @param[in] box Bounding box
  * @param[in] inst Temporal value
  */
 void
-tinstant_make_bbox(const TInstant *inst, void *box)
+tinstant_set_bbox(const TInstant *inst, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(inst->temptype);
@@ -188,10 +188,10 @@ tinstant_make_bbox(const TInstant *inst, void *box)
     tbox_set(true, true, dvalue, dvalue, inst->t, inst->t, (TBOX *) box);
   }
   else if (tgeo_type(inst->temptype))
-    tpointinst_stbox(inst, (STBOX *) box);
+    tpointinst_set_stbox(inst, (STBOX *) box);
 #ifndef MEOS
   else if (inst->temptype == T_TNPOINT)
-    tnpointinst_make_stbox(inst, (STBOX *) box);
+    tnpointinst_set_stbox(inst, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -200,35 +200,34 @@ tinstant_make_bbox(const TInstant *inst, void *box)
 }
 
 /**
- * Set the temporal box from the array of temporal number instant values
+ * Set a temporal box from an array of temporal number instants
  *
  * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberinstarr_tbox(const TInstant **instants, int count, TBOX *box)
+tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
 {
-  tinstant_make_bbox(instants[0], box);
+  tinstant_set_bbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
     TBOX box1;
-    tinstant_make_bbox(instants[i], &box1);
+    tinstant_set_bbox(instants[i], &box1);
     tbox_expand(&box1, box);
   }
   return;
 }
 
 /**
- * Set the bounding box from the array of temporal instant values
- * (dispatch function)
+ * Set a bounding box from an array of temporal instants
  *
  * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  */
 void
-tinstantset_make_bbox(const TInstant **instants, int count, void *box)
+tinstantset_set_bbox1(const TInstant **instants, int count, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
@@ -236,12 +235,12 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
     span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
       (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
-    tnumberinstarr_tbox(instants, count, (TBOX *) box);
+    tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
   else if (tgeo_type(instants[0]->temptype))
-    tgeompointinstarr_stbox(instants, count, (STBOX *) box);
+    tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
 #ifndef MEOS
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointinstarr_stbox(instants, count, (STBOX *) box);
+    tnpointinstarr_set_stbox(instants, count, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -250,8 +249,7 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
 }
 
 /**
- * Set the bounding box from the array of temporal instant values
- * (dispatch function)
+ * Set a bounding box from an array of temporal instant values
  *
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
@@ -260,11 +258,11 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  * @param[out] box Bounding box
  */
 void
-tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
+tsequence_set_bbox1(const TInstant **instants, int count, bool lower_inc,
 #ifndef MEOS
   bool upper_inc, bool linear, void *box)
 #else
-  bool upper_inc, bool linear  __attribute__((unused)), void *box)
+  bool upper_inc, bool linear __attribute__((unused)), void *box)
 #endif
 {
   /* Only external types have bounding box */
@@ -273,14 +271,12 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
     span_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
-    tnumberinstarr_tbox(instants, count, (TBOX *) box);
-  else if (instants[0]->temptype == T_TGEOMPOINT)
-    tgeompointinstarr_stbox(instants, count, (STBOX *) box);
-  else if (instants[0]->temptype == T_TGEOGPOINT)
-    tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
+    tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
+  else if (tgeo_type(instants[0]->temptype))
+    tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
 #ifndef MEOS
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
+    tnpointseq_set_stbox(instants, count, linear, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -296,8 +292,7 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the array
  */
 static void
-tseqarr_to_period(const TSequence **sequences, int count,
-  Period *period)
+tseqarr_set_period(const TSequence **sequences, int count, Period *period)
 {
   const Period *first = &sequences[0]->period;
   const Period *last = &sequences[count - 1]->period;
@@ -314,8 +309,7 @@ tseqarr_to_period(const TSequence **sequences, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_to_tbox(const TSequence **sequences, int count,
-  TBOX *box)
+tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBOX *box)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
   for (int i = 1; i < count; i++)
@@ -331,16 +325,16 @@ tnumberseqarr_to_tbox(const TSequence **sequences, int count,
  * (dispatch function)
  */
 void
-tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
+tsequenceset_set_bbox1(const TSequence **sequences, int count, void *box)
 {
   /* Only external types have bounding box */ // TODO
   ensure_temporal_type(sequences[0]->temptype);
   if (talpha_type(sequences[0]->temptype))
-    tseqarr_to_period(sequences, count, (Period *) box);
+    tseqarr_set_period(sequences, count, (Period *) box);
   else if (tnumber_type(sequences[0]->temptype))
-    tnumberseqarr_to_tbox(sequences, count, (TBOX *) box);
+    tnumberseqarr_set_tbox(sequences, count, (TBOX *) box);
   else if (tspatial_type(sequences[0]->temptype))
-    tpointseqarr_stbox(sequences, count, (STBOX *) box);
+    tpointseqarr_set_stbox(sequences, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       sequences[0]->temptype);
@@ -426,7 +420,7 @@ boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
 {
   Period p1, p2;
   temporal_period(temp, &p1);
-  periodset_period(ps, &p2);
+  periodset_set_period(ps, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }
@@ -467,8 +461,8 @@ boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  number_to_tbox(number, basetype, &box2);
+  temporal_set_bbox(temp, &box1);
+  number_set_tbox(number, basetype, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return result;
 }
@@ -486,8 +480,8 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  span_to_tbox(span, &box2);
+  temporal_set_bbox(temp, &box1);
+  span_set_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return (result);
 }
@@ -506,7 +500,7 @@ boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   bool result = invert ? func(box, &box1) : func(&box1, box);
   return result;
 }
@@ -522,8 +516,8 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *))
 {
   TBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   return result;
 }

@@ -417,7 +417,7 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)lwpoint1);
   CachedType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
-  TInstant *result = tinstant_make(PointerGetDatum(gs), t, temptype);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);
   return result;
 }
@@ -1805,7 +1805,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
   }
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-  *result = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+  *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   lwpoint_free(lwpoint);
   pfree(gs);
   return;
@@ -1942,7 +1942,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   lwpoint_free(lwpoint);
 
   /* Construct the result */
-  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
@@ -1984,7 +1984,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2029,7 +2029,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2363,7 +2363,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBOX box;
-  temporal_bbox(temp, &box);
+  temporal_set_bbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   / * We use half of the square height and width as limit: We use this

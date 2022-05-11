@@ -64,18 +64,18 @@ extern TInstant *tinstant_recv(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
-extern TInstant *tinstant_make(Datum value, TimestampTz t, CachedType temptype);
+extern TInstant *tinstant_make(Datum value, CachedType temptype, TimestampTz t);
 extern TInstant *tinstant_copy(const TInstant *inst);
 
 /* Accessor functions */
 
-extern Datum *tinstant_values(const TInstant *inst);
-extern Span **tfloatinst_spans(const TInstant *inst);
+extern Datum *tinstant_values(const TInstant *inst, int *count);
+extern Span **tfloatinst_spans(const TInstant *inst, int *count);
 extern PeriodSet *tinstant_time(const TInstant *inst);
 extern void tinstant_period(const TInstant *inst, Period *p);
-extern TSequence **tinstant_sequences(const TInstant *inst);
-extern TimestampTz *tinstant_timestamps(const TInstant *inst);
-extern const TInstant **tinstant_instants(const TInstant *inst);
+extern TSequence **tinstant_sequences(const TInstant *inst, int *count);
+extern TimestampTz *tinstant_timestamps(const TInstant *inst, int *count);
+extern const TInstant **tinstant_instants(const TInstant *inst, int *count);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t,
   Datum *result);
 

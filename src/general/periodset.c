@@ -375,10 +375,11 @@ periodset_timespan(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Copy in the second argument the bounding period of the period set value
+ * @brief Set the period in the second argument to the bounding period of the
+ * period set value
  */
 void
-periodset_period(const PeriodSet *ps, Period *p)
+periodset_set_period(const PeriodSet *ps, Period *p)
 {
   const Period *p1 = (Period *) &ps->period;
   span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
@@ -963,7 +964,7 @@ periodset_period_slice(Datum psdatum, Period *p)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  periodset_period(ps, p);
+  periodset_set_period(ps, p);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }

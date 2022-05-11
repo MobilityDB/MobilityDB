@@ -208,7 +208,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal instant point from its MF-JSON representation.
  */
 TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -239,7 +239,7 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
   TimestampTz t = basetype_input(T_TIMESTAMPTZ, str);
-  TInstant *result = tinstant_make(value, t, temptype);
+  TInstant *result = tinstant_make(value, temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -262,7 +262,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   /* Construct the array of temporal instant points */
   TInstant **result = palloc(sizeof(TInstant *) * numpoints);
   for (int i = 0; i < numpoints; i++)
-    result[i] = tinstant_make(values[i], times[i], temptype);
+    result[i] = tinstant_make(values[i], temptype, times[i]);
 
   for (int i = 0; i < numpoints; i++)
     pfree(DatumGetPointer(values[i]));
@@ -273,7 +273,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal instant set point from its MF-JSON representation.
  */
 TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -286,7 +286,7 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal sequence point from its MF-JSON representation.
  */
 TSequence *
 tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -318,7 +318,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal sequence set point from its MF-JSON representation.
  */
 TSequenceSet *
 tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -347,7 +347,6 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its MF-JSON representation
  */
 Temporal *
@@ -665,7 +664,7 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
   Datum value = point_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
   CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
-  TInstant *result = tinstant_make(value, t, temptype);
+  TInstant *result = tinstant_make(value, temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -683,7 +682,7 @@ tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
     /* Parse the point and the timestamp to create the instant point */
     Datum value = point_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make(value, t, temptype);
+    result[i] = tinstant_make(value, temptype, t);
     pfree(DatumGetPointer(value));
   }
   return result;
@@ -781,7 +780,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
       /* Parse the point and the timestamp to create the instant point */
       Datum value = point_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make(value, t, temptype);
+      instants[j] = tinstant_make(value, temptype, t);
       pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,

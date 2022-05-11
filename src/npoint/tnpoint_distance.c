@@ -122,7 +122,7 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
   Datum value;
   bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, resultgeom->t, temp->temptype);
+  TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   return result;
 }
@@ -143,7 +143,7 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   Datum value;
   bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, resultgeom->t, temp->temptype);
+  TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -175,7 +175,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
     Datum value;
     bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->temptype);
+    result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   return result;

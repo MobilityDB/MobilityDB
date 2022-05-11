@@ -98,15 +98,15 @@ extern TBOX *tbox_read(StringInfo buf);
 
 /* Casting */
 
-extern void number_to_tbox(Datum value, CachedType basetype, TBOX *box);
-extern void int_to_tbox(int i, TBOX *box);
-extern void float_to_tbox(double d, TBOX *box);
-extern void span_to_tbox(const Span *r, TBOX *box);
-extern void timestamp_to_tbox(TimestampTz t, TBOX *box);
-extern void timestampset_to_tbox(const TimestampSet *ts, TBOX *box);
+extern void number_set_tbox(Datum value, CachedType basetype, TBOX *box);
+extern void int_set_tbox(int i, TBOX *box);
+extern void float_set_tbox(double d, TBOX *box);
+extern void span_set_tbox(const Span *r, TBOX *box);
+extern void timestamp_set_tbox(TimestampTz t, TBOX *box);
+extern void timestampset_set_tbox(const TimestampSet *ts, TBOX *box);
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
-extern void period_to_tbox(const Period *p, TBOX *box);
-extern void periodset_to_box(const PeriodSet *ps, TBOX *box);
+extern void period_set_tbox(const Period *p, TBOX *box);
+extern void periodset_set_tbox(const PeriodSet *ps, TBOX *box);
 extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);

@@ -2731,7 +2731,7 @@ double
 distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
   Period p;
-  periodset_period(ps, &p);
+  periodset_set_period(ps, &p);
   double result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -2797,7 +2797,7 @@ distance_timestampset_periodset(const TimestampSet *ts,
 {
   Period p1, p2;
   timestampset_period(ts, &p1);
-  periodset_period(ps, &p2);
+  periodset_set_period(ps, &p2);
   double result = distance_span_span(&p1, &p2);
   return result;
 }
@@ -2847,7 +2847,7 @@ double
 distance_period_periodset(const Period *p, const PeriodSet *ps)
 {
   Period p1;
-  periodset_period(ps, &p1);
+  periodset_set_period(ps, &p1);
   double result = distance_span_span(&p1, p);
   return result;
 }
@@ -2901,8 +2901,8 @@ double
 distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   Period p1, p2;
-  periodset_period(ps1, &p1);
-  periodset_period(ps2, &p2);
+  periodset_set_period(ps1, &p1);
+  periodset_set_period(ps2, &p2);
   double result = distance_span_span(&p1, &p2);
   return result;
 }

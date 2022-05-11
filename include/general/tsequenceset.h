@@ -55,7 +55,7 @@ extern TSequenceSet *tsequenceset_make_gaps(const TInstant **instants,
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ts);
 
 extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
-extern void tsequenceset_bbox(const TSequenceSet *ts, void *box);
+extern void tsequenceset_set_bbox(const TSequenceSet *ts, void *box);
 extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t,
   int *loc);
 
@@ -119,11 +119,12 @@ extern Interval *tsequenceset_timespan(const TSequenceSet *ts);
 extern Interval *tsequenceset_duration(const TSequenceSet *ts);
 extern void tsequenceset_period(const TSequenceSet *ts, Period *p);
 extern const TSequence **tsequenceset_sequences_p(const TSequenceSet *ts);
-extern TSequence **tsequenceset_sequences(const TSequenceSet *ts);
+extern TSequence **tsequenceset_sequences(const TSequenceSet *ts, int *count);
 extern TSequence **tsequenceset_segments(const TSequenceSet *ts, int *count);
 extern int tsequenceset_num_instants(const TSequenceSet *ts);
 extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ts, int n);
-extern const TInstant **tsequenceset_instants(const TSequenceSet *ts);
+extern const TInstant **tsequenceset_instants(const TSequenceSet *ts,
+  int *count);
 extern TimestampTz tsequenceset_start_timestamp(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ts);

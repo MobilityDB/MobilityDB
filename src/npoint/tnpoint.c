@@ -63,7 +63,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum geom = npoint_geom(np);
-  TInstant *result = tinstant_make(geom, inst->t, T_TGEOMPOINT);
+  TInstant *result = tinstant_make(geom, T_TGEOMPOINT, inst->t);
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -106,7 +106,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
     assert(opa->npoints <= 1);
     lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
-    instants[i] = tinstant_make(point, inst->t, T_TGEOMPOINT);
+    instants[i] = tinstant_make(point, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(point));
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
@@ -163,7 +163,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
   Npoint *np = geom_npoint(geom);
   if (np == NULL)
     return NULL;
-  TInstant *result = tinstant_make(PointerGetDatum(np), inst->t, T_TNPOINT);
+  TInstant *result = tinstant_make(PointerGetDatum(np), T_TNPOINT, inst->t);
   pfree(np);
   return result;
 }

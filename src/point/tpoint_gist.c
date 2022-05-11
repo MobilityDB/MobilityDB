@@ -283,12 +283,12 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
     if (gs == NULL || gserialized_is_empty(gs))
       return false;
-    geo_to_stbox(gs, result);
+    geo_set_stbox(gs, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_to_stbox(t, result);
+    timestamp_set_stbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -298,7 +298,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
   else if (type == T_PERIOD)
   {
     Period *p = PG_GETARG_SPAN_P(1);
-    period_to_stbox(p, result);
+    period_set_stbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

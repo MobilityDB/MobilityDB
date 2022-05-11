@@ -48,7 +48,7 @@
 extern const TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
 
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
-extern void tinstantset_bbox(const TInstantSet *ti, void *box);
+extern void tinstantset_set_bbox(const TInstantSet *ti, void *box);
 extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
   int *pos);
@@ -81,11 +81,11 @@ extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
 extern void tinstantset_period(const TInstantSet *ti, Period *p);
 extern Interval *tinstantset_timespan(const TInstantSet *ti);
-extern TSequence **tinstantset_sequences(const TInstantSet *ti);
-extern const TInstant **tinstantset_instants(const TInstantSet *ti);
+extern TSequence **tinstantset_sequences(const TInstantSet *ti, int *count);
+extern const TInstant **tinstantset_instants(const TInstantSet *ti, int *count);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
-extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti);
+extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti, int *count);
 
 /* Cast functions */
 

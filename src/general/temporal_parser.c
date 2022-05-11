@@ -471,7 +471,7 @@ tinstant_parse(char **str, CachedType temptype, bool end, bool make)
   ensure_end_input(str, end);
   if (! make)
     return NULL;
-  return tinstant_make(elem, t, temptype);
+  return tinstant_make(elem, temptype, t);
 }
 
 /**

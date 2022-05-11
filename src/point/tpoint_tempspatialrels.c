@@ -147,7 +147,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
   /* For disjoint we need to invert the result */
   if (! tinter)
     result = ! result;
-  return tinstant_make(BoolGetDatum(result), inst->t, T_TBOOL);
+  return tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
 }
 
 /**
@@ -170,7 +170,7 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter,
     /* For disjoint we need to invert the result */
     if (! tinter)
       result = ! result;
-    instants[i] = tinstant_make(BoolGetDatum(result), inst->t, T_TBOOL);
+    instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
   TInstantSet *result = tinstantset_make(instants, ti->count, MERGE_NO);
   pfree_array((void **) instants, ti->count);
@@ -208,11 +208,11 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
     if (! tinter)
       datum_res = BoolGetDatum(! DatumGetBool(datum_res));
     TInstant *instants[2];
-    instants[0] = tinstant_make(datum_res, inst1->t, T_TBOOL);
+    instants[0] = tinstant_make(datum_res, T_TBOOL, inst1->t);
     int l = 1;
     bool upper_inc1 = false;
     if (inst2 != NULL)
-      instants[l++] = tinstant_make(datum_res, inst2->t, T_TBOOL);
+      instants[l++] = tinstant_make(datum_res, T_TBOOL, inst2->t);
     else
       upper_inc1 = true;
     result[k++] = tsequence_make((const TInstant **) instants, l,
@@ -473,11 +473,11 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 
   /* Bounding box test */
   STBOX box1, box2;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_to_stbox(gs, &box2);
-  if (!overlaps_stbox_stbox(&box1, &box2))
-    return temporal_from_base(temp, datum_no, T_TBOOL, STEP);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return temporal_from_base(datum_no, T_TBOOL, temp, STEP);
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
@@ -773,7 +773,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   if (seq1->count == 1)
   {
     TInstant *inst = tinstant_make(func(tinstant_value(start1),
-      tinstant_value(start2), dist), start1->t, T_TBOOL);
+      tinstant_value(start2), dist), T_TBOOL, start1->t);
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
@@ -793,7 +793,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
   TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
+  instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
   for (int i = 1; i < seq1->count; i++)
@@ -1101,8 +1101,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   Datum sv = tinstant_value(start);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(func(sv, point, dist),
-      start->t, T_TBOOL);
+    TInstant *inst = tinstant_make(func(sv, point, dist), T_TBOOL, start->t);
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
@@ -1119,7 +1118,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
   TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
+  instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
   for (int i = 1; i < seq->count; i++)
@@ -1328,7 +1327,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     pfree(DatumGetPointer(bound));
   }
   else
-    result = temporal_from_base(temp, BoolGetDatum(false), T_TBOOL, STEP);
+    result = temporal_from_base(BoolGetDatum(false), T_TBOOL, temp, STEP);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
