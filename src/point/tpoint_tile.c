@@ -917,7 +917,6 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
 
 /**
  * Set the bit corresponding to the tiles intersecting the temporal point
- * (dispatch function)
  *
  * @param[out] bm Bit matrix
  * @param[in] temp Temporal point

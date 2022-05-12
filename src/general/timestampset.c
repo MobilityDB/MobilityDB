@@ -55,7 +55,7 @@
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the n-th timestamp of the timestamp set value
+ * @brief Return the n-th timestamp of a timestamp set
  */
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
@@ -64,7 +64,7 @@ timestampset_time_n(const TimestampSet *ts, int index)
 }
 
 /**
- * Return a pointer to the precomputed bounding box of the timestamp set value
+ * Return a pointer to the precomputed bounding box of a timestamp set
  */
 const Period *
 timestampset_period_ptr(const TimestampSet *ts)
@@ -73,12 +73,12 @@ timestampset_period_ptr(const TimestampSet *ts)
 }
 
 /**
- * Return the location of the timestamp in the timestamp set value
+ * Return the location of the timestamp in a timestamp set
  * using binary search
  *
  * If the timestamp is found, the index of the timestamp is returned
  * in the output parameter. Otherwise, return a number encoding whether it
- * is before, between two timestamps, or after the timestamp set value.
+ * is before, between two timestamps, or after the timestamp set.
  * For example, given a value composed of 3 timestamps and a timestamp,
  * the result of the function is as follows:
  * @code
@@ -91,10 +91,10 @@ timestampset_period_ptr(const TimestampSet *ts)
  * 5)                            t^    => loc = 3
  * @endcode
  *
- * @param[in] ts Timestamp set value
+ * @param[in] ts Timestamp set
  * @param[in] t Timestamp
  * @param[out] loc Location
- * @result Return true if the timestamp is contained in the timestamp set value
+ * @result Return true if the timestamp is contained in the timestamp set
  */
 bool
 timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
@@ -129,7 +129,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return the string representation of the period set value.
+ * @brief Return a timestampt set from its string representation.
  */
 TimestampSet *
 timestampset_in(char *str)
@@ -139,7 +139,7 @@ timestampset_in(char *str)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return the string representation of the timestamp set value.
+ * @brief Return the string representation of a timestamp set.
  */
 char *
 timestampset_out(const TimestampSet *ts)
@@ -157,8 +157,8 @@ timestampset_out(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
+ * @brief Return a timestampset from its binary representation read from
+ * a buffer.
  *
  * @param[in] buf Buffer
  */
@@ -195,7 +195,7 @@ timestampset_write(const TimestampSet *ts, StringInfo buf)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Send function for timestamp set values
+ * @brief Return the binary representation of a timestamp set
  */
 bytea *
 timestampset_send(const TimestampSet *ts)
@@ -277,7 +277,7 @@ timestampset_make_free(TimestampTz *times, int count)
 
 /**
  * @ingroup libmeos_spantime_constructor
- * @brief Return a copy of the timestamp set.
+ * @brief Return a copy of a timestamp set.
  */
 TimestampSet *
 timestampset_copy(const TimestampSet *ts)
@@ -293,7 +293,7 @@ timestampset_copy(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast a timestamp value as a timestamp set value
+ * @brief Cast a timestamp as a timestamp set
  */
 TimestampSet *
 timestamp_to_timestampset(TimestampTz t)
@@ -308,7 +308,7 @@ timestamp_to_timestampset(TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the size in bytes of the timestamp set value.
+ * @brief Return the size in bytes of a timestamp set.
  */
 int
 timestampset_mem_size(const TimestampSet *ts)
@@ -318,7 +318,7 @@ timestampset_mem_size(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the timespan of the timestamp set value.
+ * @brief Return the timespan of a timestamp set.
  */
 Interval *
 timestampset_timespan(const TimestampSet *ts)
@@ -336,11 +336,10 @@ timestampset_timespan(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Copy in the second argument the bounding period of the timestamp
- * set value
+ * @brief Set a period to the bounding period of a timestamp set
  */
 void
-timestampset_period(const TimestampSet *ts, Period *p)
+timestampset_set_period(const TimestampSet *ts, Period *p)
 {
   const Period *p1 = &ts->period;
   span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
@@ -349,7 +348,7 @@ timestampset_period(const TimestampSet *ts, Period *p)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the number of timestamps of the timestamp set value.
+ * @brief Return the number of timestamps of a timestamp set.
  */
 int
 timestampset_num_timestamps(const TimestampSet *ts)
@@ -359,7 +358,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the start timestamp of the timestamp set value.
+ * @brief Return the start timestamp of a timestamp set.
  */
 TimestampTz
 timestampset_start_timestamp(const TimestampSet *ts)
@@ -370,7 +369,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the end timestamp of the timestamp set value.
+ * @brief Return the end timestamp of a timestamp set.
  */
 TimestampTz
 timestampset_end_timestamp(const TimestampSet *ts)
@@ -381,7 +380,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the n-th timestamp of the timestamp set value.
+ * @brief Return the n-th timestamp of a timestamp set.
  *
  * @param[in] ts Timestamp set
  * @param[in] n Number
@@ -400,7 +399,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the array of timestamps of the timestamp set value.
+ * @brief Return the array of timestamps of a timestamp set.
  */
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
@@ -417,7 +416,7 @@ timestampset_timestamps(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale the timestamp set value by the two intervals
+ * @brief Shift and/or scale a timestamp set by the intervals
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
@@ -464,7 +463,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set value is equal to the
+ * @brief Return true if the first timestamp set is equal to the
  * second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -488,7 +487,7 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set value is different from the
+ * @brief Return true if the first timestamp set is different from the
  * second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -534,7 +533,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set value is less than the second one
+ * @brief Return true if the first timestamp set is less than the second one
  */
 bool
 timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -545,7 +544,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set value is less than
+ * @brief Return true if the first timestamp set is less than
  * or equal to the second one
  */
 bool
@@ -557,7 +556,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set value is greater than
+ * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
  */
 bool
@@ -569,7 +568,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set value is greater than the second one
+ * @brief Return true if the first timestamp set is greater than the second one
  */
 bool
 timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -642,7 +641,7 @@ timestampset_hash_extended(const TimestampSet *ts, uint64 seed)
 
 PG_FUNCTION_INFO_V1(Timestampset_in);
 /**
- * Input function for timestamp set values
+ * Input function for timestamp sets
  */
 PGDLLEXPORT Datum
 Timestampset_in(PG_FUNCTION_ARGS)
@@ -654,7 +653,7 @@ Timestampset_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_out);
 /**
- * Output function for timestamp set values
+ * Output function for timestamp sets
  */
 PGDLLEXPORT Datum
 Timestampset_out(PG_FUNCTION_ARGS)
@@ -667,7 +666,7 @@ Timestampset_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_send);
 /**
- * Send function for timestamp set values
+ * Return the binary representation of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_send(PG_FUNCTION_ARGS)
@@ -680,7 +679,7 @@ Timestampset_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_recv);
 /**
- * Receive function for timestamp set values
+ * Return a timestamp set from its binary representation read from a buffer
  */
 PGDLLEXPORT Datum
 Timestampset_recv(PG_FUNCTION_ARGS)
@@ -695,7 +694,7 @@ Timestampset_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_constructor);
 /**
- * Construct a timestamp set value from an array of timestamp values
+ * Construct a timestamp set from an array of timestamps
  */
 PGDLLEXPORT Datum
 Timestampset_constructor(PG_FUNCTION_ARGS)
@@ -715,7 +714,7 @@ Timestampset_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamp_to_timestampset);
 /**
- * Cast a timestamp value as a timestamp set value
+ * Cast a timestamp as a timestamp set
  */
 PGDLLEXPORT Datum
 Timestamp_to_timestampset(PG_FUNCTION_ARGS)
@@ -738,14 +737,14 @@ timestampset_period_slice(Datum tsdatum, Period *p)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  timestampset_period(ts, p);
+  timestampset_set_period(ts, p);
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_to_period);
 /**
- * Return the bounding period on which the timestamp set value is defined
+ * Return the bounding period on which a timestamp set is defined
  */
 PGDLLEXPORT Datum
 Timestampset_to_period(PG_FUNCTION_ARGS)
@@ -762,7 +761,7 @@ Timestampset_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_mem_size);
 /**
- * Return the size in bytes of the timestamp set value
+ * Return the size in bytes of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_mem_size(PG_FUNCTION_ARGS)
@@ -775,7 +774,7 @@ Timestampset_mem_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timespan);
 /**
- * Return the timespan of the timestamp set value
+ * Return the timespan of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_timespan(PG_FUNCTION_ARGS)
@@ -788,7 +787,7 @@ Timestampset_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_num_timestamps);
 /**
- * Return the number of timestamps of the timestamp set value
+ * Return the number of timestamps of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_num_timestamps(PG_FUNCTION_ARGS)
@@ -800,7 +799,7 @@ Timestampset_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_start_timestamp);
 /**
- * Return the start timestamp of the timestamp set value
+ * Return the start timestamp of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_start_timestamp(PG_FUNCTION_ARGS)
@@ -813,7 +812,7 @@ Timestampset_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_end_timestamp);
 /**
- * Return the end timestamp of the timestamp set value
+ * Return the end timestamp of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_end_timestamp(PG_FUNCTION_ARGS)
@@ -826,7 +825,7 @@ Timestampset_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timestamp_n);
 /**
- * Return the n-th timestamp of the timestamp set value
+ * Return the n-th timestamp of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_timestamp_n(PG_FUNCTION_ARGS)
@@ -843,7 +842,7 @@ Timestampset_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timestamps);
 /**
- * Return the timestamps of the timestamp set value
+ * Return the timestamps of a timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_timestamps(PG_FUNCTION_ARGS)
@@ -862,7 +861,7 @@ Timestampset_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_shift);
 /**
- * Shift the timestamp set value by the interval
+ * Shift a timestamp set by an interval
  */
 PGDLLEXPORT Datum
 Timestampset_shift(PG_FUNCTION_ARGS)
@@ -876,7 +875,7 @@ Timestampset_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_tscale);
 /**
- * Scale the timestamp set value by the interval
+ * Scale a timestamp set by an interval
  */
 PGDLLEXPORT Datum
 Timestampset_tscale(PG_FUNCTION_ARGS)
@@ -891,7 +890,7 @@ Timestampset_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
 /**
- * Shift and scale the timestamp set value by the two intervals
+ * Shift and scale a timestamp set by the intervals
  */
 PGDLLEXPORT Datum
 Timestampset_shift_tscale(PG_FUNCTION_ARGS)
@@ -910,7 +909,7 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first timestamp set value
+ * Return -1, 0, or 1 depending on whether the first timestamp set
  * is less than, equal, or greater than the second temporal value
  */
 PGDLLEXPORT Datum
@@ -926,7 +925,7 @@ Timestampset_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_eq);
 /**
- * Return true if the first timestamp set value is equal to the second one
+ * Return true if the first timestamp set is equal to the second one
  */
 PGDLLEXPORT Datum
 Timestampset_eq(PG_FUNCTION_ARGS)
@@ -941,7 +940,7 @@ Timestampset_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_ne);
 /**
- * Return true if the first timestamp set value is different from the second one
+ * Return true if the first timestamp set is different from the second one
  */
 PGDLLEXPORT Datum
 Timestampset_ne(PG_FUNCTION_ARGS)
@@ -956,7 +955,7 @@ Timestampset_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_lt);
 /**
- * Return true if the first timestamp set value is less than the second one
+ * Return true if the first timestamp set is less than the second one
  */
 PGDLLEXPORT Datum
 Timestampset_lt(PG_FUNCTION_ARGS)
@@ -971,7 +970,7 @@ Timestampset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_le);
 /**
- * Return true if the first timestamp set value is less than
+ * Return true if the first timestamp set is less than
  * or equal to the second one
  */
 PGDLLEXPORT Datum
@@ -987,7 +986,7 @@ Timestampset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_ge);
 /**
- * Return true if the first timestamp set value is greater than
+ * Return true if the first timestamp set is greater than
  * or equal to the second one
  */
 PGDLLEXPORT Datum
@@ -1003,7 +1002,7 @@ Timestampset_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_gt);
 /**
- * Return true if the first timestamp set value is greater than the second one
+ * Return true if the first timestamp set is greater than the second one
  */
 PGDLLEXPORT Datum
 Timestampset_gt(PG_FUNCTION_ARGS)

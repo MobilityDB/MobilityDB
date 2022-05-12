@@ -727,7 +727,7 @@ tsequenceset_transform_tagg(const TSequenceSet *ts,
 }
 
 /**
- * Transform a temporal value for aggregation (dispatch function)
+ * Transform a temporal value for aggregation
  */
 Temporal **
 temporal_transform_tagg(const Temporal *temp, int *count,

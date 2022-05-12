@@ -43,7 +43,7 @@
  *****************************************************************************/
 
 /**
- * Return the Boolean and of the two values
+ * Return the Boolean and of two values
  */
 Datum
 datum_and(Datum l, Datum r)
@@ -52,7 +52,7 @@ datum_and(Datum l, Datum r)
 }
 
 /**
- * Return the Boolean or of the two values
+ * Return the Boolean or of two values
  */
 Datum
 datum_or(Datum l, Datum r)
@@ -61,7 +61,7 @@ datum_or(Datum l, Datum r)
 }
 
 /**
- * Return the Boolean not of the value.
+ * Return the Boolean not of a value.
  */
 Datum
 datum_not(Datum d)
@@ -74,7 +74,8 @@ datum_not(Datum d)
  *****************************************************************************/
 
 /**
- * Return the not boolean operator of the temporal value.
+ * @ingroup libmeos_temporal_bool
+ * @brief Return the boolean not of a temporal boolean.
  */
 Temporal *
 tnot_tbool(const Temporal *temp)
@@ -91,7 +92,7 @@ tnot_tbool(const Temporal *temp)
 }
 
 /**
- * Return the temporal boolean operator of the temporal value and the value.
+ * Return the boolean operator of a temporal boolean and a boolean.
  */
 Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
@@ -108,7 +109,7 @@ boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 }
 
 /**
- * Return the temporal boolean operator of the temporal values.
+ * Return the boolean operator of the temporal booleans.
  */
 Temporal *
 boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
@@ -140,7 +141,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 
 PG_FUNCTION_INFO_V1(Tand_bool_tbool);
 /**
- * Return the temporal boolean and of the value and the temporal value
+ * Return the boolean and of a boolean and a temporal boolean
  */
 PGDLLEXPORT Datum
 Tand_bool_tbool(PG_FUNCTION_ARGS)
@@ -154,7 +155,7 @@ Tand_bool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tand_tbool_bool);
 /**
- * Return the temporal boolean and of the temporal value and the value
+ * Return the boolean and of a temporal boolean and a boolean
  */
 PGDLLEXPORT Datum
 Tand_tbool_bool(PG_FUNCTION_ARGS)
@@ -168,7 +169,7 @@ Tand_tbool_bool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tand_tbool_tbool);
 /**
- * Return the temporal boolean and of the temporal values
+ * Return the boolean and of the temporal booleans
  */
 PGDLLEXPORT Datum
 Tand_tbool_tbool(PG_FUNCTION_ARGS)
@@ -189,7 +190,7 @@ Tand_tbool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tor_bool_tbool);
 /**
- * Return the temporal boolean or of the value and the temporal value
+ * Return the boolean or of a boolean and the temporal boolean
  */
 PGDLLEXPORT Datum
 Tor_bool_tbool(PG_FUNCTION_ARGS)
@@ -203,7 +204,7 @@ Tor_bool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tor_tbool_bool);
 /**
- * Return the temporal boolean or of the temporal value and the value
+ * Return the boolean or of a temporal boolean and a boolean
  */
 PGDLLEXPORT Datum
 Tor_tbool_bool(PG_FUNCTION_ARGS)
@@ -217,7 +218,7 @@ Tor_tbool_bool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tor_tbool_tbool);
 /**
- * Return the temporal boolean or of the temporal values
+ * Return the boolean or of the temporal booleans
  */
 PGDLLEXPORT Datum
 Tor_tbool_tbool(PG_FUNCTION_ARGS)
@@ -238,7 +239,7 @@ Tor_tbool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnot_tbool);
 /**
- * Return the temporal boolean not of the temporal value
+ * Return the boolean not of a temporal boolean
  */
 PGDLLEXPORT Datum
 Tnot_tbool(PG_FUNCTION_ARGS)

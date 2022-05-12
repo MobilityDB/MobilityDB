@@ -478,7 +478,7 @@ intersection_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet 
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
- * @param[in] bool True when the temporal type has linear interpolation
+ * @param[in] linear True when the temporal type has linear interpolation
  */
 TSequenceSet *
 tsequenceset_from_string(char *str, CachedType temptype, bool linear)
@@ -528,7 +528,7 @@ tsequenceset_out(const TSequenceSet *ts)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence set from its binary representation
- * read from the buffer.
+ * read from a buffer.
  *
  * @param[in] buf Buffer
  * @param[in] temptype Temporal type
@@ -547,7 +547,7 @@ tsequenceset_recv(StringInfo buf, CachedType temptype)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Write the binary representation of a temporal sequence set
- * into the buffer.
+ * into a buffer.
  *
  * @param[in] ts Temporal sequence set
  * @param[in] buf Buffer
@@ -668,7 +668,7 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
    */
   if (bboxsize != 0)
   {
-    tsequenceset_set_bbox1((const TSequence **) normseqs, newcount,
+    tsequenceset_compute_bbox((const TSequence **) normseqs, newcount,
       tsequenceset_bbox_ptr(result));
   }
   /* Store the composing instants */
@@ -1376,7 +1376,7 @@ tsequenceset_timestamps(const TSequenceSet *ts, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base value of a temporal sequence set at the timestamp.
+ * @brief Return the base value of a temporal sequence set at a timestamp.
  *
  * @param[in] ts Temporal sequence set
  * @param[in] t Timestamp
@@ -1547,7 +1547,7 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal instant into a temporal sequence set.
+ * @brief Return a temporal instant transformed into a temporal sequence set.
  * value.
  */
 TSequenceSet *
@@ -1561,7 +1561,7 @@ tinstant_to_tsequenceset(const TInstant *inst, bool linear)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal instant set into a temporal sequence set.
+ * @brief Return a temporal instant set transformed into a temporal sequence set.
  */
 TSequenceSet *
 tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
@@ -1580,7 +1580,7 @@ tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence into a temporal sequence set.
+ * @brief Return a temporal sequence transformed into a temporal sequence set.
  */
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
@@ -1590,7 +1590,7 @@ tsequence_to_tsequenceset(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence set with continuous base type from
+ * @brief Return a temporal sequence set with continuous base type from
  * stepwise to linear interpolation.
  */
 TSequenceSet *
@@ -1613,7 +1613,7 @@ tsequenceset_step_to_linear(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Shift and/or scale a temporal sequence set by two intervals.
+ * @brief Return a temporal sequence set shifted and/or scaled by two intervals.
  *
  * @pre The duration is greater than 0 if it is not NULL
  */

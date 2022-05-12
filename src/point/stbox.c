@@ -96,12 +96,19 @@ stbox_expand(const STBOX *box1, STBOX *box2)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Shift and/or scale the time span of the spatiotemporal box by the interval
+ * @brief Shift and/or scale a spatiotemporal box by two intervals
  */
 void
 stbox_shift_tscale(const Interval *start, const Interval *duration, STBOX *box)
 {
   assert(start != NULL || duration != NULL);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  if (start != NULL)
+    box->tmin = pg_timestamp_pl_interval(box->tmin, start);
+  box->tmax = (duration == NULL) ?
+    pg_timestamp_pl_interval(box->tmax, start) :
+    pg_timestamp_pl_interval(box->tmin, duration);
+#else
   if (start != NULL)
     box->tmin = DatumGetTimestampTz(DirectFunctionCall2(
       timestamptz_pl_interval, TimestampTzGetDatum(box->tmin),
@@ -111,6 +118,7 @@ stbox_shift_tscale(const Interval *start, const Interval *duration, STBOX *box)
       TimestampTzGetDatum(box->tmax), PointerGetDatum(start))) :
     DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
        TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
+#endif
   return;
 }
 
@@ -177,7 +185,7 @@ stbox_in(char *str)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Return the string representation of the spatiotemporal box.
+ * @brief Return the string representation of a spatiotemporal box.
  */
 char *
 stbox_out(const STBOX *box)
@@ -268,7 +276,7 @@ stbox_out(const STBOX *box)
 /**
  * @ingroup libmeos_box_input_output
  * @brief Return a spatiotemporal box from its binary representation read from
- * the buffer.
+ * a buffer.
  */
 STBOX *
 stbox_recv(StringInfo buf)
@@ -297,7 +305,7 @@ stbox_recv(StringInfo buf)
 }
 
 /**
- * @brief Write the binary representation of the box value into the buffer.
+ * @brief Write the binary representation of a spatiotemporal box into a buffer.
  */
 void
 stbox_write(const STBOX *box, StringInfo buf)
@@ -346,7 +354,7 @@ stbox_send(STBOX *box)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Constructs a newly allocated spatiotemporal box.
+ * @brief Constructs a spatiotemporal box from the arguments.
  */
 STBOX *
 stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
@@ -362,7 +370,7 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Set the spatiotemporal box from the argument values
+ * @brief Set a spatiotemporal box from the arguments.
  */
 void
 stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
@@ -403,7 +411,7 @@ stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a copy of the spatiotemporal box.
+ * @brief Return a copy of a spatiotemporal box.
  */
 STBOX *
 stbox_copy(const STBOX *box)
@@ -419,10 +427,10 @@ stbox_copy(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a spatiotemporal box as a GBOX value for PostGIS
+ * @brief Set PostGIS GBOX from a spatiotemporal box
  */
 void
-stbox_to_gbox(const STBOX *box, GBOX *gbox)
+stbox_set_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
   gbox_set(MOBDB_FLAGS_GET_Z(box->flags), false,
@@ -433,10 +441,10 @@ stbox_to_gbox(const STBOX *box, GBOX *gbox)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a spatiotemporal box as a BOX3D value for PostGIS
+ * @brief Set a PostGIS BOX3D from a spatiotemporal box
  */
 void
-stbox_to_box3d(const STBOX *box, BOX3D *box3d)
+stbox_set_box3d(const STBOX *box, BOX3D *box3d)
 {
   ensure_has_X_stbox(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -468,13 +476,13 @@ stbox_to_geometry(const STBOX *box)
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     BOX3D box3d;
-    stbox_to_box3d(box, &box3d);
+    stbox_set_box3d(box, &box3d);
     result = PointerGetDatum(PGIS_BOX3D_to_LWGEOM(&box3d));
   }
   else
   {
     GBOX box2d;
-    stbox_to_gbox(box, &box2d);
+    stbox_set_gbox(box, &box2d);
     result = PointerGetDatum(PGIS_BOX2D_to_LWGEOM(&box2d, box->srid));
   }
   return result;
@@ -488,13 +496,13 @@ stbox_to_geometry(const STBOX *box)
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     BOX3D box3d;
-    stbox_to_box3d(box, &box3d);
+    stbox_set_box3d(box, &box3d);
     result = DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(&box3d));
   }
   else
   {
     GBOX box2d;
-    stbox_to_gbox(box, &box2d);
+    stbox_set_gbox(box, &box2d);
     Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(&box2d));
     GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
     gserialized_set_srid(g, box->srid);
@@ -514,7 +522,7 @@ stbox_to_geometry(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Return a spatiotemporal box from a geometry/geography.
+ * @brief Set a spatiotemporal box from a geometry/geography.
  */
 bool
 geo_set_stbox(const GSERIALIZED *gs, STBOX *box)
@@ -584,7 +592,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Return a spatiotemporal box from a timestamptz.
+ * @brief Set a spatiotemporal box from a timestamp.
  */
 void
 timestamp_set_stbox(TimestampTz t, STBOX *box)
@@ -600,7 +608,7 @@ timestamp_set_stbox(TimestampTz t, STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Return a spatiotemporal box from a timestamp set.
+ * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
 timestampset_set_stbox(const TimestampSet *ts, STBOX *box)
@@ -616,7 +624,7 @@ timestampset_set_stbox(const TimestampSet *ts, STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Return a spatiotemporal box from a period.
+ * @brief Set a spatiotemporal box from a period.
  */
 void
 period_set_stbox(const Period *p, STBOX *box)
@@ -631,7 +639,7 @@ period_set_stbox(const Period *p, STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Return a spatiotemporal box from a period set.
+ * @brief Set a spatiotemporal box from a period set.
  */
 void
 periodset_set_stbox(const PeriodSet *ps, STBOX *box)
@@ -684,7 +692,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the spatiotemporal box has X dimension
+ * @brief Return true if a spatiotemporal box has X dimension
  */
 bool
 stbox_hasx(const STBOX *box)
@@ -695,7 +703,7 @@ stbox_hasx(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the spatiotemporal box has Z dimension
+ * @brief Return true if a spatiotemporal box has Z dimension
  */
 bool
 stbox_hasz(const STBOX *box)
@@ -706,7 +714,7 @@ stbox_hasz(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the spatiotemporal box has T dimension
+ * @brief Return true if a spatiotemporal box has T dimension
  */
 bool
 stbox_hast(const STBOX *box)
@@ -717,7 +725,7 @@ stbox_hast(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the spatiotemporal box is geodetic
+ * @brief Return true if a spatiotemporal box is geodetic
  */
 bool
 stbox_isgeodetic(const STBOX *box)
@@ -728,7 +736,7 @@ stbox_isgeodetic(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of the spatiotemporal box value, if any.
+ * @brief Return the minimum X value of a spatiotemporal box, if any.
  */
 bool
 stbox_xmin(const STBOX *box, double *result)
@@ -741,7 +749,7 @@ stbox_xmin(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of the spatiotemporal box value, if any.
+ * @brief Return the maximum X value of a spatiotemporal box, if any.
  */
 bool
 stbox_xmax(const STBOX *box, double *result)
@@ -754,7 +762,7 @@ stbox_xmax(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum Y value of the spatiotemporal box value, if any.
+ * @brief Return the minimum Y value of a spatiotemporal box, if any.
  */
 bool
 stbox_ymin(const STBOX *box, double *result)
@@ -767,7 +775,7 @@ stbox_ymin(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum Y value of the spatiotemporal box value, if any.
+ * @brief Return the maximum Y value of a spatiotemporal box, if any.
  */
 bool
 stbox_ymax(const STBOX *box, double *result)
@@ -780,7 +788,7 @@ stbox_ymax(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum Z value of the spatiotemporal box value, if any.
+ * @brief Return the minimum Z value of a spatiotemporal box, if any.
  */
 bool
 stbox_zmin(const STBOX *box, double *result)
@@ -793,7 +801,7 @@ stbox_zmin(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of the spatiotemporal box value, if any.
+ * @brief Return the maximum X value of a spatiotemporal box, if any.
  */
 bool
 stbox_zmax(const STBOX *box, double *result)
@@ -806,7 +814,7 @@ stbox_zmax(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum T value of the spatiotemporal box value, if any.
+ * @brief Return the minimum T value of a spatiotemporal box, if any.
  */
 bool
 stbox_tmin(const STBOX *box, TimestampTz *result)
@@ -819,7 +827,7 @@ stbox_tmin(const STBOX *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum T value of the spatiotemporal box value, if any.
+ * @brief Return the maximum T value of a spatiotemporal box, if any.
  */
 bool
 stbox_tmax(const STBOX *box, TimestampTz *result)
@@ -836,7 +844,7 @@ stbox_tmax(const STBOX *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the SRID of the spatiotemporal box.
+ * @brief Return the SRID of a spatiotemporal box.
  */
 int32
 stbox_get_srid(const STBOX *box)
@@ -846,7 +854,7 @@ stbox_get_srid(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Sets the SRID of the spatiotemporal box.
+ * @brief Set the SRID of a spatiotemporal box.
  */
 STBOX *
 stbox_set_srid(const STBOX *box, int32 srid)
@@ -862,8 +870,8 @@ stbox_set_srid(const STBOX *box, int32 srid)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Expand the spatial dimension of the spatiotemporal box with the
- * double value.
+ * @brief Return a spatiotemporal box expanded in the spatial dimension by a
+ * double.
  */
 STBOX *
 stbox_expand_spatial(const STBOX *box, double d)
@@ -884,8 +892,8 @@ stbox_expand_spatial(const STBOX *box, double d)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Expand the temporal dimension of the spatiotemporal box with the
- * interval value
+ * @brief Return a spatiotemporal box expanded in the temporal dimension by
+ * an interval
  */
 STBOX *
 stbox_expand_temporal(const STBOX *box, const Interval *interval)
@@ -1386,7 +1394,7 @@ intersection_stbox_stbox(const STBOX *box1, const STBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return true if the two spatiotemporal boxes are equal.
+ * @brief Return true if the spatiotemporal boxes are equal.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
  */
@@ -1405,7 +1413,7 @@ stbox_eq(const STBOX *box1, const STBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return true if the two spatiotemporal boxes are different
+ * @brief Return true if the spatiotemporal boxes are different
  */
 bool
 stbox_ne(const STBOX *box1, const STBOX *box2)
@@ -1767,7 +1775,7 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_to_period);
 /**
- * Cast the spatiotemporal box as a period
+ * Cast a spatiotemporal box as a period
  */
 PGDLLEXPORT Datum
 Stbox_to_period(PG_FUNCTION_ARGS)
@@ -1780,7 +1788,7 @@ Stbox_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_to_box2d);
 /**
- * Cast the spatiotemporal box as a GBOX value for PostGIS
+ * Cast the spatiotemporal box as a PostGIS GBOX
  */
 PGDLLEXPORT Datum
 Stbox_to_box2d(PG_FUNCTION_ARGS)
@@ -1788,13 +1796,13 @@ Stbox_to_box2d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
   GBOX *result = (GBOX *) palloc0(sizeof(GBOX));
-  stbox_to_gbox(box, result);
+  stbox_set_gbox(box, result);
   PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Stbox_to_box3d);
 /**
- * Cast the spatiotemporal box as a BOX3D value for PostGIS
+ * Cast the spatiotemporal box as a PostGIS BOX3D
  */
 PGDLLEXPORT Datum
 Stbox_to_box3d(PG_FUNCTION_ARGS)
@@ -1802,13 +1810,13 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
   BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
-  stbox_to_box3d(box, result);
+  stbox_set_box3d(box, result);
   PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Stbox_to_geometry);
 /**
- * Cast the spatiotemporal box as a GBOX value for PostGIS
+ * Cast the spatiotemporal box as a PostGIS GBOX
  */
 PGDLLEXPORT Datum
 Stbox_to_geometry(PG_FUNCTION_ARGS)
@@ -1991,7 +1999,7 @@ Geo_period_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_hasx);
 /**
- * Return true if the spatiotemporal box has X dimension
+ * Return true if a spatiotemporal box has X dimension
  */
 PGDLLEXPORT Datum
 Stbox_hasx(PG_FUNCTION_ARGS)
@@ -2002,7 +2010,7 @@ Stbox_hasx(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_hasz);
 /**
- * Return true if the spatiotemporal box has Z dimension
+ * Return true if a spatiotemporal box has Z dimension
  */
 PGDLLEXPORT Datum
 Stbox_hasz(PG_FUNCTION_ARGS)
@@ -2013,7 +2021,7 @@ Stbox_hasz(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_hast);
 /**
- * Return true if the spatiotemporal box has T dimension
+ * Return true if a spatiotemporal box has T dimension
  */
 PGDLLEXPORT Datum
 Stbox_hast(PG_FUNCTION_ARGS)
@@ -2024,7 +2032,7 @@ Stbox_hast(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_isgeodetic);
 /**
- * Return true if the spatiotemporal box is geodetic
+ * Return true if a spatiotemporal box is geodetic
  */
 PGDLLEXPORT Datum
 Stbox_isgeodetic(PG_FUNCTION_ARGS)
@@ -2035,7 +2043,7 @@ Stbox_isgeodetic(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_xmin);
 /**
- * Return the minimum X value of the spatiotemporal box, if any.
+ * Return the minimum X value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_xmin(PG_FUNCTION_ARGS)
@@ -2049,7 +2057,7 @@ Stbox_xmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_xmax);
 /**
- * Return the maximum X value of the spatiotemporal box, if any.
+ * Return the maximum X value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_xmax(PG_FUNCTION_ARGS)
@@ -2063,7 +2071,7 @@ Stbox_xmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_ymin);
 /**
- * Return the minimum Y value of the spatiotemporal box, if any.
+ * Return the minimum Y value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_ymin(PG_FUNCTION_ARGS)
@@ -2077,7 +2085,7 @@ Stbox_ymin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_ymax);
 /**
- * Return the maximum Y value of the spatiotemporal box, if any.
+ * Return the maximum Y value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_ymax(PG_FUNCTION_ARGS)
@@ -2091,7 +2099,7 @@ Stbox_ymax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_zmin);
 /**
- * Return the minimum Z value of the spatiotemporal box, if any.
+ * Return the minimum Z value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_zmin(PG_FUNCTION_ARGS)
@@ -2105,7 +2113,7 @@ Stbox_zmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_zmax);
 /**
- * Return the maximum Z value of the spatiotemporal box, if any.
+ * Return the maximum Z value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_zmax(PG_FUNCTION_ARGS)
@@ -2119,7 +2127,7 @@ Stbox_zmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_tmin);
 /**
- * Return the minimum T value of the spatiotemporal box, if any.
+ * Return the minimum T value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_tmin(PG_FUNCTION_ARGS)
@@ -2133,7 +2141,7 @@ Stbox_tmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_tmax);
 /**
- * Return the maximum T value of the spatiotemporal box, if any.
+ * Return the maximum T value of a spatiotemporal box, if any.
  */
 PGDLLEXPORT Datum
 Stbox_tmax(PG_FUNCTION_ARGS)
@@ -2151,7 +2159,7 @@ Stbox_tmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_get_srid);
 /**
- * Return the SRID of the spatiotemporal box
+ * Return the SRID of a spatiotemporal box
  */
 PGDLLEXPORT Datum
 Stbox_get_srid(PG_FUNCTION_ARGS)
@@ -2162,7 +2170,7 @@ Stbox_get_srid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_set_srid);
 /**
- * Sets the SRID of the spatiotemporal box
+ * Sets the SRID of a spatiotemporal box
  */
 PGDLLEXPORT Datum
 Stbox_set_srid(PG_FUNCTION_ARGS)
@@ -2236,7 +2244,7 @@ Stbox_transform(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_expand_spatial);
 /**
- * Expand the spatial dimension of the spatiotemporal box with the double value
+ * Return a spatiotemporal box expanded in the spatial dimension of by a double
  */
 PGDLLEXPORT Datum
 Stbox_expand_spatial(PG_FUNCTION_ARGS)
@@ -2248,7 +2256,7 @@ Stbox_expand_spatial(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_expand_temporal);
 /**
- * Expand the temporal dimension of the spatiotemporal box with the interval value
+ * Return a spatiotemporal box expanded in the temporal dimension by an interval
  */
 PGDLLEXPORT Datum
 Stbox_expand_temporal(PG_FUNCTION_ARGS)
@@ -2280,7 +2288,7 @@ stbox_round(const STBOX *box, Datum prec)
 
 PG_FUNCTION_INFO_V1(Stbox_round);
 /**
- * Sets the precision of the coordinates of the spatiotemporal box
+ * Sets the precision of the coordinates of a spatiotemporal box
  */
 PGDLLEXPORT Datum
 Stbox_round(PG_FUNCTION_ARGS)
@@ -2715,7 +2723,7 @@ Stbox_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_eq);
 /**
- * Return true if the two spatiotemporal boxes are equal
+ * Return true if the spatiotemporal boxes are equal
  */
 PGDLLEXPORT Datum
 Stbox_eq(PG_FUNCTION_ARGS)
@@ -2727,7 +2735,7 @@ Stbox_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_ne);
 /**
- * Return true if the two spatiotemporal boxes are different
+ * Return true if the spatiotemporal boxes are different
  */
 PGDLLEXPORT Datum
 Stbox_ne(PG_FUNCTION_ARGS)

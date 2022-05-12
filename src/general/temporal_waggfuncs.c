@@ -203,7 +203,7 @@ tsequenceset_extend(const TSequenceSet *ts, const Interval *interval, bool min,
 }
 
 /**
- * Extend the temporal value by the time interval (dispatch function)
+ * Extend the temporal value by the time interval
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -217,25 +217,25 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
-    TInstant *inst = (TInstant *)temp;
+    TInstant *inst = (TInstant *) temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_extend(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
-    TInstantSet *ti = (TInstantSet *)temp;
+    TInstantSet *ti = (TInstantSet *) temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_extend(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
-    TSequence *seq = (TSequence *)temp;
+    TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_extend(seq, interval, min, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    TSequenceSet *ts = (TSequenceSet *)temp;
+    TSequenceSet *ts = (TSequenceSet *) temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
     *count = tsequenceset_extend(ts, interval, min, result);
   }
@@ -356,7 +356,7 @@ tsequenceset_transform_wcount(const TSequenceSet *ts, const Interval *interval,
 }
 
 /**
- * Transform the temporal number by the time interval (dispatch function)
+ * Transform the temporal number by the time interval
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -370,25 +370,25 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
   TSequence **result;
   if (temp->subtype == INSTANT)
   {
-    TInstant *inst = (TInstant *)temp;
+    TInstant *inst = (TInstant *) temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_transform_wcount(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
-    TInstantSet *ti = (TInstantSet *)temp;
+    TInstantSet *ti = (TInstantSet *) temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_transform_wcount(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
-    TSequence *seq = (TSequence *)temp;
+    TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_transform_wcount(seq, interval, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    TSequenceSet *ts = (TSequenceSet *)temp;
+    TSequenceSet *ts = (TSequenceSet *) temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
     *count = tsequenceset_transform_wcount(ts, interval, result);
   }
@@ -526,8 +526,8 @@ tintseqset_transform_wavg(const TSequenceSet *ts, const Interval *interval,
 }
 
 /**
- * Transform the temporal integer sequence set value into a temporal double and extend
- * it by a time interval (dispatch function)
+ * Transform the temporal integer sequence set value into a temporal double
+ * and extend it by a time interval
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -542,25 +542,25 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
-    TInstant *inst = (TInstant *)temp;
+    TInstant *inst = (TInstant *) temp;
     result = palloc(sizeof(TSequence *));
     *count = tnumberinst_transform_wavg(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
-    TInstantSet *ti = (TInstantSet *)temp;
+    TInstantSet *ti = (TInstantSet *) temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tnumberinstset_transform_wavg(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
-    TSequence *seq = (TSequence *)temp;
+    TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tintseq_transform_wavg(seq, interval, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    TSequenceSet *ts = (TSequenceSet *)temp;
+    TSequenceSet *ts = (TSequenceSet *) temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
     *count = tintseqset_transform_wavg(ts, interval, result);
   }

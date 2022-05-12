@@ -237,7 +237,7 @@ skiplist_print(const SkipList *list)
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
-        temporal_period(e->value, &p);
+        temporal_set_period(e->value, &p);
         val = span_out(&p);
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);

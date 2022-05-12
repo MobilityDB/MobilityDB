@@ -399,7 +399,7 @@ PGIS_LWGEOM_reverse(GSERIALIZED *geom)
 }
 
 /**
- * @brief Return true if the two 3D geometries intersect
+ * @brief Return true if the 3D geometries intersect
  * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
  */
 bool
@@ -674,7 +674,7 @@ PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser, double distance_fraction)
  *****************************************************************************/
 
 /**
- * @brief Return true if the two 3D geometries intersect
+ * @brief Return true if the 3D geometries intersect
  * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
  * @note With respect to the original function we do not use the prec
  * argument

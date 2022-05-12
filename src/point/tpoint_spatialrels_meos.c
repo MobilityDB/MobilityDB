@@ -63,7 +63,8 @@
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal points are ever disjoint
+ * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
+ * -1 if the temporal points do not intersect in time
  */
 int
 disjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -78,7 +79,8 @@ disjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal points ever intersect
+ * @brief Return 1 if the temporal points ever intersect, 0 if not, and
+ * -1 if the temporal points do not intersect in time
  */
 int
 intersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)

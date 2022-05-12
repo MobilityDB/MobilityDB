@@ -277,7 +277,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   if (! p)
   {
     result = palloc(sizeof(Period));
-    timestampset_period(ts, result);
+    timestampset_set_period(ts, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null timestampset, return the period */
@@ -289,7 +289,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  timestampset_period(ts, &p1);
+  timestampset_set_period(ts, &p1);
   result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(ts, 1);

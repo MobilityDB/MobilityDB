@@ -417,7 +417,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
    */
   if (bboxsize != 0)
   {
-    tsequence_set_bbox1((const TInstant **) norminsts, newcount, lower_inc,
+    tsequence_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
       upper_inc, linear, tsequence_bbox_ptr(result));
   }
   /* Store the composing instants */
@@ -1299,7 +1299,7 @@ intersection_tinstantset_to_tsequence(const TInstantSet *ti, const TSequence *se
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
- * @param[in] bool True when the temporal type has linear interpolation
+ * @param[in] linear True when the temporal type has linear interpolation
  */
 TSequence *
 tsequence_from_string(char *str, CachedType temptype, bool linear)
@@ -1355,7 +1355,7 @@ tsequence_out(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence from its binary representation read from
- * the buffer.
+ * a buffer.
  *
  * @param[in] buf Buffer
  * @param[in] temptype Temporal type
@@ -1376,7 +1376,7 @@ tsequence_recv(StringInfo buf, CachedType temptype)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Write the binary representation of a temporal sequence into the buffer.
+ * @brief Write the binary representation of a temporal sequence into a buffer.
  *
  * @param[in] seq Temporal sequence
  * @param[in] buf Buffer
@@ -1543,7 +1543,7 @@ tfloatseq_to_tintseq(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal instant into a temporal sequence.
+ * @brief Return a temporal instant transformed into a temporal sequence.
  */
 TSequence *
 tinstant_to_tsequence(const TInstant *inst, bool linear)
@@ -1553,7 +1553,7 @@ tinstant_to_tsequence(const TInstant *inst, bool linear)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal instant set into a temporal sequence
+ * @brief Return a temporal instant set transformed into a temporal sequence
  * value.
  */
 TSequence *
@@ -1566,7 +1566,7 @@ tinstantset_to_tsequence(const TInstantSet *ti, bool linear)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence set into a temporal sequence
+ * @brief Return a temporal sequence set transformed into a temporal sequence
  * value.
  */
 TSequence *
@@ -1578,8 +1578,8 @@ tsequenceset_to_tsequence(const TSequenceSet *ts)
 }
 
 /**
- * Transform a temporal sequence with continuous base type from stepwise to
- * linear interpolation
+ * Return a temporal sequence with continuous base type transformed from
+ * stepwise to linear interpolation
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1631,7 +1631,7 @@ tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence with continuous base type from
+ * @brief Return a temporal sequence with continuous base type transformed from
  * stepwise to linear interpolation.
  *
  * @param[in] seq Temporal sequence
@@ -1647,7 +1647,7 @@ tsequence_step_to_linear(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Shift and/or scale a temporal sequence by two intervals.
+ * @brief Return a temporal sequence shifted and/or scaled by two intervals.
  *
  * @pre The duration is greater than 0 if it is not NULL
  */
@@ -2855,8 +2855,7 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 /*****************************************************************************/
 
 /**
- * Restrict a segment of a temporal number to (the complement of) a span of
- * base values
+ * Restrict a segment of a temporal number to (the complement of) a span
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequence is stored
@@ -3101,7 +3100,7 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Restrict a temporal number to (the complement of) a span of base values
+ * Restrict a temporal number to (the complement of) a span
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -3165,8 +3164,7 @@ tnumberseq_restrict_span2(const TSequence *seq, const Span *span, bool atfunc,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal number to (the complement of) a span of base
- * values.
+ * @brief Restrict a temporal sequence number to (the complement of) a span.
  *
  * @param[in] seq Temporal number
  * @param[in] span Span of base values
@@ -3310,8 +3308,7 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal number to (the complement of) an array of
- * spans of base values
+ * @brief Restrict a temporal number to (the complement of) an array of spans.
  *
  * @param[in] seq Temporal number
  * @param[in] normspans Array of spans of base values
@@ -3321,7 +3318,7 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
  * @return Resulting temporal number
  * @pre The array of spans is normalized
  * @note A bounding box test and an instantaneous sequence test are done in
- * the function tnumberseq_restrict_spans1 since the latter is called
+ * the function @ref tnumberseq_restrict_spans1 since the latter is called
  * for each composing sequence of a temporal sequence set number.
  */
 TSequenceSet *
@@ -4022,7 +4019,8 @@ tsequence_intersects_periodset(const TSequence *seq, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Return the integral (area under the curve) of a temporal number.
+ * @brief Return the integral (area under the curve) of a temporal sequence
+ * number.
  */
 double
 tnumberseq_integral(const TSequence *seq)
@@ -4054,7 +4052,7 @@ tnumberseq_integral(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Return the time-weighted average of a temporal number.
+ * @brief Return the time-weighted average of a temporal sequence number.
  */
 double
 tnumberseq_twavg(const TSequence *seq)

@@ -921,7 +921,7 @@ tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
 
 /**
  * Return the maximum size in bytes of the temporal point
- * represented in Well-Known Binary (WKB) format (dispatch function)
+ * represented in Well-Known Binary (WKB) format
  */
 static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)

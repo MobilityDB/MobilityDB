@@ -90,8 +90,9 @@
  *****************************************************************************/
 
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 Temporal *
 tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
@@ -106,8 +107,9 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
  *****************************************************************************/
 
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 Temporal *
 tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,

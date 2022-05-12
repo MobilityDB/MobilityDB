@@ -339,7 +339,6 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return true if the temporal points ever satisfy the spatial
  * relationship.
  *
@@ -379,7 +378,7 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * Calls the PostGIS function ST_Relate twice to compute the ever contains
- * relationship between the trajectory of the temporal point and the geometry
+ * relationship between the trajectory of a temporal point and a geometry
  * @param[in] geom1 Trajectory of the temporal point
  * @param[in] geom2 Geometry
  * @note The order of the parameters CANNOT be inverted
@@ -394,7 +393,7 @@ geom_ever_contains(Datum geom1, Datum geom2)
 }
 
 /**
- * Return true if the geometry ever contains the temporal point
+ * Return true if a geometry ever contains a temporal point
  */
 int
 contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)
@@ -413,8 +412,8 @@ contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal instant point and a geometry are ever
+ * disjoint
  *
  * @param[in] inst Temporal point
  * @param[in] geo Geometry
@@ -428,8 +427,8 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal point instant set and a geometry are ever
+ * disjoint
  *
  * @param[in] ti Temporal point
  * @param[in] geo Geometry
@@ -449,8 +448,8 @@ disjoint_tpointinstset_geo(const TInstantSet *ti, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal sequence point and a geometry are ever
+ * disjoint
  *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
@@ -470,8 +469,8 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal sequence set point and a geometry are ever
+ * disjoint
  *
  * @param[in] ts Temporal point
  * @param[in] geo Geometry
@@ -492,7 +491,8 @@ disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint.
+ * @brief Return 1 if a temporal point and a geometry are ever disjoint,
+ * 0 if not, and -1 if the geometry is empty.
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -527,7 +527,8 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the geometry and the temporal point ever intersect
+ * @brief Return 1 if a geometry and a temporal point ever intersect,
+ * 0 if not, and -1 if the geometry is empty.
  */
 int
 intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -701,7 +702,8 @@ PGIS_boundary(const GSERIALIZED *geom1)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry ever touch.
+ * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
+ * -1 if the geometry is empty
  */
 int
 touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -738,8 +740,8 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return 1 if the geometry and the temporal point are ever within the
- * given distance, 0 if not, -1 if the geometry is empty
+ * @brief Return 1 if a geometry and a temporal point are ever within the
+ * given distance, 0 if not, -1 if a geometry is empty
  */
 int
 dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum dist)
@@ -772,7 +774,7 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Return true if the two temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] ti1,ti2 Temporal points
  * @param[in] dist Distance
@@ -794,7 +796,7 @@ dwithin_tpointinstset_tpointinstset(const TInstantSet *ti1,
 }
 
 /**
- * Return true if the two temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
@@ -866,7 +868,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Return true if the two temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] ts1,ts2 Temporal points
  * @param[in] dist Distance
@@ -977,7 +979,7 @@ spatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum
 
 PG_FUNCTION_INFO_V1(Contains_geo_tpoint);
 /**
- * Return true if the geometry ever contains the temporal point
+ * Return true if a geometry ever contains a temporal point
  */
 PGDLLEXPORT Datum
 Contains_geo_tpoint(PG_FUNCTION_ARGS)
@@ -998,7 +1000,7 @@ Contains_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point are ever disjoint
+ * Return true if a geometry and a temporal point are ever disjoint
  */
 PGDLLEXPORT Datum
 Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1017,7 +1019,7 @@ Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry are ever disjoint
+ * Return true if a temporal point and a geometry are ever disjoint
  */
 PGDLLEXPORT Datum
 Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1052,7 +1054,7 @@ Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point ever intersect
+ * Return true if a geometry and a temporal point ever intersect
  */
 PGDLLEXPORT Datum
 Intersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1071,7 +1073,7 @@ Intersects_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry ever intersect
+ * Return true if a temporal point and a geometry ever intersect
  */
 PGDLLEXPORT Datum
 Intersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1108,7 +1110,7 @@ Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point ever touch
+ * Return true if a geometry and a temporal point ever touch
  */
 PGDLLEXPORT Datum
 Touches_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1125,7 +1127,7 @@ Touches_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry ever touch
+ * Return true if a temporal point and a geometry ever touch
  */
 PGDLLEXPORT Datum
 Touches_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1147,7 +1149,7 @@ Touches_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point are ever within the
+ * Return true if a geometry and a temporal point are ever within the
  * given distance
  */
 PGDLLEXPORT Datum
@@ -1168,7 +1170,7 @@ Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry are ever within the
+ * Return true if a temporal point and a geometry are ever within the
  * given distance
  */
 PGDLLEXPORT Datum

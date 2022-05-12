@@ -77,7 +77,7 @@ datum_cmp(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Return true if the two values are equal
+ * Return true if the values are equal
  */
 bool
 datum_eq(Datum l, Datum r, CachedType type)
@@ -86,7 +86,7 @@ datum_eq(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Return true if the two values are different
+ * Return true if the values are different
  */
 bool
 datum_ne(Datum l, Datum r, CachedType type)
@@ -141,7 +141,6 @@ datum_ge(Datum l, Datum r, CachedType type)
 
 /**
  * Return true if the first value is less than the second one
- * (base type dispatch function)
  */
 int
 datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -165,7 +164,7 @@ datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Return true if the two values are equal even if their type is not the same
+ * Return true if the values are equal even if their type is not the same
  */
 bool
 datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -203,7 +202,7 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Return true if the two values are different
+ * Return true if the values are different
  */
 bool
 datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -279,7 +278,7 @@ datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 /*****************************************************************************/
 
 /**
- * Return a Datum true if the two values are equal
+ * Return a Datum true if the values are equal
  */
 Datum
 datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -288,7 +287,7 @@ datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Return a Datum true if the two values are different
+ * Return a Datum true if the values are different
  */
 Datum
 datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)

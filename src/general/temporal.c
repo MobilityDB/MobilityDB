@@ -418,38 +418,6 @@ temporal_bbox_ptr(const Temporal *temp)
 }
 
 /**
- * Set the second argument to the bounding box of a temporal value
- *
- * For temporal instants the bounding box must be computed.
- * For the other subtypes a copy of the precomputed bounding box is made.
- */
-void
-temporal_set_bbox(const Temporal *temp, void *box)
-{
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    tinstant_set_bbox((TInstant *) temp, box);
-  else if (temp->subtype == INSTANTSET)
-    tinstantset_set_bbox((TInstantSet *) temp, box);
-  else if (temp->subtype == SEQUENCE)
-    tsequence_set_bbox((TSequence *) temp, box);
-  else /* temp->subtype == SEQUENCESET */
-    tsequenceset_set_bbox((TSequenceSet *) temp, box);
-  return;
-}
-
-/**
- * Return a copy of a temporal value
- */
-Temporal *
-temporal_copy(const Temporal *temp)
-{
-  Temporal *result = (Temporal *) palloc0(VARSIZE(temp));
-  memcpy(result, temp, VARSIZE(temp));
-  return result;
-}
-
-/**
  * Temporally intersect the two temporal values
  *
  * @param[in] temp1,temp2 Input values
@@ -657,10 +625,15 @@ temporal_recv(StringInfo buf)
 }
 
 /**
- * @brief Write the binary representation of a temporal value into the buffer.
+ * @ingroup libmeos_temporal_input_output
+ * @brief Write the binary representation of a temporal value into a buffer.
  *
  * @param[in] temp Temporal value
  * @param[in] buf Buffer
+ * @see tinstant_write
+ * @see tinstantset_write
+ * @see tsequence_write
+ * @see tsequenceset_write
  */
 void
 temporal_write(const Temporal *temp, StringInfo buf)
@@ -695,6 +668,22 @@ temporal_send(const Temporal *temp)
 /*****************************************************************************
  * Constructor functions
  ****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of a temporal value
+ * @see tinstant_copy
+ * @see tinstantset_copy
+ * @see tsequence_copy
+ * @see tsequenceset_copy
+ */
+Temporal *
+temporal_copy(const Temporal *temp)
+{
+  Temporal *result = (Temporal *) palloc0(VARSIZE(temp));
+  memcpy(result, temp, VARSIZE(temp));
+  return result;
+}
 
 /**
  * @ingroup libmeos_temporal_constructor
@@ -1144,7 +1133,7 @@ tfloat_to_tint(const Temporal *temp)
  * @see tsequenceset_period
  */
 void
-temporal_period(const Temporal *temp, Period *p)
+temporal_set_period(const Temporal *temp, Period *p)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -1161,7 +1150,7 @@ temporal_period(const Temporal *temp, Period *p)
 #ifdef MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Return the bounding box of the temporal number.
+ * @brief Return the bounding box of a temporal number.
  */
 TBOX *
 tnumber_to_tbox(Temporal *temp)
@@ -1178,7 +1167,7 @@ tnumber_to_tbox(Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal value into a temporal instant.
+ * @brief Return a temporal value transformed into a temporal instant.
  * @see tinstant_copy
  * @see tinstantset_to_tinstant
  * @see tsequence_to_tinstant
@@ -1202,7 +1191,7 @@ temporal_to_tinstant(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal value into a temporal instant set.
+ * @brief Return a temporal value transformed into a temporal instant set.
  * @see tinstant_to_tinstantset
  * @see tinstantset_copy
  * @see tsequence_to_tinstantset
@@ -1226,7 +1215,7 @@ temporal_to_tinstantset(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal value into a temporal sequence.
+ * @brief Return a temporal value transformed into a temporal sequence.
  * @see tinstant_to_tsequence
  * @see tinstantset_to_tsequence
  * @see tsequence_copy
@@ -1252,7 +1241,7 @@ temporal_to_tsequence(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal value into a temporal sequence set.
+ * @brief Return a temporal value transformed into a temporal sequence set.
  * @see tinstant_to_tsequenceset
  * @see tinstantset_to_tsequenceset
  * @see tsequence_to_tsequenceset
@@ -1278,8 +1267,8 @@ temporal_to_tsequenceset(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal value with continuous base type from stepwise
- * to linear interpolation.
+ * @brief Return a temporal value with continuous base type transformed from
+ * stepwise to linear interpolation.
  * @see tsequence_step_to_linear
  * @see tsequenceset_step_to_linear
  */
@@ -1302,7 +1291,7 @@ temporal_step_to_linear(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Shift and/or scale a temporal value by the interval(s).
+ * @brief Return a temporal value shifted and/or scaled by the intervals.
  *
  * @param[in] temp Temporal value
  * @param[in] shift True when a shift of the timespan must be performed
@@ -1384,6 +1373,31 @@ temporal_interpolation(const Temporal *temp)
       strcpy(result, "Stepwise");
   }
   return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal value
+ * @see tinstant_set_bbox
+ * @see tinstantset_set_bbox
+ * @see tsequence_set_bbox
+ * @see tsequenceset_set_bbox
+ * @note For temporal instants the bounding box must be computed.
+ * For the other subtypes a copy of the precomputed bounding box is made.
+ */
+void
+temporal_set_bbox(const Temporal *temp, void *box)
+{
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    tinstant_set_bbox((TInstant *) temp, box);
+  else if (temp->subtype == INSTANTSET)
+    tinstantset_set_bbox((TInstantSet *) temp, box);
+  else if (temp->subtype == SEQUENCE)
+    tsequence_set_bbox((TSequence *) temp, box);
+  else /* temp->subtype == SEQUENCESET */
+    tsequenceset_set_bbox((TSequenceSet *) temp, box);
+  return;
 }
 
 /**
@@ -2067,7 +2081,7 @@ temporal_timestamps(const Temporal *temp, int *count)
 
 /**
  * Return true if the bounding box of a temporal value is ever/always equal
- * to the base value
+ * to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value to be found
  * @param[in] ever True when testing ever, false when testing always
@@ -2278,7 +2292,7 @@ temporal_always_le(const Temporal *temp, Datum value)
  *****************************************************************************/
 
 /**
- * Return true if the bounding box of a temporal value contains the base value
+ * Return true if the bounding box of a temporal value contains a base value
  */
 bool
 temporal_bbox_restrict_value(const Temporal *temp, Datum value)
@@ -3014,7 +3028,7 @@ tnumber_twavg(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_comp
- * @brief Return true if the two temporal values are equal.
+ * @brief Return true if the temporal values are equal.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
  * @see tinstant_eq
@@ -3123,7 +3137,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_comp
- * @brief Return true if the two temporal values are different
+ * @brief Return true if the temporal values are different
  */
 bool
 temporal_ne(const Temporal *temp1, const Temporal *temp2)
@@ -3154,8 +3168,8 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
    * We need to compare periods AND bounding boxes since the bounding boxes
    * do not distinguish between inclusive and exclusive bounds */
   Period p1, p2;
-  temporal_period(temp1, &p1);
-  temporal_period(temp2, &p2);
+  temporal_set_period(temp1, &p1);
+  temporal_set_period(temp2, &p2);
   int result = span_cmp(&p1, &p2);
   if (result)
     return result;
@@ -3979,7 +3993,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  temporal_period(temp, result);
+  temporal_set_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -4070,7 +4084,7 @@ Tempstep_to_templinear(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_shift);
 /**
- * Shift a temporal value by an interval
+ * Return a temporal value a shifted by an interval
  */
 PGDLLEXPORT Datum
 Temporal_shift(PG_FUNCTION_ARGS)
@@ -4084,7 +4098,7 @@ Temporal_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_tscale);
 /**
- * Scale a temporal value by an interval
+ * Return a temporal value scaled by an interval
  */
 PGDLLEXPORT Datum
 Temporal_tscale(PG_FUNCTION_ARGS)
@@ -4099,7 +4113,7 @@ Temporal_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_shift_tscale);
 /**
- * Shift and scale a temporal value by two intervals
+ * Return a temporal value shifted and scaled by two intervals
  */
 PGDLLEXPORT Datum
 Temporal_shift_tscale(PG_FUNCTION_ARGS)
@@ -5294,7 +5308,7 @@ Tnumber_twavg(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
- * Return true if the two temporal values are equal
+ * Return true if the temporal values are equal
  */
 PGDLLEXPORT Datum
 Temporal_eq(PG_FUNCTION_ARGS)
@@ -5309,7 +5323,7 @@ Temporal_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
- * Return true if the two temporal values are different
+ * Return true if the temporal values are different
  */
 PGDLLEXPORT Datum
 Temporal_ne(PG_FUNCTION_ARGS)

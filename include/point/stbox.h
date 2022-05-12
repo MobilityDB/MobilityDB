@@ -105,8 +105,8 @@ extern STBOX *stbox_read(StringInfo buf);
 
 /* Casting */
 
-extern void stbox_to_gbox(const STBOX *box, GBOX * gbox);
-extern void stbox_to_box3d(const STBOX *box, BOX3D *box3d);
+extern void stbox_set_gbox(const STBOX *box, GBOX * gbox);
+extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
 extern Datum stbox_to_geometry(const STBOX *box);
 
 /* Set an STBOX from a <Type> */

@@ -53,42 +53,42 @@
 
 /**
  * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of the base value and the temporal value
+ * @brief Return the temporal equality of a point and a temporal point
  */
 Temporal *
 teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_eq2, INVERT);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_eq2, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of the temporal value and base value
+ * @brief Return the temporal equality of a temporal point and a point
  */
 Temporal *
 teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_eq2, INVERT_NO);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_eq2, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_comp
- * @brief Return the temporal inequality of the base value and the temporal value
+ * @brief Return the temporal difference of a point and a temporal point
  */
 Temporal *
 tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_ne2, INVERT);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_ne2, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_comp
- * @brief Return the temporal inequality of the temporal value and base value
+ * @brief Return the temporal difference of the temporal point and a point
  */
 Temporal *
 tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_ne2, INVERT_NO);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_ne2, INVERT_NO);
 }
 
 /*****************************************************************************/

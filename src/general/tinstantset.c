@@ -172,7 +172,7 @@ tinstantset_make1(const TInstant **instants, int count)
    */
   if (bboxsize != 0)
   {
-    tinstantset_set_bbox1(instants, count, tinstantset_bbox_ptr(result));
+    tinstantset_compute_bbox(instants, count, tinstantset_bbox_ptr(result));
   }
   /* Store the composing instants */
   size_t pdata = double_pad(sizeof(TInstantSet)) + double_pad(bboxsize) +
@@ -682,7 +682,7 @@ tfloatinstset_to_tintinstset(const TInstantSet *ti)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal instant into a temporal instant set.
+ * @brief Return a temporal instant transformed into a temporal instant set.
  */
 TInstantSet *
 tinstant_to_tinstantset(const TInstant *inst)
@@ -692,7 +692,7 @@ tinstant_to_tinstantset(const TInstant *inst)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence into a temporal instant.
+ * @brief Return a temporal sequence transformed into a temporal instant.
  *
  * @return Return an error if a temporal sequence has more than one instant
  */
@@ -708,7 +708,7 @@ tsequence_to_tinstantset(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence set into a temporal instant set.
+ * @brief Return a temporal sequence set transformed into a temporal instant set.
  *
  * @return Return an error if any of the composing temporal sequences has
  * more than one instant
@@ -737,7 +737,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Shift and/or scale a temporal instant set by two intervals
+ * @brief Return a temporal instant set shift and/or scaled by two intervals
  *
  * @pre The duration is greater than 0 if it is not NULL
  */
@@ -1022,7 +1022,7 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal number instant set to (the complement of) a
+ * @brief Restrict a temporal instant set number to (the complement of) a
  * span of base values.
  *
  * @param[in] ti Temporal number
@@ -1056,7 +1056,7 @@ tnumberinstset_restrict_span(const TInstantSet *ti, const Span *span,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal number instant set to (the complement of) an
+ * @brief Restrict a temporal instant set number to (the complement of) an
  * array of spans of base values.
  *
  * @param[in] ti Temporal number
@@ -1605,7 +1605,7 @@ tinstantset_intersects_periodset(const TInstantSet *ti, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Return the time-weighted average of a temporal number instant set
+ * @brief Return the time-weighted average of a temporal instant set number
  */
 double
 tnumberinstset_twavg(const TInstantSet *ti)

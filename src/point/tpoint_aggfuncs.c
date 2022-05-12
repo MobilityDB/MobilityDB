@@ -172,7 +172,6 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ts)
 
 /**
  * Transform a temporal point value for performing temporal centroid aggregation
- * (dispatch function)
  */
 Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
@@ -182,24 +181,24 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   if (temp->subtype == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
+    result[0] = (Temporal *) tpointinst_transform_tcentroid((TInstant *) temp);
     *count = 1;
   }
   else if (temp->subtype == INSTANTSET)
   {
-    result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
-    *count = ((TInstantSet *)temp)->count;
+    result = (Temporal **) tpointinstset_transform_tcentroid((TInstantSet *) temp);
+    *count = ((TInstantSet *) temp)->count;
   }
   else if (temp->subtype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
+    result[0] = (Temporal *) tpointseq_transform_tcentroid((TSequence *) temp);
     *count = 1;
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
-    *count = ((TSequenceSet *)temp)->count;
+    result = (Temporal **) tpointseqset_transform_tcentroid((TSequenceSet *) temp);
+    *count = ((TSequenceSet *) temp)->count;
   }
   assert(result != NULL);
   return result;

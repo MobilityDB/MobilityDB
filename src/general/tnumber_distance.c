@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Return the distance between the two numbers
+ * Return the distance between two numbers
  */
 Datum
 number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -82,7 +82,7 @@ number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
 
 /**
  * @ingroup libmeos_temporal_dist
- * @brief Return the temporal distance between the temporal number and the value.
+ * @brief Return the temporal distance between a temporal number and a number.
  *
  * @param[in] temp Temporal number
  * @param[in] value Value
@@ -111,7 +111,7 @@ distance_tnumber_number(const Temporal *temp, Datum value,
 }
 
 /**
- * Return true if the two segments of the temporal values intersect at the
+ * Return true if two segments of the temporal numbers intersect at a
  * timestamp.
  *
  * This function is passed to the lifting infrastructure when computing the
@@ -134,7 +134,7 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 
 /**
  * @ingroup libmeos_temporal_dist
- * @brief Return the temporal distance between the two temporal points
+ * @brief Return the temporal distance between two temporal numbers
  *
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] restype Type of the result
@@ -166,8 +166,8 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup libmeos_temporal_dist
- * @brief Return the nearest approach distance between the temporal number
- * and the base value.
+ * @brief Return the nearest approach distance between a temporal number
+ * and a number.
  */
 double
 nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
@@ -211,8 +211,8 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_temporal_dist
- * @brief Return the nearest approach distance between the temporal number
- * and the temporal box.
+ * @brief Return the nearest approach distance between a temporal number
+ * and a temporal box.
  */
 double
 nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
@@ -223,7 +223,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
   Period p1, p2, inter;
   if (hast)
   {
-    temporal_period(temp, &p1);
+    temporal_set_period(temp, &p1);
     span_set(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ, &p2);
     if (! inter_span_span(&p1, &p2, &inter))
       return DBL_MAX;
@@ -262,7 +262,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
 
 PG_FUNCTION_INFO_V1(Distance_number_tnumber);
 /**
- * Return the temporal distance between the value and the temporal number
+ * Return the temporal distance between a number and a temporal number
  */
 PGDLLEXPORT Datum
 Distance_number_tnumber(PG_FUNCTION_ARGS)
@@ -279,8 +279,7 @@ Distance_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_tnumber_number);
 /**
- * Return the temporal distance between the temporal number and the
- * value
+ * Return the temporal distance between a temporal number and a number
  */
 PGDLLEXPORT Datum
 Distance_tnumber_number(PG_FUNCTION_ARGS)
@@ -297,7 +296,7 @@ Distance_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_tnumber_tnumber);
 /**
- * Return the temporal distance between the two temporal points
+ * Return the temporal distance between two temporal numbers
  */
 PGDLLEXPORT Datum
 Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
@@ -320,7 +319,7 @@ Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_number_tnumber);
 /**
- * Return the temporal distance between the value and the temporal number
+ * Return the temporal distance between a number and a temporal number
  */
 PGDLLEXPORT Datum
 NAD_number_tnumber(PG_FUNCTION_ARGS)
@@ -336,8 +335,7 @@ NAD_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnumber_number);
 /**
- * Return the temporal distance between the temporal number and the
- * value
+ * Return the temporal distance between a temporal number and a number
  */
 PGDLLEXPORT Datum
 NAD_tnumber_number(PG_FUNCTION_ARGS)
@@ -368,7 +366,7 @@ NAD_tbox_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tbox_tnumber);
 /**
- * Return the nearest approach distance between the temporal box and the
+ * Return the nearest approach distance between a temporal box and a
  * temporal number
  */
 PGDLLEXPORT Datum
@@ -385,7 +383,7 @@ NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnumber_tbox);
 /**
- * Return the nearest approach distance between the temporal number and the
+ * Return the nearest approach distance between a temporal number and a
  * temporal box
  */
 PGDLLEXPORT Datum

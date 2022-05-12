@@ -59,7 +59,7 @@
  *****************************************************************************/
 
 /**
- * Deconstruct the span
+ * Deconstruct a span
  *
  * @param[in] s Span value
  * @param[out] lower,upper Bounds
@@ -301,7 +301,7 @@ spanarr_normalize(Span **spans, int count, int *newcount)
 }
 
 /**
- * Get the bounds of the span as double values.
+ * Get the bounds of a span as double values.
  *
  * @param[in] s Input span
  * @param[out] xmin, xmax Lower and upper bounds
@@ -358,7 +358,7 @@ unquote(char *str)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return the string representation of the span.
+ * @brief Return the string representation of a span.
  */
 char *
 span_out(const Span *s)
@@ -379,8 +379,7 @@ span_out(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return a span from its binary representation
- * read from the buffer.
+ * @brief Return a span from its binary representation read from a buffer.
  */
 Span *
 span_recv(StringInfo buf)
@@ -396,7 +395,7 @@ span_recv(StringInfo buf)
 }
 
 /**
- * @brief Write the binary representation of the span into the buffer.
+ * @brief Write the binary representation of a span into a buffer.
  */
 void
 span_write(const Span *s, StringInfo buf)
@@ -413,7 +412,7 @@ span_write(const Span *s, StringInfo buf)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Get the binary representation of the span.
+ * @brief Return the binary representation of a span.
  */
 bytea *
 span_send(const Span *s)
@@ -444,7 +443,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
 /**
  * @ingroup libmeos_spantime_constructor
- * @brief Set the span from the argument values.
+ * @brief Set a span from the arguments.
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
@@ -475,7 +474,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
 /**
  * @ingroup libmeos_spantime_constructor
- * @brief Return a copy of the span.
+ * @brief Return a copy of a span.
  */
 Span *
 span_copy(const Span *s)
@@ -491,7 +490,7 @@ span_copy(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast an element value as a span
+ * @brief Cast an element as a span
  */
 Span *
 elem_to_span(Datum d, CachedType basetype)
@@ -503,7 +502,7 @@ elem_to_span(Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast a timestamp value as a period
+ * @brief Cast a timestamp as a period
  */
 Period *
 timestamp_to_period(TimestampTz t)
@@ -518,8 +517,8 @@ timestamp_to_period(TimestampTz t)
 
 #ifdef MEOS
 /**
- * @ingroup libmeos_spantime_cast
- * @brief Return the lower bound value
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of a span
  */
 Datum
 span_lower(Span *s)
@@ -529,7 +528,7 @@ span_lower(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the upper bound value
+ * @brief Return the upper bound of a span
  */
 Datum
 span_upper(Span *s)
@@ -539,7 +538,7 @@ span_upper(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return true if the lower bound value is inclusive
+ * @brief Return true if the lower bound of a span is inclusive
  */
 bool
 span_lower_inc(Span *s)
@@ -549,7 +548,7 @@ span_lower_inc(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return true if the upper bound value is inclusive
+ * @brief Return true if the upper bound of a span is inclusive
  */
 bool
 span_upper_inc(Span *s)
@@ -560,7 +559,7 @@ span_upper_inc(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the width of the span as a double.
+ * @brief Return the width of a span as a double.
  */
 double
 span_width(const Span *s)
@@ -570,7 +569,7 @@ span_width(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the duration of the period as an interval.
+ * @brief Return the duration of a period as an interval.
  */
 Interval *
 period_duration(const Span *s)
@@ -608,7 +607,7 @@ span_expand(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale the period by the two intervals.
+ * @brief Shift and/or scale a period by two intervals.
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,

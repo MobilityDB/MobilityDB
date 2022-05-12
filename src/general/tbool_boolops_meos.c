@@ -44,7 +44,7 @@
 
 /**
  * @ingroup libmeos_temporal_bool
- * @brief Return the temporal boolean and of the value and the temporal value
+ * @brief Return the boolean and of a boolean and a temporal boolean
  */
 Temporal *
 tand_bool_tbool(bool b, const Temporal *temp)
@@ -54,7 +54,7 @@ tand_bool_tbool(bool b, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_bool
- * @brief Return the temporal boolean and of the temporal value and the value
+ * @brief Return the boolean and of a temporal boolean and a boolean
  */
 Temporal *
 tand_tbool_bool(const Temporal *temp, bool b)
@@ -64,7 +64,7 @@ tand_tbool_bool(const Temporal *temp, bool b)
 
 /**
  * @ingroup libmeos_temporal_bool
- * @brief Return the temporal boolean and of the temporal values
+ * @brief Return the boolean and of the temporal booleans
  */
 Temporal *
 tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
@@ -78,7 +78,7 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_bool
- * @brief Return the temporal boolean or of the value and the temporal value
+ * @brief Return the boolean or of a boolean and a temporal boolean
  */
 Temporal *
 tor_bool_tbool(bool b, const Temporal *temp)
@@ -88,7 +88,7 @@ tor_bool_tbool(bool b, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_bool
- * @brief Return the temporal boolean or of the temporal value and the value
+ * @brief Return the boolean or of a temporal boolean and a boolean
  */
 Temporal *
 tor_tbool_bool(const Temporal *temp, bool b)
@@ -98,7 +98,7 @@ tor_tbool_bool(const Temporal *temp, bool b)
 
 /**
  * @ingroup libmeos_temporal_bool
- * @brief Return the temporal boolean or of the temporal values
+ * @brief Return the boolean or of the temporal booleans
  */
 Temporal *
 tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)

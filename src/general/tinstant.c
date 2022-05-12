@@ -480,7 +480,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal instant set into a temporal instant.
+ * @brief Return a temporal instant set transformed into a temporal instant.
  */
 TInstant *
 tinstantset_to_tinstant(const TInstantSet *ti)
@@ -493,7 +493,7 @@ tinstantset_to_tinstant(const TInstantSet *ti)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence into a temporal instant.
+ * @brief Return a temporal sequence transformed into a temporal instant.
  */
 TInstant *
 tsequence_to_tinstant(const TSequence *seq)
@@ -506,7 +506,7 @@ tsequence_to_tinstant(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Transform a temporal sequence set into a temporal instant.
+ * @brief Return a temporal sequence set transformed into a temporal instant.
  */
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ts)
@@ -520,7 +520,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Shift the time span of a temporal instant by an interval.
+ * @brief Return a temporal instant shifted by an interval.
  */
 TInstant *
 tinstant_shift(const TInstant *inst, const Interval *interval)
@@ -584,7 +584,7 @@ tinstant_ever_le(const TInstant *inst, Datum value)
 
 /**
  * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal instant is always less thanathe base value.
+ * @brief Return true if a temporal instant is always less than a base value.
  */
 bool
 tinstant_always_lt(const TInstant *inst, Datum value)

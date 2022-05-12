@@ -973,7 +973,7 @@ Temporal_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the bounds */
     Period p;
-    temporal_period(temp, &p);
+    temporal_set_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
     TimestampTz start_bucket = timestamptz_bucket(start_time, tunits,
@@ -1933,7 +1933,7 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the time bounds */
     Period p;
-    temporal_period(temp, &p);
+    temporal_set_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
     TimestampTz start_time_bucket = timestamptz_bucket(start_time,

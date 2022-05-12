@@ -61,11 +61,11 @@ extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
 
 extern size_t temporal_bbox_size(CachedType tempype);
 extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
-extern void tinstantset_set_bbox1(const TInstant **inst, int count,
+extern void tinstantset_compute_bbox(const TInstant **inst, int count,
   void *bbox);
-extern void tsequence_set_bbox1(const TInstant** inst, int count,
+extern void tsequence_compute_bbox(const TInstant** inst, int count,
   bool lower_inc, bool upper_inc, bool linear, void *bbox);
-extern void tsequenceset_set_bbox1(const TSequence **seqs, int count,
+extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
   void *bbox);
 
 /* Bounding box operators for temporal types */
@@ -105,7 +105,7 @@ extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
   CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
 extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_to_tbox(const Temporal *temp, const TBOX *box,
+extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert);
 extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *));

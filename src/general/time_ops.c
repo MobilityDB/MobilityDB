@@ -70,7 +70,7 @@ pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 }
 
 /**
- * Determine the relative position of the period and the timestamp
+ * Determine the relative position of a period and a timestamp
  */
 RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
@@ -93,7 +93,7 @@ pos_period_timestamp(const Period *p, TimestampTz t)
  *****************************************************************************/
 
 /**
- * Return the union, intersection or difference of the two time values
+ * Return the union, intersection or difference of two timestamp sets
  */
 TimestampSet *
 setop_timestampset_timestampset(const TimestampSet *ts1,
@@ -164,7 +164,7 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
 }
 
 /**
- * Return the intersection or the difference of the two time values
+ * Return the intersection or the difference of a timestamp set and a period
  */
 TimestampSet *
 setop_timestampset_period(const TimestampSet *ts, const Period *p,
@@ -189,7 +189,7 @@ setop_timestampset_period(const TimestampSet *ts, const Period *p,
 }
 
 /*
- * Return the intersection or the difference of the two time values
+ * Return the intersection or the difference of a timestamp set and a period set
  */
 TimestampSet *
 setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
@@ -251,7 +251,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a timestamp set contains a timestamp.
  */
 bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -267,7 +267,7 @@ contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if the first timestamp set contains the second one.
  */
 bool
 contains_timestampset_timestampset(const TimestampSet *ts1,
@@ -299,7 +299,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a period contains a timestamp.
  */
 bool
 contains_period_timestamp(const Period *p, TimestampTz t)
@@ -317,7 +317,7 @@ contains_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a period contains a timestamp set.
  */
 bool
 contains_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -331,7 +331,7 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a period set contains a timestamp.
  */
 bool
 contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -349,7 +349,7 @@ contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a period set contains a timestamp set.
  */
 bool
 contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -380,7 +380,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a period set contains a period.
  */
 bool
 contains_periodset_period(const PeriodSet *ps, const Period *p)
@@ -398,7 +398,7 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if a period contains a period set.
  */
 bool
 contains_period_periodset(const Period *p, const PeriodSet *ps)
@@ -409,7 +409,7 @@ contains_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value contains the second one.
+ * @brief Return true if the first period set contains the second one.
  */
 bool
 contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -455,7 +455,7 @@ contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a timestamp is contained by a timestamp set
  */
 bool
 contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -465,7 +465,7 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a timestamp is contained by a period
  */
 bool
 contained_timestamp_period(TimestampTz t, const Period *p)
@@ -475,7 +475,7 @@ contained_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a timestamp is contained by a period set
  */
 bool
 contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -485,7 +485,7 @@ contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a timestamp set is contained by the second one
  */
 bool
 contained_timestampset_timestampset(const TimestampSet *ts1,
@@ -496,7 +496,7 @@ contained_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a timestamp set is contained by a period
  */
 bool
 contained_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -506,7 +506,7 @@ contained_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a timestamp set is contained by a period set
  */
 bool
 contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -516,7 +516,7 @@ contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a period is contained by a period
  */
 bool
 contained_period_periodset(const Period *p, const PeriodSet *ps)
@@ -526,7 +526,7 @@ contained_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if a period set is contained by a period
  */
 bool
 contained_periodset_period(const PeriodSet *ps, const Period *p)
@@ -536,7 +536,7 @@ contained_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first time value is contained by the second one
+ * @brief Return true if the first period set is contained by the second one
  */
 bool
 contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -549,7 +549,7 @@ contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap.
+ * @brief Return true if the timestamp sets overlap.
  */
 bool
 overlaps_timestampset_timestampset(const TimestampSet *ts1,
@@ -579,7 +579,7 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap.
+ * @brief Return true if a timestamp set and a period overlap.
  */
 bool
 overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -600,7 +600,7 @@ overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap.
+ * @brief Return true if a timestamp set and a period set overlap.
  */
 bool
 overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -628,7 +628,7 @@ overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap
+ * @brief Return true if a period and a timestamp set overlap
  */
 bool
 overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -638,7 +638,7 @@ overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap.
+ * @brief Return true if a period and a period set overlap.
  */
 bool
 overlaps_period_periodset(const Period *p, const PeriodSet *ps)
@@ -664,7 +664,7 @@ overlaps_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap
+ * @brief Return true if a period set and a timestamp set overlap
  */
 bool
 overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -674,7 +674,7 @@ overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap
+ * @brief Return true if a periodset and a period overlap
  */
 bool
 overlaps_periodset_period(const PeriodSet *ps, const Period *p)
@@ -684,7 +684,7 @@ overlaps_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time values overlap.
+ * @brief Return true if two period sets overlap.
  */
 bool
 overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -720,7 +720,7 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent.
+ * @brief Return true if a timestamp and a period are adjacent.
  */
 bool
 adjacent_timestamp_period(TimestampTz t, const Period *p)
@@ -735,7 +735,7 @@ adjacent_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent.
+ * @brief Return true if a timestamp and a period set are adjacent.
  */
 bool
 adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -752,7 +752,7 @@ adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent.
+ * @brief Return true if a timestamp set and a period are adjacent.
  */
 bool
 adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -769,7 +769,7 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent.
+ * @brief Return true if a timestamp set and a period set are adjacent.
  */
 bool
 adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -788,7 +788,7 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent
+ * @brief Return true if a period and a timestamp are adjacent
  */
 bool
 adjacent_period_timestamp(const Period *p, TimestampTz t)
@@ -798,7 +798,7 @@ adjacent_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent
+ * @brief Return true if a period and a timestamp set are adjacent
  */
 bool
 adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -808,7 +808,7 @@ adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent.
+ * @brief Return true if a period and a period set are adjacent.
  */
 bool
 adjacent_period_periodset(const Period *p, const PeriodSet *ps)
@@ -825,7 +825,7 @@ adjacent_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent
+ * @brief Return true if a period set a timestamp are adjacent
  */
 bool
 adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -835,7 +835,7 @@ adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent
+ * @brief Return true if a period set and a timestamp set are adjacent
  */
 bool
 adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -845,7 +845,7 @@ adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent
+ * @brief Return true if a period set and a period are adjacent
  */
 bool
 adjacent_periodset_period(const PeriodSet *ps, const Period *p)
@@ -855,7 +855,7 @@ adjacent_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two time value are adjacent.
+ * @brief Return true if a period set and a period are adjacent.
  */
 bool
 adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -877,7 +877,7 @@ adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second
+ * @brief Return true if a timestamp is strictly before the second
  * one.
  */
 bool
@@ -889,7 +889,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a timestamp is strictly before a period.
  */
 bool
 before_timestamp_period(TimestampTz t, const Period *p)
@@ -900,7 +900,7 @@ before_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a timestamp is strictly before a period set.
  */
 bool
 before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -911,7 +911,7 @@ before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a timestamp set is strictly before a timestamp set.
  */
 bool
 before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -922,7 +922,7 @@ before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a timestamp set is strictly before the second one.
  */
 bool
 before_timestampset_timestampset(const TimestampSet *ts1,
@@ -935,7 +935,7 @@ before_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a timestamp set is strictly before a period.
  */
 bool
 before_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -946,7 +946,7 @@ before_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a timestamp set is strictly before a period set.
  */
 bool
 before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -958,7 +958,7 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a period is strictly before a timestamp.
  */
 bool
 before_period_timestamp(const Period *p, TimestampTz t)
@@ -969,7 +969,7 @@ before_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period is strictly before a timestamp set
  */
 bool
 before_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -980,7 +980,7 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a period is strictly before a period set.
  */
 bool
 before_period_periodset(const Period *p, const PeriodSet *ps)
@@ -991,7 +991,7 @@ before_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a period set is strictly before a timestamp.
  */
 bool
 before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1002,7 +1002,7 @@ before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a period set is strictly before a timestamp set.
  */
 bool
 before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1014,7 +1014,7 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if a period set is strictly before a period.
  */
 bool
 before_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1025,7 +1025,7 @@ before_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly before the second one.
+ * @brief Return true if the first period set is strictly before the second one.
  */
 bool
 before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1040,7 +1040,7 @@ before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp is strictly after a timestamp set.
  */
 bool
 after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1051,7 +1051,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp is strictly after a period.
  */
 bool
 after_timestamp_period(TimestampTz t, const Period *p)
@@ -1062,7 +1062,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp is strictly after a period set.
  */
 bool
 after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1073,7 +1073,7 @@ after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp set is strictly after a timestamp.
  */
 bool
 after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -1084,7 +1084,7 @@ after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp set is strictly after the second one.
  */
 bool
 after_timestampset_timestampset(const TimestampSet *ts1,
@@ -1097,7 +1097,7 @@ after_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp set is strictly after a period.
  */
 bool
 after_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1108,7 +1108,7 @@ after_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a timestamp set is strictly after a period set.
  */
 bool
 after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1120,7 +1120,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the
+ * @brief Return true if a period is strictly after the
  * second one.
  */
 bool
@@ -1132,7 +1132,7 @@ after_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a period is strictly after a timestamp set.
  */
 bool
 after_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1143,7 +1143,7 @@ after_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a period is strictly after a period set.
  */
 bool
 after_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1154,7 +1154,7 @@ after_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a period set is strictly after a timestamp.
  */
 bool
 after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1165,7 +1165,7 @@ after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a period set is strictly after a timestamp set.
  */
 bool
 after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1177,7 +1177,7 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if a period set is strictly after a period.
  */
 bool
 after_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1188,7 +1188,7 @@ after_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is strictly after the second one.
+ * @brief Return true if the first period set is strictly after the second one.
  */
 bool
 after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1203,7 +1203,7 @@ after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp is not after a timestamp set.
  */
 bool
 overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1214,7 +1214,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp is not after a period.
  */
 bool
 overbefore_timestamp_period(TimestampTz t, const Period *p)
@@ -1225,7 +1225,7 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp is not after a period set.
  */
 bool
 overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1236,7 +1236,7 @@ overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp set is not after a timestamp.
  */
 bool
 overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -1247,7 +1247,7 @@ overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp set is not after the second one.
  */
 bool
 overbefore_timestampset_timestampset(const TimestampSet *ts1,
@@ -1260,7 +1260,7 @@ overbefore_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp set is not after a period.
  */
 bool
 overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1271,7 +1271,7 @@ overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a timestamp set is not after a period set.
  */
 bool
 overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1283,7 +1283,7 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a period is not after a timestamp.
  */
 bool
 overbefore_period_timestamp(const Period *p, TimestampTz t)
@@ -1293,7 +1293,7 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a period is not after a timestamp set.
  */
 bool
 overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1304,7 +1304,7 @@ overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a period is not after a period set.
  */
 bool
 overbefore_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1315,7 +1315,7 @@ overbefore_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a period set is not after a timestamp.
  */
 bool
 overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1326,7 +1326,7 @@ overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a period set is not after a timestamp set.
  */
 bool
 overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1338,7 +1338,7 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if a period set is not after a period.
  */
 bool
 overbefore_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1349,7 +1349,7 @@ overbefore_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not after the second one.
+ * @brief Return true if the first a period set is not after the second one.
  */
 bool
 overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1364,7 +1364,7 @@ overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a timestamp is not before a timestamp set.
  */
 bool
 overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1375,7 +1375,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a timestamp is not before a period.
  */
 bool
 overafter_timestamp_period(TimestampTz t, const Period *p)
@@ -1386,7 +1386,7 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a timestamp is not before a period set.
  */
 bool
 overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1397,7 +1397,7 @@ overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a timestamp set is not before a timestamp.
  */
 bool
 overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -1408,7 +1408,7 @@ overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if the first timestamp set is not before the second one.
  */
 bool
 overafter_timestampset_timestampset(const TimestampSet *ts1,
@@ -1421,7 +1421,7 @@ overafter_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a timestamp set is not before a period.
  */
 bool
 overafter_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1432,7 +1432,7 @@ overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a timestamp set is not before a period set.
  */
 bool
 overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1444,7 +1444,7 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a period is not before a timestamp.
  */
 bool
 overafter_period_timestamp(const Period *p, TimestampTz t)
@@ -1454,7 +1454,7 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a period is not before a timestamp set.
  */
 bool
 overafter_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1465,7 +1465,7 @@ overafter_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a period is not before a period set.
  */
 bool
 overafter_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1476,7 +1476,7 @@ overafter_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a period set is not before a timestamp.
  */
 bool
 overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1487,7 +1487,7 @@ overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a period set is not before a timestamp set.
  */
 bool
 overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1499,7 +1499,7 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if a period set is not before a period.
  */
 bool
 overafter_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1510,7 +1510,7 @@ overafter_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first time value is not before the second one.
+ * @brief Return true if the first period set is not before the second one.
  */
 bool
 overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1526,7 +1526,7 @@ overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_set
- * Return the union of the two time values
+ * Return the union of the timestamps
  */
 TimestampSet *
 union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
@@ -1555,7 +1555,7 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of a timestamp and a timestamp set.
  */
 TimestampSet *
 union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1586,7 +1586,7 @@ union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a timestamp and a period
  */
 PeriodSet *
 union_timestamp_period(TimestampTz t, const Period *p)
@@ -1599,7 +1599,7 @@ union_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a timestamp and a period set
  */
 PeriodSet *
 union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1614,7 +1614,7 @@ union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a timestamp set and a timestamp
  */
 TimestampSet *
 union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
@@ -1624,7 +1624,7 @@ union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of the timestamp sets.
  */
 TimestampSet *
 union_timestampset_timestampset(const TimestampSet *ts1,
@@ -1635,7 +1635,7 @@ union_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a timestamp set and a period
  */
 PeriodSet *
 union_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1648,7 +1648,7 @@ union_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a timestamp set and a period set
  */
 PeriodSet *
 union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1663,7 +1663,7 @@ union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a period and a timestamp
  */
 PeriodSet *
 union_period_timestamp(const Period *p, TimestampTz t)
@@ -1676,7 +1676,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a period and a timestamp set
  */
 PeriodSet *
 union_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1689,7 +1689,7 @@ union_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of the periods.
  */
 PeriodSet *
 union_period_period(const Period *p1, const Period *p2)
@@ -1723,7 +1723,7 @@ union_period_period(const Period *p1, const Period *p2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of a period and a period set.
  */
 PeriodSet *
 union_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1740,7 +1740,7 @@ union_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of a period set and a timestamp.
  */
 PeriodSet *
 union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
@@ -1753,7 +1753,7 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of a period set and a timestamp set.
  */
 PeriodSet *
 union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
@@ -1766,7 +1766,7 @@ union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values
+ * @brief Return the union of a period set and a period
  */
 PeriodSet *
 union_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1776,7 +1776,7 @@ union_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two time values.
+ * @brief Return the union of the period sets.
  */
 PeriodSet *
 union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1882,7 +1882,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of the timestamps
  */
 bool
 intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
@@ -1896,7 +1896,7 @@ intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a timestamp and a timestamp set
  */
 bool
 intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
@@ -1910,7 +1910,7 @@ intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a timestamp and a period
  */
 bool
 intersection_timestamp_period(TimestampTz t, const Period *p,
@@ -1924,7 +1924,7 @@ intersection_timestamp_period(TimestampTz t, const Period *p,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a timestamp and a period set
  */
 bool
 intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
@@ -1940,7 +1940,7 @@ intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a timestamp set and a timestamp
  */
 bool
 intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
@@ -1954,7 +1954,7 @@ intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values.
+ * @brief Return the intersection of the timestamp sets.
  */
 TimestampSet *
 intersection_timestampset_timestampset(const TimestampSet *ts1,
@@ -1965,7 +1965,7 @@ intersection_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values.
+ * @brief Return the intersection of a timestamp set and a period.
  */
 TimestampSet *
 intersection_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1975,7 +1975,7 @@ intersection_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values.
+ * @brief Return the intersection of a timestamp set and a period set.
  */
 TimestampSet *
 intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1987,7 +1987,7 @@ intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a period and a timestamp
  */
 bool
 intersection_period_timestamp(const Period *p, TimestampTz t,
@@ -2001,7 +2001,7 @@ intersection_period_timestamp(const Period *p, TimestampTz t,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a period and a timestamp set
  */
 TimestampSet *
 intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
@@ -2011,7 +2011,7 @@ intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values.
+ * @brief Return the intersection of a period and a period set.
  */
 PeriodSet *
 intersection_period_periodset(const Period *p, const PeriodSet *ps)
@@ -2047,7 +2047,7 @@ intersection_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a period set and a timestamp
  */
 bool
 intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
@@ -2061,7 +2061,7 @@ intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a period set and a timestamp set
  */
 TimestampSet *
 intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -2071,7 +2071,7 @@ intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values
+ * @brief Return the intersection of a period set and a period
  */
 PeriodSet *
 intersection_periodset_period(const PeriodSet *ps, const Period *p)
@@ -2081,7 +2081,7 @@ intersection_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two time values.
+ * @brief Return the intersection of the period sets.
  */
 PeriodSet *
 intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -2127,7 +2127,7 @@ intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values
+ * @brief Return the difference of the timestamps
  */
 bool
 minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
@@ -2140,7 +2140,7 @@ minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values
+ * @brief Return the difference of a timestamp and a timestamp set
  */
 bool
 minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
@@ -2154,7 +2154,7 @@ minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values
+ * @brief Return the difference of a timestamp and a period
  */
 bool
 minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
@@ -2167,7 +2167,7 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values
+ * @brief Return the difference of a timestamp and a period set
  */
 bool
 minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
@@ -2183,7 +2183,7 @@ minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a timestamp set and a timestamp.
  */
 TimestampSet *
 minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -2206,7 +2206,7 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of the timestamp sets.
  */
 TimestampSet *
 minus_timestampset_timestampset(const TimestampSet *ts1,
@@ -2217,7 +2217,7 @@ minus_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a timestamp set and a period.
  */
 TimestampSet *
 minus_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -2227,7 +2227,7 @@ minus_timestampset_period(const TimestampSet *ts, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a timestamp set and a period set.
  */
 TimestampSet *
 minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -2238,8 +2238,7 @@ minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period and a timestamp.
  */
 static int
 minus_period_timestamp1(const Period *p, TimestampTz t, Period **result)
@@ -2274,7 +2273,7 @@ minus_period_timestamp1(const Period *p, TimestampTz t, Period **result)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period and a timestamp.
  */
 PeriodSet *
 minus_period_timestamp(const Period *p, TimestampTz t)
@@ -2292,7 +2291,7 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period and a timestamp set.
  */
 PeriodSet *
 minus_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -2311,8 +2310,7 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of the two periods.
  * @note This function generalizes the function minus_span_span by enabling
  * the result to be two periods
  */
@@ -2381,7 +2379,7 @@ minus_period_period1(const Period *p1, const Period *p2, Period **result)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of the periods.
  */
 PeriodSet *
 minus_period_period(const Period *p1, const Period *p2)
@@ -2398,7 +2396,7 @@ minus_period_period(const Period *p1, const Period *p2)
 }
 
 /**
- * Return the difference of the two time values.
+ * Return the difference of a period and a period set.
  */
 int
 minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
@@ -2442,7 +2440,7 @@ minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period and a period set.
  */
 PeriodSet *
 minus_period_periodset(const Period *p, const PeriodSet *ps)
@@ -2462,7 +2460,7 @@ minus_period_periodset(const Period *p, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period set and a timestamp.
  */
 PeriodSet *
 minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -2486,7 +2484,7 @@ minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period set and a timestamp set.
  */
 PeriodSet *
 minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -2599,7 +2597,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of a period set and a period.
  */
 PeriodSet *
 minus_periodset_period(const PeriodSet *ps, const Period *p)
@@ -2623,7 +2621,7 @@ minus_periodset_period(const PeriodSet *ps, const Period *p)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of the period sets.
  */
 PeriodSet *
 minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -2682,7 +2680,7 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between the timestamps
  */
 double
 distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
@@ -2698,13 +2696,13 @@ distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values.
+ * @brief Return the distance in seconds between a timestamp and a timestamp set.
  */
 double
 distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
   Period p;
-  timestampset_period(ts, &p);
+  timestampset_set_period(ts, &p);
   double result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -2713,7 +2711,7 @@ distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values.
+ * @brief Return the distance in seconds between a timestamp and a period.
  */
 double
 distance_timestamp_period(TimestampTz t, const Period *p)
@@ -2725,7 +2723,7 @@ distance_timestamp_period(TimestampTz t, const Period *p)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a timestamp and a period set
  */
 double
 distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -2742,13 +2740,13 @@ distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a timestamp set and a timestamp
  */
 double
 distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   Period p;
-  timestampset_period(ts, &p);
+  timestampset_set_period(ts, &p);
   double result = distance_period_timestamp(&p, t);
   return result;
 }
@@ -2757,15 +2755,15 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between the timestamp sets
  */
 double
 distance_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   Period p1, p2;
-  timestampset_period(ts1, &p1);
-  timestampset_period(ts2, &p2);
+  timestampset_set_period(ts1, &p1);
+  timestampset_set_period(ts2, &p2);
   double result = distance_span_span(&p1, &p2);
   return result;
 }
@@ -2774,13 +2772,13 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values.
+ * @brief Return the distance in seconds between a timestamp set and a period.
  */
 double
 distance_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   Period p1;
-  timestampset_period(ts, &p1);
+  timestampset_set_period(ts, &p1);
   double result = distance_span_span(&p1, p);
   return result;
 }
@@ -2789,14 +2787,14 @@ distance_timestampset_period(const TimestampSet *ts, const Period *p)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a timestamp set and a period set
  */
 double
 distance_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps)
 {
   Period p1, p2;
-  timestampset_period(ts, &p1);
+  timestampset_set_period(ts, &p1);
   periodset_set_period(ps, &p2);
   double result = distance_span_span(&p1, &p2);
   return result;
@@ -2807,7 +2805,7 @@ distance_timestampset_periodset(const TimestampSet *ts,
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds between the period and the timestamp.
+ * @brief Return the distance in seconds between a period and a timestamp.
  */
 double
 distance_period_timestamp(const Period *p, TimestampTz t)
@@ -2816,8 +2814,8 @@ distance_period_timestamp(const Period *p, TimestampTz t)
   if (contains_period_timestamp(p, t))
     return 0.0;
 
-  /* If the period is to the left of the timestamp return the distance
-   * between the upper bound of the period and the timestamp */
+  /* If the period is to the left of a timestamp return the distance
+   * between the upper bound of the period and a timestamp */
   if ((TimestampTz) p->lower > t)
     return ((float8) p->lower - (float8) t) / USECS_PER_SEC;
 
@@ -2829,7 +2827,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a period and a timestamp set
  */
 double
 distance_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -2841,7 +2839,7 @@ distance_period_timestampset(const Period *p, const TimestampSet *ts)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a period and a period set
  */
 double
 distance_period_periodset(const Period *p, const PeriodSet *ps)
@@ -2858,7 +2856,7 @@ distance_period_periodset(const Period *p, const PeriodSet *ps)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a period set and a timestamp
  */
 double
 distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -2870,7 +2868,7 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a period set and a timestamp set
  */
 double
 distance_periodset_timestampset(const PeriodSet *ps,
@@ -2883,7 +2881,7 @@ distance_periodset_timestampset(const PeriodSet *ps,
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between a period set and a period
  */
 double
 distance_periodset_period(const PeriodSet *ps, const Period *p)
@@ -2895,7 +2893,7 @@ distance_periodset_period(const PeriodSet *ps, const Period *p)
 #ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds of the two time values
+ * @brief Return the distance in seconds between the period sets
  */
 double
 distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -2933,7 +2931,7 @@ time_max_header_size(void)
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_timestamp);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a timestamp set contains a timestamp
  */
 PGDLLEXPORT Datum
 Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -2947,7 +2945,7 @@ Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_timestampset);
 /**
- * Return true if the first time value contains the second one
+ * Return true if the first timestamp set contains the second one
  */
 PGDLLEXPORT Datum
 Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -2962,7 +2960,7 @@ Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_timestamp);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period contains a timestamp
  */
 PGDLLEXPORT Datum
 Contains_period_timestamp(PG_FUNCTION_ARGS)
@@ -2974,7 +2972,7 @@ Contains_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_timestampset);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period contains a timestamp set
  */
 PGDLLEXPORT Datum
 Contains_period_timestampset(PG_FUNCTION_ARGS)
@@ -2988,7 +2986,7 @@ Contains_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_period);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period contains a period
  */
 PGDLLEXPORT Datum
 Contains_period_period(PG_FUNCTION_ARGS)
@@ -3000,7 +2998,7 @@ Contains_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_timestamp);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period set contains a timestamp
  */
 PGDLLEXPORT Datum
 Contains_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -3014,7 +3012,7 @@ Contains_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_timestampset);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period set contains a timestamp set
  */
 PGDLLEXPORT Datum
 Contains_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -3029,7 +3027,7 @@ Contains_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_period);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period set contains a period set
  */
 PGDLLEXPORT Datum
 Contains_periodset_period(PG_FUNCTION_ARGS)
@@ -3043,7 +3041,7 @@ Contains_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_periodset);
 /**
- * Return true if the first time value contains the second one
+ * Return true if a period contains a period set
  */
 PGDLLEXPORT Datum
 Contains_period_periodset(PG_FUNCTION_ARGS)
@@ -3057,7 +3055,7 @@ Contains_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_periodset);
 /**
- * Return true if the first time value contains the second one
+ * Return true if the first period set contains the second one
  */
 PGDLLEXPORT Datum
 Contains_periodset_periodset(PG_FUNCTION_ARGS)
@@ -3075,7 +3073,7 @@ Contains_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_timestampset);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a timestamp is contained by a timestamp set
  */
 PGDLLEXPORT Datum
 Contained_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -3089,7 +3087,7 @@ Contained_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_period);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a timestamp is contained by a period
  */
 PGDLLEXPORT Datum
 Contained_timestamp_period(PG_FUNCTION_ARGS)
@@ -3101,7 +3099,7 @@ Contained_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_periodset);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a timestamp is contained by a period set
  */
 PGDLLEXPORT Datum
 Contained_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -3115,7 +3113,7 @@ Contained_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_timestampset);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if the first timestamp set is contained by the second one
  */
 PGDLLEXPORT Datum
 Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -3130,7 +3128,7 @@ Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_period);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a timestamp set is contained by a period
  */
 PGDLLEXPORT Datum
 Contained_timestampset_period(PG_FUNCTION_ARGS)
@@ -3144,7 +3142,7 @@ Contained_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_periodset);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a timestamp set is contained by a period set
  */
 PGDLLEXPORT Datum
 Contained_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -3159,7 +3157,7 @@ Contained_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_period_period);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a period is contained by the second one
  */
 PGDLLEXPORT Datum
 Contained_period_period(PG_FUNCTION_ARGS)
@@ -3171,7 +3169,7 @@ Contained_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_period_periodset);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a period is contained by a period set
  */
 PGDLLEXPORT Datum
 Contained_period_periodset(PG_FUNCTION_ARGS)
@@ -3185,7 +3183,7 @@ Contained_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_periodset_period);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if a period set is contained by a period
  */
 PGDLLEXPORT Datum
 Contained_periodset_period(PG_FUNCTION_ARGS)
@@ -3199,7 +3197,7 @@ Contained_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_periodset_periodset);
 /**
- * Return true if the first time value is contained by the second one
+ * Return true if the first period set is contained by the second one
  */
 PGDLLEXPORT Datum
 Contained_periodset_periodset(PG_FUNCTION_ARGS)
@@ -3217,7 +3215,7 @@ Contained_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_timestampset);
 /**
- * Return true if the two time values overlap
+ * Return true if the timestamp sets overlap
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -3232,7 +3230,7 @@ Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_period);
 /**
- * Return true if the two time values overlap
+ * Return true if a timestamp set and a period overlap
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_period(PG_FUNCTION_ARGS)
@@ -3246,7 +3244,7 @@ Overlaps_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_periodset);
 /**
- * Return true if the two time values overlap
+ * Return true if a timestamp set and a period set overlap
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -3261,7 +3259,7 @@ Overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_timestampset);
 /**
- * Return true if the two time values overlap
+ * Return true if a period and a timestamp set overlap
  */
 PGDLLEXPORT Datum
 Overlaps_period_timestampset(PG_FUNCTION_ARGS)
@@ -3275,7 +3273,7 @@ Overlaps_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_period);
 /**
- * Return true if the two time values overlap
+ * Return true if the periods overlap
  */
 PGDLLEXPORT Datum
 Overlaps_period_period(PG_FUNCTION_ARGS)
@@ -3287,7 +3285,7 @@ Overlaps_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_periodset);
 /**
- * Return true if the two time values overlap
+ * Return true if a period and a period set overlap
  */
 PGDLLEXPORT Datum
 Overlaps_period_periodset(PG_FUNCTION_ARGS)
@@ -3301,7 +3299,7 @@ Overlaps_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_timestampset);
 /**
- * Return true if the two time values overlap
+ * Return true if a period set and a timestamp set overlap
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -3316,7 +3314,7 @@ Overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_period);
 /**
- * Return true if the two time values overlap
+ * Return true if a period set and a period overlap
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_period(PG_FUNCTION_ARGS)
@@ -3330,7 +3328,7 @@ Overlaps_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_periodset);
 /**
- * Return true if the two time values overlap
+ * Return true if the period sets overlap
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_periodset(PG_FUNCTION_ARGS)
@@ -3348,7 +3346,7 @@ Overlaps_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestamp_period);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a timestamp and a period are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_timestamp_period(PG_FUNCTION_ARGS)
@@ -3360,7 +3358,7 @@ Adjacent_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestamp_periodset);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a timestamp and a period set are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -3374,7 +3372,7 @@ Adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_period);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a timestamp set and a period are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_timestampset_period(PG_FUNCTION_ARGS)
@@ -3388,7 +3386,7 @@ Adjacent_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_periodset);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a timestamp set and a period set are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -3403,7 +3401,7 @@ Adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_timestamp);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a period and a timestamp are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_period_timestamp(PG_FUNCTION_ARGS)
@@ -3415,7 +3413,7 @@ Adjacent_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_timestampset);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a period and a timestamp set are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_period_timestampset(PG_FUNCTION_ARGS)
@@ -3429,7 +3427,7 @@ Adjacent_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_period);
 /**
- * Return true if the two time value are adjacent
+ * Return true if the periods are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_period_period(PG_FUNCTION_ARGS)
@@ -3441,7 +3439,7 @@ Adjacent_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_periodset);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a period and a period set are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_period_periodset(PG_FUNCTION_ARGS)
@@ -3455,7 +3453,7 @@ Adjacent_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_timestamp);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a period set and a timestamp are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -3469,7 +3467,7 @@ Adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_timestampset);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a period set and a timestamp set are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -3484,7 +3482,7 @@ Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_period);
 /**
- * Return true if the two time value are adjacent
+ * Return true if a period set and a period are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_period(PG_FUNCTION_ARGS)
@@ -3498,7 +3496,7 @@ Adjacent_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_periodset);
 /**
- * Return true if the two time value are adjacent
+ * Return true if the period sets are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_periodset(PG_FUNCTION_ARGS)
@@ -3516,7 +3514,7 @@ Adjacent_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestamp_timestampset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a timestamp is strictly before a timestamp set
  */
 PGDLLEXPORT Datum
 Before_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -3530,7 +3528,7 @@ Before_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestamp_period);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a timestamp is strictly before a period
  */
 PGDLLEXPORT Datum
 Before_timestamp_period(PG_FUNCTION_ARGS)
@@ -3542,7 +3540,7 @@ Before_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestamp_periodset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a timestamp is strictly before a period set
  */
 PGDLLEXPORT Datum
 Before_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -3556,7 +3554,7 @@ Before_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_timestamp);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a timestamp set is strictly before a timestamp
  */
 PGDLLEXPORT Datum
 Before_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -3570,7 +3568,7 @@ Before_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_timestampset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if the first timestamp set is strictly before the second one
  */
 PGDLLEXPORT Datum
 Before_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -3585,7 +3583,7 @@ Before_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_period);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a timestamp set is strictly before a period
  */
 PGDLLEXPORT Datum
 Before_timestampset_period(PG_FUNCTION_ARGS)
@@ -3599,7 +3597,7 @@ Before_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_periodset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a timestamp set is strictly before a period set
  */
 PGDLLEXPORT Datum
 Before_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -3614,7 +3612,7 @@ Before_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_timestamp);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period is strictly before a timestamp
  */
 PGDLLEXPORT Datum
 Before_period_timestamp(PG_FUNCTION_ARGS)
@@ -3626,7 +3624,7 @@ Before_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_timestampset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period is strictly before a timestamp set
  */
 PGDLLEXPORT Datum
 Before_period_timestampset(PG_FUNCTION_ARGS)
@@ -3640,7 +3638,7 @@ Before_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_period);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period is strictly before the second one
  */
 PGDLLEXPORT Datum
 Before_period_period(PG_FUNCTION_ARGS)
@@ -3652,7 +3650,7 @@ Before_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_periodset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period is strictly before a period set
  */
 PGDLLEXPORT Datum
 Before_period_periodset(PG_FUNCTION_ARGS)
@@ -3666,7 +3664,7 @@ Before_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_timestamp);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period set is strictly before a timestamp
  */
 PGDLLEXPORT Datum
 Before_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -3680,7 +3678,7 @@ Before_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_timestampset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period set is strictly before a timestamp set
  */
 PGDLLEXPORT Datum
 Before_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -3695,7 +3693,7 @@ Before_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_period);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if a period set is strictly before a period
  */
 PGDLLEXPORT Datum
 Before_periodset_period(PG_FUNCTION_ARGS)
@@ -3709,7 +3707,7 @@ Before_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_periodset);
 /**
- * Return true if the first time value is strictly before the second one
+ * Return true if the first period set is strictly before the second one
  */
 PGDLLEXPORT Datum
 Before_periodset_periodset(PG_FUNCTION_ARGS)
@@ -3727,7 +3725,7 @@ Before_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestamp_timestampset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a timestamp is strictly after a timestamp set
  */
 PGDLLEXPORT Datum
 After_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -3741,7 +3739,7 @@ After_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestamp_period);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a timestamp is strictly after a period
  */
 PGDLLEXPORT Datum
 After_timestamp_period(PG_FUNCTION_ARGS)
@@ -3753,7 +3751,7 @@ After_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestamp_periodset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a timestamp is strictly after a period set
  */
 PGDLLEXPORT Datum
 After_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -3767,7 +3765,7 @@ After_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_timestamp);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a timestamp set is strictly after a timestamp
  */
 PGDLLEXPORT Datum
 After_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -3781,7 +3779,7 @@ After_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_timestampset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if the first timestamp set is strictly after the second one
  */
 PGDLLEXPORT Datum
 After_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -3796,7 +3794,7 @@ After_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_period);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a timestamp set is strictly after a period
  */
 PGDLLEXPORT Datum
 After_timestampset_period(PG_FUNCTION_ARGS)
@@ -3810,7 +3808,7 @@ After_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_periodset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a timestamp set is strictly after a period set
  */
 PGDLLEXPORT Datum
 After_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -3825,7 +3823,7 @@ After_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_timestamp);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a period is strictly after a timestamp
  */
 PGDLLEXPORT Datum
 After_period_timestamp(PG_FUNCTION_ARGS)
@@ -3837,7 +3835,7 @@ After_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_timestampset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a period is strictly after a timestamp set
  */
 PGDLLEXPORT Datum
 After_period_timestampset(PG_FUNCTION_ARGS)
@@ -3851,7 +3849,7 @@ After_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_period);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if the first period is strictly after the second one
  */
 PGDLLEXPORT Datum
 After_period_period(PG_FUNCTION_ARGS)
@@ -3863,7 +3861,7 @@ After_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_periodset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a period is strictly after a period set
  */
 PGDLLEXPORT Datum
 After_period_periodset(PG_FUNCTION_ARGS)
@@ -3877,7 +3875,7 @@ After_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_timestamp);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a period set is strictly after a timestamp
  */
 PGDLLEXPORT Datum
 After_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -3891,7 +3889,7 @@ After_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_timestampset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a period set is strictly after a timestamp set
  */
 PGDLLEXPORT Datum
 After_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -3906,7 +3904,7 @@ After_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_period);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if a period set is strictly after a period
  */
 PGDLLEXPORT Datum
 After_periodset_period(PG_FUNCTION_ARGS)
@@ -3920,7 +3918,7 @@ After_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_periodset);
 /**
- * Return true if the first time value is strictly after the second one
+ * Return true if the first period set is strictly after the second one
  */
 PGDLLEXPORT Datum
 After_periodset_periodset(PG_FUNCTION_ARGS)
@@ -3938,7 +3936,7 @@ After_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_timestampset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a timestamp is not after a timestamp set
  */
 PGDLLEXPORT Datum
 Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -3952,7 +3950,7 @@ Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_period);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a timestamp is not after a period
  */
 PGDLLEXPORT Datum
 Overbefore_timestamp_period(PG_FUNCTION_ARGS)
@@ -3964,7 +3962,7 @@ Overbefore_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_periodset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a timestamp is not after a period set
  */
 PGDLLEXPORT Datum
 Overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -3978,7 +3976,7 @@ Overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestamp);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a timestamp is not after a timestamp
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -3992,7 +3990,7 @@ Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestampset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if the first timestamp set is not after the second one
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -4007,7 +4005,7 @@ Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_period);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a timestamp set is not after a period
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_period(PG_FUNCTION_ARGS)
@@ -4021,7 +4019,7 @@ Overbefore_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_periodset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a timestamp set is not after a period set
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -4036,7 +4034,7 @@ Overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_timestamp);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a period is not after a timestamp
  */
 PGDLLEXPORT Datum
 Overbefore_period_timestamp(PG_FUNCTION_ARGS)
@@ -4048,7 +4046,7 @@ Overbefore_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_timestampset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a period is not after a timestamp set
  */
 PGDLLEXPORT Datum
 Overbefore_period_timestampset(PG_FUNCTION_ARGS)
@@ -4062,7 +4060,7 @@ Overbefore_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_period);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if the first period is not after the second one
  */
 PGDLLEXPORT Datum
 Overbefore_period_period(PG_FUNCTION_ARGS)
@@ -4074,7 +4072,7 @@ Overbefore_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_periodset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a period is not after a period set
  */
 PGDLLEXPORT Datum
 Overbefore_period_periodset(PG_FUNCTION_ARGS)
@@ -4088,7 +4086,7 @@ Overbefore_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_timestamp);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a period set is not after a timestamp
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -4102,7 +4100,7 @@ Overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_timestampset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a period set is not after a timestamp set
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -4117,7 +4115,7 @@ Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_period);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if a period set is not after a period set
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_period(PG_FUNCTION_ARGS)
@@ -4131,7 +4129,7 @@ Overbefore_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_periodset);
 /**
- * Return true if the first time value is not after the second one
+ * Return true if the first period set is not after the second one
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_periodset(PG_FUNCTION_ARGS)
@@ -4149,7 +4147,7 @@ Overbefore_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestamp_timestampset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a timestamp is not before a timestamp set
  */
 PGDLLEXPORT Datum
 Overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -4163,7 +4161,7 @@ Overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestamp_period);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a timestamp is not before a period
  */
 PGDLLEXPORT Datum
 Overafter_timestamp_period(PG_FUNCTION_ARGS)
@@ -4175,7 +4173,7 @@ Overafter_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestamp_periodset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a timestamp is not before a period set
  */
 PGDLLEXPORT Datum
 Overafter_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -4189,7 +4187,7 @@ Overafter_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_timestamp);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a timestamp set is not before a timestamp
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -4203,7 +4201,7 @@ Overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_timestampset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if the first timestamp set is not before the second one
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -4218,7 +4216,7 @@ Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_period);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a timestamp set is not before a period
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_period(PG_FUNCTION_ARGS)
@@ -4232,7 +4230,7 @@ Overafter_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_periodset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a timestamp set is not before a period set
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -4247,7 +4245,7 @@ Overafter_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_timestamp);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a period is not before a timestamp
  */
 PGDLLEXPORT Datum
 Overafter_period_timestamp(PG_FUNCTION_ARGS)
@@ -4259,7 +4257,7 @@ Overafter_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_timestampset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a period is not before a timestamp set
  */
 PGDLLEXPORT Datum
 Overafter_period_timestampset(PG_FUNCTION_ARGS)
@@ -4273,7 +4271,7 @@ Overafter_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_period);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if the first period is not before the second one
  */
 PGDLLEXPORT Datum
 Overafter_period_period(PG_FUNCTION_ARGS)
@@ -4285,7 +4283,7 @@ Overafter_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_periodset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a period is not before a period set
  */
 PGDLLEXPORT Datum
 Overafter_period_periodset(PG_FUNCTION_ARGS)
@@ -4299,7 +4297,7 @@ Overafter_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_timestamp);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a period set is not before a timestamp
  */
 PGDLLEXPORT Datum
 Overafter_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -4313,7 +4311,7 @@ Overafter_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_timestampset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a period set is not before a timestamp set
  */
 PGDLLEXPORT Datum
 Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -4328,7 +4326,7 @@ Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_period);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if a period set is not before a period
  */
 PGDLLEXPORT Datum
 Overafter_periodset_period(PG_FUNCTION_ARGS)
@@ -4342,7 +4340,7 @@ Overafter_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_periodset);
 /**
- * Return true if the first time value is not before the second one
+ * Return true if the first period set is not before the second one
  */
 PGDLLEXPORT Datum
 Overafter_periodset_periodset(PG_FUNCTION_ARGS)
@@ -4361,7 +4359,7 @@ Overafter_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_timestamp);
 /**
- * Return the union of the two time values
+ * Return the union of the timestamps
  */
 PGDLLEXPORT Datum
 Union_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -4374,7 +4372,7 @@ Union_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_timestampset);
 /**
- * Return the union of the two time values
+ * Return the union of a timestamp and a timestamp set
  */
 PGDLLEXPORT Datum
 Union_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -4388,7 +4386,7 @@ Union_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_period);
 /**
- * Return the union of the two time values
+ * Return the union of a timestamp and a period
  */
 PGDLLEXPORT Datum
 Union_timestamp_period(PG_FUNCTION_ARGS)
@@ -4401,7 +4399,7 @@ Union_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_periodset);
 /**
- * Return the union of the two time values
+ * Return the union of a timestamp and a period set
  */
 PGDLLEXPORT Datum
 Union_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -4417,7 +4415,7 @@ Union_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_timestamp);
 /**
- * Return the union of the two time values
+ * Return the union of a timestamp set and a timestamp
  */
 PGDLLEXPORT Datum
 Union_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -4431,7 +4429,7 @@ Union_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_timestampset);
 /**
- * Return the union of the two time values
+ * Return the union of the timestamp sets
  */
 PGDLLEXPORT Datum
 Union_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -4446,7 +4444,7 @@ Union_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_period);
 /**
- * Return the union of the two time values
+ * Return the union of a timestamp set and a period
  */
 PGDLLEXPORT Datum
 Union_timestampset_period(PG_FUNCTION_ARGS)
@@ -4460,7 +4458,7 @@ Union_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_periodset);
 /**
- * Return the union of the two time values
+ * Return the union of a timestamp set and a period set
  */
 PGDLLEXPORT Datum
 Union_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -4477,7 +4475,7 @@ Union_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_timestamp);
 /**
- * Return the union of the two time values
+ * Return the union of a period and a timestamp
  */
 PGDLLEXPORT Datum
 Union_period_timestamp(PG_FUNCTION_ARGS)
@@ -4490,7 +4488,7 @@ Union_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_timestampset);
 /**
- * Return the union of the two time values
+ * Return the union of a period and a timestamp set
  */
 PGDLLEXPORT Datum
 Union_period_timestampset(PG_FUNCTION_ARGS)
@@ -4504,7 +4502,7 @@ Union_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_period);
 /**
- * Return the union of the two time values
+ * Return the union of the periods
  */
 PGDLLEXPORT Datum
 Union_period_period(PG_FUNCTION_ARGS)
@@ -4516,7 +4514,7 @@ Union_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_periodset);
 /**
- * Return the union of the two time values
+ * Return the union of a period and a period set
  */
 PGDLLEXPORT Datum
 Union_period_periodset(PG_FUNCTION_ARGS)
@@ -4532,7 +4530,7 @@ Union_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_timestamp);
 /**
- * Return the union of the two time values
+ * Return the union of a period set and a timestamp
  */
 PGDLLEXPORT Datum
 Union_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -4546,7 +4544,7 @@ Union_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_timestampset);
 /**
- * Return the union of the two time values
+ * Return the union of a period set and a timestamp set
  */
 PGDLLEXPORT Datum
 Union_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -4561,7 +4559,7 @@ Union_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_period);
 /**
- * Return the union of the two time values
+ * Return the union of a period set and a period
  */
 PGDLLEXPORT Datum
 Union_periodset_period(PG_FUNCTION_ARGS)
@@ -4575,7 +4573,7 @@ Union_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_periodset);
 /**
- * Return the union of the two time values
+ * Return the union of the period sets
  */
 PGDLLEXPORT Datum
 Union_periodset_periodset(PG_FUNCTION_ARGS)
@@ -4594,7 +4592,7 @@ Union_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_timestamp);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of the timestamps
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -4610,7 +4608,7 @@ Intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_timestampset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a timestamp and a timestamp set
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -4627,7 +4625,7 @@ Intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_period);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a timestamp and a period
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_period(PG_FUNCTION_ARGS)
@@ -4643,7 +4641,7 @@ Intersection_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_periodset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a timestamp and a period set
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -4660,7 +4658,7 @@ Intersection_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_timestamp);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a timestamp set and a timestamp
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -4677,7 +4675,7 @@ Intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_timestampset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of the timestamp sets
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -4694,7 +4692,7 @@ Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_period);
 /**
- * @brief Return the intersection of the two time values.
+ * @brief Return the intersection of a timestamp set and a period.
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_period(PG_FUNCTION_ARGS)
@@ -4710,7 +4708,7 @@ Intersection_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_periodset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a timestamp set and a period set
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -4729,7 +4727,7 @@ Intersection_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_timestamp);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a period and a timestamp
  */
 PGDLLEXPORT Datum
 Intersection_period_timestamp(PG_FUNCTION_ARGS)
@@ -4745,7 +4743,7 @@ Intersection_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_timestampset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a period and a timestamp set
  */
 PGDLLEXPORT Datum
 Intersection_period_timestampset(PG_FUNCTION_ARGS)
@@ -4762,7 +4760,7 @@ Intersection_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_period);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of the periods
  */
 PGDLLEXPORT Datum
 Intersection_period_period(PG_FUNCTION_ARGS)
@@ -4777,7 +4775,7 @@ Intersection_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_periodset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a period and a period set
  */
 PGDLLEXPORT Datum
 Intersection_period_periodset(PG_FUNCTION_ARGS)
@@ -4795,7 +4793,7 @@ Intersection_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_timestamp);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a period set and a timestamp
  */
 PGDLLEXPORT Datum
 Intersection_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -4812,7 +4810,7 @@ Intersection_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_timestampset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a period set and a timestamp set
  */
 PGDLLEXPORT Datum
 Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -4829,7 +4827,7 @@ Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_period);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of a period set and a period
  */
 PGDLLEXPORT Datum
 Intersection_periodset_period(PG_FUNCTION_ARGS)
@@ -4845,7 +4843,7 @@ Intersection_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_periodset);
 /**
- * Return the intersection of the two time values
+ * Return the intersection of the period sets
  */
 PGDLLEXPORT Datum
 Intersection_periodset_periodset(PG_FUNCTION_ARGS)
@@ -4867,7 +4865,7 @@ Intersection_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_timestamp);
 /**
- * @brief Return the difference of the two time values
+ * @brief Return the difference of the timestamps
  */
 PGDLLEXPORT Datum
 Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -4882,7 +4880,7 @@ Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_timestampset);
 /**
- * Return the difference of the two time values
+ * Return the difference of a timestamp and a a timestamp set
  */
 PGDLLEXPORT Datum
 Minus_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -4899,7 +4897,7 @@ Minus_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_period);
 /**
- * Return the difference of the two time values
+ * Return the difference of a timestamp and a period
  */
 PGDLLEXPORT Datum
 Minus_timestamp_period(PG_FUNCTION_ARGS)
@@ -4915,7 +4913,7 @@ Minus_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_periodset);
 /**
- * Return the difference of the two time values
+ * Return the difference of a timestamp and a period set
  */
 PGDLLEXPORT Datum
 Minus_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -4934,7 +4932,7 @@ Minus_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_timestamp);
 /**
- * Return the difference of the two time values
+ * Return the difference of a timestamp set and a timestamp
  */
 PGDLLEXPORT Datum
 Minus_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -4950,7 +4948,7 @@ Minus_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_timestampset);
 /**
- * Return the difference of the two time values
+ * Return the difference of the timestamp sets
  */
 PGDLLEXPORT Datum
 Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -4967,7 +4965,7 @@ Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_period);
 /**
- * Return the difference of the two time values
+ * Return the difference of a timestamp set and period
  */
 PGDLLEXPORT Datum
 Minus_timestampset_period(PG_FUNCTION_ARGS)
@@ -4983,7 +4981,7 @@ Minus_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_periodset);
 /**
- * Return the difference of the two time values
+ * Return the difference of a timestamp set and a period set
  */
 PGDLLEXPORT Datum
 Minus_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -5002,7 +5000,7 @@ Minus_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_timestamp);
 /**
- * Return the difference of the two time values
+ * Return the difference of a period and a timestamp
  */
 PGDLLEXPORT Datum
 Minus_period_timestamp(PG_FUNCTION_ARGS)
@@ -5018,7 +5016,7 @@ Minus_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_timestampset);
 /**
- * Return the difference of the two time valuess
+ * Return the difference of a period and a timestamp set
  */
 PGDLLEXPORT Datum
 Minus_period_timestampset(PG_FUNCTION_ARGS)
@@ -5035,7 +5033,7 @@ Minus_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_period);
 /**
- * @brief Return the difference of the two time values.
+ * @brief Return the difference of the periods.
  */
 PGDLLEXPORT Datum
 Minus_period_period(PG_FUNCTION_ARGS)
@@ -5050,7 +5048,7 @@ Minus_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_periodset);
 /**
- * Return the difference of the two time values
+ * Return the difference of a period and a period set
  */
 PGDLLEXPORT Datum
 Minus_period_periodset(PG_FUNCTION_ARGS)
@@ -5068,7 +5066,7 @@ Minus_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_timestamp);
 /**
- * Return the difference of the two time values
+ * Return the difference of a period set and a timestamp
  */
 PGDLLEXPORT Datum
 Minus_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -5084,7 +5082,7 @@ Minus_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_timestampset);
 /**
- * Return the difference of the two time values
+ * Return the difference of a period set and a timestamp set
  */
 PGDLLEXPORT Datum
 Minus_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -5101,7 +5099,7 @@ Minus_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_period);
 /**
- * Return the difference of the two time values
+ * Return the difference of a period set and a period
  */
 PGDLLEXPORT Datum
 Minus_periodset_period(PG_FUNCTION_ARGS)
@@ -5117,7 +5115,7 @@ Minus_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_periodset);
 /**
- * Return the difference of the two time values
+ * Return the difference of the period sets
  */
 PGDLLEXPORT Datum
 Minus_periodset_periodset(PG_FUNCTION_ARGS)
@@ -5138,7 +5136,7 @@ Minus_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestamp);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between the timestamps
  */
 PGDLLEXPORT Datum
 Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -5151,7 +5149,7 @@ Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestampset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a timestamp and a timestamp set
  */
 PGDLLEXPORT Datum
 Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -5166,7 +5164,7 @@ Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_period);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a timestamp and a period
  */
 PGDLLEXPORT Datum
 Distance_timestamp_period(PG_FUNCTION_ARGS)
@@ -5179,7 +5177,7 @@ Distance_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_periodset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a timestamp and a period set
  */
 PGDLLEXPORT Datum
 Distance_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -5194,7 +5192,7 @@ Distance_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestamp);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a timestamp set and a timestamp
  */
 PGDLLEXPORT Datum
 Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -5209,7 +5207,7 @@ Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestampset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between the timestamp sets
  */
 PGDLLEXPORT Datum
 Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -5225,7 +5223,7 @@ Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_period);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a timestamp set and a period
  */
 PGDLLEXPORT Datum
 Distance_timestampset_period(PG_FUNCTION_ARGS)
@@ -5240,7 +5238,7 @@ Distance_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_periodset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a timestamp set and a period set
  */
 PGDLLEXPORT Datum
 Distance_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -5256,7 +5254,7 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_timestamp);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a period and a timestamp
  */
 PGDLLEXPORT Datum
 Distance_period_timestamp(PG_FUNCTION_ARGS)
@@ -5269,7 +5267,7 @@ Distance_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_timestampset);
 /**
- * Return the distance in seconds of the two time valuess
+ * Return the distance in seconds between a period and a timestamp set
  */
 PGDLLEXPORT Datum
 Distance_period_timestampset(PG_FUNCTION_ARGS)
@@ -5284,7 +5282,7 @@ Distance_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_period);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between the periods
  */
 PGDLLEXPORT Datum
 Distance_period_period(PG_FUNCTION_ARGS)
@@ -5297,7 +5295,7 @@ Distance_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_periodset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a period and a period set
  */
 PGDLLEXPORT Datum
 Distance_period_periodset(PG_FUNCTION_ARGS)
@@ -5312,7 +5310,7 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestamp);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a period set and a timestamp
  */
 PGDLLEXPORT Datum
 Distance_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -5327,7 +5325,7 @@ Distance_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestampset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a period set and a timestamp set
  */
 PGDLLEXPORT Datum
 Distance_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -5343,7 +5341,7 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_period);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between a period set and a period
  */
 PGDLLEXPORT Datum
 Distance_periodset_period(PG_FUNCTION_ARGS)
@@ -5358,7 +5356,7 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_periodset);
 /**
- * Return the distance in seconds of the two time values
+ * Return the distance in seconds between the period sets
  */
 PGDLLEXPORT Datum
 Distance_periodset_periodset(PG_FUNCTION_ARGS)

@@ -85,7 +85,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first span value contains the second one.
+ * @brief Return true if a span contains an element.
  */
 bool
 contains_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -103,7 +103,7 @@ contains_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first span value contains the second one.
+ * @brief Return true if the first span contains the second one.
  */
 bool
 contains_span_span(const Span *s1, const Span *s2)
@@ -124,7 +124,7 @@ contains_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first span value is contained by the second one
+ * @brief Return true if an element is contained by a span
  */
 bool
 contained_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -134,7 +134,7 @@ contained_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the first span value is contained by the second one
+ * @brief Return true if the first span is contained by the second one
  */
 bool
 contained_span_span(const Span *s1, const Span *s2)
@@ -147,7 +147,7 @@ contained_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two span values overlap.
+ * @brief Return true if the spans overlap.
  */
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
@@ -168,7 +168,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two span values are adjacent.
+ * @brief Return true if an element and a span are adjacent.
  */
 bool
 adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -183,7 +183,7 @@ adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two span values are adjacent
+ * @brief Return true if a span and an element are adjacent
  */
 bool
 adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -193,7 +193,7 @@ adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if the two span values are adjacent.
+ * @brief Return true if the spans are adjacent.
  */
 bool
 adjacent_span_span(const Span *s1, const Span *s2)
@@ -215,7 +215,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is strictly left the second one.
+ * @brief Return true if an element is strictly to the left of a span.
  */
 bool
 left_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -226,7 +226,7 @@ left_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is strictly left the second one.
+ * @brief Return true if a span is strictly to the left of an element.
  */
 bool
 left_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -238,7 +238,7 @@ left_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is strictly left the second one.
+ * @brief Return true if the first span is strictly to the left of the second one.
  */
 bool
 left_span_span(const Span *s1, const Span *s2)
@@ -253,7 +253,7 @@ left_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is strictly right the second one.
+ * @brief Return true if an element is strictly to the right of a span.
  */
 bool
 right_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -264,8 +264,7 @@ right_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is strictly right the
- * second one.
+ * @brief Return true if a span is strictly to the right of an element
  */
 bool
 right_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -276,7 +275,7 @@ right_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is strictly right the second one.
+ * @brief Return true if the first span is strictly to right the of the second one.
  */
 bool
 right_span_span(const Span *s1, const Span *s2)
@@ -291,7 +290,7 @@ right_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is not right the second one.
+ * @brief Return true if an element is not to the right a span.
  */
 bool
 overleft_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -302,7 +301,7 @@ overleft_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is not right the second one.
+ * @brief Return true if a span is not to the right of an element.
  */
 bool
 overleft_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -312,7 +311,7 @@ overleft_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is not right the second one.
+ * @brief Return true if the first span is not to the right of the second one.
  */
 bool
 overleft_span_span(const Span *s1, const Span *s2)
@@ -327,7 +326,7 @@ overleft_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is not left the second one.
+ * @brief Return true if an element is not the left of a span.
  */
 bool
 overright_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -338,7 +337,7 @@ overright_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is not left the second one.
+ * @brief Return true if a span is not to the left of an element.
  */
 bool
 overright_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -348,7 +347,7 @@ overright_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if the first span value is not left the second one.
+ * @brief Return true if the first span is not to the left of the second one.
  */
 bool
 overright_span_span(const Span *s1, const Span *s2)
@@ -364,7 +363,7 @@ overright_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the two span values.
+ * @brief Return the union of the spans.
  */
 Span *
 union_span_span(const Span *s1, const Span *s2, bool strict)
@@ -385,7 +384,7 @@ union_span_span(const Span *s1, const Span *s2, bool strict)
  *****************************************************************************/
 
 /**
- * Set the last argument to the intersection of the two spans
+ * Set the last argument to the intersection of the spans
  *
  * @note This function equivalent is to intersection_span_span
  * but avoids memory allocation
@@ -410,7 +409,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the two span values.
+ * @brief Return the intersection of the spans.
  */
 Span *
 intersection_span_span(const Span *s1, const Span *s2)
@@ -431,7 +430,7 @@ intersection_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of the two span values.
+ * @brief Return the difference of the spans.
  */
 Span *
 minus_span_span(const Span *s1, const Span *s2)
@@ -495,7 +494,7 @@ minus_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance between the two span values
+ * @brief Return the distance in seconds between the spans
  */
 double
 distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -521,7 +520,7 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance between the two span values.
+ * @brief Return the distance in seconds between an element and a span.
  */
 double
 distance_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -531,7 +530,7 @@ distance_elem_span(Datum d, CachedType basetype, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance between the span and the element.
+ * @brief Return the distance between a span and a element.
  */
 double
 distance_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -554,7 +553,7 @@ distance_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds between two spans.
+ * @brief Return the distance in seconds between the spans.
  */
 double
 distance_span_span(const Span *s1, const Span *s2)
@@ -590,7 +589,7 @@ distance_span_span(const Span *s1, const Span *s2)
 
 PG_FUNCTION_INFO_V1(Contains_span_elem);
 /**
- * Return true if the first span value contains the second one
+ * Return true if a span contains an element
  */
 PGDLLEXPORT Datum
 Contains_span_elem(PG_FUNCTION_ARGS)
@@ -604,7 +603,7 @@ Contains_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_span_span);
 /**
- * Return true if the first span value contains the second one
+ * Return true if the first span contains the second one
  */
 PGDLLEXPORT Datum
 Contains_span_span(PG_FUNCTION_ARGS)
@@ -619,7 +618,7 @@ Contains_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_elem_span);
 /**
- * Return true if the first span value is contained by the second one
+ * Return true if an element is contained by a span
  */
 PGDLLEXPORT Datum
 Contained_elem_span(PG_FUNCTION_ARGS)
@@ -632,7 +631,7 @@ Contained_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_span_span);
 /**
- * Return true if the first span value is contained by the second one
+ * Return true if the first span is contained by the second one
  */
 PGDLLEXPORT Datum
 Contained_span_span(PG_FUNCTION_ARGS)
@@ -647,7 +646,7 @@ Contained_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_span_span);
 /**
- * Return true if the two span values overlap
+ * Return true if the spans overlap
  */
 PGDLLEXPORT Datum
 Overlaps_span_span(PG_FUNCTION_ARGS)
@@ -662,7 +661,7 @@ Overlaps_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_elem_span);
 /**
- * Return true if the two span values are adjacent
+ * Return true if an element and a span are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_elem_span(PG_FUNCTION_ARGS)
@@ -675,7 +674,7 @@ Adjacent_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_span_elem);
 /**
- * Return true if the two span values are adjacent
+ * Return true if a span and an element are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_span_elem(PG_FUNCTION_ARGS)
@@ -688,7 +687,7 @@ Adjacent_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_span_span);
 /**
- * Return true if the two span values are adjacent
+ * Return true if the spans are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_span_span(PG_FUNCTION_ARGS)
@@ -703,7 +702,7 @@ Adjacent_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_elem_span);
 /**
- * Return true if the first span value is strictly left the second one
+ * Return true if an element is strictly to the left of a span
  */
 PGDLLEXPORT Datum
 Left_elem_span(PG_FUNCTION_ARGS)
@@ -716,7 +715,7 @@ Left_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_span_elem);
 /**
- * Return true if the first span value is strictly left the second one
+ * Return true if a span is strictly to the left of the second one
  */
 PGDLLEXPORT Datum
 Left_span_elem(PG_FUNCTION_ARGS)
@@ -729,7 +728,7 @@ Left_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_span_span);
 /**
- * Return true if the first span value is strictly left the second one
+ * Return true if the first span is strictly to the left of the second one
  */
 PGDLLEXPORT Datum
 Left_span_span(PG_FUNCTION_ARGS)
@@ -744,7 +743,7 @@ Left_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_elem_span);
 /**
- * Return true if the first span value is strictly right the second one
+ * Return true if an element is strictly to the right of a span
  */
 PGDLLEXPORT Datum
 Right_elem_span(PG_FUNCTION_ARGS)
@@ -757,7 +756,7 @@ Right_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_span_elem);
 /**
- * Return true if the first span value is strictly right the second one
+ * Return true if a span is strictly to the right of an element
  */
 PGDLLEXPORT Datum
 Right_span_elem(PG_FUNCTION_ARGS)
@@ -770,7 +769,7 @@ Right_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_span_span);
 /**
- * Return true if the first span value is strictly right the second one
+ * Return true if the first span is strictly to the right of the second one
  */
 PGDLLEXPORT Datum
 Right_span_span(PG_FUNCTION_ARGS)
@@ -785,7 +784,7 @@ Right_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_elem_span);
 /**
- * Return true if the first span value is not right the second one
+ * Return true if an element is not to right of a span
  */
 PGDLLEXPORT Datum
 Overleft_elem_span(PG_FUNCTION_ARGS)
@@ -798,7 +797,7 @@ Overleft_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_span_elem);
 /**
- * Return true if the first span value is not right the second one
+ * Return true if a span is not to right of an element
  */
 PGDLLEXPORT Datum
 Overleft_span_elem(PG_FUNCTION_ARGS)
@@ -811,7 +810,7 @@ Overleft_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_span_span);
 /**
- * Return true if the first span value is not right the second one
+ * Return true if the first span is not to right of the second one
  */
 PGDLLEXPORT Datum
 Overleft_span_span(PG_FUNCTION_ARGS)
@@ -826,7 +825,7 @@ Overleft_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_elem_span);
 /**
- * Return true if the first span value is not left the second one
+ * Return true if an element is not to the left of a span
  */
 PGDLLEXPORT Datum
 Overright_elem_span(PG_FUNCTION_ARGS)
@@ -839,7 +838,7 @@ Overright_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_span_elem);
 /**
- * Return true if the first span value is not left the second one
+ * Return true if a span is not to the left of an element
  */
 PGDLLEXPORT Datum
 Overright_span_elem(PG_FUNCTION_ARGS)
@@ -852,7 +851,7 @@ Overright_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_span_span);
 /**
- * Return true if the first span value is not left the second one
+ * Return true if the first span is not to the left of the second one
  */
 PGDLLEXPORT Datum
 Overright_span_span(PG_FUNCTION_ARGS)
@@ -868,7 +867,7 @@ Overright_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_span_span);
 /**
- * Return the union of the two span values
+ * Return the union of the spans
  */
 PGDLLEXPORT Datum
 Union_span_span(PG_FUNCTION_ARGS)
@@ -885,7 +884,7 @@ Union_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_span_span);
 /**
- * Return the intersection of the two span values
+ * Return the intersection of the spans
  */
 PGDLLEXPORT Datum
 Intersection_span_span(PG_FUNCTION_ARGS)
@@ -905,7 +904,7 @@ Intersection_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_span_span);
 /**
- * @brief Return the difference of the two span values.
+ * @brief Return the difference of the spans.
  */
 PGDLLEXPORT Datum
 Minus_span_span(PG_FUNCTION_ARGS)
@@ -924,7 +923,7 @@ Minus_span_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_elem_elem);
 /**
- * Return the distance in seconds of the two span values
+ * Return the distance in seconds between the elements
  */
 PGDLLEXPORT Datum
 Distance_elem_elem(PG_FUNCTION_ARGS)
@@ -939,7 +938,7 @@ Distance_elem_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_elem_span);
 /**
- * Return the distance in seconds of the two span values
+ * Return the distance in seconds between an element and a span
  */
 PGDLLEXPORT Datum
 Distance_elem_span(PG_FUNCTION_ARGS)
@@ -953,7 +952,7 @@ Distance_elem_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_span_elem);
 /**
- * Return the distance in seconds of the two span values
+ * Return the distance in seconds between a span and an element
  */
 PGDLLEXPORT Datum
 Distance_span_elem(PG_FUNCTION_ARGS)
@@ -967,7 +966,7 @@ Distance_span_elem(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_span_span);
 /**
- * Return the distance in seconds of the two span values
+ * Return the distance in seconds between the spans
  */
 PGDLLEXPORT Datum
 Distance_span_span(PG_FUNCTION_ARGS)

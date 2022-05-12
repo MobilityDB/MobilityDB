@@ -1356,7 +1356,6 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
 
 /**
  * Synchronizes the temporal values and applies to them the function
- * (dispatch function)
  *
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
@@ -1551,8 +1550,8 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 {
   /* Bounding box test */
   Period p1, p2;
-  temporal_period(temp1, &p1);
-  temporal_period(temp2, &p2);
+  temporal_set_period(temp1, &p1);
+  temporal_set_period(temp2, &p2);
   if (! overlaps_span_span(&p1, &p2))
     return NULL;
 
@@ -2137,8 +2136,8 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 {
   /* Bounding box test */
   Period p1, p2;
-  temporal_period(temp1, &p1);
-  temporal_period(temp2, &p2);
+  temporal_set_period(temp1, &p1);
+  temporal_set_period(temp2, &p2);
   if (! overlaps_span_span(&p1, &p2))
     return -1;
 

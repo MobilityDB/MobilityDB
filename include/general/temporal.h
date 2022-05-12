@@ -559,7 +559,7 @@ extern Datum temporal_min_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
 extern Interval *temporal_timespan(const Temporal *temp);
 extern Interval *temporal_duration(const Temporal *temp);
-extern void temporal_period(const Temporal *temp, Period *p);
+extern void temporal_set_period(const Temporal *temp, Period *p);
 extern int temporal_num_sequences(const Temporal *temp);
 extern TSequence *temporal_start_sequence(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
