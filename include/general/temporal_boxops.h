@@ -54,8 +54,8 @@ extern bool temporal_bbox_eq(const void *box1, const void *box2,
   CachedType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,
   CachedType temptype);
-extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
-  const Interval *duration, CachedType temptype);
+extern void temporal_bbox_shift_tscale(const Interval *start,
+  const Interval *duration, CachedType temptype, void *box);
 
 /* Compute the bounding box at the creation of temporal values */
 

@@ -1084,7 +1084,7 @@ after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a timestamp set is strictly after the second one.
+ * @brief Return true if the first timestamp set is strictly after the second one.
  */
 bool
 after_timestampset_timestampset(const TimestampSet *ts1,
@@ -1120,8 +1120,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a period is strictly after the
- * second one.
+ * @brief Return true if a period is strictly after a timestamp.
  */
 bool
 after_period_timestamp(const Period *p, TimestampTz t)
@@ -1247,7 +1246,7 @@ overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a timestamp set is not after the second one.
+ * @brief Return true if the first timestamp set is not after the second one.
  */
 bool
 overbefore_timestampset_timestampset(const TimestampSet *ts1,
@@ -1526,7 +1525,7 @@ overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_set
- * Return the union of the timestamps
+ * @brief Return the union of the timestamps
  */
 TimestampSet *
 union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)

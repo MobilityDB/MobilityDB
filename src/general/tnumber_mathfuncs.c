@@ -587,7 +587,7 @@ Div_tnumber_tnumber(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Round a number to a given number of decimal places
+ * @brief Round a number to a given number of decimal places
  */
 Datum
 datum_round_float(Datum value, Datum prec)
@@ -605,7 +605,6 @@ datum_round_float(Datum value, Datum prec)
 }
 
 /**
- * @ingroup libmeos_temporal_math
  * @brief Round a temporal number to a given number of decimal places
  */
 Temporal *

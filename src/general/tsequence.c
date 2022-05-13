@@ -1302,7 +1302,7 @@ intersection_tinstantset_to_tsequence(const TInstantSet *ti, const TSequence *se
  * @param[in] linear True when the temporal type has linear interpolation
  */
 TSequence *
-tsequence_from_string(char *str, CachedType temptype, bool linear)
+tsequence_in(char *str, CachedType temptype, bool linear)
 {
   return tsequence_parse(&str, temptype, linear, true, true);
 }
@@ -1495,7 +1495,7 @@ tsequence_from_base(Datum value, CachedType temptype, const Period *p,
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer sequence as a temporal float sequence.
+ * @brief Cast a temporal sequence integer to a temporal sequence float.
  */
 TSequence *
 tintseq_to_tfloatseq(const TSequence *seq)
@@ -1516,7 +1516,7 @@ tintseq_to_tfloatseq(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float sequence as a temporal integer sequence.
+ * @brief Cast a temporal sequence float to a temporal sequence integer.
  */
 TSequence *
 tfloatseq_to_tintseq(const TSequence *seq)
@@ -1647,7 +1647,7 @@ tsequence_step_to_linear(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal sequence shifted and/or scaled by two intervals.
+ * @brief Return a temporal sequence shifted and/or scaled by the intervals.
  *
  * @pre The duration is greater than 0 if it is not NULL
  */
@@ -1696,7 +1696,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
   }
   /* Shift and/or scale bounding box */
   void *bbox = tsequence_bbox_ptr(result);
-  temporal_bbox_shift_tscale(bbox, start, duration, seq->temptype);
+  temporal_bbox_shift_tscale(start, duration, seq->temptype, bbox);
   return result;
 }
 
@@ -1732,7 +1732,7 @@ tsequence_values(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the float span of a temporal float.
+ * @brief Return the float span of a temporal sequence float.
  */
 Span *
 tfloatseq_span(const TSequence *seq)
@@ -1809,11 +1809,16 @@ tfloatseq_spans1(const TSequence *seq, Span **result)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of spans of base values of a temporal float sequence.
+ *
+ * For temporal floats with linear interpolation the result will be a
+ * singleton, which is the result of @ref tfloatseq_span. Otherwise, the
+ * result will be an array of spans, one for each distinct value.
  */
 Span **
 tfloatseq_spans(const TSequence *seq, int *count)
 {
-  Span **result = palloc(sizeof(Span *) * seq->count);
+  int count1 = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
+  Span **result = palloc(sizeof(Span *) * count1);
   *count = tfloatseq_spans1(seq, result);
   return result;
 }
@@ -1962,6 +1967,7 @@ tsequence_period(const TSequence *seq, Period *p)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal sequence.
+ * @post The output parameter \p count is equal to 1
  */
 TSequence **
 tsequence_sequences(const TSequence *seq, int *count)
@@ -2035,6 +2041,9 @@ tsequence_segments(const TSequence *seq, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of distinct instants of a temporal sequence.
+ * @note By definition, all instants of a sequence are distinct
+ * @post The output parameter \p count is equal to the number of instants of the
+ * input sequence
  */
 const TInstant **
 tsequence_instants(const TSequence *seq, int *count)
@@ -2080,6 +2089,11 @@ tsequence_timestamps1(const TSequence *seq, TimestampTz *times)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of timestamps of a temporal sequence.
+ *
+ * @param[in] seq Temporal sequence
+ * @param[out] count Number of elements in the output array
+ * @post The output parameter count is equal to the number of instants of the
+ * input sequence
  */
 TimestampTz *
 tsequence_timestamps(const TSequence *seq, int *count)
@@ -4152,7 +4166,7 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the hash value of a temporal sequence.
+ * @brief Return the 32-bit hash value of a temporal sequence.
  */
 uint32
 tsequence_hash(const TSequence *seq)

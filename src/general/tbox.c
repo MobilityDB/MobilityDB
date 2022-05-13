@@ -217,7 +217,7 @@ tbox_send(TBOX *box)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Constructs a temporal box from the arguments.
+ * @brief Construct a temporal box from the arguments.
  */
 TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
@@ -524,7 +524,7 @@ tbox_to_period(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if a temporal box has X dimension
+ * @brief Return true if a temporal box has value dimension
  */
 bool
 tbox_hasx(const TBOX *box)
@@ -535,7 +535,7 @@ tbox_hasx(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if a temporal box has T dimension
+ * @brief Return true if a temporal box has time dimension
  */
 bool
 tbox_hast(const TBOX *box)
@@ -546,7 +546,11 @@ tbox_hast(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of a temporal box, if any.
+ * @brief Return true if the temporal box has value dimension. In that case,
+ * the minimum value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_xmin(const TBOX *box, double *result)
@@ -559,7 +563,11 @@ tbox_xmin(const TBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of a temporal box, if any.
+ * @brief Return true if the temporal box has value dimension. In that case,
+ * the maximum value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_xmax(const TBOX *box, double *result)
@@ -572,7 +580,11 @@ tbox_xmax(const TBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum T value of a temporal box, if any.
+ * @brief Return true if the temporal box has time dimension. In that case,
+ * the minimum timestamp is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_tmin(const TBOX *box, TimestampTz *result)
@@ -585,7 +597,11 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum T value of a temporal box, if any.
+ * @brief Return true if the temporal box has time dimension. In that case,
+ * the maximum timestamp is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_tmax(const TBOX *box, TimestampTz *result)
@@ -943,7 +959,8 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the intersection of the temporal boxes in the third argument.
+ * @brief Set a temporal box with the result of the intersection of the first
+ * two temporal boxes.
  */
 bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -1488,7 +1505,7 @@ Tbox_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_hasx);
 /**
- * Return true if a temporal box has X dimension
+ * Return true if a temporal box has value dimension
  */
 PGDLLEXPORT Datum
 Tbox_hasx(PG_FUNCTION_ARGS)
@@ -1499,7 +1516,7 @@ Tbox_hasx(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_hast);
 /**
- * Return true if a temporal box has T dimension
+ * Return true if a temporal box has time dimension
  */
 PGDLLEXPORT Datum
 Tbox_hast(PG_FUNCTION_ARGS)

@@ -625,7 +625,7 @@ periodset_timestamps(const PeriodSet *ps, int *count)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale a period set by two intervals.
+ * @brief Return a period set shifted and/or scaled by the intervals.
  */
 PeriodSet *
 periodset_shift_tscale(const PeriodSet *ps, const Interval *start,

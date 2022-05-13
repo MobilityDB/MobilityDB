@@ -96,7 +96,7 @@ stbox_expand(const STBOX *box1, STBOX *box2)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Shift and/or scale a spatiotemporal box by two intervals
+ * @brief Shift and/or scale a spatiotemporal box by the intervals
  */
 void
 stbox_shift_tscale(const Interval *start, const Interval *duration, STBOX *box)
@@ -354,7 +354,7 @@ stbox_send(STBOX *box)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Constructs a spatiotemporal box from the arguments.
+ * @brief Construct a spatiotemporal box from the arguments.
  */
 STBOX *
 stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
@@ -427,7 +427,7 @@ stbox_copy(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Set PostGIS GBOX from a spatiotemporal box
+ * @brief Set a PostGIS GBOX from a spatiotemporal box.
  */
 void
 stbox_set_gbox(const STBOX *box, GBOX *gbox)
@@ -692,7 +692,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if a spatiotemporal box has X dimension
+ * @brief Return true if a spatiotemporal box has value dimension
  */
 bool
 stbox_hasx(const STBOX *box)
@@ -714,7 +714,7 @@ stbox_hasz(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if a spatiotemporal box has T dimension
+ * @brief Return true if a spatiotemporal box has time dimension
  */
 bool
 stbox_hast(const STBOX *box)
@@ -736,7 +736,11 @@ stbox_isgeodetic(const STBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has value dimension. In that
+ * case, the minimum X value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_xmin(const STBOX *box, double *result)
@@ -749,7 +753,11 @@ stbox_xmin(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has value dimension. In that
+ * case, the maximum X value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_xmax(const STBOX *box, double *result)
@@ -762,7 +770,11 @@ stbox_xmax(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum Y value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has value dimension. In that
+ * case, the minimum Y value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_ymin(const STBOX *box, double *result)
@@ -775,7 +787,11 @@ stbox_ymin(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum Y value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has value dimension. In that
+ * case, the maximum Y value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_ymax(const STBOX *box, double *result)
@@ -788,7 +804,11 @@ stbox_ymax(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum Z value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has Z dimension. In that
+ * case, the minimum Z value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_zmin(const STBOX *box, double *result)
@@ -801,7 +821,11 @@ stbox_zmin(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has Z dimension. In that
+ * case, the maximum Z value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_zmax(const STBOX *box, double *result)
@@ -814,7 +838,11 @@ stbox_zmax(const STBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum T value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has time dimension. In that
+ * case, the minimum timestamp is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_tmin(const STBOX *box, TimestampTz *result)
@@ -827,7 +855,11 @@ stbox_tmin(const STBOX *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum T value of a spatiotemporal box, if any.
+ * @brief Return true if the spatiotemporal box has time dimension. In that
+ * case, the maximum timestamp is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 stbox_tmax(const STBOX *box, TimestampTz *result)
@@ -1324,7 +1356,8 @@ union_stbox_stbox(const STBOX *box1, const STBOX *box2, bool strict)
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the intersection of the spatiotemporal boxes in the third argument
+ * @brief Set a spatiotemporal box with the result of the intersection of the
+ * first two boxes
  */
 bool
 inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
@@ -1999,7 +2032,7 @@ Geo_period_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_hasx);
 /**
- * Return true if a spatiotemporal box has X dimension
+ * Return true if a spatiotemporal box has value dimension
  */
 PGDLLEXPORT Datum
 Stbox_hasx(PG_FUNCTION_ARGS)
@@ -2021,7 +2054,7 @@ Stbox_hasz(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_hast);
 /**
- * Return true if a spatiotemporal box has T dimension
+ * Return true if a spatiotemporal box has time dimension
  */
 PGDLLEXPORT Datum
 Stbox_hast(PG_FUNCTION_ARGS)

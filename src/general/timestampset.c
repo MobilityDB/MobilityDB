@@ -174,9 +174,9 @@ timestampset_recv(StringInfo buf)
 }
 
 /**
- * Write the binary representation of the time value into the buffer.
+ * Write the binary representation of a timestamp set into a buffer.
  *
- * @param[in] ts Time value
+ * @param[in] ts Timestamp set
  * @param[in] buf Buffer
  */
 void
@@ -416,7 +416,7 @@ timestampset_timestamps(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale a timestamp set by the intervals
+ * @brief Return a timestamp set shifted and/or scaled by the intervals
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,

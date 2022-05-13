@@ -107,7 +107,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
 }
 
 /**
- * Shift and/or scale the time span of the bounding box by two intervals
+ * Shift and/or scale the time span of the bounding box by the intervals
  *
  * @param[in] box Bounding box
  * @param[in] start Interval to shift
@@ -115,8 +115,8 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
  * @param[in] temptype Temporal type
  */
 void
-temporal_bbox_shift_tscale(void *box, const Interval *start,
-  const Interval *duration, CachedType temptype)
+temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
+  CachedType temptype, void *box)
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))

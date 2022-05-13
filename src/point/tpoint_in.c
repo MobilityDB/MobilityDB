@@ -841,7 +841,8 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its EWKB representation.
+ * @brief Return a temporal point from its Extended Well-Known Binary (EWKB)
+ * representation.
  */
 Temporal *
 tpoint_from_ewkb(uint8_t *wkb, int size)

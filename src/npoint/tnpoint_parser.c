@@ -43,7 +43,7 @@
 /*****************************************************************************/
 
 /**
- * @brief Parse a network point value from the buffer.
+ * @brief Parse a network point from its string representation.
  */
 Npoint *
 npoint_parse(char **str)
@@ -79,7 +79,7 @@ npoint_parse(char **str)
 }
 
 /**
- * @brief Parse a network segment value from the buffer.
+ * @brief Parse a network segment from its string representation.
  */
 Nsegment *
 nsegment_parse(char **str)

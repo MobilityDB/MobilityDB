@@ -290,7 +290,7 @@ right_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if an element is not to the right a span.
+ * @brief Return true if an element is not to the right of a span.
  */
 bool
 overleft_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -494,7 +494,7 @@ minus_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds between the spans
+ * @brief Return the distance between the elements
  */
 double
 distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -520,7 +520,7 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds between an element and a span.
+ * @brief Return the distance between an element and a span.
  */
 double
 distance_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -553,7 +553,7 @@ distance_span_elem(const Span *s, Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance in seconds between the spans.
+ * @brief Return the distance between the spans.
  */
 double
 distance_span_span(const Span *s1, const Span *s2)

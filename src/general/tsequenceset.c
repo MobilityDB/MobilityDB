@@ -481,7 +481,7 @@ intersection_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet 
  * @param[in] linear True when the temporal type has linear interpolation
  */
 TSequenceSet *
-tsequenceset_from_string(char *str, CachedType temptype, bool linear)
+tsequenceset_in(char *str, CachedType temptype, bool linear)
 {
   return tsequenceset_parse(&str, temptype, linear);
 }
@@ -1442,7 +1442,7 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float sequence as a float span.
+ * @brief Cast a temporal sequence set float to a float span.
  */
 Span *
 tfloatseqset_to_span(const TSequenceSet *ts)
@@ -1489,7 +1489,7 @@ tfloatseqset_to_span(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer sequence set as a temporal float sequence set.
+ * @brief Cast a temporal sequence set integer to a temporal sequence set float.
  */
 TSequenceSet *
 tintseqset_to_tfloatseqset(const TSequenceSet *ts)
@@ -1515,7 +1515,7 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float sequence set as a temporal integer sequence set.
+ * @brief Cast a temporal sequence set float to a temporal sequence set integer.
  */
 TSequenceSet *
 tfloatseqset_to_tintseqset(const TSequenceSet *ts)
@@ -1613,7 +1613,7 @@ tsequenceset_step_to_linear(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal sequence set shifted and/or scaled by two intervals.
+ * @brief Return a temporal sequence set shifted and/or scaled by the intervals.
  *
  * @pre The duration is greater than 0 if it is not NULL
  */

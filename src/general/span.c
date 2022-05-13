@@ -607,7 +607,7 @@ span_expand(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale a period by two intervals.
+ * @brief Shift and/or scale a period by the intervals.
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,

@@ -59,7 +59,7 @@ extern char *tpointseqset_as_mfjson(const TSequenceSet *ts, int precision,
   const STBOX *bbox, char *srs);
 extern char *tpoint_as_mfjson(const Temporal *temp, int precision,
   int has_bbox, char *srs);
-extern uint8_t *tpoint_to_wkb(const Temporal *temp, uint8_t variant,
+extern uint8_t *tpoint_as_wkb(const Temporal *temp, uint8_t variant,
   size_t *size_out);
 extern char *tpoint_as_hexewkb(const Temporal *temp, uint8_t variant,
   size_t *size);

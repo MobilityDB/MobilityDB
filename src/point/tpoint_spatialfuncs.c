@@ -312,17 +312,13 @@ pt_distance_fn(int16 flags)
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000
+#if POSTGIS_VERSION_NUMBER >= 30000
   Datum result = Float8GetDatum(PGIS_ST_Distance(
     (GSERIALIZED *) DatumGetPointer(geom1),
     (GSERIALIZED *) DatumGetPointer(geom2)));
   return result;
 #else
-#if POSTGIS_VERSION_NUMBER >= 30000
-  return call_function2(ST_Distance, geom1, geom2);
-#else
   return call_function2(distance, geom1, geom2);
-#endif
 #endif
 }
 
@@ -332,13 +328,13 @@ geom_distance2d(Datum geom1, Datum geom2)
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return call_function2(distance3d, geom1, geom2);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   Datum result = Float8GetDatum(PGIS_ST_3DDistance(
     (GSERIALIZED *) DatumGetPointer(geom1),
     (GSERIALIZED *) DatumGetPointer(geom2)));
   return result;
+#else
+  return call_function2(distance3d, geom1, geom2);
 #endif
 }
 
@@ -380,12 +376,12 @@ pt_distance3d(Datum geom1, Datum geom2)
 Datum
 geom_intersection2d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return call_function2(intersection, geom1, geom2);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   return PointerGetDatum(PGIS_ST_Intersection(
     (GSERIALIZED *) DatumGetPointer(geom1),
     (GSERIALIZED *) DatumGetPointer(geom2)));
+#else
+  return call_function2(intersection, geom1, geom2);
 #endif
 }
 
@@ -2034,7 +2030,7 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+#if POSTGIS_VERSION_NUMBER >= 30000
   GSERIALIZED *value = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst));
   Datum point = (oper == GEOM_TO_GEOG) ?
     PointerGetDatum(PGIS_geography_from_geometry(value)) :
@@ -2077,7 +2073,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
   pfree(points);
   /* Convert the multipoint geometry/geography */
   gs = (oper == GEOM_TO_GEOG) ?
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+#if POSTGIS_VERSION_NUMBER >= 30000
     PGIS_geography_from_geometry(mpoint_orig) :
     PGIS_geometry_from_geography(mpoint_orig);
 #else
@@ -2130,7 +2126,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   pfree(points);
   /* Convert the multipoint geometry/geography */
   gs = (oper == GEOM_TO_GEOG) ?
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+#if POSTGIS_VERSION_NUMBER >= 30000
       PGIS_geography_from_geometry(mpoint_orig) :
       PGIS_geometry_from_geography(mpoint_orig);
 #else
@@ -2349,7 +2345,7 @@ tpointseq_length(const TSequence *seq)
   {
     Datum traj = tpointseq_trajectory(seq);
     /* We are sure that the trajectory is a line */
-#if POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000
+#if POSTGIS_VERSION_NUMBER >= 30000
     GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
     double result = PGIS_geography_length(gstraj, true);
     PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));

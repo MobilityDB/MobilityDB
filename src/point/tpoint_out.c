@@ -131,7 +131,7 @@ tpoint_as_text(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
- * point, that is, the WKT representation prefixed with the SRID.
+ * point.
  */
 char *
 tpoint_as_ewkt(const Temporal *temp)
@@ -157,6 +157,10 @@ tpoint_as_ewkt(const Temporal *temp)
  * @ingroup libmeos_temporal_input_output
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a geometry/geography array.
+ *
+ * @param[in] geoarr Array of geometries/geographies
+ * @param[in] count Number of elements in the input array
+ * @param[in] extended True when the output is in EWKT
  */
 char **
 geoarr_as_text(const Datum *geoarr, int count, bool extended)
@@ -1168,7 +1172,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
  * @note Caller is responsible for freeing the returned array.
  */
 uint8_t *
-tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+tpoint_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   size_t buf_size;
   uint8_t *buf = NULL;
@@ -1261,7 +1265,7 @@ tpoint_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size)
 {
   size_t hexwkb_size;
   /* Create WKB hex string */
-  char *result = (char *) tpoint_to_wkb(temp,
+  char *result = (char *) tpoint_as_wkb(temp,
     variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, &hexwkb_size);
 
   *size = hexwkb_size;
@@ -1520,8 +1524,8 @@ tpoint_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
   /* Create WKB hex string */
   size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
   uint8_t *wkb = extended ?
-    tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
-    tpoint_to_wkb(temp, variant, &wkb_size);
+    tpoint_as_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
+    tpoint_as_wkb(temp, variant, &wkb_size);
 
   /* Prepare the PostgreSQL text return type */
   bytea *result = palloc(wkb_size + VARHDRSZ);

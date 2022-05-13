@@ -150,7 +150,7 @@ tnumberinst_double(const TInstant *inst)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_from_string(char *str, CachedType temptype)
+tinstant_in(char *str, CachedType temptype)
 {
   return tinstant_parse(&str, temptype, true, true);
 }
@@ -198,7 +198,7 @@ tinstant_out(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant from its binary representation read from
- * the buffer.
+ * a buffer.
  *
  * @param[in] buf Buffer
  * @param[in] temptype Temporal type
@@ -224,7 +224,7 @@ tinstant_recv(StringInfo buf, CachedType temptype)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Write the binary representation of a temporal instant into
- * the buffer.
+ * a buffer.
  *
  * @param[in] inst Temporal instant
  * @param[in] buf Buffer
@@ -339,6 +339,7 @@ tinstant_copy(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of base values of a temporal instant.
+ * @post The output parameter count is equal to 1
  */
 Datum *
 tinstant_values(const TInstant *inst, int *count)
@@ -351,7 +352,8 @@ tinstant_values(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the singleton array of spans of a temporal float.
+ * @brief Return the singleton array of spans of a temporal instant float.
+ * @post The output parameter count is equal to 1
  */
 Span **
 tfloatinst_spans(const TInstant *inst, int *count)
@@ -387,6 +389,7 @@ tinstant_period(const TInstant *inst, Period *p)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal instant.
+ * @post The output parameter count is equal to 1
  */
 TSequence **
 tinstant_sequences(const TInstant *inst, int *count)
@@ -401,6 +404,7 @@ tinstant_sequences(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of timestamps of a temporal instant.
+ * @post The output parameter count is equal to 1
  */
 TimestampTz *
 tinstant_timestamps(const TInstant *inst, int *count)
@@ -414,6 +418,7 @@ tinstant_timestamps(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of instants of a temporal instant.
+ * @post The output parameter count is equal to 1
  */
 const TInstant **
 tinstant_instants(const TInstant *inst, int *count)
@@ -446,7 +451,7 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer instant as a temporal float instant.
+ * @brief Cast a temporal instant integer to a temporal instant float.
  */
 TInstant *
 tintinst_to_tfloatinst(const TInstant *inst)
@@ -461,7 +466,7 @@ tintinst_to_tfloatinst(const TInstant *inst)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float instant as a temporal integer instant.
+ * @brief Cast a temporal instant float to a temporal instant integer.
  */
 TInstant *
 tfloatinst_to_tintinst(const TInstant *inst)
@@ -1004,7 +1009,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the hash value of a temporal instant.
+ * @brief Return the 32-bit hash value of a temporal instant.
  */
 #if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
 uint32

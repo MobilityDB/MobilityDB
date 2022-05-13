@@ -254,7 +254,7 @@ tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *loc)
  * @param[in] temptype Temporal type
  */
 TInstantSet *
-tinstantset_from_string(char *str, CachedType temptype)
+tinstantset_in(char *str, CachedType temptype)
 {
   return tinstantset_parse(&str, temptype);
 }
@@ -296,7 +296,7 @@ tinstantset_out(const TInstantSet *ti)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant set from its binary representation
- * read from the buffer.
+ * read from a buffer.
  *
  * @param[in] buf Buffer
  * @param[in] temptype Temporal type
@@ -313,7 +313,7 @@ tinstantset_recv(StringInfo buf, CachedType temptype)
 
 /**
  * @brief Write the binary representation of a temporal instant set
- * into the buffer.
+ * into a buffer.
  *
  * @param[in] ti Temporal instant set
  * @param[in] buf Buffer
@@ -436,7 +436,7 @@ tinstantset_values(const TInstantSet *ti, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of spans of a temporal float instant set.
+ * @brief Return the array of spans of a temporal instant set float.
  */
 Span **
 tfloatinstset_spans(const TInstantSet *ti, int *count)
@@ -640,7 +640,7 @@ tinstantset_timestamps(const TInstantSet *ti, int *count)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer instant set as a temporal float instant set.
+ * @brief Cast a temporal instant set integer to a temporal instant set float.
  */
 TInstantSet *
 tintinstset_to_tfloatinstset(const TInstantSet *ti)
@@ -659,7 +659,7 @@ tintinstset_to_tfloatinstset(const TInstantSet *ti)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float instant set as a temporal integer instant set.
+ * @brief Cast a temporal instant set float to a temporal instant set integer.
  */
 TInstantSet *
 tfloatinstset_to_tintinstset(const TInstantSet *ti)
@@ -737,7 +737,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal instant set shift and/or scaled by two intervals
+ * @brief Return a temporal instant set shift and/or scaled by the intervals
  *
  * @pre The duration is greater than 0 if it is not NULL
  */
@@ -786,7 +786,7 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
   }
   /* Shift and/or scale bounding box */
   void *bbox = tinstantset_bbox_ptr(result);
-  temporal_bbox_shift_tscale(bbox, start, duration, ti->temptype);
+  temporal_bbox_shift_tscale(start, duration, ti->temptype, bbox);
   return result;
 }
 
@@ -1699,7 +1699,7 @@ tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the hash value of a temporal instant set
+ * @brief Return the 32-bit hash value of a temporal instant set
  */
 uint32
 tinstantset_hash(const TInstantSet *ti)

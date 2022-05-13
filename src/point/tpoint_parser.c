@@ -45,7 +45,7 @@
 /*****************************************************************************/
 
 /**
- * @brief Parse a spatiotemporal box value from the buffer.
+ * @brief Parse a spatiotemporal box from its string representation.
  */
 STBOX *
 stbox_parse(char **str)
@@ -206,7 +206,7 @@ stbox_parse(char **str)
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal point value of instant type from the buffer.
+ * @brief Parse a temporal point of instant type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -249,7 +249,7 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
 }
 
 /**
- * @brief Parse a temporal point value of instant set type from the buffer.
+ * @brief Parse a temporal point of instant set type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type

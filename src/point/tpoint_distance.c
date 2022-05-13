@@ -912,7 +912,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Datum traj = tpoint_trajectory(temp);
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+#if POSTGIS_VERSION_NUMBER >= 30000
   GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
   if (geodetic)
     /* Notice that geography_shortestline_internal is a MobilityDB function */

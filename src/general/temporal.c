@@ -72,7 +72,7 @@ ensure_valid_tempsubtype(int16 subtype)
 }
 
 /**
- * Ensure that the subtype of temporal value is valid
+ * Ensure that the subtype of a temporal value is valid
  *
  * @note Used for the the analyze and selectivity functions
  */
@@ -564,6 +564,10 @@ mobilitydb_full_version(void)
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
+ * @see tinstant_in
+ * @see tinstantset_in
+ * @see tsequence_in
+ * @see tsequenceset_in
  */
 Temporal *
 temporal_in(char *str, CachedType temptype)
@@ -598,7 +602,7 @@ temporal_out(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal value from its binary representation read from
- * the buffer.
+ * a buffer.
  *
  * @param[in] buf Buffer
  * @see tinstant_recv
@@ -1078,7 +1082,7 @@ tfloat_to_span(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer as a temporal float.
+ * @brief Cast a temporal integer to a temporal float.
  * @see tintinst_to_tfloatinst
  * @see tintinstset_to_tfloatinstset
  * @see tintseq_to_tfloatseq
@@ -1102,7 +1106,7 @@ tint_to_tfloat(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float as a temporal integer.
+ * @brief Cast a temporal float to a temporal integer.
  * @see tfloatinst_to_tintinst
  * @see tfloatinstset_to_tintinstset
  * @see tfloatseq_to_tintseq
@@ -1356,7 +1360,8 @@ temporal_subtype(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the string representation of the interpolation of temporal value.
+ * @brief Return the string representation of the interpolation of a temporal
+ * value.
  */
 char *
 temporal_interpolation(const Temporal *temp)
@@ -1426,7 +1431,7 @@ temporal_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base values of the temporal float as an array of spans.
+ * @brief Return the base values of a temporal float as an array of spans.
  * @see tfloatinst_spans
  * @see tfloatinstset_spans
  * @see tfloatseq_spans
@@ -1450,7 +1455,7 @@ tfloat_spans(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the time frame of temporal value as a period set.
+ * @brief Return the time frame of a temporal value as a period set.
  * @see tinstant_time
  * @see tinstantset_time
  * @see tsequence_time
@@ -3279,7 +3284,7 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the hash value of a temporal value.
+ * @brief Return the 32-bit hash value of a temporal value.
  */
 uint32
 temporal_hash(const Temporal *temp)
@@ -4113,7 +4118,7 @@ Temporal_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_shift_tscale);
 /**
- * Return a temporal value shifted and scaled by two intervals
+ * Return a temporal value shifted and scaled by the intervals
  */
 PGDLLEXPORT Datum
 Temporal_shift_tscale(PG_FUNCTION_ARGS)

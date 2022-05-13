@@ -248,7 +248,7 @@ npoint_remove_duplicates(Npoint **values, int count)
  *****************************************************************************/
 
 /**
- * @brief Return a span from its string representation.
+ * @brief Return a network point from its string representation.
  */
 Npoint *
 npoint_in(char *str)
@@ -257,7 +257,7 @@ npoint_in(char *str)
 }
 
 /**
- * @brief Output function for network points
+ * @brief Return the string representation of a network point
  */
 char *
 npoint_out(const Npoint *np)
@@ -271,8 +271,8 @@ npoint_out(const Npoint *np)
 }
 
 /**
- * @brief Return a new network point value from its binary representation read
- * from the buffer.
+ * @brief Return a network point from its binary representation read
+ * from a buffer.
  */
 Npoint *
 npoint_recv(StringInfo buf)
@@ -284,10 +284,9 @@ npoint_recv(StringInfo buf)
 }
 
 /**
- * @brief Write the binary representation of the network point value into the
- * buffer.
+ * @brief Return the binary representation of a network point
  *
- * @param[in] np Network point value
+ * @param[in] np Network point
  */
 bytea *
 npoint_send(const Npoint *np)
