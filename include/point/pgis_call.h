@@ -65,29 +65,16 @@ extern double PGIS_ST_Distance(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern double PGIS_ST_3DDistance(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
-extern GSERIALIZED *PGIS_LWGEOM_reverse(GSERIALIZED *geom);
 extern bool PGIS_ST_3DIntersects(GSERIALIZED *geom1, GSERIALIZED *geom2);
-extern bool PGIS_LWGEOM_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
-  double *result);
 
 /* Functions adapted from lwgeom_btree.c */
 
 extern bool PGIS_lwgeom_lt(GSERIALIZED *g1, GSERIALIZED *g2);
 
-/* Functions adapted from lwgeom_functions_lrs.c */
-
-extern double PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1,
-  GSERIALIZED *geom2);
-
-/* Functions adapted from lwgeom_functions_analytic.c */
-
-extern GSERIALIZED *PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from,
-  double to);
-extern GSERIALIZED *PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser,
-  double distance_fraction);
-
 /* Functions adapted from lwgeom_geos.c */
 
+extern bool PGIS_ST_Intersects(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2);
 extern GSERIALIZED *PGIS_ST_Intersection(GSERIALIZED *geom1,
   GSERIALIZED *geom2);
 

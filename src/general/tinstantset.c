@@ -571,6 +571,8 @@ tinstantset_timespan(const TInstantSet *ti)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of sequences of a temporal instant set.
+ * @post The output parameter @p count is equal to the number of instants of
+ * the input temporal instant set
  */
 TSequence **
 tinstantset_sequences(const TInstantSet *ti, int *count)
@@ -589,6 +591,8 @@ tinstantset_sequences(const TInstantSet *ti, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of instants of a temporal instant set.
+ * @post The output parameter @p count is equal to the number of instants of
+ * the input temporal instant set
  */
 const TInstant **
 tinstantset_instants(const TInstantSet *ti, int *count)
@@ -623,6 +627,8 @@ tinstantset_end_timestamp(const TInstantSet *ti)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the distinct timestamps of a temporal instant set.
+ * @post The output parameter @p count is equal to the number of instants of
+ * the input temporal instant set
  */
 TimestampTz *
 tinstantset_timestamps(const TInstantSet *ti, int *count)
@@ -737,7 +743,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal instant set shift and/or scaled by the intervals
+ * @brief Return a temporal instant set shifted and/or scaled by the intervals
  *
  * @pre The duration is greater than 0 if it is not NULL
  */
@@ -1150,6 +1156,11 @@ tinstantset_max_instant(const TInstantSet *ti)
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) its
  * minimum/maximum base value
+ *
+ * @param[in] ti Temporal instant set
+ * @param[in] min True when restricted to the minumum value, false for the
+ * maximum value
+ * @param[in] atfunc True when the restriction is at, false for minus
  */
 TInstantSet *
 tinstantset_restrict_minmax(const TInstantSet *ti, bool min, bool atfunc)

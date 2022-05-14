@@ -1967,7 +1967,7 @@ tsequence_period(const TSequence *seq, Period *p)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal sequence.
- * @post The output parameter \p count is equal to 1
+ * @post The output parameter @p count is equal to 1
  */
 TSequence **
 tsequence_sequences(const TSequence *seq, int *count)
@@ -2042,8 +2042,8 @@ tsequence_segments(const TSequence *seq, int *count)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of distinct instants of a temporal sequence.
  * @note By definition, all instants of a sequence are distinct
- * @post The output parameter \p count is equal to the number of instants of the
- * input sequence
+ * @post The output parameter @p count is equal to the number of instants of the
+ * input temporal sequence
  */
 const TInstant **
 tsequence_instants(const TSequence *seq, int *count)
@@ -2093,7 +2093,7 @@ tsequence_timestamps1(const TSequence *seq, TimestampTz *times)
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  * @post The output parameter count is equal to the number of instants of the
- * input sequence
+ * input temporal sequence
  */
 TimestampTz *
 tsequence_timestamps(const TSequence *seq, int *count)
@@ -3356,6 +3356,11 @@ tnumberseq_restrict_spans(const TSequence *seq, Span **normspans,
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal sequence to (the complement of) its
  * minimum/maximum base value.
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] min True when restricted to the minumum value, false for the
+ * maximum value
+ * @param[in] atfunc True when the restriction is at, false for minus
  */
 TSequenceSet *
 tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc)

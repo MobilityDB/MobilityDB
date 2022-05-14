@@ -3874,6 +3874,12 @@ tpoint_make_simple(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point instant to (the complement of) a geometry.
+ *
+ * @param[in] inst Temporal instant point
+ * @param[in] geom Geometry
+ * @param[in] atfunc True when the restriction is at, false for minus
+ * @pre The arguments are of the same dimensionality, have the same SRID,
+ * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  */
 TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
@@ -3888,6 +3894,12 @@ tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point instant set to (the complement of) a
  * geometry.
+ *
+ * @param[in] ti Temporal instant set point
+ * @param[in] geom Geometry
+ * @param[in] atfunc True when the restriction is at, false for minus
+ * @pre The arguments are of the same dimensionality, have the same SRID,
+ * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  */
 TInstantSet *
 tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
@@ -4312,10 +4324,10 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
  * for each piece
- * @param[in] seq Temporal point sequence
+ * @param[in] seq Temporal sequence point
  * @param[in] geom Geometry
  * @param[out] count Number of elements in the resulting array
- * @pre The temporal sequence is simple, that is, not self-intersecting
+ * @pre The temporal sequence is simple, that is, does not self-intersect
  */
 TSequence **
 tpointseq_at_geometry(const TSequence *seq, Datum geom, int *count)
@@ -4392,6 +4404,11 @@ tpointseq_minus_geometry(const TSequence *seq, Datum geom, int *count)
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
  *
+ * @param[in] seq Temporal sequence point
+ * @param[in] geom Geometry
+ * @param[in] atfunc True when the restriction is at, false for minus
+ * @pre The arguments are of the same dimensionality, have the same SRID,
+ * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @note The test for instantaneous sequences is done at the function
  * tpointseq_at_geometry since the latter function is called for each sequence
  * of a sequence set
@@ -4415,10 +4432,12 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
  * @brief Restrict a temporal point sequence set to (the complement of) a
  * geometry.
  *
- * @param[in] ts Temporal point sequence set
+ * @param[in] ts Temporal sequence set point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] atfunc True when the restriction is at, false for minus
+ * @pre The arguments are of the same dimensionality, have the same SRID,
+ * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  */
 TSequenceSet *
 tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
@@ -4476,8 +4495,10 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  *
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty
+ *
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] atfunc True when the restriction is at, false for minus
  */
 Temporal *
 tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
@@ -4722,6 +4743,9 @@ tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
  * @brief Restrict a temporal point to (the complement of) a spatiotemporal
  * box.
  *
+ * @param[in] temp Temporal point
+ * @param[in] box Box
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
  */
 Temporal *

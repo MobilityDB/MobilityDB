@@ -100,7 +100,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a timestamp set
+ * @brief Restrict a temporal value to the complement of a timestamp
  */
 Temporal *
 temporal_minus_timestamp(const Temporal *temp, TimestampTz t)

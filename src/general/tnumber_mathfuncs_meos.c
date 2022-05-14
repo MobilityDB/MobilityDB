@@ -184,7 +184,7 @@ div_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal multiplication of the temporal numbers
+ * @brief Return the temporal division of the temporal numbers
  */
 Temporal *
 div_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)

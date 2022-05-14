@@ -65,7 +65,7 @@
  *****************************************************************************/
 
 /**
- * Calls the PostGIS function ST_Contains with the 2 arguments
+ * Call the PostGIS function ST_Contains with the 2 arguments
  */
 Datum
 geom_contains(Datum geom1, Datum geom2)
@@ -74,92 +74,83 @@ geom_contains(Datum geom1, Datum geom2)
 }
 
 /**
- * Calls the PostGIS function ST_Disjoint with the 2 arguments
+ * Call the PostGIS function ST_Intersects with the 2 arguments
+ * and negate the result
  */
 Datum
 geom_disjoint2d(Datum geom1, Datum geom2)
 {
-  return call_function2(disjoint, geom1, geom2);
+  return BoolGetDatum(! DatumGetBool(geom_intersects2d(geom1, geom2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects3D with the 2 arguments
+ * Call the PostGIS function ST_Intersects3D with the 2 arguments
  * and negates the result
  */
 Datum
 geom_disjoint3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return BoolGetDatum(! DatumGetBool(call_function2(intersects3d, geom1,
-    geom2)));
-#else
-  return BoolGetDatum(! DatumGetBool(call_function2(ST_3DIntersects, geom1,
-    geom2)));
-#endif
+  return BoolGetDatum(! DatumGetBool(geom_intersects3d(geom1, geom2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * Call the PostGIS function ST_Intersects for geographies with the 2 arguments
  */
 Datum
 geog_disjoint(Datum geog1, Datum geog2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  /* We apply the same threshold as PostGIS in the definition of the
-   * function ST_Intersects(geography, geography) */
-  double dist = DatumGetFloat8(geog_distance(geog1, geog2));
-  return BoolGetDatum(dist > DIST_EPSILON);
-#else
-  return BoolGetDatum(! DatumGetBool(CallerFInfoFunctionCall2(geography_intersects,
-    (fetch_fcinfo())->flinfo, InvalidOid, geog1, geog2)));
-#endif
+  return BoolGetDatum(! DatumGetBool(geog_intersects(geog1, geog2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects with the 2 arguments
+ * Call the PostGIS function ST_Intersects with the 2 arguments
  */
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return call_function2(intersects, geom1, geom2);
+#if POSTGIS_VERSION_NUMBER >= 30000
+  Datum result = BoolGetDatum(PGIS_ST_Intersects(
+    (GSERIALIZED *) DatumGetPointer(geom1),
+    (GSERIALIZED *) DatumGetPointer(geom2)));
+  return result;
+  // return call_function2(ST_Intersects, geom1, geom2);
 #else
-  return call_function2(ST_Intersects, geom1, geom2);
+  return call_function2(intersects, geom1, geom2);
 #endif
 }
 
 /**
- * Calls the PostGIS function ST_3DIntersects with the 2 arguments
+ * Call the PostGIS function ST_3DIntersects with the 2 arguments
  */
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return call_function2(intersects3d, geom1, geom2);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   return call_function2(ST_3DIntersects, geom1, geom2);
+#else
+  return call_function2(intersects3d, geom1, geom2);
 #endif
 }
 
 /**
- * Calls the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * Call the PostGIS function ST_Intersects for geographies with the 2 arguments
  */
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
+#if POSTGIS_VERSION_NUMBER >= 30000
+  return CallerFInfoFunctionCall2(geography_intersects, (fetch_fcinfo())->flinfo,
+    InvalidOid, geog1, geog2);
+#else
   /* We apply the same threshold as PostGIS in the definition of the
    * function ST_Intersects(geography, geography) */
   double dist = DatumGetFloat8(geog_distance(geog1, geog2));
   return BoolGetDatum(dist <= DIST_EPSILON);
-#else
-  return CallerFInfoFunctionCall2(geography_intersects, (fetch_fcinfo())->flinfo,
-    InvalidOid, geog1, geog2);
 #endif
 }
 
 /**
- * Calls the PostGIS function ST_Touches with the 2 arguments
+ * Call the PostGIS function ST_Touches with the 2 arguments
  */
 Datum
 geom_touches(Datum geom1, Datum geom2)
@@ -168,7 +159,7 @@ geom_touches(Datum geom1, Datum geom2)
 }
 
 /**
- * Calls the PostGIS function ST_DWithin with the 3 arguments
+ * Call the PostGIS function ST_DWithin with the 3 arguments
  */
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
@@ -177,7 +168,7 @@ geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 }
 
 /**
- * Calls the PostGIS function ST_3DDWithin with the 3 arguments
+ * Call the PostGIS function ST_3DDWithin with the 3 arguments
  */
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
@@ -186,7 +177,7 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 }
 
 /**
- * Calls the PostGIS function ST_DWithin for geographies with the 3 arguments
+ * Call the PostGIS function ST_DWithin for geographies with the 3 arguments
  */
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
@@ -377,7 +368,7 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * Calls the PostGIS function ST_Relate twice to compute the ever contains
+ * Call the PostGIS function ST_Relate twice to compute the ever contains
  * relationship between the trajectory of a temporal point and a geometry
  * @param[in] geom1 Trajectory of the temporal point
  * @param[in] geom2 Geometry

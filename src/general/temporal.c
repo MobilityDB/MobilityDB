@@ -959,7 +959,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Merge the array of temporal values.
+ * @brief Merge an array of temporal values.
  */
 Temporal *
 temporal_merge_array(Temporal **temparr, int count)
@@ -1129,8 +1129,8 @@ tfloat_to_tint(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Cast a temporal value to its bounding period.
+ * @ingroup libmeos_temporal_cast
+ * @brief Set a period to the bounding period of a temporal value.
  * @see tinstant_period
  * @see tinstantset_period
  * @see tsequence_period
@@ -5092,7 +5092,7 @@ Temporal_at_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
 /**
- * Restrict a temporal value to the complement of a timestamp set
+ * Restrict a temporal value to the complement of a timestamp
  */
 PGDLLEXPORT Datum
 Temporal_minus_timestampset(PG_FUNCTION_ARGS)

@@ -41,7 +41,8 @@
 
 /* C */
 #include <float.h>
-// #include <math.h>
+/* GEOS */
+#include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/elog.h>
@@ -49,8 +50,17 @@
 #include <liblwgeom.h>
 #include <lwgeom_pg.h>
 #include <lwgeom_log.h>
+#include <lwgeom_geos.h>
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"
+
+/* To avoid including lwgeom_geos.h */
+GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
+GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *g);
+
+/* To avoid including lwgeom_functions_analytic.h */
+extern int point_in_polygon(LWPOLY *polygon, LWPOINT *point);
+extern int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point);
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
@@ -386,19 +396,6 @@ PGIS_ST_3DDistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 }
 
 /**
- * @brief Reverse vertex order of geometry
- * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
- */
-GSERIALIZED *
-PGIS_LWGEOM_reverse(GSERIALIZED *geom)
-{
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
-  lwgeom_reverse_in_place(lwgeom);
-  GSERIALIZED *result = geometry_serialize(lwgeom);
-  return result;
-}
-
-/**
  * @brief Return true if the 3D geometries intersect
  * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
  */
@@ -415,263 +412,126 @@ PGIS_ST_3DIntersects(GSERIALIZED *geom1, GSERIALIZED *geom2)
   return (0.0 == mindist);
 }
 
-/**
- * @brief Return the azimuth between the two geometries
- * @note PostGIS function: Datum LWGEOM_azimuth(PG_FUNCTION_ARGS)
- */
-bool
-PGIS_LWGEOM_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2, double *result)
-{
-  LWPOINT *lwpoint;
-  POINT2D p1, p2;
-  int32_t srid;
-
-  /* Extract first point */
-  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom1));
-  if (! lwpoint)
-    elog(ERROR, "Argument must be POINT geometries");
-  srid = lwpoint->srid;
-  if (! getPoint2d_p(lwpoint->point, 0, &p1))
-    elog(ERROR, "Error extracting point");
-  lwpoint_free(lwpoint);
-
-  /* Extract second point */
-  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom2));
-  if (! lwpoint)
-    elog(ERROR, "Argument must be POINT geometries");
-  if (lwpoint->srid != srid)
-    elog(ERROR, "Operation on mixed SRID geometries");
-  if (! getPoint2d_p(lwpoint->point, 0, &p2))
-    elog(ERROR, "Error extracting point");
-  lwpoint_free(lwpoint);
-
-  /* Standard return value for equality case */
-  if ((p1.x == p2.x) && (p1.y == p2.y))
-    return false;
-
-  /* Compute azimuth */
-  if (! azimuth_pt_pt(&p1, &p2, result))
-    return false;
-
-  return true;
-}
-
-/*****************************************************************************
- * Functions adapted from lwgeom_functions_lrs.c
- *****************************************************************************/
-
-/**
- * @brief Return the fraction in [0,1] where the point is located in the line
- * @note PostGIS function: Datum LWGEOM_line_locate_point(PG_FUNCTION_ARGS)
- */
-double
-PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1, GSERIALIZED *geom2)
-{
-  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-  if ( gserialized_get_type(geom1) != LINETYPE )
-    elog(ERROR,"line_locate_point: 1st arg isn't a line");
-  if ( gserialized_get_type(geom2) != POINTTYPE )
-    elog(ERROR,"line_locate_point: 2st arg isn't a point");
-
-  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(geom1));
-  LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom2));
-  POINTARRAY *pa = lwline->points;
-  POINT4D p, p_proj;
-  lwpoint_getPoint4d_p(lwpoint, &p);
-  double result = ptarray_locate_point(pa, &p, NULL, &p_proj);
-  return result;
-}
-
-/*****************************************************************************
- * Functions adapted from lwgeom_functions_analytic.c
- *****************************************************************************/
-
-/**
- * @brief Extract a line fraction from a line and two doubles in [0,1]
- * @note PostGIS function: Datum LWGEOM_line_substring(PG_FUNCTION_ARGS)
- */
-GSERIALIZED *
-PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
-{
-  LWGEOM *olwgeom;
-  POINTARRAY *ipa, *opa;
-  GSERIALIZED *result;
-  int type = gserialized_get_type(geom);
-
-  if ( from < 0 || from > 1 )
-  {
-    elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
-    return NULL;
-  }
-  if ( to < 0 || to > 1 )
-  {
-    elog(ERROR,"line_interpolate_point: 3rd arg isn't within [0,1]");
-    return NULL;
-  }
-  if ( from > to )
-  {
-    elog(ERROR, "2nd arg must be smaller then 3rd arg");
-    return NULL;
-  }
-
-  if ( type == LINETYPE )
-  {
-    LWLINE *iline = lwgeom_as_lwline(lwgeom_from_gserialized(geom));
-
-    if ( lwgeom_is_empty((LWGEOM*)iline) )
-    {
-      /* TODO return empty line */
-      lwline_release(iline);
-      return NULL;
-    }
-
-    ipa = iline->points;
-
-    opa = ptarray_substring(ipa, from, to, 0);
-
-    if ( opa->npoints == 1 ) /* Point returned */
-      olwgeom = (LWGEOM *)lwpoint_construct(iline->srid, NULL, opa);
-    else
-      olwgeom = (LWGEOM *)lwline_construct(iline->srid, NULL, opa);
-
-  }
-  else if ( type == MULTILINETYPE )
-  {
-    LWMLINE *iline;
-    uint32_t i = 0, g = 0;
-    int homogeneous = LW_TRUE;
-    LWGEOM **geoms = NULL;
-    double length = 0.0, sublength = 0.0, minprop = 0.0, maxprop = 0.0;
-
-    iline = lwgeom_as_lwmline(lwgeom_from_gserialized(geom));
-
-    if ( lwgeom_is_empty((LWGEOM*)iline) )
-    {
-      /* TODO return empty collection */
-      lwmline_release(iline);
-      return NULL;
-    }
-
-    /* Calculate the total length of the mline */
-    for ( i = 0; i < iline->ngeoms; i++ )
-    {
-      LWLINE *subline = (LWLINE*)iline->geoms[i];
-      if ( subline->points && subline->points->npoints > 1 )
-        length += ptarray_length_2d(subline->points);
-    }
-
-    geoms = lwalloc(sizeof(LWGEOM*) * iline->ngeoms);
-
-    /* Slice each sub-geometry of the multiline */
-    for ( i = 0; i < iline->ngeoms; i++ )
-    {
-      LWLINE *subline = (LWLINE*)iline->geoms[i];
-      double subfrom = 0.0, subto = 0.0;
-
-      if ( subline->points && subline->points->npoints > 1 )
-        sublength += ptarray_length_2d(subline->points);
-
-      /* Calculate proportions for this subline */
-      minprop = maxprop;
-      maxprop = sublength / length;
-
-      /* This subline doesn't reach the lowest proportion requested
-         or is beyond the highest proporton */
-      if ( from > maxprop || to < minprop )
-        continue;
-
-      if ( from <= minprop )
-        subfrom = 0.0;
-      if ( to >= maxprop )
-        subto = 1.0;
-
-      if ( from > minprop && from <= maxprop )
-        subfrom = (from - minprop) / (maxprop - minprop);
-
-      if ( to < maxprop && to >= minprop )
-        subto = (to - minprop) / (maxprop - minprop);
-
-
-      opa = ptarray_substring(subline->points, subfrom, subto, 0);
-      if ( opa && opa->npoints > 0 )
-      {
-        if ( opa->npoints == 1 ) /* Point returned */
-        {
-          geoms[g] = (LWGEOM *)lwpoint_construct(SRID_UNKNOWN, NULL, opa);
-          homogeneous = LW_FALSE;
-        }
-        else
-        {
-          geoms[g] = (LWGEOM *)lwline_construct(SRID_UNKNOWN, NULL, opa);
-        }
-        g++;
-      }
-    }
-    /* If we got any points, we need to return a GEOMETRYCOLLECTION */
-    if ( ! homogeneous )
-      type = COLLECTIONTYPE;
-
-    olwgeom = (LWGEOM*)lwcollection_construct(type, iline->srid, NULL, g, geoms);
-  }
-  else
-  {
-    elog(ERROR,"line_substring: 1st arg isn't a line");
-    return NULL;
-  }
-
-  result = geometry_serialize(olwgeom);
-  lwgeom_free(olwgeom);
-  return result;
-
-}
-
-/**
- * @brief Extract a line fraction from a line and two doubles in [0,1]
- * @note PostGIS function: Datum LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
- * @note With respect to the original function we do not use the repeat
- * argument
- */
-GSERIALIZED *
-PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser, double distance_fraction)
-{
-  GSERIALIZED *result;
-  int repeat = 0;
-  int32_t srid = gserialized_get_srid(gser);
-  LWLINE* lwline;
-  LWGEOM* lwresult;
-  POINTARRAY* opa;
-
-  if ( distance_fraction < 0 || distance_fraction > 1 )
-  {
-    elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
-  }
-
-  if ( gserialized_get_type(gser) != LINETYPE )
-  {
-    elog(ERROR,"line_interpolate_point: 1st arg isn't a line");
-  }
-
-  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
-  opa = lwline_interpolate_points(lwline, distance_fraction, repeat);
-
-  lwgeom_free(lwline_as_lwgeom(lwline));
-
-  if (opa->npoints <= 1)
-  {
-    lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
-  } else {
-    lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
-  }
-
-  result = geometry_serialize(lwresult);
-  lwgeom_free(lwresult);
-
-  return result;
-}
-
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
  *****************************************************************************/
+
+static char
+is_point(const GSERIALIZED* g)
+{
+  int type = gserialized_get_type(g);
+  return type == POINTTYPE || type == MULTIPOINTTYPE;
+}
+
+static char
+is_poly(const GSERIALIZED* g)
+{
+    int type = gserialized_get_type(g);
+    return type == POLYGONTYPE || type == MULTIPOLYGONTYPE;
+}
+
+bool
+PGIS_ST_Intersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+{
+  int result;
+  GBOX box1, box2;
+
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
+  /* A.Intersects(Empty) == FALSE */
+  if ( gserialized_is_empty(geom1) || gserialized_is_empty(geom2) )
+      return false;
+
+  /*
+   * short-circuit 1: if geom2 bounding box does not overlap
+   * geom1 bounding box we can return FALSE.
+   */
+  if ( gserialized_get_gbox_p(geom1, &box1) &&
+          gserialized_get_gbox_p(geom2, &box2) )
+  {
+    if ( gbox_overlaps_2d(&box1, &box2) == LW_FALSE )
+      return false;
+  }
+
+  /*
+   * short-circuit 2: if the geoms are a point and a polygon,
+   * call the point_outside_polygon function.
+   */
+  if ((is_point(geom1) && is_poly(geom2)) || (is_poly(geom1) && is_point(geom2)))
+  {
+    const GSERIALIZED *gpoly = is_poly(geom1) ? geom1 : geom2;
+    const GSERIALIZED *gpoint = is_point(geom1) ? geom1 : geom2;
+    int retval;
+
+    LWGEOM *poly = lwgeom_from_gserialized(gpoly);
+    int32 polytype = lwgeom_get_type(poly);
+    int pip_result;
+    if (gserialized_get_type(gpoint) == POINTTYPE)
+    {
+      LWGEOM *point = lwgeom_from_gserialized(gpoint);
+      if ( polytype == POLYGONTYPE )
+        pip_result = point_in_polygon(lwgeom_as_lwpoly(poly),
+          lwgeom_as_lwpoint(point));
+      else /* polytype == MULTIPOLYGONTYPE */
+        pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly),
+          lwgeom_as_lwpoint(point));
+      lwgeom_free(point);
+      retval = (pip_result != -1); /* not outside */
+    }
+    else /* gserialized_get_type(gpoint) == MULTIPOINTTYPE */
+    {
+      LWMPOINT* mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gpoint));
+      int found_completely_inside = LW_FALSE;
+      retval = LW_TRUE;
+      for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+      {
+        /* We need to find at least one point that's completely inside the
+         * polygons (pip_result == 1).  As long as we have one point that's
+         * completely inside, we can have as many as we want on the boundary
+         * itself. (pip_result == 0)
+         */
+         if ( polytype == POLYGONTYPE )
+          pip_result = point_in_polygon(lwgeom_as_lwpoly(poly), mpoint->geoms[i]);
+        else /* polytype == MULTIPOLYGONTYPE */
+          pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly), mpoint->geoms[i]);
+        if (pip_result == 1)
+          found_completely_inside = LW_TRUE;
+
+        if (pip_result == -1) /* completely outside */
+        {
+          retval = LW_FALSE;
+          break;
+        }
+      }
+      lwmpoint_free(mpoint);
+      retval = retval && found_completely_inside;
+    }
+    lwgeom_free(poly);
+    retval = (pip_result != -1); /* not outside */
+  }
+
+  initGEOS(lwpgnotice, lwgeom_geos_error);
+
+  GEOSGeometry *g1;
+  GEOSGeometry *g2;
+  g1 = POSTGIS2GEOS(geom1);
+  if (!g1)
+    elog(ERROR, "First argument geometry could not be converted to GEOS");
+  g2 = POSTGIS2GEOS(geom2);
+  if (!g2)
+  {
+    GEOSGeom_destroy(g1);
+    elog(ERROR, "Second argument geometry could not be converted to GEOS");
+  }
+  result = GEOSIntersects( g1, g2);
+  GEOSGeom_destroy(g1);
+  GEOSGeom_destroy(g2);
+
+  if (result == 2)
+    elog(ERROR, "GEOSIntersects returned error");
+
+  return result;
+}
 
 /**
  * @brief Return true if the 3D geometries intersect

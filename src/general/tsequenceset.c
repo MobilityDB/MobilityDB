@@ -1143,6 +1143,8 @@ tsequenceset_sequences_p(const TSequenceSet *ts)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of sequences of a temporal sequence set.
+ * @post The output parameter @p count is equal to the number of sequences of
+ * the input temporal sequence set
  */
 TSequence **
 tsequenceset_sequences(const TSequenceSet *ts, int *count)
@@ -1241,6 +1243,8 @@ tsequenceset_inst_n(const TSequenceSet *ts, int n)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the distinct instants of a temporal sequence set.
+ * @post The output parameter @p count is equal to the number of instants of
+ * the input temporal sequence set
  */
 const TInstant **
 tsequenceset_instants(const TSequenceSet *ts, int *count)
@@ -1967,6 +1971,11 @@ tnumberseqset_restrict_spans(const TSequenceSet *ts, Span **normspans,
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) its
  * minimum/maximum base value
+ *
+ * @param[in] ts Temporal sequence set
+ * @param[in] min True when restricted to the minumum value, false for the
+ * maximum value
+ * @param[in] atfunc True when the restriction is at, false for minus
  */
 TSequenceSet *
 tsequenceset_restrict_minmax(const TSequenceSet *ts, bool min, bool atfunc)

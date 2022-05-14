@@ -926,8 +926,10 @@ basetype_recv(CachedType basetype, StringInfo buf)
     return BoolGetDatum(pg_boolrecv(buf));
   if (basetype == T_INT4)
     return Int32GetDatum(pg_int4recv(buf));
+#if 0 /* not used */
   if (basetype == T_INT8)
     return Int64GetDatum(pg_int8recv(buf));
+#endif /* not used */
   if (basetype == T_FLOAT8)
     return Float8GetDatum(pg_float8recv(buf));
   if (basetype == T_TEXT)
@@ -966,8 +968,10 @@ basetype_send(CachedType basetype, Datum value)
     return pg_boolsend(DatumGetBool(value));
   if (basetype == T_INT4)
     return pg_int4send(DatumGetInt32(value));
+#if 0 /* not used */
   if (basetype == T_INT8)
     return pg_int8send(DatumGetInt64(value));
+#endif /* not used */
   if (basetype == T_FLOAT8)
     return pg_float8send(DatumGetFloat8(value));
   if (basetype == T_TEXT)

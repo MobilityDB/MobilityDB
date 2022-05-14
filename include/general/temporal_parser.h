@@ -61,6 +61,7 @@ extern TBOX *tbox_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
+extern Datum elem_parse(char **str, CachedType basetype);
 extern Span *span_parse(char **str, CachedType spantype, bool make);
 
 extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end,

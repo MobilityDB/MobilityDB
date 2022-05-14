@@ -339,7 +339,7 @@ tinstant_copy(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of base values of a temporal instant.
- * @post The output parameter count is equal to 1
+ * @post The output parameter @p count is equal to 1
  */
 Datum *
 tinstant_values(const TInstant *inst, int *count)
@@ -353,7 +353,7 @@ tinstant_values(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of spans of a temporal instant float.
- * @post The output parameter count is equal to 1
+ * @post The output parameter @p count is equal to 1
  */
 Span **
 tfloatinst_spans(const TInstant *inst, int *count)
@@ -389,7 +389,7 @@ tinstant_period(const TInstant *inst, Period *p)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal instant.
- * @post The output parameter count is equal to 1
+ * @post The output parameter @p count is equal to 1
  */
 TSequence **
 tinstant_sequences(const TInstant *inst, int *count)
@@ -404,7 +404,7 @@ tinstant_sequences(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of timestamps of a temporal instant.
- * @post The output parameter count is equal to 1
+ * @post The output parameter @p count is equal to 1
  */
 TimestampTz *
 tinstant_timestamps(const TInstant *inst, int *count)
@@ -418,7 +418,7 @@ tinstant_timestamps(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of instants of a temporal instant.
- * @post The output parameter count is equal to 1
+ * @post The output parameter @p count is equal to 1
  */
 const TInstant **
 tinstant_instants(const TInstant *inst, int *count)

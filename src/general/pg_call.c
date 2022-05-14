@@ -255,6 +255,7 @@ pg_int8out(int64 val)
   return result;
 }
 
+#if 0 /* not used */
 /**
  * @brief Convert an int8 to binary format
  * @note PostgreSQL function: Datum int8send(PG_FUNCTION_ARGS)
@@ -277,6 +278,7 @@ pg_int8recv(StringInfo buf)
 {
   return pq_getmsgint64(buf);
 }
+#endif /* not used */
 
 /*****************************************************************************
  * Functions adapted from float.c
@@ -894,8 +896,9 @@ pg_hashfloat8(float8 key)
   return DatumGetUInt32(hash_any((unsigned char *) &key, sizeof(key)));
 }
 
+#if 0 /* not used */
 /*
- * @brief Get the 64-bit hash value of an float64 value.
+ * @brief Get the 64-bit hash value of a float64 value.
  * @note PostgreSQL function: Datum hashfloat8extended(PG_FUNCTION_ARGS)
  */
 uint64
@@ -909,6 +912,7 @@ pg_hashfloat8extended(float8 key, uint64 seed)
   return DatumGetUInt64(hash_any_extended((unsigned char *) &key, sizeof(key),
     seed));
 }
+#endif /* not used */
 
 /*
  * @brief Get the 32-bit hash value of an text value.

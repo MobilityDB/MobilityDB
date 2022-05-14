@@ -255,7 +255,7 @@ tbox_parse(char **str)
     elog(ERROR, "Could not parse TBOX");
 
   /* Parse double opening parenthesis */
-  if (!p_oparen(str) || !p_oparen(str))
+  if (! p_oparen(str) || ! p_oparen(str))
     elog(ERROR, "Could not parse TBOX: Missing opening parenthesis");
 
   /* Determine whether there is an X dimension */
@@ -430,7 +430,6 @@ span_parse(char **str, CachedType spantype, bool make)
     elog(ERROR, "Could not parse span");
 
   CachedType basetype = spantype_basetype(spantype);
-  // Oid basetypid = type_oid(basetype);
   /* The next two instructions will throw an exception if they fail */
   Datum lower = elem_parse(str, basetype);
   p_comma(str);
