@@ -430,8 +430,57 @@ is_poly(const GSERIALIZED* g)
     return type == POLYGONTYPE || type == MULTIPOLYGONTYPE;
 }
 
+static int
+MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+{
+  const GSERIALIZED *gpoly = is_poly(geom1) ? geom1 : geom2;
+  const GSERIALIZED *gpoint = is_point(geom1) ? geom1 : geom2;
+
+  LWGEOM *poly = lwgeom_from_gserialized(gpoly);
+  int32 polytype = lwgeom_get_type(poly);
+  int retval;
+  if (gserialized_get_type(gpoint) == POINTTYPE)
+  {
+    LWGEOM *point = lwgeom_from_gserialized(gpoint);
+    if ( polytype == POLYGONTYPE )
+      retval = point_in_polygon(lwgeom_as_lwpoly(poly),
+        lwgeom_as_lwpoint(point));
+    else /* polytype == MULTIPOLYGONTYPE */
+      retval = point_in_multipolygon(lwgeom_as_lwmpoly(poly),
+        lwgeom_as_lwpoint(point));
+    lwgeom_free(point);
+    lwgeom_free(poly);
+    return retval;
+  }
+  else /* gserialized_get_type(gpoint) == MULTIPOINTTYPE */
+  {
+    LWMPOINT* mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gpoint));
+    for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+    {
+      /* We need to find at least one point that's completely inside the
+       * polygons (pip_result == 1).  As long as we have one point that's
+       * completely inside, we can have as many as we want on the boundary
+       * itself. (pip_result == 0)
+       */
+       int pip_result;
+       if ( polytype == POLYGONTYPE )
+        pip_result = point_in_polygon(lwgeom_as_lwpoly(poly), mpoint->geoms[i]);
+      else /* polytype == MULTIPOLYGONTYPE */
+        pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly), mpoint->geoms[i]);
+      /* Since we use the same function for intersects and contains we cannot
+       * break on pip_result != 1 for intersects or pip_presult == 1 for
+       * contains */
+      retval = Max(retval, pip_result);
+    }
+    lwmpoint_free(mpoint);
+    lwgeom_free(poly);
+    return retval;
+  }
+}
+
 bool
-PGIS_ST_Intersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  bool inter)
 {
   int result;
   GBOX box1, box2;
@@ -459,55 +508,10 @@ PGIS_ST_Intersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
    */
   if ((is_point(geom1) && is_poly(geom2)) || (is_poly(geom1) && is_point(geom2)))
   {
-    const GSERIALIZED *gpoly = is_poly(geom1) ? geom1 : geom2;
-    const GSERIALIZED *gpoint = is_point(geom1) ? geom1 : geom2;
-    int retval;
-
-    LWGEOM *poly = lwgeom_from_gserialized(gpoly);
-    int32 polytype = lwgeom_get_type(poly);
-    int pip_result;
-    if (gserialized_get_type(gpoint) == POINTTYPE)
-    {
-      LWGEOM *point = lwgeom_from_gserialized(gpoint);
-      if ( polytype == POLYGONTYPE )
-        pip_result = point_in_polygon(lwgeom_as_lwpoly(poly),
-          lwgeom_as_lwpoint(point));
-      else /* polytype == MULTIPOLYGONTYPE */
-        pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly),
-          lwgeom_as_lwpoint(point));
-      lwgeom_free(point);
-      retval = (pip_result != -1); /* not outside */
-    }
-    else /* gserialized_get_type(gpoint) == MULTIPOINTTYPE */
-    {
-      LWMPOINT* mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gpoint));
-      int found_completely_inside = LW_FALSE;
-      retval = LW_TRUE;
-      for (uint32_t i = 0; i < mpoint->ngeoms; i++)
-      {
-        /* We need to find at least one point that's completely inside the
-         * polygons (pip_result == 1).  As long as we have one point that's
-         * completely inside, we can have as many as we want on the boundary
-         * itself. (pip_result == 0)
-         */
-         if ( polytype == POLYGONTYPE )
-          pip_result = point_in_polygon(lwgeom_as_lwpoly(poly), mpoint->geoms[i]);
-        else /* polytype == MULTIPOLYGONTYPE */
-          pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly), mpoint->geoms[i]);
-        if (pip_result == 1)
-          found_completely_inside = LW_TRUE;
-
-        if (pip_result == -1) /* completely outside */
-        {
-          retval = LW_FALSE;
-          break;
-        }
-      }
-      lwmpoint_free(mpoint);
-      retval = retval && found_completely_inside;
-    }
-    lwgeom_free(poly);
-    retval = (pip_result != -1); /* not outside */
+    int pip_result = MOBDB_point_in_polygon(geom1, geom2);
+    return inter ?
+      (pip_result != -1) : /* not outside */
+      (pip_result == 1); /* inside */
   }
 
   initGEOS(lwpgnotice, lwgeom_geos_error);
@@ -523,12 +527,17 @@ PGIS_ST_Intersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
     GEOSGeom_destroy(g1);
     elog(ERROR, "Second argument geometry could not be converted to GEOS");
   }
-  result = GEOSIntersects( g1, g2);
+  result = inter ? GEOSIntersects(g1, g2) : GEOSContains(g1, g2);
   GEOSGeom_destroy(g1);
   GEOSGeom_destroy(g2);
 
   if (result == 2)
-    elog(ERROR, "GEOSIntersects returned error");
+  {
+    if (inter)
+      elog(ERROR, "GEOSIntersects returned error");
+    else
+      elog(ERROR, "GEOSContains returned error");
+  }
 
   return result;
 }

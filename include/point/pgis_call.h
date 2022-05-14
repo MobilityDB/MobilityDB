@@ -73,8 +73,8 @@ extern bool PGIS_lwgeom_lt(GSERIALIZED *g1, GSERIALIZED *g2);
 
 /* Functions adapted from lwgeom_geos.c */
 
-extern bool PGIS_ST_Intersects(const GSERIALIZED *geom1,
-  const GSERIALIZED *geom2);
+extern bool PGIS_inter_contains(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2, bool inter);
 extern GSERIALIZED *PGIS_ST_Intersection(GSERIALIZED *geom1,
   GSERIALIZED *geom2);
 
