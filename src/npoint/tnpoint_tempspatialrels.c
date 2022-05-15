@@ -58,7 +58,7 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  GSERIALIZED *geo = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
+  GSERIALIZED *geo = DatumGetGserializedP(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(tempgeom, geo, tinter,
     restr, atvalue);
@@ -143,7 +143,7 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  GSERIALIZED *geo = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
+  GSERIALIZED *geo = DatumGetGserializedP(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo(tempgeom, geo, restr, atvalue);
   pfree(tempgeom);

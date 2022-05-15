@@ -430,15 +430,22 @@ is_poly(const GSERIALIZED* g)
     return type == POLYGONTYPE || type == MULTIPOLYGONTYPE;
 }
 
+/**
+ * @brief Return -1, 0, or 1 depending on whether a (multi)point is completely
+ * outside, on the boundary, or completely inside a (multi)polygon
+ * @note This function is based PostGIS function pip_short_circuit bypassing
+ * the cache
+ */
 static int
-MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  bool inter)
 {
   const GSERIALIZED *gpoly = is_poly(geom1) ? geom1 : geom2;
   const GSERIALIZED *gpoint = is_point(geom1) ? geom1 : geom2;
 
   LWGEOM *poly = lwgeom_from_gserialized(gpoly);
   int32 polytype = lwgeom_get_type(poly);
-  int retval;
+  int retval = -1; /* Initialize to completely outside */
   if (gserialized_get_type(gpoint) == POINTTYPE)
   {
     LWGEOM *point = lwgeom_from_gserialized(gpoint);
@@ -468,9 +475,11 @@ MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
       else /* polytype == MULTIPOLYGONTYPE */
         pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly), mpoint->geoms[i]);
       /* Since we use the same function for intersects and contains we cannot
-       * break on pip_result != 1 for intersects or pip_presult == 1 for
+       * break on pip_result != -1 for intersects or pip_presult == 1 for
        * contains */
       retval = Max(retval, pip_result);
+      if ((inter && retval != -1)|| (!inter && retval == 1))
+        break;
     }
     lwmpoint_free(mpoint);
     lwgeom_free(poly);
@@ -478,6 +487,48 @@ MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   }
 }
 
+/**
+ * @brief Transform the GSERIALIZED geometries into GEOSGeometry and
+ * call the GEOS function passed as argument
+ */
+char
+MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
+{
+  initGEOS(lwpgnotice, lwgeom_geos_error);
+
+  GEOSGeometry *g1;
+  GEOSGeometry *g2;
+  g1 = POSTGIS2GEOS(geom1);
+  if (!g1)
+    elog(ERROR, "First argument geometry could not be converted to GEOS");
+  g2 = POSTGIS2GEOS(geom2);
+  if (!g2)
+  {
+    GEOSGeom_destroy(g1);
+    elog(ERROR, "Second argument geometry could not be converted to GEOS");
+  }
+
+  char result = func(g1, g2);
+
+  GEOSGeom_destroy(g1);
+  GEOSGeom_destroy(g2);
+
+  if (result == 2)
+    elog(ERROR, "GEOS returned error");
+
+  return result;
+}
+
+/**
+ * @brief Return true if the geometries intersect or the first contains
+ * the other
+ *
+ * @param[in] geom1,geom2, Geometries
+ * @param[in] inter: True when performing intersection, fals for contains
+ * @note PostGIS functions: Datum ST_Intersects(PG_FUNCTION_ARGS) and
+ * Datum contains(PG_FUNCTION_ARGS)
+ */
 bool
 PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   bool inter)
@@ -508,36 +559,52 @@ PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
    */
   if ((is_point(geom1) && is_poly(geom2)) || (is_poly(geom1) && is_point(geom2)))
   {
-    int pip_result = MOBDB_point_in_polygon(geom1, geom2);
+    int pip_result = MOBDB_point_in_polygon(geom1, geom2, inter);
     return inter ?
       (pip_result != -1) : /* not outside */
       (pip_result == 1); /* inside */
   }
 
-  initGEOS(lwpgnotice, lwgeom_geos_error);
+  /* Call GEOS function */
+  result = (int) MOBDB_call_geos(geom1, geom2, &GEOSIntersects);
 
-  GEOSGeometry *g1;
-  GEOSGeometry *g2;
-  g1 = POSTGIS2GEOS(geom1);
-  if (!g1)
-    elog(ERROR, "First argument geometry could not be converted to GEOS");
-  g2 = POSTGIS2GEOS(geom2);
-  if (!g2)
-  {
-    GEOSGeom_destroy(g1);
-    elog(ERROR, "Second argument geometry could not be converted to GEOS");
-  }
-  result = inter ? GEOSIntersects(g1, g2) : GEOSContains(g1, g2);
-  GEOSGeom_destroy(g1);
-  GEOSGeom_destroy(g2);
+  return result;
+}
 
-  if (result == 2)
+
+/**
+ * @brief Return true if the geometries touch
+ * @note PostGIS function: Datum touches(PG_FUNCTION_ARGS)
+ * @note With respect to the original function we do not use the prec
+ * argument
+ */
+bool
+PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+{
+  char result;
+  GBOX box1, box2;
+
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
+  /* A.Touches(Empty) == FALSE */
+  if ( gserialized_is_empty(geom1) || gserialized_is_empty(geom2) )
+    return false;
+
+  /*
+   * short-circuit 1: if geom2 bounding box does not overlap
+   * geom1 bounding box we can return FALSE.
+   */
+  if ( gserialized_get_gbox_p(geom1, &box1) &&
+      gserialized_get_gbox_p(geom2, &box2) )
   {
-    if (inter)
-      elog(ERROR, "GEOSIntersects returned error");
-    else
-      elog(ERROR, "GEOSContains returned error");
+    if ( gbox_overlaps_2d(&box1, &box2) == LW_FALSE )
+    {
+      return false;
+    }
   }
+
+  /* Call GEOS function */
+  result = (int) MOBDB_call_geos(geom1, geom2, &GEOSTouches);
 
   return result;
 }

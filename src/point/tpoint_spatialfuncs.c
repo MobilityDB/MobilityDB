@@ -130,7 +130,7 @@ store_fcinfo(FunctionCallInfo fcinfo)
 POINT2D
 datum_point2d(Datum geom)
 {
-  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = DatumGetGserializedP(geom);
   POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
   return *point;
 }
@@ -141,7 +141,7 @@ datum_point2d(Datum geom)
 POINT3DZ
 datum_point3dz(Datum geom)
 {
-  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = DatumGetGserializedP(geom);
   POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
   return *point;
 }
@@ -153,7 +153,7 @@ datum_point3dz(Datum geom)
 void
 datum_point4d(Datum geom, POINT4D *p)
 {
-  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = DatumGetGserializedP(geom);
   memset(p, 0, sizeof(POINT4D));
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
@@ -179,7 +179,7 @@ datum_point4d(Datum geom, POINT4D *p)
 const POINT2D *
 datum_point2d_p(Datum geom)
 {
-  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = DatumGetGserializedP(geom);
   return (POINT2D *) GS_POINT_PTR(gs);
 }
 
@@ -198,7 +198,7 @@ gserialized_point2d_p(const GSERIALIZED *gs)
 const POINT3DZ *
 datum_point3dz_p(Datum geom)
 {
-  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = DatumGetGserializedP(geom);
   return (POINT3DZ *) GS_POINT_PTR(gs);
 }
 
@@ -217,8 +217,8 @@ gserialized_point3dz_p(const GSERIALIZED *gs)
 bool
 datum_point_eq(Datum geopoint1, Datum geopoint2)
 {
-  const GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(geopoint1);
-  const GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(geopoint2);
+  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
   if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
     FLAGS_GET_Z(GS_FLAGS(gs1)) != FLAGS_GET_Z(GS_FLAGS(gs2)) ||
     FLAGS_GET_GEODETIC(GS_FLAGS(gs1)) != FLAGS_GET_GEODETIC(GS_FLAGS(gs2)))
@@ -313,9 +313,8 @@ Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = Float8GetDatum(PGIS_ST_Distance(
-    (GSERIALIZED *) DatumGetPointer(geom1),
-    (GSERIALIZED *) DatumGetPointer(geom2)));
+  Datum result = Float8GetDatum(PGIS_ST_Distance(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
   return result;
 #else
   return call_function2(distance, geom1, geom2);
@@ -329,9 +328,8 @@ Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = Float8GetDatum(PGIS_ST_3DDistance(
-    (GSERIALIZED *) DatumGetPointer(geom1),
-    (GSERIALIZED *) DatumGetPointer(geom2)));
+  Datum result = Float8GetDatum(PGIS_ST_3DDistance(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
   return result;
 #else
   return call_function2(distance3d, geom1, geom2);
@@ -377,9 +375,8 @@ Datum
 geom_intersection2d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  return PointerGetDatum(PGIS_ST_Intersection(
-    (GSERIALIZED *) DatumGetPointer(geom1),
-    (GSERIALIZED *) DatumGetPointer(geom2)));
+  return PointerGetDatum(PGIS_ST_Intersection(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
 #else
   return call_function2(intersection, geom1, geom2);
 #endif
@@ -737,7 +734,7 @@ point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
 static bool
 point_on_segment(Datum start, Datum end, Datum point)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
+  GSERIALIZED *gs = DatumGetGserializedP(start);
   if (FLAGS_GET_GEODETIC(GS_FLAGS(gs)))
   {
     POINT4D p1, p2, p;
@@ -887,7 +884,7 @@ tpointseqset_ever_eq(const TSequenceSet *ts, Datum value)
 bool
 tpoint_ever_eq(const Temporal *temp, Datum value)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs = DatumGetGserializedP(value);
   if (gserialized_is_empty(gs))
     return false;
   ensure_point_type(gs);
@@ -982,7 +979,7 @@ tpointseqset_always_eq(const TSequenceSet *ts, Datum value)
 bool
 tpoint_always_eq(const Temporal *temp, Datum value)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs = DatumGetGserializedP(value);
   if (gserialized_is_empty(gs))
     return false;
   ensure_point_type(gs);
@@ -1243,7 +1240,7 @@ point_make(double x, double y, double z, bool hasz, bool geodetic,
 Datum
 geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
+  GSERIALIZED *gs = DatumGetGserializedP(start);
   int srid = gserialized_get_srid(gs);
   POINT4D p1, p2, p;
   datum_point4d(start, &p1);
@@ -1288,7 +1285,7 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 long double
 geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
+  GSERIALIZED *gs = DatumGetGserializedP(start);
   long double result;
   if (FLAGS_GET_GEODETIC(GS_FLAGS(gs)))
   {
@@ -1627,7 +1624,7 @@ LWLINE *
 lwline_make(Datum value1, Datum value2)
 {
   /* Obtain the flags and the SRID from the first value */
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
+  GSERIALIZED *gs = DatumGetGserializedP(value1);
   int srid = gserialized_get_srid(gs);
   int hasz = FLAGS_GET_Z(GS_FLAGS(gs));
   int isgeodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
@@ -1681,7 +1678,7 @@ tpointinstset_trajectory(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     Datum value = tinstant_value(tinstantset_inst_n(ti, i));
-    GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ti->count, STEP);
@@ -1712,13 +1709,13 @@ tpointseq_trajectory(const TSequence *seq)
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Remove two consecutive points if they are equal */
   Datum value = tinstant_value(tsequence_inst_n(seq, 0));
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs = DatumGetGserializedP(value);
   points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     value = tinstant_value(tsequence_inst_n(seq, i));
-    gs = (GSERIALIZED *) DatumGetPointer(value);
+    gs = DatumGetGserializedP(value);
     LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
     if (! lwpoint_same(lwpoint, points[k - 1]))
       points[k++] = lwpoint;
@@ -1753,7 +1750,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     Datum traj = tpointseq_trajectory(tsequenceset_seq_n(ts, i));
-    GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
+    GSERIALIZED *gstraj = DatumGetGserializedP(traj);
     int geotype = gserialized_get_type(gstraj);
     if (geotype == POINTTYPE)
       points[l++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gstraj));
@@ -1840,7 +1837,7 @@ tpoint_trajectory(const Temporal *temp)
 int
 tpointinst_srid(const TInstant *inst)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(inst));
   return gserialized_get_srid(gs);
 }
 
@@ -1907,7 +1904,7 @@ TInstant *
 tpointinst_set_srid(const TInstant *inst, int32 srid)
 {
   TInstant *result = tinstant_copy(inst);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(result));
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(result));
   gserialized_set_srid(gs, srid);
   return result;
 }
@@ -1923,7 +1920,7 @@ tpointinstset_set_srid(const TInstantSet *ti, int32 srid)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(result, i);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(inst));
     gserialized_set_srid(gs, srid);
   }
   STBOX *box = tinstantset_bbox_ptr(result);
@@ -1944,12 +1941,12 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(result, i);
-    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    gs = DatumGetGserializedP(tinstant_value_ptr(inst));
     gserialized_set_srid(gs, srid);
   }
   /* Set the SRID of the precomputed trajectory */
   Datum traj = tpointseq_trajectory(result);
-  gs = (GSERIALIZED *) DatumGetPointer(traj);
+  gs = DatumGetGserializedP(traj);
   gserialized_set_srid(gs, srid);
   /* Set the SRID of the bounding box */
   STBOX *box = tsequence_bbox_ptr(result);
@@ -1975,7 +1972,7 @@ tpointseqset_set_srid(const TSequenceSet *ts, int32 srid)
     {
       /* Set the SRID of the composing points */
       const TInstant *inst = tsequence_inst_n(seq, j);
-      gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+      gs = DatumGetGserializedP(tinstant_value_ptr(inst));
       gserialized_set_srid(gs, srid);
     }
     /* Set the SRID of the bounding box */
@@ -2031,7 +2028,7 @@ TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  GSERIALIZED *value = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst));
+  GSERIALIZED *value = DatumGetGserializedP(tinstant_value(inst));
   Datum point = (oper == GEOM_TO_GEOG) ?
     PointerGetDatum(PGIS_geography_from_geometry(value)) :
     PointerGetDatum(PGIS_geometry_from_geography(value));
@@ -2062,7 +2059,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
   for (int i = 0; i < ti->count; i++)
   {
     inst = tinstantset_inst_n(ti, i);
-    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    gs = DatumGetGserializedP(tinstant_value_ptr(inst));
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
@@ -2077,9 +2074,9 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
     PGIS_geography_from_geometry(mpoint_orig) :
     PGIS_geometry_from_geography(mpoint_orig);
 #else
-    (GSERIALIZED *) DatumGetPointer(call_function1(geography_from_geometry,
+    DatumGetGserializedP(call_function1(geography_from_geometry,
       PointerGetDatum(mpoint_orig))) :
-    (GSERIALIZED *) DatumGetPointer(call_function1(geometry_from_geography,
+    DatumGetGserializedP(call_function1(geometry_from_geography,
       PointerGetDatum(mpoint_orig)));
 #endif
   /* Construct the resulting tpoint from the multipoint geometry/geography */
@@ -2115,7 +2112,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    gs = DatumGetGserializedP(tinstant_value_ptr(inst));
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
@@ -2130,9 +2127,9 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
       PGIS_geography_from_geometry(mpoint_orig) :
       PGIS_geometry_from_geography(mpoint_orig);
 #else
-      (GSERIALIZED *) DatumGetPointer(call_function1(geography_from_geometry,
+      DatumGetGserializedP(call_function1(geography_from_geometry,
         PointerGetDatum(mpoint_orig))) :
-      (GSERIALIZED *) DatumGetPointer(call_function1(geometry_from_geography,
+      DatumGetGserializedP(call_function1(geometry_from_geography,
         PointerGetDatum(mpoint_orig)));
 #endif
   /* Construct the resulting tpoint from the multipoint geometry/geography */
@@ -4023,9 +4020,9 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   {
     /* We need to do the comparison in 2D since the Z values returned by PostGIS
      * may not be correct */
-    gs1 = (GSERIALIZED *) DatumGetPointer(tinstant_value_copy(inst1));
-    gs2 = (GSERIALIZED *) DatumGetPointer(tinstant_value_copy(inst2));
-    gs = gserialized_copy((GSERIALIZED *) DatumGetPointer(value));
+    gs1 = DatumGetGserializedP(tinstant_value_copy(inst1));
+    gs2 = DatumGetGserializedP(tinstant_value_copy(inst2));
+    gs = gserialized_copy(DatumGetGserializedP(value));
     FLAGS_SET_Z(GS_FLAGS(gs1), false);
     FLAGS_SET_Z(GS_FLAGS(gs2), false);
     FLAGS_SET_Z(GS_FLAGS(gs), false);
@@ -4587,7 +4584,7 @@ tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
 static Datum
 point2D_add_z(Datum point, Datum z, Datum srid)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+  GSERIALIZED *gs = DatumGetGserializedP(point);
   bool geodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
   const POINT2D *pt = datum_point2d_p(point);
   double z1 = DatumGetFloat8(z);
@@ -4966,7 +4963,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   for (int i = 0; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
   /* Last parameter set to STEP to force the function to return multipoint */
@@ -5026,7 +5023,7 @@ tpointseqset_transform(const TSequenceSet *ts, int srid)
     for (int j = 0; j < seq->count; j++)
     {
       Datum value = tinstant_value(tsequence_inst_n(seq, j));
-      GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+      GSERIALIZED *gsvalue = DatumGetGserializedP(value);
       points[k++] = lwgeom_from_gserialized(gsvalue);
     }
   }
@@ -5435,7 +5432,7 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
 Datum
 datum_round_geo(Datum value, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs = DatumGetGserializedP(value);
   if (gserialized_is_empty(gs))
     return PointerGetDatum(gserialized_copy(gs));
 

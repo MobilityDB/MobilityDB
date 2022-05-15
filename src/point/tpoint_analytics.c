@@ -87,7 +87,7 @@
 static LWPOINT *
 point_to_trajpoint(Datum point, TimestampTz t)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+  GSERIALIZED *gs = DatumGetGserializedP(point);
   int32 srid = gserialized_get_srid(gs);
   double epoch = ((double) t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   LWPOINT *result;
@@ -128,7 +128,7 @@ static Datum
 tpointinstset_to_geo(const TInstantSet *ti)
 {
   const TInstant *inst = tinstantset_inst_n(ti, 0);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(inst));
   int32 srid = gserialized_get_srid(gs);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -605,7 +605,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
 static LWPOINT *
 point_measure_to_geo_measure(Datum point, Datum measure)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+  GSERIALIZED *gs = DatumGetGserializedP(point);
   int32 srid = gserialized_get_srid(gs);
   double d = DatumGetFloat8(measure);
   LWPOINT *result;
@@ -2208,7 +2208,7 @@ tpointinstset_decouple(const TInstantSet *ti, TimestampTz **timesarr,
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
@@ -2241,7 +2241,7 @@ tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }

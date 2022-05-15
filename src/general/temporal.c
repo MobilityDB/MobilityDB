@@ -2108,12 +2108,12 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     STBOX box1, box2;
     temporal_set_bbox(temp, &box1);
     if (tgeo_type(temp->temptype))
-      geo_set_stbox((GSERIALIZED *) DatumGetPointer(value), &box2);
+      geo_set_stbox(DatumGetGserializedP(value), &box2);
 #ifndef MEOS
     else if (temp->temptype == T_TNPOINT)
     {
       Datum geom = npoint_geom(DatumGetNpointP(value));
-      geo_set_stbox((GSERIALIZED *) DatumGetPointer(geom), &box2);
+      geo_set_stbox(DatumGetGserializedP(geom), &box2);
       pfree(DatumGetPointer(geom));
     }
 #endif
@@ -2313,7 +2313,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   if (tgeo_type(temp->temptype))
   {
     /* Test that the geometry is not empty */
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     ensure_point_type(gs);
     ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
     ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -2368,7 +2368,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
     for (int i = 0; i < count; i++)
     {
       /* Test that the geometry is not empty */
-      GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
+      GSERIALIZED *gs = DatumGetGserializedP(values[i]);
       ensure_point_type(gs);
       ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
       ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -5092,7 +5092,7 @@ Temporal_at_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
 /**
- * Restrict a temporal value to the complement of a timestamp
+ * Restrict a temporal value to the complement of a timestamp set
  */
 PGDLLEXPORT Datum
 Temporal_minus_timestampset(PG_FUNCTION_ARGS)

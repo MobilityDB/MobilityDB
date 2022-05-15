@@ -739,7 +739,7 @@ int
 npoint_srid(const Npoint *np)
 {
   Datum line = route_geom(np->rid);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int result = gserialized_get_srid(gs);
   pfree(DatumGetPointer(line));
   return result;
@@ -752,7 +752,7 @@ int
 nsegment_srid(const Nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int result = gserialized_get_srid(gs);
   pfree(DatumGetPointer(line));
   return result;

@@ -137,7 +137,7 @@ tnpointinst_srid(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum line = route_geom(np->rid);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int result = gserialized_get_srid(gs);
   pfree(DatumGetPointer(line));
   return result;

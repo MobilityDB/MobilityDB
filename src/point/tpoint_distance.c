@@ -459,7 +459,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     LWGEOM *point = lwgeom_from_gserialized(gs);
     double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     if (dist < mindist)
@@ -494,7 +494,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     LWGEOM *point = lwgeom_from_gserialized(gs);
     double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     if (dist < mindist)
@@ -567,7 +567,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   /* Constant segment */
   if (datum_point_eq(value1, value2))
   {
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
+    GSERIALIZED *gs = DatumGetGserializedP(value1);
     LWGEOM *point = lwgeom_from_gserialized(gs);
     dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     lwgeom_free(point);
@@ -617,7 +617,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, const LWGEOM *geo,
   {
     /* Instantaneous sequence */
     Datum value1 = tinstant_value(inst1);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
+    GSERIALIZED *gs = DatumGetGserializedP(value1);
     LWGEOM *point = lwgeom_from_gserialized(gs);
     dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     if (dist < mindist)

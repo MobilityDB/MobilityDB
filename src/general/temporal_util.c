@@ -235,11 +235,11 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
       DEFAULT_COLLATION_OID) < 0;
   if (typel == T_GEOMETRY && typel == typer)
-    return gserialized_cmp((GSERIALIZED *) DatumGetPointer(l),
-      (GSERIALIZED *) DatumGetPointer(r)) < 0;
+    return gserialized_cmp(DatumGetGserializedP(l),
+      DatumGetGserializedP(r)) < 0;
   if (typel == T_GEOGRAPHY && typel == typer)
-    return gserialized_cmp((GSERIALIZED *) DatumGetPointer(l),
-      (GSERIALIZED *) DatumGetPointer(r)) < 0;
+    return gserialized_cmp(DatumGetGserializedP(l),
+      DatumGetGserializedP(r)) < 0;
 #ifndef MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -903,9 +903,9 @@ basetype_output(CachedType basetype, Datum value)
   if (basetype == T_TEXT)
     return text_to_cstring(DatumGetTextP(value));
   if (basetype == T_GEOMETRY)
-    return PGIS_LWGEOM_out((GSERIALIZED *) DatumGetPointer(value));
+    return PGIS_LWGEOM_out(DatumGetGserializedP(value));
   if (basetype == T_GEOGRAPHY)
-    return PGIS_geography_out((GSERIALIZED *) DatumGetPointer(value));
+    return PGIS_geography_out(DatumGetGserializedP(value));
 #ifndef MEOS
   if (basetype == T_NPOINT)
     return npoint_out(DatumGetNpointP(value));
@@ -983,9 +983,9 @@ basetype_send(CachedType basetype, Datum value)
   if (basetype == T_DOUBLE4)
     return double4_send(DatumGetDouble4P(value));
   if (basetype == T_GEOMETRY)
-    return PGIS_LWGEOM_send((GSERIALIZED *) DatumGetPointer(value));
+    return PGIS_LWGEOM_send(DatumGetGserializedP(value));
   if (basetype == T_GEOGRAPHY)
-    return PGIS_geography_send((GSERIALIZED *) DatumGetPointer(value));
+    return PGIS_geography_send(DatumGetGserializedP(value));
 #ifndef MEOS
   if (basetype == T_NPOINT)
     return npoint_send(DatumGetNpointP(value));

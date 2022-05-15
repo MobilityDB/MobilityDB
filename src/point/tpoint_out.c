@@ -77,7 +77,7 @@
 static char *
 wkt_out(Oid typid __attribute__((unused)), Datum value)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs = DatumGetGserializedP(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
   char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);

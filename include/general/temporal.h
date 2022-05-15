@@ -441,7 +441,7 @@ typedef struct
       pfree(DatumGetPointer(value)); \
   } while (0)
 
-/*
+/**
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
  * for more details.
@@ -456,6 +456,12 @@ typedef struct
 #define PG_DATUM_NEEDS_DETOAST(datum) \
   (VARATT_IS_EXTENDED((datum)) || VARATT_IS_EXTERNAL((datum)) || \
    VARATT_IS_COMPRESSED((datum)))
+
+/**
+ * @brief Macro for accessing the GSERIALIZED value of a temporal point.
+ * @pre It is assumed that the geometry/geography IS NOT TOASTED
+ */
+#define DatumGetGserializedP(X)      ((GSERIALIZED *) DatumGetPointer(X))
 
 /*****************************************************************************/
 

@@ -71,14 +71,12 @@ Datum
 geom_contains(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_inter_contains(
-    (GSERIALIZED *) DatumGetPointer(geom1),
-    (GSERIALIZED *) DatumGetPointer(geom2), false));
+  Datum result = BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), false));
   return result;
 #else
   return call_function2(contains, geom1, geom2);
 #endif
-// return call_function2(contains, geom1, geom2);
 }
 
 /**
@@ -117,9 +115,8 @@ Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_inter_contains(
-    (GSERIALIZED *) DatumGetPointer(geom1),
-    (GSERIALIZED *) DatumGetPointer(geom2), true));
+  Datum result = BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), true));
   return result;
 #else
   return call_function2(intersects, geom1, geom2);
@@ -133,11 +130,9 @@ Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_ST_3DIntersects(
-    (GSERIALIZED *) DatumGetPointer(geom1),
-    (GSERIALIZED *) DatumGetPointer(geom2)));
+  Datum result = BoolGetDatum(PGIS_ST_3DIntersects(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
   return result;
-  // return call_function2(ST_3DIntersects, geom1, geom2);
 #else
   return call_function2(intersects3d, geom1, geom2);
 #endif
@@ -166,7 +161,13 @@ geog_intersects(Datum geog1, Datum geog2)
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER >= 30000
+  Datum result = BoolGetDatum(PGIS_touches(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
+  return result;
+#else
   return call_function2(touches, geom1, geom2);
+#endif
 }
 
 /**

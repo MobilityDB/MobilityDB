@@ -1031,7 +1031,7 @@ tinstant_hash(const TInstant *inst)
   else if (inst->temptype == T_TTEXT)
     value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
-    value_hash = gserialized_hash((GSERIALIZED *) DatumGetPointer(value));
+    value_hash = gserialized_hash(DatumGetGserializedP(value));
 #ifndef MEOS
   else if (inst->temptype == T_TNPOINT)
   {

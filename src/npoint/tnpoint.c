@@ -94,9 +94,9 @@ tnpointseq_tgeompointseq(const TSequence *seq)
   Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, 0)));
   Datum line = route_geom(np->rid);
   /* We are sure line is not empty */
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int srid = gserialized_get_srid(gs);
-  LWLINE *lwline = (LWLINE *)lwgeom_from_gserialized(gs);
+  LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(gs);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
