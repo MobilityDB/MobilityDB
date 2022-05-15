@@ -574,12 +574,7 @@ span_width(const Span *s)
 Interval *
 period_duration(const Span *s)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   return pg_timestamp_mi(s->upper, s->lower);
-#else
-  return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    s->upper, s->lower));
-#endif
 }
 
 /*****************************************************************************
@@ -756,19 +751,12 @@ span_hash(const Span *s)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   uint32 type_hash = hash_uint32((int32) type);
 
   /* Apply the hash function to each bound */
   uint32 lower_hash = pg_hashint8(s->lower);
   uint32 upper_hash = pg_hashint8(s->upper);
-#else
-  uint32 type_hash = DatumGetUInt32(call_function1(hashint4, type));
 
-  /* Apply the hash function to each bound */
-  uint32 lower_hash = DatumGetUInt32(call_function1(hashint8, s->lower));
-  uint32 upper_hash = DatumGetUInt32(call_function1(hashint8, s->upper));
-#endif
   /* Merge hashes of flags, type, and bounds */
   uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
   result ^= type_hash;
@@ -797,19 +785,12 @@ span_hash_extended(const Span *s, Datum seed)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   type_hash = DatumGetUInt64(hash_uint32_extended(type, seed));
 
   /* Apply the hash function to each bound */
   lower_hash = pg_hashint8extended(s->lower, seed);
   upper_hash = pg_hashint8extended(s->upper, seed);
-#else
-  type_hash = DatumGetUInt64(call_function2(hashint4extended, type, seed));
 
-  /* Apply the hash function to each bound */
-  lower_hash = DatumGetUInt64(call_function2(hashint8extended, s->lower, seed));
-  upper_hash = DatumGetUInt64(call_function2(hashint8extended, s->upper, seed));
-#endif
   /* Merge hashes of flags and bounds */
   result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
     DatumGetInt64(seed)));

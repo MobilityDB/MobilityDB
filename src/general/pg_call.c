@@ -928,4 +928,4 @@ pg_hashtext(text *key)
 }
 /*****************************************************************************/
 
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */

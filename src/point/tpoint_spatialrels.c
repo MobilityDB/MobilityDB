@@ -71,9 +71,8 @@ Datum
 geom_contains(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+  return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), false));
-  return result;
 #else
   return call_function2(contains, geom1, geom2);
 #endif
@@ -115,9 +114,8 @@ Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+  return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), true));
-  return result;
 #else
   return call_function2(intersects, geom1, geom2);
 #endif
@@ -130,9 +128,8 @@ Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_ST_3DIntersects(DatumGetGserializedP(geom1),
+  return BoolGetDatum(PGIS_ST_3DIntersects(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-  return result;
 #else
   return call_function2(intersects3d, geom1, geom2);
 #endif
@@ -145,8 +142,11 @@ Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  return CallerFInfoFunctionCall2(geography_intersects, (fetch_fcinfo())->flinfo,
-    InvalidOid, geog1, geog2);
+  return BoolGetDatum(PGIS_geography_dwithin(
+    DatumGetGserializedP(geog1), DatumGetGserializedP(geog2),
+    DatumGetFloat8(0.0), true));
+  // return CallerFInfoFunctionCall2(geography_intersects, (fetch_fcinfo())->flinfo,
+    // InvalidOid, geog1, geog2);
 #else
   /* We apply the same threshold as PostGIS in the definition of the
    * function ST_Intersects(geography, geography) */
@@ -162,9 +162,8 @@ Datum
 geom_touches(Datum geom1, Datum geom2)
 {
 #if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = BoolGetDatum(PGIS_touches(DatumGetGserializedP(geom1),
+  return BoolGetDatum(PGIS_touches(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-  return result;
 #else
   return call_function2(touches, geom1, geom2);
 #endif
@@ -176,7 +175,12 @@ geom_touches(Datum geom1, Datum geom2)
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
+#if POSTGIS_VERSION_NUMBER >= 30000
+  return BoolGetDatum(PGIS_LWGEOM_dwithin(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
+#else
   return call_function3(LWGEOM_dwithin, geom1, geom2, dist);
+#endif
 }
 
 /**
@@ -185,7 +189,12 @@ geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
+#if POSTGIS_VERSION_NUMBER >= 30000
+  return BoolGetDatum(PGIS_LWGEOM_dwithin3d(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
+#else
   return call_function3(LWGEOM_dwithin3d, geom1, geom2, dist);
+#endif
 }
 
 /**
@@ -194,8 +203,14 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
+#if POSTGIS_VERSION_NUMBER >= 30000
+  return BoolGetDatum(PGIS_geography_dwithin(
+    DatumGetGserializedP(geog1), DatumGetGserializedP(geog2),
+    DatumGetFloat8(dist), true));
+#else
   return CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo,
     InvalidOid, geog1, geog2, dist, BoolGetDatum(true));
+#endif
 }
 
 /*****************************************************************************/
@@ -389,10 +404,17 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 static Datum
 geom_ever_contains(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER >= 30000
+  return BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
+      DatumGetGserializedP(geom2), "T********")) ||
+    BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
+      DatumGetGserializedP(geom2), "***T*****"));
+#else
   return call_function3(relate_pattern, geom1, geom2,
       PointerGetDatum(cstring2text("T********"))) ||
     call_function3(relate_pattern, geom1, geom2,
       PointerGetDatum(cstring2text("***T*****")));
+#endif
 }
 
 /**

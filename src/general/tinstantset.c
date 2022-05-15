@@ -559,12 +559,7 @@ tinstantset_timespan(const TInstantSet *ti)
 {
   TimestampTz lower = tinstantset_start_timestamp(ti);
   TimestampTz upper = tinstantset_end_timestamp(ti);
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   Interval *result = pg_timestamp_mi(upper, lower);
-#else
-  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    TimestampTzGetDatum(upper), TimestampTzGetDatum(lower)));
-#endif
   return result;
 }
 

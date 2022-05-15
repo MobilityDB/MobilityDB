@@ -40,6 +40,7 @@
 #include "point/pgis_call.h"
 
 /* C */
+#include <assert.h>
 #include <float.h>
 /* GEOS */
 #include <geos_c.h>
@@ -400,7 +401,7 @@ PGIS_ST_3DDistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
  * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
  */
 bool
-PGIS_ST_3DIntersects(GSERIALIZED *geom1, GSERIALIZED *geom2)
+PGIS_ST_3DIntersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
   double mindist;
@@ -410,6 +411,53 @@ PGIS_ST_3DIntersects(GSERIALIZED *geom1, GSERIALIZED *geom2)
   /*empty geometries cases should be right handled since return from underlying
     functions should be FLT_MAX which causes false as answer*/
   return (0.0 == mindist);
+}
+
+/**
+ * @brief Return true if the geometries are within the given distance
+ * @note PostGIS function: Datum LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ */
+bool
+PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  double tolerance)
+{
+  if (tolerance < 0)
+    elog(ERROR, "Tolerance cannot be less than zero\n");
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
+
+  if (lwgeom_is_empty(lwgeom1) || lwgeom_is_empty(lwgeom2))
+    return false;
+
+  double mindist = lwgeom_mindistance2d_tolerance(lwgeom1, lwgeom2, tolerance);
+
+  /*empty geometries cases should be right handled since return from underlying
+   functions should be FLT_MAX which causes false as answer*/
+  return (tolerance >= mindist);
+}
+
+/**
+ * @brief Return true if the geometries are within the given distance
+ * @note PostGIS function: Datum LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
+ */
+bool
+PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  double tolerance)
+{
+  if (tolerance < 0)
+    elog(ERROR, "Tolerance cannot be less than zero\n");
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
+
+  double mindist = lwgeom_mindistance3d_tolerance(lwgeom1, lwgeom2, tolerance);
+
+  /*empty geometries cases should be right handled since return from underlying
+   functions should be FLT_MAX which causes false as answer*/
+  return (tolerance >= mindist);
 }
 
 /*****************************************************************************
@@ -491,7 +539,7 @@ MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
  * @brief Transform the GSERIALIZED geometries into GEOSGeometry and
  * call the GEOS function passed as argument
  */
-char
+static char
 MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
 {
@@ -533,7 +581,6 @@ bool
 PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   bool inter)
 {
-  int result;
   GBOX box1, box2;
 
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
@@ -566,22 +613,18 @@ PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   }
 
   /* Call GEOS function */
-  result = (int) MOBDB_call_geos(geom1, geom2, &GEOSIntersects);
+  bool result = (bool) MOBDB_call_geos(geom1, geom2, &GEOSIntersects);
 
   return result;
 }
 
-
 /**
  * @brief Return true if the geometries touch
  * @note PostGIS function: Datum touches(PG_FUNCTION_ARGS)
- * @note With respect to the original function we do not use the prec
- * argument
- */
+  */
 bool
 PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
-  char result;
   GBOX box1, box2;
 
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
@@ -604,9 +647,52 @@ PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   }
 
   /* Call GEOS function */
-  result = (int) MOBDB_call_geos(geom1, geom2, &GEOSTouches);
+  bool result = (bool) MOBDB_call_geos(geom1, geom2, &GEOSTouches);
 
   return result;
+}
+
+/**
+ * @brief Return true if the 3D geometries intersect
+ * @note PostGIS function: Datum relate_pattern(PG_FUNCTION_ARGS)
+ */
+bool
+PGIS_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  char *patt)
+{
+  gserialized_error_if_srid_mismatch(geom1, geom2, __func__);
+
+  /* TODO handle empty */
+
+  initGEOS(lwpgnotice, lwgeom_geos_error);
+
+  GEOSGeometry *g1 = POSTGIS2GEOS(geom1);
+  if (!g1)
+    elog(ERROR, "First argument geometry could not be converted to GEOS");
+  GEOSGeometry *g2 = POSTGIS2GEOS(geom2);
+  if (!g2)
+  {
+    GEOSGeom_destroy(g1);
+    elog(ERROR, "Second argument geometry could not be converted to GEOS");
+  }
+
+  /*
+  ** Need to make sure 't' and 'f' are upper-case before handing to GEOS
+  */
+  for (size_t i = 0; i < strlen(patt); i++ )
+  {
+    if ( patt[i] == 't' ) patt[i] = 'T';
+    if ( patt[i] == 'f' ) patt[i] = 'F';
+  }
+
+  char result = GEOSRelatePattern(g1, g2, patt);
+  GEOSGeom_destroy(g1);
+  GEOSGeom_destroy(g2);
+
+  if (result == 2)
+    elog(ERROR, "GEOSRelatePattern returned error");
+
+  return (bool) result;
 }
 
 /**
@@ -678,6 +764,52 @@ PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
   lwgeom_free(lwgeom);
 
   return length;
+}
+
+/**
+ * @brief Return true if the geographies are within the given distance
+ * @note PostGIS function: Datum geography_dwithin_uncached(PG_FUNCTION_ARGS)
+ * where we use the WGS84 spheroid
+ */
+bool
+PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
+  bool use_spheroid)
+{
+  SPHEROID s;
+
+  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
+
+  /* Initialize spheroid */
+  /* We currently cannot use the following statement since PROJ4 API is not
+   * available directly to MobilityDB. */
+  // spheroid_init_from_srid(gserialized_get_srid(g1), &s);
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  /* Set to sphere if requested */
+  if ( ! use_spheroid )
+    s.a = s.b = s.radius;
+
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
+
+  /* Return FALSE on empty arguments. */
+  if ( lwgeom_is_empty(lwgeom1) || lwgeom_is_empty(lwgeom2) )
+    return false;
+
+  double distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
+
+  /* Clean up */
+  lwgeom_free(lwgeom1);
+  lwgeom_free(lwgeom2);
+
+  /* Something went wrong... should already be eloged, return FALSE */
+  if ( distance < 0.0 )
+  {
+    elog(ERROR, "lwgeom_distance_spheroid returned negative!");
+    return false;
+  }
+
+  return (distance <= tolerance);
 }
 
 /*****************************************************************************

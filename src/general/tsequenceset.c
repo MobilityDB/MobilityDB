@@ -761,12 +761,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
   /* Set the interval to NULL if it is negative or zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   int cmp = pg_interval_cmp(maxt, &intervalzero);
-#else
-  int cmp = call_function2(interval_cmp, PointerGetDatum(maxt),
-    PointerGetDatum(&intervalzero));
-#endif
   if (cmp <= 0)
     maxt = NULL;
 
@@ -1063,12 +1058,7 @@ tsequenceset_timespan(const TSequenceSet *ts)
 {
   const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
   const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   Interval *result = pg_timestamp_mi(seq2->period.upper, seq1->period.lower);
-#else
-  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    seq2->period.upper, seq1->period.lower));
-#endif
   return result;
 }
 
@@ -1076,7 +1066,6 @@ tsequenceset_timespan(const TSequenceSet *ts)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of a temporal sequence set.
  */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 Interval *
 tsequenceset_duration(const TSequenceSet *ts)
 {
@@ -1092,25 +1081,6 @@ tsequenceset_duration(const TSequenceSet *ts)
   }
   return result;
 }
-#else
-Interval *
-tsequenceset_duration(const TSequenceSet *ts)
-{
-  const TSequence *seq = tsequenceset_seq_n(ts, 0);
-  Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
-  for (int i = 1; i < ts->count; i++)
-  {
-    seq = tsequenceset_seq_n(ts, i);
-    Datum interval1 = call_function2(timestamp_mi,
-      TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
-    Datum interval2 = call_function2(interval_pl, result, interval1);
-    pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
-    result = interval2;
-  }
-  return (Interval *) DatumGetPointer(result);
-}
-#endif
 
 /**
  * @ingroup libmeos_temporal_accessor

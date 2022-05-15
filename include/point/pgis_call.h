@@ -65,7 +65,14 @@ extern double PGIS_ST_Distance(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern double PGIS_ST_3DDistance(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
-extern bool PGIS_ST_3DIntersects(GSERIALIZED *geom1, GSERIALIZED *geom2);
+extern bool PGIS_ST_3DIntersects(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2);
+extern bool PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2, double tolerance);
+extern bool PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2, double tolerance);
+extern bool PGIS_relate_pattern(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2, char *patt);
 
 /* Functions adapted from lwgeom_btree.c */
 
@@ -83,6 +90,8 @@ extern GSERIALIZED *PGIS_ST_Intersection(GSERIALIZED *geom1,
 /* Functions adapted from geography_measurement.c */
 
 extern double PGIS_geography_length(GSERIALIZED *g, bool use_spheroid);
+extern bool PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2,
+  double tolerance, bool use_spheroid);
 
 /* Functions adapted from lwgeom_inout.c */
 

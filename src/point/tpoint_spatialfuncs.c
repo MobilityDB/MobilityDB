@@ -2951,21 +2951,16 @@ geom_bearing(Datum point1, Datum point2)
     return 0.0;
   if (fabs(p1->y - p2->y) > MOBDB_EPSILON)
   {
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
     double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
       alpha(p1, p2);
-#else
-    double bearing = DatumGetFloat8(call_function1(datan,
-      Float8GetDatum((p1->x - p2->x) / (p1->y - p2->y)))) + alpha(p1, p2);
-#endif
     if (fabs(bearing) <= MOBDB_EPSILON)
       bearing = 0.0;
     return Float8GetDatum(bearing);
   }
   if (p1->x < p2->x)
-      return Float8GetDatum(M_PI / 2.0);
-    else
-      return Float8GetDatum(M_PI * 3.0 / 2.0);
+    return Float8GetDatum(M_PI / 2.0);
+  else
+    return Float8GetDatum(M_PI * 3.0 / 2.0);
 }
 
 /**
@@ -2995,25 +2990,11 @@ geog_bearing(Datum point1, Datum point2)
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
   double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);
 #endif
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
   double lat = pg_dsin(diffLong) * pg_dcos(lat2);
   double lgt = ( pg_dcos(lat1) * pg_dsin(lat2) ) -
     ( pg_dsin(lat1) * pg_dcos(lat2) * pg_dcos(diffLong) );
   /* Notice that the arguments are inverted, e.g., wrt the atan2 in Python */
   double initial_bearing = pg_datan2(lat, lgt);
-#else
-  double lat = DatumGetFloat8(call_function1(dsin, Float8GetDatum(diffLong))) *
-    DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2)));
-  double lgt =
-    ( DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat1))) *
-      DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat2))) ) -
-    ( DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat1))) *
-      DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2))) *
-      DatumGetFloat8(call_function1(dcos, Float8GetDatum(diffLong))) );
-  /* Notice that the arguments are inverted, e.g., wrt the atan2 in Python */
-  double initial_bearing = DatumGetFloat8(call_function2(datan2,
-    Float8GetDatum(lat), Float8GetDatum(lgt)));
-#endif /* (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000) */
   /* Normalize the bearing from -180° to + 180° (in radians) to
    * 0° to 360° (in radians) */
   double bearing = fmod(initial_bearing + M_PI * 2.0, M_PI * 2.0);

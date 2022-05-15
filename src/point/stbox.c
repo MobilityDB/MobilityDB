@@ -102,23 +102,11 @@ void
 stbox_shift_tscale(const Interval *start, const Interval *duration, STBOX *box)
 {
   assert(start != NULL || duration != NULL);
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   if (start != NULL)
     box->tmin = pg_timestamp_pl_interval(box->tmin, start);
   box->tmax = (duration == NULL) ?
     pg_timestamp_pl_interval(box->tmax, start) :
     pg_timestamp_pl_interval(box->tmin, duration);
-#else
-  if (start != NULL)
-    box->tmin = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(box->tmin),
-      PointerGetDatum(start)));
-  box->tmax = (duration == NULL) ?
-    DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-      TimestampTzGetDatum(box->tmax), PointerGetDatum(start))) :
-    DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-       TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
-#endif
   return;
 }
 
@@ -932,15 +920,8 @@ stbox_expand_temporal(const STBOX *box, const Interval *interval)
 {
   ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
   result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
-#else
-  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
-    TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
-  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
-    TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
-#endif
   return result;
 }
 

@@ -37,12 +37,44 @@
 #ifndef PG_CALL_H
 #define PG_CALL_H
 
+#if POSTGRESQL_VERSION_NUMBER < 140000
+
+#define pg_timestamp_pl_interval(X, Y) \
+  (DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval, \
+    TimestampTzGetDatum(X), PointerGetDatum(Y))))
+#define pg_timestamp_mi_interval(X, Y) \
+  (DatumGetTimestampTz(DirectFunctionCall2(timestamp_mi_interval, \
+    TimestampTzGetDatum(X), PointerGetDatum(Y))))
+#define pg_timestamp_mi(X, Y) \
+  (DatumGetIntervalP(call_function2(timestamp_mi, \
+    TimestampTzGetDatum(X), TimestampTzGetDatum(Y))))
+#define pg_interval_pl(X, Y) \
+  (DatumGetIntervalP(call_function2(interval_pl, \
+    PointerGetDatum(X), PointerGetDatum(Y))))
+#define pg_interval_cmp(X, Y) \
+  (DatumGetInt32(call_function2(interval_cmp, PointerGetDatum(X), \
+    PointerGetDatum(Y))))
+
+#define pg_hashint8(X) \
+  (DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(X))))
+#define pg_hashint8extended(X, Y) \
+  (DatumGetUInt64(call_function2(hashint8extended, \
+      TimestampTzGetDatum(X), Int64GetDatum(Y))))
+
+#define pg_dsin(X) (DatumGetFloat8(call_function1(dsin, Float8GetDatum(X))))
+#define pg_dcos(X) (DatumGetFloat8(call_function1(dcos, Float8GetDatum(X))))
+#define pg_datan(X) (DatumGetFloat8(call_function1(datan, Float8GetDatum(X))))
+#define pg_datan2(X, Y) \
+  (DatumGetFloat8(call_function2(datan2, Float8GetDatum(X), Float8GetDatum(Y))))
+
+#else /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/*****************************************************************************/
+
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
 #include <utils/timestamp.h>
-
-/*****************************************************************************/
 
 /* Functions adadpted from bool.c */
 
@@ -105,6 +137,8 @@ extern uint64 pg_hashint8extended(int64 val, uint64 seed);
 extern uint64 pg_hashfloat8extended(float8 key, uint64 seed);
 extern uint32 pg_hashtext(text *key);
 
-#endif /* PG_CALL_H */
+#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
 
 /*****************************************************************************/
+
+#endif /* PG_CALL_H */
