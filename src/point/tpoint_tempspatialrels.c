@@ -1265,11 +1265,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
-#if POSTGIS_VERSION_NUMBER >= 30000
   Datum bound = PointerGetDatum(PGIS_boundary(gs));
-#else
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-#endif
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
@@ -1313,11 +1309,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
-#if POSTGIS_VERSION_NUMBER >= 30000
   Datum bound = PointerGetDatum(PGIS_boundary(gs));
-#else
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-#endif
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))

@@ -70,12 +70,8 @@
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), false));
-#else
-  return call_function2(contains, geom1, geom2);
-#endif
 }
 
 /**
@@ -113,12 +109,8 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), true));
-#else
-  return call_function2(intersects, geom1, geom2);
-#endif
 }
 
 /**
@@ -127,12 +119,8 @@ geom_intersects2d(Datum geom1, Datum geom2)
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_ST_3DIntersects(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-#else
-  return call_function2(intersects3d, geom1, geom2);
-#endif
 }
 
 /**
@@ -141,18 +129,8 @@ geom_intersects3d(Datum geom1, Datum geom2)
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
-  return BoolGetDatum(PGIS_geography_dwithin(
-    DatumGetGserializedP(geog1), DatumGetGserializedP(geog2),
-    DatumGetFloat8(0.0), true));
-  // return CallerFInfoFunctionCall2(geography_intersects, (fetch_fcinfo())->flinfo,
-    // InvalidOid, geog1, geog2);
-#else
-  /* We apply the same threshold as PostGIS in the definition of the
-   * function ST_Intersects(geography, geography) */
-  double dist = DatumGetFloat8(geog_distance(geog1, geog2));
-  return BoolGetDatum(dist <= DIST_EPSILON);
-#endif
+  return BoolGetDatum(PGIS_geography_dwithin(DatumGetGserializedP(geog1),
+    DatumGetGserializedP(geog2), 0.0, true));
 }
 
 /**
@@ -161,12 +139,8 @@ geog_intersects(Datum geog1, Datum geog2)
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_touches(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-#else
-  return call_function2(touches, geom1, geom2);
-#endif
 }
 
 /**
@@ -175,12 +149,8 @@ geom_touches(Datum geom1, Datum geom2)
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_LWGEOM_dwithin(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
-#else
-  return call_function3(LWGEOM_dwithin, geom1, geom2, dist);
-#endif
 }
 
 /**
@@ -189,12 +159,8 @@ geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_LWGEOM_dwithin3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
-#else
-  return call_function3(LWGEOM_dwithin3d, geom1, geom2, dist);
-#endif
 }
 
 /**
@@ -203,14 +169,8 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
-  return BoolGetDatum(PGIS_geography_dwithin(
-    DatumGetGserializedP(geog1), DatumGetGserializedP(geog2),
-    DatumGetFloat8(dist), true));
-#else
-  return CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo,
-    InvalidOid, geog1, geog2, dist, BoolGetDatum(true));
-#endif
+  return BoolGetDatum(PGIS_geography_dwithin(DatumGetGserializedP(geog1),
+    DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
 }
 
 /*****************************************************************************/
@@ -404,17 +364,10 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 static Datum
 geom_ever_contains(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
       DatumGetGserializedP(geom2), "T********")) ||
     BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
       DatumGetGserializedP(geom2), "***T*****"));
-#else
-  return call_function3(relate_pattern, geom1, geom2,
-      PointerGetDatum(cstring2text("T********"))) ||
-    call_function3(relate_pattern, geom1, geom2,
-      PointerGetDatum(cstring2text("***T*****")));
-#endif
 }
 
 /**
@@ -572,159 +525,6 @@ intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * ST_Boundary function
  *****************************************************************************/
 
-#if POSTGIS_VERSION_NUMBER >= 30000
-/* The boundary function has changed its implementation in version 3.2.
- * This is the version in 3.2.1 */
-LWGEOM *
-lwgeom_boundary(LWGEOM *lwgeom)
-{
-  int32_t srid = lwgeom_get_srid(lwgeom);
-  uint8_t hasz = lwgeom_has_z(lwgeom);
-  uint8_t hasm = lwgeom_has_m(lwgeom);
-
-  switch (lwgeom->type)
-  {
-  case POINTTYPE:
-  case MULTIPOINTTYPE: {
-    return lwgeom_construct_empty(lwgeom->type, srid, hasz, hasm);
-  }
-  case LINETYPE:
-  case CIRCSTRINGTYPE: {
-    if (lwgeom_is_closed(lwgeom) || lwgeom_is_empty(lwgeom))
-      return (LWGEOM *)lwmpoint_construct_empty(srid, hasz, hasm);
-    else
-    {
-      LWLINE *lwline = (LWLINE *)lwgeom;
-      LWMPOINT *lwmpoint = lwmpoint_construct_empty(srid, hasz, hasm);
-      POINT4D pt;
-      getPoint4d_p(lwline->points, 0, &pt);
-      lwmpoint_add_lwpoint(lwmpoint, lwpoint_make(srid, hasz, hasm, &pt));
-      getPoint4d_p(lwline->points, lwline->points->npoints - 1, &pt);
-      lwmpoint_add_lwpoint(lwmpoint, lwpoint_make(srid, hasz, hasm, &pt));
-
-      return (LWGEOM *)lwmpoint;
-    }
-  }
-  case MULTILINETYPE:
-  case MULTICURVETYPE: {
-    LWMLINE *lwmline = (LWMLINE *)lwgeom;
-    POINT4D *out = lwalloc(sizeof(POINT4D) * lwmline->ngeoms * 2);
-    uint32_t n = 0;
-
-    for (uint32_t i = 0; i < lwmline->ngeoms; i++)
-    {
-      LWMPOINT *points = lwgeom_as_lwmpoint(lwgeom_boundary((LWGEOM *)lwmline->geoms[i]));
-      if (!points)
-        continue;
-
-      for (uint32_t k = 0; k < points->ngeoms; k++)
-      {
-        POINT4D pt = getPoint4d(points->geoms[k]->point, 0);
-
-        uint8_t seen = LW_FALSE;
-        for (uint32_t j = 0; j < n; j++)
-        {
-          if (memcmp(&(out[j]), &pt, sizeof(POINT4D)) == 0)
-          {
-            seen = LW_TRUE;
-            out[j] = out[--n];
-            break;
-          }
-        }
-        if (!seen)
-          out[n++] = pt;
-      }
-
-      lwgeom_free((LWGEOM *)points);
-    }
-
-    LWMPOINT *lwmpoint = lwmpoint_construct_empty(srid, hasz, hasm);
-
-    for (uint32_t i = 0; i < n; i++)
-      lwmpoint_add_lwpoint(lwmpoint, lwpoint_make(srid, hasz, hasm, &(out[i])));
-
-    lwfree(out);
-
-    return (LWGEOM *)lwmpoint;
-  }
-  case TRIANGLETYPE: {
-    LWTRIANGLE *lwtriangle = (LWTRIANGLE *)lwgeom;
-    POINTARRAY *points = ptarray_clone_deep(lwtriangle->points);
-    return (LWGEOM *)lwline_construct(srid, 0, points);
-  }
-  case POLYGONTYPE: {
-    LWPOLY *lwpoly = (LWPOLY *)lwgeom;
-
-    LWMLINE *lwmline = lwmline_construct_empty(srid, hasz, hasm);
-    for (uint32_t i = 0; i < lwpoly->nrings; i++)
-    {
-      POINTARRAY *ring = ptarray_clone_deep(lwpoly->rings[i]);
-      lwmline_add_lwline(lwmline, lwline_construct(srid, 0, ring));
-    }
-
-    /* Homogenize the multilinestring to hopefully get a single LINESTRING */
-    LWGEOM *lwout = lwgeom_homogenize((LWGEOM *)lwmline);
-    lwgeom_free((LWGEOM *)lwmline);
-    return lwout;
-  }
-  case CURVEPOLYTYPE: {
-    LWCURVEPOLY *lwcurvepoly = (LWCURVEPOLY *)lwgeom;
-    LWCOLLECTION *lwcol = lwcollection_construct_empty(MULTICURVETYPE, srid, hasz, hasm);
-
-    for (uint32_t i = 0; i < lwcurvepoly->nrings; i++)
-      lwcol = lwcollection_add_lwgeom(lwcol, lwgeom_clone_deep(lwcurvepoly->rings[i]));
-
-    return (LWGEOM *)lwcol;
-  }
-  case MULTIPOLYGONTYPE:
-  case COLLECTIONTYPE:
-  case TINTYPE: {
-    LWCOLLECTION *lwcol = (LWCOLLECTION *)lwgeom;
-    LWCOLLECTION *lwcol_boundary = lwcollection_construct_empty(COLLECTIONTYPE, srid, hasz, hasm);
-
-    for (uint32_t i = 0; i < lwcol->ngeoms; i++)
-      lwcollection_add_lwgeom(lwcol_boundary, lwgeom_boundary(lwcol->geoms[i]));
-
-    LWGEOM *lwout = lwgeom_homogenize((LWGEOM *)lwcol_boundary);
-    lwgeom_free((LWGEOM *)lwcol_boundary);
-
-    return lwout;
-  }
-  default:
-    elog(ERROR, "unsupported geometry type: %s", lwtype_name(lwgeom->type));
-    return NULL;
-  }
-}
-
-/**
- * @brief Return the boundary of a geometry
- * @note PostGIS function: Datum boundary(PG_FUNCTION_ARGS)
- */
-GSERIALIZED *
-PGIS_boundary(const GSERIALIZED *geom1)
-{
-  GSERIALIZED *result;
-  LWGEOM *lwgeom, *lwresult;
-
-  /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
-
-  lwgeom = lwgeom_from_gserialized(geom1);
-  lwresult = lwgeom_boundary(lwgeom);
-  if (!lwresult)
-  {
-    lwgeom_free(lwgeom);
-    return NULL;
-  }
-
-  result = geo_serialize(lwresult);
-
-  lwgeom_free(lwgeom);
-  lwgeom_free(lwresult);
-
-  return result;
-}
-#endif
-
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
@@ -738,11 +538,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-#if POSTGIS_VERSION_NUMBER >= 30000
   Datum bound = PointerGetDatum(PGIS_boundary(gs));
-#else
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-#endif
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
   bool result = false;
   if (! gserialized_is_empty(gsbound))

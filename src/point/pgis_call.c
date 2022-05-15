@@ -95,6 +95,8 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
   {
     /* Construct and serialize point */
     LWPOINT *point = lwpoint_make2d(srid, box->xmin, box->ymin);
+    /* MobilityDB: The above function does not set the geodetic flag */
+    FLAGS_SET_GEODETIC(point->flags, FLAGS_GET_GEODETIC(box->flags));
     result = geometry_serialize(lwpoint_as_lwgeom(point));
     lwpoint_free(point);
   }
@@ -112,6 +114,8 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
 
     /* Construct and serialize linestring */
     line = lwline_construct(srid, NULL, pa);
+    /* MobilityDB: The above function does not set the geodetic flag */
+    FLAGS_SET_GEODETIC(line->flags, FLAGS_GET_GEODETIC(box->flags));
     result = geometry_serialize(lwline_as_lwgeom(line));
     lwline_free(line);
   }
@@ -130,6 +134,8 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     poly = lwpoly_construct_rectangle(LW_FALSE, LW_FALSE, &points[0],
       &points[1], &points[2], &points[3]);
     lwgeom_set_srid(lwpoly_as_lwgeom(poly), srid);
+    /* MobilityDB: The above function does not set the geodetic flag */
+    FLAGS_SET_GEODETIC(poly->flags, FLAGS_GET_GEODETIC(box->flags));
     result = geometry_serialize(lwpoly_as_lwgeom(poly));
     lwpoly_free(poly);
   }
@@ -300,6 +306,159 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
  * Functions adapted from lwgeom_functions_basic.c
  *****************************************************************************/
 
+/* The boundary function has changed its implementation in version 3.2.
+ * This is the version in 3.2.1 */
+LWGEOM *
+PGIS_lwgeom_boundary(LWGEOM *lwgeom)
+{
+  int32_t srid = lwgeom_get_srid(lwgeom);
+  uint8_t hasz = lwgeom_has_z(lwgeom);
+  uint8_t hasm = lwgeom_has_m(lwgeom);
+
+  switch (lwgeom->type)
+  {
+  case POINTTYPE:
+  case MULTIPOINTTYPE: {
+    return lwgeom_construct_empty(lwgeom->type, srid, hasz, hasm);
+  }
+  case LINETYPE:
+  case CIRCSTRINGTYPE: {
+    if (lwgeom_is_closed(lwgeom) || lwgeom_is_empty(lwgeom))
+      return (LWGEOM *)lwmpoint_construct_empty(srid, hasz, hasm);
+    else
+    {
+      LWLINE *lwline = (LWLINE *)lwgeom;
+      LWMPOINT *lwmpoint = lwmpoint_construct_empty(srid, hasz, hasm);
+      POINT4D pt;
+      getPoint4d_p(lwline->points, 0, &pt);
+      lwmpoint_add_lwpoint(lwmpoint, lwpoint_make(srid, hasz, hasm, &pt));
+      getPoint4d_p(lwline->points, lwline->points->npoints - 1, &pt);
+      lwmpoint_add_lwpoint(lwmpoint, lwpoint_make(srid, hasz, hasm, &pt));
+
+      return (LWGEOM *)lwmpoint;
+    }
+  }
+  case MULTILINETYPE:
+  case MULTICURVETYPE: {
+    LWMLINE *lwmline = (LWMLINE *)lwgeom;
+    POINT4D *out = lwalloc(sizeof(POINT4D) * lwmline->ngeoms * 2);
+    uint32_t n = 0;
+
+    for (uint32_t i = 0; i < lwmline->ngeoms; i++)
+    {
+      LWMPOINT *points = lwgeom_as_lwmpoint(PGIS_lwgeom_boundary(
+        (LWGEOM *)lwmline->geoms[i]));
+      if (!points)
+        continue;
+
+      for (uint32_t k = 0; k < points->ngeoms; k++)
+      {
+        POINT4D pt = getPoint4d(points->geoms[k]->point, 0);
+
+        uint8_t seen = LW_FALSE;
+        for (uint32_t j = 0; j < n; j++)
+        {
+          if (memcmp(&(out[j]), &pt, sizeof(POINT4D)) == 0)
+          {
+            seen = LW_TRUE;
+            out[j] = out[--n];
+            break;
+          }
+        }
+        if (!seen)
+          out[n++] = pt;
+      }
+
+      lwgeom_free((LWGEOM *)points);
+    }
+
+    LWMPOINT *lwmpoint = lwmpoint_construct_empty(srid, hasz, hasm);
+
+    for (uint32_t i = 0; i < n; i++)
+      lwmpoint_add_lwpoint(lwmpoint, lwpoint_make(srid, hasz, hasm, &(out[i])));
+
+    lwfree(out);
+
+    return (LWGEOM *)lwmpoint;
+  }
+  case TRIANGLETYPE: {
+    LWTRIANGLE *lwtriangle = (LWTRIANGLE *)lwgeom;
+    POINTARRAY *points = ptarray_clone_deep(lwtriangle->points);
+    return (LWGEOM *)lwline_construct(srid, 0, points);
+  }
+  case POLYGONTYPE: {
+    LWPOLY *lwpoly = (LWPOLY *)lwgeom;
+
+    LWMLINE *lwmline = lwmline_construct_empty(srid, hasz, hasm);
+    for (uint32_t i = 0; i < lwpoly->nrings; i++)
+    {
+      POINTARRAY *ring = ptarray_clone_deep(lwpoly->rings[i]);
+      lwmline_add_lwline(lwmline, lwline_construct(srid, 0, ring));
+    }
+
+    /* Homogenize the multilinestring to hopefully get a single LINESTRING */
+    LWGEOM *lwout = lwgeom_homogenize((LWGEOM *)lwmline);
+    lwgeom_free((LWGEOM *)lwmline);
+    return lwout;
+  }
+  case CURVEPOLYTYPE: {
+    LWCURVEPOLY *lwcurvepoly = (LWCURVEPOLY *)lwgeom;
+    LWCOLLECTION *lwcol = lwcollection_construct_empty(MULTICURVETYPE, srid, hasz, hasm);
+
+    for (uint32_t i = 0; i < lwcurvepoly->nrings; i++)
+      lwcol = lwcollection_add_lwgeom(lwcol, lwgeom_clone_deep(lwcurvepoly->rings[i]));
+
+    return (LWGEOM *)lwcol;
+  }
+  case MULTIPOLYGONTYPE:
+  case COLLECTIONTYPE:
+  case TINTYPE: {
+    LWCOLLECTION *lwcol = (LWCOLLECTION *)lwgeom;
+    LWCOLLECTION *lwcol_boundary = lwcollection_construct_empty(COLLECTIONTYPE, srid, hasz, hasm);
+
+    for (uint32_t i = 0; i < lwcol->ngeoms; i++)
+      lwcollection_add_lwgeom(lwcol_boundary,
+        PGIS_lwgeom_boundary(lwcol->geoms[i]));
+
+    LWGEOM *lwout = lwgeom_homogenize((LWGEOM *)lwcol_boundary);
+    lwgeom_free((LWGEOM *)lwcol_boundary);
+
+    return lwout;
+  }
+  default:
+    elog(ERROR, "unsupported geometry type: %s", lwtype_name(lwgeom->type));
+    return NULL;
+  }
+}
+
+/**
+ * @brief Return the boundary of a geometry
+ * @note PostGIS function: Datum boundary(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_boundary(const GSERIALIZED *geom1)
+{
+  GSERIALIZED *result;
+  LWGEOM *lwgeom, *lwresult;
+
+  /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
+
+  lwgeom = lwgeom_from_gserialized(geom1);
+  lwresult = PGIS_lwgeom_boundary(lwgeom);
+  if (!lwresult)
+  {
+    lwgeom_free(lwgeom);
+    return NULL;
+  }
+
+  result = geo_serialize(lwresult);
+
+  lwgeom_free(lwgeom);
+  lwgeom_free(lwresult);
+
+  return result;
+}
+
 /**
  * @brief Return the shortest 2d line between two geometries
  * @note PostGIS function: Datum LWGEOM_shortestline2d(PG_FUNCTION_ARGS)
@@ -307,18 +466,16 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
 GSERIALIZED *
 PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
-  GSERIALIZED *result;
-  LWGEOM *theline;
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
-  gserialized_error_if_srid_mismatch(geom1, geom2, __func__);
-
-  theline = lwgeom_closest_line(lwgeom1, lwgeom2);
+  LWGEOM *theline = lwgeom_closest_line(lwgeom1, lwgeom2);
 
   if (lwgeom_is_empty(theline))
     return NULL;
 
-  result = geometry_serialize(theline);
+  GSERIALIZED *result = geometry_serialize(theline);
   lwgeom_free(theline);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
@@ -334,18 +491,15 @@ GSERIALIZED *
 PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-  GSERIALIZED *result;
-  LWGEOM *theline;
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
-
-  theline = lwgeom_closest_line_3d(lwgeom1, lwgeom2);
-  // theline = lw_dist3d_distanceline(lwgeom1, lwgeom2, lwgeom1->srid, DIST_MIN);
+  LWGEOM *theline = lwgeom_closest_line_3d(lwgeom1, lwgeom2);
 
   if (lwgeom_is_empty(theline))
     return NULL;
 
-  result = geometry_serialize(theline);
+  GSERIALIZED *result = geometry_serialize(theline);
 
   lwgeom_free(theline);
   lwgeom_free(lwgeom1);
@@ -625,8 +779,6 @@ PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 bool
 PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
-  GBOX box1, box2;
-
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
   /* A.Touches(Empty) == FALSE */
@@ -637,6 +789,7 @@ PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
    * short-circuit 1: if geom2 bounding box does not overlap
    * geom1 bounding box we can return FALSE.
    */
+  GBOX box1, box2;
   if ( gserialized_get_gbox_p(geom1, &box1) &&
       gserialized_get_gbox_p(geom2, &box2) )
   {
@@ -660,7 +813,7 @@ bool
 PGIS_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char *patt)
 {
-  gserialized_error_if_srid_mismatch(geom1, geom2, __func__);
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
   /* TODO handle empty */
 
@@ -728,8 +881,6 @@ PGIS_ST_Intersection(GSERIALIZED *geom1, GSERIALIZED *geom2)
 double
 PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
 {
-  SPHEROID s;
-
   /* Get our geometry object loaded into memory. */
   LWGEOM *lwgeom = lwgeom_from_gserialized(g);
 
@@ -745,6 +896,7 @@ PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
   /* We currently cannot use the following statement since PROJ4 API is not
    * available directly to MobilityDB. */
   // spheroid_init_from_srid(gserialized_get_srid(g), &s);
+  SPHEROID s;
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* User requests spherical calculation, turn our spheroid into a sphere */
@@ -810,6 +962,59 @@ PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
   }
 
   return (distance <= tolerance);
+}
+
+/* Defined in liblwgeom_internal.h */
+#define PGIS_FP_TOLERANCE 1e-12
+
+/**
+ * @brief Return the distance between two geographies
+ * @note PostGIS function: Datum geography_distance_uncached(PG_FUNCTION_ARGS)
+ * @note We set by defaultboth tolerance and use_spheroid and initialize the
+ * spheroid to WGS84
+ * @note Errors return -1 to replace PG_RETURN_NULL()
+ */
+double
+PGIS_geography_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
+{
+  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g1));
+
+  double tolerance = PGIS_FP_TOLERANCE;
+  bool use_spheroid = true;
+
+  /* Initialize spheroid */
+  /* We currently cannot use the following statement since PROJ4 API is not
+   * available directly to MobilityDB. */
+  // spheroid_init_from_srid(gserialized_get_srid(g), &s);
+  SPHEROID s;
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  /* Set to sphere if requested */
+  if ( ! use_spheroid )
+    s.a = s.b = s.radius;
+
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
+
+  /* Return NULL on empty arguments. */
+  if ( lwgeom_is_empty(lwgeom1) || lwgeom_is_empty(lwgeom2) )
+    return -1;
+
+  /* Make sure we have boxes attached */
+  lwgeom_add_bbox_deep(lwgeom1, NULL);
+  lwgeom_add_bbox_deep(lwgeom2, NULL);
+
+  double distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
+
+  /* Clean up */
+  lwgeom_free(lwgeom1);
+  lwgeom_free(lwgeom2);
+
+  /* Something went wrong, negative return... should already be eloged, return NULL */
+  if ( distance < 0.0 )
+    elog(ERROR, "PGIS_geography_distance returned distance < 0.0");
+
+  return distance;
 }
 
 /*****************************************************************************
@@ -1288,7 +1493,7 @@ PGIS_geography_from_geometry(GSERIALIZED *geom)
   geography_valid_type(lwgeom_get_type(lwgeom));
 
   /* Force default SRID */
-  if ( (int)lwgeom->srid <= 0 )
+  if ( (int) lwgeom->srid <= 0 )
   {
     lwgeom->srid = SRID_DEFAULT;
   }

@@ -455,7 +455,6 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
  * @ingroup libmeos_box_cast
  * @brief Cast a spatiotemporal box as a PostGIS geometry
  */
-#if POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000
 Datum
 stbox_to_geometry(const STBOX *box)
 {
@@ -471,37 +470,15 @@ stbox_to_geometry(const STBOX *box)
   {
     GBOX box2d;
     stbox_set_gbox(box, &box2d);
+#if POSTGIS_VERSION_NUMBER >= 30000
     result = PointerGetDatum(PGIS_BOX2D_to_LWGEOM(&box2d, box->srid));
-  }
-  return result;
-}
 #else
-Datum
-stbox_to_geometry(const STBOX *box)
-{
-  ensure_has_X_stbox(box);
-  Datum result;
-  if (MOBDB_FLAGS_GET_Z(box->flags))
-  {
-    BOX3D box3d;
-    stbox_set_box3d(box, &box3d);
-    result = DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(&box3d));
-  }
-  else
-  {
-    GBOX box2d;
-    stbox_set_gbox(box, &box2d);
-    Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(&box2d));
-    GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-    gserialized_set_srid(g, box->srid);
-    result = PointerGetDatum(g);
-    /* We cannot do the following
-    PG_FREE_IF_COPY_P(g, DatumGetPointer(geom));
-    pfree(DatumGetPointer(geom)); */
+    PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
+#endif /* POSTGIS_VERSION_NUMBER >= 30000 */
   }
   return result;
 }
-#endif
+
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX

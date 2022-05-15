@@ -71,9 +71,6 @@ extern int dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 extern int dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum dist);
 
-/* The implementation of this function changed in PostGIS version 3.2 */
-extern GSERIALIZED *PGIS_boundary(const GSERIALIZED *geom1);
-
 /*****************************************************************************/
 
 #endif

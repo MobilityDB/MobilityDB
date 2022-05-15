@@ -912,7 +912,6 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Datum traj = tpoint_trajectory(temp);
-#if POSTGIS_VERSION_NUMBER >= 30000
   GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
   if (geodetic)
     /* Notice that geography_shortestline_internal is a MobilityDB function */
@@ -924,16 +923,6 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
       PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, gs));
   }
   PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
-#else
-  if (geodetic)
-    *result = call_function2(geography_shortestline, traj, PointerGetDatum(gs));
-  else
-  {
-    *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
-      call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
-  }
-#endif
   pfree(DatumGetPointer(traj));
   return true;
 }

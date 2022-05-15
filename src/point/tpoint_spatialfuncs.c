@@ -312,13 +312,8 @@ pt_distance_fn(int16 flags)
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = Float8GetDatum(PGIS_ST_Distance(DatumGetGserializedP(geom1),
+  return Float8GetDatum(PGIS_ST_Distance(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-  return result;
-#else
-  return call_function2(distance, geom1, geom2);
-#endif
 }
 
 /**
@@ -327,13 +322,8 @@ geom_distance2d(Datum geom1, Datum geom2)
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
-  Datum result = Float8GetDatum(PGIS_ST_3DDistance(DatumGetGserializedP(geom1),
+  return Float8GetDatum(PGIS_ST_3DDistance(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-  return result;
-#else
-  return call_function2(distance3d, geom1, geom2);
-#endif
 }
 
 /**
@@ -342,8 +332,8 @@ geom_distance3d(Datum geom1, Datum geom2)
 Datum
 geog_distance(Datum geog1, Datum geog2)
 {
-  return CallerFInfoFunctionCall2(geography_distance, (fetch_fcinfo())->flinfo,
-    InvalidOid, geog1, geog2);
+  return Float8GetDatum(PGIS_geography_distance(DatumGetGserializedP(geog1),
+    DatumGetGserializedP(geog2)));
 }
 
 /**
@@ -374,12 +364,8 @@ pt_distance3d(Datum geom1, Datum geom2)
 Datum
 geom_intersection2d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
   return PointerGetDatum(PGIS_ST_Intersection(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
-#else
-  return call_function2(intersection, geom1, geom2);
-#endif
 }
 
 /*****************************************************************************
@@ -2027,16 +2013,11 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
-#if POSTGIS_VERSION_NUMBER >= 30000
-  GSERIALIZED *value = DatumGetGserializedP(tinstant_value(inst));
+  Datum value = tinstant_value(inst);
+  GSERIALIZED *gsvalue = DatumGetGserializedP(value);
   Datum point = (oper == GEOM_TO_GEOG) ?
-    PointerGetDatum(PGIS_geography_from_geometry(value)) :
-    PointerGetDatum(PGIS_geometry_from_geography(value));
-#else
-  Datum point = (oper == GEOM_TO_GEOG) ?
-    call_function1(geography_from_geometry, tinstant_value(inst)) :
-    call_function1(geometry_from_geography, tinstant_value(inst));
-#endif
+    PointerGetDatum(PGIS_geography_from_geometry(gsvalue)) :
+    PointerGetDatum(PGIS_geometry_from_geography(gsvalue));
   return tinstant_make(point, (oper == GEOM_TO_GEOG) ?
     T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
 }
@@ -2070,15 +2051,8 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
   pfree(points);
   /* Convert the multipoint geometry/geography */
   gs = (oper == GEOM_TO_GEOG) ?
-#if POSTGIS_VERSION_NUMBER >= 30000
     PGIS_geography_from_geometry(mpoint_orig) :
     PGIS_geometry_from_geography(mpoint_orig);
-#else
-    DatumGetGserializedP(call_function1(geography_from_geometry,
-      PointerGetDatum(mpoint_orig))) :
-    DatumGetGserializedP(call_function1(geometry_from_geography,
-      PointerGetDatum(mpoint_orig)));
-#endif
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
@@ -2123,15 +2097,8 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   pfree(points);
   /* Convert the multipoint geometry/geography */
   gs = (oper == GEOM_TO_GEOG) ?
-#if POSTGIS_VERSION_NUMBER >= 30000
-      PGIS_geography_from_geometry(mpoint_orig) :
-      PGIS_geometry_from_geography(mpoint_orig);
-#else
-      DatumGetGserializedP(call_function1(geography_from_geometry,
-        PointerGetDatum(mpoint_orig))) :
-      DatumGetGserializedP(call_function1(geometry_from_geography,
-        PointerGetDatum(mpoint_orig)));
-#endif
+    PGIS_geography_from_geometry(mpoint_orig) :
+    PGIS_geometry_from_geography(mpoint_orig);
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -2342,15 +2309,10 @@ tpointseq_length(const TSequence *seq)
   {
     Datum traj = tpointseq_trajectory(seq);
     /* We are sure that the trajectory is a line */
-#if POSTGIS_VERSION_NUMBER >= 30000
     GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
     double result = PGIS_geography_length(gstraj, true);
     PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
     pfree(DatumGetPointer(traj));
-#else
-    double result = DatumGetFloat8(call_function2(geography_length, traj,
-      BoolGetDatum(true)));
-#endif
     return result;
   }
 }

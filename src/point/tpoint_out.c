@@ -42,7 +42,7 @@
 #include <utils/builtins.h>
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
-#include <liblwgeom_internal.h>
+  #include <liblwgeom_internal.h>
 #endif
 /* MobilityDB */
 #include "general/temporal_catalog.h"
