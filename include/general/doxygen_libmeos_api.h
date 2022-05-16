@@ -194,7 +194,7 @@
  *
  * @defgroup libmeos_temporal_ever Ever/always functions
  * @ingroup libmeos_temporal
- * @brief Comparison functions for temporal types.
+ * @brief Ever/always functions for temporal types.
  *
  * @defgroup libmeos_temporal_comp Comparison functions
  * @ingroup libmeos_temporal
