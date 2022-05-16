@@ -154,8 +154,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include "general/span_ops.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 

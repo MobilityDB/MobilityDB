@@ -102,56 +102,11 @@ extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
 /* Input/output functions */
 
-extern Span *span_in(char *str, CachedType spantype);
-extern char *span_out(const Span *s);
-extern Span *span_recv(StringInfo buf);
-extern bytea *span_send(const Span *s);
-
 extern void span_write(const Span *s, StringInfo buf);
-
-/* Constructors */
-
-extern Span *span_make(Datum lower, Datum upper, bool lower_inc,
-  bool upper_inc, CachedType basetype);
-extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType basetype, Span *s);
-extern Span *span_copy(const Span *s);
-
-/* Casting */
-
-extern Span *elem_to_span(Datum d, CachedType basetype);
-extern Period *timestamp_to_period(TimestampTz t);
-
-/* Accessor functions */
-
-extern Datum span_lower(Span *s);
-extern Datum span_upper(Span *s);
-extern bool span_lower_inc(Span *s);
-extern bool span_upper_inc(Span *s);
-extern double span_width(const Span *s);
-extern Interval *period_duration(const Period *p);
 
 /* Transformation functions */
 
-extern void span_expand(const Span *s1, Span *s2);
 extern Span *floatspan_round(Span *span, Datum size);
-extern void period_shift_tscale(const Interval *start,
-  const Interval *duration, Period *result);
-
-/* Comparison functions */
-
-extern bool span_eq(const Span *s1, const Span *s2);
-extern bool span_ne(const Span *s1, const Span *s2);
-extern int span_cmp(const Span *s1, const Span *s2);
-extern bool span_lt(const Span *s1, const Span *s2);
-extern bool span_le(const Span *s1, const Span *s2);
-extern bool span_ge(const Span *s1, const Span *s2);
-extern bool span_gt(const Span *s1, const Span *s2);
-
-/* Hash functions */
-
-extern uint32 span_hash(const Span *s);
-extern uint64 span_hash_extended(const Span *s, uint64 seed);
 
 /*****************************************************************************/
 

@@ -41,12 +41,8 @@
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/skiplist.h"
-#include "general/timestampset.h"
-#include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************

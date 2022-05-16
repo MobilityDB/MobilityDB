@@ -43,23 +43,15 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
 #endif
-#ifndef MEOS
-  #include <utils/builtins.h>
-#endif
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/span.h"
-#include "general/temporaltypes.h"
 #include "general/doublen.h"
 #include "point/pgis_call.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #ifndef MEOS
   #include "npoint/tnpoint_static.h"
 #endif
-
-extern text *cstring_to_text(const char *s);
-extern char *text_to_cstring(const text *t);
 
 /*****************************************************************************
  * Comparison functions on datums

@@ -100,17 +100,15 @@
 #include <float.h>
 /* PostgreSQL */
 #include <access/spgist.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/spgist_private.h>
 #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/temporal_boxops.h"
+#include <libmeos.h>
 #include "general/tnumber_gist.h"
-#include "general/tnumber_distance.h"
 
 /*****************************************************************************
  * Data structures

@@ -38,10 +38,9 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
@@ -384,10 +383,11 @@ union_span_span(const Span *s1, const Span *s2, bool strict)
  *****************************************************************************/
 
 /**
- * Set the last argument to the intersection of the spans
+ * @ingroup libmeos_spantime_set
+ * @brief Set a span with the result of the intersection of the first two spans
  *
- * @note This function equivalent is to intersection_span_span
- * but avoids memory allocation
+ * @note This function equivalent is to intersection_span_span but avoids
+ * memory allocation
  */
 bool
 inter_span_span(const Span *s1, const Span *s2, Span *result)

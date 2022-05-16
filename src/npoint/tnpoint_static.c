@@ -45,8 +45,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/pgis_call.h"

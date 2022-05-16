@@ -41,19 +41,14 @@
 /* PostgreSQL */
 #include <access/htup_details.h>
 #include <catalog/pg_collation_d.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 #include <utils/selfuncs.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/span_ops.h"
-#include "general/temporal_boxops.h"
-#include "general/temporal_catalog.h"
-#include "general/tbox.h"
 #include "general/span_selfuncs.h"
 #include "general/temporal_analyze.h"
 #include "general/temporal_selfuncs.h"

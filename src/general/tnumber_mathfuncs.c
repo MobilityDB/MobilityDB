@@ -40,16 +40,14 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
+#include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/lifting.h"
 
 /*****************************************************************************
  * Miscellaneous functions on datums

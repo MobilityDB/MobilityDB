@@ -43,9 +43,8 @@
 /* PostgGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -191,7 +190,6 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 }
 
 /**
- * @ingroup libmeos_temporal_similarity
  * @brief Compute the similarity distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
@@ -211,6 +209,33 @@ temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
   pfree(instants1); pfree(instants2);
   return result;
 }
+
+#ifdef MEOS
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Frechet distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+double
+temporal_frechet_distance(Temporal *temp1, Temporal *temp2)
+{
+  return temporal_similarity(temp1, temp2, FRECHET);
+}
+
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Dynamic Time Warp distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+double
+temporal_dyntimewarp_distance(Temporal *temp1, Temporal *temp2)
+{
+  return temporal_similarity(temp1, temp2, DYNTIMEWARP);
+}
+#endif
+
 
 /*****************************************************************************
  * Iterative implementation of the similarity distance with a full matrix
@@ -428,6 +453,32 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
   pfree(instants1); pfree(instants2);
   return result;
 }
+
+#ifdef MEOS
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Frechet distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+double
+temporal_frechet_path(Temporal *temp1, Temporal *temp2)
+{
+  return temporal_similarity_path(temp1, temp2, FRECHET);
+}
+
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Dynamic Time Warp distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+double
+temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2)
+{
+  return temporal_similarity_path(temp1, temp2, DYNTIMEWARP);
+}
+#endif
 
 /*****************************************************************************/
 /*****************************************************************************/

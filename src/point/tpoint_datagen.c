@@ -42,7 +42,6 @@
 #include <access/htup_details.h>
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */
-#include <utils/builtins.h>
 #include <utils/typcache.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
@@ -56,8 +55,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
 #include "point/postgis.h"
 #include "point/tpoint.h"

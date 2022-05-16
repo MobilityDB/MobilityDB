@@ -37,11 +37,10 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/span_ops.h"
+#include <libmeos.h>
 #include "general/periodset.h"
 #include "general/timestampset.h"
 #include "general/temporal_util.h"

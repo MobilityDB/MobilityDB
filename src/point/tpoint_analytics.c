@@ -43,7 +43,6 @@
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
@@ -54,13 +53,8 @@
 #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/lifting.h"
-#include "general/tnumber_mathfuncs.h"
 #include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"

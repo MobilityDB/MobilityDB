@@ -36,10 +36,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/builtins.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/doublen.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_aggfuncs.h"
@@ -61,10 +60,7 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
   TSequence **result)
 {
   TInstant *instants[2];
-  TimestampTz upper = DatumGetTimestampTz(
-    DirectFunctionCall2(timestamptz_pl_interval,
-    TimestampTzGetDatum(inst->t),
-    PointerGetDatum(interval)));
+  TimestampTz upper = pg_timestamp_pl_interval(inst->t, interval);
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), inst->temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
@@ -125,9 +121,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
     /* Stepwise interpolation or constant segment */
     if (! linear || datum_eq(value1, value2, basetype))
     {
-      TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-        timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-        PointerGetDatum(interval)));
+      TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
       instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make(value1, inst1->temptype, upper);
       result[i] = tsequence_make((const TInstant **) instants, 2,
@@ -142,12 +136,8 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
         (datum_gt(value1, value2, basetype) && !min))
       {
         /* Extend the start value for the duration of the window */
-        TimestampTz lower = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(inst1->t),
-          PointerGetDatum(interval)));
-        TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-          PointerGetDatum(interval)));
+        TimestampTz lower = pg_timestamp_pl_interval(inst1->t, interval);
+        TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
         instants[0] = inst1;
         instants[1] = tinstant_make(value1, inst1->temptype, lower);
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
@@ -158,9 +148,8 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
       else
       {
         /* Extend the end value for the duration of the window */
-        TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(seq->period.upper),
-          PointerGetDatum(interval)));
+        TimestampTz upper = pg_timestamp_pl_interval(seq->period.upper,
+          interval);
         instants[0] = inst1;
         instants[1] = inst2;
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
@@ -256,9 +245,7 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc, const Interval *interval)
 {
   TInstant *instants[2];
-  TimestampTz upper1 = DatumGetTimestampTz(DirectFunctionCall2(
-    timestamptz_pl_interval, TimestampTzGetDatum(upper),
-    PointerGetDatum(interval)));
+  TimestampTz upper1 = pg_timestamp_pl_interval(upper, interval);
   instants[0] = tinstant_make(Int32GetDatum(1), T_TINT, lower);
   instants[1] = tinstant_make(Int32GetDatum(1), T_TINT, upper1);
   TSequence *result = tsequence_make((const TInstant **) instants, 2,
@@ -420,9 +407,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
-  TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-    timestamptz_pl_interval, TimestampTzGetDatum(inst->t),
-    PointerGetDatum(interval)));
+  TimestampTz upper = pg_timestamp_pl_interval(inst->t, interval);
   TInstant *instants[2];
   instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
@@ -488,9 +473,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
     double2_set(value, 1, &dvalue);
-    TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-      PointerGetDatum(interval)));
+    TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
     instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst1->t);
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
     result[i] = tsequence_make((const TInstant **) instants, 2,

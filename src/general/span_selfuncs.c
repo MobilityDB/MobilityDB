@@ -43,17 +43,16 @@
 /* PostgreSQL */
 #include <port.h>
 #include <access/htup_details.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include "utils/syscache.h"
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
 #include <utils/timestamp.h>
 #include <math.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/temporal_catalog.h"
 #include "general/span_analyze.h"
 
 /*****************************************************************************/

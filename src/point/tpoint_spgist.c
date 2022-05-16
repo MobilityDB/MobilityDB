@@ -101,22 +101,15 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/spgist.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/spgist_private.h>
 #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporal.h"
-#include "general/span.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/tnumber_spgist.h"
-#include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
-#include "point/tpoint_distance.h"
 #include "point/tpoint_gist.h"
 
 /*****************************************************************************

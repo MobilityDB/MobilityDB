@@ -38,8 +38,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-// #include <lib/stringinfo.h>
-// #include <utils/lsyscache.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/temporal_catalog.h"
@@ -56,6 +54,15 @@
 #ifndef USE_FLOAT8_BYVAL
 #error Postgres needs to be configured with USE_FLOAT8_BYVAL
 #endif
+
+/* To avoid including builtins.h */
+extern text *cstring_to_text(const char *s);
+extern char *text_to_cstring(const text *t);
+
+/* To avoid including fmgrprotos.h */
+extern Datum numeric_float8(PG_FUNCTION_ARGS);
+extern Datum numeric_round(PG_FUNCTION_ARGS);
+extern Datum float8_numeric(PG_FUNCTION_ARGS);
 
 /**
  * Floating point precision
@@ -367,6 +374,16 @@ typedef struct
   double    d;
 } double4;
 
+/**
+ * Struct for storing a similarity match
+ */
+typedef struct
+{
+  int i;
+  int j;
+} Match;
+
+
 /*****************************************************************************
  * Miscellaneous
  *****************************************************************************/
@@ -465,15 +482,6 @@ typedef struct
 
 /*****************************************************************************/
 
-/* Initialization function */
-
-extern void _PG_init(void);
-
-/* Typmod functions */
-
-extern const char *tempsubtype_name(int16 subtype);
-extern bool tempsubtype_from_string(const char *str, int16 *subtype);
-
 /* Parameter tests */
 
 extern void ensure_valid_tempsubtype(int16 type);
@@ -500,9 +508,8 @@ extern void ensure_valid_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
-extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern void temporal_bbox_slice(Datum tempdatum, void *box);
-extern Temporal *temporal_copy(const Temporal *temp);
+
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
 extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
@@ -512,90 +519,12 @@ extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 extern char *mobilitydb_version(void);
 extern char *mobilitydb_full_version(void);
 
-/* Input/output functions */
-
-extern Temporal *temporal_in(char *str, CachedType temptype);
-extern char *temporal_out(const Temporal *temp);
-extern void temporal_write(const Temporal* temp, StringInfo buf);
-extern Temporal* temporal_recv(StringInfo buf);
-
-/* Constructor functions */
-
-extern Temporal *temporal_from_base(Datum value, CachedType basetype,
-  const Temporal *temp, bool linear);
-
-/* Append and merge functions */
-
-extern Temporal *temporal_append_tinstant(const Temporal *temp,
-  const Temporal *inst);
-extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *temporal_merge_array(Temporal **temparr, int count);
-
-/* Cast functions */
-
-extern Span *tint_to_span(const Temporal *temp);
-extern Span *tfloat_to_span(const Temporal *temp);
-extern Temporal *tint_to_tfloat(const Temporal *temp);
-extern Temporal *tfloat_to_tint(const Temporal *temp);
-extern TBOX *tnumber_to_tbox(Temporal *temp);
-
-/* Transformation functions */
-
-extern Temporal *temporal_to_tinstant(const Temporal *temp);
-extern Temporal *temporal_to_tinstantset(const Temporal *temp);
-extern Temporal *temporal_to_tsequence(const Temporal *temp);
-extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
-extern Temporal *temporal_step_to_linear(const Temporal *temp);
-extern Temporal *temporal_shift_tscale(const Temporal *temp, bool shift,
-  bool tscale, Interval *start, Interval *duration);
-
-/* Accessor functions */
-
-extern char *temporal_subtype(const Temporal *temp);
-extern char *temporal_interpolation(const Temporal *temp);
-extern Datum *temporal_values(const Temporal *temp, int *count);
-extern Span **tfloat_spans(const Temporal *temp, int *count);
-extern PeriodSet *temporal_time(const Temporal *temp);
-extern Span *tnumber_span(const Temporal *temp);
-extern Datum temporal_start_value(Temporal *temp);
-extern Datum temporal_end_value(Temporal *temp);
-extern const TInstant *temporal_min_instant(const Temporal *temp);
-extern const TInstant *temporal_max_instant(const Temporal *temp);
-extern Datum temporal_min_value(const Temporal *temp);
-extern Datum temporal_max_value(const Temporal *temp);
-extern Interval *temporal_timespan(const Temporal *temp);
-extern Interval *temporal_duration(const Temporal *temp);
-extern void temporal_set_period(const Temporal *temp, Period *p);
-extern int temporal_num_sequences(const Temporal *temp);
-extern TSequence *temporal_start_sequence(const Temporal *temp);
-extern TSequence *temporal_end_sequence(const Temporal *temp);
-extern TSequence *temporal_sequence_n(const Temporal *temp, int i);
-extern TSequence **temporal_sequences(const Temporal *temp, int *count);
-extern TSequence **temporal_segments(const Temporal *temp, int *count);
-extern int temporal_num_instants(const Temporal *temp);
-extern const TInstant *temporal_start_instant(const Temporal *temp);
-extern const TInstant *temporal_end_instant(const Temporal *temp);
-extern const TInstant *temporal_instant_n(Temporal *temp, int n);
-extern const TInstant **temporal_instants(const Temporal *temp,
-  int *count);
-extern int temporal_num_timestamps(const Temporal *temp);
-extern TimestampTz temporal_start_timestamp(const Temporal *temp);
-extern TimestampTz temporal_end_timestamp(Temporal *temp);
-extern bool temporal_timestamp_n(Temporal *temp, int n, TimestampTz *result);
-extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
-
 /* Ever/always equal operators */
 
 extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
   bool ever);
 extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
   bool ever);
-extern bool temporal_ever_eq(const Temporal *temp, Datum value);
-extern bool temporal_always_eq(const Temporal *temp, Datum value);
-extern bool temporal_ever_lt(const Temporal *temp, Datum value);
-extern bool temporal_always_lt(const Temporal *temp, Datum value);
-extern bool temporal_ever_le(const Temporal *temp, Datum value);
-extern bool temporal_always_le(const Temporal *temp, Datum value);
 
 /* Restriction functions */
 
@@ -606,58 +535,6 @@ extern Span **tnumber_bbox_restrict_spans(const Temporal *temp,
   Span **spans, int count, int *newcount);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
   bool atfunc);
-
-extern Temporal *temporal_restrict_value(const Temporal *temp,
-  Datum value, bool atfunc);
-extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values,
-  int count, bool atfunc);
-extern Temporal *tnumber_restrict_span(const Temporal *temp,
- Span *span, bool atfunc);
-extern Temporal *tnumber_restrict_spans(const Temporal *temp,
-  Span **spans, int count, bool atfunc);
-extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
-  TimestampTz t, Datum *value);
-extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t,
-  Datum *result);
-
-extern Temporal *temporal_restrict_timestamp(const Temporal *temp,
-  TimestampTz t, bool atfunc);
-extern Temporal *temporal_restrict_timestampset(const Temporal *temp,
-  const TimestampSet *ts, bool atfunc);
-extern Temporal *temporal_restrict_period(const Temporal *temp,
-  const Period *ps, bool atfunc);
-extern Temporal *temporal_restrict_periodset(const Temporal *temp,
-  const PeriodSet *ps, bool atfunc);
-extern Temporal *tnumber_at_tbox(const Temporal *temp, const TBOX *box);
-extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBOX *box);
-
-/* Intersects functions */
-
-extern bool temporal_intersects_timestamp(const Temporal *temp, TimestampTz t);
-extern bool temporal_intersects_timestampset(const Temporal *temp,
-  const TimestampSet *ts);
-extern bool temporal_intersects_period(const Temporal *temp, const Period *p);
-extern bool temporal_intersects_periodset(const Temporal *temp,
-  const PeriodSet *ps);
-
-/* Local aggregate functions */
-
-extern double tnumber_integral(const Temporal *temp);
-extern double tnumber_twavg(const Temporal *temp);
-
-/* Comparison functions */
-
-extern bool temporal_eq(const Temporal *temp1, const Temporal *temp2);
-extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
-extern int temporal_cmp(const Temporal *temp1, const Temporal *temp2);
-extern bool temporal_lt(const Temporal *temp1, const Temporal *temp2);
-extern bool temporal_le(const Temporal *temp1, const Temporal *temp2);
-extern bool temporal_gt(const Temporal *temp1, const Temporal *temp2);
-extern bool temporal_ge(const Temporal *temp1, const Temporal *temp2);
-
-/* Functions for defining hash index */
-
-extern uint32 temporal_hash(const Temporal *temp);
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -691,6 +568,15 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
   (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
 #define TEMPSUBTYPE_MAX_LEN   13
+
+/* Initialization function */
+
+extern void _PG_init(void);
+
+/* Typmod functions */
+
+extern const char *tempsubtype_name(int16 subtype);
+extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 /* Parameter tests */
 

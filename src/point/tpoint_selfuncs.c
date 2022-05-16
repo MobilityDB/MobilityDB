@@ -41,16 +41,11 @@
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/span_selfuncs.h"
-#include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
 #include "point/postgis.h"
-#include "point/stbox.h"
-#include "point/tpoint.h"
 #include "point/tpoint_analyze.h"
-#include "point/tpoint_boxops.h"
 #include "npoint/tnpoint_selfuncs.h"
 
 /*****************************************************************************

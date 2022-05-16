@@ -38,12 +38,11 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/span.h"
-#include "general/timestampset.h"
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"

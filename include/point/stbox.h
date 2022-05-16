@@ -78,16 +78,6 @@ typedef struct
 
 /* General functions */
 
-extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
-  int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, TimestampTz tmin, TimestampTz tmax);
-extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic,
-  int32 srid, double xmin, double xmax, double ymin, double ymax,
-  double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
-extern STBOX *stbox_copy(const STBOX *box);
-extern void stbox_expand(const STBOX *box1, STBOX *box2);
-extern void stbox_shift_tscale(const Interval *start, const Interval *duration,
-  STBOX *box);
 
 /* Parameter tests */
 
@@ -96,102 +86,41 @@ extern void ensure_has_T_stbox(const STBOX *box);
 
 /* Input/Ouput functions */
 
-extern char *stbox_to_string(const STBOX *box);
-extern void stbox_write(const STBOX *box, StringInfo buf);
-extern STBOX *stbox_read(StringInfo buf);
 
 /* Constructor functions */
 
 
 /* Casting */
 
-extern void stbox_set_gbox(const STBOX *box, GBOX * gbox);
-extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
-extern Datum stbox_to_geometry(const STBOX *box);
 
 /* Set an STBOX from a <Type> */
 
-extern bool geo_set_stbox(const GSERIALIZED *gs, STBOX *box);
-extern void timestamp_set_stbox(TimestampTz t, STBOX *box);
-extern void timestampset_set_stbox(const TimestampSet *ps, STBOX *box);
 extern void timestampset_stbox_slice(Datum tsdatum, STBOX *box);
-extern void period_set_stbox(const Period *p, STBOX *box);
-extern void periodset_set_stbox(const PeriodSet *ps, STBOX *box);
 extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
-extern STBOX *geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t);
-extern STBOX *geo_period_to_stbox(const GSERIALIZED *gs, const Period *p);
 
 /* Accessor functions */
 
-extern bool stbox_hasx(const STBOX *box);
-extern bool stbox_hasz(const STBOX *box);
-extern bool stbox_hast(const STBOX *box);
-extern bool stbox_isgeodetic(const STBOX *box);
-extern bool stbox_xmin(const STBOX *box, double *result);
-extern bool stbox_xmax(const STBOX *box, double *result);
-extern bool stbox_ymin(const STBOX *box, double *result);
-extern bool stbox_ymax(const STBOX *box, double *result);
-extern bool stbox_zmin(const STBOX *box, double *result);
-extern bool stbox_zmax(const STBOX *box, double *result);
-extern bool stbox_tmin(const STBOX *box, TimestampTz *result);
-extern bool stbox_tmax(const STBOX *box, TimestampTz *result);
 
 /* SRID functions */
 
-extern int32 stbox_get_srid(const STBOX *box);
 extern STBOX * stbox_set_srid(const STBOX *box, int32 srid);
 extern STBOX * stbox_transform(const STBOX *box, int32 srid);
 
 /* Transformation functions */
 
-extern STBOX *stbox_expand_spatial(const STBOX *box, double d);
-extern STBOX *stbox_expand_temporal(const STBOX *box, const Interval *interval);
 extern STBOX *stbox_round(const STBOX *box, Datum prec);
 
 /* Topological operators */
 
-extern bool contains_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool contained_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overlaps_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool same_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool adjacent_stbox_stbox(const STBOX *box1, const STBOX *box2);
 
 /* Position operators */
 
-extern bool left_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overleft_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool right_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overright_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool below_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overbelow_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool above_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overabove_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool front_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overfront_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool back_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overback_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool before_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overbefore_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool after_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool overafter_stbox_stbox(const STBOX *box1, const STBOX *box2);
 
 /* Set operators */
 
-extern STBOX *union_stbox_stbox(const STBOX *box1, const STBOX *box2,
-  bool strict);
-extern STBOX *intersection_stbox_stbox(const STBOX *box1, const STBOX *box2);
-extern bool inter_stbox_stbox(const STBOX *box1, const STBOX *box2,
-  STBOX *result);
 
 /* Comparison functions */
 
-extern bool stbox_eq(const STBOX *box1, const STBOX *box2);
-extern bool stbox_ne(const STBOX *box1, const STBOX *box2);
-extern int stbox_cmp(const STBOX *box1, const STBOX *box2);
-extern bool stbox_lt(const STBOX *box1, const STBOX *box2);
-extern bool stbox_le(const STBOX *box1, const STBOX *box2);
-extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
-extern bool stbox_ge(const STBOX *box1, const STBOX *box2);
 
 /*****************************************************************************/
 

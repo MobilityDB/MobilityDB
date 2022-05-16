@@ -38,18 +38,15 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/span_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
@@ -68,7 +65,8 @@ tinstantset_bbox_ptr(const TInstantSet *ti)
 }
 
 /**
- * Copy in the second argument the bounding box of a temporal instant set
+ * @ingroup libmeos_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal instant set
  */
 void
 tinstantset_set_bbox(const TInstantSet *ti, void *box)
@@ -1165,7 +1163,8 @@ tinstantset_restrict_minmax(const TInstantSet *ti, bool min, bool atfunc)
 }
 
 /**
- * Return the base value of a temporal instant set at a timestamp
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base value of a temporal instant set at a timestamp
  *
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
@@ -1465,14 +1464,14 @@ tinstantset_merge_array(const TInstantSet **instsets, int count)
  *****************************************************************************/
 
 /**
- * Temporally intersect two temporal instant sets
+ * Temporally intersect a temporal instant set and a temporal instant
  *
  * @param[in] ti,inst Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst,
+intersection_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
   TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti, inst->t, REST_AT);
@@ -1492,10 +1491,10 @@ intersection_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstant_to_tinstantset(const TInstant *inst, const TInstantSet *ti,
+intersection_tinstant_tinstantset(const TInstant *inst, const TInstantSet *ti,
   TInstant **inter1, TInstant **inter2)
 {
-  return intersection_tinstantset_to_tinstant(ti, inst, inter2, inter1);
+  return intersection_tinstantset_tinstant(ti, inst, inter2, inter1);
 }
 
 /**

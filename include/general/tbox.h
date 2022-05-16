@@ -69,98 +69,20 @@ typedef struct
 
 /*****************************************************************************/
 
-/* General functions */
-
-extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax);
-extern void tbox_set(bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax, TBOX *box);
-extern TBOX *tbox_copy(const TBOX *box);
-extern void tbox_expand(const TBOX *box1, TBOX *box2);
-extern void tbox_shift_tscale(const Interval *start, const Interval *duration,
-  TBOX *box);
-extern bool inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result);
-
 /* Parameter tests */
 
 extern void ensure_has_X_tbox(const TBOX *box);
 extern void ensure_has_T_tbox(const TBOX *box);
 extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
 
-/* Input/output functions */
-
-extern char *tbox_to_string(const TBOX *box);
-extern void tbox_write(const TBOX *box, StringInfo buf);
-extern TBOX *tbox_read(StringInfo buf);
-
-/* Constructor functions */
-
-
 /* Casting */
 
-extern void number_set_tbox(Datum value, CachedType basetype, TBOX *box);
-extern void int_set_tbox(int i, TBOX *box);
-extern void float_set_tbox(double d, TBOX *box);
-extern void span_set_tbox(const Span *r, TBOX *box);
-extern void timestamp_set_tbox(TimestampTz t, TBOX *box);
-extern void timestampset_set_tbox(const TimestampSet *ts, TBOX *box);
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
-extern void period_set_tbox(const Period *p, TBOX *box);
-extern void periodset_set_tbox(const PeriodSet *ps, TBOX *box);
 extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
-
-extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
-extern TBOX *float_timestamp_to_tbox(double d, TimestampTz t);
-extern TBOX *int_period_to_tbox(int i, const Period *p);
-extern TBOX *float_period_to_tbox(double d, const Period *p);
-extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
-extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
-extern Span *tbox_to_intspan(const TBOX *box);
-extern Span *tbox_to_floatspan(const TBOX *box);
-extern Period *tbox_to_period(const TBOX *box);
-
-/* Accessor functions */
-
-extern bool tbox_hasx(const TBOX *box);
-extern bool tbox_hast(const TBOX *box);
-extern bool tbox_xmin(const TBOX *box, double *result);
-extern bool tbox_xmax(const TBOX *box, double *result);
-extern bool tbox_tmin(const TBOX *box, TimestampTz *result);
-extern bool tbox_tmax(const TBOX *box, TimestampTz *result);
 
 /* Transformation functions */
 
-extern TBOX *tbox_expand_value(const TBOX *box, const double d);
-extern TBOX *tbox_expand_temporal(const TBOX *box, const Interval *interval);
 extern TBOX *tbox_round(const TBOX *box, int size);
-
-/* Topological functions */
-
-extern bool contains_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool contained_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool same_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2);
-
-/* Relative position functions */
-
-extern bool left_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overleft_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool right_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overright_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool before_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool after_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overafter_tbox_tbox(const TBOX *box1, const TBOX *box2);
-
-/* Set functions */
-
-extern TBOX *union_tbox_tbox(const TBOX *box1, const TBOX *box2);
-
-/* Comparison functions */
-
-extern int tbox_cmp(const TBOX *box1, const TBOX *box2);
-extern bool tbox_eq(const TBOX *box1, const TBOX *box2);
 
 /*****************************************************************************/
 

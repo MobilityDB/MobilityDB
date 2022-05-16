@@ -38,11 +38,10 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/doxygen_libmeos_api.h"
 #include "general/pg_call.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
@@ -301,10 +300,8 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     /* If there is not already a split by distance */
     if (maxt != NULL && ! split)
     {
-      Datum duration = DirectFunctionCall2(timestamp_mi,
-        TimestampTzGetDatum(instants[i]->t), TimestampTzGetDatum(instants[i - 1]->t));
-      int cmp = DatumGetInt32(DirectFunctionCall2(interval_cmp, duration,
-        IntervalPGetDatum(maxt)));
+      Interval *duration = pg_timestamp_mi(instants[i]->t, instants[i - 1]->t);
+      int cmp = pg_interval_cmp(duration, maxt);
       if (cmp > 0)
         split = true;
     }
@@ -431,22 +428,22 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TInstant *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == INSTANTSET)
-      result = intersection_tinstant_to_tinstantset(
+      result = intersection_tinstant_tinstantset(
         (TInstant *) temp1, (TInstantSet *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == SEQUENCE)
-      result = intersection_tinstant_to_tsequence(
+      result = intersection_tinstant_tsequence(
         (TInstant *) temp1, (TSequence *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else /* temp2->subtype == SEQUENCESET */
-      result = intersection_tinstant_to_tsequenceset(
+      result = intersection_tinstant_tsequenceset(
         (TInstant *) temp1, (TSequenceSet *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
   }
   else if (temp1->subtype == INSTANTSET)
   {
     if (temp2->subtype == INSTANT)
-      result = intersection_tinstantset_to_tinstant(
+      result = intersection_tinstantset_tinstant(
         (TInstantSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == INSTANTSET)
@@ -454,22 +451,22 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TInstantSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else if (temp2->subtype == SEQUENCE)
-      result = intersection_tinstantset_to_tsequence(
+      result = intersection_tinstantset_tsequence(
         (TInstantSet *) temp1, (TSequence *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else /* temp2->subtype == SEQUENCESET */
-      result = intersection_tinstantset_to_tsequenceset(
+      result = intersection_tinstantset_tsequenceset(
         (TInstantSet *) temp1, (TSequenceSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
   }
   else if (temp1->subtype == SEQUENCE)
   {
     if (temp2->subtype == INSTANT)
-      result = intersection_tsequence_to_tinstant(
+      result = intersection_tsequence_tinstant(
         (TSequence *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == INSTANTSET)
-      result = intersection_tsequence_to_tinstantset(
+      result = intersection_tsequence_tinstantset(
         (TSequence *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else if (temp2->subtype == SEQUENCE)
@@ -478,22 +475,22 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           (TSequence **) inter1, (TSequence **) inter2,
             mode == SYNCHRONIZE_CROSS);
     else /* temp2->subtype == SEQUENCESET */
-      result = intersection_tsequence_to_tsequenceset(
+      result = intersection_tsequence_tsequenceset(
           (TSequence *) temp1, (TSequenceSet *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
   }
   else /* temp1->subtype == SEQUENCESET */
   {
     if (temp2->subtype == INSTANT)
-      result = intersection_tsequenceset_to_tinstant(
+      result = intersection_tsequenceset_tinstant(
         (TSequenceSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == INSTANTSET)
-      result = intersection_tsequenceset_to_tinstantset(
+      result = intersection_tsequenceset_tinstantset(
         (TSequenceSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else if (temp2->subtype == SEQUENCE)
-      result = synchronize_tsequenceset_to_tsequence(
+      result = synchronize_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
     else /* temp2->subtype == SEQUENCESET */
@@ -2451,7 +2448,8 @@ tnumber_bbox_restrict_spans(const Temporal *temp, Span **spans,
  *****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) a base value.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a base value.
  *
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
@@ -2491,7 +2489,9 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) an array of base values.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) an array of base
+ * values.
  */
 Temporal *
 temporal_restrict_values(const Temporal *temp, Datum *values, int count,
@@ -2533,7 +2533,8 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) a span of base values.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a span of base values.
  */
 Temporal *
 tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc)
@@ -2569,7 +2570,8 @@ tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc)
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) an array of spans
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) an array of spans
  * of base values.
  */
 Temporal *
@@ -2615,7 +2617,8 @@ tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) a minimum base value
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a minimum base value
  */
 Temporal *
 temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
@@ -2639,7 +2642,8 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to a timestamp.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to a timestamp.
  */
 Temporal *
 temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
@@ -2664,7 +2668,8 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
 /*****************************************************************************/
 
 /**
- * Return the base value of a temporal value at the timestamp when the
+ * @ingroup libmeos_temporal_restrict
+ * @brief Return the base value of a temporal value at the timestamp when the
  * timestamp may be at an exclusive bound
  */
 bool
@@ -2684,7 +2689,8 @@ temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *valu
 }
 
 /**
- * Return the base value of a temporal value at the timestamp
+ * @ingroup libmeos_temporal_restrict
+ * @brief Return the base value of a temporal value at the timestamp
  */
 bool
 temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, Datum *result)
@@ -2705,7 +2711,8 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, Datum *result)
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) a timestamp set
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a timestamp set
  */
 Temporal *
 temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
@@ -2732,7 +2739,8 @@ temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) a period.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a period.
  */
 Temporal *
 temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
@@ -2758,7 +2766,8 @@ temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
 /*****************************************************************************/
 
 /**
- * Restrict a temporal value to (the complement of) a period set.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a period set.
  */
 Temporal *
 temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
@@ -3308,6 +3317,10 @@ temporal_hash(const Temporal *temp)
 #include <access/heaptoast.h>
 #include <access/detoast.h>
 #endif
+
+/* To avoid including fmgrprotos.h */
+extern Datum timestamp_mi(PG_FUNCTION_ARGS);
+extern Datum interval_cmp(PG_FUNCTION_ARGS);
 
 /*
  * This is required in a SINGLE file for builds against pgsql

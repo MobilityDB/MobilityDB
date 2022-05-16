@@ -50,20 +50,14 @@
 #include <lwgeodetic.h>
 #endif
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
 #include "general/lifting.h"
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/pgis_call.h"
 #include "point/postgis.h"
-#include "point/stbox.h"
-#include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
-#include "point/tpoint_distance.h"
 #include "point/tpoint_spatialrels.h"
 
 /*****************************************************************************

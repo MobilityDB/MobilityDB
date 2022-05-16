@@ -50,11 +50,9 @@
 #include <postgres.h>
 #include <catalog/pg_operator.h>
 /* MobilityDB */
-#include "general/timetypes.h"
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/temporal_catalog.h"
 
 /*****************************************************************************/
 

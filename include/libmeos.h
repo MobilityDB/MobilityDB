@@ -35,6 +35,16 @@
 #ifndef __LIBMEOS_H__
 #define __LIBMEOS_H__
 
+/* JSON-C */
+#include <json-c/json.h>
+/* MobilityDB */
+#include "general/span.h"
+#include "general/timetypes.h"
+#include "general/tbox.h"
+#include "general/temporal.h"
+#include "point/stbox.h"
+
+
 /*****************************************************************************
  * Functions for span and time types
  *****************************************************************************/
@@ -58,7 +68,7 @@ extern bytea *timestampset_send(const TimestampSet *ts);
 
 /* Constructor functions for span and time types */
 
-extern PeriodSet *periodset_make(const Period **periods, int count, bool normalize)
+extern PeriodSet *periodset_make(const Period **periods, int count, bool normalize);
 extern PeriodSet *periodset_make_free(Period **periods, int count, bool normalize);
 extern PeriodSet *periodset_copy(const PeriodSet *ps);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, CachedType basetype);
@@ -105,6 +115,8 @@ extern Datum span_upper(Span *s);
 extern bool span_lower_inc(Span *s);
 extern bool span_upper_inc(Span *s);
 extern double span_width(const Span *s);
+extern uint32 span_hash(const Span *s);
+extern uint64 span_hash_extended(const Span *s, uint64 seed);
 extern Interval *period_duration(const Span *s);
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 extern int timestampset_mem_size(const TimestampSet *ts);
@@ -256,6 +268,7 @@ extern bool overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet 
 /* Set functions for span and time types */
 
 extern Span *union_span_span(const Span *s1, const Span *s2, bool strict);
+extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
 extern Span *intersection_span_span(const Span *s1, const Span *s2);
 extern Span *minus_span_span(const Span *s1, const Span *s2);
 extern TimestampSet *union_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
@@ -649,6 +662,9 @@ extern TimestampTz temporal_end_timestamp(Temporal *temp);
 extern bool temporal_timestamp_n(Temporal *temp, int n, TimestampTz *result);
 extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
 extern uint32 temporal_hash(const Temporal *temp);
+extern void tinstant_set_bbox(const TInstant *inst, void *box);
+extern Datum tinstant_value(const TInstant *inst);
+extern Datum tinstant_value_copy(const TInstant *inst);
 extern Datum *tinstant_values(const TInstant *inst, int *count);
 extern Span **tfloatinst_spans(const TInstant *inst, int *count);
 extern PeriodSet *tinstant_time(const TInstant *inst);
@@ -659,6 +675,7 @@ extern const TInstant **tinstant_instants(const TInstant *inst, int *count);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result);
 extern uint32 tinstant_hash(const TInstant *inst);
 extern const TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
+extern void tinstantset_set_bbox(const TInstantSet *ti, void *box);
 extern Datum *tinstantset_values(const TInstantSet *ti, int *count);
 extern Span **tfloatinstset_spans(const TInstantSet *ti, int *count);
 extern PeriodSet *tinstantset_time(const TInstantSet *ti);
@@ -674,6 +691,8 @@ extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti, int *count);
 extern const TInstant *tinstantset_min_instant(const TInstantSet *ti);
 extern const TInstant *tinstantset_max_instant(const TInstantSet *ti);
 extern uint32 tinstantset_hash(const TInstantSet *ti);
+extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
+extern void tsequence_set_bbox(const TSequence *seq, void *box);
 extern Datum *tsequence_values(const TSequence *seq, int *count);
 extern Span *tfloatseq_span(const TSequence *seq);
 extern Span **tfloatseq_spans(const TSequence *seq, int *count);
@@ -683,6 +702,7 @@ extern const TInstant *tsequence_max_instant(const TSequence *seq);
 extern Datum tsequence_min_value(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern Interval *tsequence_duration(const TSequence *seq);
+extern void tsequence_period(const TSequence *seq, Period *p);
 extern TSequence **tsequence_sequences(const TSequence *seq, int *count);
 extern TSequence **tsequence_segments(const TSequence *seq, int *count);
 extern const TInstant **tsequence_instants(const TSequence *seq, int *count);
@@ -693,6 +713,7 @@ extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Da
 extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t, Datum *result);
 extern uint32 tsequence_hash(const TSequence *seq);
 extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
+extern void tsequenceset_set_bbox(const TSequenceSet *ts, void *box);
 extern Datum *tsequenceset_values(const TSequenceSet *ts, int *count);
 extern Span **tfloatseqset_spans(const TSequenceSet *ts, int *count);
 extern const TInstant *tsequenceset_min_instant(const TSequenceSet *ts);
@@ -765,6 +786,16 @@ extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts, const Int
 
 /* Restriction functions for temporal types */
 
+extern Temporal *temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc);
+extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values, int count, bool atfunc);
+extern Temporal *tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc);
+extern Temporal *tnumber_restrict_spans(const Temporal *temp, Span **spans, int count, bool atfunc);
+extern bool temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *value);
+extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, Datum *result);
+extern Temporal *temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc);
+extern Temporal *temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts, bool atfunc);
+extern Temporal *temporal_restrict_period(const Temporal *temp, const Period *ps, bool atfunc);
+extern Temporal *temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps, bool atfunc);
 extern Temporal *tnumber_at_tbox(const Temporal *temp, const TBOX *box);
 extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBOX *box);
 extern Temporal *temporal_at_min(const Temporal *temp);
@@ -796,6 +827,7 @@ extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti, Timestamp
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti, const TimestampSet *ts, bool atfunc);
 extern TInstantSet *tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool atfunc);
 extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps, bool atfunc);
+extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t, Datum *result);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc);
 extern TSequenceSet *tsequence_restrict_values(const TSequence *seq, const Datum *values, int count, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc);
@@ -1374,8 +1406,10 @@ extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start, Timesta
 
 /* Similarity functions for temporal types */
 
-extern double temporal_similarity (Temporal *temp1, Temporal *temp2, SimFunc simfunc);
-extern Match *temporal_similarity_path (Temporal *temp1, Temporal *temp2, int *count, SimFunc simfunc);
+extern double temporal_frechet_distance(Temporal *temp1, Temporal *temp2);
+extern double temporal_dyntimewarp_distance(Temporal *temp1, Temporal *temp2);
+extern Match *temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count);
+extern Match *temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count);
 
 /*****************************************************************************/
 

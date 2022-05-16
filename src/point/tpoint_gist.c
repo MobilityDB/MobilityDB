@@ -38,20 +38,17 @@
 #include <assert.h>
 #include <float.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <access/gist.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/time_gist.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
-#include "point/tpoint.h"
 #include "general/tnumber_gist.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_distance.h"
-#include "point/tpoint_posops.h"
+#include "point/postgis.h"
 
 /*****************************************************************************
  * GiST consistent methods

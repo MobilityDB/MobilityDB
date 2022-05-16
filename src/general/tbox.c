@@ -37,16 +37,13 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
 #include <libpq/pqformat.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/temporal.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"

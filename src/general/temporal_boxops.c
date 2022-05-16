@@ -46,9 +46,7 @@
 #include "general/temporal_boxops.h"
 
 /* MobilityDB */
-#include "general/timestampset.h"
-#include "general/periodset.h"
-#include "general/span_ops.h"
+#include <libmeos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
 #ifndef MEOS
@@ -169,7 +167,8 @@ temporal_bbox_size(CachedType temptype)
 }
 
 /**
- * Set a bounding box from a temporal instant
+ * @ingroup libmeos_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal instant
  *
  * @param[in] box Bounding box
  * @param[in] inst Temporal value

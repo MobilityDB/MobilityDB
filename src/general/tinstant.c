@@ -43,22 +43,15 @@
   #include <access/hash.h>
 #endif
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/lsyscache.h>  /* for get_typlenbyval */
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/timetypes.h"
-#include "general/timestampset.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
-#include "general/temporal_boxops.h"
-#include "general/span_ops.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -75,7 +68,8 @@ tinstant_value_ptr(const TInstant *inst)
 }
 
 /**
- * Return the base value of a temporal instant
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base value of a temporal instant
  */
 Datum
 tinstant_value(const TInstant *inst)
@@ -89,7 +83,8 @@ tinstant_value(const TInstant *inst)
 }
 
 /**
- * Return a copy of the base value of a temporal instant
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a copy of the base value of a temporal instant
  */
 Datum
 tinstant_value_copy(const TInstant *inst)
@@ -531,9 +526,7 @@ TInstant *
 tinstant_shift(const TInstant *inst, const Interval *interval)
 {
   TInstant *result = tinstant_copy(inst);
-  result->t = DatumGetTimestampTz(
-    DirectFunctionCall2(timestamptz_pl_interval,
-    TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+  result->t = pg_timestamp_pl_interval(inst->t, interval);
   return result;
 }
 

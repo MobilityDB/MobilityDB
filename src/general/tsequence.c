@@ -47,16 +47,13 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
 #include "general/doublen.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
-#include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 #ifndef MEOS
@@ -220,7 +217,8 @@ tsequence_bbox_ptr(const TSequence *seq)
 }
 
 /**
- * Copy in the second argument the bounding box of a temporal sequence
+ * @ingroup libmeos_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal sequence
  */
 void
 tsequence_set_bbox(const TSequence *seq, void *box)
@@ -241,7 +239,7 @@ tsequence_offsets_ptr(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_acessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th instant of a temporal sequence.
  */
 const TInstant *
@@ -1205,7 +1203,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tsequence_to_tinstant(const TSequence *seq, const TInstant *inst,
+intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
   TInstant *inst1 = tsequence_at_timestamp(seq, inst->t);
@@ -1225,10 +1223,10 @@ intersection_tsequence_to_tinstant(const TSequence *seq, const TInstant *inst,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tinstant_to_tsequence(const TInstant *inst, const TSequence *seq,
+intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
   TInstant **inter1, TInstant **inter2)
 {
-  return intersection_tsequence_to_tinstant(seq, inst, inter2, inter1);
+  return intersection_tsequence_tinstant(seq, inst, inter2, inter1);
 }
 
 /**
@@ -1239,7 +1237,7 @@ intersection_tinstant_to_tsequence(const TInstant *inst, const TSequence *seq,
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
+intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
   TInstantSet **inter1, TInstantSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -1282,10 +1280,10 @@ intersection_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *t
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tinstantset_to_tsequence(const TInstantSet *ti, const TSequence *seq,
+intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
   TInstantSet **inter1, TInstantSet **inter2)
 {
-  return intersection_tsequence_to_tinstantset(seq, ti, inter2, inter1);
+  return intersection_tsequence_tinstantset(seq, ti, inter2, inter1);
 }
 
 /*****************************************************************************
@@ -1954,7 +1952,8 @@ tsequence_duration(const TSequence *seq)
 }
 
 /**
- * Return the bounding period of a temporal sequence
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the bounding period of a temporal sequence
  */
 void
 tsequence_period(const TSequence *seq, Period *p)

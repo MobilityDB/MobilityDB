@@ -45,9 +45,7 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/timestampset.h"
-#include "general/periodset.h"
+#include <libmeos.h>
 #include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_aggfuncs.h"

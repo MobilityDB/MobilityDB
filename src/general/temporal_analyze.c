@@ -80,14 +80,11 @@
 #include <commands/vacuum.h>
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
-#include <utils/fmgrprotos.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span_ops.h"
+#include <libmeos.h>
 #include "general/span_analyze.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_analyze.h"
 

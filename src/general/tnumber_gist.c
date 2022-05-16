@@ -42,18 +42,12 @@
 #include <math.h>
 /* PostgreSQL */
 #include <access/gist.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/time_gist.h"
-#include "general/temporal_catalog.h"
-#include "general/temporal_boxops.h"
-#include "general/temporal_posops.h"
-#include "general/tnumber_distance.h"
 
 /*****************************************************************************
  * GiST consistent methods

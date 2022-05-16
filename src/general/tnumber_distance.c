@@ -39,15 +39,13 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
 #include "general/lifting.h"
 
 /*****************************************************************************

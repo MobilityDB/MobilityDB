@@ -47,6 +47,7 @@
 #include "point/tpoint_posops.h"
 
 /* MobilityDB */
+#include <libmeos.h>
 #include "point/tpoint_boxops.h"
 
 /*****************************************************************************/

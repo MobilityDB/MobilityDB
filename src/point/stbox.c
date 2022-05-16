@@ -38,10 +38,9 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/fmgrprotos.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"

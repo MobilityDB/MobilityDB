@@ -39,7 +39,6 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
 #include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
@@ -51,16 +50,13 @@
 #include <measures3d.h>
 #endif
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/lifting.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "point/pgis_call.h"
 #include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialrels.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/

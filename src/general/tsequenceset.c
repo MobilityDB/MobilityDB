@@ -39,22 +39,17 @@
 /* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/lsyscache.h>
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/span.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_boxops.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * General functions
@@ -70,7 +65,8 @@ tsequenceset_bbox_ptr(const TSequenceSet *ts)
 }
 
 /**
- * Copy in the second argument the bounding box of a temporal sequence set
+ * @ingroup libmeos_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal sequence set
  */
 void
 tsequenceset_set_bbox(const TSequenceSet *ts, void *box)
@@ -243,7 +239,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
  * @result Return false if the input values do not overlap on time
  */
 bool
-synchronize_tsequenceset_to_tsequence(const TSequenceSet *ts, const TSequence *seq,
+synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -359,7 +355,7 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
+intersection_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
   TInstant *inst1 = (TInstant *)
@@ -380,10 +376,10 @@ intersection_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *in
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
+intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
   TInstant **inter1, TInstant **inter2)
 {
-  return intersection_tsequenceset_to_tinstant(ts, inst, inter2, inter1);
+  return intersection_tsequenceset_tinstant(ts, inst, inter2, inter1);
 }
 
 /**
@@ -394,7 +390,7 @@ intersection_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_to_tinstantset(const TSequenceSet *ts,
+intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
   const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -446,10 +442,10 @@ intersection_tsequenceset_to_tinstantset(const TSequenceSet *ts,
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_to_tsequenceset(const TInstantSet *ti,
+intersection_tinstantset_tsequenceset(const TInstantSet *ti,
   const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2)
 {
-  return intersection_tsequenceset_to_tinstantset(ts, ti, inter2, inter1);
+  return intersection_tsequenceset_tinstantset(ts, ti, inter2, inter1);
 }
 
 /**
@@ -461,10 +457,10 @@ intersection_tinstantset_to_tsequenceset(const TInstantSet *ti,
  * @result Return false if the input values do not overlap on times
  */
 bool
-intersection_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
+intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
   SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
-  return synchronize_tsequenceset_to_tsequence(ts, seq, mode, inter2, inter1);
+  return synchronize_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
 }
 
 /*****************************************************************************

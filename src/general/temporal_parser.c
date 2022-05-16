@@ -40,10 +40,7 @@
 #include "general/temporal_parser.h"
 
 /* MobilityDB */
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/timestampset.h"
-#include "general/temporaltypes.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************/

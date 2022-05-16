@@ -38,13 +38,9 @@
 #include <assert.h>
 #include <float.h>
 /* MobilityDB */
-#include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_distance.h"
 #include "point/tpoint_boxops.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"

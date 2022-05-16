@@ -37,11 +37,10 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"
-#include "point/stbox.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"

@@ -72,20 +72,17 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/lifting.h"
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tbool_boolops.h"
 #include "point/pgis_call.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 

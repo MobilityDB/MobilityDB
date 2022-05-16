@@ -43,62 +43,12 @@
 
 /*****************************************************************************/
 
-/* assorted support functions */
-
-extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
+/* General functions */
 
 extern const Period *timestampset_period_ptr(const TimestampSet *ts);
 extern void timestampset_period_slice(Datum tsdatum, Period *p);
 extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t,
   int *loc);
-
-/* Input/output functions */
-
-extern char *timestampset_to_string(const TimestampSet *ts);
-extern void timestampset_write(const TimestampSet *ts, StringInfo buf);
-extern TimestampSet *timestampset_read(StringInfo buf);
-
-/* Constructor function */
-
-extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
-extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
-extern TimestampSet *timestampset_copy(const TimestampSet *ts);
-
-/* Cast function */
-
-extern TimestampSet *timestamp_to_timestampset(TimestampTz t);
-extern void timestampset_set_period(const TimestampSet *ts, Period *p);
-
-/* Accessor functions */
-
-extern int timestampset_mem_size(const TimestampSet *ts);
-extern Interval *timestampset_timespan(const TimestampSet *ts);
-extern int timestampset_num_timestamps(const TimestampSet *ts);
-extern TimestampTz timestampset_start_timestamp(const TimestampSet *ts);
-extern TimestampTz timestampset_end_timestamp(const TimestampSet *ts);
-extern bool timestampset_timestamp_n(const TimestampSet *ts, int n,
-  TimestampTz *result);
-extern TimestampTz *timestampset_timestamps(const TimestampSet *ts);
-
-/* Modification functions */
-
-extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts,
-  const Interval *start, const Interval *duration);
-
-/* Comparison functions */
-
-extern int timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2);
-
-/* Hash functions */
-
-extern uint32 timestampset_hash(const TimestampSet *ts);
-extern uint64 timestampset_hash_extended(const TimestampSet *ts, uint64 seed);
 
 /*****************************************************************************/
 

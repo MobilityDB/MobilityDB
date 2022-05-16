@@ -47,18 +47,14 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <utils/builtins.h>
+// #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/timestampset.h"
-#include "general/periodset.h"
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "general/temporal_boxops.h"
 #include "point/tpoint.h"
-#include "point/stbox.h"
-#include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);

@@ -35,12 +35,9 @@
 #include "point/tpoint_parser.h"
 
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/temporaltypes.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include <libmeos.h>
 #include "general/temporal_parser.h"
-#include "point/stbox.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 

@@ -38,21 +38,17 @@
 /* C */
 #include <assert.h>
 #include <float.h>
-/* PostgreSQL */
-#include <utils/builtins.h>
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
   #include <liblwgeom_internal.h>
 #endif
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/temporal.h"
+#include <libmeos.h>
 #include "general/tinstant.h"
 #include "general/tinstantset.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/temporal_util.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /* The following definitions are taken from PostGIS */

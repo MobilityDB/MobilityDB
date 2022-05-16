@@ -44,12 +44,10 @@
   #include <common/hashfn.h>
 #endif
 #include <libpq/pqformat.h>
-#include <utils/fmgrprotos.h>
+// #include <utils/fmgrprotos.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/temporal.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "general/tnumber_mathfuncs.h"
@@ -615,20 +613,14 @@ period_shift_tscale(const Interval *start, const Interval *duration,
 
   if (start != NULL)
   {
-    result->lower = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(result->lower),
-      PointerGetDatum(start)));
+    result->lower = pg_timestamp_pl_interval(result->lower, start);
     if (instant)
       result->upper = result->lower;
     else
-      result->upper = DatumGetTimestampTz(DirectFunctionCall2(
-        timestamptz_pl_interval, TimestampTzGetDatum(result->upper),
-        PointerGetDatum(start)));
+      result->upper = pg_timestamp_pl_interval(result->upper, start);
   }
   if (duration != NULL && ! instant)
-    result->upper =
-      DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-         TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
+    result->upper = pg_timestamp_pl_interval(result->lower, duration);
   return;
 }
 
@@ -739,6 +731,10 @@ span_gt(const Span *s1, const Span *s2)
  * Hash support
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the 32-bit hash value of a span.
+ */
 uint32
 span_hash(const Span *s)
 {
@@ -768,6 +764,10 @@ span_hash(const Span *s)
   return result;
 }
 
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the 64-bit hash value of a span using a seed
+ */
 uint64
 span_hash_extended(const Span *s, Datum seed)
 {

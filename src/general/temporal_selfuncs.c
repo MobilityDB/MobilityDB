@@ -57,23 +57,16 @@
 #include <executor/tuptable.h>
 #include <optimizer/paths.h>
 #include <storage/bufmgr.h>
-#include <utils/builtins.h>
 #include <utils/date.h>
 #include <utils/datum.h>
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/timetypes.h"
-#include "general/timestampset.h"
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/span_selfuncs.h"
-#include "general/temporal_boxops.h"
 #include "general/temporal_analyze.h"
 #include "general/tnumber_selfuncs.h"
-#include "point/tpoint.h"
 #include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************
