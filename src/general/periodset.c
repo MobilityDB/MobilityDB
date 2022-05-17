@@ -367,7 +367,7 @@ periodset_timespan(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_spantime_cast
  * @brief Set a period to the bounding period of a period set
  */
 void

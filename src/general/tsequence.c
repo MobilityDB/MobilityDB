@@ -1242,7 +1242,7 @@ intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
-  tinstantset_period(ti, &p);
+  tinstantset_set_period(ti, &p);
   if (! overlaps_span_span(&seq->period, &p))
     return false;
 
@@ -1952,11 +1952,11 @@ tsequence_duration(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal sequence
  */
 void
-tsequence_period(const TSequence *seq, Period *p)
+tsequence_set_period(const TSequence *seq, Period *p)
 {
   span_set(seq->period.lower, seq->period.upper, seq->period.lower_inc,
     seq->period.upper_inc, T_TIMESTAMPTZ, p);

@@ -1120,23 +1120,23 @@ tfloat_to_tint(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Set a period to the bounding period of a temporal value.
- * @see tinstant_period
- * @see tinstantset_period
- * @see tsequence_period
- * @see tsequenceset_period
+ * @see tinstant_set_period
+ * @see tinstantset_set_period
+ * @see tsequence_set_period
+ * @see tsequenceset_set_period
  */
 void
 temporal_set_period(const Temporal *temp, Period *p)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    tinstant_period((TInstant *) temp, p);
+    tinstant_set_period((TInstant *) temp, p);
   else if (temp->subtype == INSTANTSET)
-    tinstantset_period((TInstantSet *) temp, p);
+    tinstantset_set_period((TInstantSet *) temp, p);
   else if (temp->subtype == SEQUENCE)
-    tsequence_period((TSequence *) temp, p);
+    tsequence_set_period((TSequence *) temp, p);
   else /* temp->subtype == SEQUENCESET */
-    tsequenceset_period((TSequenceSet *) temp, p);
+    tsequenceset_set_period((TSequenceSet *) temp, p);
   return;
 }
 

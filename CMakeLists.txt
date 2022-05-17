@@ -17,6 +17,7 @@ option(MEOS
   OFF
 )
 
+# Get the major/minor/micro versions from the text file
 file(READ mobdb_version.txt ver)
 string(REGEX MATCH "MOBILITYDB_MAJOR_VERSION=([0-9]+)" _ ${ver})
 set(MOBILITYDB_MAJOR_VERSION ${CMAKE_MATCH_1})
@@ -26,22 +27,27 @@ string(REGEX MATCH "MOBILITYDB_MICRO_VERSION=([0-9]+)" _ ${ver})
 set(MOBILITYDB_MICRO_VERSION ${CMAKE_MATCH_1})
 string(REGEX MATCH "MOBILITYDB_MICRO_VERSION=[0-9]+(beta?[0-9]+)" _ ${ver})
 set(PROJECT_VERSION_DEV ${CMAKE_MATCH_1})
-project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
-set(MOBILITYDB_VERSION "${MobilityDB_VERSION}")
-set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+
+# Set the name (either MEOS or MobilityDB) and version of the project
 if(MEOS)
-  add_definitions(-DMEOS)
   message(STATUS "Building the MEOS library")
-  set(MOBILITYDB_LIB_NAME "MEOS-${MOBILITYDB_LIB_VERSION}")
+  project(MEOS VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
+  add_definitions(-DMEOS)
 else()
   message(STATUS "Building MobilityDB")
-  set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
+  project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
 endif()
-set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION}${PROJECT_VERSION_DEV}")
-string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
-set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql")
-set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
+set(MOBILITYDB_VERSION_STR "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
+
+# Set the version and name of the library
+set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
+
+# Set the name of the PostgreSQL extension and of the internal extension used for testing
+string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
+set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${PROJECT_VERSION}.sql")
+set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -175,6 +181,7 @@ endif()
 include_directories("include")
 add_subdirectory("src")
 
+# Build the library
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
 if(MEOS)
@@ -214,12 +221,13 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 
 #--------------------------------
 # Belongs to MobilityDB
+#--------------------------------
 
-# if(MEOS)
-  # message(STATUS "Building MEOS: SQL definitions and tests not included")
-  # install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
-  # message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
-# else()
+if(MEOS)
+  message(STATUS "Building MEOS: SQL definitions and tests not included")
+  install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
+  message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
+else()
   message(STATUS "Building MobilityDB: Including SQL definitions and tests")
   add_subdirectory(sql)
   add_subdirectory(test)
@@ -229,7 +237,7 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
     FILES "${CMAKE_BINARY_DIR}/mobilitydb.control"  "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
     DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
   install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
-# endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # Documentation

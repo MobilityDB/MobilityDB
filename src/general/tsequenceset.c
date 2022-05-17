@@ -227,7 +227,8 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
  *****************************************************************************/
 
 /**
- * Temporally intersect or synchronize two temporal values
+ * Temporally intersect or synchronize a temporal sequence set and a temporal
+ * sequence
  *
  * The resulting values are composed of denormalized sequences
  * covering the intersection of their time spans
@@ -243,7 +244,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
-  tsequenceset_period(ts, &p);
+  tsequenceset_set_period(ts, &p);
   if (! overlaps_span_span(&seq->period, &p))
     return false;
 
@@ -283,7 +284,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 }
 
 /**
- * Temporally intersect or synchronize two temporal values
+ * Temporally intersect or synchronize two temporal sequence sets
  *
  * @param[in] ts1,ts2 Input values
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
@@ -297,8 +298,8 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
-  tsequenceset_period(ts1, &p1);
-  tsequenceset_period(ts2, &p2);
+  tsequenceset_set_period(ts1, &p1);
+  tsequenceset_set_period(ts2, &p2);
   if (! overlaps_span_span(&p1, &p2))
     return false;
 
@@ -394,8 +395,8 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
-  tsequenceset_period(ts, &p1);
-  tinstantset_period(ti, &p2);
+  tsequenceset_set_period(ts, &p1);
+  tinstantset_set_period(ti, &p2);
   if (! overlaps_span_span(&p1, &p2))
     return false;
 
@@ -1078,11 +1079,11 @@ tsequenceset_duration(const TSequenceSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal sequence set.
  */
 void
-tsequenceset_period(const TSequenceSet *ts, Period *p)
+tsequenceset_set_period(const TSequenceSet *ts, Period *p)
 {
   const TSequence *start = tsequenceset_seq_n(ts, 0);
   const TSequence *end = tsequenceset_seq_n(ts, ts->count - 1);
@@ -1959,7 +1960,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
 {
   /* Bounding box test */
   Period p;
-  tsequenceset_period(ts, &p);
+  tsequenceset_set_period(ts, &p);
   if (! contains_period_timestamp(&p, t))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts);
 
@@ -2030,7 +2031,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
 
   /* Bounding box test */
   Period p1;
-  tsequenceset_period(ts1, &p1);
+  tsequenceset_set_period(ts1, &p1);
   const Period *p2 = timestampset_period_ptr(ts2);
   if (! overlaps_span_span(&p1, p2))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts1);
@@ -2094,7 +2095,7 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p,
 {
   /* Bounding box test */
   Period p1;
-  tsequenceset_period(ts, &p1);
+  tsequenceset_set_period(ts, &p1);
   if (! overlaps_span_span(&p1, p))
     return atfunc ? NULL : tsequenceset_copy(ts);
 
@@ -2182,7 +2183,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
 
   /* Bounding box test */
   Period p1;
-  tsequenceset_period(ts, &p1);
+  tsequenceset_set_period(ts, &p1);
   const Period *p2 = periodset_period_ptr(ps);
   if (! overlaps_span_span(&p1, p2))
     return atfunc ? NULL : tsequenceset_copy(ts);

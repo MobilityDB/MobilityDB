@@ -1,3 +1,20 @@
+COPY tbl_tnpoint TO '/tmp/tbl_tnpoint' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tnpoint_tmp;
+NOTICE:  table "tbl_tnpoint_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tnpoint_tmp AS TABLE tbl_tnpoint WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tnpoint_tmp FROM '/tmp/tbl_tnpoint' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tnpoint_tmp;
+DROP TABLE
 SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
    max    
 ----------

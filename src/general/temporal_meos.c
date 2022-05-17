@@ -35,7 +35,7 @@
 #include "general/temporal.h"
 
 /* MobilityDB */
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 
 /*****************************************************************************
  * Restriction Functions

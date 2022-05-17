@@ -38,7 +38,6 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <catalog/pg_collation_d.h>
-#include <utils/lsyscache.h>
 #include <utils/varlena.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
@@ -1035,6 +1034,16 @@ basetype_send(CachedType basetype, Datum value)
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 AND POSTGIS_VERSION_NUMBER >= 30000 */
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+#include <utils/lsyscache.h>
+
 /*****************************************************************************
  * Call PostgreSQL functions
  * The call_input and call_output functions are needed for the geography
@@ -1296,14 +1305,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
     return result;
 }
 #endif
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#ifndef MEOS
 
 /*****************************************************************************
  * Array functions

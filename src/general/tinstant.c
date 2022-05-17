@@ -43,7 +43,6 @@
   #include <access/hash.h>
 #endif
 #include <libpq/pqformat.h>
-#include <utils/lsyscache.h>  /* for get_typlenbyval */
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
@@ -371,11 +370,11 @@ tinstant_time(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal instant.
  */
 void
-tinstant_period(const TInstant *inst, Period *p)
+tinstant_set_period(const TInstant *inst, Period *p)
 {
   return span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, p);
 }

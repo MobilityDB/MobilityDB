@@ -38,14 +38,10 @@
 /* C */
 #include <assert.h>
 #include <math.h>
-/* PostgreSQL */
-#include <utils/builtins.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
+#include <libmeos.h>
+#include "general/tnumber_mathfuncs.h"
 #include "general/temporal_util.h"
-#include "general/lifting.h"
 
 /*****************************************************************************
  * Temporal addition

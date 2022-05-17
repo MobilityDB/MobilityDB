@@ -38,7 +38,6 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
@@ -536,11 +535,11 @@ tinstantset_max_value(const TInstantSet *ti)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal instant set
  */
 void
-tinstantset_period(const TInstantSet *ti, Period *p)
+tinstantset_set_period(const TInstantSet *ti, Period *p)
 {
   TimestampTz lower = tinstantset_start_timestamp(ti);
   TimestampTz upper = tinstantset_end_timestamp(ti);
@@ -1194,7 +1193,7 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
 {
   /* Bounding box test */
   Period p;
-  tinstantset_period(ti, &p);
+  tinstantset_set_period(ti, &p);
   if (!contains_period_timestamp(&p, t))
     return atfunc ? NULL : (Temporal *) tinstantset_copy(ti);
 
@@ -1255,7 +1254,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti, const TimestampSet *ts,
 
   /* Bounding box test */
   Period p1;
-  tinstantset_period(ti, &p1);
+  tinstantset_set_period(ti, &p1);
   const Period *p2 = timestampset_period_ptr(ts);
   if (!overlaps_span_span(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
@@ -1315,7 +1314,7 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period,
 {
   /* Bounding box test */
   Period p;
-  tinstantset_period(ti, &p);
+  tinstantset_set_period(ti, &p);
   if (!overlaps_span_span(&p, period))
     return atfunc ? NULL : tinstantset_copy(ti);
 
@@ -1355,7 +1354,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 
   /* Bounding box test */
   Period p1;
-  tinstantset_period(ti, &p1);
+  tinstantset_set_period(ti, &p1);
   const Period *p2 = periodset_period_ptr(ps);
   if (!overlaps_span_span(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
@@ -1509,8 +1508,8 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
-  tinstantset_period(ti1, &p1);
-  tinstantset_period(ti2, &p2);
+  tinstantset_set_period(ti1, &p1);
+  tinstantset_set_period(ti2, &p2);
   if (!overlaps_span_span(&p1, &p2))
     return false;
 

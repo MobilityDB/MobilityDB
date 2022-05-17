@@ -46,7 +46,8 @@
 #include "general/temporal_boxops.h"
 
 /* MobilityDB */
-#include "general/span_ops.h"
+#include <libmeos.h>
+#include "general/temporal_boxops.h"
 
 /*****************************************************************************
  * Bounding box operators for temporal types

@@ -47,9 +47,7 @@
 #include "point/tpoint_posops.h"
 
 /* MobilityDB */
-#include "point/postgis.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include <libmeos.h>
 #include "point/tpoint_boxops.h"
 
 /*****************************************************************************/

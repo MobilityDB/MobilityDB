@@ -40,8 +40,6 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* PostgGIS */
-#include <liblwgeom.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/temporaltypes.h"
@@ -461,10 +459,10 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
  *
  * @param[in] temp1,temp2 Temporal values
  */
-double
-temporal_frechet_path(Temporal *temp1, Temporal *temp2)
+Match *
+temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
 {
-  return temporal_similarity_path(temp1, temp2, FRECHET);
+  return temporal_similarity_path(temp1, temp2, count, FRECHET);
 }
 
 /**
@@ -473,10 +471,10 @@ temporal_frechet_path(Temporal *temp1, Temporal *temp2)
  *
  * @param[in] temp1,temp2 Temporal values
  */
-double
-temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2)
+Match *
+temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count)
 {
-  return temporal_similarity_path(temp1, temp2, DYNTIMEWARP);
+  return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }
 #endif
 

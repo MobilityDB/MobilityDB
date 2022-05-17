@@ -386,7 +386,7 @@ nsegment_make(int64 rid, double pos1, double pos2)
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
-  if (!route_exists(rid))
+  if (! route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("there is no route with gid value %lu in table ways", rid)));
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)

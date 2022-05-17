@@ -467,11 +467,9 @@ GSERIALIZED *
 PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   LWGEOM *theline = lwgeom_closest_line(lwgeom1, lwgeom2);
-
   if (lwgeom_is_empty(theline))
     return NULL;
 
@@ -479,7 +477,6 @@ PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   lwgeom_free(theline);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
-
   return result;
 }
 
@@ -491,20 +488,16 @@ GSERIALIZED *
 PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   LWGEOM *theline = lwgeom_closest_line_3d(lwgeom1, lwgeom2);
-
   if (lwgeom_is_empty(theline))
     return NULL;
 
   GSERIALIZED *result = geometry_serialize(theline);
-
   lwgeom_free(theline);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
-
   return result;
 }
 
@@ -516,10 +509,9 @@ double
 PGIS_ST_Distance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-  double mindist;
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
-  mindist = lwgeom_mindistance2d(lwgeom1, lwgeom2);
+  double mindist = lwgeom_mindistance2d(lwgeom1, lwgeom2);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
   /* if called with empty geometries the ingoing mindistance is untouched,
@@ -537,10 +529,9 @@ double
 PGIS_ST_3DDistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-  double mindist;
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
-  mindist = lwgeom_mindistance3d(lwgeom1, lwgeom2);
+  double mindist = lwgeom_mindistance3d(lwgeom1, lwgeom2);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
   /* if called with empty geometries the ingoing mindistance is untouched,
@@ -579,14 +570,12 @@ PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
     elog(ERROR, "Tolerance cannot be less than zero\n");
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
-  LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
-  LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
-
-  if (lwgeom_is_empty(lwgeom1) || lwgeom_is_empty(lwgeom2))
+  if (gserialized_is_empty(geom1) || gserialized_is_empty(geom2))
     return false;
 
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   double mindist = lwgeom_mindistance2d_tolerance(lwgeom1, lwgeom2, tolerance);
-
   /*empty geometries cases should be right handled since return from underlying
    functions should be FLT_MAX which causes false as answer*/
   return (tolerance >= mindist);
@@ -881,16 +870,14 @@ PGIS_ST_Intersection(GSERIALIZED *geom1, GSERIALIZED *geom2)
 double
 PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
 {
+  /* EMPTY things have no length */
+  int32 geo_type = gserialized_get_type(g);
+  if (gserialized_is_empty(g) || geo_type == POLYGONTYPE ||
+    geo_type == MULTIPOLYGONTYPE)
+    return 0.0;
+
   /* Get our geometry object loaded into memory. */
   LWGEOM *lwgeom = lwgeom_from_gserialized(g);
-
-  /* EMPTY things have no length */
-  if ( lwgeom_is_empty(lwgeom) || lwgeom->type == POLYGONTYPE ||
-    lwgeom->type == MULTIPOLYGONTYPE )
-  {
-    lwgeom_free(lwgeom);
-    return 0.0;
-  }
 
   /* Initialize spheroid */
   /* We currently cannot use the following statement since PROJ4 API is not
@@ -927,14 +914,16 @@ bool
 PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
   bool use_spheroid)
 {
-  SPHEROID s;
-
   ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
+  /* Return FALSE on empty arguments. */
+  if (gserialized_is_empty(g1) || gserialized_is_empty(g2))
+    return false;
 
   /* Initialize spheroid */
   /* We currently cannot use the following statement since PROJ4 API is not
    * available directly to MobilityDB. */
   // spheroid_init_from_srid(gserialized_get_srid(g1), &s);
+  SPHEROID s;
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* Set to sphere if requested */
@@ -943,11 +932,6 @@ PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
-
-  /* Return FALSE on empty arguments. */
-  if ( lwgeom_is_empty(lwgeom1) || lwgeom_is_empty(lwgeom2) )
-    return false;
-
   double distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
 
   /* Clean up */
@@ -978,6 +962,9 @@ double
 PGIS_geography_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
 {
   ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g1));
+  /* Return NULL on empty arguments. */
+  if (gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+    return -1;
 
   double tolerance = PGIS_FP_TOLERANCE;
   bool use_spheroid = true;
@@ -995,10 +982,6 @@ PGIS_geography_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
-
-  /* Return NULL on empty arguments. */
-  if ( lwgeom_is_empty(lwgeom1) || lwgeom_is_empty(lwgeom2) )
-    return -1;
 
   /* Make sure we have boxes attached */
   lwgeom_add_bbox_deep(lwgeom1, NULL);

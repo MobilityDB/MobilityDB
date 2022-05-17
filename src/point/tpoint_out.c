@@ -1289,7 +1289,7 @@ Tpoint_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *str = tpoint_as_text(temp);
-  text *result = cstring_to_text(str);
+  text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -1305,7 +1305,7 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *str = tpoint_as_ewkt(temp);
-  text *result = cstring_to_text(str);
+  text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -1466,7 +1466,7 @@ Tpoint_as_mfjson(PG_FUNCTION_ARGS)
     has_bbox = 1;
 
   char *mfjson = tpoint_as_mfjson(temp, precision, has_bbox, srs);
-  text *result = cstring_to_text(mfjson);
+  text *result = cstring2text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }

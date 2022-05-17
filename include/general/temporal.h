@@ -37,7 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 /* MobilityDB */
 #include "general/span.h"
 #include "general/temporal_catalog.h"
@@ -45,24 +44,9 @@
 #include "general/tbox.h"
 #include "point/stbox.h"
 
-#if POSTGRESQL_VERSION_NUMBER < 130000
-#ifndef USE_FLOAT4_BYVAL
-#error Postgres needs to be configured with USE_FLOAT4_BYVAL
-#endif
-#endif
-
-#ifndef USE_FLOAT8_BYVAL
-#error Postgres needs to be configured with USE_FLOAT8_BYVAL
-#endif
-
 /* To avoid including builtins.h */
 extern text *cstring_to_text(const char *s);
 extern char *text_to_cstring(const text *t);
-
-/* To avoid including fmgrprotos.h */
-extern Datum numeric_float8(PG_FUNCTION_ARGS);
-extern Datum numeric_round(PG_FUNCTION_ARGS);
-extern Datum float8_numeric(PG_FUNCTION_ARGS);
 
 /**
  * Floating point precision
@@ -223,41 +207,6 @@ typedef enum
 #define DEFAULT_INTSPAN_ORIGIN (0)
 
 /*****************************************************************************
- * Definitions for GiST indexes
- *****************************************************************************/
-
-/* Minimum accepted ratio of split */
-#define LIMIT_RATIO 0.3
-
-#if POSTGRESQL_VERSION_NUMBER < 120000
-extern int float8_cmp_internal(float8 a, float8 b);
-extern double get_float8_infinity(void);
-#endif
-
-/* Convenience macros for NaN-aware comparisons */
-#define FLOAT8_EQ(a,b)   (float8_cmp_internal(a, b) == 0)
-#define FLOAT8_LT(a,b)   (float8_cmp_internal(a, b) < 0)
-#define FLOAT8_LE(a,b)   (float8_cmp_internal(a, b) <= 0)
-#define FLOAT8_GT(a,b)   (float8_cmp_internal(a, b) > 0)
-#define FLOAT8_GE(a,b)   (float8_cmp_internal(a, b) >= 0)
-#define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
-#define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
-
-/*****************************************************************************
- * Additional operator strategy numbers used in the GiST and SP-GiST temporal
- * opclasses with respect to those defined in the file stratnum.h
- *****************************************************************************/
-
-#define RTOverBeforeStrategyNumber    28    /* for &<# */
-#define RTBeforeStrategyNumber        29    /* for <<# */
-#define RTAfterStrategyNumber         30    /* for #>> */
-#define RTOverAfterStrategyNumber     31    /* for #&> */
-#define RTOverFrontStrategyNumber     32    /* for &</ */
-#define RTFrontStrategyNumber         33    /* for <</ */
-#define RTBackStrategyNumber          34    /* for />> */
-#define RTOverBackStrategyNumber      35    /* for /&> */
-
-/*****************************************************************************
  * Struct definitions for temporal types
  *****************************************************************************/
 
@@ -399,31 +348,6 @@ typedef Datum (*datum_func2) (Datum, Datum);
 typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /*****************************************************************************
- * Struct definitions for GisT indexes copied from PostgreSQL
- *****************************************************************************/
-
-/**
- * Structure to represent information about an entry that can be placed
- * to either group without affecting overlap over selected axis ("common entry").
- */
-typedef struct
-{
-  /* Index of entry in the initial array */
-  int      index;
-  /* Delta between penalties of entry insertion into different groups */
-  double    delta;
-} CommonEntry;
-
-/**
- * Structure to represent a projection of bounding box to an axis.
- */
-typedef struct
-{
-  double    lower,
-            upper;
-} SplitInterval;
-
-/*****************************************************************************
  * fmgr macros temporal types
  *****************************************************************************/
 
@@ -547,8 +471,83 @@ extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
 #include <utils/array.h>
 #include <utils/lsyscache.h>
 
+#if POSTGRESQL_VERSION_NUMBER < 130000
+#ifndef USE_FLOAT4_BYVAL
+#error Postgres needs to be configured with USE_FLOAT4_BYVAL
+#endif
+#endif
+
+#ifndef USE_FLOAT8_BYVAL
+#error Postgres needs to be configured with USE_FLOAT8_BYVAL
+#endif
+
+/* To avoid including fmgrprotos.h */
+extern Datum numeric_float8(PG_FUNCTION_ARGS);
+extern Datum numeric_round(PG_FUNCTION_ARGS);
+extern Datum float8_numeric(PG_FUNCTION_ARGS);
+
 #define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
+
+/*****************************************************************************
+ * Additional operator strategy numbers used in the GiST and SP-GiST temporal
+ * opclasses with respect to those defined in the file stratnum.h
+ *****************************************************************************/
+
+#define RTOverBeforeStrategyNumber    28    /* for &<# */
+#define RTBeforeStrategyNumber        29    /* for <<# */
+#define RTAfterStrategyNumber         30    /* for #>> */
+#define RTOverAfterStrategyNumber     31    /* for #&> */
+#define RTOverFrontStrategyNumber     32    /* for &</ */
+#define RTFrontStrategyNumber         33    /* for <</ */
+#define RTBackStrategyNumber          34    /* for />> */
+#define RTOverBackStrategyNumber      35    /* for /&> */
+
+/*****************************************************************************
+ * Struct definitions for GisT indexes copied from PostgreSQL
+ *****************************************************************************/
+
+/**
+ * Structure to represent information about an entry that can be placed
+ * to either group without affecting overlap over selected axis ("common entry").
+ */
+typedef struct
+{
+  /* Index of entry in the initial array */
+  int      index;
+  /* Delta between penalties of entry insertion into different groups */
+  double    delta;
+} CommonEntry;
+
+/**
+ * Structure to represent a projection of bounding box to an axis.
+ */
+typedef struct
+{
+  double    lower,
+            upper;
+} SplitInterval;
+
+/*****************************************************************************
+ * Definitions for GiST indexes
+ *****************************************************************************/
+
+/* Minimum accepted ratio of split */
+#define LIMIT_RATIO 0.3
+
+#if POSTGRESQL_VERSION_NUMBER < 120000
+extern int float8_cmp_internal(float8 a, float8 b);
+extern double get_float8_infinity(void);
+#endif
+
+/* Convenience macros for NaN-aware comparisons */
+#define FLOAT8_EQ(a,b)   (float8_cmp_internal(a, b) == 0)
+#define FLOAT8_LT(a,b)   (float8_cmp_internal(a, b) < 0)
+#define FLOAT8_LE(a,b)   (float8_cmp_internal(a, b) <= 0)
+#define FLOAT8_GT(a,b)   (float8_cmp_internal(a, b) > 0)
+#define FLOAT8_GE(a,b)   (float8_cmp_internal(a, b) >= 0)
+#define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
+#define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
  * Typmod definitions

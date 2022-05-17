@@ -51,7 +51,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/builtins.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #ifndef MEOS

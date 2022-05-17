@@ -36,7 +36,6 @@
 
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#include "general/lifting.h"
 
 /*****************************************************************************
  * Temporal and

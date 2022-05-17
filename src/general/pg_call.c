@@ -43,13 +43,16 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-#include <miscadmin.h>
 #include <common/int128.h>
 #include <common/hashfn.h>
 #include <libpq/pqformat.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
 #include <utils/int8.h>
+
+/* Definitions from miscadmin.h to avoid including it */
+
+extern int DateStyle;
 
 /* Definitions from builtins.h to avoid including it */
 

@@ -474,7 +474,7 @@ tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
 Temporal *
 tpoint_from_text(const char *wkt, CachedType temptype)
 {
-  Temporal *result = tpoint_parse((char **) &ewkt, temptype);
+  Temporal *result = tpoint_parse((char **) &wkt, temptype);
   return result;
 }
 #endif
