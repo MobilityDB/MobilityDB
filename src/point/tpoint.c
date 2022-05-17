@@ -68,11 +68,11 @@ gserialized_copy(const GSERIALIZED *g)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_box_cast
  * @brief Return the bounding box of a temporal point
  */
 STBOX *
-tpoint_stbox(const Temporal *temp)
+tpoint_to_stbox(const Temporal *temp)
 {
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   temporal_set_bbox(temp, result);

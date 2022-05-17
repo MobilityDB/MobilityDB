@@ -463,6 +463,34 @@ tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
 }
 
 /*****************************************************************************
+ * Input in EWKT format
+ *****************************************************************************/
+
+#ifdef MEOS
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its WKT representation
+ */
+Temporal *
+tpoint_from_text(const char *wkt, CachedType temptype)
+{
+  Temporal *result = tpoint_parse((char **) &ewkt, temptype);
+  return result;
+}
+#endif
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its EWKT representation
+ */
+Temporal *
+tpoint_from_ewkt(const char *ewkt, CachedType temptype)
+{
+  Temporal *result = tpoint_parse((char **) &ewkt, temptype);
+  return result;
+}
+
+/*****************************************************************************
  * Input in EWKB format
  * Please refer to the file tpoint_out.c where the binary format is explained
  *****************************************************************************/
@@ -863,7 +891,8 @@ tpoint_from_ewkb(uint8_t *wkb, int size)
  *****************************************************************************/
 
 /**
- * Return a temporal point from its HEXEWKB representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its HEXEWKB representation
  */
 Temporal *
 tpoint_from_hexewkb(const char *hexwkb)
@@ -872,21 +901,6 @@ tpoint_from_hexewkb(const char *hexwkb)
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
   Temporal *result = tpoint_from_ewkb(wkb, hexwkb_len / 2);
   pfree(wkb);
-  return result;
-}
-
-/*****************************************************************************
- * Input in EWKT format
- *****************************************************************************/
-
-/**
- * This just does the same thing as the _in function, except it has to handle
- * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
-*/
-Temporal *
-tpoint_from_ewkt(const char *wkt, CachedType temptype)
-{
-  Temporal *result = tpoint_parse((char **) &wkt, temptype);
   return result;
 }
 

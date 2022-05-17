@@ -53,6 +53,7 @@
 #include <libmeos.h>
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 #include "point/pgis_call.h"
 #include "point/postgis.h"
 #include "point/geography_funcs.h"

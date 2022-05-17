@@ -422,6 +422,7 @@ extern TBOX *tnumber_to_tbox(Temporal *temp);
 extern void stbox_set_gbox(const STBOX *box, GBOX *gbox);
 extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
 extern Datum stbox_to_geometry(const STBOX *box);
+extern STBOX *tpoint_to_stbox(const Temporal *temp);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBOX *box);
 extern void timestamp_set_stbox(TimestampTz t, STBOX *box);
 extern void timestampset_set_stbox(const TimestampSet *ts, STBOX *box);
@@ -572,16 +573,19 @@ extern TInstant *tpointinst_from_mfjson(json_object *mfjson, int srid, CachedTyp
 extern TInstantSet *tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype);
 extern TSequence *tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype, bool linear);
 extern TSequenceSet *tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype, bool linear);
+extern Temporal *tpoint_from_text(const char *wkt, CachedType temptype);
+extern Temporal *tpoint_from_ewkt(const char *wkt, Oid temptypid);
 extern Temporal *tpoint_from_ewkb(uint8_t *wkb, int size);
-extern char *tpoint_as_text(const Temporal *temp);
-extern char *tpoint_as_ewkt(const Temporal *temp);
-extern char **geoarr_as_text(const Datum *geoarr, int count, bool extended);
-extern char **tpointarr_as_text(const Temporal **temparr, int count, bool extended);
+extern Temporal *tpoint_from_hexewkb(const char *hexwkb);
 extern char *tpointinst_as_mfjson(const TInstant *inst, int precision, const STBOX *bbox, char *srs);
 extern char *tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox, char *srs);
 extern char *tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox, char *srs);
 extern char *tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox, char *srs);
 extern char *tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs);
+extern char *tpoint_as_text(const Temporal *temp);
+extern char *tpoint_as_ewkt(const Temporal *temp);
+extern char **geoarr_as_text(const Datum *geoarr, int count, bool extended);
+extern char **tpointarr_as_text(const Temporal **temparr, int count, bool extended);
 extern uint8_t *tpoint_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *tpoint_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size);
 
@@ -1279,7 +1283,6 @@ extern Temporal *tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo);
 
 /* Spatial accessor functions for temporal point types */
 
-extern STBOX *tpoint_stbox(const Temporal *temp);
 extern STBOX *tpointseq_stboxes(const TSequence *seq, int *count);
 extern STBOX *tpointseqset_stboxes(const TSequenceSet *ts, int *count);
 extern STBOX *tpoint_stboxes(const Temporal *temp, int *count);
@@ -1340,6 +1343,7 @@ extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 
 /* Spatial relationship functions for temporal point types */
 
+extern int contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp);
 extern int disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);

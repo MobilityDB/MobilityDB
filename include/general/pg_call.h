@@ -39,6 +39,23 @@
 
 #if POSTGRESQL_VERSION_NUMBER < 140000
 
+/* To avoid including fmgrprotos.h */
+extern Datum timestamptz_pl_interval(PG_FUNCTION_ARGS);
+extern Datum timestamp_mi_interval(PG_FUNCTION_ARGS);
+extern Datum timestamp_mi(PG_FUNCTION_ARGS);
+extern Datum interval_pl(PG_FUNCTION_ARGS);
+extern Datum interval_cmp(PG_FUNCTION_ARGS);
+extern Datum hashchar(PG_FUNCTION_ARGS);
+extern Datum hashint4(PG_FUNCTION_ARGS);
+extern Datum hashint8(PG_FUNCTION_ARGS);
+extern Datum hashint8extended(PG_FUNCTION_ARGS);
+extern Datum hashfloat8(PG_FUNCTION_ARGS);
+extern Datum hashtext(PG_FUNCTION_ARGS);
+extern Datum dsin(PG_FUNCTION_ARGS);
+extern Datum dcos(PG_FUNCTION_ARGS);
+extern Datum datan(PG_FUNCTION_ARGS);
+extern Datum degrees(PG_FUNCTION_ARGS);
+
 #define pg_timestamp_pl_interval(X, Y) \
   (DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval, \
     TimestampTzGetDatum(X), PointerGetDatum(Y))))

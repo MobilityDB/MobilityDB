@@ -45,6 +45,7 @@
 #endif
 /* MobilityDB */
 #include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"

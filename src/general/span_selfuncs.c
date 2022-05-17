@@ -43,7 +43,6 @@
 /* PostgreSQL */
 #include <port.h>
 #include <access/htup_details.h>
-// #include <utils/builtins.h>
 #include "utils/syscache.h"
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>

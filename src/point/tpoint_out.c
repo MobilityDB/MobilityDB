@@ -62,129 +62,6 @@
 #endif
 
 /*****************************************************************************
- * Output in WKT and EWKT format
- *****************************************************************************/
-
-/**
- * Output a geometry in Well-Known Text (WKT) format.
- *
- * @note The parameter type is not needed for temporal points
- */
-static char *
-wkt_out(Oid typid __attribute__((unused)), Datum value)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(value);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
-  char *result = palloc(len);
-  strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
-  return result;
-}
-
-/**
- * Output a geometry in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID.
- *
- * @note The parameter type is not needed for temporal points
- */
-char *
-ewkt_out(Oid typid __attribute__((unused)), Datum value)
-{
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DBL_DIG, &len);
-  char *result = palloc(len);
-  strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the Well-Known Text (WKT) representation of a temporal point.
- */
-char *
-tpoint_as_text(const Temporal *temp)
-{
-  char *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = tinstant_to_string((TInstant *) temp, &wkt_out);
-  else if (temp->subtype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
-  else if (temp->subtype == SEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
-  else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
- * point.
- */
-char *
-tpoint_as_ewkt(const Temporal *temp)
-{
-  int srid = tpoint_srid(temp);
-  char str1[20];
-  if (srid > 0)
-    sprintf(str1, "SRID=%d%c", srid,
-      MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
-  else
-    str1[0] = '\0';
-  char *str2 = tpoint_as_text(temp);
-  char *result = (char *) palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
-  pfree(str2);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a geometry/geography array.
- *
- * @param[in] geoarr Array of geometries/geographies
- * @param[in] count Number of elements in the input array
- * @param[in] extended True when the output is in EWKT
- */
-char **
-geoarr_as_text(const Datum *geoarr, int count, bool extended)
-{
-  char **result = palloc(sizeof(char *) * count);
-  for (int i = 0; i < count; i++)
-    /* The wkt_out and ewkt_out functions do not use the first argument */
-    result[i] = extended ?
-      ewkt_out(ANYOID, geoarr[i]) : wkt_out(ANYOID, geoarr[i]);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a temporal point array
- */
-char **
-tpointarr_as_text(const Temporal **temparr, int count, bool extended)
-{
-  char **result = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-    result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
-      tpoint_as_text(temparr[i]);
-  return result;
-}
-
-/*****************************************************************************
  * Output in MFJSON format
  *****************************************************************************/
 
@@ -626,6 +503,129 @@ tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
     result = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
   else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
+  return result;
+}
+
+/*****************************************************************************
+ * Output in WKT and EWKT format
+ *****************************************************************************/
+
+/**
+ * Output a geometry in Well-Known Text (WKT) format.
+ *
+ * @note The parameter type is not needed for temporal points
+ */
+static char *
+wkt_out(Oid typid __attribute__((unused)), Datum value)
+{
+  GSERIALIZED *gs = DatumGetGserializedP(value);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  size_t len;
+  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
+  char *result = palloc(len);
+  strcpy(result, wkt);
+  lwgeom_free(geom);
+  pfree(wkt);
+  return result;
+}
+
+/**
+ * Output a geometry in Extended Well-Known Text (EWKT) format,
+ * that is, in WKT format prefixed with the SRID.
+ *
+ * @note The parameter type is not needed for temporal points
+ */
+char *
+ewkt_out(Oid typid __attribute__((unused)), Datum value)
+{
+  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  size_t len;
+  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DBL_DIG, &len);
+  char *result = palloc(len);
+  strcpy(result, wkt);
+  lwgeom_free(geom);
+  pfree(wkt);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Well-Known Text (WKT) representation of a temporal point.
+ */
+char *
+tpoint_as_text(const Temporal *temp)
+{
+  char *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tinstant_to_string((TInstant *) temp, &wkt_out);
+  else if (temp->subtype == INSTANTSET)
+    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
+  else if (temp->subtype == SEQUENCE)
+    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
+  else /* temp->subtype == SEQUENCESET */
+    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
+ * point.
+ */
+char *
+tpoint_as_ewkt(const Temporal *temp)
+{
+  int srid = tpoint_srid(temp);
+  char str1[20];
+  if (srid > 0)
+    sprintf(str1, "SRID=%d%c", srid,
+      MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
+  else
+    str1[0] = '\0';
+  char *str2 = tpoint_as_text(temp);
+  char *result = (char *) palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
+ * representation of a geometry/geography array.
+ *
+ * @param[in] geoarr Array of geometries/geographies
+ * @param[in] count Number of elements in the input array
+ * @param[in] extended True when the output is in EWKT
+ */
+char **
+geoarr_as_text(const Datum *geoarr, int count, bool extended)
+{
+  char **result = palloc(sizeof(char *) * count);
+  for (int i = 0; i < count; i++)
+    /* The wkt_out and ewkt_out functions do not use the first argument */
+    result[i] = extended ?
+      ewkt_out(ANYOID, geoarr[i]) : wkt_out(ANYOID, geoarr[i]);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
+ * representation of a temporal point array
+ */
+char **
+tpointarr_as_text(const Temporal **temparr, int count, bool extended)
+{
+  char **result = palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
+      tpoint_as_text(temparr[i]);
   return result;
 }
 

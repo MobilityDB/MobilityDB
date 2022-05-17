@@ -43,7 +43,6 @@
   #include <access/hash.h>
 #endif
 #include <libpq/pqformat.h>
-// #include <utils/builtins.h>
 #include <utils/lsyscache.h>  /* for get_typlenbyval */
 #include <utils/timestamp.h>
 /* MobilityDB */

@@ -46,6 +46,7 @@
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/temporal_util.h"
+#include "point/postgis.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -374,7 +375,7 @@ PGDLLEXPORT Datum
 Tnpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *result = tpoint_stbox(temp);
+  STBOX *result = tpoint_to_stbox(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

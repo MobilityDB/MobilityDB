@@ -42,6 +42,8 @@
 #include <utils/varlena.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
+#else
+  extern double get_float8_nan(void);
 #endif
 /* MobilityDB */
 #include <libmeos.h>

@@ -44,7 +44,6 @@
   #include <common/hashfn.h>
 #endif
 #include <libpq/pqformat.h>
-// #include <utils/fmgrprotos.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/pg_call.h"

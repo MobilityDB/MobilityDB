@@ -100,7 +100,6 @@
 #include <float.h>
 /* PostgreSQL */
 #include <access/spgist.h>
-// #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/spgist_private.h>
 #include <utils/float.h>

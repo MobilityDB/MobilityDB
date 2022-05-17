@@ -51,6 +51,8 @@
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/lifting.h"
+#include "general/temporal_util.h"
+#include "point/postgis.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
@@ -367,7 +369,9 @@ geom_ever_contains(Datum geom1, Datum geom2)
 }
 
 /**
- * Return true if a geometry ever contains a temporal point
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return 1 if a geometry ever contains a temporal point,
+ * 0 if not, and -1 if the geometry is empty.
  */
 int
 contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)

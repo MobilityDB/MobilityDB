@@ -72,7 +72,6 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-// #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>

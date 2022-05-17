@@ -38,7 +38,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type_d.h>
-// #include <libpq/pqformat.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -76,30 +75,15 @@ typedef struct
 
 /*****************************************************************************/
 
-/* General functions */
-
-
 /* Parameter tests */
 
 extern void ensure_has_X_stbox(const STBOX *box);
 extern void ensure_has_T_stbox(const STBOX *box);
 
-/* Input/Ouput functions */
-
-
-/* Constructor functions */
-
-
-/* Casting */
-
-
 /* Set an STBOX from a <Type> */
 
 extern void timestampset_stbox_slice(Datum tsdatum, STBOX *box);
 extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
-
-/* Accessor functions */
-
 
 /* SRID functions */
 
@@ -109,18 +93,6 @@ extern STBOX * stbox_transform(const STBOX *box, int32 srid);
 /* Transformation functions */
 
 extern STBOX *stbox_round(const STBOX *box, Datum prec);
-
-/* Topological operators */
-
-
-/* Position operators */
-
-
-/* Set operators */
-
-
-/* Comparison functions */
-
 
 /*****************************************************************************/
 

@@ -59,7 +59,6 @@
   (CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo, \
     InvalidOid, PointerGetDatum(X), PointerGetDatum(Y), Float8GetDatum(Z), \
     BoolGetDatum(W)))
-
 #define PGIS_ST_Distance(X, Y) \
   (DatumGetFloat8(call_function2(distance, PointerGetDatum(X), PointerGetDatum(Y))))
 #define PGIS_ST_3DDistance(X, Y) \
@@ -73,13 +72,10 @@
   (call_function2(LWGEOM_shortestline3d, PointerGetDatum(X), PointerGetDatum(Y)))
 #define PGIS_geography_shortestline(X, Y) \
   (call_function2(geography_shortestline, PointerGetDatum(X), PointerGetDatum(Y)))
-
 #define PGIS_ST_Intersection(X, Y) \
   (call_function2(intersection, PointerGetDatum(X), PointerGetDatum(Y)))
-
 #define PGIS_boundary(X) \
   (call_function1(boundary, PointerGetDatum(X)))
-
 #define PGIS_BOX3D_to_LWGEOM(X) \
   (DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(X)))
 #define PGIS_BOX2D_to_LWGEOM(X, Y) \
@@ -89,18 +85,15 @@
       gserialized_set_srid(g, Y); \
       result = PointerGetDatum(g); \
   } while (0)
-
 #define PGIS_geometry_from_geography(X) \
   (DatumGetGserializedP(call_function1(geometry_from_geography, \
     PointerGetDatum(X))))
 #define PGIS_geography_from_geometry(X) \
   (DatumGetGserializedP(call_function1(geography_from_geometry, \
     PointerGetDatum(X))))
-
 #define PGIS_geography_length(X, Y) \
   (DatumGetFloat8(call_function2(geography_length, PointerGetDatum(X), \
     BoolGetDatum(Y))))
-
 
 #else /* POSTGIS_VERSION_NUMBER >= 30000 */
 
