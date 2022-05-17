@@ -301,10 +301,19 @@ npoint_send(const Npoint *np)
 /*****************************************************************************/
 
 /**
+ * @brief Return a network point from its string representation.
+ */
+Nsegment *
+nsegment_in(char *str)
+{
+  return nsegment_parse(&str);
+}
+
+/**
  * @brief Output function for network segments
  */
 char *
-nsegment_to_string(Nsegment *ns)
+nsegment_out(const Nsegment *ns)
 {
   char *result = psprintf("NSegment(%ld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
   return result;
@@ -314,7 +323,7 @@ nsegment_to_string(Nsegment *ns)
  * @brief Receive function for network segments
  */
 Nsegment *
-nsegment_read(StringInfo buf)
+nsegment_recv(StringInfo buf)
 {
   Nsegment *result = (Nsegment *) palloc(sizeof(Nsegment));
   result->rid = pq_getmsgint64(buf);
@@ -326,13 +335,14 @@ nsegment_read(StringInfo buf)
 /**
  * @brief Send function for network segments
  */
-void
-nsegment_write(Nsegment *ns, StringInfo buf)
+bytea *
+nsegment_send(const Nsegment *ns)
 {
-  pq_sendint64(buf, (uint64) ns->rid);
-  pq_sendfloat8(buf, ns->pos1);
-  pq_sendfloat8(buf, ns->pos2);
-  return;
+  StringInfoData buf;
+  pq_sendint64(&buf, (uint64) ns->rid);
+  pq_sendfloat8(&buf, ns->pos1);
+  pq_sendfloat8(&buf, ns->pos2);
+  return pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -340,7 +350,7 @@ nsegment_write(Nsegment *ns, StringInfo buf)
  *****************************************************************************/
 
 /**
- * @brief Construct an network point value from the arguments
+ * @brief Construct a network segment from the arguments
  */
 Npoint *
 npoint_make(int64 rid, double pos)
@@ -352,7 +362,7 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
- * @brief Set a network point value from the arguments.
+ * @brief Set a network segment from the arguments.
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -369,7 +379,7 @@ npoint_set(int64 rid, double pos, Npoint *np)
 }
 
 /**
- * @brief Construct an network segment value from the arguments
+ * @brief Construct a network segment from the arguments
  */
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
@@ -381,7 +391,7 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
- * @brief Set a network segment value from the arguments.
+ * @brief Set a network segment from the arguments.
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
@@ -403,10 +413,10 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @brief Construct an network segment value from the arguments
+ * @brief Cast a network point as a network segment
  */
 Nsegment *
-npoint_nsegment(const Npoint *np)
+npoint_to_nsegment(const Npoint *np)
 {
   return nsegment_make(np->rid, np->pos, np->pos);
 }
@@ -419,7 +429,7 @@ npoint_nsegment(const Npoint *np)
  * @brief Return the route of the network point
  */
 int64
-npoint_route(Npoint *np)
+npoint_route(const Npoint *np)
 {
   return np->rid;
 }
@@ -428,7 +438,7 @@ npoint_route(Npoint *np)
  * @brief Return the position of the network point
  */
 double
-npoint_position(Npoint *np)
+npoint_position(const Npoint *np)
 {
   return np->pos;
 }
@@ -437,7 +447,7 @@ npoint_position(Npoint *np)
  * @brief Return the route of the network segment
  */
 int64
-nsegment_route(Nsegment *ns)
+nsegment_route(const Nsegment *ns)
 {
   return ns->rid;
 }
@@ -446,7 +456,7 @@ nsegment_route(Nsegment *ns)
  * @brief Return the start position of the network segment
  */
 double
-nsegment_start_position(Nsegment *ns)
+nsegment_start_position(const Nsegment *ns)
 {
   return ns->pos1;
 }
@@ -455,7 +465,7 @@ nsegment_start_position(Nsegment *ns)
  * @brief Return the end position of the network segment
  */
 double
-nsegment_end_position(Nsegment *ns)
+nsegment_end_position(const Nsegment *ns)
 {
   return ns->pos2;
 }
@@ -463,6 +473,49 @@ nsegment_end_position(Nsegment *ns)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @brief Set the precision of the position of a network point to the number of
+ * decimal places
+ * @note Funcion used by the lifting infrastructure
+ */
+Datum
+datum_npoint_round(Datum npoint, Datum size)
+{
+  /* Set precision of position */
+  Npoint *np = (Npoint *) DatumGetPointer(npoint);
+  Npoint *result = npoint_round(np, size);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the position of a network point to the number of
+ * decimal places
+ */
+Npoint *
+npoint_round(const Npoint *np, Datum size)
+{
+  /* Set precision of position */
+  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
+  Npoint *result = npoint_make(np->rid, pos);
+  return result;
+}
+
+/**
+ * @brief Set the precision of the position of a network point to the number of
+ * decimal places
+ */
+Nsegment *
+nsegment_round(const Nsegment *ns, Datum size)
+{
+  /* Set precision of positions */
+  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
+    size));
+  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
+    size));
+  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
+  return result;
+}
 
 /*****************************************************************************
  * Conversions between network and Euclidean space
@@ -1004,7 +1057,7 @@ PGDLLEXPORT Datum
 Nsegment_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(nsegment_parse(&str));
+  PG_RETURN_POINTER(nsegment_in(str));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_out);
@@ -1015,7 +1068,7 @@ PGDLLEXPORT Datum
 Nsegment_out(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_CSTRING(nsegment_to_string(ns));
+  PG_RETURN_CSTRING(nsegment_out(ns));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_recv);
@@ -1026,7 +1079,7 @@ PGDLLEXPORT Datum
 Nsegment_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(nsegment_read(buf));
+  PG_RETURN_POINTER(nsegment_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_send);
@@ -1037,10 +1090,7 @@ PGDLLEXPORT Datum
 Nsegment_send(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  nsegment_write(ns, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(nsegment_send(ns));
 }
 
 /*****************************************************************************
@@ -1049,7 +1099,7 @@ Nsegment_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_constructor);
 /**
- * Construct an network point value from the arguments
+ * Construct a network segment from the arguments
  */
 PGDLLEXPORT Datum
 Npoint_constructor(PG_FUNCTION_ARGS)
@@ -1061,7 +1111,7 @@ Npoint_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_constructor);
 /**
- * Construct an network segment value from the arguments
+ * Construct a network segment from the arguments
  */
 PGDLLEXPORT Datum
 Nsegment_constructor(PG_FUNCTION_ARGS)
@@ -1074,13 +1124,13 @@ Nsegment_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
- * Construct an network segment value from the network point
+ * Cast a network segment from a network point
  */
 PGDLLEXPORT Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_POINTER(npoint_nsegment(np));
+  PG_RETURN_POINTER(npoint_to_nsegment(np));
 }
 
 /*****************************************************************************
@@ -1140,53 +1190,6 @@ Nsegment_end_position(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   PG_RETURN_FLOAT8(nsegment_end_position(ns));
-}
-
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
- * @note Funcion used by the lifting infrastructure
- */
-Datum
-datum_npoint_round(Datum npoint, Datum size)
-{
-  /* Set precision of position */
-  Npoint *np = (Npoint *) DatumGetPointer(npoint);
-  Npoint *result = npoint_round(np, size);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
- */
-Npoint *
-npoint_round(Npoint *np, Datum size)
-{
-  /* Set precision of position */
-  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
-  Npoint *result = npoint_make(np->rid, pos);
-  return result;
-}
-
-/**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
- */
-Nsegment *
-nsegment_round(Nsegment *ns, Datum size)
-{
-  /* Set precision of positions */
-  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
-    size));
-  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
-    size));
-  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
-  return result;
 }
 
 PG_FUNCTION_INFO_V1(Npoint_round);

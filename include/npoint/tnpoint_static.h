@@ -68,27 +68,28 @@ extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
 /* Cast functions */
 
-extern Nsegment *npoint_nsegment(const Npoint *np);
+extern Nsegment *npoint_to_nsegment(const Npoint *np);
 
 /* Input/output functions */
 
-extern char *nsegment_to_string(Nsegment *ns);
-extern Nsegment *nsegment_read(StringInfo buf);
-extern void nsegment_write(Nsegment *ns, StringInfo buf);
+extern Nsegment *nsegment_in(char *str);
+extern char *nsegment_out(const Nsegment *ns);
+extern Nsegment *nsegment_recv(StringInfo buf);
+extern bytea *nsegment_send(const Nsegment *ns);
 
 /* Accessor functions */
 
-extern int64 npoint_route(Npoint *np);
-extern double npoint_position(Npoint *np);
-extern int64 nsegment_route(Nsegment *ns);
-extern double nsegment_start_position(Nsegment *ns);
-extern double nsegment_end_position(Nsegment *ns);
+extern int64 npoint_route(const Npoint *np);
+extern double npoint_position(const Npoint *np);
+extern int64 nsegment_route(const Nsegment *ns);
+extern double nsegment_start_position(const Nsegment *ns);
+extern double nsegment_end_position(const Nsegment *ns);
 
 /* Transformation functions */
 
 extern Datum datum_npoint_round(Datum npoint, Datum size);
-extern Npoint *npoint_round(Npoint *np, Datum size);
-extern Nsegment *nsegment_round(Nsegment *ns, Datum size);
+extern Npoint *npoint_round(const Npoint *np, Datum size);
+extern Nsegment *nsegment_round(const Nsegment *ns, Datum size);
 
 /* Conversions between network and Euclidean space */
 

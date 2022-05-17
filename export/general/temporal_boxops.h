@@ -61,25 +61,25 @@ extern Datum Same_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum Overlaps_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum Overlaps_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum Overlaps_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Overlaps_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Overlaps_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum Overlaps_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Contains_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum Contains_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum Contains_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Contains_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Contains_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum Contains_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Contained_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum Contained_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum Contained_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Contained_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Contained_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum Contained_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Same_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum Same_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum Same_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Same_tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Same_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum Same_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
