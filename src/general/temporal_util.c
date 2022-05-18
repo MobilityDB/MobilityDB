@@ -1248,7 +1248,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 /*****************************************************************************/
 
 /* CallerFInfoFunctionCall 1 to 3 are provided by PostGIS */
-
+#if POSTGIS_VERSION_NUMBER < 30000
 #if POSTGRESQL_VERSION_NUMBER < 120000
 Datum
 CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
@@ -1304,6 +1304,7 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
 
     return result;
 }
+#endif
 #endif
 
 /*****************************************************************************
