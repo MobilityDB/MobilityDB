@@ -82,6 +82,7 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
   }
 }
 
+#if MEOS
 /*
  * @brief Construct a span value from the bounds
  *
@@ -108,6 +109,7 @@ span_serialize(SpanBound *lower, SpanBound *upper)
     upper->inclusive, lower->basetype);
   return result;
 }
+#endif
 
 /*****************************************************************************/
 
@@ -552,7 +554,6 @@ span_upper_inc(Span *s)
 {
   return s->upper_inc != 0;
 }
-#endif
 
 /**
  * @ingroup libmeos_spantime_accessor
@@ -563,6 +564,7 @@ span_width(const Span *s)
 {
   return distance_elem_elem(s->lower, s->upper, s->basetype, s->basetype);
 }
+#endif
 
 /**
  * @ingroup libmeos_spantime_accessor
