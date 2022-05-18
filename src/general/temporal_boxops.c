@@ -49,7 +49,7 @@
 #include <libmeos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_boxops.h"
 #endif
 
@@ -188,7 +188,7 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   }
   else if (tgeo_type(inst->temptype))
     tpointinst_set_stbox(inst, (STBOX *) box);
-#ifndef MEOS
+#if ! MEOS
   else if (inst->temptype == T_TNPOINT)
     tnpointinst_set_stbox(inst, (STBOX *) box);
 #endif
@@ -237,7 +237,7 @@ tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
     tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
   else if (tgeo_type(instants[0]->temptype))
     tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
-#ifndef MEOS
+#if ! MEOS
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, (STBOX *) box);
 #endif
@@ -258,7 +258,7 @@ tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
  */
 void
 tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
-#ifndef MEOS
+#if ! MEOS
   bool upper_inc, bool linear, void *box)
 #else
   bool upper_inc, bool linear __attribute__((unused)), void *box)
@@ -275,7 +275,7 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
     tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->temptype == T_TGEOGPOINT)
     tgeogpointinstarr_set_stbox(instants, count, (STBOX *) box);
-#ifndef MEOS
+#if ! MEOS
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointseq_set_stbox(instants, count, linear, (STBOX *) box);
 #endif
@@ -528,7 +528,7 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /**
  * Return the size in bytes to read from toast to get the basic
@@ -1726,6 +1726,6 @@ Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS)
   return boxop_tnumber_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

@@ -53,7 +53,7 @@
 #include <postgres.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
 
@@ -77,7 +77,7 @@ temptype_cache_struct _temptype_cache[] =
   {T_TTEXT,      T_TEXT},
   {T_TGEOMPOINT, T_GEOMETRY},
   {T_TGEOGPOINT, T_GEOGRAPHY},
-#ifndef MEOS
+#if ! MEOS
   {T_TNPOINT,    T_NPOINT},
 #endif
 };
@@ -221,7 +221,7 @@ temporal_type(CachedType temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
     temptype == T_TTEXT || temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
-#ifndef MEOS
+#if ! MEOS
     || temptype == T_TNPOINT
 #endif
     )
@@ -253,7 +253,7 @@ ensure_temporal_basetype(CachedType basetype)
     basetype != T_FLOAT8 && basetype != T_TEXT &&
     basetype != T_DOUBLE2 && basetype != T_DOUBLE3 && basetype != T_DOUBLE4 &&
     basetype != T_GEOMETRY && basetype != T_GEOGRAPHY
-#ifndef MEOS
+#if ! MEOS
     && basetype != T_NPOINT
 #endif
     )
@@ -270,7 +270,7 @@ temptype_continuous(CachedType temptype)
   if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
     temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
     temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
-#ifndef MEOS
+#if ! MEOS
     || temptype == T_TNPOINT
 #endif
     )
@@ -326,7 +326,7 @@ basetype_length(CachedType basetype)
     return -1;
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return -1;
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return sizeof(Npoint);
 #endif
@@ -424,7 +424,7 @@ bool
 tspatial_type(CachedType temptype)
 {
   if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
-#ifndef MEOS
+#if ! MEOS
       || temptype == T_TNPOINT
 #endif
       )
@@ -442,7 +442,7 @@ bool
 tspatial_basetype(CachedType basetype)
 {
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY
-#ifndef MEOS
+#if ! MEOS
     || basetype == T_NPOINT
 #endif
     )
@@ -489,7 +489,7 @@ ensure_tgeo_type(CachedType temptype)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <access/heapam.h>
 #include <access/htup_details.h>
@@ -783,6 +783,6 @@ oid_type(Oid typid)
     errmsg("Unknown type Oid %d", typid)));
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

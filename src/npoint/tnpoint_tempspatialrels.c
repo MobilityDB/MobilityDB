@@ -247,7 +247,7 @@ tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, Datum dist,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic functions
@@ -707,6 +707,6 @@ Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

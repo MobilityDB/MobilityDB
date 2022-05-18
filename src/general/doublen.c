@@ -55,7 +55,7 @@
  * Functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * Create a double2 value from the double values
  */
@@ -136,7 +136,7 @@ double2_eq(const double2 *d1, const double2 *d2)
   return (d1->a == d2->a && d1->b == d2->b);
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
@@ -155,7 +155,7 @@ double2_cmp(double2 *d1, double2 *d2)
  * Functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * Create a double2 value from the double values
  */
@@ -238,7 +238,7 @@ double3_eq(const double3 *d1, const double3 *d2)
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
@@ -261,7 +261,7 @@ double3_cmp(double3 *d1, double3 *d2)
  * Functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @brief Create a double2 value from the double values
  */
@@ -353,7 +353,7 @@ double4_eq(const double4 *d1, const double4 *d2)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/Output functions
@@ -545,7 +545,7 @@ Tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
   PG_RETURN_POINTER(NULL);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/
 

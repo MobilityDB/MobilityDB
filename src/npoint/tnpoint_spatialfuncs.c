@@ -921,7 +921,7 @@ tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *geo, bool atfunc)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Functions for spatial reference systems
@@ -1099,6 +1099,6 @@ Tnpoint_minus_geometry(PG_FUNCTION_ARGS)
   return tnpoint_restrict_geometry_ext(fcinfo, REST_MINUS);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

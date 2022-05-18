@@ -616,7 +616,7 @@ timestampset_hash_extended(const TimestampSet *ts, uint64 seed)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/output functions
@@ -1027,6 +1027,6 @@ Timestampset_hash_extended(PG_FUNCTION_ARGS)
   PG_RETURN_UINT64(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

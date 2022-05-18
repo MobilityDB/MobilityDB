@@ -300,7 +300,7 @@ shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Temporal distance
@@ -665,6 +665,6 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

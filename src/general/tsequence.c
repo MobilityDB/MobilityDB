@@ -56,7 +56,7 @@
 #include "general/temporal_parser.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
@@ -146,7 +146,7 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
   return result;
 }
 
-#ifndef MEOS
+#if ! MEOS
 /**
  * Return true if the three values are collinear
  *
@@ -195,7 +195,7 @@ datum_collinear(CachedType basetype, Datum value1, Datum value2, Datum value3,
   if (basetype == T_DOUBLE4)
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value3), ratio);
@@ -560,7 +560,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
   CachedType basetype = temptype_basetype(seq->temptype);
-#ifndef MEOS
+#if ! MEOS
   if (inst1->temptype == T_TNPOINT)
     ensure_same_rid_tnpointinst(inst, inst1);
 #endif
@@ -1061,7 +1061,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
   else if (tgeo_type(inst1->temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
-#ifndef MEOS
+#if ! MEOS
   else if (inst1->temptype == T_TNPOINT)
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);
 #endif
@@ -1290,7 +1290,7 @@ intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
  * Input/output functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence from its string representation.
@@ -2176,7 +2176,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
-#ifndef MEOS
+#if ! MEOS
   if (inst1->temptype == T_TNPOINT)
   {
     Npoint *np1 = DatumGetNpointP(value1);

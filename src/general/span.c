@@ -512,7 +512,7 @@ timestamp_to_period(TimestampTz t)
  * Accessor functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the lower bound of a span
@@ -808,7 +808,7 @@ span_hash_extended(const Span *s, Datum seed)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/output functions
@@ -1222,6 +1222,6 @@ Span_hash_extended(PG_FUNCTION_ARGS)
   PG_RETURN_UINT64(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /******************************************************************************/

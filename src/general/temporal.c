@@ -48,7 +48,7 @@
 #include "general/temporal_parser.h"
 #include "general/tnumber_distance.h"
 #include "point/tpoint_spatialfuncs.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
@@ -198,7 +198,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  */
 void
 ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
-#ifndef MEOS
+#if ! MEOS
   bool merge, int16 subtype)
 #else
   bool merge, int16 subtype __attribute__((unused)))
@@ -207,7 +207,7 @@ ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
   ensure_same_interpolation((Temporal *) inst1, (Temporal *) inst2);
   ensure_increasing_timestamps(inst1, inst2, merge);
   ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
-#ifndef MEOS
+#if ! MEOS
   if (subtype == SEQUENCE && inst1->temptype == T_TNPOINT)
     ensure_same_rid_tnpointinst(inst1, inst2);
 #endif
@@ -259,13 +259,13 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   CachedType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
-#ifndef MEOS
+#if ! MEOS
   Datum geom1 = 0; /* Used only for temporal network points */
 #endif
   datum_func2 point_distance = NULL;
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     point_distance = pt_distance_fn(instants[0]->flags);
-#ifndef MEOS
+#if ! MEOS
   else if (basetype == T_NPOINT)
     geom1 = npoint_geom(DatumGetNpointP(value1));
 #endif
@@ -275,7 +275,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, subtype);
     bool split = false;
     Datum value2 = tinstant_value(instants[i]);
-#ifndef MEOS
+#if ! MEOS
     Datum geom2 = 0; /* Used only for temporal network points */
 #endif
     if (maxdist > 0 && ! datum_eq(value1, value2, basetype))
@@ -287,7 +287,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
       else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
         dist = DatumGetFloat8(point_distance(value1, value2));
-#ifndef MEOS
+#if ! MEOS
       else if (basetype == T_NPOINT)
       {
         geom2 = npoint_geom(DatumGetNpointP(value2));
@@ -308,7 +308,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     if (split)
       result[k++] = i;
     value1 = value2;
-#ifndef MEOS
+#if ! MEOS
     geom1 = geom2;
 #endif
   }
@@ -1140,7 +1140,7 @@ temporal_set_period(const Temporal *temp, Period *p)
   return;
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
  * @brief Return the bounding box of a temporal number.
@@ -2098,7 +2098,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     temporal_set_bbox(temp, &box1);
     if (tgeo_type(temp->temptype))
       geo_set_stbox(DatumGetGserializedP(value), &box2);
-#ifndef MEOS
+#if ! MEOS
     else if (temp->temptype == T_TNPOINT)
     {
       Datum geom = npoint_geom(DatumGetNpointP(value));
@@ -3309,7 +3309,7 @@ temporal_hash(const Temporal *temp)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #if POSTGRESQL_VERSION_NUMBER < 130000
 #include <access/tuptoaster.h>
@@ -5445,6 +5445,6 @@ Temporal_hash(PG_FUNCTION_ARGS)
   PG_RETURN_UINT32(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

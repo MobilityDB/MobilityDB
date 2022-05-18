@@ -241,7 +241,7 @@ tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *loc)
  * Input/output functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant set from its string representation.

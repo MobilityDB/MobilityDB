@@ -208,7 +208,7 @@ temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
   return result;
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
@@ -452,7 +452,7 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
   return result;
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
@@ -484,7 +484,7 @@ temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
@@ -663,6 +663,6 @@ Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
   return temporal_similarity_path_ext(fcinfo, DYNTIMEWARP);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

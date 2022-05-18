@@ -50,7 +50,7 @@
 #include "general/doublen.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
 
@@ -187,7 +187,7 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
     return datum_point_eq(l, r);
   if (typel == T_GEOGRAPHY && typel == typer)
     return datum_point_eq(l, r);
-#ifndef MEOS
+#if ! MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
@@ -233,7 +233,7 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_GEOGRAPHY && typel == typer)
     return gserialized_cmp(DatumGetGserializedP(l),
       DatumGetGserializedP(r)) < 0;
-#ifndef MEOS
+#if ! MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
@@ -864,12 +864,12 @@ basetype_input(CachedType basetype, char *str)
   if (basetype == T_GEOMETRY)
     return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
   if (basetype == T_GEOGRAPHY)
-#ifndef MEOS
+#if ! MEOS
     return call_input(type_oid(T_GEOGRAPHY), str);
 #else
     return PointerGetDatum(PGIS_geography_in(str, -1));
 #endif
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return PointerGetDatum(npoint_in(str));
 #endif
@@ -899,7 +899,7 @@ basetype_output(CachedType basetype, Datum value)
     return PGIS_LWGEOM_out(DatumGetGserializedP(value));
   if (basetype == T_GEOGRAPHY)
     return PGIS_geography_out(DatumGetGserializedP(value));
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return npoint_out(DatumGetNpointP(value));
 #endif
@@ -936,12 +936,12 @@ basetype_recv(CachedType basetype, StringInfo buf)
   if (basetype == T_GEOMETRY)
     return PointerGetDatum(PGIS_LWGEOM_recv(buf));
   if (basetype == T_GEOGRAPHY)
-#ifndef MEOS
+#if ! MEOS
     return call_recv(type_oid(T_GEOGRAPHY), buf);
 #else
     return PointerGetDatum(PGIS_geography_recv(buf));
 #endif
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return PointerGetDatum(npoint_recv(buf));
 #endif
@@ -979,7 +979,7 @@ basetype_send(CachedType basetype, Datum value)
     return PGIS_LWGEOM_send(DatumGetGserializedP(value));
   if (basetype == T_GEOGRAPHY)
     return PGIS_geography_send(DatumGetGserializedP(value));
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return npoint_send(DatumGetNpointP(value));
 #endif
@@ -1040,7 +1040,7 @@ basetype_send(CachedType basetype, Datum value)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <utils/lsyscache.h>
 
@@ -1552,6 +1552,6 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   return make_range(typcache, &lower, &upper, false);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

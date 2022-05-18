@@ -466,7 +466,7 @@ tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
  * Input in EWKT format
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its WKT representation
@@ -910,7 +910,7 @@ tpoint_from_hexewkb(const char *hexwkb)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input in MFJSON format
@@ -988,6 +988,6 @@ Tpoint_from_ewkt(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

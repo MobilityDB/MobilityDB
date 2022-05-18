@@ -765,7 +765,7 @@ dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, Datum dist)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic ever spatial relationship functions
@@ -1033,6 +1033,6 @@ Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

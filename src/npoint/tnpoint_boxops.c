@@ -305,7 +305,7 @@ boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Transform a temporal Npoint to a STBOX
@@ -933,6 +933,6 @@ Adjacent_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   return boxop_tpoint_tpoint_ext(fcinfo, &adjacent_stbox_stbox);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

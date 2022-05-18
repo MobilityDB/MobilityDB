@@ -2690,7 +2690,7 @@ distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
   return result;
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp and a timestamp set.
@@ -2703,9 +2703,7 @@ distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   double result = distance_period_timestamp(&p, t);
   return result;
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp and a period.
@@ -2715,9 +2713,7 @@ distance_timestamp_period(TimestampTz t, const Period *p)
 {
   return distance_period_timestamp(p, t);
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp and a period set
@@ -2734,7 +2730,7 @@ distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /******************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
@@ -2747,9 +2743,7 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
   double result = distance_period_timestamp(&p, t);
   return result;
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between the timestamp sets
@@ -2764,9 +2758,7 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
   double result = distance_span_span(&p1, &p2);
   return result;
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp set and a period.
@@ -2779,9 +2771,7 @@ distance_timestampset_period(const TimestampSet *ts, const Period *p)
   double result = distance_span_span(&p1, p);
   return result;
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp set and a period set
@@ -2821,7 +2811,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
     return ((float8) t - (float8) p->upper) / USECS_PER_SEC;
 }
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period and a timestamp set
@@ -2831,9 +2821,7 @@ distance_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   return distance_timestampset_period(ts, p);
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period and a period set
@@ -2850,7 +2838,7 @@ distance_period_periodset(const Period *p, const PeriodSet *ps)
 
 /******************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period set and a timestamp
@@ -2860,9 +2848,7 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   return distance_timestamp_periodset(t, ps);
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period set and a timestamp set
@@ -2873,9 +2859,7 @@ distance_periodset_timestampset(const PeriodSet *ps,
 {
   return distance_timestampset_periodset(ts, ps);
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period set and a period
@@ -2885,9 +2869,7 @@ distance_periodset_period(const PeriodSet *ps, const Period *p)
 {
   return distance_period_periodset(p, ps);
 }
-#endif
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between the period sets
@@ -2909,7 +2891,7 @@ distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /**
  * Return the size in bytes to read from toast to get the basic information
@@ -5367,6 +5349,6 @@ Distance_periodset_periodset(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /******************************************************************************/

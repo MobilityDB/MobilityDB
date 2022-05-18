@@ -134,7 +134,7 @@ tnumberinst_double(const TInstant *inst)
  * Intput/output functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant from its string representation.
@@ -1023,7 +1023,7 @@ tinstant_hash(const TInstant *inst)
     value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
     value_hash = gserialized_hash(DatumGetGserializedP(value));
-#ifndef MEOS
+#if ! MEOS
   else if (inst->temptype == T_TNPOINT)
   {
     value_hash = pg_hashint8(value);

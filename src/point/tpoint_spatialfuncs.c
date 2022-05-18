@@ -4703,7 +4703,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Ever/always functions
@@ -5770,6 +5770,6 @@ Tpoint_minus_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

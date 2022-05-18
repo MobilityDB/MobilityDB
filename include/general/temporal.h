@@ -466,7 +466,7 @@ extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <utils/array.h>
 #include <utils/lsyscache.h>
@@ -581,7 +581,7 @@ extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 extern void ensure_non_empty_array(ArrayType *array);
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/
 

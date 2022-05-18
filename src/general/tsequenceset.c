@@ -467,7 +467,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  * Input/output functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence set from its string representation.

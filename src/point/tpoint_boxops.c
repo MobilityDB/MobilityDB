@@ -356,7 +356,7 @@ boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Boxes function
@@ -769,6 +769,6 @@ Adjacent_tpoint_tpoint(PG_FUNCTION_ARGS)
   return boxop_tpoint_tpoint_ext(fcinfo, &adjacent_stbox_stbox);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/
