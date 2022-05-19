@@ -536,9 +536,3 @@ WHERE t1.temp >= t2.temp;
   5050
 (1 row)
 
-SELECT MAX(tnpoint_hash(temp)) FROM tbl_tnpoint;
-    max     
-------------
- 2118530146
-(1 row)
-

@@ -1406,7 +1406,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     if (sync1->subtype == INSTANT)
       result = (Temporal *) tfunc_tinstant_tinstant(
         (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
-    else if (sync1->subtype == INSTANTSET)
+    else /* sync1->subtype == INSTANTSET */
       result = (Temporal *) tfunc_tinstantset_tinstantset(
         (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
   }

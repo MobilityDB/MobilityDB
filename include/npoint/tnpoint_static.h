@@ -126,6 +126,7 @@ extern bool nsegment_ge(const Nsegment *ns1, const Nsegment *ns2);
 
 /* Hash functions */
 
+extern uint32 npoint_hash(const Npoint *np);
 
 /*****************************************************************************/
 
