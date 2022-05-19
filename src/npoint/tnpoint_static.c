@@ -46,6 +46,7 @@
 #include <liblwgeom.h>
 /* MobilityDB */
 #include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/postgis.h"
@@ -984,6 +985,29 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
 {
   int cmp = nsegment_cmp(ns1, ns2);
   return (cmp >= 0);
+}
+
+/*****************************************************************************
+ * Function for defining hash index
+ * The function reuses the approach for span types for combining the hash of
+ * the lower and upper bounds.
+ *****************************************************************************/
+
+/**
+ * @brief Return the 32-bit hash value of a network point.
+ */
+uint32
+npoint_hash(const Npoint *np)
+{
+  /* Compute hashes of value and position */
+  uint32 rid_hash =  pg_hashint8(np->rid);
+  uint32 pos_hash = pg_hashfloat8(np->pos);
+
+  /* Merge hashes of value and position */
+  uint32 result = rid_hash;
+  result = (result << 1) | (result >> 31);
+  result ^= pos_hash;
+  return result;
 }
 
 /*****************************************************************************/

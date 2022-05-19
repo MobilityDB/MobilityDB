@@ -77,6 +77,8 @@ extern Datum degrees(PG_FUNCTION_ARGS);
 #define pg_hashint8extended(X, Y) \
   (DatumGetUInt64(call_function2(hashint8extended, \
       TimestampTzGetDatum(X), Int64GetDatum(Y))))
+#define pg_hashfloat8(X) \
+  (DatumGetUInt32(call_function1(hashfloat8, Float8GetDatum(X))))
 
 #define pg_dsin(X) (DatumGetFloat8(call_function1(dsin, Float8GetDatum(X))))
 #define pg_dcos(X) (DatumGetFloat8(call_function1(dcos, Float8GetDatum(X))))

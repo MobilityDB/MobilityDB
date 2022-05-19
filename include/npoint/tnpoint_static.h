@@ -124,6 +124,9 @@ extern bool nsegment_le(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_gt(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_ge(const Nsegment *ns1, const Nsegment *ns2);
 
+/* Hash functions */
+
+
 /*****************************************************************************/
 
 #endif /* __TNPOINT_STATIC_H__ */

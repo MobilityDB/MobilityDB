@@ -1025,10 +1025,7 @@ tinstant_hash(const TInstant *inst)
     value_hash = gserialized_hash(DatumGetGserializedP(value));
 #if ! MEOS
   else if (inst->temptype == T_TNPOINT)
-  {
-    value_hash = pg_hashint8(value);
-    value_hash ^= pg_hashfloat8(value);
-  }
+    value_hash = npoint_hash(DatumGetNpointP(value));
 #endif
   else
     elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
