@@ -554,6 +554,7 @@ span_upper_inc(Span *s)
 {
   return s->upper_inc != 0;
 }
+#endif
 
 /**
  * @ingroup libmeos_spantime_accessor
@@ -564,7 +565,6 @@ span_width(const Span *s)
 {
   return distance_elem_elem(s->lower, s->upper, s->basetype, s->basetype);
 }
-#endif
 
 /**
  * @ingroup libmeos_spantime_accessor
@@ -1015,6 +1015,18 @@ Span_upper_inc(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   PG_RETURN_BOOL(s->upper_inc != 0);
+}
+
+PG_FUNCTION_INFO_V1(Span_width);
+/**
+ * Return the duration of the period
+ */
+PGDLLEXPORT Datum
+Span_width(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  double result = span_width(s);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Period_duration);

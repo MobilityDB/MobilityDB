@@ -32,6 +32,14 @@
 -- File span.c
 -------------------------------------------------------------------------------
 
+SELECT SUM(width(i)) FROM tbl_intspan;
+SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
+
+SELECT i::int4range FROM tbl_intspan LIMIT 10;
+SELECT p::tstzrange FROM tbl_period LIMIT 10;
+
+-------------------------------------------------------------------------------
+
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i;
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i;
 

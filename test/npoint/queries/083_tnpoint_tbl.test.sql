@@ -261,4 +261,10 @@ WHERE t1.temp > t2.temp;
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
 WHERE t1.temp >= t2.temp;
 
+-------------------------------------------------------------------------------
+--  Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
+
+SELECT MAX(tnpoint_hash(temp)) FROM tbl_tnpoint;
+
 ------------------------------------------------------------------------------

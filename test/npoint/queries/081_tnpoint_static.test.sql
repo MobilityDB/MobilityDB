@@ -35,6 +35,7 @@ SELECT npoint 'npoint(1,0.5)';
 SELECT npoint ' npoint   (   1   ,	0.5   )   ';
 /* Errors */
 SELECT npoint 'point(1,0.5)';
+SELECT npoint 'npoint 1,0.5)';
 SELECT npoint 'npoint(1,0.5';
 SELECT npoint 'npoint(1 0.5)';
 SELECT npoint 'npoint(1000,0.5)';
