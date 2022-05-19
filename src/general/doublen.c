@@ -378,7 +378,7 @@ PG_FUNCTION_INFO_V1(Double2_out);
  * Output function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
-Double2_out(PG_FUNCTION_ARGS)
+Double2_out(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double2 is an internal type")));
@@ -428,7 +428,7 @@ PG_FUNCTION_INFO_V1(Double3_out);
  * Output function for double3 values (stub only)
  */
 PGDLLEXPORT Datum
-Double3_out(PG_FUNCTION_ARGS)
+Double3_out(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double3 is an internal type")));
@@ -478,7 +478,7 @@ PG_FUNCTION_INFO_V1(Double4_out);
  * Output function for double4 values (stub only)
  */
 PGDLLEXPORT Datum
-Double4_out(PG_FUNCTION_ARGS)
+Double4_out(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double4 is an internal type")));
