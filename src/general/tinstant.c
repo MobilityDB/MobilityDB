@@ -51,6 +51,7 @@
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "point/tpoint_spatialfuncs.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * General functions
