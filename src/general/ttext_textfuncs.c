@@ -35,8 +35,8 @@
 #include "general/ttext_textfuncs.h"
 
 /* PostgreSQL */
-#include <catalog/pg_collation_d.h>
-#include <utils/builtins.h>
+// #include <catalog/pg_collation_d.h>
+// #include <utils/builtins.h>
 #include "utils/formatting.h"
 /* MobilityDB */
 #include "general/temporal.h"

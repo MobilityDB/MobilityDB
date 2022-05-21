@@ -40,7 +40,6 @@
 #include <libmeos.h>
 #include "general/lifting.h"
 #include "general/temporal_util.h"
-#include "point/postgis.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"

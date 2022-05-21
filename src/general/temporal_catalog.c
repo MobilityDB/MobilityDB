@@ -494,7 +494,7 @@ ensure_tgeo_type(CachedType temptype)
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <access/tableam.h>
+  #include <access/tableam.h>
 #endif
 #include <catalog/namespace.h>
 #include <utils/rel.h>

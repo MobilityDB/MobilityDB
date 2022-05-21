@@ -52,7 +52,6 @@
 #include <libmeos.h>
 #include "general/lifting.h"
 #include "general/temporal_util.h"
-#include "point/postgis.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
@@ -260,10 +259,10 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 bool
 spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert,
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool geomcoll)
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   bool geomcoll __attribute__((unused)))
+#else
+  bool geomcoll)
 #endif
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -275,7 +274,7 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   /* PostGIS 2.5 does not allow GEOMETRYCOLLECTION for ST_Relate */
   if (geomcoll)
   {
-    GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+    GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
     if (gserialized_get_type(gstraj) == COLLECTIONTYPE)
     {
       bool found = false;
@@ -539,7 +538,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
   Datum bound = PointerGetDatum(PGIS_boundary(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
   bool result = false;
   if (! gserialized_is_empty(gsbound))
   {

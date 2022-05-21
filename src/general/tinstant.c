@@ -51,8 +51,10 @@
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
+#if ! MEOS
+  #include "npoint/tnpoint.h"
+  #include "npoint/tnpoint_static.h"
+#endif
 
 /*****************************************************************************
  * General functions
@@ -307,7 +309,7 @@ tinstant_make(Datum value, CachedType temptype, TimestampTz t)
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))
   {
-    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
@@ -1004,7 +1006,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal instant.
  */
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 uint32
 tinstant_hash(const TInstant *inst)
 {

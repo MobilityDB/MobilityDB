@@ -41,7 +41,6 @@
 #include "general/temporal.h"
 #include "general/span.h"
 #include "general/temporal_catalog.h"
-#include "point/postgis.h"
 
 /*****************************************************************************/
 

@@ -53,7 +53,8 @@ extern void tgeompointinstarr_set_stbox(const TInstant **inst, int count,
   STBOX *box);
 extern void tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
   STBOX *box);
-extern void tpointseqarr_set_stbox(const TSequence **seq, int count, STBOX *box);
+extern void tpointseqarr_set_stbox(const TSequence **seq, int count,
+  STBOX *box);
 
 /* Boxes functions */
 
@@ -70,6 +71,14 @@ extern Datum boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
 extern bool boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBOX *, const STBOX *));
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
 extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
 extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
@@ -81,6 +90,8 @@ extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
 
+#endif /* ! MEOS */
+
 /*****************************************************************************/
 
-#endif
+#endif /* __TPOINT_BOXOPS_H__ */

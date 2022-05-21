@@ -66,7 +66,6 @@
 #include <libmeos.h>
 #include "general/span_analyze.h"
 #include "general/temporal_analyze.h"
-#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"

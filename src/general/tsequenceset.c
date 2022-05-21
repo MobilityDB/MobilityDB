@@ -38,7 +38,6 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>

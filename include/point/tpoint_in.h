@@ -35,18 +35,7 @@
 #ifndef __TPOINT_IN_H__
 #define __TPOINT_IN_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-/* JSON-C */
-#include <json-c/json.h>
-/* MobilityDB */
-#include "general/temporal.h"
-#include "general/temporal_catalog.h"
-
 /*****************************************************************************/
-
-extern Temporal *tpoint_from_mfjson_ext(FunctionCallInfo fcinfo,
-  text *mfjson_input, CachedType temptype);
 
 /*****************************************************************************/
 

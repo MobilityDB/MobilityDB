@@ -38,10 +38,10 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  #include <access/hash.h>
-#else
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
 #endif
 #include <libpq/pqformat.h>
 /* MobilityDB */

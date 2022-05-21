@@ -22,12 +22,12 @@
  *
  **********************************************************************/
 
-#include "postgres.h"
-#include "lwgeom_pg.h"
-
 /* MobilityDB: We only include from the original file the functions necessary
  * to test the inclusion of a point in a polygon. This file is originally
  * located in the /postgis directory */
+
+#include "postgres.h"
+#include <liblwgeom.h> /* MobilityDB */
 
 /*******************************************************************************
  * The following is based on the "Fast Winding Number Inclusion of a Point
@@ -82,18 +82,12 @@ static int isOnSegment(const POINT2D *seg1, const POINT2D *seg2, const POINT2D *
 		minY = seg1->y;
 	}
 
-	POSTGIS_DEBUGF(3, "maxX minX/maxY minY: %.8f %.8f/%.8f %.8f", maxX, minX, maxY, minY);
-
 	if (maxX < point->x || minX > point->x)
 	{
-		POSTGIS_DEBUGF(3, "X value %.8f falls outside the range %.8f-%.8f", point->x, minX, maxX);
-
 		return 0;
 	}
 	else if (maxY < point->y || minY > point->y)
 	{
-		POSTGIS_DEBUGF(3, "Y value %.8f falls outside the range %.8f-%.8f", point->y, minY, maxY);
-
 		return 0;
 	}
 	return 1;
@@ -112,8 +106,6 @@ static int point_in_ring(POINTARRAY *pts, const POINT2D *point)
 	const POINT2D* seg1;
 	const POINT2D* seg2;
 
-	POSTGIS_DEBUG(2, "point_in_ring called.");
-
 	seg2 = getPoint2d_cp(pts, 0);
 	for (i=0; i<pts->npoints-1; i++)
 	{
@@ -122,15 +114,9 @@ static int point_in_ring(POINTARRAY *pts, const POINT2D *point)
 
 		side = determineSide(seg1, seg2, point);
 
-		POSTGIS_DEBUGF(3, "segment: (%.8f, %.8f),(%.8f, %.8f)", seg1->x, seg1->y, seg2->x, seg2->y);
-		POSTGIS_DEBUGF(3, "side result: %.8f", side);
-		POSTGIS_DEBUGF(3, "counterclockwise wrap %d, clockwise wrap %d", FP_CONTAINS_BOTTOM(seg1->y, point->y, seg2->y), FP_CONTAINS_BOTTOM(seg2->y, point->y, seg1->y));
-
 		/* zero length segments are ignored. */
 		if ((seg2->x == seg1->x) && (seg2->y == seg1->y))
 		{
-			POSTGIS_DEBUG(3, "segment is zero length... ignoring.");
-
 			continue;
 		}
 
@@ -140,8 +126,6 @@ static int point_in_ring(POINTARRAY *pts, const POINT2D *point)
 		{
 			if (isOnSegment(seg1, seg2, point) == 1)
 			{
-				POSTGIS_DEBUGF(3, "point on ring boundary between points %d, %d", i, i+1);
-
 				return 0;
 			}
 		}
@@ -153,8 +137,6 @@ static int point_in_ring(POINTARRAY *pts, const POINT2D *point)
 		 */
 		if ((seg1->y <= point->y) && (point->y < seg2->y) && (side > 0))
 		{
-			POSTGIS_DEBUG(3, "incrementing winding number.");
-
 			++wn;
 		}
 		/*
@@ -164,13 +146,9 @@ static int point_in_ring(POINTARRAY *pts, const POINT2D *point)
 		 */
 		else if ((seg2->y <= point->y) && (point->y < seg1->y) && (side < 0))
 		{
-			POSTGIS_DEBUG(3, "decrementing winding number.");
-
 			--wn;
 		}
 	}
-
-	POSTGIS_DEBUGF(3, "winding number %d", wn);
 
 	if (wn == 0)
 		return -1;
@@ -188,8 +166,6 @@ int point_in_polygon(LWPOLY *polygon, LWPOINT *point)
 	int result, in_ring;
 	POINT2D pt;
 
-	POSTGIS_DEBUG(2, "point_in_polygon called.");
-
 	getPoint2d_p(point->point, 0, &pt);
 	/* assume bbox short-circuit has already been attempted */
 
@@ -199,7 +175,6 @@ int point_in_polygon(LWPOLY *polygon, LWPOINT *point)
 	in_ring = point_in_ring(polygon->rings[0], &pt);
 	if ( in_ring == -1) /* outside the exterior ring */
 	{
-		POSTGIS_DEBUG(3, "point_in_polygon: outside exterior ring.");
 		return -1;
 	}
 	result = in_ring;
@@ -209,12 +184,10 @@ int point_in_polygon(LWPOLY *polygon, LWPOINT *point)
 		in_ring = point_in_ring(polygon->rings[i], &pt);
 		if (in_ring == 1) /* inside a hole => outside the polygon */
 		{
-			POSTGIS_DEBUGF(3, "point_in_polygon: within hole %d.", i);
 			return -1;
 		}
 		if (in_ring == 0) /* on the edge of a hole */
 		{
-			POSTGIS_DEBUGF(3, "point_in_polygon: on edge of hole %d.", i);
 			return 0;
 		}
 	}
@@ -232,8 +205,6 @@ int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point)
 	int result, in_ring;
 	POINT2D pt;
 
-	POSTGIS_DEBUG(2, "point_in_polygon called.");
-
 	getPoint2d_p(point->point, 0, &pt);
 	/* assume bbox short-circuit has already been attempted */
 
@@ -250,7 +221,6 @@ int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point)
 		in_ring = point_in_ring(polygon->rings[0], &pt);
 		if ( in_ring == -1) /* outside the exterior ring */
 		{
-			POSTGIS_DEBUG(3, "point_in_polygon: outside exterior ring.");
 			continue;
 		}
 		if ( in_ring == 0 )
@@ -265,13 +235,11 @@ int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point)
 			in_ring = point_in_ring(polygon->rings[i], &pt);
 			if (in_ring == 1) /* inside a hole => outside the polygon */
 			{
-				POSTGIS_DEBUGF(3, "point_in_polygon: within hole %d.", i);
 				result = -1;
 				break;
 			}
 			if (in_ring == 0) /* on the edge of a hole */
 			{
-				POSTGIS_DEBUGF(3, "point_in_polygon: on edge of hole %d.", i);
 				return 0;
 			}
 		}
@@ -282,7 +250,6 @@ int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point)
 	}
 	return result;
 }
-
 
 /*******************************************************************************
  * End of "Fast Winding Number Inclusion of a Point in a Polygon" derivative.

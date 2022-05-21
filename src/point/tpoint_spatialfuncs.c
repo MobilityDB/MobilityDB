@@ -45,50 +45,20 @@
 #endif
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
-#include <liblwgeom.h>
-#include <liblwgeom_internal.h>
-#include <lwgeodetic.h>
+  #include <liblwgeom.h>
+  #include <liblwgeom_internal.h>
+  #include <lwgeodetic.h>
 #endif
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/pg_call.h"
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/pgis_call.h"
-#include "point/postgis.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialrels.h"
-
-/*****************************************************************************
- * PostGIS cache functions
- *****************************************************************************/
-
-/**
- * Global variable to save the fcinfo when PostGIS functions need to access
- * the proj cache such as transform, geography_distance, or geography_azimuth
- */
-FunctionCallInfo _FCINFO;
-
-/**
- * Fetch from the cache the fcinfo of the external function
- */
-FunctionCallInfo
-fetch_fcinfo()
-{
-  assert(_FCINFO);
-  return _FCINFO;
-}
-
-/**
- * Store in the cache the fcinfo of the external function
- */
-void
-store_fcinfo(FunctionCallInfo fcinfo)
-{
-  _FCINFO = fcinfo;
-  return;
-}
 
 /*****************************************************************************
  * Utility functions
@@ -1343,7 +1313,7 @@ bool
 tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   if (gserialized_is_empty(gs))
   {
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
@@ -2303,7 +2273,7 @@ tpointseq_length(const TSequence *seq)
   {
     Datum traj = tpointseq_trajectory(seq);
     /* We are sure that the trajectory is a line */
-    GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+    GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
     double result = PGIS_geography_length(gstraj, true);
     PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
     pfree(DatumGetPointer(traj));
@@ -2742,10 +2712,18 @@ geom_azimuth(Datum geom1, Datum geom2)
  * Return the azimuth the two geography points
  */
 static Datum
-geog_azimuth(Datum geom1, Datum geom2)
+geog_azimuth(Datum geog1, Datum geog2)
 {
-  return CallerFInfoFunctionCall2(geography_azimuth, (fetch_fcinfo())->flinfo,
-    InvalidOid, geom1, geom2);
+  const GSERIALIZED *g1 = DatumGetGserializedP(geog1);
+  const GSERIALIZED *g2 = DatumGetGserializedP(geog2);
+  const LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
+  const LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
+
+  SPHEROID s;
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+  double result = lwgeom_azumith_spheroid(lwgeom_as_lwpoint(lwgeom1),
+    lwgeom_as_lwpoint(lwgeom2), &s);
+  return Float8GetDatum(result);
 }
 
 /**
@@ -2871,12 +2849,6 @@ tpoint_azimuth(const Temporal *temp)
 /*****************************************************************************
  * Temporal bearing
  *****************************************************************************/
-
-/* Prototypes from float.c */
-extern Datum dsin(PG_FUNCTION_ARGS);
-extern Datum dcos(PG_FUNCTION_ARGS);
-extern Datum datan(PG_FUNCTION_ARGS);
-extern Datum datan2(PG_FUNCTION_ARGS);
 
 /**
  * Normalize the bearing from -180° to + 180° (in radians) to
@@ -3906,7 +3878,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
   {
     Datum traj = tpointseq_trajectory(simpleseqs[i]);
     Datum inter = geom_intersection2d(traj, geom);
-    GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+    GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
@@ -4195,7 +4167,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     pfree_array((void **) simpleseqs, countsimple);
     Datum traj = tpointseq_trajectory(seq);
     Datum inter = geom_intersection2d(traj, geom);
-    GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+    GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
@@ -4216,7 +4188,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     {
       Datum traj = tpointseq_trajectory(simpleseqs[i]);
       Datum inter = geom_intersection2d(traj, geom);
-      GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+      GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
       if (! gserialized_is_empty(gsinter))
       {
         periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,
@@ -4317,7 +4289,7 @@ tpointseq_minus_geometry(const TSequence *seq, Datum geom, int *count)
     return result;
   }
 
-  const Period **periods = palloc(sizeof(Period) * countinter);
+  const Period **periods = palloc(sizeof(Period *) * countinter);
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
   PeriodSet *ps1 = periodset_make(periods, countinter, NORMALIZE_NO);
@@ -4704,6 +4676,36 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
 /*****************************************************************************/
 
 #if ! MEOS
+
+/*****************************************************************************
+ * PostGIS cache functions
+ *****************************************************************************/
+
+/**
+ * Global variable to save the fcinfo when PostGIS functions need to access
+ * the proj cache such as transform, geography_distance, or geography_azimuth
+ */
+FunctionCallInfo _FCINFO;
+
+/**
+ * Fetch from the cache the fcinfo of the external function
+ */
+FunctionCallInfo
+fetch_fcinfo()
+{
+  assert(_FCINFO);
+  return _FCINFO;
+}
+
+/**
+ * Store in the cache the fcinfo of the external function
+ */
+void
+store_fcinfo(FunctionCallInfo fcinfo)
+{
+  _FCINFO = fcinfo;
+  return;
+}
 
 /*****************************************************************************
  * Ever/always functions

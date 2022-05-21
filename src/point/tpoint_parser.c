@@ -220,7 +220,7 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
   CachedType basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
   Datum geo = basetype_parse(str, basetype);
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geo);
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);

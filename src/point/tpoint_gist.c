@@ -41,14 +41,13 @@
 #include <postgres.h>
 #include <access/gist.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
+  #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/time_gist.h"
 #include "general/tnumber_gist.h"
-#include "point/postgis.h"
 
 /*****************************************************************************
  * GiST consistent methods

@@ -101,11 +101,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/span.h"
 #include "general/temporal_catalog.h"
-#include "point/postgis.h"
 
 /* Functions adapted from lwgeom_box.c */
 

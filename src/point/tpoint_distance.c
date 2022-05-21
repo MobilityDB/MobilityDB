@@ -45,9 +45,9 @@
 #endif
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
-#include <lwgeodetic_tree.h>
-#include <measures.h>
-#include <measures3d.h>
+  #include <lwgeodetic_tree.h>
+  #include <measures.h>
+  #include <measures3d.h>
 #endif
 /* MobilityDB */
 #include <libmeos.h>
@@ -55,7 +55,6 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "point/pgis_call.h"
-#include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -909,7 +908,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Datum traj = tpoint_trajectory(temp);
-  GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+  GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
   if (geodetic)
     /* Notice that geography_shortestline_internal is a MobilityDB function */
     *result = PointerGetDatum(geography_shortestline_internal(gstraj, gs, true));

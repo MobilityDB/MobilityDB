@@ -49,7 +49,6 @@
 #include "general/pg_call.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
-#include "point/postgis.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"

@@ -57,7 +57,6 @@
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/temporal_util.h"
-#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 

@@ -57,8 +57,8 @@
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
 #if POSTGIS_VERSION_NUMBER < 30000
-#define OUT_DOUBLE_BUFFER_SIZE \
-  OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
+  #define OUT_DOUBLE_BUFFER_SIZE \
+    OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
 #endif
 
 /*****************************************************************************
@@ -98,26 +98,26 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   {
     char z[OUT_DOUBLE_BUFFER_SIZE];
     const POINT3DZ *pt = datum_point3dz_p(tinstant_value(inst));
-#if POSTGIS_VERSION_NUMBER < 30000
-    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
     lwprint_double(pt->x, precision, x);
     lwprint_double(pt->y, precision, y);
     lwprint_double(pt->z, precision, z);
+#else
+    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+    lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
 #endif
     ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
   }
   else
   {
     const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
-#if POSTGIS_VERSION_NUMBER < 30000
-    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
     lwprint_double(pt->x, precision, x);
     lwprint_double(pt->y, precision, y);
+#else
+    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
 #endif
     ptr += sprintf(ptr, "[%s,%s]", x, y);
   }
@@ -610,7 +610,7 @@ geoarr_as_text(const Datum *geoarr, int count, bool extended)
   for (int i = 0; i < count; i++)
     /* The wkt_out and ewkt_out functions do not use the first argument */
     result[i] = extended ?
-      ewkt_out(ANYOID, geoarr[i]) : wkt_out(ANYOID, geoarr[i]);
+      ewkt_out(0, geoarr[i]) : wkt_out(0, geoarr[i]);
   return result;
 }
 
@@ -681,12 +681,12 @@ static inline bool
 wkb_swap_bytes(uint8_t variant)
 {
   /* If requested variant matches machine arch, we don't have to swap! */
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
-     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   if (((variant & WKB_NDR) && !IS_BIG_ENDIAN) ||
       ((!(variant & WKB_NDR)) && IS_BIG_ENDIAN))
+#else
+  if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
+     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
 #endif
     return false;
   return true;
@@ -1196,10 +1196,10 @@ tpoint_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   if (! (variant & WKB_NDR || variant & WKB_XDR) ||
     (variant & WKB_NDR && variant & WKB_XDR))
   {
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (getMachineEndian() != NDR)
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
     if (IS_BIG_ENDIAN)
+#else
+    if (getMachineEndian() != NDR)
 #endif
       variant = variant | (uint8_t) WKB_XDR;
     else

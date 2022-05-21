@@ -57,9 +57,10 @@
 /*****************************************************************************/
 
 /* Fetch from and store in the cache the fcinfo of the external function */
-
-extern FunctionCallInfo fetch_fcinfo();
-extern void store_fcinfo(FunctionCallInfo fcinfo);
+#if ! MEOS
+  extern FunctionCallInfo fetch_fcinfo();
+  extern void store_fcinfo(FunctionCallInfo fcinfo);
+#endif
 
 /* Utility functions */
 

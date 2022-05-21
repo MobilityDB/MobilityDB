@@ -34,11 +34,8 @@
 
 #include "general/ttext_textfuncs.h"
 
-/* PostgreSQL */
-#include <utils/builtins.h>
 /* MobilityDB */
-#include "general/temporal.h"
-#include "general/temporal_util.h"
+#include <libmeos.h>
 
 /*****************************************************************************
  * Text concatenation

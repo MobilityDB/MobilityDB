@@ -55,7 +55,6 @@
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/lifting.h"
-#include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"

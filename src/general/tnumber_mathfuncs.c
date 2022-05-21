@@ -60,10 +60,10 @@
 static Datum
 datum_degrees(Datum value)
 {
-#if POSTGRESQL_VERSION_NUMBER < 120000
-  return call_function1(degrees, value);
-#else
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   return Float8GetDatum(float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE));
+#else
+  return call_function1(degrees, value);
 #endif
 }
 

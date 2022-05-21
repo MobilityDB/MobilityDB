@@ -49,7 +49,6 @@
 #include <utils/elog.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include <lwgeom_pg.h>
 #include <lwgeom_log.h>
 #include <lwgeom_geos.h>
 /* MobilityDB */
@@ -62,6 +61,17 @@ GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *g);
 /* To avoid including lwgeom_functions_analytic.h */
 extern int point_in_polygon(LWPOLY *polygon, LWPOINT *point);
 extern int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point);
+
+/* Modified version of PG_PARSER_ERROR */
+
+#if MEOS
+#define PG_PARSER_ERROR(lwg_parser_result) \
+  do { \
+    elog(ERROR, "%s", lwg_parser_result.message); \
+  } while(0);
+#else
+  #include <lwgeom_pg.h>
+#endif
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
@@ -97,7 +107,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     LWPOINT *point = lwpoint_make2d(srid, box->xmin, box->ymin);
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(point->flags, FLAGS_GET_GEODETIC(box->flags));
-    result = geometry_serialize(lwpoint_as_lwgeom(point));
+    result = geo_serialize(lwpoint_as_lwgeom(point));
     lwpoint_free(point);
   }
   else if ( (box->xmin == box->xmax) || (box->ymin == box->ymax) )
@@ -116,7 +126,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     line = lwline_construct(srid, NULL, pa);
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(line->flags, FLAGS_GET_GEODETIC(box->flags));
-    result = geometry_serialize(lwline_as_lwgeom(line));
+    result = geo_serialize(lwline_as_lwgeom(line));
     lwline_free(line);
   }
   else
@@ -136,7 +146,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     lwgeom_set_srid(lwpoly_as_lwgeom(poly), srid);
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(poly->flags, FLAGS_GET_GEODETIC(box->flags));
-    result = geometry_serialize(lwpoly_as_lwgeom(poly));
+    result = geo_serialize(lwpoly_as_lwgeom(poly));
     lwpoly_free(poly);
   }
 
@@ -182,7 +192,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     pt.z = box->zmin;
     ptarray_append_point(pa, &pt, LW_TRUE);
 
-    result = geometry_serialize(lwpoint_as_lwgeom(lwpt));
+    result = geo_serialize(lwpoint_as_lwgeom(lwpt));
     lwpoint_free(lwpt);
   }
   /* BOX3D is a line */
@@ -201,7 +211,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     pt.z = box->zmax;
     ptarray_append_point(pa, &pt, LW_TRUE);
 
-    result = geometry_serialize(lwline_as_lwgeom(lwline));
+    result = geo_serialize(lwline_as_lwgeom(lwline));
     lwline_free(lwline);
   }
   /* BOX3D is a polygon in the X plane */
@@ -217,7 +227,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     points[3] = (POINT4D){box->xmin, box->ymin, box->zmax, 0.0};
 
     lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
-    result = geometry_serialize(lwpoly_as_lwgeom(lwpoly));
+    result = geo_serialize(lwpoly_as_lwgeom(lwpoly));
     lwpoly_free(lwpoly);
   }
   /* BOX3D is a polygon in the Y plane */
@@ -233,7 +243,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     points[3] = (POINT4D){box->xmin, box->ymin, box->zmax, 0.0};
 
     lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
-    result = geometry_serialize(lwpoly_as_lwgeom(lwpoly));
+    result = geo_serialize(lwpoly_as_lwgeom(lwpoly));
     lwpoly_free(lwpoly);
   }
   /* BOX3D is a polygon in the Z plane */
@@ -249,7 +259,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     points[3] = (POINT4D){box->xmax, box->ymin, box->zmin, 0.0};
 
     lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
-    result = geometry_serialize(lwpoly_as_lwgeom(lwpoly));
+    result = geo_serialize(lwpoly_as_lwgeom(lwpoly));
     lwpoly_free(lwpoly);
   }
   /* BOX3D is a polyhedron */
@@ -293,7 +303,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
 
     FLAGS_SET_SOLID(geom->flags, 1);
 
-    result = geometry_serialize(geom);
+    result = geo_serialize(geom);
     lwcollection_free((LWCOLLECTION *)geom);
   }
 
@@ -473,7 +483,7 @@ PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   if (lwgeom_is_empty(theline))
     return NULL;
 
-  GSERIALIZED *result = geometry_serialize(theline);
+  GSERIALIZED *result = geo_serialize(theline);
   lwgeom_free(theline);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
@@ -494,7 +504,7 @@ PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   if (lwgeom_is_empty(theline))
     return NULL;
 
-  GSERIALIZED *result = geometry_serialize(theline);
+  GSERIALIZED *result = geo_serialize(theline);
   lwgeom_free(theline);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
@@ -686,7 +696,7 @@ static char
 MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
 {
-  initGEOS(lwpgnotice, lwgeom_geos_error);
+  initGEOS(lwnotice, lwgeom_geos_error);
 
   GEOSGeometry *g1;
   GEOSGeometry *g2;
@@ -806,7 +816,7 @@ PGIS_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
   /* TODO handle empty */
 
-  initGEOS(lwpgnotice, lwgeom_geos_error);
+  initGEOS(lwnotice, lwgeom_geos_error);
 
   GEOSGeometry *g1 = POSTGIS2GEOS(geom1);
   if (!g1)
@@ -852,7 +862,7 @@ PGIS_ST_Intersection(GSERIALIZED *geom1, GSERIALIZED *geom2)
   lwgeom1 = lwgeom_from_gserialized(geom1);
   lwgeom2 = lwgeom_from_gserialized(geom2);
   lwresult = lwgeom_intersection_prec(lwgeom1, lwgeom2, prec);
-  result = geometry_serialize(lwresult);
+  result = geo_serialize(lwresult);
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
   lwgeom_free(lwresult);
@@ -1020,8 +1030,6 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
   int32 typmod_z = TYPMOD_GET_Z(typmod);
   int32 typmod_m = TYPMOD_GET_M(typmod);
 
-  POSTGIS_DEBUG(2, "Entered function");
-
   /* No typmod (-1) => no preferences */
   if (typmod < 0) return gser;
 
@@ -1041,9 +1049,9 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
     geom_type = POINTTYPE;
     pfree(gser);
     if ( gserialized_is_geodetic(gser) )
-      gser = geography_serialize(lwpoint_as_lwgeom(empty_point));
+      gser = geo_serialize(lwpoint_as_lwgeom(empty_point));
     else
-      gser = geometry_serialize(lwpoint_as_lwgeom(empty_point));
+      gser = geo_serialize(lwpoint_as_lwgeom(empty_point));
   }
 
   /* Typmod has a preference for SRID, but geometry does not? Harmonize the geometry SRID. */
@@ -1167,7 +1175,7 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
     /* Add a bbox if necessary */
     if ( lwgeom_needs_bbox(lwgeom) ) lwgeom_add_bbox(lwgeom);
     lwfree(wkb);
-    result = geometry_serialize(lwgeom);
+    result = geo_serialize(lwgeom);
     lwgeom_free(lwgeom);
   }
   else if (str[0] == '{')
@@ -1181,7 +1189,7 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
       lwfree(srs);
       lwgeom_set_srid(lwgeom, srid);
     }
-    result = geometry_serialize(lwgeom);
+    result = geo_serialize(lwgeom);
     lwgeom_free(lwgeom);
   }
   /* WKT then. */
@@ -1194,7 +1202,7 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
     lwgeom = lwg_parser_result.geom;
     if ( lwgeom_needs_bbox(lwgeom) )
       lwgeom_add_bbox(lwgeom);
-    result = geometry_serialize(lwgeom);
+    result = geo_serialize(lwgeom);
     lwgeom_parser_result_free(&lwg_parser_result);
   }
 
@@ -1250,7 +1258,7 @@ PGIS_LWGEOM_recv(StringInfo buf)
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
 
-  geom = geometry_serialize(lwgeom);
+  geom = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
 
   if ( geom_typmod >= 0 )
@@ -1355,7 +1363,7 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
   ** Serialize our lwgeom and set the geodetic flag so subsequent
   ** functions do the right thing.
   */
-  g_ser = geography_serialize(lwgeom);
+  g_ser = geo_serialize(lwgeom);
 
   /* Check for typmod agreement */
   if ( geog_typmod >= 0 )
@@ -1499,7 +1507,7 @@ PGIS_geography_from_geometry(GSERIALIZED *geom)
 
   lwgeom_set_geodetic(lwgeom, true);
   /* We are trusting geography_serialize will add a box if needed */
-  GSERIALIZED *result = geography_serialize(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
   return result;
 }
@@ -1520,7 +1528,7 @@ PGIS_geometry_from_geography(GSERIALIZED *geom)
   if ( (int)lwgeom->srid <= 0 )
     lwgeom->srid = SRID_DEFAULT;
 
-  GSERIALIZED *result = geometry_serialize(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
   return result;
 }

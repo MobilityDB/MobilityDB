@@ -3311,11 +3311,11 @@ temporal_hash(const Temporal *temp)
 
 #if ! MEOS
 
-#if POSTGRESQL_VERSION_NUMBER < 130000
-#include <access/tuptoaster.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <access/heaptoast.h>
+  #include <access/detoast.h>
 #else
-#include <access/heaptoast.h>
-#include <access/detoast.h>
+  #include <access/tuptoaster.h>
 #endif
 
 /* To avoid including fmgrprotos.h */

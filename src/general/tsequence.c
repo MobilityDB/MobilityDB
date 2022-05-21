@@ -37,14 +37,14 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 /* PostgreSQL */
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  #include <access/hash.h>
-#else
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
 #endif
 #include <libpq/pqformat.h>
-#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>

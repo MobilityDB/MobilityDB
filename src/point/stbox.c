@@ -47,7 +47,6 @@
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/pgis_call.h"
-#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -845,7 +844,7 @@ stbox_tmax(const STBOX *box, TimestampTz *result)
 int32
 stbox_get_srid(const STBOX *box)
 {
-  PG_RETURN_INT32(box->srid);
+  return box->srid;
 }
 
 /**

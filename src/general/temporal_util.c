@@ -37,8 +37,6 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <catalog/pg_collation_d.h>
-#include <utils/varlena.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
 #else
@@ -46,6 +44,7 @@
 #endif
 /* MobilityDB */
 #include <libmeos.h>
+#include "general/temporal.h"
 #include "general/pg_call.h"
 #include "general/doublen.h"
 #include "point/pgis_call.h"
@@ -53,6 +52,9 @@
 #if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
+
+/* To avoid including varlena.h */
+extern int	varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oid collid);
 
 /*****************************************************************************
  * Comparison functions on datums
@@ -569,8 +571,7 @@ double2arr_sort(double2 *doubles, int count)
 void
 double3arr_sort(double3 *triples, int count)
 {
-  qsort(triples, count, sizeof(double3),
-    (qsort_comparator) &double3_cmp);
+  qsort(triples, count, sizeof(double3), (qsort_comparator) &double3_cmp);
 }
 #endif
 
@@ -839,7 +840,7 @@ hypot4d(double x, double y, double z, double m)
  * Input/output PostgreSQL functions
  *****************************************************************************/
 
-#if (POSTGRESQL_VERSION_NUMBER >= 140000 && POSTGIS_VERSION_NUMBER >= 30000)
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 
 /**
  * Call input function of the base type
@@ -986,7 +987,7 @@ basetype_send(CachedType basetype, Datum value)
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
-#else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 AND POSTGIS_VERSION_NUMBER >= 30000 */
+#else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /**
  * Call input function of the base type
@@ -1032,7 +1033,7 @@ basetype_send(CachedType basetype, Datum value)
   return call_send(basetypid, value);
 }
 
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 AND POSTGIS_VERSION_NUMBER >= 30000 */
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -1043,6 +1044,8 @@ basetype_send(CachedType basetype, Datum value)
 #if ! MEOS
 
 #include <utils/lsyscache.h>
+#include <catalog/pg_collation_d.h>
+#include <utils/varlena.h>
 
 /*****************************************************************************
  * Call PostgreSQL functions

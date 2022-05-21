@@ -40,6 +40,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>

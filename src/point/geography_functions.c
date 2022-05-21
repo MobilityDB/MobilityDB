@@ -52,7 +52,6 @@
   #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
-#include "point/postgis.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

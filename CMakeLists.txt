@@ -95,22 +95,26 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # Verify PostgreSQL Version
 #-------------------------------------
 
-set(PG_MIN_MAJOR_VERSION "11")
-set(PG_MAX_MAJOR_VERSION "14")
-
-find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
-if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
-  message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
+if(NOT MEOS)
+  set(PG_MIN_MAJOR_VERSION "11")
+  set(PG_MAX_MAJOR_VERSION "14")
+  find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
+  if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
+    message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
+  endif()
+  math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
+else()
+  set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
+  set(POSTGRESQL_VERSION_NUMBER "140200")
 endif()
-math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
+add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
+add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
-add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
-
-# if(MEOS)
-  # message(STATUS "Building MEOS: Including embedded PostgreSQL files")
-  # include_directories("postgresql")
-  # add_subdirectory("postgresql")
-# else()
+if(MEOS)
+  message(STATUS "Building MEOS: Including embedded PostgreSQL files")
+  include_directories("postgres")
+  add_subdirectory("postgres")
+else()
   include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
   if(WIN32)
     include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
@@ -120,13 +124,18 @@ add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTG
     link_directories(${POSTGRESQL_LIBRARIES})
     link_libraries(postgres)
   endif()
-# endif()
+endif()
 
 #-------------------------------------
 # Verify PostGIS Version
 #-------------------------------------
 
-find_package(POSTGIS REQUIRED)
+if(NOT MEOS)
+  find_package(POSTGIS REQUIRED)
+else()
+  set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
+  set(POSTGIS_VERSION_NUMBER "30201")
+endif()
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
@@ -144,11 +153,22 @@ endif()
 # Other dependencies
 #--------------------------------
 
-# Link liblwgeom library for PostGIS 2.5.5
-if(POSTGIS_VERSION_NUMBER LESS 30000)
-  find_package(LWGEOM REQUIRED)
-  include_directories(SYSTEM ${LWGEOM_INCLUDE_DIRS})
+if(NOT MEOS)
+  # Link liblwgeom library for PostGIS 2.5.5
+  if(POSTGIS_VERSION_NUMBER LESS 30000)
+    find_package(LWGEOM REQUIRED)
+    include_directories(SYSTEM ${LWGEOM_INCLUDE_DIRS})
+  endif()
+
+  find_package(GSL REQUIRED)
+  include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 endif()
+  
+  # TODO remove if MEOS
+  find_package(PROJ REQUIRED)
+  include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
+  math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
+  message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
 
 find_package(GEOS REQUIRED)
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
@@ -158,14 +178,6 @@ message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 find_package(JSON-C REQUIRED)
 include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
-find_package(PROJ REQUIRED)
-include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
-math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
-message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
-
-find_package(GSL REQUIRED)
-include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
-
 #--------------------------------
 # Belongs to MobilityDB
 # Must go before target_link_libraries
@@ -174,9 +186,13 @@ include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
   include_directories("postgis/liblwgeom")
+if(NOT MEOS)
   include_directories("postgis/libpgcommon")
+endif()
   include_directories("postgis")
   add_subdirectory("postgis")
+else()
+  message(STATUS "PROBLEM including PostGIS POSTGIS_VERSION_NUMBER= ${POSTGIS_VERSION_NUMBER}<------------------")
 endif()
 
 include_directories("include")
@@ -187,18 +203,21 @@ set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
 if(MEOS)
   message(STATUS "Building MEOS: Network points not included")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpq>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
 else()
   message(STATUS "Building MobilityDB: Including network points")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
 if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-  # if(MEOS)
-    # message(STATUS "Building MEOS: postgis/libpgcommon not included")
-  # else()
-    # message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
+  if(MEOS)
+    message(STATUS "Building MEOS: postgis/libpgcommon not included")
+  else()
+    message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
     set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
-  # endif()
+  endif()
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 endif()
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
@@ -213,12 +232,14 @@ endif()
 #--------------------------------
 
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
-if(POSTGIS_VERSION_NUMBER LESS 30000)
-  target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
+if(NOT MEOS)
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
+  if(POSTGIS_VERSION_NUMBER LESS 30000)
+    target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
+  endif()
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 endif()
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 
 #--------------------------------
 # Belongs to MobilityDB

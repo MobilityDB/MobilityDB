@@ -37,16 +37,30 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 /* PostGIS */
 #include <liblwgeom.h>
+
+
+/*****************************************************************************/
+
+extern GSERIALIZED *geography_shortestline_internal(const GSERIALIZED *g1,
+  const GSERIALIZED *g2, bool use_spheroid);
+
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <fmgr.h>
 #if POSTGIS_VERSION_NUMBER < 30000
 #include "postgis.h"
 #else
 #include <lwgeodetic_tree.h>
 #endif
-
-/*****************************************************************************/
 
 #if POSTGIS_VERSION_NUMBER < 30000
 extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
@@ -60,8 +74,7 @@ extern Datum geography_line_substring(PG_FUNCTION_ARGS);
 extern Datum geography_line_interpolate_point(PG_FUNCTION_ARGS);
 extern Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 
-extern GSERIALIZED *geography_shortestline_internal(const GSERIALIZED *g1,
-  const GSERIALIZED *g2, bool use_spheroid);
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 

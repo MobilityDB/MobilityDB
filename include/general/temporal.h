@@ -48,6 +48,15 @@
 extern text *cstring_to_text(const char *s);
 extern char *text_to_cstring(const text *t);
 
+/* To avoid including pg_collation_d */
+#define DEFAULT_COLLATION_OID 100
+
+#if MEOS
+  /* To avoid including fmgr.h However this implies that the text values are 
+   * always detoasted */
+  #define DatumGetTextP(X)			((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
+#endif
+
 /**
  * Floating point precision
  */
@@ -470,6 +479,8 @@ extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
 
 #include <utils/array.h>
 #include <utils/lsyscache.h>
+#include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
+#include "point/postgis.h"
 
 #if POSTGRESQL_VERSION_NUMBER < 130000
 #ifndef USE_FLOAT4_BYVAL

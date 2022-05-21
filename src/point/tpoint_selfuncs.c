@@ -44,7 +44,6 @@
 #include <libmeos.h>
 #include "general/span_selfuncs.h"
 #include "general/temporal_selfuncs.h"
-#include "point/postgis.h"
 #include "point/tpoint_analyze.h"
 #include "npoint/tnpoint_selfuncs.h"
 

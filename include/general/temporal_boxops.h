@@ -82,6 +82,23 @@ extern bool boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
 extern bool boxop_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, bool (*func)(const Period *, const Period *));
 
+extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
+  CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
+extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
+  bool (*func)(const TBOX *, const TBOX *), bool invert);
+extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
+  bool (*func)(const TBOX *, const TBOX *), bool invert);
+extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const TBOX *, const TBOX *));
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
 extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
@@ -101,15 +118,6 @@ extern Datum boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 
-extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
-  CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
-  bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
-  bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const TBOX *, const TBOX *));
-
 extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
@@ -125,6 +133,8 @@ extern Datum boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 
+#endif /* ! MEOS */
+
 /*****************************************************************************/
 
-#endif
+#endif /* __TEMPORAL_BOXOPS_H__ */ 

@@ -71,6 +71,7 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* PostGIS */
@@ -260,7 +261,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
 
   Datum traj = tpointseq_trajectory(seq);
   Datum inter = geom_intersection2d(traj, geom);
-  GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+  GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
@@ -1262,7 +1263,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
   Datum bound = PointerGetDatum(PGIS_boundary(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {
@@ -1306,7 +1307,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
   Datum bound = PointerGetDatum(PGIS_boundary(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {

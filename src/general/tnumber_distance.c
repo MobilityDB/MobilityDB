@@ -40,7 +40,7 @@
 #include <math.h>
 /* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
+  #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
