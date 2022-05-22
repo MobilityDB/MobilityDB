@@ -232,7 +232,9 @@ endif()
 #--------------------------------
 
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-if(NOT MEOS)
+if(MEOS)
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
+else()
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
   if(POSTGIS_VERSION_NUMBER LESS 30000)
     target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})

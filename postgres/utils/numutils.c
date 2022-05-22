@@ -407,30 +407,6 @@ pg_ultoa_n(uint32 value, char *a)
 }
 
 /*
- * pg_ltoa: converts a signed 32-bit integer to its string representation and
- * returns strlen(a).
- *
- * It is the caller's responsibility to ensure that a is at least 12 bytes long,
- * which is enough room to hold a minus sign, a maximally long int32, and the
- * above terminating NUL.
- */
-int
-pg_ltoa(int32 value, char *a)
-{
-	uint32		uvalue = (uint32) value;
-	int			len = 0;
-
-	if (value < 0)
-	{
-		uvalue = (uint32) 0 - uvalue;
-		a[len++] = '-';
-	}
-	len += pg_ultoa_n(uvalue, a + len);
-	a[len] = '\0';
-	return len;
-}
-
-/*
  * Get the decimal representation, not NUL-terminated, and return the length of
  * same.  Caller must ensure that a points to at least MAXINT8LEN bytes.
  */
@@ -513,6 +489,31 @@ pg_ulltoa_n(uint64 value, char *a)
 
 	return olength;
 }
+
+/*
+ * pg_ltoa: converts a signed 32-bit integer to its string representation and
+ * returns strlen(a).
+ *
+ * It is the caller's responsibility to ensure that a is at least 12 bytes long,
+ * which is enough room to hold a minus sign, a maximally long int32, and the
+ * above terminating NUL.
+ */
+int
+pg_ltoa(int32 value, char *a)
+{
+	uint32		uvalue = (uint32) value;
+	int			len = 0;
+
+	if (value < 0)
+	{
+		uvalue = (uint32) 0 - uvalue;
+		a[len++] = '-';
+	}
+	len += pg_ultoa_n(uvalue, a + len);
+	a[len] = '\0';
+	return len;
+}
+
 
 /*
  * pg_lltoa: converts a signed 64-bit integer to its string representation and

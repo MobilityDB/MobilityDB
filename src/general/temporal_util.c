@@ -861,7 +861,7 @@ basetype_input(CachedType basetype, char *str)
     return Float8GetDatum(float8in_internal(str, NULL, "double precision",
       str));
   if (basetype == T_TEXT)
-    return PointerGetDatum(cstring_to_text(str));
+    return PointerGetDatum(cstring2text(str));
   if (basetype == T_GEOMETRY)
     return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
   if (basetype == T_GEOGRAPHY)
@@ -895,7 +895,7 @@ basetype_output(CachedType basetype, Datum value)
   if (basetype == T_FLOAT8)
     return float8out_internal(DatumGetFloat8(value));
   if (basetype == T_TEXT)
-    return text_to_cstring(DatumGetTextP(value));
+    return text2cstring(DatumGetTextP(value));
   if (basetype == T_GEOMETRY)
     return PGIS_LWGEOM_out(DatumGetGserializedP(value));
   if (basetype == T_GEOGRAPHY)

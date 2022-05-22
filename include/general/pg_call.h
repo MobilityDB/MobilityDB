@@ -54,6 +54,7 @@ extern Datum hashtext(PG_FUNCTION_ARGS);
 extern Datum dsin(PG_FUNCTION_ARGS);
 extern Datum dcos(PG_FUNCTION_ARGS);
 extern Datum datan(PG_FUNCTION_ARGS);
+extern Datum datan2(PG_FUNCTION_ARGS);
 extern Datum degrees(PG_FUNCTION_ARGS);
 
 #define pg_timestamp_pl_interval(X, Y) \

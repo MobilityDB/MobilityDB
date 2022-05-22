@@ -50,10 +50,12 @@ extern char *text_to_cstring(const text *t);
 
 /* To avoid including pg_collation_d */
 #define DEFAULT_COLLATION_OID 100
+#define C_COLLATION_OID 950
+#define POSIX_COLLATION_OID 951
 
 #if MEOS
-  /* To avoid including fmgr.h However this implies that the text values are 
-   * always detoasted */
+  /* To avoid including fmgr.h However this implies that the text values must 
+   * be ALWAYS detoasted */
   #define DatumGetTextP(X)			((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
 #endif
 
