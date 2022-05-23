@@ -54,7 +54,7 @@ extern char *text_to_cstring(const text *t);
 #define POSIX_COLLATION_OID 951
 
 #if MEOS
-  /* To avoid including fmgr.h However this implies that the text values must 
+  /* To avoid including fmgr.h However this implies that the text values must
    * be ALWAYS detoasted */
   #define DatumGetTextP(X)			((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
 #endif
@@ -342,7 +342,6 @@ typedef struct
   int i;
   int j;
 } Match;
-
 
 /*****************************************************************************
  * Miscellaneous

@@ -210,7 +210,7 @@ periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const Period **periods = periodset_periods(ps);
   SkipList *result;
   if (! state)
-    /* Periods are copies while constructing the skiplist */
+    /* Periods are copied while constructing the skiplist */
     result = skiplist_make(fcinfo, (void **) periods, ps->count, PERIOD);
   else
   {
@@ -272,7 +272,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   /* Null period and non-null timestampset, return the bbox of the timestampset */
   if (! p)
   {
-    result = palloc(sizeof(Period));
+    result = palloc0(sizeof(Period));
     timestampset_set_period(ts, result);
     PG_RETURN_POINTER(result);
   }
@@ -310,7 +310,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   /* Null period and non-null period set, return the bbox of the period set */
   if (! p)
   {
-    result = palloc(sizeof(Period));
+    result = palloc0(sizeof(Period));
     periodset_set_period(ps, result);
     PG_RETURN_POINTER(result);
   }

@@ -48,11 +48,15 @@
 #include <libpq/pqformat.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
-#include <utils/int8.h>
 /* MobilityDB */
 #include "general/temporal_util.h"
 
 /* Definitions from builtins.h to avoid including it */
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  extern int64 pg_strtoint64(const char *s);
+#else
+  extern bool scanint8(const char *str, bool errorOK, int64 *result);
+#endif
 
 /* Sign + the most decimal digits an 8-byte number could have */
 #define MAXINT8LEN 20
@@ -203,8 +207,12 @@ pg_int4recv(StringInfo buf)
 int64
 pg_int8in(char *str)
 {
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  int64 result = pg_strtoint64(str);
+#else
   int64 result;
   (void) scanint8(str, false, &result);
+#endif
   return result;
 }
 
@@ -472,7 +480,7 @@ pg_textsend(text *t)
 // #define DATEORDER_DMY      1
 // #define DATEORDER_MDY      2
 
-// /* Definitions from globals.c */ 
+// /* Definitions from globals.c */
 
 int DateStyle = USE_ISO_DATES;
 // int DateOrder = DATEORDER_MDY;
@@ -616,7 +624,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 
   result->month = span1->month + span2->month;
   /* overflow check copied from int4pl */
-  if (SAMESIGN(span1->month, span2->month) && 
+  if (SAMESIGN(span1->month, span2->month) &&
     ! SAMESIGN(result->month, span1->month))
     elog(ERROR, "interval out of range");
 

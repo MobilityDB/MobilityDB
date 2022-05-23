@@ -254,6 +254,10 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 			<listitem>
 				<para>Otro conjunto de funciones para valores de conjuntos de secuencias tiene un único argumento, que es una matriz de valores de secuencia correspondientes. Para valores de secuencia con tipo de base continuo, la interpolación del valor temporal resultante depende de la interpolación de las secuencias que la componen. Se genera un error si las secuencias que componen la matriz tienen interpolación diferentes.</para>
 			</listitem>
+
+			<listitem>
+				<para>Finalmente, otro conjunto de funciones para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de los valores instantáneos correspondientes, y dos argumentos que establecen una distancia máxima y un intervalo de tiempo máximo tal que se introduce una brecha entre la composición de secuencias del resultado siempre que dos instantes de entrada consecutivos tengan una distancia o un intervalo de tiempo superior a estos valores. Para puntos temporales, la distancia se especifica en unidades del SRID subyacente. Estos dos argumentos de brechas son opcionales y, si no se dan, se asume un valor cero, que no se tiene en cuenta para determinar las brechas en el resultado. Además, las funciones para valores de secuencia con tipo de base continuo tienen un argumento adicional de valor booleano que indica si la interpolación es lineal o no. Si no se especifica este argumento, se asume que es verdadero por defecto.</para>
+			</listitem>
 		</itemizedlist>
 
 		<para>A continuación, damos las funciones de constructor para los distintos subtipos.</para>
