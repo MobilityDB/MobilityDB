@@ -15,6 +15,8 @@
 
 #include "postgres.h"
 
+#include "datatype/timestamp.h"
+
 #if 0 /* MobilityDB not used */
 
 #include <ctype.h>
@@ -39,6 +41,7 @@
 #include "utils/datetime.h"
 #include "utils/float.h"
 #include "utils/numeric.h"
+
 
 /*
  * gcc's -ffast-math switch breaks routines that expect exact results from
@@ -333,6 +336,8 @@ timestamp_scale(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMP(result);
 }
 
+#endif /* MobilityDB not used */
+
 /*
  * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
  * Works for either timestamp or timestamptz.
@@ -397,6 +402,8 @@ AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
 	(void) AdjustTimestampForTypmodError(time, typmod, NULL);
 }
+
+#if 0 /* MobilityDB not used */
 
 /* timestamptz_in()
  * Convert a string to internal form.
@@ -2082,6 +2089,8 @@ SetEpochTimestamp(void)
 	return dt;
 }								/* SetEpochTimestamp() */
 
+#endif /* MobilityDB not used */
+
 /*
  * We are currently sharing some code between timestamp and timestamptz.
  * The comparison functions are among them. - thomas 2001-09-25
@@ -2093,6 +2102,8 @@ timestamp_cmp_internal(Timestamp dt1, Timestamp dt2)
 {
 	return (dt1 < dt2) ? -1 : ((dt1 > dt2) ? 1 : 0);
 }
+
+#if 0 /* MobilityDB not used */
 
 Datum
 timestamp_eq(PG_FUNCTION_ARGS)

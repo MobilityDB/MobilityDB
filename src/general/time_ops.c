@@ -2808,7 +2808,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 
   /* If the first period is to the right of the seconde return the distance
    * between the upper bound of the second and lower bound of the first */
-    return ((float8) t - (float8) p->upper) / USECS_PER_SEC;
+  return ((float8) t - (float8) p->upper) / USECS_PER_SEC;
 }
 
 #if MEOS

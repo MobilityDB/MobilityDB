@@ -384,8 +384,8 @@ typedef struct
   bool swap_bytes;     /**< Do an endian flip? */
   uint8_t subtype;     /**< Current subtype we are handling */
   int32_t srid;        /**< Current SRID we are handling */
-  bool hasz;          /**< Z? */
-  bool geodetic;    /**< Geodetic? */
+  bool hasz;           /**< Z? */
+  bool geodetic;       /**< Geodetic? */
   bool has_srid;       /**< SRID? */
   bool linear;         /**< Linear interpolation? */
   const uint8_t *pos;  /**< Current parse position */

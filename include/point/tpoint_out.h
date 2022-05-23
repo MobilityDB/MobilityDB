@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -46,4 +44,4 @@ extern char *ewkt_out(Oid typid, Datum value);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TPOINT_OUT_H__ */

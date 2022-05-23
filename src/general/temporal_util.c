@@ -712,6 +712,62 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 }
 
 /*****************************************************************************
+ * Array functions
+ *****************************************************************************/
+
+/**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
+ * Free a C array of Datum pointers
+ */
+void
+pfree_datumarr(Datum *array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(DatumGetPointer(array[i]));
+  pfree(array);
+  return;
+}
+
+/**
+ * Return the string resulting from assembling the array of strings.
+ * The function frees the memory of the input strings after finishing.
+ */
+char *
+stringarr_to_string(char **strings, int count, int outlen,
+  char *prefix, char open, char close)
+{
+  char *result = palloc(strlen(prefix) + outlen + 3);
+  result[outlen] = '\0';
+  size_t pos = 0;
+  strcpy(result, prefix);
+  pos += strlen(prefix);
+  result[pos++] = open;
+  for (int i = 0; i < count; i++)
+  {
+    strcpy(result + pos, strings[i]);
+    pos += strlen(strings[i]);
+    result[pos++] = ',';
+    result[pos++] = ' ';
+    pfree(strings[i]);
+  }
+  result[pos - 2] = close;
+  result[pos - 1] = '\0';
+  pfree(strings);
+  return result;
+}
+
+/*****************************************************************************
  * Hypotenuse functions
  *****************************************************************************/
 
@@ -1313,58 +1369,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
 /*****************************************************************************
  * Array functions
  *****************************************************************************/
-
-/**
- * Free a C array of pointers
- */
-void
-pfree_array(void **array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(array[i]);
-  pfree(array);
-  return;
-}
-
-/**
- * Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
-  pfree(array);
-  return;
-}
-
-/**
- * Return the string resulting from assembling the array of strings.
- * The function frees the memory of the input strings after finishing.
- */
-char *
-stringarr_to_string(char **strings, int count, int outlen,
-  char *prefix, char open, char close)
-{
-  char *result = palloc(strlen(prefix) + outlen + 3);
-  result[outlen] = '\0';
-  size_t pos = 0;
-  strcpy(result, prefix);
-  pos += strlen(prefix);
-  result[pos++] = open;
-  for (int i = 0; i < count; i++)
-  {
-    strcpy(result + pos, strings[i]);
-    pos += strlen(strings[i]);
-    result[pos++] = ',';
-    result[pos++] = ' ';
-    pfree(strings[i]);
-  }
-  result[pos - 2] = close;
-  result[pos - 1] = '\0';
-  pfree(strings);
-  return result;
-}
 
 /**
  * Extract a C array from a PostgreSQL array containing datums

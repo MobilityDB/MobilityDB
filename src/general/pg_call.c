@@ -49,10 +49,8 @@
 #include <utils/datetime.h>
 #include <utils/float.h>
 #include <utils/int8.h>
-
-/* Definitions from miscadmin.h to avoid including it */
-
-extern int DateStyle;
+/* MobilityDB */
+#include "general/temporal_util.h"
 
 /* Definitions from builtins.h to avoid including it */
 
@@ -63,7 +61,6 @@ extern bool parse_bool_with_len(const char *value, size_t len, bool *result);
 extern int pg_ltoa(int32 l, char *a);
 extern int pg_lltoa(int64 ll, char *a);
 extern int pg_ulltoa_n(uint64 l, char *a);
-extern text *cstring_to_text_with_len(const char *s, int len);
 
 /*****************************************************************************
  * Functions adapted from bool.c
@@ -99,8 +96,7 @@ pg_boolin(const char *in_str)
   if (parse_bool_with_len(str, len, &result))
     return result;
 
-  ereport(ERROR,(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-    errmsg("invalid input syntax for type %s: \"%s\"", "boolean", in_str)));
+  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "boolean", in_str);
 
   /* not reached */
   return false;
@@ -329,8 +325,7 @@ pg_dsin(float8 arg1)
   errno = 0;
   result = sin(arg1);
   if (errno != 0 || isinf(arg1))
-    ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-      errmsg("input is out of range")));
+    elog(ERROR, "input is out of range");
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -368,9 +363,7 @@ pg_dcos(float8 arg1)
   errno = 0;
   result = cos(arg1);
   if (errno != 0 || isinf(arg1))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("input is out of range")));
+    elog(ERROR, "input is out of range");
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -441,7 +434,7 @@ pg_textrecv(StringInfo buf)
   char *str;
   int nbytes;
   str = pq_getmsgtext(buf, buf->len - buf->cursor, &nbytes);
-  result = cstring_to_text_with_len(str, nbytes);
+  result = cstring2text(str);
   pfree(str);
   return result;
 }
@@ -462,6 +455,27 @@ pg_textsend(text *t)
 /*****************************************************************************
  * Functions adapted from timestamp.c
  *****************************************************************************/
+
+// /* Definitions taken from miscadmin.h */
+
+// /* valid DateStyle values */
+// #define USE_POSTGRES_DATES 0
+#define USE_ISO_DATES      1
+// #define USE_SQL_DATES      2
+// #define USE_GERMAN_DATES   3
+// #define USE_XSD_DATES      4
+
+// #define MAXTZLEN           0  /* max TZ name len, not counting tr. null */
+
+// /* valid DateOrder values taken */
+// #define DATEORDER_YMD      0
+// #define DATEORDER_DMY      1
+// #define DATEORDER_MDY      2
+
+// /* Definitions from globals.c */ 
+
+int DateStyle = USE_ISO_DATES;
+// int DateOrder = DATEORDER_MDY;
 
 /**
  * @brief Convert a string to a timestamp.
@@ -493,9 +507,7 @@ pg_timestamptz_in(char *str, int32 typmod)
   {
     case DTK_DATE:
       if (tm2timestamp(tm, fsec, &tz, &result) != 0)
-        ereport(ERROR,
-            (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-             errmsg("timestamp out of range: \"%s\"", str)));
+        elog(ERROR, "timestamp out of range: \"%s\"", str);
       break;
 
     case DTK_EPOCH:
@@ -541,9 +553,7 @@ pg_timestamptz_out(TimestampTz dt)
   else if (timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
     EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
   else
-    ereport(ERROR,
-        (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-         errmsg("timestamp out of range")));
+    elog(ERROR, "timestamp out of range");
 
   result = pstrdup(buf);
   return result;
@@ -584,8 +594,7 @@ pg_timestamptz_recv(StringInfo buf)
      /* ok */ ;
   else if (timestamp2tm(timestamp, &tz, tm, &fsec, NULL, NULL) != 0 ||
        ! IS_VALID_TIMESTAMP(timestamp))
-    ereport(ERROR, (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-         errmsg("timestamp out of range")));
+    elog(ERROR, "timestamp out of range");
 
   AdjustTimestampForTypmod(&timestamp, typmod);
 
@@ -607,25 +616,19 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 
   result->month = span1->month + span2->month;
   /* overflow check copied from int4pl */
-  if (SAMESIGN(span1->month, span2->month) &&
+  if (SAMESIGN(span1->month, span2->month) && 
     ! SAMESIGN(result->month, span1->month))
-    ereport(ERROR,
-        (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-         errmsg("interval out of range")));
+    elog(ERROR, "interval out of range");
 
   result->day = span1->day + span2->day;
   if (SAMESIGN(span1->day, span2->day) &&
     ! SAMESIGN(result->day, span1->day))
-    ereport(ERROR,
-        (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-         errmsg("interval out of range")));
+    elog(ERROR, "interval out of range");
 
   result->time = span1->time + span2->time;
   if (SAMESIGN(span1->time, span2->time) &&
     ! SAMESIGN(result->time, span1->time))
-    ereport(ERROR,
-        (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-         errmsg("interval out of range")));
+    elog(ERROR, "interval out of range");
 
   return result;
 }
@@ -658,9 +661,7 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       fsec_t    fsec;
 
       if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
-        ereport(ERROR,
-            (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-             errmsg("timestamp out of range")));
+        elog(ERROR, "timestamp out of range");
 
       tm->tm_mon += span->month;
       if (tm->tm_mon > MONTHS_PER_YEAR)
@@ -679,9 +680,7 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
         tm->tm_mday = (day_tab[isleap(tm->tm_year)][tm->tm_mon - 1]);
 
       if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
-        ereport(ERROR,
-            (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-             errmsg("timestamp out of range")));
+        elog(ERROR, "timestamp out of range");
     }
 
     if (span->day != 0)
@@ -692,26 +691,20 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       int      julian;
 
       if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
-        ereport(ERROR,
-            (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-             errmsg("timestamp out of range")));
+        elog(ERROR, "timestamp out of range");
 
       /* Add days by converting to and from Julian */
       julian = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) + span->day;
       j2date(julian, &tm->tm_year, &tm->tm_mon, &tm->tm_mday);
 
       if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
-        ereport(ERROR,
-            (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-             errmsg("timestamp out of range")));
+        elog(ERROR, "timestamp out of range");
     }
 
     timestamp += span->time;
 
     if (!IS_VALID_TIMESTAMP(timestamp))
-      ereport(ERROR,
-          (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-           errmsg("timestamp out of range")));
+      elog(ERROR, "timestamp out of range");
 
     result = timestamp;
   }
@@ -777,9 +770,7 @@ Interval *
 pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2)
 {
   if (TIMESTAMP_NOT_FINITE(dt1) || TIMESTAMP_NOT_FINITE(dt2))
-    ereport(ERROR,
-        (errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-         errmsg("cannot subtract infinite timestamps")));
+    elog(ERROR, "cannot subtract infinite timestamps");
 
   Interval interval;
   interval.time = dt1 - dt2;

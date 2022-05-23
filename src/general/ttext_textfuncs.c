@@ -107,7 +107,7 @@ pg_lower(text *txt)
 
   out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     DEFAULT_COLLATION_OID);
-  result = cstring_to_text(out_string);
+  result = cstring2text(out_string);
   pfree(out_string);
 
   return PointerGetDatum(result);
@@ -135,7 +135,7 @@ pg_upper(text *txt)
 
   out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     DEFAULT_COLLATION_OID);
-  result = cstring_to_text(out_string);
+  result = cstring2text(out_string);
   pfree(out_string);
 
   return PointerGetDatum(result);

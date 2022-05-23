@@ -1420,6 +1420,8 @@ tm2time(struct pg_tm *tm, fsec_t fsec, TimeADT *result)
 	return 0;
 }
 
+#endif /* MobilityDB not used */
+
 /* time_overflows()
  * Check to see if a broken-down time-of-day is out of range.
  */
@@ -1443,6 +1445,8 @@ time_overflows(int hour, int min, int sec, fsec_t fsec)
 
 	return false;
 }
+
+#if 0 /* MobilityDB not used */
 
 /* float_time_overflows()
  * Same, when we have seconds + fractional seconds as one "double" value.

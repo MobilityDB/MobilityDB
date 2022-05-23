@@ -269,7 +269,7 @@ matrix_print(double *dist, int count1, int count2)
   for (j = 0; j < count2; j++)
     len += sprintf(buf+len, "    %2d    ", j);
   sprintf(buf+len, "\n"); /* make Codacy quiet by removing last assignment */
-  ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("MATRIX:\n%s", buf)));
+  elog(WARNING, "MATRIX:\n%s", buf);
   return;
 }
 
@@ -284,7 +284,7 @@ path_print(Match *path, int count)
   int i, k = 0;
   for (i = count - 1; i >= 0; i--)
     len += sprintf(buf+len, "%d: (%2d,%2d)\n", k++, path[i].i, path[i].j);
-  ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("PATH:\n%s", buf)));
+  elog(WARNING, "PATH:\n%s", buf);
   return;
 }
 #endif

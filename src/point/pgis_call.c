@@ -1064,8 +1064,8 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
   /* Typmod has a preference for SRID? Geometry SRID had better match. */
   if ( typmod_srid > 0 && typmod_srid != geom_srid )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Geometry SRID (%d) does not match column SRID (%d)", geom_srid, typmod_srid) ));
+    elog(ERROR, "Geometry SRID (%d) does not match column SRID (%d)",
+      geom_srid, typmod_srid);
   }
 
   /* Typmod has a preference for geometry type. */
@@ -1077,36 +1077,32 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
            /* Other types must be strictly equal. */
            (typmod_type != geom_type)) )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Geometry type (%s) does not match column type (%s)", lwtype_name(geom_type), lwtype_name(typmod_type)) ));
+    elog(ERROR, "Geometry type (%s) does not match column type (%s)",
+      lwtype_name(geom_type), lwtype_name(typmod_type));
   }
 
   /* Mismatched Z dimensionality. */
   if ( typmod_z && ! geom_z )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Column has Z dimension but geometry does not" )));
+    elog(ERROR, "Column has Z dimension but geometry does not");
   }
 
   /* Mismatched Z dimensionality (other way). */
   if ( geom_z && ! typmod_z )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Geometry has Z dimension but column does not" )));
+    elog(ERROR, "Geometry has Z dimension but column does not");
   }
 
   /* Mismatched M dimensionality. */
   if ( typmod_m && ! geom_m )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Column has M dimension but geometry does not" )));
+    elog(ERROR, "Column has M dimension but geometry does not");
   }
 
   /* Mismatched M dimensionality (other way). */
   if ( geom_m && ! typmod_m )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Geometry has M dimension but column does not" )));
+    elog(ERROR, "Geometry has M dimension but column does not");
   }
 
   return gser;
@@ -1138,7 +1134,7 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
 
   /* Empty string. */
   if ( str[0] == '\0' ) {
-    ereport(ERROR,(errmsg("parse error - invalid geometry")));
+    elog(ERROR, "parse error - invalid geometry");
   }
 
   /* Starts with "SRID=" */
@@ -1330,8 +1326,7 @@ geography_valid_type(uint8_t type)
           type == MULTIPOINTTYPE || type == MULTILINETYPE ||
           type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE) )
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Geography type does not support %s", lwtype_name(type) )));
+    elog(ERROR, "Geography type does not support %s", lwtype_name(type));
   }
 }
 
@@ -1350,9 +1345,8 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
   lwgeom_nudge_geodetic(lwgeom);
   if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
   {
-    ereport(NOTICE, (errmsg_internal(
-      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY" ))
-    );
+    elog(NOTICE,
+      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY");
   }
 
   /* Force default SRID to the default */
@@ -1497,8 +1491,8 @@ PGIS_geography_from_geometry(GSERIALIZED *geom)
   lwgeom_nudge_geodetic(lwgeom);
   if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
   {
-    ereport(NOTICE, (errmsg_internal(
-      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY" ))
+    elog(NOTICE,
+      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY"
     );
   }
 

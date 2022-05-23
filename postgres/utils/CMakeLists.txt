@@ -5,6 +5,7 @@
 add_library(utils OBJECT
   bool.c
   date.c
+  datetime.c
   int.c
   numutils.c
   timestamp.c
