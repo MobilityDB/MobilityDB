@@ -29,7 +29,7 @@
 
 -------------------------------------------------------------------------------
 -- Tests for constructors of PostgreSQL geometry types.
--- File geos.c
+-- File geo_constructors.c
 -------------------------------------------------------------------------------
 
 SELECT point(1.5, 2.5);
