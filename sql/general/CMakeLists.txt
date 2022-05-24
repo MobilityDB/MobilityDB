@@ -7,9 +7,6 @@ if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
     set(FILE_019 019_geo_constructors)
   endif()
 endif()
-if (${POSTGRESQL_VERSION_NUMBER} LESS 140000)
-    set(FILE_020 020_doublen)
-endif()
 
 SET(LOCAL_FILES
   001_span
@@ -24,7 +21,6 @@ SET(LOCAL_FILES
   015_span_aggfuncs
   017_time_aggfuncs
   ${FILE_019}
-  ${FILE_020}
   021_tbox
   022_temporal
   023_temporal_tile

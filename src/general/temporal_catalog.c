@@ -613,10 +613,8 @@ Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
 static bool
 internal_type(const char *typname)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   if (strncmp(typname, "double", 6) == 0 || strncmp(typname, "tdouble", 7) == 0)
     return true;
-#endif
   return false;
 }
 

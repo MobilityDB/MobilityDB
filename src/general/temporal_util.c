@@ -54,7 +54,7 @@
 #endif
 
 /* To avoid including varlena.h */
-extern int	varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oid collid);
+extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oid collid);
 
 /*****************************************************************************
  * Comparison functions on datums
@@ -1074,6 +1074,13 @@ Datum
 basetype_recv(CachedType basetype, StringInfo buf)
 {
   ensure_temporal_basetype(basetype);
+  /* Internal types are not known by PostgreSQL */
+  if (basetype == T_DOUBLE2)
+    return PointerGetDatum(double2_recv(buf));
+  if (basetype == T_DOUBLE3)
+    return PointerGetDatum(double3_recv(buf));
+  if (basetype == T_DOUBLE4)
+    return PointerGetDatum(double4_recv(buf));
   Oid basetypid = type_oid(basetype);
   return call_recv(basetypid, buf);
 }
@@ -1085,6 +1092,13 @@ bytea *
 basetype_send(CachedType basetype, Datum value)
 {
   ensure_temporal_basetype(basetype);
+  /* Internal types are not known by PostgreSQL */
+  if (basetype == T_DOUBLE2)
+    return double2_send(DatumGetDouble2P(value));
+  if (basetype == T_DOUBLE3)
+    return double3_send(DatumGetDouble3P(value));
+  if (basetype == T_DOUBLE4)
+    return double4_send(DatumGetDouble4P(value));
   Oid basetypid = type_oid(basetype);
   return call_send(basetypid, value);
 }
