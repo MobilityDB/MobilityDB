@@ -1349,60 +1349,51 @@ tsequenceset_timestamps(const TSequenceSet *ts, int *count)
  *
  * @param[in] ts Temporal sequence set
  * @param[in] t Timestamp
+ * @param[in] strict True when exclusive bounds are taken into account
  * @param[out] result Base value
  * @result Return true if the timestamp is contained in the temporal sequence set
  * @pre A bounding box test has been done before by the calling function
  */
 bool
 tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t,
-  Datum *result)
+  bool strict, Datum *result)
 {
+  /* Return the value even when the timestamp is at an exclusive bound */
+  if (! strict)
+  {
+    /* Singleton sequence set */
+    if (ts->count == 1)
+      return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, 0), t, false,
+        result);
+
+    for (int i = 0; i < ts->count; i++)
+    {
+      const TSequence *seq = tsequenceset_seq_n(ts, i);
+      /* Test whether the timestamp is at one of the bounds */
+      const TInstant *inst = tsequence_inst_n(seq, 0);
+      if (inst->t == t)
+        return tinstant_value_at_timestamp(inst, t, result);
+      inst = tsequence_inst_n(seq, seq->count - 1);
+      if (inst->t == t)
+        return tinstant_value_at_timestamp(inst, t, result);
+      /* Call the function on the sequence with strict set to true */
+      if (contains_period_timestamp(&seq->period, t))
+        return tsequence_value_at_timestamp(seq, t, true, result);
+    }
+    /* Since this function is always called with a timestamp that appears
+     * in the sequence set the next statement is never reached */
+    return false;
+  }
+
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, 0), t, result);
+    return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, 0), t, true, result);
 
   /* General case */
   int loc;
   if (! tsequenceset_find_timestamp(ts, t, &loc))
     return false;
-  return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, loc), t, result);
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
- * @brief Return the base value of a temporal sequence set at a timestamp when
- * the timestamp may be at an exclusive bound.
- *
- * @param[in] ts Temporal sequence set
- * @param[in] t Timestamp
- * @param[out] result Base value
- * @result Return true if the timestamp is found in the temporal sequence set
- */
-bool
-tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
-  Datum *result)
-{
-  /* Singleton sequence set */
-  if (ts->count == 1)
-    return tsequence_value_at_timestamp_inc(tsequenceset_seq_n(ts, 0),
-      t, result);
-
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    if (contains_period_timestamp(&seq->period, t))
-      return tsequence_value_at_timestamp(seq, t, result);
-    /* Test whether the timestamp is at one of the bounds */
-    const TInstant *inst = tsequence_inst_n(seq, 0);
-    if (inst->t == t)
-      return tinstant_value_at_timestamp(inst, t, result);
-    inst = tsequence_inst_n(seq, seq->count - 1);
-    if (inst->t == t)
-      return tinstant_value_at_timestamp(inst, t, result);
-  }
-  /* Since this function is always called with a timestamp that appears
-   * in the sequence set the next statement is never reached */
-  return false;
+  return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, loc), t, true, result);
 }
 
 /*****************************************************************************

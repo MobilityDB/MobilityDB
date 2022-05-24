@@ -758,7 +758,7 @@ tfunc_tsequence_to_tinstant(const TSequence *seq, const TInstant *inst,
   Datum value1;
   /* The following call is ensured to return true due to the period bound test
    * in the dispatch function */
-  tsequence_value_at_timestamp(seq, inst->t, &value1);
+  tsequence_value_at_timestamp(seq, inst->t, true, &value1);
   Datum value2 = tinstant_value(inst);
   Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
   TInstant *result = tinstant_make(resvalue, lfinfo->restype, inst->t);
@@ -794,7 +794,7 @@ tfunc_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tsequenceset_value_at_timestamp(ts, inst->t, &value1))
+  if (! tsequenceset_value_at_timestamp(ts, inst->t, true, &value1))
     return NULL;
 
   Datum value2 = tinstant_value(inst);
@@ -883,7 +883,7 @@ tfunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
-      tsequence_value_at_timestamp(seq, inst->t, &value1);
+      tsequence_value_at_timestamp(seq, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
       instants[k++] = tinstant_make(resvalue, lfinfo->restype, inst->t);
@@ -932,7 +932,7 @@ tfunc_tsequenceset_to_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
-      tsequenceset_value_at_timestamp(ts, inst->t, &value1);
+      tsequenceset_value_at_timestamp(ts, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
       instants[k++] = tinstant_make(resvalue, lfinfo->restype, inst->t);
@@ -1372,8 +1372,8 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
   if (inter.lower == inter.upper)
   {
     Datum value1, value2;
-    tsequence_value_at_timestamp(seq1, inter.lower, &value1);
-    tsequence_value_at_timestamp(seq2, inter.lower, &value2);
+    tsequence_value_at_timestamp(seq1, inter.lower, true, &value1);
+    tsequence_value_at_timestamp(seq2, inter.lower, true, &value2);
     Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
     TInstant *inst = tinstant_make(resvalue, lfinfo->restype, inter.lower);
     result[0] = tinstant_to_tsequence(inst, lfinfo->reslinear);
@@ -1695,7 +1695,7 @@ efunc_tsequence_to_tinstant(const TSequence *seq, const TInstant *inst,
   Datum value1;
   /* The following call is ensured to return true due to the period bound test
    * in the dispatch function */
-  tsequence_value_at_timestamp(seq, inst->t, &value1);
+  tsequence_value_at_timestamp(seq, inst->t, true, &value1);
   Datum value2 = tinstant_value(inst);
   bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
   return result ? 1 : 0;
@@ -1728,7 +1728,7 @@ efunc_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tsequenceset_value_at_timestamp(ts, inst->t, &value1))
+  if (! tsequenceset_value_at_timestamp(ts, inst->t, true, &value1))
     return -1;
 
   Datum value2 = tinstant_value(inst);
@@ -1806,7 +1806,7 @@ efunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
-      tsequence_value_at_timestamp(seq, inst->t, &value1);
+      tsequence_value_at_timestamp(seq, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
         return 1;
@@ -1851,7 +1851,7 @@ efunc_tsequenceset_to_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
-      tsequenceset_value_at_timestamp(ts, inst->t, &value1);
+      tsequenceset_value_at_timestamp(ts, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
         return 1;
@@ -2031,8 +2031,8 @@ efunc_tsequence_tsequence(const TSequence *seq1,
   if (inter.lower == inter.upper)
   {
     Datum value1, value2;
-    tsequence_value_at_timestamp(seq1, inter.lower, &value1);
-    tsequence_value_at_timestamp(seq2, inter.lower, &value2);
+    tsequence_value_at_timestamp(seq1, inter.lower, true, &value1);
+    tsequence_value_at_timestamp(seq2, inter.lower, true, &value2);
     bool resvalue = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
     return resvalue ? 1 : 0;
   }

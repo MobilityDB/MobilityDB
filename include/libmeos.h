@@ -714,8 +714,7 @@ extern const TInstant **tsequence_instants(const TSequence *seq, int *count);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
 extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
-extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
-extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t, Datum *result);
+extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict, Datum *result);
 extern uint32 tsequence_hash(const TSequence *seq);
 extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
 extern void tsequenceset_set_bbox(const TSequenceSet *ts, void *box);
@@ -739,8 +738,7 @@ extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ts);
 extern bool tsequenceset_timestamp_n(const TSequenceSet *ts, int n, TimestampTz *result);
 extern TimestampTz *tsequenceset_timestamps(const TSequenceSet *ts, int *count);
-extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t, Datum *result);
-extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t, Datum *result);
+extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t, bool strict, Datum *result);
 extern uint32 tsequenceset_hash(const TSequenceSet *ts);
 
 /*****************************************************************************/
@@ -794,8 +792,7 @@ extern Temporal *temporal_restrict_value(const Temporal *temp, Datum value, bool
 extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values, int count, bool atfunc);
 extern Temporal *tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc);
 extern Temporal *tnumber_restrict_spans(const Temporal *temp, Span **spans, int count, bool atfunc);
-extern bool temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *value);
-extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, Datum *result);
+extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, Datum *result);
 extern Temporal *temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc);
 extern Temporal *temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts, bool atfunc);
 extern Temporal *temporal_restrict_period(const Temporal *temp, const Period *ps, bool atfunc);

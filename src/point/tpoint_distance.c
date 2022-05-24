@@ -655,7 +655,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
-  bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
+  bool found = tsequence_value_at_timestamp(seq, t, false, &value);
   assert(found);
   TInstant *result = tinstant_make(value, seq->temptype, t);
   pfree(DatumGetPointer(value));
@@ -686,7 +686,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
   }
   /* The closest point may be at an exclusive bound. */
   Datum value;
-  bool found = tsequenceset_value_at_timestamp_inc(ts, t, &value);
+  bool found = tsequenceset_value_at_timestamp(ts, t, false, &value);
   assert(found);
   TInstant *result = tinstant_make(value, ts->temptype, t);
   pfree(DatumGetPointer(value));
@@ -743,7 +743,7 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
     const TInstant *min = temporal_min_instant(dist);
     /* The closest point may be at an exclusive bound. */
     Datum value;
-    bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
+    bool found = temporal_value_at_timestamp(temp1, min->t, false, &value);
     assert(found);
     result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
@@ -940,8 +940,8 @@ shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
-  bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);
-  bool found2 = temporal_value_at_timestamp_inc(temp2, inst->t, &value2);
+  bool found1 = temporal_value_at_timestamp(temp1, inst->t, false, &value1);
+  bool found2 = temporal_value_at_timestamp(temp2, inst->t, false, &value2);
   assert (found1 && found2);
   *line = line_make(value1, value2);
   return true;

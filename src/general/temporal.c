@@ -2669,31 +2669,11 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Return the base value of a temporal value at the timestamp when the
- * timestamp may be at an exclusive bound
- */
-bool
-temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *value)
-{
-  bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = tinstant_value_at_timestamp((TInstant *) temp, t, value);
-  else if (temp->subtype == INSTANTSET)
-    result = tinstantset_value_at_timestamp((TInstantSet *) temp, t, value);
-  else if (temp->subtype == SEQUENCE)
-    result = tsequence_value_at_timestamp_inc((TSequence *) temp, t, value);
-  else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_value_at_timestamp_inc((TSequenceSet *) temp, t, value);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
  * @brief Return the base value of a temporal value at the timestamp
  */
 bool
-temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, Datum *result)
+temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+  Datum *result)
 {
   bool found = false;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2702,9 +2682,10 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, Datum *result)
   else if (temp->subtype == INSTANTSET)
     found = tinstantset_value_at_timestamp((TInstantSet *) temp, t, result);
   else if (temp->subtype == SEQUENCE)
-    found = tsequence_value_at_timestamp((TSequence *) temp, t, result);
+    found = tsequence_value_at_timestamp((TSequence *) temp, t, strict, result);
   else /* subtype == SEQUENCESET */
-    found = tsequenceset_value_at_timestamp((TSequenceSet *) temp, t, result);
+    found = tsequenceset_value_at_timestamp((TSequenceSet *) temp, t, strict,
+      result);
   return found;
 }
 
@@ -5069,7 +5050,7 @@ Temporal_value_at_timestamp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Datum result;
-  bool found = temporal_value_at_timestamp(temp, t, &result);
+  bool found = temporal_value_at_timestamp(temp, t, true, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (! found)
     PG_RETURN_NULL();

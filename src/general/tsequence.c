@@ -2196,12 +2196,26 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
  *
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
+ * @param[in] strict True when inclusive/exclusive bounds are taken into account
  * @param[out] result Base value
  * @result Return true if the timestamp is contained in the temporal sequence
  */
 bool
-tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
+tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict,
+  Datum *result)
 {
+  /* Return the value even when the timestamp is at an exclusive bound */
+  if (! strict)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, 0);
+    /* Instantaneous sequence or t is at lower bound */
+    if (seq->count == 1 || inst->t == t)
+      return tinstant_value_at_timestamp(inst, t, result);
+    inst = tsequence_inst_n(seq, seq->count - 1);
+    if (inst->t == t)
+      return tinstant_value_at_timestamp(inst, t, result);
+  }
+
   /* Bounding box test */
   if (! contains_period_timestamp(&seq->period, t))
     return false;
@@ -2225,30 +2239,6 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
       MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
   }
   return true;
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
- * @brief Return the base value of a temporal sequence at a timestamp when the
- * timestamp may be at an exclusive bound.
- *
- * @param[in] seq Temporal sequence
- * @param[in] t Timestamp
- * @param[out] result Base value
- * @result Return true if the timestamp is found in the temporal sequence
- */
-bool
-tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,
-  Datum *result)
-{
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  /* Instantaneous sequence or t is at lower bound */
-  if (seq->count == 1 || inst->t == t)
-    return tinstant_value_at_timestamp(inst, t, result);
-  inst = tsequence_inst_n(seq, seq->count - 1);
-  if (inst->t == t)
-    return tinstant_value_at_timestamp(inst, t, result);
-  return tsequence_value_at_timestamp(seq, t, result);
 }
 
 /*****************************************************************************

@@ -644,7 +644,6 @@ populate_typeoid_cache()
 static void
 populate_operoid_cache()
 {
-  // elog(NOTICE, "populate operators");
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
