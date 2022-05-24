@@ -707,8 +707,7 @@ tnpoint_twcentroid(Temporal *temp)
  * Temporal azimuth of two temporal network point instants
  */
 static TInstant **
-tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
-  int *count)
+tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2, int *count)
 {
   const Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
   const Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
@@ -733,8 +732,8 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   {
     Datum vertex2 = call_function2(LWGEOM_pointn_linestring, traj,
       Int32GetDatum(i + 2)); /* 1-based */
-    double fraction = DatumGetFloat8(call_function2(
-      LWGEOM_line_locate_point, traj, vertex2));
+    double fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+      traj, vertex2));
     azimuth = call_function2(LWGEOM_azimuth, vertex1, vertex2);
     result[i] = tinstant_make(azimuth, T_TFLOAT, time);
     pfree(DatumGetPointer(vertex1));

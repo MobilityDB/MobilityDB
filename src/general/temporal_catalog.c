@@ -610,6 +610,16 @@ Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
  * Catalog functions
  *****************************************************************************/
 
+static bool
+internal_type(const char *typname)
+{
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  if (strncmp(typname, "double", 6) == 0 || strncmp(typname, "tdouble", 7) == 0)
+    return true;
+#endif
+  return false;
+}
+
 /**
  * Populate the Oid cache for types
  */
@@ -619,10 +629,13 @@ populate_typeoid_cache()
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    _type_oids[i] = TypenameGetTypid(_type_names[i]);
-    if (!_type_oids[i])
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("No Oid for type %s", _type_names[i])));
+    if (! internal_type(_type_names[i]))
+    {
+      _type_oids[i] = TypenameGetTypid(_type_names[i]);
+      if (!_type_oids[i])
+        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+          errmsg("No Oid for type %s", _type_names[i])));
+    }
   }
   return;
 }

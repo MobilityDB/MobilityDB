@@ -353,7 +353,8 @@ double4_eq(const double4 *d1, const double4 *d2)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#if ! MEOS
+#if ! MEOS && POSTGRESQL_VERSION_NUMBER < 140000
+
 
 /*****************************************************************************
  * Input/Output functions
@@ -545,7 +546,7 @@ Tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
   PG_RETURN_POINTER(NULL);
 }
 
-#endif /* #if ! MEOS */
+#endif /* #if ! MEOS && POSTGRESQL_VERSION_NUMBER < 140000 */
 
 /*****************************************************************************/
 

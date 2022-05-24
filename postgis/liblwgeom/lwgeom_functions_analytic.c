@@ -27,7 +27,7 @@
  * located in the /postgis directory */
 
 #include "postgres.h"
-#include <liblwgeom.h> /* MobilityDB */
+#include <liblwgeom.h>
 
 /*******************************************************************************
  * The following is based on the "Fast Winding Number Inclusion of a Point

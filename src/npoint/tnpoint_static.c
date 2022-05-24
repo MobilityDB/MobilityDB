@@ -747,12 +747,14 @@ geom_nsegment(Datum geom)
   }
   else /* geomtype == LINETYPE */
   {
-    int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring, geom));
+    int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring,
+      geom));
     points = palloc0(sizeof(Npoint *) * numpoints);
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      Datum point = call_function2(LWGEOM_pointn_linestring, geom, Int32GetDatum(i + 1));
+      Datum point = call_function2(LWGEOM_pointn_linestring, geom,
+        Int32GetDatum(i + 1));
       np = geom_npoint(point);
       if (np != NULL)
         points[k++] = np;
