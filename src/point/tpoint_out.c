@@ -48,6 +48,7 @@
 #include "general/tinstantset.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -632,8 +633,8 @@ tpointarr_as_text(const Temporal **temparr, int count, bool extended)
 /*****************************************************************************
  * Output in WKB or EWKB format
  *
- * The format of the MobilityDB binary format builds upon the one of PostGIS.
- * In particular, many of the flags defined in liblwgeom.h such as WKB_NDR vs
+ * The MobilityDB binary format builds upon the one of PostGIS. In particular,
+ * we reuse many of the flags defined in liblwgeom.h such as WKB_NDR vs
  * WKB_XDR (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc.
  * In addition, we need additional flags such as MOBDB_WKB_LINEAR_INTERP for
  * linear interporation, etc.
@@ -654,167 +655,6 @@ tpointarr_as_text(const Temporal **temparr, int count, bool extended)
  * Look-up table for hex writer
  */
 static char *hexchr = "0123456789ABCDEF";
-
-/**
- * Writes into the buffer the Endian represented in Well-Known Binary (WKB) format
- */
-static uint8_t *
-endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
-{
-  if (variant & WKB_HEX)
-  {
-    buf[0] = '0';
-    buf[1] = ((variant & WKB_NDR) ? (uint8_t) '1' : (uint8_t) '0');
-    return buf + 2;
-  }
-  else
-  {
-    buf[0] = ((variant & WKB_NDR) ? (uint8_t) 1 : (uint8_t) 0);
-    return buf + 1;
-  }
-}
-
-/**
- * Return true if the bytes must be swaped dependng of the variant
- */
-static inline bool
-wkb_swap_bytes(uint8_t variant)
-{
-  /* If requested variant matches machine arch, we don't have to swap! */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  if (((variant & WKB_NDR) && !IS_BIG_ENDIAN) ||
-      ((!(variant & WKB_NDR)) && IS_BIG_ENDIAN))
-#else
-  if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
-     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
-#endif
-    return false;
-  return true;
-}
-
-/**
- * Writes into the buffer the Integer32 represented in Well-Known Binary (WKB) format
- */
-static uint8_t *
-integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
-{
-  char *iptr = (char *)(&ival);
-
-  if (sizeof(int) != WKB_INT_SIZE)
-    elog(ERROR, "Machine int size is not %d bytes!", WKB_INT_SIZE);
-
-  if (variant & WKB_HEX)
-  {
-    int swap = wkb_swap_bytes(variant);
-    /* Machine/request arch mismatch, so flip byte order */
-    for (int i = 0; i < WKB_INT_SIZE; i++)
-    {
-      int j = (swap ? WKB_INT_SIZE - 1 - i : i);
-      uint8_t b = (uint8_t) iptr[j];
-      /* Top four bits to 0-F */
-      buf[2*i] = (uint8_t) hexchr[b >> 4];
-      /* Bottom four bits to 0-F */
-      buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
-    }
-    return buf + (2 * WKB_INT_SIZE);
-  }
-  else
-  {
-    /* Machine/request arch mismatch, so flip byte order */
-    if (wkb_swap_bytes(variant))
-    {
-      for (int i = 0; i < WKB_INT_SIZE; i++)
-        buf[i] = (uint8_t) iptr[WKB_INT_SIZE - 1 - i];
-    }
-    /* If machine arch and requested arch match, don't flip byte order */
-    else
-      memcpy(buf, iptr, WKB_INT_SIZE);
-    return buf + WKB_INT_SIZE;
-  }
-}
-
-/**
- * Writes into the buffer the float64 represented in Well-Known Binary (WKB) format
- */
-static uint8_t*
-double_to_wkb_buf(double d, uint8_t *buf, uint8_t variant)
-{
-  char *dptr = (char *)(&d);
-
-  if (sizeof(double) != WKB_DOUBLE_SIZE)
-    elog(ERROR, "Machine double size is not %d bytes!", WKB_DOUBLE_SIZE);
-
-  if (variant & WKB_HEX)
-  {
-    int swap =  wkb_swap_bytes(variant);
-    /* Machine/request arch mismatch, so flip byte order */
-    for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
-    {
-      int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
-      uint8_t b = (uint8_t) dptr[j];
-      /* Top four bits to 0-F */
-      buf[2*i] = (uint8_t) hexchr[b >> 4];
-      /* Bottom four bits to 0-F */
-      buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
-    }
-    return buf + (2 * WKB_DOUBLE_SIZE);
-  }
-  else
-  {
-    /* Machine/request arch mismatch, so flip byte order */
-    if (wkb_swap_bytes(variant))
-    {
-      for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
-        buf[i] = (uint8_t) dptr[WKB_DOUBLE_SIZE - 1 - i];
-    }
-    /* If machine arch and requested arch match, don't flip byte order */
-    else
-      memcpy(buf, dptr, WKB_DOUBLE_SIZE);
-    return buf + WKB_DOUBLE_SIZE;
-  }
-}
-
-/**
- * Writes into the buffer the TimestampTz (aka int64) represented in
- * Well-Known Binary (WKB) format
- */
-static uint8_t *
-timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
-{
-  char *tptr = (char *)(&t);
-
-  if (sizeof(TimestampTz) != WKB_TIMESTAMP_SIZE)
-    elog(ERROR, "Machine timestamp size is not %d bytes!", WKB_TIMESTAMP_SIZE);
-
-  if (variant & WKB_HEX)
-  {
-    int swap =  wkb_swap_bytes(variant);
-    /* Machine/request arch mismatch, so flip byte order */
-    for (int i = 0; i < WKB_TIMESTAMP_SIZE; i++)
-    {
-      int j = (swap ? WKB_TIMESTAMP_SIZE - 1 - i : i);
-      uint8_t b = (uint8_t) tptr[j];
-      /* Top four bits to 0-F */
-      buf[2*i] = (uint8_t) hexchr[b >> 4];
-      /* Bottom four bits to 0-F */
-      buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
-    }
-    return buf + (2 * WKB_TIMESTAMP_SIZE);
-  }
-  else
-  {
-    /* Machine/request arch mismatch, so flip byte order */
-    if (wkb_swap_bytes(variant))
-    {
-      for (int i = 0; i < WKB_TIMESTAMP_SIZE; i++)
-        buf[i] = (uint8_t) tptr[WKB_TIMESTAMP_SIZE - 1 - i];
-    }
-    /* If machine arch and requested arch match, don't flip byte order */
-    else
-      memcpy(buf, tptr, WKB_TIMESTAMP_SIZE);
-    return buf + WKB_TIMESTAMP_SIZE;
-  }
-}
 
 /**
  * Return true if the temporal point needs to output the SRID
@@ -839,7 +679,8 @@ tpointinstarr_to_wkb_size(int npoints, bool hasz)
 {
   int dims = hasz ? 3 : 2;
   /* size of the TInstant array */
-  size_t size = dims * npoints * WKB_DOUBLE_SIZE + npoints * WKB_TIMESTAMP_SIZE;
+  size_t size = dims * npoints * MOBDB_WKB_DOUBLE_SIZE +
+    npoints * MOBDB_WKB_TIMESTAMP_SIZE;
   return size;
 }
 
@@ -851,10 +692,10 @@ static size_t
 tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
 {
   /* Endian flag + temporal flag */
-  size_t size = WKB_BYTE_SIZE * 2;
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
-    size += WKB_INT_SIZE;
+    size += MOBDB_WKB_INT4_SIZE;
   /* TInstant */
   size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags));
   return size;
@@ -868,12 +709,12 @@ static size_t
 tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
 {
   /* Endian flag + temporal type flag */
-  size_t size = WKB_BYTE_SIZE * 2;
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
-    size += WKB_INT_SIZE;
+    size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants */
-  size += WKB_INT_SIZE;
+  size += MOBDB_WKB_INT4_SIZE;
   /* Include the TInstant array */
   size += tpointinstarr_to_wkb_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags));
   return size;
@@ -887,12 +728,12 @@ static size_t
 tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
 {
   /* Endian flag + temporal type flag */
-  size_t size = WKB_BYTE_SIZE * 2;
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    size += WKB_INT_SIZE;
+    size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
-  size += WKB_INT_SIZE + WKB_BYTE_SIZE;
+  size += MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE;
   /* Include the TInstant array */
   size += tpointinstarr_to_wkb_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags));
   return size;
@@ -906,14 +747,14 @@ static size_t
 tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
 {
   /* Endian flag + temporal type flag */
-  size_t size = WKB_BYTE_SIZE * 2;
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
-    size += WKB_INT_SIZE;
+    size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of sequences */
-  size += WKB_INT_SIZE;
+  size += MOBDB_WKB_INT4_SIZE;
   /* For each sequence include the number of instants and the period bounds flag */
-  size += ts->count * (WKB_INT_SIZE + WKB_BYTE_SIZE);
+  size += ts->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
   /* Include all the TInstant of all the sequences */
   size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags));
   return size;
@@ -1016,7 +857,7 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   buf = tpoint_wkb_type((Temporal *) inst, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
-    buf = integer_to_wkb_buf(tpointinst_srid(inst), buf, variant);
+    buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
   return coords_ts_to_wkb_buf(inst, buf, variant);
 }
 
@@ -1038,9 +879,9 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   buf = tpoint_wkb_type((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
-    buf = integer_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
+    buf = int32_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
   /* Set the count */
-  buf = integer_to_wkb_buf(ti->count, buf, variant);
+  buf = int32_to_wkb_buf(ti->count, buf, variant);
   /* Set the array of instants */
   for (int i = 0; i < ti->count; i++)
   {
@@ -1048,33 +889,6 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
     buf = coords_ts_to_wkb_buf(inst, buf, variant);
   }
   return buf;
-}
-
-/**
- * Writes into the buffer the flag containing the bounds represented
- * in Well-Known Binary (WKB) format as follows
- * xxxxxxUL
- * x = Unused bits, U = Upper inclusive, L = Lower inclusive
- */
-static uint8_t *
-tpointseq_wkb_bounds(const TSequence *seq, uint8_t *buf, uint8_t variant)
-{
-  uint8_t wkb_flags = 0;
-  if (seq->period.lower_inc)
-    wkb_flags |= MOBDB_WKB_LOWER_INC;
-  if (seq->period.upper_inc)
-    wkb_flags |= MOBDB_WKB_UPPER_INC;
-  if (variant & WKB_HEX)
-  {
-    buf[0] = '0';
-    buf[1] = (uint8_t) hexchr[wkb_flags];
-    return buf + 2;
-  }
-  else
-  {
-    buf[0] = wkb_flags;
-    return buf + 1;
-  }
 }
 
 /**
@@ -1097,11 +911,11 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   buf = tpoint_wkb_type((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    buf = integer_to_wkb_buf(tpointseq_srid(seq), buf, variant);
+    buf = int32_to_wkb_buf(tpointseq_srid(seq), buf, variant);
   /* Set the count */
-  buf = integer_to_wkb_buf(seq->count, buf, variant);
+  buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Set the period bounds */
-  buf = tpointseq_wkb_bounds(seq, buf, variant);
+  buf = tsequence_wkb_bounds(seq, buf, variant);
   /* Set the array of instants */
   for (int i = 0; i < seq->count; i++)
   {
@@ -1133,17 +947,17 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   buf = tpoint_wkb_type((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
-    buf = integer_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
+    buf = int32_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
   /* Set the count */
-  buf = integer_to_wkb_buf(ts->count, buf, variant);
+  buf = int32_to_wkb_buf(ts->count, buf, variant);
   /* Set the sequences */
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     /* Set the number of instants */
-    buf = integer_to_wkb_buf(seq->count, buf, variant);
+    buf = int32_to_wkb_buf(seq->count, buf, variant);
     /* Set the period bounds */
-    buf = tpointseq_wkb_bounds(seq, buf, variant);
+    buf = tsequence_wkb_bounds(seq, buf, variant);
     /* Set the array of instants */
     for (int j = 0; j < seq->count; j++)
     {

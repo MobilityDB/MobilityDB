@@ -52,6 +52,8 @@ add_library(general OBJECT
   temporal_catalog.c
   temporal_compops.c
   ${temporal_gist.c}
+  temporal_in.c
+  temporal_out.c
   temporal_parser.c
   ${temporal_posops.c}
   ${temporal_selfuncs.c}
