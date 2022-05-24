@@ -34,15 +34,15 @@
 
 #include "point/tpoint_analytics.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
-#include <funcapi.h>
 #include <math.h>
+/* PostgreSQL */
+#include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
@@ -53,14 +53,8 @@
 #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/lifting.h"
-#include "general/tnumber_mathfuncs.h"
-#include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
@@ -86,7 +80,7 @@
 static LWPOINT *
 point_to_trajpoint(Datum point, TimestampTz t)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+  GSERIALIZED *gs = DatumGetGserializedP(point);
   int32 srid = gserialized_get_srid(gs);
   double epoch = ((double) t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   LWPOINT *result;
@@ -127,7 +121,7 @@ static Datum
 tpointinstset_to_geo(const TInstantSet *ti)
 {
   const TInstant *inst = tinstantset_inst_n(ti, 0);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(inst));
   int32 srid = gserialized_get_srid(gs);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -416,7 +410,7 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)lwpoint1);
   CachedType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
-  TInstant *result = tinstant_make(PointerGetDatum(gs), t, temptype);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);
   return result;
 }
@@ -559,7 +553,7 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
     {
       TInstant *inst = geo_to_tpointinst(gs1);
       /* The resulting sequence assumes linear interpolation */
-      sequences[i] = tinstant_tsequence(inst, LINEAR);
+      sequences[i] = tinstant_to_tsequence(inst, LINEAR);
       pfree(inst);
     }
     else /* lwgeom1->type == LINETYPE */
@@ -604,7 +598,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
 static LWPOINT *
 point_measure_to_geo_measure(Datum point, Datum measure)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+  GSERIALIZED *gs = DatumGetGserializedP(point);
   int32 srid = gserialized_get_srid(gs);
   double d = DatumGetFloat8(measure);
   LWPOINT *result;
@@ -1110,7 +1104,7 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
   {
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tfloatseq_simplify(seq, eps_dist, minpts);
-    TSequenceSet *result = tsequence_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1530,7 +1524,7 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   {
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
-    TSequenceSet *result = tsequence_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1714,7 +1708,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_remove_repeated_points(seq, tolerance,
       min_points);
-    TSequenceSet *result = tsequence_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1804,7 +1798,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
   }
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-  *result = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+  *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   lwpoint_free(lwpoint);
   pfree(gs);
   return;
@@ -1873,7 +1867,7 @@ tpointseqset_affine(const TSequenceSet *ts, const AFFINE *a)
   if (ts->count == 1)
   {
     TSequence *seq = tpointseq_affine(tsequenceset_seq_n(ts, 0), a);
-    TSequenceSet *result = tsequence_tsequenceset(seq);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -1941,7 +1935,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   lwpoint_free(lwpoint);
 
   /* Construct the result */
-  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
@@ -1983,7 +1977,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2028,7 +2022,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2057,7 +2051,7 @@ tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid, bool filter_pts)
     TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ts, 0), grid, filter_pts);
     if (seq == NULL)
       return NULL;
-    TSequenceSet *result = tsequence_tsequenceset(seq);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -2207,7 +2201,7 @@ tpointinstset_decouple(const TInstantSet *ti, TimestampTz **timesarr,
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
@@ -2240,7 +2234,7 @@ tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
@@ -2362,7 +2356,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBOX box;
-  temporal_bbox(temp, &box);
+  temporal_set_bbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   / * We use half of the square height and width as limit: We use this
@@ -2393,7 +2387,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************/
 
@@ -2530,6 +2524,6 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

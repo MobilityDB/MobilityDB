@@ -44,9 +44,9 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
-#include "point/stbox.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint.h"
@@ -64,11 +64,11 @@
  * @param[in] np Network point
  */
 bool
-npoint_stbox(const Npoint *np, STBOX *box)
+npoint_set_stbox(const Npoint *np, STBOX *box)
 {
   Datum geom = npoint_geom(DatumGetNpointP(np));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  bool result = geo_stbox(gs, box);
+  bool result = geo_set_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
@@ -81,9 +81,9 @@ npoint_stbox(const Npoint *np, STBOX *box)
  * @param[in] inst Temporal network point
  */
 void
-tnpointinst_make_stbox(const TInstant *inst, STBOX *box)
+tnpointinst_set_stbox(const TInstant *inst, STBOX *box)
 {
-  npoint_stbox(DatumGetNpointP(tinstant_value(inst)), box);
+  npoint_set_stbox(DatumGetNpointP(tinstant_value(inst)), box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -97,13 +97,13 @@ tnpointinst_make_stbox(const TInstant *inst, STBOX *box)
  * @param[in] count Number of elements in the array
  */
 void
-tnpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
+tnpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 {
-  tnpointinst_make_stbox(instants[0], box);
+  tnpointinst_set_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
     STBOX box1;
-    tnpointinst_make_stbox(instants[i], &box1);
+    tnpointinst_set_stbox(instants[i], &box1);
     stbox_expand(&box1, box);
   }
   return;
@@ -117,7 +117,7 @@ tnpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
  * @param[in] count Number of elements in the array
  */
 void
-tnpointinstarr_linear_stbox(const TInstant **instants, int count,
+tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
   STBOX *box)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(instants[0]));
@@ -136,13 +136,13 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
     call_function3(LWGEOM_line_substring, line, Float8GetDatum(posmin),
       Float8GetDatum(posmax));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  geo_stbox(gs, box);
+  geo_set_stbox(gs, box);
   box->tmin = tmin;
   box->tmax = tmax;
   MOBDB_FLAGS_SET_T(box->flags, true);
   pfree(DatumGetPointer(line));
   if (posmin != 0 || posmax != 1)
-    pfree(DatumGetPointer(geom));
+    pfree(gs);
   return;
 }
 
@@ -155,13 +155,13 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
+tnpointseq_set_stbox(const TInstant **instants, int count, bool linear,
   STBOX *box)
 {
   if (linear)
-    tnpointinstarr_linear_stbox(instants, count, box);
+    tnpointinstarr_linear_set_stbox(instants, count, box);
   else
-    tnpointinstarr_stbox(instants, count, box);
+    tnpointinstarr_set_stbox(instants, count, box);
   return;
 }
 
@@ -169,11 +169,11 @@ tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
  * @brief Return the bounding box of the network segment value
  */
 bool
-nsegment_stbox(STBOX *box, const Nsegment *ns)
+nsegment_set_stbox(STBOX *box, const Nsegment *ns)
 {
   Datum geom = nsegment_geom(DatumGetNsegmentP(ns));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  bool result = geo_stbox(gs, box);
+  bool result = geo_set_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
@@ -183,9 +183,9 @@ nsegment_stbox(STBOX *box, const Nsegment *ns)
  * @brief Transform a network point and a timestamp to a spatiotemporal box
  */
 bool
-npoint_timestamp_to_stbox(const Npoint *np, TimestampTz t, STBOX *box)
+npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBOX *box)
 {
-  npoint_stbox(np, box);
+  npoint_set_stbox(np, box);
   box->tmin = box->tmax = t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
@@ -195,9 +195,9 @@ npoint_timestamp_to_stbox(const Npoint *np, TimestampTz t, STBOX *box)
  * @brief Transform a network point and a period to a spatiotemporal box
  */
 bool
-npoint_period_to_stbox(const Npoint *np, const Period *p, STBOX *box)
+npoint_period_set_stbox(const Npoint *np, const Period *p, STBOX *box)
 {
-  npoint_stbox(np, box);
+  npoint_set_stbox(np, box);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -226,8 +226,8 @@ boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  geo_stbox(gs, &box2);
-  temporal_bbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  temporal_set_bbox(temp, &box1);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return(result ? 1 : 0);
 }
@@ -253,7 +253,7 @@ boxop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   bool result = invert ? func(box, &box1) : func(&box1, box);
   return result ? 1 : 0;
 }
@@ -274,8 +274,8 @@ boxop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   STBOX box1, box2;
   /* Return an error if the geometry is not found, is null, or is empty */
-  npoint_stbox(np, &box2);
-  temporal_bbox(temp, &box1);
+  npoint_set_stbox(np, &box2);
+  temporal_set_bbox(temp, &box1);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return result;
 }
@@ -292,8 +292,8 @@ boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 {
   ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
   STBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   return result;
 }
@@ -304,7 +304,7 @@ boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Transform a temporal Npoint to a STBOX
@@ -319,7 +319,7 @@ Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  npoint_stbox(np, result);
+  npoint_set_stbox(np, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -332,7 +332,7 @@ Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  nsegment_stbox(result, ns);
+  nsegment_set_stbox(result, ns);
   PG_RETURN_POINTER(result);
 }
 
@@ -346,7 +346,7 @@ Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  npoint_timestamp_to_stbox(np, t, result);
+  npoint_timestamp_set_stbox(np, t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -360,7 +360,7 @@ Npoint_period_to_stbox(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Period *p = PG_GETARG_SPAN_P(1);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  npoint_period_to_stbox(np, p, result);
+  npoint_period_set_stbox(np, p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -374,7 +374,7 @@ PGDLLEXPORT Datum
 Tnpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *result = tpoint_stbox(temp);
+  STBOX *result = tpoint_to_stbox(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -932,6 +932,6 @@ Adjacent_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   return boxop_tpoint_tpoint_ext(fcinfo, &adjacent_stbox_stbox);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

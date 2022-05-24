@@ -34,22 +34,17 @@
 
 #include "point/tpoint_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/span_selfuncs.h"
-#include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
-#include "point/postgis.h"
-#include "point/stbox.h"
-#include "point/tpoint.h"
 #include "point/tpoint_analyze.h"
-#include "point/tpoint_boxops.h"
 #include "npoint/tnpoint_selfuncs.h"
 
 /*****************************************************************************
@@ -462,20 +457,20 @@ tpoint_const_stbox(Node *other, STBOX *box)
   Oid consttypid = ((Const *) other)->consttype;
   CachedType type = oid_type(consttypid);
   if (tgeo_basetype(type))
-    geo_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
+    geo_set_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
   else if (type == T_TIMESTAMPTZ)
-    timestamp_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+    timestamp_set_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
   else if (type == T_TIMESTAMPSET)
     timestampset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_PERIOD)
-    period_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
+    period_set_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
   else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
   else if (tspatial_type(type))
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
+    temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
   return true;

@@ -95,27 +95,21 @@
 
 #include "point/tpoint_spgist.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <access/spgist.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/spgist_private.h>
 #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporal.h"
-#include "general/span.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/tnumber_spgist.h"
-#include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
-#include "point/tpoint_distance.h"
 #include "point/tpoint_gist.h"
 
 /*****************************************************************************
@@ -529,13 +523,13 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
     /* The geometry can be empty */
-    if (! geo_stbox(gs, result))
+    if (! geo_set_stbox(gs, result))
       return false;
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_stbox(t, result);
+    timestamp_set_stbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -544,7 +538,7 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   else if (type == T_PERIOD)
   {
     Period *p = DatumGetSpanP(scankey->sk_argument);
-    period_stbox(p, result);
+    period_set_stbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

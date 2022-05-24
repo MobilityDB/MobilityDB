@@ -32,9 +32,10 @@
  * @brief Functions for spatial and spatiotemporal tiles.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
@@ -42,12 +43,10 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "point/tpoint_tile.h"
-#include "general/span.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_tile.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -916,7 +915,6 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
 
 /**
  * Set the bit corresponding to the tiles intersecting the temporal point
- * (dispatch function)
  *
  * @param[out] bm Bit matrix
  * @param[in] temp Temporal point
@@ -978,7 +976,7 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    temporal_bbox(temp, &bounds);
+    temporal_set_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
@@ -1116,7 +1114,7 @@ Tpoint_space_time_split(PG_FUNCTION_ARGS)
     int64 tunits = get_interval_units(duration);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    temporal_bbox(temp, &bounds);
+    temporal_set_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)

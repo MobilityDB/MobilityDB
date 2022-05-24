@@ -35,7 +35,7 @@
 #include "general/temporal_compops.h"
 
 /* MobilityDB */
-#include "general/temporaltypes.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -103,7 +103,7 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic functions
@@ -411,6 +411,6 @@ Tge_temporal_temporal(PG_FUNCTION_ARGS)
   return tcomp_temporal_temporal_ext(fcinfo, &datum2_ge2);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

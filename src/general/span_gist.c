@@ -36,17 +36,14 @@
 
 #include "general/span_gist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <access/gist.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/temporal.h"
-#include "general/temporal_catalog.h"
 
 /*****************************************************************************
  * GiST consistent methods

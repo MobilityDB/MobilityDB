@@ -36,23 +36,18 @@
 
 #include "general/tnumber_gist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+/* PostgreSQL */
 #include <access/gist.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/time_gist.h"
-#include "general/temporal_catalog.h"
-#include "general/temporal_boxops.h"
-#include "general/temporal_posops.h"
-#include "general/tnumber_distance.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -207,19 +202,19 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   if (tnumber_basetype(type))
   {
     Datum value = PG_GETARG_DATUM(1);
-    number_tbox(value, type, result);
+    number_set_tbox(value, type, result);
   }
   else if (tnumber_spantype(type))
   {
     Span *span = PG_GETARG_SPAN_P(1);
     if (span == NULL)
       return false;
-    span_tbox(span, result);
+    span_set_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_tbox(t, result);
+    timestamp_set_tbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -229,7 +224,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   else if (type == T_PERIOD)
   {
     Period *p = PG_GETARG_SPAN_P(1);
-    period_tbox(p, result);
+    period_set_tbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

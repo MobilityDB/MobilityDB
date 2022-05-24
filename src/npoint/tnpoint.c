@@ -34,12 +34,11 @@
 
 #include "npoint/tnpoint.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
+#include <libmeos.h>
 #include "general/temporal_parser.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -63,7 +62,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum geom = npoint_geom(np);
-  TInstant *result = tinstant_make(geom, inst->t, T_TGEOMPOINT);
+  TInstant *result = tinstant_make(geom, T_TGEOMPOINT, inst->t);
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -94,9 +93,9 @@ tnpointseq_tgeompointseq(const TSequence *seq)
   Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, 0)));
   Datum line = route_geom(np->rid);
   /* We are sure line is not empty */
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int srid = gserialized_get_srid(gs);
-  LWLINE *lwline = (LWLINE *)lwgeom_from_gserialized(gs);
+  LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(gs);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
@@ -106,7 +105,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
     assert(opa->npoints <= 1);
     lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
-    instants[i] = tinstant_make(point, inst->t, T_TGEOMPOINT);
+    instants[i] = tinstant_make(point, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(point));
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
@@ -163,7 +162,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
   Npoint *np = geom_npoint(geom);
   if (np == NULL)
     return NULL;
-  TInstant *result = tinstant_make(PointerGetDatum(np), inst->t, T_TNPOINT);
+  TInstant *result = tinstant_make(PointerGetDatum(np), T_TNPOINT, inst->t);
   pfree(np);
   return result;
 }
@@ -265,26 +264,6 @@ tgeompoint_tnpoint(const Temporal *temp)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
-/**
- * @brief Set the precision of the fraction of the temporal network point to the
- * number of decimal places.
- */
-Temporal *
-tnpoint_round(const Temporal *temp, Datum size)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_npoint_round;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = size;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
 
 /*****************************************************************************
  * Accessor functions
@@ -578,7 +557,7 @@ tnpoint_routes(const Temporal *temp, int *count)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * General functions
@@ -668,6 +647,26 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
+/**
+ * @brief Set the precision of the fraction of the temporal network point to the
+ * number of decimal places.
+ */
+Temporal *
+tnpoint_round(const Temporal *temp, Datum size)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_npoint_round;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = size;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Tnpoint_round);
 /**
  * @brief Set the precision of the fraction of the temporal network point to the
@@ -732,6 +731,6 @@ Tnpoint_routes(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

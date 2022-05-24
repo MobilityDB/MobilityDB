@@ -49,13 +49,11 @@
 /* PostgreSQL */
 #include <assert.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/lifting.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
-#include "point/tpoint.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_distance.h"
 #include "point/tpoint_tempspatialrels.h"
 
 /*****************************************************************************
@@ -64,134 +62,112 @@
  *****************************************************************************/
 
 /**
- * Calls the PostGIS function ST_Contains with the 2 arguments
+ * Call the PostGIS function ST_Contains with the 2 arguments
  */
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
-  return call_function2(contains, geom1, geom2);
+  return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), false));
 }
 
 /**
- * Calls the PostGIS function ST_Disjoint with the 2 arguments
+ * Call the PostGIS function ST_Intersects with the 2 arguments
+ * and negate the result
  */
 Datum
 geom_disjoint2d(Datum geom1, Datum geom2)
 {
-  return call_function2(disjoint, geom1, geom2);
+  return BoolGetDatum(! DatumGetBool(geom_intersects2d(geom1, geom2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects3D with the 2 arguments
+ * Call the PostGIS function ST_Intersects3D with the 2 arguments
  * and negates the result
  */
 Datum
 geom_disjoint3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return BoolGetDatum(! DatumGetBool(call_function2(intersects3d, geom1,
-    geom2)));
-#else
-  return BoolGetDatum(! DatumGetBool(call_function2(ST_3DIntersects, geom1,
-    geom2)));
-#endif
+  return BoolGetDatum(! DatumGetBool(geom_intersects3d(geom1, geom2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * Call the PostGIS function ST_Intersects for geographies with the 2 arguments
  */
 Datum
 geog_disjoint(Datum geog1, Datum geog2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  /* We apply the same threshold as PostGIS in the definition of the
-   * function ST_Intersects(geography, geography) */
-  double dist = DatumGetFloat8(geog_distance(geog1, geog2));
-  return BoolGetDatum(dist > DIST_EPSILON);
-#else
-  return BoolGetDatum(! DatumGetBool(CallerFInfoFunctionCall2(geography_intersects,
-    (fetch_fcinfo())->flinfo, InvalidOid, geog1, geog2)));
-#endif
+  return BoolGetDatum(! DatumGetBool(geog_intersects(geog1, geog2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects with the 2 arguments
+ * Call the PostGIS function ST_Intersects with the 2 arguments
  */
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return call_function2(intersects, geom1, geom2);
-#else
-  return call_function2(ST_Intersects, geom1, geom2);
-#endif
+  return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), true));
 }
 
 /**
- * Calls the PostGIS function ST_3DIntersects with the 2 arguments
+ * Call the PostGIS function ST_3DIntersects with the 2 arguments
  */
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  return call_function2(intersects3d, geom1, geom2);
-#else
-  return call_function2(ST_3DIntersects, geom1, geom2);
-#endif
+  return BoolGetDatum(PGIS_ST_3DIntersects(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
 }
 
 /**
- * Calls the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * Call the PostGIS function ST_Intersects for geographies with the 2 arguments
  */
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  /* We apply the same threshold as PostGIS in the definition of the
-   * function ST_Intersects(geography, geography) */
-  double dist = DatumGetFloat8(geog_distance(geog1, geog2));
-  return BoolGetDatum(dist <= DIST_EPSILON);
-#else
-  return CallerFInfoFunctionCall2(geography_intersects, (fetch_fcinfo())->flinfo,
-    InvalidOid, geog1, geog2);
-#endif
+  return BoolGetDatum(PGIS_geography_dwithin(DatumGetGserializedP(geog1),
+    DatumGetGserializedP(geog2), 0.0, true));
 }
 
 /**
- * Calls the PostGIS function ST_Touches with the 2 arguments
+ * Call the PostGIS function ST_Touches with the 2 arguments
  */
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
-  return call_function2(touches, geom1, geom2);
+  return BoolGetDatum(PGIS_touches(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
 }
 
 /**
- * Calls the PostGIS function ST_DWithin with the 3 arguments
+ * Call the PostGIS function ST_DWithin with the 3 arguments
  */
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
-  return call_function3(LWGEOM_dwithin, geom1, geom2, dist);
+  return BoolGetDatum(PGIS_LWGEOM_dwithin(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
 /**
- * Calls the PostGIS function ST_3DDWithin with the 3 arguments
+ * Call the PostGIS function ST_3DDWithin with the 3 arguments
  */
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
-  return call_function3(LWGEOM_dwithin3d, geom1, geom2, dist);
+  return BoolGetDatum(PGIS_LWGEOM_dwithin3d(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
 /**
- * Calls the PostGIS function ST_DWithin for geographies with the 3 arguments
+ * Call the PostGIS function ST_DWithin for geographies with the 3 arguments
  */
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-  return CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo,
-    InvalidOid, geog1, geog2, dist, BoolGetDatum(true));
+  return BoolGetDatum(PGIS_geography_dwithin(DatumGetGserializedP(geog1),
+    DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
 }
 
 /*****************************************************************************/
@@ -283,10 +259,10 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 bool
 spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert,
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool geomcoll)
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   bool geomcoll __attribute__((unused)))
+#else
+  bool geomcoll)
 #endif
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -298,7 +274,7 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   /* PostGIS 2.5 does not allow GEOMETRYCOLLECTION for ST_Relate */
   if (geomcoll)
   {
-    GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+    GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
     if (gserialized_get_type(gstraj) == COLLECTIONTYPE)
     {
       bool found = false;
@@ -338,7 +314,6 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Return true if the temporal points ever satisfy the spatial
  * relationship.
  *
@@ -377,8 +352,8 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * Calls the PostGIS function ST_Relate twice to compute the ever contains
- * relationship between the trajectory of the temporal point and the geometry
+ * Call the PostGIS function ST_Relate twice to compute the ever contains
+ * relationship between the trajectory of a temporal point and a geometry
  * @param[in] geom1 Trajectory of the temporal point
  * @param[in] geom2 Geometry
  * @note The order of the parameters CANNOT be inverted
@@ -386,14 +361,16 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 static Datum
 geom_ever_contains(Datum geom1, Datum geom2)
 {
-  return call_function3(relate_pattern, geom1, geom2,
-      PointerGetDatum(cstring2text("T********"))) ||
-    call_function3(relate_pattern, geom1, geom2,
-      PointerGetDatum(cstring2text("***T*****")));
+  return BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
+      DatumGetGserializedP(geom2), "T********")) ||
+    BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
+      DatumGetGserializedP(geom2), "***T*****"));
 }
 
 /**
- * Return true if the geometry ever contains the temporal point
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return 1 if a geometry ever contains a temporal point,
+ * 0 if not, and -1 if the geometry is empty.
  */
 int
 contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)
@@ -412,8 +389,8 @@ contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal instant point and a geometry are ever
+ * disjoint
  *
  * @param[in] inst Temporal point
  * @param[in] geo Geometry
@@ -427,8 +404,8 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal point instant set and a geometry are ever
+ * disjoint
  *
  * @param[in] ti Temporal point
  * @param[in] geo Geometry
@@ -448,8 +425,8 @@ disjoint_tpointinstset_geo(const TInstantSet *ti, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal sequence point and a geometry are ever
+ * disjoint
  *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
@@ -469,8 +446,8 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint
+ * @brief Return true if a temporal sequence set point and a geometry are ever
+ * disjoint
  *
  * @param[in] ts Temporal point
  * @param[in] geo Geometry
@@ -491,7 +468,8 @@ disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry are ever disjoint.
+ * @brief Return 1 if a temporal point and a geometry are ever disjoint,
+ * 0 if not, and -1 if the geometry is empty.
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -526,7 +504,8 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the geometry and the temporal point ever intersect
+ * @brief Return 1 if a geometry and a temporal point ever intersect,
+ * 0 if not, and -1 if the geometry is empty.
  */
 int
 intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -547,7 +526,8 @@ intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return true if the temporal point and the geometry ever touch.
+ * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
+ * -1 if the geometry is empty
  */
 int
 touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -557,16 +537,16 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  Datum bound = PointerGetDatum(PGIS_boundary(gs));
+  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
   bool result = false;
   if (! gserialized_is_empty(gsbound))
   {
     varfunc func =
       (MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs))) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
-    result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL,
-      func, 2, INVERT_NO, false);
+    result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
+      INVERT_NO, false);
   }
   PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
   pfree(DatumGetPointer(bound));
@@ -580,8 +560,8 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return 1 if the geometry and the temporal point are ever within the
- * given distance, 0 if not, -1 if the geometry is empty
+ * @brief Return 1 if a geometry and a temporal point are ever within the
+ * given distance, 0 if not, -1 if a geometry is empty
  */
 int
 dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum dist)
@@ -614,7 +594,7 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Return true if the two temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] ti1,ti2 Temporal points
  * @param[in] dist Distance
@@ -636,7 +616,7 @@ dwithin_tpointinstset_tpointinstset(const TInstantSet *ti1,
 }
 
 /**
- * Return true if the two temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
@@ -708,7 +688,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Return true if the two temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] ts1,ts2 Temporal points
  * @param[in] dist Distance
@@ -784,7 +764,7 @@ dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, Datum dist)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic ever spatial relationship functions
@@ -819,7 +799,7 @@ spatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum
 
 PG_FUNCTION_INFO_V1(Contains_geo_tpoint);
 /**
- * Return true if the geometry ever contains the temporal point
+ * Return true if a geometry ever contains a temporal point
  */
 PGDLLEXPORT Datum
 Contains_geo_tpoint(PG_FUNCTION_ARGS)
@@ -840,7 +820,7 @@ Contains_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point are ever disjoint
+ * Return true if a geometry and a temporal point are ever disjoint
  */
 PGDLLEXPORT Datum
 Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
@@ -859,7 +839,7 @@ Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry are ever disjoint
+ * Return true if a temporal point and a geometry are ever disjoint
  */
 PGDLLEXPORT Datum
 Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
@@ -894,7 +874,7 @@ Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point ever intersect
+ * Return true if a geometry and a temporal point ever intersect
  */
 PGDLLEXPORT Datum
 Intersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -913,7 +893,7 @@ Intersects_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry ever intersect
+ * Return true if a temporal point and a geometry ever intersect
  */
 PGDLLEXPORT Datum
 Intersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -950,7 +930,7 @@ Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point ever touch
+ * Return true if a geometry and a temporal point ever touch
  */
 PGDLLEXPORT Datum
 Touches_geo_tpoint(PG_FUNCTION_ARGS)
@@ -967,7 +947,7 @@ Touches_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry ever touch
+ * Return true if a temporal point and a geometry ever touch
  */
 PGDLLEXPORT Datum
 Touches_tpoint_geo(PG_FUNCTION_ARGS)
@@ -989,7 +969,7 @@ Touches_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_geo_tpoint);
 /**
- * Return true if the geometry and the temporal point are ever within the
+ * Return true if a geometry and a temporal point are ever within the
  * given distance
  */
 PGDLLEXPORT Datum
@@ -1010,7 +990,7 @@ Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_tpoint_geo);
 /**
- * Return true if the temporal point and the geometry are ever within the
+ * Return true if a temporal point and a geometry are ever within the
  * given distance
  */
 PGDLLEXPORT Datum
@@ -1052,6 +1032,6 @@ Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

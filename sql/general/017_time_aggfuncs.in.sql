@@ -57,15 +57,15 @@ CREATE FUNCTION periodset_extent_transfn(period, periodset)
 
 CREATE AGGREGATE extent(timestampset) (
   SFUNC = timestampset_extent_transfn,
-  STYPE = period,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
+  STYPE = period
+  -- , COMBINEFUNC = span_extent_combinefn,
+  -- PARALLEL = safe
 );
 CREATE AGGREGATE extent(periodset) (
   SFUNC = periodset_extent_transfn,
-  STYPE = period,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
+  STYPE = period
+  -- , COMBINEFUNC = span_extent_combinefn,
+  -- PARALLEL = safe
 );
 
 /*****************************************************************************/

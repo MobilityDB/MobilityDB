@@ -35,8 +35,7 @@
 #include "general/temporal.h"
 
 /* MobilityDB */
-#include "general/doxygen_libmeos_api.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 
 /*****************************************************************************
  * Restriction Functions
@@ -44,7 +43,7 @@
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the minimum base value
+ * @brief Restrict a temporal value to its minimum base value
  */
 Temporal *
 temporal_at_min(const Temporal *temp)
@@ -55,7 +54,7 @@ temporal_at_min(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the complement of the minimum base value
+ * @brief Restrict a temporal value to the complement of its minimum base value
  */
 Temporal *
 temporal_minus_min(const Temporal *temp)
@@ -66,7 +65,7 @@ temporal_minus_min(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the maximum base value
+ * @brief Restrict a temporal value to its maximum base value
  */
 Temporal *
 temporal_at_max(const Temporal *temp)
@@ -77,7 +76,7 @@ temporal_at_max(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the complement of the maximum base value
+ * @brief Restrict a temporal value to the complement of its maximum base value
  */
 Temporal *
 temporal_minus_max(const Temporal *temp)
@@ -90,7 +89,7 @@ temporal_minus_max(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the timestamp
+ * @brief Restrict a temporal value to a timestamp
  */
 Temporal *
 temporal_at_timestamp(const Temporal *temp, TimestampTz t)
@@ -101,7 +100,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the complement of the timestamp set
+ * @brief Restrict a temporal value to the complement of a timestamp
  */
 Temporal *
 temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
@@ -112,7 +111,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the timestamp set
+ * @brief Restrict a temporal value to a timestamp set
  */
 Temporal *
 temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -123,7 +122,7 @@ temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the complement of the timestamp set
+ * @brief Restrict a temporal value to the complement of a timestamp set
  */
 Temporal *
 temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -134,7 +133,29 @@ temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the period set
+ * @brief Restrict a temporal value to a period
+ */
+Temporal *
+temporal_at_period(const Temporal *temp, const Period *p)
+{
+  Temporal *result = temporal_restrict_period(temp, p, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a period
+ */
+Temporal *
+temporal_minus_period(const Temporal *temp, const Period *p)
+{
+  Temporal *result = temporal_restrict_period(temp, p, REST_MINUS);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to a period set
  */
 Temporal *
 temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -145,7 +166,7 @@ temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict the temporal value to the complement of the period set
+ * @brief Restrict a temporal value to the complement of a period set
  */
 Temporal *
 temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -153,5 +174,3 @@ temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
   return result;
 }
-
-

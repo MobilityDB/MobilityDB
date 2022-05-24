@@ -36,48 +36,35 @@
 
 #include "general/tnumber_mathfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
-#include <utils/builtins.h>
+/* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
+  #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
+#include "general/pg_call.h"
+#include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "general/lifting.h"
 
 /*****************************************************************************
  * Miscellaneous functions on datums
  *****************************************************************************/
 
 /**
- * Round the number to the number of decimal places
- */
-Datum
-datum_round_float(Datum value, Datum prec)
-{
-  Datum result = value;
-  if (DatumGetFloat8(value) != -1 * get_float8_infinity() &&
-      DatumGetFloat8(value) != get_float8_infinity())
-  {
-    Datum number = call_function1(float8_numeric, value);
-    Datum round = call_function2(numeric_round, number, prec);
-    result = call_function1(numeric_float8, round);
-  }
-  return result;
-}
-
-/**
- * Convert the number from radians to degrees
+ * Convert a number from radians to degrees
  */
 static Datum
 datum_degrees(Datum value)
 {
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  return Float8GetDatum(float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE));
+#else
   return call_function1(degrees, value);
+#endif
 }
 
 /**
@@ -278,30 +265,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Round the temporal number to the number of decimal places
- */
-Temporal *
-tnumber_round(const Temporal *temp, Datum digits)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_float;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = digits;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.argtype[1] = T_INT4;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_math
- * @brief Convert the temporal number from radians to degrees
+ * @brief Convert a temporal number from radians to degrees
  */
 Temporal *
 tnumber_degrees(const Temporal *temp)
@@ -326,7 +290,7 @@ tnumber_degrees(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the derivative of the temporal number.
+ * @brief Return the derivative of a temporal sequence number.
  */
 TSequence *
 tnumberseq_derivative(const TSequence *seq)
@@ -350,12 +314,12 @@ tnumberseq_derivative(const TSequence *seq)
     derivative = datum_eq(value1, value2, basetype) ? 0.0 :
       (datum_double(value1, basetype) - datum_double(value2, basetype)) /
         ((double)(inst2->t - inst1->t) / 1000000);
-    instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t, T_TFLOAT);
+    instants[i] = tinstant_make(Float8GetDatum(derivative), T_TFLOAT, inst1->t);
     inst1 = inst2;
     value1 = value2;
   }
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
-    seq->period.upper, T_TFLOAT);
+    T_TFLOAT, seq->period.upper);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
@@ -365,7 +329,7 @@ tnumberseq_derivative(const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the derivative of the temporal number
+ * @brief Return the derivative of a temporal sequence set number
  */
 TSequenceSet *
 tnumberseqset_derivative(const TSequenceSet *ts)
@@ -384,7 +348,9 @@ tnumberseqset_derivative(const TSequenceSet *ts)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the derivative of the temporal number
+ * @brief Return the derivative of a temporal number
+ * @see tnumberseq_derivative
+ * @see tnumberseqset_derivative
  */
 Temporal *
 tnumber_derivative(const Temporal *temp)
@@ -407,7 +373,7 @@ tnumber_derivative(const Temporal *temp)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic functions
@@ -483,7 +449,7 @@ arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 
 PG_FUNCTION_INFO_V1(Add_number_tnumber);
 /**
- * Return the temporal addition of the number and the temporal number
+ * Return the temporal addition of a number and a temporal number
  */
 PGDLLEXPORT Datum
 Add_number_tnumber(PG_FUNCTION_ARGS)
@@ -493,7 +459,7 @@ Add_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Add_tnumber_number);
 /**
- * Return the temporal addition of the temporal number and the number
+ * Return the temporal addition of a temporal number and a number
  */
 PGDLLEXPORT Datum
 Add_tnumber_number(PG_FUNCTION_ARGS)
@@ -517,7 +483,7 @@ Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Sub_number_tnumber);
 /**
- * Return the temporal subtraction of the number and the temporal number
+ * Return the temporal subtraction of a number and a temporal number
  */
 PGDLLEXPORT Datum
 Sub_number_tnumber(PG_FUNCTION_ARGS)
@@ -527,7 +493,7 @@ Sub_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Sub_tnumber_number);
 /**
- * Return the temporal subtraction of the temporal number and the number
+ * Return the temporal subtraction of a temporal number and a number
  */
 PGDLLEXPORT Datum
 Sub_tnumber_number(PG_FUNCTION_ARGS)
@@ -551,7 +517,7 @@ Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Mult_number_tnumber);
 /**
- * Return the temporal multiplication of the number and the temporal number
+ * Return the temporal multiplication of a number and a temporal number
  */
 PGDLLEXPORT Datum
 Mult_number_tnumber(PG_FUNCTION_ARGS)
@@ -561,7 +527,7 @@ Mult_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Mult_tnumber_number);
 /**
- * Return the temporal multiplication of the temporal number and the number
+ * Return the temporal multiplication of a temporal number and a number
  */
 PGDLLEXPORT Datum
 Mult_tnumber_number(PG_FUNCTION_ARGS)
@@ -586,7 +552,7 @@ Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Div_number_tnumber);
 /**
- * Return the temporal division of the number and the temporal number
+ * Return the temporal division of a number and a temporal number
  */
 PGDLLEXPORT Datum
 Div_number_tnumber(PG_FUNCTION_ARGS)
@@ -596,7 +562,7 @@ Div_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Div_tnumber_number);
 /**
- * Return the temporal division of the temporal number and the number
+ * Return the temporal division of a temporal number and a number
  */
 PGDLLEXPORT Datum
 Div_tnumber_number(PG_FUNCTION_ARGS)
@@ -619,9 +585,49 @@ Div_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Miscellaneous temporal functions
  *****************************************************************************/
 
+/**
+ * @brief Round a number to a given number of decimal places
+ */
+Datum
+datum_round_float(Datum value, Datum prec)
+{
+  Datum result = value;
+  double d = DatumGetFloat8(value);
+  double inf = get_float8_infinity();
+  if (d != -1 * inf && d != inf)
+  {
+    Datum number = call_function1(float8_numeric, value);
+    Datum roundnumber = call_function2(numeric_round, number, prec);
+    result = call_function1(numeric_float8, roundnumber);
+  }
+  return result;
+}
+
+/**
+ * @brief Round a temporal number to a given number of decimal places
+ */
+Temporal *
+tnumber_round(const Temporal *temp, Datum digits)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_round_float;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = digits;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = T_INT4;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Tnumber_round);
 /**
- * Round the temporal number to the number of decimal places
+ * Round a temporal number to a given number of decimal places
  */
 PGDLLEXPORT Datum
 Tnumber_round(PG_FUNCTION_ARGS)
@@ -635,7 +641,7 @@ Tnumber_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_degrees);
 /**
- * Convert the temporal number from radians to degrees
+ * Convert a temporal number from radians to degrees
  */
 PGDLLEXPORT Datum
 Tnumber_degrees(PG_FUNCTION_ARGS)
@@ -652,7 +658,7 @@ Tnumber_degrees(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_derivative);
 /**
- * Return the derivative of the temporal number
+ * Return the derivative of a temporal number
  */
 PGDLLEXPORT Datum
 Tnumber_derivative(PG_FUNCTION_ARGS)
@@ -665,6 +671,6 @@ Tnumber_derivative(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

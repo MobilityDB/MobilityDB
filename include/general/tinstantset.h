@@ -45,10 +45,7 @@
 
 /* General functions */
 
-extern const TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
-
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
-extern void tinstantset_bbox(const TInstantSet *ti, void *box);
 extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
   int *pos);
@@ -56,90 +53,8 @@ extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
 /* Input/output functions */
 
 extern char *tinstantset_to_string(const TInstantSet *ti,
-  char *(*value_out)(Oid, Datum));
+  char *(*value_out)(CachedType, Datum));
 extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
-extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
-
-/* Constructor functions */
-
-extern TInstantSet *tinstantset_make(const TInstant **instants, int count,
-  bool merge);
-extern TInstantSet *tinstantset_make_free(TInstant **instants, int count,
-  bool merge);
-extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
-extern TInstantSet *tinstantset_from_base(Datum value, CachedType temptype,
-  const TimestampSet *ts);
-
-/* Accessor functions */
-
-extern Datum *tinstantset_values(const TInstantSet *ti, int *count);
-extern Span **tfloatinstset_spans(const TInstantSet *ti, int *count);
-extern PeriodSet *tinstantset_time(const TInstantSet *ti);
-extern Datum tinstantset_min_value(const TInstantSet *ti);
-extern Datum tinstantset_max_value(const TInstantSet *ti);
-extern void tinstantset_period(const TInstantSet *ti, Period *p);
-extern Interval *tinstantset_timespan(const TInstantSet *ti);
-extern TSequence **tinstantset_sequences(const TInstantSet *ti);
-extern const TInstant **tinstantset_instants(const TInstantSet *ti);
-extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
-extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
-extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti);
-
-/* Cast functions */
-
-TInstantSet *tintinstset_tfloatinstset(const TInstantSet *ti);
-TInstantSet *tfloatinstset_tintinstset(const TInstantSet *ti);
-
-/* Transformation functions */
-
-extern TInstantSet *tinstant_tinstantset(const TInstant *inst);
-extern TInstantSet *tsequence_tinstantset(const TSequence *seq);
-extern TInstantSet *tsequenceset_tinstantset(const TSequenceSet *ts);
-extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
-  const Interval *start, const Interval *duration);
-
-/* Ever/always comparison operators */
-
-extern bool tinstantset_ever_eq(const TInstantSet *ti, Datum value);
-extern bool tinstantset_always_eq(const TInstantSet *ti, Datum value);
-extern bool tinstantset_ever_lt(const TInstantSet *ti, Datum value);
-extern bool tinstantset_ever_le(const TInstantSet *ti, Datum value);
-extern bool tinstantset_always_lt(const TInstantSet *ti, Datum value);
-extern bool tinstantset_always_le(const TInstantSet *ti, Datum value);
-
-/* Restriction Functions */
-
-extern TInstantSet *tinstantset_restrict_value(const TInstantSet *ti,
-  Datum value, bool atfunc);
-extern TInstantSet *tinstantset_restrict_values(const TInstantSet *ti,
-  const Datum *values, int count, bool atfunc);
-extern TInstantSet *tnumberinstset_restrict_span(const TInstantSet *ti,
-  const Span *span, bool atfunc);
-extern TInstantSet *tnumberinstset_restrict_spans(const TInstantSet *ti,
-  Span **normspans, int count, bool atfunc);
-extern const TInstant *tinstantset_min_instant(const TInstantSet *ti);
-extern const TInstant *tinstantset_max_instant(const TInstantSet *ti);
-extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *ti,
-  bool min, bool atfunc);
-extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti,
-  TimestampTz t, bool atfunc);
-extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti,
-  const TimestampSet *ts, bool atfunc);
-extern TInstantSet *tinstantset_restrict_period(const TInstantSet *ti,
-  const Period *p, bool atfunc);
-extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *ti,
-  const PeriodSet *ps, bool atfunc);
-
-extern bool tinstantset_value_at_timestamp(const TInstantSet *ti,
-  TimestampTz t, Datum *result);
-
-/* Append and merge functions */
-
-extern TInstantSet *tinstantset_append_tinstant(const TInstantSet *ti,
-  const TInstant *inst);
-extern Temporal *tinstantset_merge(const TInstantSet *ti1,
-  const TInstantSet *ti2);
-extern Temporal *tinstantset_merge_array(const TInstantSet **tis, int count);
 
 /* Intersection functions */
 
@@ -149,30 +64,6 @@ extern bool intersection_tinstant_tinstantset(const TInstant *inst,
   const TInstantSet *ti, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1,
   const TInstantSet *ti2, TInstantSet **inter1, TInstantSet **inter2);
-
-/* Intersects Functions */
-
-extern bool tinstantset_intersects_timestamp(const TInstantSet *ti,
-  const TimestampTz t);
-extern bool tinstantset_intersects_timestampset(const TInstantSet *ti,
-  const TimestampSet *ts);
-extern bool tinstantset_intersects_period(const TInstantSet *ti,
-  const Period *p);
-extern bool tinstantset_intersects_periodset(const TInstantSet *ti,
-  const PeriodSet *ps);
-
-/* Local aggregate functions */
-
-extern double tnumberinstset_twavg(const TInstantSet *ti);
-
-/* Comparison functions */
-
-extern int tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2);
-extern bool tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2);
-
-/* Function for defining hash index */
-
-extern uint32 tinstantset_hash(const TInstantSet *ti);
 
 /*****************************************************************************/
 

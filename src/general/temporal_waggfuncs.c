@@ -36,10 +36,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/builtins.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/doublen.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_aggfuncs.h"
@@ -61,12 +60,9 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
   TSequence **result)
 {
   TInstant *instants[2];
-  TimestampTz upper = DatumGetTimestampTz(
-    DirectFunctionCall2(timestamptz_pl_interval,
-    TimestampTzGetDatum(inst->t),
-    PointerGetDatum(interval)));
+  TimestampTz upper = pg_timestamp_pl_interval(inst->t, interval);
   instants[0] = (TInstant *) inst;
-  instants[1] = tinstant_make(tinstant_value(inst), upper, inst->temptype);
+  instants[1] = tinstant_make(tinstant_value(inst), inst->temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
     MOBDB_FLAGS_GET_CONTINUOUS(inst->flags), NORMALIZE_NO);
   pfree(instants[1]);
@@ -125,11 +121,9 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
     /* Stepwise interpolation or constant segment */
     if (! linear || datum_eq(value1, value2, basetype))
     {
-      TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-        timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-        PointerGetDatum(interval)));
+      TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, upper, inst1->temptype);
+      instants[1] = tinstant_make(value1, inst1->temptype, upper);
       result[i] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, linear, NORMALIZE_NO);
       pfree(instants[1]);
@@ -142,15 +136,11 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
         (datum_gt(value1, value2, basetype) && !min))
       {
         /* Extend the start value for the duration of the window */
-        TimestampTz lower = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(inst1->t),
-          PointerGetDatum(interval)));
-        TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-          PointerGetDatum(interval)));
+        TimestampTz lower = pg_timestamp_pl_interval(inst1->t, interval);
+        TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
         instants[0] = inst1;
-        instants[1] = tinstant_make(value1, lower, inst1->temptype);
-        instants[2] = tinstant_make(value2, upper, inst1->temptype);
+        instants[1] = tinstant_make(value1, inst1->temptype, lower);
+        instants[2] = tinstant_make(value2, inst1->temptype, upper);
         result[i] = tsequence_make((const TInstant **) instants, 3,
           lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
@@ -158,12 +148,11 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
       else
       {
         /* Extend the end value for the duration of the window */
-        TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(seq->period.upper),
-          PointerGetDatum(interval)));
+        TimestampTz upper = pg_timestamp_pl_interval(seq->period.upper,
+          interval);
         instants[0] = inst1;
         instants[1] = inst2;
-        instants[2] = tinstant_make(value2, upper, inst1->temptype);
+        instants[2] = tinstant_make(value2, inst1->temptype, upper);
         result[i] = tsequence_make((const TInstant**) instants, 3,
           lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[2]);
@@ -203,7 +192,7 @@ tsequenceset_extend(const TSequenceSet *ts, const Interval *interval, bool min,
 }
 
 /**
- * Extend the temporal value by the time interval (dispatch function)
+ * Extend the temporal value by the time interval
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -217,25 +206,25 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
-    TInstant *inst = (TInstant *)temp;
+    TInstant *inst = (TInstant *) temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_extend(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
-    TInstantSet *ti = (TInstantSet *)temp;
+    TInstantSet *ti = (TInstantSet *) temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_extend(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
-    TSequence *seq = (TSequence *)temp;
+    TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_extend(seq, interval, min, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    TSequenceSet *ts = (TSequenceSet *)temp;
+    TSequenceSet *ts = (TSequenceSet *) temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
     *count = tsequenceset_extend(ts, interval, min, result);
   }
@@ -256,11 +245,9 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc, const Interval *interval)
 {
   TInstant *instants[2];
-  TimestampTz upper1 = DatumGetTimestampTz(DirectFunctionCall2(
-    timestamptz_pl_interval, TimestampTzGetDatum(upper),
-    PointerGetDatum(interval)));
-  instants[0] = tinstant_make(Int32GetDatum(1), lower, T_TINT);
-  instants[1] = tinstant_make(Int32GetDatum(1), upper1, T_TINT);
+  TimestampTz upper1 = pg_timestamp_pl_interval(upper, interval);
+  instants[0] = tinstant_make(Int32GetDatum(1), T_TINT, lower);
+  instants[1] = tinstant_make(Int32GetDatum(1), T_TINT, upper1);
   TSequence *result = tsequence_make((const TInstant **) instants, 2,
     lower_inc, upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
@@ -356,7 +343,7 @@ tsequenceset_transform_wcount(const TSequenceSet *ts, const Interval *interval,
 }
 
 /**
- * Transform the temporal number by the time interval (dispatch function)
+ * Transform the temporal number by the time interval
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -370,25 +357,25 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
   TSequence **result;
   if (temp->subtype == INSTANT)
   {
-    TInstant *inst = (TInstant *)temp;
+    TInstant *inst = (TInstant *) temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_transform_wcount(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
-    TInstantSet *ti = (TInstantSet *)temp;
+    TInstantSet *ti = (TInstantSet *) temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_transform_wcount(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
-    TSequence *seq = (TSequence *)temp;
+    TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_transform_wcount(seq, interval, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    TSequenceSet *ts = (TSequenceSet *)temp;
+    TSequenceSet *ts = (TSequenceSet *) temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
     *count = tsequenceset_transform_wcount(ts, interval, result);
   }
@@ -420,12 +407,10 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
-  TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-    timestamptz_pl_interval, TimestampTzGetDatum(inst->t),
-    PointerGetDatum(interval)));
+  TimestampTz upper = pg_timestamp_pl_interval(inst->t, interval);
   TInstant *instants[2];
-  instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_TDOUBLE2);
-  instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper, T_TDOUBLE2);
+  instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
+  instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
   result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
     linear, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
@@ -488,11 +473,9 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
     double2_set(value, 1, &dvalue);
-    TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-      PointerGetDatum(interval)));
-    instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst1->t, T_TDOUBLE2);
-    instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper, T_TDOUBLE2);
+    TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
+    instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst1->t);
+    instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
     result[i] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc, linear, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
@@ -526,8 +509,8 @@ tintseqset_transform_wavg(const TSequenceSet *ts, const Interval *interval,
 }
 
 /**
- * Transform the temporal integer sequence set value into a temporal double and extend
- * it by a time interval (dispatch function)
+ * Transform the temporal integer sequence set value into a temporal double
+ * and extend it by a time interval
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -542,25 +525,25 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
-    TInstant *inst = (TInstant *)temp;
+    TInstant *inst = (TInstant *) temp;
     result = palloc(sizeof(TSequence *));
     *count = tnumberinst_transform_wavg(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
-    TInstantSet *ti = (TInstantSet *)temp;
+    TInstantSet *ti = (TInstantSet *) temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tnumberinstset_transform_wavg(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
-    TSequence *seq = (TSequence *)temp;
+    TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tintseq_transform_wavg(seq, interval, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
-    TSequenceSet *ts = (TSequenceSet *)temp;
+    TSequenceSet *ts = (TSequenceSet *) temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
     *count = tintseqset_transform_wavg(ts, interval, result);
   }

@@ -51,10 +51,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/builtins.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
 
@@ -78,7 +77,7 @@ temptype_cache_struct _temptype_cache[] =
   {T_TTEXT,      T_TEXT},
   {T_TGEOMPOINT, T_GEOMETRY},
   {T_TGEOGPOINT, T_GEOGRAPHY},
-#ifndef MEOS
+#if ! MEOS
   {T_TNPOINT,    T_NPOINT},
 #endif
 };
@@ -221,8 +220,11 @@ bool
 temporal_type(CachedType temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
-    temptype == T_TTEXT || temptype == T_TGEOMPOINT ||
-    temptype == T_TGEOGPOINT || temptype == T_TNPOINT)
+    temptype == T_TTEXT || temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+#if ! MEOS
+    || temptype == T_TNPOINT
+#endif
+    )
     return true;
   return false;
 }
@@ -240,17 +242,21 @@ ensure_temporal_type(CachedType temptype)
 
 /**
  * Ensure that the base type is supported by MobilityDB
- * @note The TimestampTz type is added to cope with base types for spans
+ * @note The TimestampTz type is added to cope with base types for spans.
+ * Also, the int8 type is added to cope with the rid in network points.
  */
 void
 ensure_temporal_basetype(CachedType basetype)
 {
   if (basetype != T_TIMESTAMPTZ &&
-    basetype != T_BOOL && basetype != T_INT4 &&
+    basetype != T_BOOL && basetype != T_INT4 && basetype != T_INT8 &&
     basetype != T_FLOAT8 && basetype != T_TEXT &&
-    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 &&
-    basetype != T_DOUBLE4 && basetype != T_GEOMETRY &&
-    basetype != T_GEOGRAPHY && basetype != T_NPOINT)
+    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 && basetype != T_DOUBLE4 &&
+    basetype != T_GEOMETRY && basetype != T_GEOGRAPHY
+#if ! MEOS
+    && basetype != T_NPOINT
+#endif
+    )
     elog(ERROR, "unknown temporal base type: %d", basetype);
   return;
 }
@@ -263,8 +269,11 @@ temptype_continuous(CachedType temptype)
 {
   if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
     temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
-    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
-    temptype == T_TNPOINT)
+    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+#if ! MEOS
+    || temptype == T_TNPOINT
+#endif
+    )
     return true;
   return false;
 }
@@ -317,7 +326,7 @@ basetype_length(CachedType basetype)
     return -1;
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return -1;
-#ifndef MEOS
+#if ! MEOS
   if (basetype == T_NPOINT)
     return sizeof(Npoint);
 #endif
@@ -414,8 +423,11 @@ ensure_tnumber_spantype(CachedType spantype)
 bool
 tspatial_type(CachedType temptype)
 {
-  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
-      temptype == T_TNPOINT)
+  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+#if ! MEOS
+      || temptype == T_TNPOINT
+#endif
+      )
     return true;
   return false;
 }
@@ -429,8 +441,11 @@ tspatial_type(CachedType temptype)
 bool
 tspatial_basetype(CachedType basetype)
 {
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY ||
-    basetype == T_NPOINT)
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY
+#if ! MEOS
+    || basetype == T_NPOINT
+#endif
+    )
     return true;
   return false;
 }
@@ -474,12 +489,12 @@ ensure_tgeo_type(CachedType temptype)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <access/tableam.h>
+  #include <access/tableam.h>
 #endif
 #include <catalog/namespace.h>
 #include <utils/rel.h>
@@ -504,6 +519,7 @@ const char *_type_names[] =
   [T_INT4] = "int4",
   [T_INT4RANGE] = "int4range",
   [T_INTSPAN] = "intspan",
+  [T_INT8] = "int8",
   [T_PERIOD] = "period",
   [T_PERIODSET] = "periodset",
   [T_STBOX] = "stbox",
@@ -594,6 +610,14 @@ Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
  * Catalog functions
  *****************************************************************************/
 
+static bool
+internal_type(const char *typname)
+{
+  if (strncmp(typname, "double", 6) == 0 || strncmp(typname, "tdouble", 7) == 0)
+    return true;
+  return false;
+}
+
 /**
  * Populate the Oid cache for types
  */
@@ -603,10 +627,13 @@ populate_typeoid_cache()
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    _type_oids[i] = TypenameGetTypid(_type_names[i]);
-    if (!_type_oids[i])
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("No Oid for type %s", _type_names[i])));
+    if (! internal_type(_type_names[i]))
+    {
+      _type_oids[i] = TypenameGetTypid(_type_names[i]);
+      if (!_type_oids[i])
+        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+          errmsg("No Oid for type %s", _type_names[i])));
+    }
   }
   return;
 }
@@ -617,7 +644,6 @@ populate_typeoid_cache()
 static void
 populate_operoid_cache()
 {
-  // elog(NOTICE, "populate operators");
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
@@ -767,6 +793,6 @@ oid_type(Oid typid)
     errmsg("Unknown type Oid %d", typid)));
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

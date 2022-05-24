@@ -36,9 +36,10 @@
 
 #include "npoint/tnpoint_aggfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"

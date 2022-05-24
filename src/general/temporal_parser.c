@@ -23,7 +23,7 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
@@ -40,10 +40,7 @@
 #include "general/temporal_parser.h"
 
 /* MobilityDB */
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/timestampset.h"
-#include "general/temporaltypes.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
@@ -198,7 +195,7 @@ double_parse(char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(char **str, Oid basetypid)
+basetype_parse(char **str, CachedType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -221,7 +218,7 @@ basetype_parse(char **str, Oid basetypid)
   if ((*str)[delim] == '\0')
     elog(ERROR, "Could not parse element value");
   (*str)[delim] = '\0';
-  Datum result = call_input(basetypid, *str);
+  Datum result = basetype_input(basetype, *str);
   if (isttext)
     /* Replace the double quote */
     (*str)[delim++] = '"';
@@ -236,7 +233,6 @@ basetype_parse(char **str, Oid basetypid)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_input_output
  * @brief Parse a temporal box value from the buffer.
  */
 TBOX *
@@ -256,7 +252,7 @@ tbox_parse(char **str)
     elog(ERROR, "Could not parse TBOX");
 
   /* Parse double opening parenthesis */
-  if (!p_oparen(str) || !p_oparen(str))
+  if (! p_oparen(str) || ! p_oparen(str))
     elog(ERROR, "Could not parse TBOX: Missing opening parenthesis");
 
   /* Determine whether there is an X dimension */
@@ -322,14 +318,13 @@ timestamp_parse(char **str)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = call_input(TIMESTAMPTZOID, *str);
+  Datum result = basetype_input(T_TIMESTAMPTZ, *str);
   (*str)[delim] = bak;
   *str += delim;
   return result;
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
  * @brief Parse a timestamp set value from the buffer.
  */
 TimestampSet *
@@ -362,7 +357,6 @@ timestampset_parse(char **str)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
  * @brief Parse a period set value from the buffer.
  */
 PeriodSet *
@@ -403,23 +397,22 @@ periodset_parse(char **str)
  * Parse a timestamp value from the buffer.
  */
 Datum
-elem_parse(char **str, CachedType basetypid)
+elem_parse(char **str, CachedType basetype)
 {
   p_whitespace(str);
   int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' &&
-    (*str)[delim] != '\0')
+  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
+    (*str)[delim] != ')' &&  (*str)[delim] != '\0')
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = call_input(basetypid, *str);
+  Datum result = basetype_input(basetype, *str);
   (*str)[delim] = bak;
   *str += delim;
   return result;
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
  * @brief Parse a span value from the buffer.
  */
 Span *
@@ -434,11 +427,10 @@ span_parse(char **str, CachedType spantype, bool make)
     elog(ERROR, "Could not parse span");
 
   CachedType basetype = spantype_basetype(spantype);
-  Oid basetypid = type_oid(basetype);
   /* The next two instructions will throw an exception if they fail */
-  Datum lower = elem_parse(str, basetypid);
+  Datum lower = elem_parse(str, basetype);
   p_comma(str);
-  Datum upper = elem_parse(str, basetypid);
+  Datum upper = elem_parse(str, basetype);
 
   if (p_cbracket(str))
     upper_inc = true;
@@ -456,7 +448,6 @@ span_parse(char **str, CachedType spantype, bool make)
 /* Temporal Types */
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal instant value from the buffer.
  *
  * @param[in] str Input string
@@ -469,18 +460,17 @@ TInstant *
 tinstant_parse(char **str, CachedType temptype, bool end, bool make)
 {
   p_whitespace(str);
-  Oid basetypid = type_oid(temptype_basetype(temptype));
+  CachedType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
-  Datum elem = basetype_parse(str, basetypid);
+  Datum elem = basetype_parse(str, basetype);
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   if (! make)
     return NULL;
-  return tinstant_make(elem, t, temptype);
+  return tinstant_make(elem, temptype, t);
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal instant set value from the buffer.
  *
  * @param[in] str Input string
@@ -520,15 +510,14 @@ tinstantset_parse(char **str, CachedType temptype)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal sequence value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] linear True when the interpolation is linear
- * @param[in] end Set to true when reading a single instant to ensure there is
+ * @param[in] end Set to true when reading a single sequence to ensure there is
  * no moreinput after the sequence
- * @param[in] make Set to false for the first pass to do not create the instant
+ * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
 tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
@@ -577,7 +566,6 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal sequence set value from the buffer.
  *
  * @param[in] str Input string
@@ -618,7 +606,6 @@ tsequenceset_parse(char **str, CachedType temptype, bool linear)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal value from the buffer (dispatch function).
  *
  * @param[in] str Input string

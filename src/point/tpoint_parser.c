@@ -35,18 +35,14 @@
 #include "point/tpoint_parser.h"
 
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/temporaltypes.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include <libmeos.h>
 #include "general/temporal_parser.h"
-#include "point/stbox.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_input_output
- * @brief Parse a spatiotemporal box value from the buffer.
+ * @brief Parse a spatiotemporal box from its string representation.
  */
 STBOX *
 stbox_parse(char **str)
@@ -207,8 +203,7 @@ stbox_parse(char **str)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Parse a temporal point value of instant type from the buffer.
+ * @brief Parse a temporal point of instant type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -222,10 +217,10 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
   int *tpoint_srid)
 {
   p_whitespace(str);
-  Oid basetypid = type_oid(temptype_basetype(temptype));
+  CachedType basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
-  Datum geo = basetype_parse(str, basetypid);
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
+  Datum geo = basetype_parse(str, basetype);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geo);
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
@@ -245,14 +240,13 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   TInstant *result = make ?
-    tinstant_make(PointerGetDatum(gs), t, temptype) : NULL;
+    tinstant_make(PointerGetDatum(gs), temptype, t) : NULL;
   pfree(gs);
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Parse a temporal point value of instant set type from the buffer.
+ * @brief Parse a temporal point of instant set type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -292,7 +286,6 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal point value of sequence type from the buffer.
  *
  * @param[in] str Input string
@@ -350,7 +343,6 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal point value of sequence set type from the buffer.
  *
  * @param[in] str Input string
@@ -394,7 +386,6 @@ tpointseqset_parse(char **str, CachedType temptype, bool linear,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Parse a temporal point value from the buffer.
  *
  * @param[in] str Input string

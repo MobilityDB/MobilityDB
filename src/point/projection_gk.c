@@ -38,7 +38,7 @@
 
 #include "point/projection_gk.h"
 
-/* PostgreSQL */
+/* C */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <math.h>
 #endif
@@ -48,7 +48,6 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
 #include "general/lifting.h"
-#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 

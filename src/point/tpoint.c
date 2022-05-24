@@ -37,18 +37,90 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"
-#include "point/stbox.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 
-/* To avoid including <utils/builtins.h> */
-extern int32 pg_atoi(const char *s, int size, int c);
+/* PostgreSQL removed pg_atoi in version 15 */
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+/*
+ * pg_atoi: convert string to integer
+ *
+ * allows any number of leading or trailing whitespace characters.
+ *
+ * 'size' is the sizeof() the desired integral result (1, 2, or 4 bytes).
+ *
+ * c, if not 0, is a terminator character that may appear after the
+ * integer (plus whitespace).  If 0, the string must end after the integer.
+ *
+ * Unlike plain atoi(), this will throw elog() upon bad input format or
+ * overflow.
+ */
+int32
+pg_atoi(const char *s, int size, int c)
+{
+  long    l;
+  char     *badp;
 
+  /*
+   * Some versions of strtol treat the empty string as an error, but some
+   * seem not to.  Make an explicit test to be sure we catch it.
+   */
+  if (s == NULL)
+    elog(ERROR, "NULL pointer");
+  if (*s == 0)
+    elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
+
+  errno = 0;
+  l = strtol(s, &badp, 10);
+
+  /* We made no progress parsing the string, so bail out */
+  if (s == badp)
+    elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
+
+  switch (size)
+  {
+    case sizeof(int32):
+      if (errno == ERANGE
+#if defined(HAVE_LONG_INT_64)
+      /* won't get ERANGE on these with 64-bit longs... */
+        || l < INT_MIN || l > INT_MAX
+#endif
+        )
+        elog(ERROR, "value \"%s\" is out of range for type %s", s, "integer");
+      break;
+    case sizeof(int16):
+      if (errno == ERANGE || l < SHRT_MIN || l > SHRT_MAX)
+        elog(ERROR, "value \"%s\" is out of range for type %s", s, "smallint");
+      break;
+    case sizeof(int8):
+      if (errno == ERANGE || l < SCHAR_MIN || l > SCHAR_MAX)
+        elog(ERROR, "value \"%s\" is out of range for 8-bit integer", s);
+      break;
+    default:
+      elog(ERROR, "unsupported result size: %d", size);
+  }
+
+  /*
+   * Skip any trailing whitespace; if anything but whitespace remains before
+   * the terminating character, bail out
+   */
+  while (*badp && *badp != c && isspace((unsigned char) *badp))
+    badp++;
+
+  if (*badp && *badp != c)
+    elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
+
+  return (int32) l;
+}
+#else
+  /* To avoid including <utils/builtins.h> */
+  extern int32 pg_atoi(const char *s, int size, int c);
+#endif
 /*****************************************************************************
  * General functions
  *****************************************************************************/
@@ -69,14 +141,14 @@ gserialized_copy(const GSERIALIZED *g)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
- * @brief Return the bounding box of the temporal point value
+ * @ingroup libmeos_box_cast
+ * @brief Return the bounding box of a temporal point
  */
 STBOX *
-tpoint_stbox(const Temporal *temp)
+tpoint_to_stbox(const Temporal *temp)
 {
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  temporal_bbox(temp, result);
+  temporal_set_bbox(temp, result);
   return result;
 }
 
@@ -86,7 +158,7 @@ tpoint_stbox(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of the temporal point value expanded on the
+ * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
  */
 STBOX *
@@ -95,21 +167,21 @@ geo_expand_spatial(const GSERIALIZED *gs, double d)
   if (gserialized_is_empty(gs))
     return NULL;
   STBOX box;
-  geo_stbox(gs, &box);
+  geo_set_stbox(gs, &box);
   STBOX *result = stbox_expand_spatial(&box, d);
   return result;
 }
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of the temporal point value expanded on the
+ * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
  */
 STBOX *
 tpoint_expand_spatial(const Temporal *temp, double d)
 {
   STBOX box;
-  temporal_bbox(temp, &box);
+  temporal_set_bbox(temp, &box);
   STBOX *result = stbox_expand_spatial(&box, d);
   return result;
 }
@@ -119,10 +191,10 @@ tpoint_expand_spatial(const Temporal *temp, double d)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal comparison of the base value and temporal value
+ * @brief Return the temporal comparison of a temporal point and a point
  */
 Temporal *
-tcomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
 {
   if (gserialized_is_empty(gs))
@@ -142,7 +214,7 @@ tcomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * General functions
@@ -495,8 +567,8 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
-    temptype);
+  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), temptype,
+    t);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }
@@ -507,7 +579,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
- * Return the bounding box of the temporal point value
+ * Return the bounding box of a temporal point
  */
 PGDLLEXPORT Datum
 Tpoint_to_stbox(PG_FUNCTION_ARGS)
@@ -524,7 +596,7 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geo_expand_spatial);
 /**
- * Return the bounding box of the temporal point value expanded on the
+ * Return the bounding box of a temporal point expanded on the
  * spatial dimension
  */
 PGDLLEXPORT Datum
@@ -541,7 +613,7 @@ Geo_expand_spatial(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_expand_spatial);
 /**
- * Return the bounding box of the temporal point value expanded on the
+ * Return the bounding box of a temporal point expanded on the
  * spatial dimension
  */
 PGDLLEXPORT Datum
@@ -559,7 +631,7 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return the temporal comparison of the temporal value and the base value
+ * Return the temporal comparison of a point and a temporal point
  */
 static Datum
 tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
@@ -567,7 +639,7 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = tcomp_tpoint_geo(temp, gs, func, true);
+  Temporal *result = tcomp_tpoint_point(temp, gs, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -576,15 +648,15 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Return the temporal comparison of the temporal value and the base value
+ * Return the temporal comparison of a temporal point and a point
  */
 static Datum
-tcomp_tpoint_geo_ext(FunctionCallInfo fcinfo,
+tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tcomp_tpoint_geo(temp, gs, func, false);
+  Temporal *result = tcomp_tpoint_point(temp, gs, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -596,7 +668,7 @@ tcomp_tpoint_geo_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
 /**
- * Return the temporal equality of the base value and the temporal value
+ * Return the temporal equality of a point and a temporal point
  */
 PGDLLEXPORT Datum
 Teq_geo_tpoint(PG_FUNCTION_ARGS)
@@ -606,17 +678,17 @@ Teq_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
 /**
- * Return the temporal equality of the temporal value and base value
+ * Return the temporal equality of the temporal point and a point
  */
 PGDLLEXPORT Datum
 Teq_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tcomp_tpoint_geo_ext(fcinfo, &datum2_eq2);
+  return tcomp_tpoint_point_ext(fcinfo, &datum2_eq2);
 }
 
 PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
 /**
- * Return the temporal inequality of the base value and the temporal value
+ * Return the temporal inequality of a point and a temporal point
  */
 PGDLLEXPORT Datum
 Tne_geo_tpoint(PG_FUNCTION_ARGS)
@@ -626,12 +698,12 @@ Tne_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
 /**
- * Return the temporal inequality of the temporal value and base value
+ * Return the temporal inequality of the temporal point and a point
  */
 PGDLLEXPORT Datum
 Tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tcomp_tpoint_geo_ext(fcinfo, &datum2_ne2);
+  return tcomp_tpoint_point_ext(fcinfo, &datum2_ne2);
 }
 
 /*****************************************************************************
@@ -641,7 +713,7 @@ Tne_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_values);
 /**
- * Return the base values (that is, the trajectory) of the temporal point
+ * Return the base values (that is, the trajectory) of a temporal point
  * value as a geometry/geography
  */
 PGDLLEXPORT Datum
@@ -653,6 +725,6 @@ Tpoint_values(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

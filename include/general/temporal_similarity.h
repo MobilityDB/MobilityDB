@@ -42,15 +42,6 @@ typedef enum
 } SimFunc;
 
 /**
- * Struct for storing a match
- */
-typedef struct
-{
-  int i;
-  int j;
-} Match;
-
-/**
  * Struct for storing the state that persists across multiple calls generating
  * the bucket list
  */

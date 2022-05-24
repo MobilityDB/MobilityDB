@@ -46,12 +46,10 @@
 #include "general/temporal_boxops.h"
 
 /* MobilityDB */
-#include "general/timestampset.h"
-#include "general/periodset.h"
-#include "general/span_ops.h"
+#include <libmeos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_boxops.h"
 #endif
 
@@ -60,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * Return true if the bounding boxes are equal
+ * Return true if two bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
@@ -107,7 +105,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
 }
 
 /**
- * Shift and/or scale the time span of the bounding box with the two intervals
+ * Shift and/or scale the time span of the bounding box by the intervals
  *
  * @param[in] box Bounding box
  * @param[in] start Interval to shift
@@ -115,8 +113,8 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
  * @param[in] temptype Temporal type
  */
 void
-temporal_bbox_shift_tscale(void *box, const Interval *start,
-  const Interval *duration, CachedType temptype)
+temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
+  CachedType temptype, void *box)
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
@@ -138,7 +136,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
  *****************************************************************************/
 
 /**
- * Return true if the base type does not have bounding box
+ * Return true if a temporal type does not have bounding box
  */
 static bool
 temptype_without_bbox(CachedType temptype)
@@ -150,7 +148,7 @@ temptype_without_bbox(CachedType temptype)
 }
 
 /**
- * Return the size of the bounding box
+ * Return the size of a bounding box
  */
 size_t
 temporal_bbox_size(CachedType temptype)
@@ -169,13 +167,14 @@ temporal_bbox_size(CachedType temptype)
 }
 
 /**
- * Set the bounding box from a temporal instant value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal instant
  *
  * @param[in] box Bounding box
  * @param[in] inst Temporal value
  */
 void
-tinstant_make_bbox(const TInstant *inst, void *box)
+tinstant_set_bbox(const TInstant *inst, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(inst->temptype);
@@ -188,10 +187,10 @@ tinstant_make_bbox(const TInstant *inst, void *box)
     tbox_set(true, true, dvalue, dvalue, inst->t, inst->t, (TBOX *) box);
   }
   else if (tgeo_type(inst->temptype))
-    tpointinst_stbox(inst, (STBOX *) box);
-#ifndef MEOS
+    tpointinst_set_stbox(inst, (STBOX *) box);
+#if ! MEOS
   else if (inst->temptype == T_TNPOINT)
-    tnpointinst_make_stbox(inst, (STBOX *) box);
+    tnpointinst_set_stbox(inst, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -200,35 +199,34 @@ tinstant_make_bbox(const TInstant *inst, void *box)
 }
 
 /**
- * Set the temporal box from the array of temporal number instant values
+ * Set a temporal box from an array of temporal number instants
  *
  * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberinstarr_tbox(const TInstant **instants, int count, TBOX *box)
+tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
 {
-  tinstant_make_bbox(instants[0], box);
+  tinstant_set_bbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
     TBOX box1;
-    tinstant_make_bbox(instants[i], &box1);
+    tinstant_set_bbox(instants[i], &box1);
     tbox_expand(&box1, box);
   }
   return;
 }
 
 /**
- * Set the bounding box from the array of temporal instant values
- * (dispatch function)
+ * Set a bounding box from an array of temporal instants
  *
  * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  */
 void
-tinstantset_make_bbox(const TInstant **instants, int count, void *box)
+tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
@@ -236,12 +234,12 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
     span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
       (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
-    tnumberinstarr_tbox(instants, count, (TBOX *) box);
+    tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
   else if (tgeo_type(instants[0]->temptype))
-    tgeompointinstarr_stbox(instants, count, (STBOX *) box);
-#ifndef MEOS
+    tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
+#if ! MEOS
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointinstarr_stbox(instants, count, (STBOX *) box);
+    tnpointinstarr_set_stbox(instants, count, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -250,8 +248,7 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
 }
 
 /**
- * Set the bounding box from the array of temporal instant values
- * (dispatch function)
+ * Set a bounding box from an array of temporal instant values
  *
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
@@ -260,11 +257,11 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  * @param[out] box Bounding box
  */
 void
-tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
-#ifndef MEOS
+tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
+#if ! MEOS
   bool upper_inc, bool linear, void *box)
 #else
-  bool upper_inc, bool linear  __attribute__((unused)), void *box)
+  bool upper_inc, bool linear __attribute__((unused)), void *box)
 #endif
 {
   /* Only external types have bounding box */
@@ -273,14 +270,14 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
     span_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
-    tnumberinstarr_tbox(instants, count, (TBOX *) box);
+    tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
   else if (instants[0]->temptype == T_TGEOMPOINT)
-    tgeompointinstarr_stbox(instants, count, (STBOX *) box);
+    tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->temptype == T_TGEOGPOINT)
-    tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
-#ifndef MEOS
+    tgeogpointinstarr_set_stbox(instants, count, (STBOX *) box);
+#if ! MEOS
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
+    tnpointseq_set_stbox(instants, count, linear, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -296,8 +293,7 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the array
  */
 static void
-tseqarr_to_period(const TSequence **sequences, int count,
-  Period *period)
+tseqarr_set_period(const TSequence **sequences, int count, Period *period)
 {
   const Period *first = &sequences[0]->period;
   const Period *last = &sequences[count - 1]->period;
@@ -314,8 +310,7 @@ tseqarr_to_period(const TSequence **sequences, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_to_tbox(const TSequence **sequences, int count,
-  TBOX *box)
+tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBOX *box)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
   for (int i = 1; i < count; i++)
@@ -328,19 +323,18 @@ tnumberseqarr_to_tbox(const TSequence **sequences, int count,
 
 /**
  * Set the bounding box from the array of temporal sequence values
- * (dispatch function)
  */
 void
-tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
+tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
 {
   /* Only external types have bounding box */ // TODO
   ensure_temporal_type(sequences[0]->temptype);
   if (talpha_type(sequences[0]->temptype))
-    tseqarr_to_period(sequences, count, (Period *) box);
+    tseqarr_set_period(sequences, count, (Period *) box);
   else if (tnumber_type(sequences[0]->temptype))
-    tnumberseqarr_to_tbox(sequences, count, (TBOX *) box);
+    tnumberseqarr_set_tbox(sequences, count, (TBOX *) box);
   else if (tspatial_type(sequences[0]->temptype))
-    tpointseqarr_stbox(sequences, count, (STBOX *) box);
+    tpointseqarr_set_stbox(sequences, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       sequences[0]->temptype);
@@ -366,7 +360,7 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1, p2;
-  temporal_period(temp, &p1);
+  temporal_set_period(temp, &p1);
   span_set(t, t, true, true, T_TIMESTAMPTZ, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
@@ -386,8 +380,8 @@ boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1, p2;
-  temporal_period(temp, &p1);
-  timestampset_period(ts, &p2);
+  temporal_set_period(temp, &p1);
+  timestampset_set_period(ts, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }
@@ -406,7 +400,7 @@ boxop_temporal_period(const Temporal *temp, const Period *p,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1;
-  temporal_period(temp, &p1);
+  temporal_set_period(temp, &p1);
   bool result = invert ? func(p, &p1) : func(&p1, p);
   return result;
 }
@@ -425,8 +419,8 @@ boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1, p2;
-  temporal_period(temp, &p1);
-  periodset_period(ps, &p2);
+  temporal_set_period(temp, &p1);
+  periodset_set_period(ps, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }
@@ -442,8 +436,8 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const Period *, const Period *))
 {
   Period p1, p2;
-  temporal_period(temp1, &p1);
-  temporal_period(temp2, &p2);
+  temporal_set_period(temp1, &p1);
+  temporal_set_period(temp2, &p2);
   bool result = func(&p1, &p2);
   return result;
 }
@@ -467,8 +461,8 @@ boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  number_tbox(number, basetype, &box2);
+  temporal_set_bbox(temp, &box1);
+  number_set_tbox(number, basetype, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return result;
 }
@@ -486,8 +480,8 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  span_tbox(span, &box2);
+  temporal_set_bbox(temp, &box1);
+  span_set_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return (result);
 }
@@ -506,7 +500,7 @@ boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   bool result = invert ? func(box, &box1) : func(&box1, box);
   return result;
 }
@@ -522,8 +516,8 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *))
 {
   TBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   return result;
 }
@@ -534,7 +528,7 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /**
  * Return the size in bytes to read from toast to get the basic
@@ -718,7 +712,7 @@ boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Contains_timestamp_temporal);
 /**
- * Return true if the timestamp contains the bounding period of the temporal
+ * Return true if a timestamp contains the bounding period of the temporal
  * value
  */
 PGDLLEXPORT Datum
@@ -729,7 +723,7 @@ Contains_timestamp_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_temporal_timestamp);
 /**
- * Return true if the bounding period of the temporal value contains the
+ * Return true if the bounding period of a temporal value contains the
  * timestamp
  */
 PGDLLEXPORT Datum
@@ -740,8 +734,8 @@ Contains_temporal_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
 /**
- * Return true if the bounding period of the timestampset contains the bounding
- * period of the temporal value
+ * Return true if the bounding period of a timestampset contains the one
+ * of a temporal value
  */
 PGDLLEXPORT Datum
 Contains_timestampset_temporal(PG_FUNCTION_ARGS)
@@ -751,8 +745,8 @@ Contains_timestampset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
 /**
- * Return true if the bounding period of the temporal value contains the
- * bounding period of the timestampset
+ * Return true if the bounding period of a temporal value contains the
+ * one of a timestampset
  */
 PGDLLEXPORT Datum
 Contains_temporal_timestampset(PG_FUNCTION_ARGS)
@@ -762,7 +756,7 @@ Contains_temporal_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_temporal);
 /**
- * Return true if the period contains the bounding period of the temporal value
+ * Return true if a period contains the bounding period of a temporal value
  */
 PGDLLEXPORT Datum
 Contains_period_temporal(PG_FUNCTION_ARGS)
@@ -772,7 +766,7 @@ Contains_period_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_temporal_period);
 /**
- * Return true if the bounding period of the temporal value contains the period
+ * Return true if the bounding period of a temporal value contains a period
  */
 PGDLLEXPORT Datum
 Contains_temporal_period(PG_FUNCTION_ARGS)
@@ -782,8 +776,8 @@ Contains_temporal_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_temporal);
 /**
- * Return true if the bounding period of the periodset contains the bounding
- * period of the temporal value
+ * Return true if the bounding period of a period set contains the one
+ * of a temporal value
  */
 PGDLLEXPORT Datum
 Contains_periodset_temporal(PG_FUNCTION_ARGS)
@@ -793,8 +787,8 @@ Contains_periodset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_temporal_periodset);
 /**
- * Return true if the bounding period of the temporal value contains the
- * bounding period of the periodset
+ * Return true if the bounding period of a temporal value contains the
+ * one of a period set
  */
 PGDLLEXPORT Datum
 Contains_temporal_periodset(PG_FUNCTION_ARGS)
@@ -805,7 +799,7 @@ Contains_temporal_periodset(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
 /**
  * Return true if the bounding period of the first temporal value contains
- * the bounding period of the second one.
+ * the one of the second one.
  */
 PGDLLEXPORT Datum
 Contains_temporal_temporal(PG_FUNCTION_ARGS)
@@ -817,7 +811,7 @@ Contains_temporal_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_temporal);
 /**
- * Return true if the timestamp is contained in the bounding period of the
+ * Return true if a timestamp is contained in the bounding period of the
  * temporal value
  */
 PGDLLEXPORT Datum
@@ -828,8 +822,8 @@ Contained_timestamp_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_temporal_timestamp);
 /**
- * Return true if the bounding period of the temporal value is contained in
- * the timestamp
+ * Return true if the bounding period of a temporal value is contained in
+ * a timestamp
  */
 PGDLLEXPORT Datum
 Contained_temporal_timestamp(PG_FUNCTION_ARGS)
@@ -839,8 +833,8 @@ Contained_temporal_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
 /**
- * Return true if the bounding period of the timestampset is contained in the
- * bounding period of the temporal value overlap
+ * Return true if the bounding period of a timestampset is contained in the
+ * one of a temporal value overlap
  */
 PGDLLEXPORT Datum
 Contained_timestampset_temporal(PG_FUNCTION_ARGS)
@@ -850,8 +844,8 @@ Contained_timestampset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
 /**
- * Return true if the bounding period of the temporal value is contained in
- * the bounding period of the timestampset
+ * Return true if the bounding period of a temporal value is contained in
+ * the one of a timestampset
  */
 PGDLLEXPORT Datum
 Contained_temporal_timestampset(PG_FUNCTION_ARGS)
@@ -861,7 +855,7 @@ Contained_temporal_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_period_temporal);
 /**
- * Return true if the period is contained the bounding period of the temporal
+ * Return true if a period is contained the bounding period of the temporal
  * value
  */
 PGDLLEXPORT Datum
@@ -872,8 +866,8 @@ Contained_period_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_temporal_period);
 /**
- * Return true if the bounding period of the temporal value is contained in
- * the period
+ * Return true if the bounding period of a temporal value is contained in
+ * a period
  */
 PGDLLEXPORT Datum
 Contained_temporal_period(PG_FUNCTION_ARGS)
@@ -883,8 +877,8 @@ Contained_temporal_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_periodset_temporal);
 /**
- * Return true if the bounding period of the periodset is contained in the
- * bounding period of the temporal value
+ * Return true if the bounding period of a period set is contained in the
+ * one of a temporal value
  */
 PGDLLEXPORT Datum
 Contained_periodset_temporal(PG_FUNCTION_ARGS)
@@ -894,8 +888,8 @@ Contained_periodset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_temporal_periodset);
 /**
- * Return true if the bounding period of the temporal value is contained in
- * the bounding period of the periodset
+ * Return true if the bounding period of a temporal value is contained in
+ * the one of a period set
  */
 PGDLLEXPORT Datum
 Contained_temporal_periodset(PG_FUNCTION_ARGS)
@@ -906,7 +900,7 @@ Contained_temporal_periodset(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
 /**
  * Return true if the bounding period of the first temporal value is contained
- * in the bounding period of the second one.
+ * in the one of the second temporal value.
  */
 PGDLLEXPORT Datum
 Contained_temporal_temporal(PG_FUNCTION_ARGS)
@@ -918,7 +912,7 @@ Contained_temporal_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestamp_temporal);
 /**
- * Return true if the timestamp and the bounding period of the temporal value
+ * Return true if a timestamp and the bounding period of a temporal value
  * overlap
  */
 PGDLLEXPORT Datum
@@ -929,7 +923,7 @@ Overlaps_timestamp_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_timestamp);
 /**
- * Return true if the bounding period of the temporal value and the timestamp
+ * Return true if the bounding period of a temporal value and a timestamp
  * overlap
  */
 PGDLLEXPORT Datum
@@ -940,8 +934,8 @@ Overlaps_temporal_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
 /**
- * Return true if the bounding period the timestampset and the bounding period
- * of the temporal value overlap
+ * Return true if the bounding period a timestampset and the one
+ * of a temporal value overlap
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_temporal(PG_FUNCTION_ARGS)
@@ -951,8 +945,8 @@ Overlaps_timestampset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
 /**
- * Return true if the bounding period of the temporal value and the bounding
- * period the timestampset overlap
+ * Return true if the bounding periods of a temporal value and of
+ * a timestampset overlap
  */
 PGDLLEXPORT Datum
 Overlaps_temporal_timestampset(PG_FUNCTION_ARGS)
@@ -962,7 +956,7 @@ Overlaps_temporal_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
 /**
- * Return true if the period and the bounding period of the temporal value
+ * Return true if a period and the bounding period of a temporal value
  * overlap
  */
 PGDLLEXPORT Datum
@@ -973,7 +967,7 @@ Overlaps_period_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
 /**
- * Return true if the bounding period of the temporal value and the period
+ * Return true if the bounding period of a temporal value and a period
  * overlap
  */
 PGDLLEXPORT Datum
@@ -984,8 +978,8 @@ Overlaps_temporal_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_temporal);
 /**
- * Return true if the bounding period the periodset and the bounding period of
- * the temporal value overlap
+ * Return true if the bounding period a period set and the one of
+ * a temporal value overlap
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_temporal(PG_FUNCTION_ARGS)
@@ -995,8 +989,8 @@ Overlaps_periodset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_temporal_periodset);
 /**
- * Return true if the bounding period of the temporal value and the bounding
- * period the periodset overlap
+ * Return true if the bounding periods of a temporal value and of
+ * a period set overlap
  */
 PGDLLEXPORT Datum
 Overlaps_temporal_periodset(PG_FUNCTION_ARGS)
@@ -1018,7 +1012,7 @@ Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_timestamp_temporal);
 /**
- * Return true if the timestamp and the bounding period of the temporal value
+ * Return true if a timestamp and the bounding period of a temporal value
  * are equal
  */
 PGDLLEXPORT Datum
@@ -1029,7 +1023,7 @@ Same_timestamp_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_temporal_timestamp);
 /**
- * Return true if the bounding period of the temporal value and the timestamp
+ * Return true if the bounding period of a temporal value and a timestamp
  * are equal
  */
 PGDLLEXPORT Datum
@@ -1040,8 +1034,8 @@ Same_temporal_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
 /**
- * Return true if the bounding period of the timestampset and the bounding
- * period of the temporal value are equal
+ * Return true if the bounding periods of a timestampset and of
+ * a temporal value are equal
  */
 PGDLLEXPORT Datum
 Same_timestampset_temporal(PG_FUNCTION_ARGS)
@@ -1051,8 +1045,8 @@ Same_timestampset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
 /**
- * Return true if the bounding period of the temporal value and the bounding
- * period of the timestampset are equal
+ * Return true if the bounding periods of a temporal value and of
+ * a timestampset are equal
  */
 PGDLLEXPORT Datum
 Same_temporal_timestampset(PG_FUNCTION_ARGS)
@@ -1062,7 +1056,7 @@ Same_temporal_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_period_temporal);
 /**
- * Return true if the period and the bounding period of the temporal value
+ * Return true if a period and the bounding period of a temporal value
  * are equal
  */
 PGDLLEXPORT Datum
@@ -1073,7 +1067,7 @@ Same_period_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_temporal_period);
 /**
- * Return true if the bounding period of the temporal value and the period
+ * Return true if the bounding period of a temporal value and a period
  * are equal
  */
 PGDLLEXPORT Datum
@@ -1084,8 +1078,8 @@ Same_temporal_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_periodset_temporal);
 /**
- * Return true if the bounding period of the periodset and the bounding period
- * of the temporal value are equal
+ * Return true if the bounding periods of a period set and of
+ * a temporal value are equal
  */
 PGDLLEXPORT Datum
 Same_periodset_temporal(PG_FUNCTION_ARGS)
@@ -1095,8 +1089,8 @@ Same_periodset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_temporal_periodset);
 /**
- * Return true if the bounding period of the temporal value and the bounding
- * period of the periodset are equal
+ * Return true if the bounding periods of a temporal value and of
+ * a period set are equal
  */
 PGDLLEXPORT Datum
 Same_temporal_periodset(PG_FUNCTION_ARGS)
@@ -1118,7 +1112,7 @@ Same_temporal_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestamp_temporal);
 /**
- * Return true if the timestamp and the bounding period of the temporal value
+ * Return true if a timestamp and the bounding period of a temporal value
  * are adjacent
  */
 PGDLLEXPORT Datum
@@ -1129,7 +1123,7 @@ Adjacent_timestamp_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_timestamp);
 /**
- * Return true if the bounding period of the temporal value and the timestamp
+ * Return true if the bounding period of a temporal value and a timestamp
  * are adjacent
  */
 PGDLLEXPORT Datum
@@ -1140,8 +1134,8 @@ Adjacent_temporal_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
 /**
- * Return true if the bounding period of the timestampset and the bounding
- * period of the temporal value are adjacent
+ * Return true if the bounding periods of a timestampset and of
+ * a temporal value are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_timestampset_temporal(PG_FUNCTION_ARGS)
@@ -1151,8 +1145,8 @@ Adjacent_timestampset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
 /**
- * Return true if the bounding period of the temporal value and the bounding
- * period of the timestampset are adjacent
+ * Return true if the bounding periods of a temporal value and of
+ * a timestampset are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_temporal_timestampset(PG_FUNCTION_ARGS)
@@ -1162,7 +1156,7 @@ Adjacent_temporal_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
 /**
- * Return true if the period and the bounding period of the temporal value
+ * Return true if a period and the bounding period of a temporal value
  * are adjacent
  */
 PGDLLEXPORT Datum
@@ -1173,7 +1167,7 @@ Adjacent_period_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
 /**
- * Return true if the bounding period of the temporal value and the period
+ * Return true if the bounding period of a temporal value and a period
  * are adjacent
  */
 PGDLLEXPORT Datum
@@ -1184,8 +1178,8 @@ Adjacent_temporal_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_temporal);
 /**
- * Return true if the bounding period of the periodset and the bounding period
- * of the temporal value are adjacent
+ * Return true if the bounding periods of a period set and of
+ * a temporal value are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_temporal(PG_FUNCTION_ARGS)
@@ -1195,8 +1189,8 @@ Adjacent_periodset_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_temporal_periodset);
 /**
- * Return true if the bounding period of the temporal value and the bounding
- * period of the periodset are adjacent
+ * Return true if the bounding periods of a temporal value and of
+ * a period set are adjacent
  */
 PGDLLEXPORT Datum
 Adjacent_temporal_periodset(PG_FUNCTION_ARGS)
@@ -1732,6 +1726,6 @@ Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS)
   return boxop_tnumber_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

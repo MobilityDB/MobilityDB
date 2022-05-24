@@ -34,16 +34,16 @@
 
 #include "general/periodset.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/timestampset.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
+#include "general/pg_call.h"
+#include "general/time_ops.h"
 #include "general/temporal_parser.h"
 
 /*****************************************************************************
@@ -51,7 +51,7 @@
  *****************************************************************************/
 
 /**
- * Return a pointer to the precomputed bounding box of the period set value
+ * Return a pointer to the precomputed bounding box of a period set
  */
 const Period *
 periodset_period_ptr(const PeriodSet *ps)
@@ -65,7 +65,7 @@ periodset_period_ptr(const PeriodSet *ps)
  *
  * If the timestamp is found, the index of the period is returned
  * in the output parameter. Otherwise, return a number encoding whether the
- * timestamp is before, between two periods, or after the period set value.
+ * timestamp is before, between two periods, or after the period set.
  * For example, given a value composed of 3 periods and a timestamp, the
  * result of the function is as follows:
  * @code
@@ -80,7 +80,7 @@ periodset_period_ptr(const PeriodSet *ps)
  * @param[in] ps Period set value
  * @param[in] t Timestamp
  * @param[out] loc Location
- * @result Return true if the timestamp is contained in the period set value
+ * @result Return true if the timestamp is contained in the period set
  */
 bool
 periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
@@ -115,10 +115,20 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return the string representation of the period set value.
+ * @brief Return a period set from its string representation.
+ */
+PeriodSet *
+periodset_in(char *str)
+{
+  return periodset_parse(&str);
+}
+
+/**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Return the string representation of a period set.
  */
 char *
-periodset_to_string(const PeriodSet *ps)
+periodset_out(const PeriodSet *ps)
 {
   char **strings = palloc(sizeof(char *) * ps->count);
   size_t outlen = 0;
@@ -126,7 +136,7 @@ periodset_to_string(const PeriodSet *ps)
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    strings[i] = span_to_string(p);
+    strings[i] = span_out(p);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');
@@ -134,7 +144,24 @@ periodset_to_string(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Write the binary representation of the time value into the buffer.
+ * @brief Return a period set from its binary representation read from
+ * a buffer.
+ *
+ * @param[in] buf Buffer
+ */
+PeriodSet *
+periodset_recv(StringInfo buf)
+{
+  int count = (int) pq_getmsgint(buf, 4);
+  Period **periods = palloc(sizeof(Period *) * count);
+  for (int i = 0; i < count; i++)
+    periods[i] = span_recv(buf);
+  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of a period set into a buffer.
  *
  * @param[in] ps Time value
  * @param[in] buf Buffer
@@ -153,22 +180,16 @@ periodset_write(const PeriodSet *ps, StringInfo buf)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
- *
- * @param[in] buf Buffer
+ * @brief Return the binary representation of a period set
  */
-PeriodSet *
-periodset_read(StringInfo buf)
+bytea *
+periodset_send(const PeriodSet *ps)
 {
-  int count = (int) pq_getmsgint(buf, 4);
-  Period **periods = palloc(sizeof(Period *) * count);
-  for (int i = 0; i < count; i++)
-    periods[i] = span_read(buf);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  periodset_write(ps, &buf) ;
+  return (bytea *) pq_endtypsend(&buf);
 }
-
 /*****************************************************************************
  * Constructor function
  ****************************************************************************/
@@ -185,7 +206,7 @@ periodset_read(StringInfo buf)
  * ---------------------------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, and `bbox` is the
- * bounding box which is also period.
+ * bounding box which is also a period.
  *
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
@@ -236,6 +257,7 @@ periodset_make(const Period **periods, int count, bool normalize)
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
  * @param[in] normalize True when the resulting value should be normalized.
+ * @see periodset_make
  */
 PeriodSet *
 periodset_make_free(Period **periods, int count, bool normalize)
@@ -253,7 +275,7 @@ periodset_make_free(Period **periods, int count, bool normalize)
 
 /**
  * @ingroup libmeos_spantime_constructor
- * @brief Return a copy of the period set.
+ * @brief Return a copy of a period set.
  */
 PeriodSet *
 periodset_copy(const PeriodSet *ps)
@@ -269,23 +291,23 @@ periodset_copy(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast the timestamp value as a period set value.
+ * @brief Cast a timestamp as a period set.
  */
 PeriodSet *
-timestamp_periodset(TimestampTz t)
+timestamp_to_periodset(TimestampTz t)
 {
   Span p;
   span_set(t, t, true, true, T_TIMESTAMPTZ, &p);
-  PeriodSet *result = period_periodset(&p);
+  PeriodSet *result = period_to_periodset(&p);
   return result;
 }
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast the timestamp set value as a period set value.
+ * @brief Cast a timestamp set as a period set.
  */
 PeriodSet *
-timestampset_periodset(const TimestampSet *ts)
+timestampset_to_periodset(const TimestampSet *ts)
 {
   Period **periods = palloc(sizeof(Period *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -299,24 +321,12 @@ timestampset_periodset(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Construct a period set from a period.
+ * @brief Cast a period as a period set.
  */
 PeriodSet *
-period_periodset(const Period *period)
+period_to_periodset(const Period *period)
 {
   return periodset_make((const Period **) &period, 1, NORMALIZE_NO);
-}
-
-/**
- * @ingroup libmeos_spantime_cast
- * @brief Copy in the second argument the bounding period of the period set value
- */
-void
-periodset_period(const PeriodSet *ps, Period *p)
-{
-  const Period *p1 = (Period *) &ps->period;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
-  return;
 }
 
 /*****************************************************************************
@@ -325,7 +335,7 @@ periodset_period(const PeriodSet *ps, Period *p)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the n-th period of the period set value.
+ * @brief Return the n-th period of a period set.
  */
 const Period *
 periodset_per_n(const PeriodSet *ps, int index)
@@ -335,7 +345,7 @@ periodset_per_n(const PeriodSet *ps, int index)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the size in bytes of the period set value
+ * @brief Return the size in bytes of a period set
  */
 int
 periodset_mem_size(const PeriodSet *ps)
@@ -345,43 +355,52 @@ periodset_mem_size(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the timespan of the period set value
+ * @brief Return the timespan of a period set
  */
 Interval *
 periodset_timespan(const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, 0);
   const Period *p2 = periodset_per_n(ps, ps->count - 1);
-  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-    TimestampTzGetDatum(p2->upper), TimestampTzGetDatum(p1->lower)));
+  Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
   return result;
 }
 
 /**
+ * @ingroup libmeos_spantime_cast
+ * @brief Set a period to the bounding period of a period set
+ */
+void
+periodset_set_period(const PeriodSet *ps, Period *p)
+{
+  const Period *p1 = (Period *) &ps->period;
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
+  return;
+}
+
+/**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the duration of the period set value
+ * @brief Return the duration of a period set
  */
 Interval *
 periodset_duration(const PeriodSet *ps)
 {
   const Period *p = periodset_per_n(ps, 0);
-  Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper),  TimestampTzGetDatum(p->lower));
+  Interval *result = pg_timestamp_mi(p->upper, p->lower);
   for (int i = 1; i < ps->count; i++)
   {
     p = periodset_per_n(ps, i);
-    Datum interval1 = call_function2(timestamp_mi,
-      TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
-    Datum interval2 = call_function2(interval_pl, result, interval1);
-    pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
+    Interval *interval1 = pg_timestamp_mi(p->upper, p->lower);
+    Interval *interval2 = pg_interval_pl(result, interval1);
+    pfree(result); pfree(interval1);
     result = interval2;
   }
-  return (Interval *) DatumGetPointer(result);
+  return result;
 }
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the number of periods of the period set value
+ * @brief Return the number of periods of a period set
  */
 int
 periodset_num_periods(const PeriodSet *ps)
@@ -391,7 +410,7 @@ periodset_num_periods(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the end period of the period set value
+ * @brief Return the start period of a period set
  */
 Period *
 periodset_start_period(const PeriodSet *ps)
@@ -402,7 +421,7 @@ periodset_start_period(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the end period of the period set value
+ * @brief Return the end period of a period set
  */
 Period *
 periodset_end_period(const PeriodSet *ps)
@@ -413,7 +432,7 @@ periodset_end_period(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the n-th period of the period set value
+ * @brief Return the n-th period of a period set
  */
 Period *
 periodset_period_n(const PeriodSet *ps, int i)
@@ -426,7 +445,7 @@ periodset_period_n(const PeriodSet *ps, int i)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the periods of the period set value.
+ * @brief Return the periods of a period set.
  */
 const Period **
 periodset_periods(const PeriodSet *ps)
@@ -439,7 +458,7 @@ periodset_periods(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the number of timestamps of the period set value
+ * @brief Return the number of timestamps of a period set
  */
 int
 periodset_num_timestamps(const PeriodSet *ps)
@@ -474,7 +493,7 @@ periodset_num_timestamps(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the start timestamp of the period set value.
+ * @brief Return the start timestamp of a period set.
  */
 TimestampTz
 periodset_start_timestamp(const PeriodSet *ps)
@@ -485,7 +504,7 @@ periodset_start_timestamp(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the end timestamp of the period set value.
+ * @brief Return the end timestamp of a period set.
  */
 TimestampTz
 periodset_end_timestamp(const PeriodSet *ps)
@@ -496,7 +515,7 @@ periodset_end_timestamp(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the n-th timestamp of the period set value.
+ * @brief Return the n-th timestamp of a period set.
  *
  * @param[in] ps Period set
  * @param[in] n Number
@@ -550,7 +569,7 @@ periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the timestamps of the period set value
+ * @brief Return the timestamps of a period set
  */
 TimestampTz *
 periodset_timestamps(const PeriodSet *ps, int *count)
@@ -579,7 +598,7 @@ periodset_timestamps(const PeriodSet *ps, int *count)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale the period set value by the two intervals.
+ * @brief Return a period set shifted and/or scaled by the intervals.
  */
 PeriodSet *
 periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
@@ -628,8 +647,41 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return -1, 0, or 1 depending on whether the first period set value
- * is less than, equal, or greater than the second temporal value.
+ * @brief Return true if the first period set is equal to the second one.
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
+{
+  if (ps1->count != ps2->count)
+    return false;
+  /* ps1 and ps2 have the same number of PeriodSet */
+  for (int i = 0; i < ps1->count; i++)
+  {
+    const Period *p1 = periodset_per_n(ps1, i);
+    const Period *p2 = periodset_per_n(ps2, i);
+    if (span_ne(p1, p2))
+      return false;
+  }
+  /* All periods of the two PeriodSet are equal */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_comp
+ * @brief Return true if the first period set is different from the
+ * second one.
+ */
+bool
+periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
+{
+  return ! periodset_eq(ps1, ps2);
+}
+/**
+ * @ingroup libmeos_spantime_comp
+ * @brief Return -1, 0, or 1 depending on whether the first period set
+ * is less than, equal, or greater than the second one.
  *
  * @note Function used for B-tree comparison
  */
@@ -663,41 +715,7 @@ periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is equal to the second one.
- *
- * @note The internal B-tree comparator is not used to increase efficiency
- */
-bool
-periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  if (ps1->count != ps2->count)
-    return false;
-  /* ps1 and ps2 have the same number of PeriodSet */
-  for (int i = 0; i < ps1->count; i++)
-  {
-    const Period *p1 = periodset_per_n(ps1, i);
-    const Period *p2 = periodset_per_n(ps2, i);
-    if (span_ne(p1, p2))
-      return false;
-  }
-  /* All periods of the two PeriodSet are equal */
-  return true;
-}
-
-/**
- * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is different from the
- * second one.
- */
-bool
-periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  return ! periodset_eq(ps1, ps2);
-}
-
-/**
- * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is less than the second one
+ * @brief Return true if the first period set is less than the second one
  */
 bool
 periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -708,7 +726,7 @@ periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is less than or equal to
+ * @brief Return true if the first period set is less than or equal to
  * the second one
  */
 bool
@@ -720,7 +738,7 @@ periodset_le(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is greater than or equal to
+ * @brief Return true if the first period set is greater than or equal to
  * the second one
  */
 bool
@@ -732,7 +750,7 @@ periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set value is greater than the second
+ * @brief Return true if the first period set is greater than the second
  * one
  */
 bool
@@ -750,7 +768,7 @@ periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the 32-bit hash value of a period set value.
+ * @brief Return the 32-bit hash value of a period set.
  */
 uint32
 periodset_hash(const PeriodSet *ps)
@@ -770,7 +788,7 @@ periodset_hash(const PeriodSet *ps)
  * @brief Return the 64-bit hash value of a period set using a seed
  */
 uint64
-periodset_hash_extended(const PeriodSet *ps, Datum seed)
+periodset_hash_extended(const PeriodSet *ps, uint64 seed)
 {
   uint64 result = 1;
   for (int i = 0; i < ps->count; i++)
@@ -788,7 +806,7 @@ periodset_hash_extended(const PeriodSet *ps, Datum seed)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/output functions
@@ -796,53 +814,51 @@ periodset_hash_extended(const PeriodSet *ps, Datum seed)
 
 PG_FUNCTION_INFO_V1(Periodset_in);
 /**
- * Input function for period set values
+ * Return a period set from its string representation
  */
 PGDLLEXPORT Datum
 Periodset_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  PeriodSet *result = periodset_parse(&input);
+  PeriodSet *result = periodset_in(input);
   PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_out);
 /**
- * Output function for period set values
+ * Return the string representation of a period set
  */
 PGDLLEXPORT Datum
 Periodset_out(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  char *result = periodset_to_string(ps);
+  char *result = periodset_out(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_CSTRING(result);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_send);
 /**
- * Send function for period set values
+ * Get a period set from its binary representation
  */
 PGDLLEXPORT Datum
 Periodset_send(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  periodset_write(ps, &buf) ;
+  bytea *result = periodset_send(ps);
   PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(result);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_recv);
 /**
- * Receive function for period set values
+ * Get the binary representation of a period set
  */
 PGDLLEXPORT Datum
 Periodset_recv(PG_FUNCTION_ARGS)
 {
-  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  PeriodSet *result = periodset_read(buf);
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PeriodSet *result = periodset_recv(buf);
   PG_RETURN_POINTER(result);
 }
 
@@ -873,37 +889,37 @@ Periodset_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamp_to_periodset);
 /**
- * Cast the timestamp value as a period set value
+ * Cast the timestamp value as a period set
  */
 PGDLLEXPORT Datum
 Timestamp_to_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *result = timestamp_periodset(t);
+  PeriodSet *result = timestamp_to_periodset(t);
   PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_to_periodset);
 /**
- * Cast the timestamp set value as a period set value
+ * Cast the timestamp set value as a period set
  */
 PGDLLEXPORT Datum
 Timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *result = timestampset_periodset(ts);
+  PeriodSet *result = timestampset_to_periodset(ts);
   PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Period_to_periodset);
 /**
- * Cast the period value as a period set value
+ * Cast the period value as a period set
  */
 PGDLLEXPORT Datum
 Period_to_periodset(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *result = period_periodset(p);
+  PeriodSet *result = period_to_periodset(p);
   PG_RETURN_POINTER(result);
 }
 
@@ -920,14 +936,14 @@ periodset_period_slice(Datum psdatum, Period *p)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  periodset_period(ps, p);
+  periodset_set_period(ps, p);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 
 PG_FUNCTION_INFO_V1(Periodset_to_period);
 /**
- * Return the bounding period on which the period set value is defined
+ * Return the bounding period on which a period set is defined
  */
 PGDLLEXPORT Datum
 Periodset_to_period(PG_FUNCTION_ARGS)
@@ -944,7 +960,7 @@ Periodset_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_mem_size);
 /**
- * Return the size in bytes of the period set value
+ * Return the size in bytes of a period set
  */
 PGDLLEXPORT Datum
 Periodset_mem_size(PG_FUNCTION_ARGS)
@@ -957,7 +973,7 @@ Periodset_mem_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timespan);
 /**
- * Return the timespan of the period set value
+ * Return the timespan of a period set
  */
 PGDLLEXPORT Datum
 Periodset_timespan(PG_FUNCTION_ARGS)
@@ -970,7 +986,7 @@ Periodset_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_duration);
 /**
- * Return the timespan of the period set value
+ * Return the timespan of a period set
  */
 PGDLLEXPORT Datum
 Periodset_duration(PG_FUNCTION_ARGS)
@@ -983,7 +999,7 @@ Periodset_duration(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_num_periods);
 /**
- * Return the number of periods of the period set value
+ * Return the number of periods of a period set
  */
 PGDLLEXPORT Datum
 Periodset_num_periods(PG_FUNCTION_ARGS)
@@ -996,7 +1012,7 @@ Periodset_num_periods(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_start_period);
 /**
- * Return the start period of the period set value
+ * Return the start period of a period set
  */
 PGDLLEXPORT Datum
 Periodset_start_period(PG_FUNCTION_ARGS)
@@ -1009,7 +1025,7 @@ Periodset_start_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_end_period);
 /**
- * Return the end period of the period set value
+ * Return the end period of a period set
  */
 PGDLLEXPORT Datum
 Periodset_end_period(PG_FUNCTION_ARGS)
@@ -1022,7 +1038,7 @@ Periodset_end_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_period_n);
 /**
- * Return the n-th period of the period set value
+ * Return the n-th period of a period set
  */
 PGDLLEXPORT Datum
 Periodset_period_n(PG_FUNCTION_ARGS)
@@ -1038,7 +1054,7 @@ Periodset_period_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_periods);
 /**
- * Return the periods of the period set value
+ * Return the periods of a period set
  */
 PGDLLEXPORT Datum
 Periodset_periods(PG_FUNCTION_ARGS)
@@ -1053,7 +1069,7 @@ Periodset_periods(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_num_timestamps);
 /**
- * Return the number of timestamps of the period set value
+ * Return the number of timestamps of a period set
  */
 PGDLLEXPORT Datum
 Periodset_num_timestamps(PG_FUNCTION_ARGS)
@@ -1066,7 +1082,7 @@ Periodset_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_start_timestamp);
 /**
- * Return the start timestamp of the period set value
+ * Return the start timestamp of a period set
  */
 PGDLLEXPORT Datum
 Periodset_start_timestamp(PG_FUNCTION_ARGS)
@@ -1080,7 +1096,7 @@ Periodset_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_end_timestamp);
 /**
- * Return the end timestamp of the period set value
+ * Return the end timestamp of a period set
  */
 PGDLLEXPORT Datum
 Periodset_end_timestamp(PG_FUNCTION_ARGS)
@@ -1094,7 +1110,7 @@ Periodset_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timestamp_n);
 /**
- * Return the n-th timestamp of the period set value
+ * Return the n-th timestamp of a period set
  */
 PGDLLEXPORT Datum
 Periodset_timestamp_n(PG_FUNCTION_ARGS)
@@ -1110,7 +1126,7 @@ Periodset_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timestamps);
 /**
- * Return the timestamps of the period set value
+ * Return the timestamps of a period set
  */
 PGDLLEXPORT Datum
 Periodset_timestamps(PG_FUNCTION_ARGS)
@@ -1130,7 +1146,7 @@ Periodset_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_shift);
 /**
- * Shift the period set value by the interval
+ * Shift a period set by an interval
  */
 PGDLLEXPORT Datum
 Periodset_shift(PG_FUNCTION_ARGS)
@@ -1144,7 +1160,7 @@ Periodset_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_tscale);
 /**
- * Shift the period set value by the interval
+ * Shift a period set by an interval
  */
 PGDLLEXPORT Datum
 Periodset_tscale(PG_FUNCTION_ARGS)
@@ -1158,7 +1174,7 @@ Periodset_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_shift_tscale);
 /**
- * Shift the period set value by the interval
+ * Shift a period set by an interval
  */
 PGDLLEXPORT Datum
 Periodset_shift_tscale(PG_FUNCTION_ARGS)
@@ -1177,8 +1193,8 @@ Periodset_shift_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first period set value
- * is less than, equal, or greater than the second temporal value
+ * Return -1, 0, or 1 depending on whether the first period set
+ * is less than, equal, or greater than the second one
  */
 PGDLLEXPORT Datum
 Periodset_cmp(PG_FUNCTION_ARGS)
@@ -1193,7 +1209,7 @@ Periodset_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_eq);
 /**
- * Return true if the first period set value is equal to the second one
+ * Return true if the first period set is equal to the second one
  */
 PGDLLEXPORT Datum
 Periodset_eq(PG_FUNCTION_ARGS)
@@ -1208,7 +1224,7 @@ Periodset_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_ne);
 /**
- * Return true if the first period set value is different from the second one
+ * Return true if the first period set is different from the second one
  */
 PGDLLEXPORT Datum
 Periodset_ne(PG_FUNCTION_ARGS)
@@ -1225,7 +1241,7 @@ Periodset_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_lt);
 /**
- * Return true if the first period set value is less than the second one
+ * Return true if the first period set is less than the second one
  */
 PGDLLEXPORT Datum
 Periodset_lt(PG_FUNCTION_ARGS)
@@ -1240,7 +1256,7 @@ Periodset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_le);
 /**
- * Return true if the first period set value is less than or equal to
+ * Return true if the first period set is less than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
@@ -1256,7 +1272,7 @@ Periodset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_ge);
 /**
- * Return true if the first period set value is greater than or equal to
+ * Return true if the first period set is greater than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
@@ -1272,7 +1288,7 @@ Periodset_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_gt);
 /**
- * Return true if the first period set value is greater than the second one
+ * Return true if the first period set is greater than the second one
  */
 PGDLLEXPORT Datum
 Periodset_gt(PG_FUNCTION_ARGS)
@@ -1311,11 +1327,11 @@ PGDLLEXPORT Datum
 Periodset_hash_extended(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Datum seed = PG_GETARG_DATUM(1);
+  uint64 seed = PG_GETARG_INT64(1);
   uint64 result = periodset_hash_extended(ps, seed);
   PG_RETURN_UINT64(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

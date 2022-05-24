@@ -37,18 +37,16 @@
 
 #include "general/span_spgist.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <access/spgist.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
-#include "general/temporal.h"
 #include "general/span_gist.h"
 
 /*****************************************************************************

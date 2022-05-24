@@ -627,3 +627,15 @@ CREATE OPERATOR CLASS tnpoint_ops
     FUNCTION  1 tnpoint_cmp(tnpoint, tnpoint);
 
 /******************************************************************************/
+
+CREATE FUNCTION tnpoint_hash(tnpoint)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS hash_tnpoint_ops
+  DEFAULT FOR TYPE tnpoint USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   tnpoint_hash(tnpoint);
+
+/******************************************************************************/

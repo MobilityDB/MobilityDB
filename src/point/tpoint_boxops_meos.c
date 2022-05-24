@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include "general/timetypes.h"
+#include <libmeos.h>
 
 /*****************************************************************************
  * overlaps
@@ -45,8 +45,8 @@
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal boxes of the geometry/geography and
- * the temporal point overlap
+ * @brief Return true if the spatiotemporal boxes of a geometry/geography and
+ * a temporal point overlap
  */
 bool
 overlaps_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -56,8 +56,8 @@ overlaps_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box and the spatiotemporal box of
- * the temporal point overlap
+ * @brief Return true if a spatiotemporal box and the spatiotemporal box of
+ * a temporal point overlap
  */
 bool
 overlaps_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
@@ -67,7 +67,7 @@ overlaps_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal boxes of the temporal point and the
+ * @brief Return true if the spatiotemporal boxes of a temporal point and a
  * geometry/geography overlap
  */
 bool
@@ -78,7 +78,7 @@ overlaps_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point and the
+ * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box overlap
  */
 bool
@@ -103,8 +103,8 @@ overlaps_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the geometry/geography contains
- * the spatiotemporal box of the temporal point
+ * @brief Return true if the spatiotemporal box of a geometry/geography contains
+ * the one of a temporal point
  */
 bool
 contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -114,8 +114,8 @@ contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box contains the spatiotemporal box of the
- * temporal point
+ * @brief Return true if a spatiotemporal box contains the one
+ * of a temporal point
  */
 bool
 contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
@@ -125,8 +125,8 @@ contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point contains the
- * one of the geometry/geography
+ * @brief Return true if the spatiotemporal box of a temporal point contains the
+ * one of a geometry/geography
  */
 bool
 contains_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
@@ -136,7 +136,7 @@ contains_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point contains
+ * @brief Return true if the spatiotemporal box of a temporal point contains
  * the spatiotemporal box
  */
 bool
@@ -162,8 +162,8 @@ contains_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the geometry/geography is
- * contained in the spatiotemporal box of the temporal point
+ * @brief Return true if the spatiotemporal box of a geometry/geography is
+ * contained in the one of a temporal point
  */
 bool
 contained_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -173,8 +173,8 @@ contained_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box is contained in the
- * spatiotemporal box of the temporal point
+ * @brief Return true if a spatiotemporal box is contained in the
+ * one of a temporal point
  */
 bool
 contained_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
@@ -184,8 +184,8 @@ contained_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point is
- * contained in the one of the geometry/geography
+ * @brief Return true if the spatiotemporal box of a temporal point is
+ * contained in the one of a geometry/geography
  */
 bool
 contained_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
@@ -195,7 +195,7 @@ contained_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point is
+ * @brief Return true if the spatiotemporal box of a temporal point is
  * contained in the spatiotemporal box
  */
 bool
@@ -221,8 +221,8 @@ contained_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal boxes of the geometry/geography and
- * the temporal point are equal in the common dimensions
+ * @brief Return true if the spatiotemporal boxes of a geometry/geography and
+ * a temporal point are equal in the common dimensions
  */
 bool
 same_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -232,8 +232,8 @@ same_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box and the spatiotemporal box of
- * the temporal point are equal in the common dimensions
+ * @brief Return true if a spatiotemporal box and the spatiotemporal box of
+ * a temporal point are equal in the common dimensions
  */
 bool
 same_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
@@ -243,8 +243,8 @@ same_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal boxes of the temporal point and
- * geometry/geography are equal in the common dimensions
+ * @brief Return true if the spatiotemporal boxes of a temporal point and
+ * a geometry/geography are equal in the common dimensions
  */
 bool
 same_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
@@ -254,7 +254,7 @@ same_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point and the
+ * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box are equal in the common dimensions
  */
 bool
@@ -280,8 +280,8 @@ same_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal boxes of the geometry/geography and
- * the temporal point are adjacent
+ * @brief Return true if the spatiotemporal boxes of a geometry/geography and
+ * a temporal point are adjacent
  */
 bool
 adjacent_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -291,8 +291,8 @@ adjacent_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box and the spatiotemporal box of
- * the temporal point are adjacent
+ * @brief Return true if a spatiotemporal box and the spatiotemporal box of
+ * a temporal point are adjacent
  */
 bool
 adjacent_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
@@ -302,8 +302,8 @@ adjacent_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal boxes of the temporal point and
- * geometry/geography are adjacent
+ * @brief Return true if the spatiotemporal boxes of a temporal point and
+ * a geometry/geography are adjacent
  */
 bool
 adjacent_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
@@ -313,7 +313,7 @@ adjacent_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the spatiotemporal box of the temporal point and the
+ * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box are adjacent
  */
 bool

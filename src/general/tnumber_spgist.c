@@ -95,21 +95,19 @@
 
 #include "general/tnumber_spgist.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <access/spgist.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/spgist_private.h>
 #include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/temporal_boxops.h"
+#include <libmeos.h>
 #include "general/tnumber_gist.h"
-#include "general/tnumber_distance.h"
 
 /*****************************************************************************
  * Data structures
@@ -384,17 +382,17 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
   if (tnumber_basetype(type))
   {
     Datum value = scankey->sk_argument;
-    number_tbox(value, type, result);
+    number_set_tbox(value, type, result);
   }
   else if (tnumber_spantype(type))
   {
     Span *span = DatumGetSpanP(scankey->sk_argument);
-    span_tbox(span, result);
+    span_set_tbox(span, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_tbox(t, result);
+    timestamp_set_tbox(t, result);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -403,7 +401,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
   else if (type == T_PERIOD)
   {
     Period *p = DatumGetSpanP(scankey->sk_argument);
-    period_tbox(p, result);
+    period_set_tbox(p, result);
   }
   else if (type == T_PERIODSET)
   {

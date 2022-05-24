@@ -64,11 +64,12 @@
 
 #include "general/temporal_analyze.h"
 
+/* C */
+#include <assert.h>
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <fmgr.h>
-#include <math.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000
 #include <access/tuptoaster.h>
 #else
@@ -79,14 +80,11 @@
 #include <commands/vacuum.h>
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
-#include <utils/fmgrprotos.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span_ops.h"
+#include <libmeos.h>
 #include "general/span_analyze.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/temporal_analyze.h"
 
@@ -193,7 +191,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
         value_lengths[non_null_cnt] = DatumGetFloat8(span_upper.val) -
           DatumGetFloat8(span_lower.val);
     }
-    temporal_period(temp, &period);
+    temporal_set_period(temp, &period);
     span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;

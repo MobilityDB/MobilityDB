@@ -34,17 +34,16 @@
 
 #include "general/tbox.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
-#include <utils/builtins.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/span.h"
+#include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
-#include "general/temporal.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
@@ -57,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * Ensure that the temporal box has X values
+ * Ensure that a temporal box has X values
  */
 void
 ensure_has_X_tbox(const TBOX *box)
@@ -67,7 +66,7 @@ ensure_has_X_tbox(const TBOX *box)
 }
 
 /**
- * Ensure that the temporal box has T values
+ * Ensure that a temporal box has T values
  */
 void
 ensure_has_T_tbox(const TBOX *box)
@@ -77,7 +76,7 @@ ensure_has_T_tbox(const TBOX *box)
 }
 
 /**
- * Ensure that the temporal boxes have the same dimensionality
+ * Ensure that a temporal boxes have the same dimensionality
  */
 void
 ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
@@ -93,10 +92,20 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Return the string representation of the temporal box.
+ * @brief Return a temporal box from its string representation.
+ */
+TBOX *
+tbox_in(char *str)
+{
+  return tbox_parse(&str);
+}
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Return the string representation of a temporal box.
  */
 char *
-tbox_to_string(const TBOX *box)
+tbox_out(const TBOX *box)
 {
   static size_t size = MAXTBOXLEN + 1;
   char *result = (char *) palloc(size);
@@ -106,13 +115,13 @@ tbox_to_string(const TBOX *box)
   assert(hasx || hast);
   if (hasx)
   {
-    xmin = call_output(FLOAT8OID, Float8GetDatum(box->xmin));
-    xmax = call_output(FLOAT8OID, Float8GetDatum(box->xmax));
+    xmin = basetype_output(T_FLOAT8, Float8GetDatum(box->xmin));
+    xmax = basetype_output(T_FLOAT8, Float8GetDatum(box->xmax));
   }
   if (hast)
   {
-    tmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-    tmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+    tmin = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
+    tmax = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
   }
   if (hasx)
   {
@@ -138,36 +147,11 @@ tbox_to_string(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_input_output
- * @brief Write the binary representation of the box value into the buffer.
- */
-void
-tbox_write(const TBOX *box, StringInfo buf)
-{
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_T(box->flags) ? (uint8) 1 : (uint8) 0);
-  if (MOBDB_FLAGS_GET_X(box->flags))
-  {
-    pq_sendfloat8(buf, box->xmin);
-    pq_sendfloat8(buf, box->xmax);
-  }
-  if (MOBDB_FLAGS_GET_T(box->flags))
-  {
-    bytea *tmin = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-    bytea *tmax = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
-    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
-    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
-    pfree(tmin); pfree(tmax);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_box_input_output
- * @brief Return a new box value from its binary representation read from
- * the buffer.
+ * @brief Return a temporal box from its binary representation read from
+ * a buffer.
  */
 TBOX *
-tbox_read(StringInfo buf)
+tbox_recv(StringInfo buf)
 {
   TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
   bool hasx = (char) pq_getmsgbyte(buf);
@@ -181,10 +165,47 @@ tbox_read(StringInfo buf)
   }
   if (hast)
   {
-    result->tmin = call_recv(TIMESTAMPTZOID, buf);
-    result->tmax = call_recv(TIMESTAMPTZOID, buf);
+    result->tmin = basetype_recv(T_TIMESTAMPTZ, buf);
+    result->tmax = basetype_recv(T_TIMESTAMPTZ, buf);
   }
   return result;
+}
+
+/**
+ * @brief Write the binary representation of a box into a buffer.
+ */
+void
+tbox_write(const TBOX *box, StringInfo buf)
+{
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_T(box->flags) ? (uint8) 1 : (uint8) 0);
+  if (MOBDB_FLAGS_GET_X(box->flags))
+  {
+    pq_sendfloat8(buf, box->xmin);
+    pq_sendfloat8(buf, box->xmax);
+  }
+  if (MOBDB_FLAGS_GET_T(box->flags))
+  {
+    bytea *tmin = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
+    bytea *tmax = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
+    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
+    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
+    pfree(tmin); pfree(tmax);
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Retun the binary representation of a temporal box
+ */
+bytea *
+tbox_send(TBOX *box)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  tbox_write(box, &buf);
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -193,7 +214,7 @@ tbox_read(StringInfo buf)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Constructs a newly allocated temporal box.
+ * @brief Construct a temporal box from the arguments.
  */
 TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
@@ -207,7 +228,7 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Set the temporal box from the argument values
+ * @brief Set a temporal box from the arguments
  */
 void
 tbox_set(bool hasx, bool hast, double xmin, double xmax,
@@ -234,7 +255,7 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a copy of the temporal box value.
+ * @brief Return a copy of a temporal box.
  */
 TBOX *
 tbox_copy(const TBOX *box)
@@ -251,10 +272,10 @@ tbox_copy(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the number to a temporal box.
+ * @brief Set a temporal box from a number.
  */
 void
-number_tbox(Datum value, CachedType basetype, TBOX *box)
+number_set_tbox(Datum value, CachedType basetype, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -270,10 +291,10 @@ number_tbox(Datum value, CachedType basetype, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the integer to a temporal box.
+ * @brief Set a temporal box from an integer.
  */
 void
-int_tbox(int i, TBOX *box)
+int_set_tbox(int i, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -285,10 +306,10 @@ int_tbox(int i, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the float to a temporal box.
+ * @brief Set a temporal box from a float.
  */
 void
-float_tbox(double d, TBOX *box)
+float_set_tbox(double d, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -300,10 +321,10 @@ float_tbox(double d, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the span to a temporal box.
+ * @brief Set a temporal box from a span.
  */
 void
-span_tbox(const Span *span, TBOX *box)
+span_set_tbox(const Span *span, TBOX *box)
 {
   ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -316,10 +337,10 @@ span_tbox(const Span *span, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the timestamp to a temporal box.
+ * @brief Set a temporal box from a timestamp.
  */
 void
-timestamp_tbox(TimestampTz t, TBOX *box)
+timestamp_set_tbox(TimestampTz t, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -331,10 +352,10 @@ timestamp_tbox(TimestampTz t, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the period set to a temporal box.
+ * @brief Set a temporal box from a period set.
  */
 void
-timestampset_tbox(const TimestampSet *ts, TBOX *box)
+timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -348,10 +369,10 @@ timestampset_tbox(const TimestampSet *ts, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the period to a temporal box.
+ * @brief Set a temporal box from a period.
  */
 void
-period_tbox(const Period *p, TBOX *box)
+period_set_tbox(const Period *p, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -364,10 +385,10 @@ period_tbox(const Period *p, TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Transform the period set to a temporal box.
+ * @brief Set a temporal box from a period set.
  */
 void
-periodset_tbox(const PeriodSet *ps, TBOX *box)
+periodset_set_tbox(const PeriodSet *ps, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -380,8 +401,8 @@ periodset_tbox(const PeriodSet *ps, TBOX *box)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the integer and the timestamp to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from an integer and a timestamp
  */
 TBOX *
 int_timestamp_to_tbox(int i, TimestampTz t)
@@ -391,8 +412,8 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the integer and the timestamp to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a float and a timestamp
  */
 TBOX *
 float_timestamp_to_tbox(double d, TimestampTz t)
@@ -402,8 +423,8 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the integer and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from an integer and a period
  */
 TBOX *
 int_period_to_tbox(int i, const Period *p)
@@ -414,8 +435,8 @@ int_period_to_tbox(int i, const Period *p)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the float and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a float and a period
  */
 TBOX *
 float_period_to_tbox(double d, const Period *p)
@@ -425,8 +446,8 @@ float_period_to_tbox(double d, const Period *p)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the span and the timestamp to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a span and a timestamp
  */
 TBOX *
 span_timestamp_to_tbox(const Span *span, TimestampTz t)
@@ -438,8 +459,8 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Transform the span and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Return a temporal box from a span and a period
  */
 TBOX *
 span_period_to_tbox(const Span *span, const Period *p)
@@ -455,10 +476,10 @@ span_period_to_tbox(const Span *span, const Period *p)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a integer span value.
+ * @brief Cast a temporal box to an integer span.
  */
 Span *
-tbox_intspan(const TBOX *box)
+tbox_to_intspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -469,10 +490,10 @@ tbox_intspan(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a float span value.
+ * @brief Cast a temporal box as a float span.
  */
 Span *
-tbox_floatspan(const TBOX *box)
+tbox_to_floatspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -483,10 +504,10 @@ tbox_floatspan(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast the temporal box value as a period value
+ * @brief Cast a temporal box as a period
  */
 Period *
-tbox_period(const TBOX *box)
+tbox_to_period(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
@@ -500,7 +521,7 @@ tbox_period(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the temporal box has X dimension
+ * @brief Return true if a temporal box has value dimension
  */
 bool
 tbox_hasx(const TBOX *box)
@@ -511,7 +532,7 @@ tbox_hasx(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the temporal box has T dimension
+ * @brief Return true if a temporal box has time dimension
  */
 bool
 tbox_hast(const TBOX *box)
@@ -522,7 +543,11 @@ tbox_hast(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of the temporal box value, if any.
+ * @brief Return true if the temporal box has value dimension. In that case,
+ * the minimum value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_xmin(const TBOX *box, double *result)
@@ -535,7 +560,11 @@ tbox_xmin(const TBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of the temporal box value, if any.
+ * @brief Return true if the temporal box has value dimension. In that case,
+ * the maximum value is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_xmax(const TBOX *box, double *result)
@@ -548,7 +577,11 @@ tbox_xmax(const TBOX *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum T value of the temporal box value, if any.
+ * @brief Return true if the temporal box has time dimension. In that case,
+ * the minimum timestamp is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_tmin(const TBOX *box, TimestampTz *result)
@@ -561,7 +594,11 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum T value of the temporal box value, if any.
+ * @brief Return true if the temporal box has time dimension. In that case,
+ * the maximum timestamp is returned in the output argument.
+ *
+ * @param[in] box Box
+ * @param[out] result Result
  */
 bool
 tbox_tmax(const TBOX *box, TimestampTz *result)
@@ -578,7 +615,7 @@ tbox_tmax(const TBOX *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Expand the second temporal box value with the first one
+ * @brief Expand the second temporal box with the first one
  */
 void
 tbox_expand(const TBOX *box1, TBOX *box2)
@@ -598,27 +635,24 @@ tbox_expand(const TBOX *box1, TBOX *box2)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Shift and/or scale the time span of the temporal box by the interval
+ * @brief Return a temporal box shifted and/or scaled in the time dimension by
+ * an interval
  */
 void
 tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
 {
   assert(start != NULL || duration != NULL);
   if (start != NULL)
-    box->tmin = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(box->tmin),
-      PointerGetDatum(start)));
+    box->tmin = pg_timestamp_pl_interval(box->tmin, start);
   box->tmax = (duration == NULL) ?
-    DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-      TimestampTzGetDatum(box->tmax), PointerGetDatum(start))) :
-    DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-       TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
+    pg_timestamp_pl_interval(box->tmax, start) :
+    pg_timestamp_pl_interval(box->tmin, duration);
   return;
 }
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Expand the value dimension of the temporal box with the double value.
+ * @brief Return a temporal box expanded in the value dimension by a double.
  */
 TBOX *
 tbox_expand_value(const TBOX *box, const double d)
@@ -632,34 +666,15 @@ tbox_expand_value(const TBOX *box, const double d)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Expand the time dimension of the temporal box with the interval value.
+ * @brief Return a temporal box expanded in the time dimension by an interval.
  */
 TBOX *
 tbox_expand_temporal(const TBOX *box, const Interval *interval)
 {
   ensure_has_T_tbox(box);
   TBOX *result = tbox_copy(box);
-  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
-    TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
-  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
-    TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_transf
- * @brief Set the precision of the value dimension of the temporal box to
- * the number of decimal places.
- */
-TBOX *
-tbox_round(const TBOX *box, int size)
-{
-  ensure_has_X_tbox(box);
-  TBOX *result = tbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
-    size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
-    size));
+  result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
+  result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
   return result;
 }
 
@@ -922,7 +937,8 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the intersection of the temporal boxes.
+ * @brief Set a temporal box with the result of the intersection of the first
+ * two temporal boxes.
  */
 bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -954,7 +970,7 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the union of the spatiotemporal boxes.
+ * @brief Return the intersection of the spatiotemporal boxes.
  */
 TBOX *
 intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -974,7 +990,36 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return -1, 0, or 1 depending on whether the first temporal box value
+ * @brief Return true if the temporal boxes are equal
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+tbox_eq(const TBOX *box1, const TBOX *box2)
+{
+  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
+    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
+      return false;
+  if (box1->xmin != box2->xmin || box1->tmin != box2->tmin ||
+    box1->xmax != box2->xmax || box1->tmax != box2->tmax)
+    return false;
+  /* The two boxes are equal */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_comp
+ * @brief Return true if the temporal boxes are different
+ */
+bool
+tbox_ne(const TBOX *box1, const TBOX *box2)
+{
+  return ! tbox_eq(box1, box2);
+}
+
+/**
+ * @ingroup libmeos_box_comp
+ * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal to, or greater than the second one.
  *
  * The time dimension is compared first and then the value dimension.
@@ -1023,36 +1068,7 @@ tbox_cmp(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return true if the two temporal boxes are equal
- *
- * @note The internal B-tree comparator is not used to increase efficiency
- */
-bool
-tbox_eq(const TBOX *box1, const TBOX *box2)
-{
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-      return false;
-  if (box1->xmin != box2->xmin || box1->tmin != box2->tmin ||
-    box1->xmax != box2->xmax || box1->tmax != box2->tmax)
-    return false;
-  /* The two boxes are equal */
-  return true;
-}
-
-/**
- * @ingroup libmeos_box_comp
- * @brief Return true if the two temporal boxes are different
- */
-bool
-tbox_ne(const TBOX *box1, const TBOX *box2)
-{
-  return ! tbox_eq(box1, box2);
-}
-
-/**
- * @ingroup libmeos_box_comp
- * @brief Return true if the first temporal box value is less than the second one
+ * @brief Return true if the first temporal box is less than the second one
  */
 bool
 tbox_lt(const TBOX *box1, const TBOX *box2)
@@ -1063,7 +1079,7 @@ tbox_lt(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return true if the first temporal box value is less than or equal to
+ * @brief Return true if the first temporal box is less than or equal to
  * the second one
  */
 bool
@@ -1075,7 +1091,7 @@ tbox_le(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return true if the first temporal box value is greater than or equal
+ * @brief Return true if the first temporal box is greater than or equal
  * to the second one
  */
 bool
@@ -1087,7 +1103,7 @@ tbox_ge(const TBOX *box1, const TBOX *box2)
 
 /**
  * @ingroup libmeos_box_comp
- * @brief Return true if the first temporal box value is greater than the second one
+ * @brief Return true if the first temporal box is greater than the second one
  */
 bool
 tbox_gt(const TBOX *box1, const TBOX *box2)
@@ -1102,7 +1118,7 @@ tbox_gt(const TBOX *box1, const TBOX *box2)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/output functions
@@ -1124,8 +1140,7 @@ PGDLLEXPORT Datum
 Tbox_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
-  TBOX *result = tbox_parse(&input);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_POINTER(tbox_in(input));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_out);
@@ -1136,8 +1151,7 @@ PGDLLEXPORT Datum
 Tbox_out(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  char *result = tbox_to_string(box);
-  PG_RETURN_CSTRING(result);
+  PG_RETURN_CSTRING(tbox_out(box));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_send);
@@ -1148,10 +1162,7 @@ PGDLLEXPORT Datum
 Tbox_send(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  tbox_write(box, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(tbox_send(box));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_recv);
@@ -1162,7 +1173,7 @@ PGDLLEXPORT Datum
 Tbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(tbox_read(buf));
+  PG_RETURN_POINTER(tbox_recv(buf));
 }
 
 /*****************************************************************************
@@ -1171,7 +1182,7 @@ Tbox_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_constructor);
 /**
- * Construct a temporal box value from the arguments
+ * Construct a temporal box from the arguments
  */
 PGDLLEXPORT Datum
 Tbox_constructor(PG_FUNCTION_ARGS)
@@ -1201,7 +1212,7 @@ Tbox_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_constructor_t);
 /**
- * Construct a temporal box value from the timestamps
+ * Construct a temporal box from the timestamps
  */
 PGDLLEXPORT Datum
 Tbox_constructor_t(PG_FUNCTION_ARGS)
@@ -1226,7 +1237,7 @@ Int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  int_tbox(i, result);
+  int_set_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1239,7 +1250,7 @@ Float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  float_tbox(d, result);
+  float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1253,7 +1264,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  float_tbox(d, result);
+  float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1266,7 +1277,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  span_tbox(span, result);
+  span_set_tbox(span, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1279,7 +1290,7 @@ Timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  timestamp_tbox(t, result);
+  timestamp_set_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1296,7 +1307,7 @@ timestampset_tbox_slice(Datum tsdatum, TBOX *box)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  timestampset_tbox(ts, box);
+  timestampset_set_tbox(ts, box);
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
@@ -1323,7 +1334,7 @@ Period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  period_tbox(p, result);
+  period_set_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1340,7 +1351,7 @@ periodset_tbox_slice(Datum psdatum, TBOX *box)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  periodset_tbox(ps, box);
+  periodset_set_tbox(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
@@ -1440,13 +1451,13 @@ Span_period_to_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
- * Cast the temporal box value as a float span value
+ * Cast a temporal box as a float span
  */
 PGDLLEXPORT Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Span *result = tbox_floatspan(box);
+  Span *result = tbox_to_floatspan(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1454,13 +1465,13 @@ Tbox_to_floatspan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_to_period);
 /**
- * Cast the temporal box value as a period value
+ * Cast a temporal box as a period
  */
 PGDLLEXPORT Datum
 Tbox_to_period(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Period *result = tbox_period(box);
+  Period *result = tbox_to_period(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1472,7 +1483,7 @@ Tbox_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_hasx);
 /**
- * Return true if the temporal box has X dimension
+ * Return true if a temporal box has value dimension
  */
 PGDLLEXPORT Datum
 Tbox_hasx(PG_FUNCTION_ARGS)
@@ -1483,7 +1494,7 @@ Tbox_hasx(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_hast);
 /**
- * Return true if the temporal box has T dimension
+ * Return true if a temporal box has time dimension
  */
 PGDLLEXPORT Datum
 Tbox_hast(PG_FUNCTION_ARGS)
@@ -1494,7 +1505,7 @@ Tbox_hast(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_xmin);
 /**
- * Return the minimum X value of the temporal box value
+ * Return the minimum X value of a temporal box
  */
 PGDLLEXPORT Datum
 Tbox_xmin(PG_FUNCTION_ARGS)
@@ -1508,7 +1519,7 @@ Tbox_xmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_xmax);
 /**
- * Return the maximum X value of the temporal box value
+ * Return the maximum X value of a temporal box
  */
 PGDLLEXPORT Datum
 Tbox_xmax(PG_FUNCTION_ARGS)
@@ -1522,7 +1533,7 @@ Tbox_xmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_tmin);
 /**
- * Return the minimum timestamp of the temporal box value
+ * Return the minimum timestamp of a temporal box
  */
 PGDLLEXPORT Datum
 Tbox_tmin(PG_FUNCTION_ARGS)
@@ -1536,7 +1547,7 @@ Tbox_tmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_tmax);
 /**
- * Return the maximum timestamp of the temporal box value
+ * Return the maximum timestamp of a temporal box
  */
 PGDLLEXPORT Datum
 Tbox_tmax(PG_FUNCTION_ARGS)
@@ -1554,7 +1565,7 @@ Tbox_tmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_expand_value);
 /**
- * Expand the value dimension of the temporal box with the double value
+ * Return a temporal box expanded in the value dimension by a double
  */
 PGDLLEXPORT Datum
 Tbox_expand_value(PG_FUNCTION_ARGS)
@@ -1566,7 +1577,7 @@ Tbox_expand_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_expand_temporal);
 /**
- * Expand the time dimension of the temporal box with the interval value
+ * Return a temporal box expanded in the time dimension by an interval
  */
 PGDLLEXPORT Datum
 Tbox_expand_temporal(PG_FUNCTION_ARGS)
@@ -1574,6 +1585,22 @@ Tbox_expand_temporal(PG_FUNCTION_ARGS)
   TBOX *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   PG_RETURN_POINTER(tbox_expand_temporal(box, interval));
+}
+
+/**
+ * @brief Set the precision of the value dimension of the temporal box to
+ * the number of decimal places.
+ */
+TBOX *
+tbox_round(const TBOX *box, int size)
+{
+  ensure_has_X_tbox(box);
+  TBOX *result = tbox_copy(box);
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
+    size));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
+    size));
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Tbox_round);
@@ -1850,7 +1877,7 @@ Tbox_extent_combinefn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first temporal box value
+ * Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
@@ -1865,7 +1892,7 @@ Tbox_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_lt);
 /**
- * Return true if the first temporal box value is less than the second one
+ * Return true if the first temporal box is less than the second one
  */
 PGDLLEXPORT Datum
 Tbox_lt(PG_FUNCTION_ARGS)
@@ -1877,7 +1904,7 @@ Tbox_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_le);
 /**
- * Return true if the first temporal box value is less than or equal to
+ * Return true if the first temporal box is less than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
@@ -1890,7 +1917,7 @@ Tbox_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_ge);
 /**
- * Return true if the first temporal box value is greater than or equal to
+ * Return true if the first temporal box is greater than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
@@ -1903,7 +1930,7 @@ Tbox_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_gt);
 /**
- * Return true if the first temporal box value is greater than the second one
+ * Return true if the first temporal box is greater than the second one
  */
 PGDLLEXPORT Datum
 Tbox_gt(PG_FUNCTION_ARGS)
@@ -1915,7 +1942,7 @@ Tbox_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_eq);
 /**
- * Return true if the two temporal boxes are equal
+ * Return true if the temporal boxes are equal
  */
 PGDLLEXPORT Datum
 Tbox_eq(PG_FUNCTION_ARGS)
@@ -1927,7 +1954,7 @@ Tbox_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_ne);
 /**
- * Return true if the two temporal boxes are different
+ * Return true if the temporal boxes are different
  */
 PGDLLEXPORT Datum
 Tbox_ne(PG_FUNCTION_ARGS)
@@ -1937,6 +1964,6 @@ Tbox_ne(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(tbox_ne(box1, box2));
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

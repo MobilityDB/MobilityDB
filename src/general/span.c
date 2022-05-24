@@ -35,19 +35,18 @@
 
 #include "general/span.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  #include <access/hash.h>
-#else
+/* PostgreSQL */
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
 #endif
 #include <libpq/pqformat.h>
-#include <utils/fmgrprotos.h>
 /* MobilityDB */
-#include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/temporal.h"
+#include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "general/tnumber_mathfuncs.h"
@@ -57,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * Deconstruct the span
+ * Deconstruct a span
  *
  * @param[in] s Span value
  * @param[out] lower,upper Bounds
@@ -83,6 +82,7 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
   }
 }
 
+#if MEOS
 /*
  * @brief Construct a span value from the bounds
  *
@@ -109,6 +109,7 @@ span_serialize(SpanBound *lower, SpanBound *upper)
     upper->inclusive, lower->basetype);
   return result;
 }
+#endif
 
 /*****************************************************************************/
 
@@ -299,7 +300,7 @@ spanarr_normalize(Span **spans, int count, int *newcount)
 }
 
 /**
- * Get the bounds of the span as double values.
+ * Get the bounds of a span as double values.
  *
  * @param[in] s Input span
  * @param[out] xmin, xmax Lower and upper bounds
@@ -326,6 +327,16 @@ span_bounds(const Span *s, double *xmin, double *xmax)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Return a span from its string representation.
+ */
+Span *
+span_in(char *str, CachedType spantype)
+{
+  return span_parse(&str, spantype, true);
+}
+
+/**
  * Remove the quotes from the string representation of a span
  */
 static void
@@ -346,14 +357,13 @@ unquote(char *str)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return the string representation of the span.
+ * @brief Return the string representation of a span.
  */
 char *
-span_to_string(const Span *s)
+span_out(const Span *s)
 {
-  Oid basetypid = type_oid(s->basetype);
-  char *lower = call_output(basetypid, s->lower);
-  char *upper = call_output(basetypid, s->upper);
+  char *lower = basetype_output(s->basetype, s->lower);
+  char *upper = basetype_output(s->basetype, s->upper);
   StringInfoData buf;
   initStringInfo(&buf);
   appendStringInfoChar(&buf, s->lower_inc ? (char) '[' : (char) '(');
@@ -368,40 +378,48 @@ span_to_string(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Write the binary representation of the time value into the buffer.
+ * @brief Return a span from its binary representation read from a buffer.
+ */
+Span *
+span_recv(StringInfo buf)
+{
+  Span *result = (Span *) palloc0(sizeof(Span));
+  result->spantype = (char) pq_getmsgbyte(buf);
+  result->basetype = spantype_basetype(result->spantype);
+  result->lower = basetype_recv(result->basetype, buf);
+  result->upper = basetype_recv(result->basetype, buf);
+  result->lower_inc = (char) pq_getmsgbyte(buf);
+  result->upper_inc = (char) pq_getmsgbyte(buf);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of a span into a buffer.
  */
 void
 span_write(const Span *s, StringInfo buf)
 {
   pq_sendbyte(buf, s->spantype);
-  Oid basetypid = type_oid(s->basetype);
-  bytea *lower = call_send(basetypid, s->lower);
-  bytea *upper = call_send(basetypid, s->upper);
+  bytea *lower = basetype_send(s->basetype, s->lower);
+  bytea *upper = basetype_send(s->basetype, s->upper);
   pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
   pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
   pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, s->upper_inc ? (uint8) 1 : (uint8) 0);
-  pfree(lower);
-  pfree(upper);
+  pfree(lower); pfree(upper);
 }
 
 /**
  * @ingroup libmeos_spantime_input_output
- * @brief Return a new time value from its binary representation
- * read from the buffer.
+ * @brief Return the binary representation of a span.
  */
-Span *
-span_read(StringInfo buf)
+bytea *
+span_send(const Span *s)
 {
-  Span *result = (Span *) palloc0(sizeof(Span));
-  result->spantype = (char) pq_getmsgbyte(buf);
-  result->basetype = spantype_basetype(result->spantype);
-  Oid basetypid = type_oid(result->basetype);
-  result->lower = call_recv(basetypid, buf);
-  result->upper = call_recv(basetypid, buf);
-  result->lower_inc = (char) pq_getmsgbyte(buf);
-  result->upper_inc = (char) pq_getmsgbyte(buf);
-  return result;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  span_write(s, &buf);
+  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -424,7 +442,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
 /**
  * @ingroup libmeos_spantime_constructor
- * @brief Set the span from the argument values.
+ * @brief Set a span from the arguments.
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
@@ -455,7 +473,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
 /**
  * @ingroup libmeos_spantime_constructor
- * @brief Return a copy of the span.
+ * @brief Return a copy of a span.
  */
 Span *
 span_copy(const Span *s)
@@ -471,10 +489,10 @@ span_copy(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast an element value as a span
+ * @brief Cast an element as a span
  */
 Span *
-elem_span(Datum d, CachedType basetype)
+elem_to_span(Datum d, CachedType basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);
@@ -483,10 +501,10 @@ elem_span(Datum d, CachedType basetype)
 
 /**
  * @ingroup libmeos_spantime_cast
- * @brief Cast a timestamp value as a period
+ * @brief Cast a timestamp as a period
  */
 Period *
-timestamp_period(TimestampTz t)
+timestamp_to_period(TimestampTz t)
 {
   Period *result = span_make(t, t, true, true, T_TIMESTAMPTZ);
   return result;
@@ -496,10 +514,10 @@ timestamp_period(TimestampTz t)
  * Accessor functions
  *****************************************************************************/
 
-#ifdef MEOS
+#if MEOS
 /**
- * @ingroup libmeos_spantime_cast
- * @brief Return the lower bound value
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of a span
  */
 Datum
 span_lower(Span *s)
@@ -509,7 +527,7 @@ span_lower(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the upper bound value
+ * @brief Return the upper bound of a span
  */
 Datum
 span_upper(Span *s)
@@ -519,7 +537,7 @@ span_upper(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return true if the lower bound value is inclusive
+ * @brief Return true if the lower bound of a span is inclusive
  */
 bool
 span_lower_inc(Span *s)
@@ -529,7 +547,7 @@ span_lower_inc(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return true if the upper bound value is inclusive
+ * @brief Return true if the upper bound of a span is inclusive
  */
 bool
 span_upper_inc(Span *s)
@@ -540,22 +558,22 @@ span_upper_inc(Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the duration of the span as an interval.
+ * @brief Return the width of a span as a double.
  */
 double
-span_distance(const Span *s)
+span_width(const Span *s)
 {
   return distance_elem_elem(s->lower, s->upper, s->basetype, s->basetype);
 }
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the duration of the period as an interval.
+ * @brief Return the duration of a period as an interval.
  */
 Interval *
 period_duration(const Span *s)
 {
-  return DatumGetIntervalP(call_function2(timestamp_mi, s->upper, s->lower));
+  return pg_timestamp_mi(s->upper, s->lower);
 }
 
 /*****************************************************************************
@@ -583,23 +601,7 @@ span_expand(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_spantime_transf
- * @brief Set the precision of the float span to the number of decimal places.
- */
-Span *
-floatspan_round(Span *span, Datum size)
-{
-  /* Set precision of bounds */
-  Datum lower = datum_round_float(span->lower, size);
-  Datum upper = datum_round_float(span->upper, size);
-  /* Create resulting span */
-  Span *result = span_make(lower, upper, span->lower_inc, span->upper_inc,
-    span->basetype);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_transf
- * @brief Shift and/or scale the period by the two intervals.
+ * @brief Shift and/or scale a period by the intervals.
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,
@@ -612,20 +614,14 @@ period_shift_tscale(const Interval *start, const Interval *duration,
 
   if (start != NULL)
   {
-    result->lower = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(result->lower),
-      PointerGetDatum(start)));
+    result->lower = pg_timestamp_pl_interval(result->lower, start);
     if (instant)
       result->upper = result->lower;
     else
-      result->upper = DatumGetTimestampTz(DirectFunctionCall2(
-        timestamptz_pl_interval, TimestampTzGetDatum(result->upper),
-        PointerGetDatum(start)));
+      result->upper = pg_timestamp_pl_interval(result->upper, start);
   }
   if (duration != NULL && ! instant)
-    result->upper =
-      DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-         TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
+    result->upper = pg_timestamp_pl_interval(result->lower, duration);
   return;
 }
 
@@ -752,11 +748,11 @@ span_hash(const Span *s)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  uint32 type_hash = DatumGetUInt32(call_function1(hashint4, type));
+  uint32 type_hash = hash_uint32((int32) type);
 
   /* Apply the hash function to each bound */
-  uint32 lower_hash = DatumGetUInt32(call_function1(hashint8, s->lower));
-  uint32 upper_hash = DatumGetUInt32(call_function1(hashint8, s->upper));
+  uint32 lower_hash = pg_hashint8(s->lower);
+  uint32 upper_hash = pg_hashint8(s->upper);
 
   /* Merge hashes of flags, type, and bounds */
   uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
@@ -771,7 +767,7 @@ span_hash(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the 64-bit hash value of a span obtained with a seed.
+ * @brief Return the 64-bit hash value of a span using a seed
  */
 uint64
 span_hash_extended(const Span *s, Datum seed)
@@ -790,11 +786,11 @@ span_hash_extended(const Span *s, Datum seed)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  type_hash = DatumGetUInt64(call_function2(hashint4extended, type, seed));
+  type_hash = DatumGetUInt64(hash_uint32_extended(type, seed));
 
   /* Apply the hash function to each bound */
-  lower_hash = DatumGetUInt64(call_function2(hashint8extended, s->lower, seed));
-  upper_hash = DatumGetUInt64(call_function2(hashint8extended, s->upper, seed));
+  lower_hash = pg_hashint8extended(s->lower, seed);
+  upper_hash = pg_hashint8extended(s->upper, seed);
 
   /* Merge hashes of flags and bounds */
   result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
@@ -814,7 +810,7 @@ span_hash_extended(const Span *s, Datum seed)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/output functions
@@ -829,7 +825,7 @@ Span_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid spantypid = PG_GETARG_OID(1);
-  Span *result = span_parse(&input, oid_type(spantypid), true);
+  Span *result = span_in(input, oid_type(spantypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -841,7 +837,7 @@ PGDLLEXPORT Datum
 Span_out(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_CSTRING(span_to_string(s));
+  PG_RETURN_CSTRING(span_out(s));
 }
 
 PG_FUNCTION_INFO_V1(Span_send);
@@ -852,10 +848,7 @@ PGDLLEXPORT Datum
 Span_send(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  span_write(s, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(span_send(s));
 }
 
 PG_FUNCTION_INFO_V1(Span_recv);
@@ -866,7 +859,7 @@ PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(span_read(buf));
+  PG_RETURN_POINTER(span_recv(buf));
 }
 
 /*****************************************************************************
@@ -921,7 +914,7 @@ Elem_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span *result = elem_span(d, basetype);
+  Span *result = elem_to_span(d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -1024,6 +1017,18 @@ Span_upper_inc(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(s->upper_inc != 0);
 }
 
+PG_FUNCTION_INFO_V1(Span_width);
+/**
+ * Return the duration of the period
+ */
+PGDLLEXPORT Datum
+Span_width(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  double result = span_width(s);
+  PG_RETURN_FLOAT8(result);
+}
+
 PG_FUNCTION_INFO_V1(Period_duration);
 /**
  * Return the duration of the period
@@ -1084,6 +1089,21 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
+
+/**
+ * @brief Set the precision of the float span to the number of decimal places.
+ */
+Span *
+floatspan_round(Span *span, Datum size)
+{
+  /* Set precision of bounds */
+  Datum lower = datum_round_float(span->lower, size);
+  Datum upper = datum_round_float(span->upper, size);
+  /* Create resulting span */
+  Span *result = span_make(lower, upper, span->lower_inc, span->upper_inc,
+    span->basetype);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
@@ -1211,11 +1231,11 @@ PGDLLEXPORT Datum
 Span_hash_extended(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum seed = PG_GETARG_DATUM(1);
+  uint64 seed = PG_GETARG_INT64(1);
   uint64 result = span_hash_extended(s, seed);
   PG_RETURN_UINT64(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /******************************************************************************/

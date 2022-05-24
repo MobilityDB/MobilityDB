@@ -38,20 +38,20 @@
 
 #include "point/geography_funcs.h"
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <float.h>
 #include <fmgr.h>
 #include <utils/array.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
-#include <liblwgeom_internal.h>
-#include <lwgeom_pg.h>
-#include <lwgeodetic_tree.h>
+  #include <liblwgeom_internal.h>
+  #include <lwgeom_pg.h>
+  #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
-#include "point/postgis.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -440,36 +440,19 @@ geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
 }
 
 /**
-Returns the point in first input geography that is closest to the second input geography in 2d
+Returns the point in first input geography that is closest to the second
+input geography in 2d (internal function)
 */
-
-PG_FUNCTION_INFO_V1(geography_shortestline);
-Datum geography_shortestline(PG_FUNCTION_ARGS)
+GSERIALIZED *
+geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,
+  bool use_spheroid)
 {
-  GSERIALIZED* g1 = NULL;
-  GSERIALIZED* g2 = NULL;
-  LWGEOM *line;
-  GSERIALIZED* result;
-  bool use_spheroid = true;
   SPHEROID s;
-
-  /* Get our geography objects loaded into memory. */
-  g1 = PG_GETARG_GSERIALIZED_P(0);
-  g2 = PG_GETARG_GSERIALIZED_P(1);
-
   ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
-
-  /* Read calculation type */
-  if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
-    use_spheroid = PG_GETARG_BOOL(2);
 
   /* Return NULL on empty arguments. */
   if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
-  {
-    PG_FREE_IF_COPY(g1, 0);
-    PG_FREE_IF_COPY(g2, 1);
-    PG_RETURN_NULL();
-  }
+    return NULL;
 
   /* Initialize spheroid */
   /* We currently cannot use the following statement since PROJ4 API is not
@@ -481,16 +464,39 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  line = geography_tree_shortestline(g1, g2, FP_TOLERANCE, &s);
+  LWGEOM *line = geography_tree_shortestline(g1, g2, FP_TOLERANCE, &s);
 
   if (lwgeom_is_empty(line))
-    PG_RETURN_NULL();
+    return NULL;
 
-  result = geography_serialize(line);
+  GSERIALIZED *result = geography_serialize(line);
   lwgeom_free(line);
+
+  return result;
+}
+
+/**
+Returns the point in first input geography that is closest to the second
+input geography in 2d
+*/
+PG_FUNCTION_INFO_V1(geography_shortestline);
+Datum geography_shortestline(PG_FUNCTION_ARGS)
+{
+  /* Get our geography objects loaded into memory. */
+  GSERIALIZED *g1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *g2 = PG_GETARG_GSERIALIZED_P(1);
+
+  /* Read calculation type */
+  bool use_spheroid = true;
+  if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
+    use_spheroid = PG_GETARG_BOOL(2);
+
+  GSERIALIZED *result = geography_shortestline_internal(g1, g2, use_spheroid);
 
   PG_FREE_IF_COPY(g1, 0);
   PG_FREE_IF_COPY(g2, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

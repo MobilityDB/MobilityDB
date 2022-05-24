@@ -34,6 +34,7 @@ add_library(general OBJECT
   ${geo_constructors.c}
   lifting.c
   periodset.c
+  pg_call.c
   ${skiplist.c}
   span.c
   ${span_aggfuncs.c}

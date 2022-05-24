@@ -37,23 +37,20 @@
 
 #include "general/temporal_tile.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+#include <math.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
-#include <access/htup_details.h>
+  #include <access/htup_details.h>
 #endif
-#include <utils/builtins.h>
 #include <utils/datetime.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/span_ops.h"
-#include "general/temporal.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************
@@ -743,7 +740,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value(instants[k - 1]);
-          tofree[l] = tinstant_make(value, upper, seq->temptype);
+          tofree[l] = tinstant_make(value, seq->temptype, upper);
         }
         instants[k++] = tofree[l++];
       }
@@ -819,7 +816,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       count, buckets, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
     for (int i = 0; i < *newcount; i++)
-      result[i] = tsequence_tsequenceset(sequences[i]);
+      result[i] = tsequence_to_tsequenceset(sequences[i]);
     pfree_array((void **) sequences, *newcount);
     return result;
   }
@@ -872,12 +869,12 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       }
       else
       {
-        result[m++] = tsequence_tsequenceset(sequences[0]);
+        result[m++] = tsequence_to_tsequenceset(sequences[0]);
         pfree(sequences[0]);
       }
       for (int j = 1; j < l - 1; j++)
       {
-        result[m++] = tsequence_tsequenceset(sequences[j]);
+        result[m++] = tsequence_to_tsequenceset(sequences[j]);
         pfree(sequences[j]);
       }
     }
@@ -972,7 +969,7 @@ Temporal_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the bounds */
     Period p;
-    temporal_period(temp, &p);
+    temporal_set_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
     TimestampTz start_bucket = timestamptz_bucket(start_time, tunits,
@@ -1420,7 +1417,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     int k = 1;
     if (i < seq->count)
     {
-      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, seq->temptype);
+      tofree[l++] = bounds[1] = tinstant_make(value, seq->temptype, inst2->t);
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
@@ -1545,8 +1542,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetype,
           &projvalue, &t);
         tofree[l++] = bounds[last] =  SPAN_ROUNDOFF ?
-          tinstant_make(bucket_upper, t, seq->temptype) :
-          tinstant_make(projvalue, t, seq->temptype);
+          tinstant_make(bucket_upper, seq->temptype, t) :
+          tinstant_make(projvalue, seq->temptype, t);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
@@ -1627,7 +1624,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   {
     TSequenceSet **result = palloc(sizeof(TSequenceSet *));
     Datum *values = palloc(sizeof(Datum));
-    result[0] = tsequence_tsequenceset(seq);
+    result[0] = tsequence_to_tsequenceset(seq);
     Datum value = tinstant_value(tsequence_inst_n(seq, 0));
     values[0] = number_bucket(value, size, start_bucket, basetype);
     *buckets = values;
@@ -1932,7 +1929,7 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the time bounds */
     Period p;
-    temporal_period(temp, &p);
+    temporal_set_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
     TimestampTz start_time_bucket = timestamptz_bucket(start_time,

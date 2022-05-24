@@ -35,16 +35,14 @@
 
 #include "general/temporal_similarity.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <math.h>
-/* PostgreGIS */
-#include <liblwgeom.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/temporaltypes.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -190,7 +188,6 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 }
 
 /**
- * @ingroup libmeos_temporal_similarity
  * @brief Compute the similarity distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
@@ -210,6 +207,33 @@ temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
   pfree(instants1); pfree(instants2);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Frechet distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+double
+temporal_frechet_distance(Temporal *temp1, Temporal *temp2)
+{
+  return temporal_similarity(temp1, temp2, FRECHET);
+}
+
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Dynamic Time Warp distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+double
+temporal_dyntimewarp_distance(Temporal *temp1, Temporal *temp2)
+{
+  return temporal_similarity(temp1, temp2, DYNTIMEWARP);
+}
+#endif
+
 
 /*****************************************************************************
  * Iterative implementation of the similarity distance with a full matrix
@@ -245,7 +269,7 @@ matrix_print(double *dist, int count1, int count2)
   for (j = 0; j < count2; j++)
     len += sprintf(buf+len, "    %2d    ", j);
   sprintf(buf+len, "\n"); /* make Codacy quiet by removing last assignment */
-  ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("MATRIX:\n%s", buf)));
+  elog(WARNING, "MATRIX:\n%s", buf);
   return;
 }
 
@@ -260,7 +284,7 @@ path_print(Match *path, int count)
   int i, k = 0;
   for (i = count - 1; i >= 0; i--)
     len += sprintf(buf+len, "%d: (%2d,%2d)\n", k++, path[i].i, path[i].j);
-  ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("PATH:\n%s", buf)));
+  elog(WARNING, "PATH:\n%s", buf);
   return;
 }
 #endif
@@ -428,13 +452,39 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Frechet distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+Match *
+temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
+{
+  return temporal_similarity_path(temp1, temp2, count, FRECHET);
+}
+
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the Dynamic Time Warp distance between two temporal values.
+ *
+ * @param[in] temp1,temp2 Temporal values
+ */
+Match *
+temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count)
+{
+  return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
+}
+#endif
+
 /*****************************************************************************/
 /*****************************************************************************/
 /*                        MobilityDB - PostgreSQL                            */
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
@@ -613,6 +663,6 @@ Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
   return temporal_similarity_path_ext(fcinfo, DYNTIMEWARP);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

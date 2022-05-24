@@ -69,28 +69,17 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
-/* PostgreSQL */
-#include <assert.h>
-#include <utils/builtins.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_util.h"
-#include "general/tbool_boolops.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_spatialrels.h"
+#include <libmeos.h>
 
 /*****************************************************************************
  * Temporal disjoint
  *****************************************************************************/
 
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 Temporal *
 tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
@@ -105,8 +94,9 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
  *****************************************************************************/
 
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 Temporal *
 tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,

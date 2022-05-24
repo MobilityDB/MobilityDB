@@ -203,7 +203,7 @@ dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic binary functions for tnpoint <rel> (geo | Npoint)
@@ -560,6 +560,6 @@ Touches_tnpoint_npoint(PG_FUNCTION_ARGS)
   return spatialrel_tnpoint_npoint_ext(fcinfo, &geom_touches);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

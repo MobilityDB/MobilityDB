@@ -35,30 +35,8 @@
 #ifndef __TPOINT_IN_H__
 #define __TPOINT_IN_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-/* JSON-C */
-#include <json-c/json.h>
-/* MobilityDB */
-#include "general/temporal.h"
-#include "general/temporal_catalog.h"
+/*****************************************************************************/
 
 /*****************************************************************************/
 
-extern TInstant *tpointinst_from_mfjson(json_object *mfjson, int srid,
-  CachedType temptype);
-extern TInstantSet *tpointinstset_from_mfjson(json_object *mfjson, int srid,
-  CachedType temptype);
-extern TSequence *tpointseq_from_mfjson(json_object *mfjson, int srid,
-  CachedType temptype, bool linear);
-extern TSequenceSet *tpointseqset_from_mfjson(json_object *mfjson, int srid,
-  CachedType temptype, bool linear);
-extern Temporal *tpoint_from_mfjson_ext(FunctionCallInfo fcinfo,
-  text *mfjson_input, CachedType temptype);
-extern Temporal *tpoint_from_ewkb(uint8_t *wkb, int size);
-extern Temporal *tpoint_from_hexewkb(const char *hexwkb);
-extern Temporal *tpoint_from_ewkt(const char *wkt, Oid temptypid);
-
-/*****************************************************************************/
-
-#endif
+#endif /* __TPOINT_IN_H__ */

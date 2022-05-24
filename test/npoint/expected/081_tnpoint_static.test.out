@@ -15,12 +15,16 @@ SELECT npoint 'point(1,0.5)';
 ERROR:  Could not parse network point
 LINE 2: SELECT npoint 'point(1,0.5)';
                       ^
+SELECT npoint 'npoint 1,0.5)';
+ERROR:  Could not parse network point: Missing opening parenthesis
+LINE 1: SELECT npoint 'npoint 1,0.5)';
+                      ^
 SELECT npoint 'npoint(1,0.5';
-ERROR:  Could not parse network point
+ERROR:  Could not parse network point: Missing closing parenthesis
 LINE 1: SELECT npoint 'npoint(1,0.5';
                       ^
 SELECT npoint 'npoint(1 0.5)';
-ERROR:  Could not parse network point
+ERROR:  invalid input syntax for type bigint: "1 0.5"
 LINE 1: SELECT npoint 'npoint(1 0.5)';
                       ^
 SELECT npoint 'npoint(1000,0.5)';

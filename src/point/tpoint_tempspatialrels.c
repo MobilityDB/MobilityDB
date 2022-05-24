@@ -69,19 +69,20 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
-#include <utils/builtins.h>
+#include <math.h>
+/* PostgreSQL */
 #include <utils/timestamp.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/lifting.h"
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tbool_boolops.h"
-#include "point/tpoint.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 
@@ -143,7 +144,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
   /* For disjoint we need to invert the result */
   if (! tinter)
     result = ! result;
-  return tinstant_make(BoolGetDatum(result), inst->t, T_TBOOL);
+  return tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
 }
 
 /**
@@ -166,7 +167,7 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter,
     /* For disjoint we need to invert the result */
     if (! tinter)
       result = ! result;
-    instants[i] = tinstant_make(BoolGetDatum(result), inst->t, T_TBOOL);
+    instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
   TInstantSet *result = tinstantset_make(instants, ti->count, MERGE_NO);
   pfree_array((void **) instants, ti->count);
@@ -204,11 +205,11 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
     if (! tinter)
       datum_res = BoolGetDatum(! DatumGetBool(datum_res));
     TInstant *instants[2];
-    instants[0] = tinstant_make(datum_res, inst1->t, T_TBOOL);
+    instants[0] = tinstant_make(datum_res, T_TBOOL, inst1->t);
     int l = 1;
     bool upper_inc1 = false;
     if (inst2 != NULL)
-      instants[l++] = tinstant_make(datum_res, inst2->t, T_TBOOL);
+      instants[l++] = tinstant_make(datum_res, T_TBOOL, inst2->t);
     else
       upper_inc1 = true;
     result[k++] = tsequence_make((const TInstant **) instants, l,
@@ -260,7 +261,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
 
   Datum traj = tpointseq_trajectory(seq);
   Datum inter = geom_intersection2d(traj, geom);
-  GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+  GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
@@ -356,7 +357,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
     TInstant *inst = tinterrel_tpointinst_geom(tsequence_inst_n(seq, 0),
       geom, tinter, func);
     TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tinstant_tsequence(inst, STEP);
+    result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     *count = 1;
     return result;
@@ -469,11 +470,11 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 
   /* Bounding box test */
   STBOX box1, box2;
-  temporal_bbox(temp, &box1);
+  temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_stbox(gs, &box2);
-  if (!overlaps_stbox_stbox(&box1, &box2))
-    return temporal_from_base(temp, datum_no, T_TBOOL, STEP);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return temporal_from_base(datum_no, T_TBOOL, temp, STEP);
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
@@ -769,8 +770,8 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   if (seq1->count == 1)
   {
     TInstant *inst = tinstant_make(func(tinstant_value(start1),
-      tinstant_value(start2), dist), start1->t, T_TBOOL);
-    result[0] = tinstant_tsequence(inst, STEP);
+      tinstant_value(start2), dist), T_TBOOL, start1->t);
+    result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
   }
@@ -789,7 +790,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
   TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
+  instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
   for (int i = 1; i < seq1->count; i++)
@@ -871,7 +872,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
       {
         Datum value = func(ev1, ev2, dist);
         tinstant_set(instants[0], value, upper);
-        result[k++] = tinstant_tsequence(instants[0], STEP);
+        result[k++] = tinstant_to_tsequence(instants[0], STEP);
       }
     }
     sv1 = ev1;
@@ -1097,9 +1098,8 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   Datum sv = tinstant_value(start);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(func(sv, point, dist),
-      start->t, T_TBOOL);
-    result[0] = tinstant_tsequence(inst, STEP);
+    TInstant *inst = tinstant_make(func(sv, point, dist), T_TBOOL, start->t);
+    result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
   }
@@ -1115,7 +1115,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
   TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
+  instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
   for (int i = 1; i < seq->count; i++)
@@ -1251,8 +1251,8 @@ tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return the temporal contains relationship between the geometry and
- * the temporal point
+ * @brief Return the temporal contains relationship between a geometry and
+ * a temporal point
  */
 Temporal *
 tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
@@ -1262,13 +1262,13 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  Datum bound = PointerGetDatum(PGIS_boundary(gs));
+  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {
-    Temporal *inter_bound = tinterrel_tpoint_geo(temp, gsbound,
-      TINTERSECTS, restr, atvalue);
+    Temporal *inter_bound = tinterrel_tpoint_geo(temp, gsbound, TINTERSECTS,
+      restr, atvalue);
     Temporal *not_inter_bound = tnot_tbool(inter_bound);
     result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
     pfree(inter);
@@ -1295,8 +1295,8 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return the temporal touches relationship between the geometry and the
- * temporal point (internal version)
+ * @brief Return the temporal touches relationship between a geometry and a
+ * temporal point
  */
 Temporal *
 ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -1306,18 +1306,17 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  Datum bound = PointerGetDatum(PGIS_boundary(gs));
+  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {
-    result = tinterrel_tpoint_geo(temp, gsbound, TINTERSECTS, restr,
-      atvalue);
+    result = tinterrel_tpoint_geo(temp, gsbound, TINTERSECTS, restr, atvalue);
     PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
     pfree(DatumGetPointer(bound));
   }
   else
-    result = temporal_from_base(temp, BoolGetDatum(false), T_TBOOL, STEP);
+    result = temporal_from_base(BoolGetDatum(false), T_TBOOL, temp, STEP);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
@@ -1335,8 +1334,8 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return a temporal Boolean that states whether the temporal point and
- * the geometry are within the given distance.
+ * @brief Return a temporal Boolean that states whether a temporal point and
+ * a geometry are within the given distance.
  */
 Temporal *
 tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
@@ -1388,7 +1387,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
 /**
  * @brief Return a temporal Boolean that states whether the temporal points
  * are within the given distance.
- * @pre The temporal points are syncrhonized.
+ * @pre The temporal points are synchronized.
  */
 Temporal *
 tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
@@ -1408,7 +1407,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     if (sync1->subtype == INSTANT)
       result = (Temporal *) tfunc_tinstant_tinstant(
         (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
-    else if (sync1->subtype == INSTANTSET)
+    else /* sync1->subtype == INSTANTSET */
       result = (Temporal *) tfunc_tinstantset_tinstantset(
         (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
   }
@@ -1458,7 +1457,7 @@ tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships
@@ -1466,8 +1465,8 @@ tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * Return the temporal disjoint/intersection relationship between the geometry
- * and the temporal point
+ * Return the temporal disjoint/intersection relationship between a geometry
+ * and a temporal point
  */
 static Datum
 tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
@@ -1492,8 +1491,8 @@ tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * Return the temporal disjoint/intersection relationship between the geometry
- * and the temporal point
+ * Return the temporal disjoint/intersection relationship between a geometry
+ * and a temporal point
  */
 static Datum
 tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
@@ -1522,7 +1521,7 @@ tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
 
 PG_FUNCTION_INFO_V1(Tcontains_geo_tpoint);
 /**
- * Return the temporal contains relationship between the geometry and the
+ * Return the temporal contains relationship between a geometry and a
  * temporal point
  */
 PGDLLEXPORT Datum
@@ -1551,8 +1550,8 @@ Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tdisjoint_geo_tpoint);
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 PGDLLEXPORT Datum
 Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1562,8 +1561,8 @@ Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 PGDLLEXPORT Datum
 Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1578,8 +1577,8 @@ Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tintersects_geo_tpoint);
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 PGDLLEXPORT Datum
 Tintersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1589,8 +1588,8 @@ Tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
 /**
- * Return the temporal intersects relationship between the temporal point
- * and the geometry
+ * Return the temporal intersects relationship between a temporal point
+ * and a geometry
  */
 PGDLLEXPORT Datum
 Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1604,7 +1603,7 @@ Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Ttouches_geo_tpoint);
 /**
- * Return the temporal touches relationship between the geometry and the
+ * Return the temporal touches relationship between a geometry and a
  * temporal point
  */
 PGDLLEXPORT Datum
@@ -1629,8 +1628,8 @@ Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Ttouches_tpoint_geo);
 /**
- * Return the temporal touches relationship between the temporal point
- * and the geometry
+ * Return the temporal touches relationship between a temporal point
+ * and a geometry
  */
 PGDLLEXPORT Datum
 Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1659,7 +1658,7 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tdwithin_geo_tpoint);
 /**
- * Return a temporal Boolean that states whether the geometry and the
+ * Return a temporal Boolean that states whether a geometry and a
  * temporal point are within the given distance
  */
 PGDLLEXPORT Datum
@@ -1687,8 +1686,8 @@ Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tdwithin_tpoint_geo);
 /**
- * Return a temporal Boolean that states whether the temporal point and
- * the geometry are within the given distance
+ * Return a temporal Boolean that states whether a temporal point and
+ * a geometry are within the given distance
  */
 PGDLLEXPORT Datum
 Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1744,6 +1743,6 @@ Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

@@ -45,70 +45,11 @@
 
 /* General functions */
 
-extern const Period *periodset_per_n(const PeriodSet *ps, int index);
 extern const Period *periodset_period_ptr(const PeriodSet *ps);
-extern void periodset_period(const PeriodSet *ps, Period *p);
 extern void periodset_period_slice(Datum psdatum, Period *p);
-extern PeriodSet *periodset_make(const Period **periods, int count,
-  bool normalize);
-extern PeriodSet *periodset_make_free(Period **periods, int count,
-  bool normalize);
-extern PeriodSet *periodset_copy(const PeriodSet *ps);
 extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
   int *loc);
 
-/* Input/output functions */
-
-extern char *periodset_to_string(const PeriodSet *ps);
-extern void periodset_write(const PeriodSet *ps, StringInfo buf);
-extern PeriodSet *periodset_read(StringInfo buf);
-
-/* Constructor function */
-
-/* Cast functions */
-
-extern PeriodSet *timestamp_periodset(TimestampTz t);
-extern PeriodSet *timestampset_periodset(const TimestampSet *ts);
-extern PeriodSet *period_periodset(const Period *p);
-extern void periodset_period(const PeriodSet *ps, Period *p);
-
-/* Accessor functions */
-
-extern int periodset_mem_size(const PeriodSet *ps);
-extern Interval *periodset_timespan(const PeriodSet *ps);
-extern Interval *periodset_duration(const PeriodSet *ps);
-extern int periodset_num_periods(const PeriodSet *ps);
-extern Period *periodset_start_period(const PeriodSet *ps);
-extern Period *periodset_end_period(const PeriodSet *ps);
-extern Period *periodset_period_n(const PeriodSet *ps, int i);
-extern const Period **periodset_periods(const PeriodSet *ps);
-extern int periodset_num_timestamps(const PeriodSet *ps);
-extern TimestampTz periodset_start_timestamp(const PeriodSet *ps);
-extern TimestampTz periodset_end_timestamp(const PeriodSet *ps);
-extern bool periodset_timestamp_n(const PeriodSet *ps, int n,
-  TimestampTz *result);
-TimestampTz *periodset_timestamps(const PeriodSet *ps, int *count);
-
-/* Modification functions */
-
-extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps,
-  const Interval *start, const Interval *duration);
-
-/* Comparison functions */
-
-extern int periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_le(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2);
-
-/* Hash functions */
-
-extern uint32 periodset_hash(const PeriodSet *ps);
-extern uint64 periodset_hash_extended(const PeriodSet *ps, Datum seed);
+/*****************************************************************************/
 
 #endif
-
-/*****************************************************************************/

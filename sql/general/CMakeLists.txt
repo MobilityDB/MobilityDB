@@ -21,7 +21,6 @@ SET(LOCAL_FILES
   015_span_aggfuncs
   017_time_aggfuncs
   ${FILE_019}
-  020_doublen
   021_tbox
   022_temporal
   023_temporal_tile

@@ -35,24 +35,20 @@
 
 #include "general/tnumber_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <math.h>
+/* PostgreSQL */
 #include <access/htup_details.h>
 #include <catalog/pg_collation_d.h>
-#include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 #include <utils/selfuncs.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/time_ops.h"
-#include "general/span_ops.h"
-#include "general/temporal_boxops.h"
-#include "general/temporal_catalog.h"
-#include "general/tbox.h"
 #include "general/span_selfuncs.h"
 #include "general/temporal_analyze.h"
 #include "general/temporal_selfuncs.h"
@@ -129,7 +125,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   if (tnumber_basetype(type))
   {
     Datum value = ((Const *) other)->constvalue;
-    *s = elem_span(value, type);
+    *s = elem_to_span(value, type);
   }
   else if (type == T_INTSPAN || type == T_FLOATSPAN)
   {
@@ -139,7 +135,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    *p = timestamp_period(t);
+    *p = timestamp_to_period(t);
   }
   else if (type == T_TIMESTAMPSET)
   {
@@ -161,21 +157,21 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
     const TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
     ensure_span_basetype(basetype);
     if (basetype == T_INT4)
-      *s = tbox_intspan(box);
+      *s = tbox_to_intspan(box);
     else /* basetype == T_FLOAT8 */
-      *s = tbox_floatspan(box);
-    *p = tbox_period(box);
+      *s = tbox_to_floatspan(box);
+    *p = tbox_to_period(box);
   }
   else if (tnumber_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBOX box;
-    temporal_bbox(temp, &box);
+    temporal_set_bbox(temp, &box);
     if (basetype == T_INT4)
-      *s = tbox_intspan(&box);
+      *s = tbox_to_intspan(&box);
     else /* basetype == T_FLOAT8 */
-      *s = tbox_floatspan(&box);
-    *p = tbox_period(&box);
+      *s = tbox_to_floatspan(&box);
+    *p = tbox_to_period(&box);
   }
   else
     return false;

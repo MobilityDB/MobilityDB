@@ -32,6 +32,9 @@
 -- File span.c
 -------------------------------------------------------------------------------
 
+-- canonicalize
+SELECT intspan '[1,2]';
+
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);
 select round(floatspan '[1.123456789,inf]',6);

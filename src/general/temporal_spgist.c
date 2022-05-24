@@ -36,9 +36,10 @@
 
 #include "general/temporal_spgist.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <assert.h>
 #include <access/spgist.h>
 /* MobilityDB */
 #include "general/timetypes.h"

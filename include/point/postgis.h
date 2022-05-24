@@ -339,5 +339,6 @@ extern Datum geography_lt(PG_FUNCTION_ARGS);
 #include "general/temporal.h"
 #include <liblwgeom.h>
 
-#endif /* __TEMPORAL_POSTGIS_H__ */
 /*****************************************************************************/
+
+#endif /* __POSTGIS_H__ */

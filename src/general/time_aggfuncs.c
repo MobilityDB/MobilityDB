@@ -34,18 +34,15 @@
 
 #include "general/time_aggfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <libmeos.h>
 #include "general/skiplist.h"
-#include "general/timestampset.h"
-#include "general/periodset.h"
-#include "general/span_ops.h"
-#include "general/time_ops.h"
-#include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************
@@ -213,7 +210,7 @@ periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const Period **periods = periodset_periods(ps);
   SkipList *result;
   if (! state)
-    /* Periods are copies while constructing the skiplist */
+    /* Periods are copied while constructing the skiplist */
     result = skiplist_make(fcinfo, (void **) periods, ps->count, PERIOD);
   else
   {
@@ -275,8 +272,8 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   /* Null period and non-null timestampset, return the bbox of the timestampset */
   if (! p)
   {
-    result = palloc(sizeof(Period));
-    timestampset_period(ts, result);
+    result = palloc0(sizeof(Period));
+    timestampset_set_period(ts, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null timestampset, return the period */
@@ -288,7 +285,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  timestampset_period(ts, &p1);
+  timestampset_set_period(ts, &p1);
   result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(ts, 1);
@@ -313,8 +310,8 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   /* Null period and non-null period set, return the bbox of the period set */
   if (! p)
   {
-    result = palloc(sizeof(Period));
-    periodset_period(ps, result);
+    result = palloc0(sizeof(Period));
+    periodset_set_period(ps, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -326,7 +323,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  periodset_period(ps, &p1);
+  periodset_set_period(ps, &p1);
   result = union_span_span(p, &p1, false);
 
   PG_FREE_IF_COPY(ps, 1);
@@ -417,7 +414,7 @@ timestampset_transform_tcount(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    result[i] = tinstant_make(datum_one, t, T_TINT);
+    result[i] = tinstant_make(datum_one, T_TINT, t);
   }
   return result;
 }
@@ -432,7 +429,7 @@ period_transform_tcount(const Period *p)
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, p->lower, T_TINT);
+  instants[0] = tinstant_make(datum_one, T_TINT, p->lower);
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1,
@@ -440,7 +437,7 @@ period_transform_tcount(const Period *p)
   }
   else
   {
-    instants[1] = tinstant_make(datum_one, p->upper, T_TINT);
+    instants[1] = tinstant_make(datum_one, T_TINT, p->upper);
     result = tsequence_make((const TInstant **) instants, 2,
       p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[1]);

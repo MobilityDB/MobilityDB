@@ -43,8 +43,9 @@
 
 #include "general/temporal_selfuncs.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <access/amapi.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
@@ -56,23 +57,16 @@
 #include <executor/tuptable.h>
 #include <optimizer/paths.h>
 #include <storage/bufmgr.h>
-#include <utils/builtins.h>
 #include <utils/date.h>
 #include <utils/datum.h>
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include "general/timetypes.h"
-#include "general/timestampset.h"
-#include "general/span.h"
-#include "general/periodset.h"
-#include "general/time_ops.h"
+#include <libmeos.h>
 #include "general/span_selfuncs.h"
-#include "general/temporal_boxops.h"
 #include "general/temporal_analyze.h"
 #include "general/tnumber_selfuncs.h"
-#include "point/tpoint.h"
 #include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************
@@ -254,7 +248,7 @@ temporal_const_to_period(Node *other, Period *period)
   if (time_type(type))
     time_const_to_period(other, period);
   else if (type == T_TBOOL || type == T_TTEXT)
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
+    temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
     return false;
   return true;

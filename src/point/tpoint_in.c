@@ -34,17 +34,12 @@
 
 #include "point/tpoint_in.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
-/* JSON-C */
-#include <json-c/json.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
 #include "general/temporal_util.h"
-#include "point/postgis.h"
-#include "point/tpoint.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -197,7 +192,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
       strcpy(datetime, strdatevalue);
       /* Replace 'T' by ' ' before converting to timestamptz */
       datetime[10] = ' ';
-      times[i] = call_input(TIMESTAMPTZOID, datetime);
+      times[i] = basetype_input(T_TIMESTAMPTZ, datetime);
     }
   }
   *count = numdates;
@@ -208,7 +203,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal instant point from its MF-JSON representation.
  */
 TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -238,8 +233,8 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
   strcpy(str, strdatetimes);
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
-  TimestampTz t = call_input(TIMESTAMPTZOID, str);
-  TInstant *result = tinstant_make(value, t, temptype);
+  TimestampTz t = basetype_input(T_TIMESTAMPTZ, str);
+  TInstant *result = tinstant_make(value, temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -262,7 +257,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   /* Construct the array of temporal instant points */
   TInstant **result = palloc(sizeof(TInstant *) * numpoints);
   for (int i = 0; i < numpoints; i++)
-    result[i] = tinstant_make(values[i], times[i], temptype);
+    result[i] = tinstant_make(values[i], temptype, times[i]);
 
   for (int i = 0; i < numpoints; i++)
     pfree(DatumGetPointer(values[i]));
@@ -273,7 +268,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal instant set point from its MF-JSON representation.
  */
 TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -286,7 +281,7 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal sequence point from its MF-JSON representation.
  */
 TSequence *
 tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -318,7 +313,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation.
+ * @brief Return a temporal sequence set point from its MF-JSON representation.
  */
 TSequenceSet *
 tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -346,124 +341,31 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
 
+/*****************************************************************************
+ * Input in EWKT format
+ *****************************************************************************/
+
+#if MEOS
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its MF-JSON representation
+ * @brief Return a temporal point from its WKT representation
  */
 Temporal *
-tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
-  CachedType temptype)
+tpoint_from_text(const char *wkt, CachedType temptype)
 {
-  char *mfjson = text2cstring(mfjson_input);
-  char *srs = NULL;
-  int srid = 0;
-  Temporal *result = NULL;
+  Temporal *result = tpoint_parse((char **) &wkt, temptype);
+  return result;
+}
+#endif
 
-  json_tokener *jstok = NULL;
-  json_object *poObj = NULL;
-  json_object *poObjType = NULL;
-  json_object *poObjInterp = NULL;
-  json_object *poObjInterp1 = NULL;
-  json_object *poObjDates = NULL;
-  json_object *poObjSrs = NULL;
-
-  /* Begin to parse json */
-  jstok = json_tokener_new();
-  poObj = json_tokener_parse_ex(jstok, mfjson, -1);
-  if (jstok->err != json_tokener_success)
-  {
-    char err[256];
-    snprintf(err, 256, "%s (at offset %d)",
-      json_tokener_error_desc(jstok->err), jstok->char_offset);
-    json_tokener_free(jstok);
-    json_object_put(poObj);
-    elog(ERROR, "Error while processing MFJSON string");
-  }
-  json_tokener_free(jstok);
-
-  /*
-   * Ensure that it is a moving point
-   */
-  poObjType = findMemberByName(poObj, "type");
-  if (poObjType == NULL)
-    elog(ERROR, "Unable to find 'type' in MFJSON string");
-
-  const char *pszType = json_object_get_string(poObjType);
-  if (strcmp(pszType, "MovingPoint") != 0)
-    elog(ERROR, "Invalid 'type' value in MFJSON string");
-
-  /*
-   * Determine type of temporal point and call the corresponding parse function
-   */
-  poObjInterp = findMemberByName(poObj, "interpolations");
-  if (poObjInterp == NULL)
-    elog(ERROR, "Unable to find 'interpolations' in MFJSON string");
-
-  if (json_object_get_type(poObjInterp) != json_type_array)
-    elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
-
-  const int nSize = json_object_array_length(poObjInterp);
-  if (nSize != 1)
-    elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
-
-  /* Parse crs and set SRID of temporal point */
-  poObjSrs = findMemberByName(poObj, "crs");
-  if (poObjSrs != NULL)
-  {
-    json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
-    if (poObjSrsType != NULL)
-    {
-      json_object *poObjSrsProps = findMemberByName(poObjSrs, "properties");
-      if (poObjSrsProps)
-      {
-        json_object *poNameURL = findMemberByName(poObjSrsProps, "name");
-        if (poNameURL)
-        {
-          const char *pszName = json_object_get_string(poNameURL);
-          if (pszName)
-          {
-            srs = palloc(strlen(pszName) + 1);
-            strcpy(srs, pszName);
-          }
-        }
-      }
-    }
-  }
-
-  if (srs)
-  {
-    srid = getSRIDbySRS(fcinfo, srs);
-    pfree(srs);
-  }
-
-  /* Read interpolation value */
-  poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
-  const char *pszInterp = json_object_get_string(poObjInterp1);
-  if (pszInterp)
-  {
-    if (strcmp(pszInterp, "Discrete") == 0)
-    {
-      poObjDates = findMemberByName(poObj, "datetimes");
-      if (poObjDates != NULL &&
-        json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *) tpointinstset_from_mfjson(poObj, srid, temptype);
-      else
-        result = (Temporal *) tpointinst_from_mfjson(poObj, srid, temptype);
-    }
-    else if (strcmp(pszInterp, "Stepwise") == 0 ||
-      strcmp(pszInterp, "Linear") == 0)
-    {
-      bool linear = strcmp(pszInterp, "Linear") == 0;
-      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
-      if (poObjSeqs != NULL)
-        result = (Temporal *) tpointseqset_from_mfjson(poObj, srid, temptype, linear);
-      else
-        result = (Temporal *) tpointseq_from_mfjson(poObj, srid, temptype, linear);
-    }
-    else
-      elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
-  }
-
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its EWKT representation
+ */
+Temporal *
+tpoint_from_ewkt(const char *ewkt, CachedType temptype)
+{
+  Temporal *result = tpoint_parse((char **) &ewkt, temptype);
   return result;
 }
 
@@ -482,8 +384,8 @@ typedef struct
   bool swap_bytes;     /**< Do an endian flip? */
   uint8_t subtype;     /**< Current subtype we are handling */
   int32_t srid;        /**< Current SRID we are handling */
-  bool hasz;          /**< Z? */
-  bool geodetic;    /**< Geodetic? */
+  bool hasz;           /**< Z? */
+  bool geodetic;       /**< Geodetic? */
   bool has_srid;       /**< SRID? */
   bool linear;         /**< Linear interpolation? */
   const uint8_t *pos;  /**< Current parse position */
@@ -665,7 +567,7 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
   Datum value = point_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
   CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
-  TInstant *result = tinstant_make(value, t, temptype);
+  TInstant *result = tinstant_make(value, temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -683,7 +585,7 @@ tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
     /* Parse the point and the timestamp to create the instant point */
     Datum value = point_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make(value, t, temptype);
+    result[i] = tinstant_make(value, temptype, t);
     pfree(DatumGetPointer(value));
   }
   return result;
@@ -781,7 +683,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
       /* Parse the point and the timestamp to create the instant point */
       Datum value = point_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make(value, t, temptype);
+      instants[j] = tinstant_make(value, temptype, t);
       pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
@@ -804,17 +706,17 @@ tpoint_from_wkb_state(wkb_parse_state *s)
   /* Check the endianness of our input */
   s->swap_bytes = false;
   /* Machine arch is big endian, request is for little */
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (getMachineEndian() != NDR && wkb_little_endian)
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   if (IS_BIG_ENDIAN && wkb_little_endian)
+#else
+  if (getMachineEndian() != NDR && wkb_little_endian)
 #endif
     s->swap_bytes = true;
   /* Machine arch is little endian, request is for big */
-#if POSTGIS_VERSION_NUMBER < 30000
-  else if (getMachineEndian() == NDR && ! wkb_little_endian)
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   else if ((!IS_BIG_ENDIAN) && (!wkb_little_endian))
+#else
+  else if (getMachineEndian() == NDR && ! wkb_little_endian)
 #endif
     s->swap_bytes = true;
 
@@ -842,7 +744,8 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its EWKB representation.
+ * @brief Return a temporal point from its Extended Well-Known Binary (EWKB)
+ * representation.
  */
 Temporal *
 tpoint_from_ewkb(uint8_t *wkb, int size)
@@ -867,7 +770,8 @@ tpoint_from_ewkb(uint8_t *wkb, int size)
  *****************************************************************************/
 
 /**
- * Return a temporal point from its HEXEWKB representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its HEXEWKB representation
  */
 Temporal *
 tpoint_from_hexewkb(const char *hexwkb)
@@ -879,28 +783,133 @@ tpoint_from_hexewkb(const char *hexwkb)
   return result;
 }
 
-/*****************************************************************************
- * Input in EWKT format
- *****************************************************************************/
-
-/**
- * This just does the same thing as the _in function, except it has to handle
- * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
-*/
-Temporal *
-tpoint_from_ewkt(const char *wkt, CachedType temptype)
-{
-  Temporal *result = tpoint_parse((char **) &wkt, temptype);
-  return result;
-}
-
 /*****************************************************************************/
 /*****************************************************************************/
 /*                        MobilityDB - PostgreSQL                            */
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
+
+/**
+ * @brief Return a temporal point from its MF-JSON representation
+ */
+Temporal *
+tpoint_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
+  CachedType temptype)
+{
+  char *mfjson = text2cstring(mfjson_input);
+  char *srs = NULL;
+  int srid = 0;
+  Temporal *result = NULL;
+
+  json_tokener *jstok = NULL;
+  json_object *poObj = NULL;
+  json_object *poObjType = NULL;
+  json_object *poObjInterp = NULL;
+  json_object *poObjInterp1 = NULL;
+  json_object *poObjDates = NULL;
+  json_object *poObjSrs = NULL;
+
+  /* Begin to parse json */
+  jstok = json_tokener_new();
+  poObj = json_tokener_parse_ex(jstok, mfjson, -1);
+  if (jstok->err != json_tokener_success)
+  {
+    char err[256];
+    snprintf(err, 256, "%s (at offset %d)",
+      json_tokener_error_desc(jstok->err), jstok->char_offset);
+    json_tokener_free(jstok);
+    json_object_put(poObj);
+    elog(ERROR, "Error while processing MFJSON string");
+  }
+  json_tokener_free(jstok);
+
+  /*
+   * Ensure that it is a moving point
+   */
+  poObjType = findMemberByName(poObj, "type");
+  if (poObjType == NULL)
+    elog(ERROR, "Unable to find 'type' in MFJSON string");
+
+  const char *pszType = json_object_get_string(poObjType);
+  if (strcmp(pszType, "MovingPoint") != 0)
+    elog(ERROR, "Invalid 'type' value in MFJSON string");
+
+  /*
+   * Determine type of temporal point and call the corresponding parse function
+   */
+  poObjInterp = findMemberByName(poObj, "interpolations");
+  if (poObjInterp == NULL)
+    elog(ERROR, "Unable to find 'interpolations' in MFJSON string");
+
+  if (json_object_get_type(poObjInterp) != json_type_array)
+    elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
+
+  const int nSize = json_object_array_length(poObjInterp);
+  if (nSize != 1)
+    elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
+
+  /* Parse crs and set SRID of temporal point */
+  poObjSrs = findMemberByName(poObj, "crs");
+  if (poObjSrs != NULL)
+  {
+    json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
+    if (poObjSrsType != NULL)
+    {
+      json_object *poObjSrsProps = findMemberByName(poObjSrs, "properties");
+      if (poObjSrsProps)
+      {
+        json_object *poNameURL = findMemberByName(poObjSrsProps, "name");
+        if (poNameURL)
+        {
+          const char *pszName = json_object_get_string(poNameURL);
+          if (pszName)
+          {
+            srs = palloc(strlen(pszName) + 1);
+            strcpy(srs, pszName);
+          }
+        }
+      }
+    }
+  }
+
+  if (srs)
+  {
+    srid = getSRIDbySRS(fcinfo, srs);
+    pfree(srs);
+  }
+
+  /* Read interpolation value */
+  poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
+  const char *pszInterp = json_object_get_string(poObjInterp1);
+  if (pszInterp)
+  {
+    if (strcmp(pszInterp, "Discrete") == 0)
+    {
+      poObjDates = findMemberByName(poObj, "datetimes");
+      if (poObjDates != NULL &&
+        json_object_get_type(poObjDates) == json_type_array)
+        result = (Temporal *) tpointinstset_from_mfjson(poObj, srid, temptype);
+      else
+        result = (Temporal *) tpointinst_from_mfjson(poObj, srid, temptype);
+    }
+    else if (strcmp(pszInterp, "Stepwise") == 0 ||
+      strcmp(pszInterp, "Linear") == 0)
+    {
+      bool linear = strcmp(pszInterp, "Linear") == 0;
+      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
+      if (poObjSeqs != NULL)
+        result = (Temporal *) tpointseqset_from_mfjson(poObj, srid, temptype, linear);
+      else
+        result = (Temporal *) tpointseq_from_mfjson(poObj, srid, temptype, linear);
+    }
+    else
+      elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
+  }
+
+  return result;
+}
 
 /*****************************************************************************
  * Input in MFJSON format
@@ -978,6 +987,6 @@ Tpoint_from_ewkt(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

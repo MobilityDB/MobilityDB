@@ -37,49 +37,54 @@
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_parser.h"
+#include "general/temporal_util.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 
 /**
- * @brief Parse a network point value from the buffer.
+ * @brief Parse a network point from its string representation.
  */
 Npoint *
 npoint_parse(char **str)
 {
   p_whitespace(str);
 
-  if (strncasecmp(*str,"NPOINT",6) != 0)
+  if (strncasecmp(*str, "NPOINT", 6) != 0)
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse network point")));
 
   *str += 6;
   p_whitespace(str);
 
-  int delim = 0;
-  while ((*str)[delim] != ')' && (*str)[delim] != '\0')
-    delim++;
-  if ((*str)[delim] == '\0')
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse network point")));
+  /* Parse opening parenthesis */
+  if (! p_oparen(str))
+    elog(ERROR, "Could not parse network point: Missing opening parenthesis");
 
-  int64 rid;
-  double pos;
-  if (sscanf(*str, "( %ld , %lf )", &rid, &pos) != 2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-        errmsg("Could not parse network point")));
+  /* Parse rid */
+  p_whitespace(str);
+  int64 rid = DatumGetInt64(elem_parse(str, T_INT8));
+
+  p_whitespace(str);
+  p_comma(str);
+  p_whitespace(str);
+
+  double pos = DatumGetFloat8(elem_parse(str, T_FLOAT8));
   if (pos < 0 || pos > 1)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The relative position must be a real number between 0 and 1")));
 
-  *str += delim + 1;
+  /* Parse closing parenthesis */
+  p_whitespace(str);
+  if (! p_cparen(str))
+    elog(ERROR, "Could not parse network point: Missing closing parenthesis");
 
   return npoint_make(rid, pos);
 }
 
 /**
- * @brief Parse a network segment value from the buffer.
+ * @brief Parse a network segment from its string representation.
  */
 Nsegment *
 nsegment_parse(char **str)

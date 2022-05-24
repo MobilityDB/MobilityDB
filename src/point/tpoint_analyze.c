@@ -54,20 +54,18 @@
 
 #include "point/tpoint_analyze.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <access/htup_details.h>
 #include <executor/spi.h>
 #include <utils/lsyscache.h>
 /* MobilityDB */
-#include "general/span_ops.h"
+#include <libmeos.h>
 #include "general/span_analyze.h"
-#include "general/temporal.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_analyze.h"
-#include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
@@ -608,8 +606,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     is_copy = VARATT_IS_EXTENDED(temp);
 
     /* Get bounding box from temporal point */
-    temporal_bbox(temp, &box);
-    stbox_gbox(&box, &gbox);
+    temporal_set_bbox(temp, &box);
+    stbox_set_gbox(&box, &gbox);
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )
@@ -1000,7 +998,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(temp);
 
     /* Get period from temporal point */
-    temporal_period(temp, &period);
+    temporal_set_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
     span_deserialize((Span *) &period, &period_lower, &period_upper);

@@ -35,19 +35,20 @@
 
 #include "point/tpoint_out.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 #include <float.h>
-#include <utils/builtins.h>
 /* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
-#include <liblwgeom_internal.h>
+  #include <liblwgeom_internal.h>
 #endif
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
+#include "general/tinstant.h"
+#include "general/tinstantset.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
 #include "general/temporal_util.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /* The following definitions are taken from PostGIS */
@@ -56,127 +57,9 @@
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
 #if POSTGIS_VERSION_NUMBER < 30000
-#define OUT_DOUBLE_BUFFER_SIZE \
-  OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
+  #define OUT_DOUBLE_BUFFER_SIZE \
+    OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
 #endif
-
-/*****************************************************************************
- * Output in WKT and EWKT format
- *****************************************************************************/
-
-/**
- * Output a geometry in Well-Known Text (WKT) format.
- *
- * @note The parameter type is not needed for temporal points
- */
-static char *
-wkt_out(Oid typid __attribute__((unused)), Datum value)
-{
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
-  char *result = palloc(len);
-  strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
-  return result;
-}
-
-/**
- * Output a geometry in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID.
- *
- * @note The parameter type is not needed for temporal points
- */
-char *
-ewkt_out(Oid typid __attribute__((unused)), Datum value)
-{
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DBL_DIG, &len);
-  char *result = palloc(len);
-  strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point in Well-Known Text (WKT) format.
- */
-char *
-tpoint_as_text(const Temporal *temp)
-{
-  char *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = tinstant_to_string((TInstant *) temp, &wkt_out);
-  else if (temp->subtype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
-  else if (temp->subtype == SEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
-  else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID.
- */
-char *
-tpoint_as_ewkt(const Temporal *temp)
-{
-  int srid = tpoint_srid(temp);
-  char str1[20];
-  if (srid > 0)
-    sprintf(str1, "SRID=%d%c", srid,
-      MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
-  else
-    str1[0] = '\0';
-  char *str2 = tpoint_as_text(temp);
-  char *result = (char *) palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
-  pfree(str2);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Output a geometry/geography array in Well-Known Text (WKT) format
- */
-char **
-geoarr_as_text(const Datum *geoarr, int count, bool extended)
-{
-  char **result = palloc(sizeof(char *) * count);
-  for (int i = 0; i < count; i++)
-    /* The wkt_out and ewkt_out functions do not use the first argument */
-    result[i] = extended ?
-      ewkt_out(ANYOID, geoarr[i]) : wkt_out(ANYOID, geoarr[i]);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point array in Well-Known Text (WKT) or
- * Extended Well-Known Text (EWKT) format
- */
-char **
-tpointarr_as_text(const Temporal **temparr, int count, bool extended)
-{
-  char **result = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-    result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
-      tpoint_as_text(temparr[i]);
-  return result;
-}
 
 /*****************************************************************************
  * Output in MFJSON format
@@ -215,26 +98,26 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   {
     char z[OUT_DOUBLE_BUFFER_SIZE];
     const POINT3DZ *pt = datum_point3dz_p(tinstant_value(inst));
-#if POSTGIS_VERSION_NUMBER < 30000
-    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
     lwprint_double(pt->x, precision, x);
     lwprint_double(pt->y, precision, y);
     lwprint_double(pt->z, precision, z);
+#else
+    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+    lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
 #endif
     ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
   }
   else
   {
     const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
-#if POSTGIS_VERSION_NUMBER < 30000
-    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
     lwprint_double(pt->x, precision, x);
     lwprint_double(pt->y, precision, y);
+#else
+    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
 #endif
     ptr += sprintf(ptr, "[%s,%s]", x, y);
   }
@@ -262,7 +145,7 @@ static size_t
 datetimes_mfjson_buf(char *output, const TInstant *inst)
 {
   char *ptr = output;
-  char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+  char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   /* Replace ' ' by 'T' as separator between date and time parts */
   t[10] = 'T';
   ptr += sprintf(ptr, "\"%s\"", t);
@@ -333,8 +216,8 @@ bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
     ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f,%.*f,%.*f],",
       precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
       precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
-  char *begin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(bbox->tmin));
-  char *end = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(bbox->tmax));
+  char *begin = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(bbox->tmin));
+  char *end = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(bbox->tmax));
   ptr += sprintf(ptr, "\"period\":{\"begin\":\"%s\",\"end\":\"%s\"}},", begin, end);
   pfree(begin); pfree(end);
   return (ptr - output);
@@ -382,7 +265,7 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal instant point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal instant point.
  */
 char *
 tpointinst_as_mfjson(const TInstant *inst, int precision,
@@ -444,7 +327,7 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal instant set point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal instant set point.
  */
 char *
 tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox,
@@ -508,7 +391,7 @@ tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal sequence point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal sequence point.
  */
 char *
 tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
@@ -581,7 +464,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal sequence set point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal sequence set point.
  */
 char *
 tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
@@ -597,7 +480,7 @@ tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the temporal point represented in MF-JSON format
+ * @brief Return the MF-JSON representation of a temporal point.
  */
 char *
 tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
@@ -606,7 +489,7 @@ tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
   STBOX *bbox = NULL, tmp;
   if (has_bbox)
   {
-    temporal_bbox(temp, &tmp);
+    temporal_set_bbox(temp, &tmp);
     bbox = &tmp;
   }
 
@@ -620,6 +503,129 @@ tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
     result = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
   else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
+  return result;
+}
+
+/*****************************************************************************
+ * Output in WKT and EWKT format
+ *****************************************************************************/
+
+/**
+ * Output a geometry in Well-Known Text (WKT) format.
+ *
+ * @note The parameter type is not needed for temporal points
+ */
+static char *
+wkt_out(Oid typid __attribute__((unused)), Datum value)
+{
+  GSERIALIZED *gs = DatumGetGserializedP(value);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  size_t len;
+  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
+  char *result = palloc(len);
+  strcpy(result, wkt);
+  lwgeom_free(geom);
+  pfree(wkt);
+  return result;
+}
+
+/**
+ * Output a geometry in Extended Well-Known Text (EWKT) format,
+ * that is, in WKT format prefixed with the SRID.
+ *
+ * @note The parameter type is not needed for temporal points
+ */
+char *
+ewkt_out(Oid typid __attribute__((unused)), Datum value)
+{
+  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  size_t len;
+  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DBL_DIG, &len);
+  char *result = palloc(len);
+  strcpy(result, wkt);
+  lwgeom_free(geom);
+  pfree(wkt);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Well-Known Text (WKT) representation of a temporal point.
+ */
+char *
+tpoint_as_text(const Temporal *temp)
+{
+  char *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tinstant_to_string((TInstant *) temp, &wkt_out);
+  else if (temp->subtype == INSTANTSET)
+    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
+  else if (temp->subtype == SEQUENCE)
+    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
+  else /* temp->subtype == SEQUENCESET */
+    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
+ * point.
+ */
+char *
+tpoint_as_ewkt(const Temporal *temp)
+{
+  int srid = tpoint_srid(temp);
+  char str1[20];
+  if (srid > 0)
+    sprintf(str1, "SRID=%d%c", srid,
+      MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
+  else
+    str1[0] = '\0';
+  char *str2 = tpoint_as_text(temp);
+  char *result = (char *) palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
+ * representation of a geometry/geography array.
+ *
+ * @param[in] geoarr Array of geometries/geographies
+ * @param[in] count Number of elements in the input array
+ * @param[in] extended True when the output is in EWKT
+ */
+char **
+geoarr_as_text(const Datum *geoarr, int count, bool extended)
+{
+  char **result = palloc(sizeof(char *) * count);
+  for (int i = 0; i < count; i++)
+    /* The wkt_out and ewkt_out functions do not use the first argument */
+    result[i] = extended ?
+      ewkt_out(0, geoarr[i]) : wkt_out(0, geoarr[i]);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
+ * representation of a temporal point array
+ */
+char **
+tpointarr_as_text(const Temporal **temparr, int count, bool extended)
+{
+  char **result = palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
+      tpoint_as_text(temparr[i]);
   return result;
 }
 
@@ -675,12 +681,12 @@ static inline bool
 wkb_swap_bytes(uint8_t variant)
 {
   /* If requested variant matches machine arch, we don't have to swap! */
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
-     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
   if (((variant & WKB_NDR) && !IS_BIG_ENDIAN) ||
       ((!(variant & WKB_NDR)) && IS_BIG_ENDIAN))
+#else
+  if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
+     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
 #endif
     return false;
   return true;
@@ -915,7 +921,7 @@ tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
 
 /**
  * Return the maximum size in bytes of the temporal point
- * represented in Well-Known Binary (WKB) format (dispatch function)
+ * represented in Well-Known Binary (WKB) format
  */
 static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
@@ -1149,26 +1155,8 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal point represented in
- * Well-Known Binary (WKB) format
- */
-static uint8_t *
-tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
-{
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    return tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
-  else if (temp->subtype == INSTANTSET)
-    return tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
-  else if (temp->subtype == SEQUENCE)
-    return tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
-  else /* temp->subtype == SEQUENCESET */
-    return tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
-}
-
-/**
  * @ingroup libmeos_temporal_input_output
- * @brief Convert the temporal value to a char * in WKB format.
+ * @brief Return the WKB representation of a temporal point.
  *
  * @param[in] temp Temporal value
  * @param[in] variant Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
@@ -1180,7 +1168,7 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * @note Caller is responsible for freeing the returned array.
  */
 uint8_t *
-tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+tpoint_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   size_t buf_size;
   uint8_t *buf = NULL;
@@ -1208,10 +1196,10 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   if (! (variant & WKB_NDR || variant & WKB_XDR) ||
     (variant & WKB_NDR && variant & WKB_XDR))
   {
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (getMachineEndian() != NDR)
-#else
+#if POSTGIS_VERSION_NUMBER >= 30000
     if (IS_BIG_ENDIAN)
+#else
+    if (getMachineEndian() != NDR)
 #endif
       variant = variant | (uint8_t) WKB_XDR;
     else
@@ -1231,7 +1219,15 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   wkb_out = buf;
 
   /* Write the WKB into the output buffer */
-  buf = tpoint_to_wkb_buf(temp, buf, variant);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    buf = tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
+  else if (temp->subtype == INSTANTSET)
+    buf = tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
+  else if (temp->subtype == SEQUENCE)
+    buf = tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
+  else /* temp->subtype == SEQUENCESET */
+    buf = tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
 
   /* Null the last byte if this is a hex output */
   if (variant & WKB_HEX)
@@ -1257,7 +1253,7 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output the temporal point in HexEWKB format.
+ * @brief Return the HexEWKB representation of a temporal point.
  * @note This will have 'SRID=#;'
  */
 char *
@@ -1265,7 +1261,7 @@ tpoint_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size)
 {
   size_t hexwkb_size;
   /* Create WKB hex string */
-  char *result = (char *) tpoint_to_wkb(temp,
+  char *result = (char *) tpoint_as_wkb(temp,
     variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, &hexwkb_size);
 
   *size = hexwkb_size;
@@ -1278,7 +1274,7 @@ tpoint_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size)
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Output in WKT and EWKT format
@@ -1293,7 +1289,7 @@ Tpoint_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *str = tpoint_as_text(temp);
-  text *result = cstring_to_text(str);
+  text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -1309,7 +1305,7 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *str = tpoint_as_ewkt(temp);
-  text *result = cstring_to_text(str);
+  text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -1470,7 +1466,7 @@ Tpoint_as_mfjson(PG_FUNCTION_ARGS)
     has_bbox = 1;
 
   char *mfjson = tpoint_as_mfjson(temp, precision, has_bbox, srs);
-  text *result = cstring_to_text(mfjson);
+  text *result = cstring2text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -1524,8 +1520,8 @@ tpoint_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
   /* Create WKB hex string */
   size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
   uint8_t *wkb = extended ?
-    tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
-    tpoint_to_wkb(temp, variant, &wkb_size);
+    tpoint_as_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
+    tpoint_as_wkb(temp, variant, &wkb_size);
 
   /* Prepare the PostgreSQL text return type */
   bytea *result = palloc(wkb_size + VARHDRSZ);
@@ -1598,6 +1594,6 @@ Tpoint_as_hexewkb(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

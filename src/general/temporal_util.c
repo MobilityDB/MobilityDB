@@ -34,26 +34,27 @@
 
 #include "general/temporal_util.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
-#include <catalog/pg_collation_d.h>
-#include <utils/lsyscache.h>
-#include <utils/varlena.h>
+/* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
-#endif
-#ifndef MEOS
-  #include <utils/builtins.h>
+#else
+  extern double get_float8_nan(void);
 #endif
 /* MobilityDB */
-#include "general/span.h"
-#include "general/temporaltypes.h"
+#include <libmeos.h>
+#include "general/temporal.h"
+#include "general/pg_call.h"
 #include "general/doublen.h"
-#include "point/tpoint.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#ifndef MEOS
+#if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
+
+/* To avoid including varlena.h */
+extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oid collid);
 
 /*****************************************************************************
  * Comparison functions on datums
@@ -71,7 +72,7 @@ datum_cmp(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Return true if the two values are equal
+ * Return true if the values are equal
  */
 bool
 datum_eq(Datum l, Datum r, CachedType type)
@@ -80,7 +81,7 @@ datum_eq(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Return true if the two values are different
+ * Return true if the values are different
  */
 bool
 datum_ne(Datum l, Datum r, CachedType type)
@@ -135,7 +136,6 @@ datum_ge(Datum l, Datum r, CachedType type)
 
 /**
  * Return true if the first value is less than the second one
- * (base type dispatch function)
  */
 int
 datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -159,7 +159,7 @@ datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Return true if the two values are equal even if their type is not the same
+ * Return true if the values are equal even if their type is not the same
  */
 bool
 datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -186,12 +186,10 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
   if (typel == T_GEOMETRY && typel == typer)
-    //  return DatumGetBool(call_function2(lwgeom_eq, l, r));
     return datum_point_eq(l, r);
   if (typel == T_GEOGRAPHY && typel == typer)
-    //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
-#ifndef MEOS
+#if ! MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
@@ -199,7 +197,7 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Return true if the two values are different
+ * Return true if the values are different
  */
 bool
 datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -229,12 +227,15 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return MOBDB_FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == T_TEXT && typel == typer)
-    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
+      DEFAULT_COLLATION_OID) < 0;
   if (typel == T_GEOMETRY && typel == typer)
-    return DatumGetBool(call_function2(lwgeom_lt, l, r));
+    return gserialized_cmp(DatumGetGserializedP(l),
+      DatumGetGserializedP(r)) < 0;
   if (typel == T_GEOGRAPHY && typel == typer)
-    return DatumGetBool(call_function2(geography_lt, l, r));
-#ifndef MEOS
+    return gserialized_cmp(DatumGetGserializedP(l),
+      DatumGetGserializedP(r)) < 0;
+#if ! MEOS
   if (typel == T_NPOINT && typel == typer)
     return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
@@ -272,7 +273,7 @@ datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 /*****************************************************************************/
 
 /**
- * Return a Datum true if the two values are equal
+ * Return a Datum true if the values are equal
  */
 Datum
 datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -281,7 +282,7 @@ datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Return a Datum true if the two values are different
+ * Return a Datum true if the values are different
  */
 Datum
 datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -570,8 +571,7 @@ double2arr_sort(double2 *doubles, int count)
 void
 double3arr_sort(double3 *triples, int count)
 {
-  qsort(triples, count, sizeof(double3),
-    (qsort_comparator) &double3_cmp);
+  qsort(triples, count, sizeof(double3), (qsort_comparator) &double3_cmp);
 }
 #endif
 
@@ -712,6 +712,62 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 }
 
 /*****************************************************************************
+ * Array functions
+ *****************************************************************************/
+
+/**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
+ * Free a C array of Datum pointers
+ */
+void
+pfree_datumarr(Datum *array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(DatumGetPointer(array[i]));
+  pfree(array);
+  return;
+}
+
+/**
+ * Return the string resulting from assembling the array of strings.
+ * The function frees the memory of the input strings after finishing.
+ */
+char *
+stringarr_to_string(char **strings, int count, int outlen,
+  char *prefix, char open, char close)
+{
+  char *result = palloc(strlen(prefix) + outlen + 3);
+  result[outlen] = '\0';
+  size_t pos = 0;
+  strcpy(result, prefix);
+  pos += strlen(prefix);
+  result[pos++] = open;
+  for (int i = 0; i < count; i++)
+  {
+    strcpy(result + pos, strings[i]);
+    pos += strlen(strings[i]);
+    result[pos++] = ',';
+    result[pos++] = ' ';
+    pfree(strings[i]);
+  }
+  result[pos - 2] = close;
+  result[pos - 1] = '\0';
+  pfree(strings);
+  return result;
+}
+
+/*****************************************************************************
  * Hypotenuse functions
  *****************************************************************************/
 
@@ -837,7 +893,234 @@ hypot4d(double x, double y, double z, double m)
 }
 
 /*****************************************************************************
+ * Input/output PostgreSQL functions
+ *****************************************************************************/
+
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+
+/**
+ * Call input function of the base type
+ */
+Datum
+basetype_input(CachedType basetype, char *str)
+{
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
+  if (basetype == T_BOOL)
+    return BoolGetDatum(pg_boolin(str));
+  if (basetype == T_INT4)
+    return Int32GetDatum(pg_int4in(str));
+  if (basetype == T_INT8)
+    return Int64GetDatum(pg_int8in(str));
+  if (basetype == T_FLOAT8)
+    return Float8GetDatum(float8in_internal(str, NULL, "double precision",
+      str));
+  if (basetype == T_TEXT)
+    return PointerGetDatum(cstring2text(str));
+  if (basetype == T_GEOMETRY)
+    return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
+  if (basetype == T_GEOGRAPHY)
+#if ! MEOS
+    return call_input(type_oid(T_GEOGRAPHY), str);
+#else
+    return PointerGetDatum(PGIS_geography_in(str, -1));
+#endif
+#if ! MEOS
+  if (basetype == T_NPOINT)
+    return PointerGetDatum(npoint_in(str));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+}
+
+/**
+ * Call output function of the base type
+ */
+char *
+basetype_output(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return pg_timestamptz_out(DatumGetTimestampTz(value));
+  if (basetype == T_BOOL)
+    return pg_boolout(DatumGetBool(value));
+  if (basetype == T_INT4)
+    return pg_int4out(DatumGetInt32(value));
+  if (basetype == T_INT8)
+    return pg_int8out(DatumGetInt64(value));
+  if (basetype == T_FLOAT8)
+    return float8out_internal(DatumGetFloat8(value));
+  if (basetype == T_TEXT)
+    return text2cstring(DatumGetTextP(value));
+  if (basetype == T_GEOMETRY)
+    return PGIS_LWGEOM_out(DatumGetGserializedP(value));
+  if (basetype == T_GEOGRAPHY)
+    return PGIS_geography_out(DatumGetGserializedP(value));
+#if ! MEOS
+  if (basetype == T_NPOINT)
+    return npoint_out(DatumGetNpointP(value));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+}
+
+/**
+ * Call receive function of the base type
+ */
+Datum
+basetype_recv(CachedType basetype, StringInfo buf)
+{
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return TimestampTzGetDatum(pg_timestamptz_recv(buf));
+  if (basetype == T_BOOL)
+    return BoolGetDatum(pg_boolrecv(buf));
+  if (basetype == T_INT4)
+    return Int32GetDatum(pg_int4recv(buf));
+#if 0 /* not used */
+  if (basetype == T_INT8)
+    return Int64GetDatum(pg_int8recv(buf));
+#endif /* not used */
+  if (basetype == T_FLOAT8)
+    return Float8GetDatum(pg_float8recv(buf));
+  if (basetype == T_TEXT)
+    return PointerGetDatum(pg_textrecv(buf));
+  if (basetype == T_DOUBLE2)
+    return PointerGetDatum(double2_recv(buf));
+  if (basetype == T_DOUBLE3)
+    return PointerGetDatum(double3_recv(buf));
+  if (basetype == T_DOUBLE4)
+    return PointerGetDatum(double4_recv(buf));
+  if (basetype == T_GEOMETRY)
+    return PointerGetDatum(PGIS_LWGEOM_recv(buf));
+  if (basetype == T_GEOGRAPHY)
+#if ! MEOS
+    return call_recv(type_oid(T_GEOGRAPHY), buf);
+#else
+    return PointerGetDatum(PGIS_geography_recv(buf));
+#endif
+#if ! MEOS
+  if (basetype == T_NPOINT)
+    return PointerGetDatum(npoint_recv(buf));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+}
+
+/**
+ * Call send function of the base type
+ */
+bytea *
+basetype_send(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  if (basetype == T_TIMESTAMPTZ)
+    return pg_timestamptz_send(DatumGetTimestampTz(value));
+  if (basetype == T_BOOL)
+    return pg_boolsend(DatumGetBool(value));
+  if (basetype == T_INT4)
+    return pg_int4send(DatumGetInt32(value));
+#if 0 /* not used */
+  if (basetype == T_INT8)
+    return pg_int8send(DatumGetInt64(value));
+#endif /* not used */
+  if (basetype == T_FLOAT8)
+    return pg_float8send(DatumGetFloat8(value));
+  if (basetype == T_TEXT)
+    return pg_textsend(DatumGetTextP(value));
+  if (basetype == T_DOUBLE2)
+    return double2_send(DatumGetDouble2P(value));
+  if (basetype == T_DOUBLE3)
+    return double3_send(DatumGetDouble3P(value));
+  if (basetype == T_DOUBLE4)
+    return double4_send(DatumGetDouble4P(value));
+  if (basetype == T_GEOMETRY)
+    return PGIS_LWGEOM_send(DatumGetGserializedP(value));
+  if (basetype == T_GEOGRAPHY)
+    return PGIS_geography_send(DatumGetGserializedP(value));
+#if ! MEOS
+  if (basetype == T_NPOINT)
+    return npoint_send(DatumGetNpointP(value));
+#endif
+  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+}
+
+#else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/**
+ * Call input function of the base type
+ */
+Datum
+basetype_input(CachedType basetype, char *str)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_input(basetypid, str);
+}
+
+/**
+ * Call output function of the base type
+ */
+char *
+basetype_output(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_output(basetypid, value);
+}
+
+/**
+ * Call receive function of the base type
+ */
+Datum
+basetype_recv(CachedType basetype, StringInfo buf)
+{
+  ensure_temporal_basetype(basetype);
+  /* Internal types are not known by PostgreSQL */
+  if (basetype == T_DOUBLE2)
+    return PointerGetDatum(double2_recv(buf));
+  if (basetype == T_DOUBLE3)
+    return PointerGetDatum(double3_recv(buf));
+  if (basetype == T_DOUBLE4)
+    return PointerGetDatum(double4_recv(buf));
+  Oid basetypid = type_oid(basetype);
+  return call_recv(basetypid, buf);
+}
+
+/**
+ * Call send function of the base type
+ */
+bytea *
+basetype_send(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  /* Internal types are not known by PostgreSQL */
+  if (basetype == T_DOUBLE2)
+    return double2_send(DatumGetDouble2P(value));
+  if (basetype == T_DOUBLE3)
+    return double3_send(DatumGetDouble3P(value));
+  if (basetype == T_DOUBLE4)
+    return double4_send(DatumGetDouble4P(value));
+  Oid basetypid = type_oid(basetype);
+  return call_send(basetypid, value);
+}
+
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <utils/lsyscache.h>
+#include <catalog/pg_collation_d.h>
+#include <utils/varlena.h>
+
+/*****************************************************************************
  * Call PostgreSQL functions
+ * The call_input and call_output functions are needed for the geography
+ * type to call the function srid_is_latlong(fcinfo, srid)
  *****************************************************************************/
 
 /**
@@ -854,6 +1137,7 @@ call_input(Oid typid, char *str)
   return InputFunctionCall(&infuncinfo, str, basetypid, -1);
 }
 
+#if POSTGRESQL_VERSION_NUMBER < 140000
 /**
  * Call output function of the base type
  */
@@ -867,20 +1151,7 @@ call_output(Oid typid, Datum value)
   fmgr_info(outfunc, &outfuncinfo);
   return OutputFunctionCall(&outfuncinfo, value);
 }
-
-/**
- * Call send function of the base type
- */
-bytea *
-call_send(Oid typid, Datum value)
-{
-  Oid sendfunc;
-  bool isvarlena;
-  FmgrInfo sendfuncinfo;
-  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
-  fmgr_info(sendfunc, &sendfuncinfo);
-  return SendFunctionCall(&sendfuncinfo, value);
-}
+#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
 
 /**
  * Call receive function of the base type
@@ -895,6 +1166,22 @@ call_recv(Oid typid, StringInfo buf)
   fmgr_info(recvfunc, &recvfuncinfo);
   return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
 }
+
+#if POSTGRESQL_VERSION_NUMBER < 140000
+/**
+ * Call send function of the base type
+ */
+bytea *
+call_send(Oid typid, Datum value)
+{
+  Oid sendfunc;
+  bool isvarlena;
+  FmgrInfo sendfuncinfo;
+  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
+  fmgr_info(sendfunc, &sendfuncinfo);
+  return SendFunctionCall(&sendfuncinfo, value);
+}
+#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
 
 /**
  * Call PostgreSQL function with 1 argument
@@ -1034,7 +1321,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 /*****************************************************************************/
 
 /* CallerFInfoFunctionCall 1 to 3 are provided by PostGIS */
-
+#if POSTGIS_VERSION_NUMBER < 30000
 #if POSTGRESQL_VERSION_NUMBER < 120000
 Datum
 CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
@@ -1091,70 +1378,11 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
     return result;
 }
 #endif
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#ifndef MEOS
+#endif
 
 /*****************************************************************************
  * Array functions
  *****************************************************************************/
-
-/**
- * Free a C array of pointers
- */
-void
-pfree_array(void **array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(array[i]);
-  pfree(array);
-  return;
-}
-
-/**
- * Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
-  pfree(array);
-  return;
-}
-
-/**
- * Return the string resulting from assembling the array of strings.
- * The function frees the memory of the input strings after finishing.
- */
-char *
-stringarr_to_string(char **strings, int count, int outlen,
-  char *prefix, char open, char close)
-{
-  char *result = palloc(strlen(prefix) + outlen + 3);
-  result[outlen] = '\0';
-  size_t pos = 0;
-  strcpy(result, prefix);
-  pos += strlen(prefix);
-  result[pos++] = open;
-  for (int i = 0; i < count; i++)
-  {
-    strcpy(result + pos, strings[i]);
-    pos += strlen(strings[i]);
-    result[pos++] = ',';
-    result[pos++] = ' ';
-    pfree(strings[i]);
-  }
-  result[pos - 2] = close;
-  result[pos - 1] = '\0';
-  pfree(strings);
-  return result;
-}
 
 /**
  * Extract a C array from a PostgreSQL array containing datums
@@ -1346,6 +1574,6 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   return make_range(typcache, &lower, &upper, false);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

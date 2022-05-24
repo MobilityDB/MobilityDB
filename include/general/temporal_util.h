@@ -51,24 +51,12 @@ extern double datum_double(Datum d, CachedType basetype);
 extern text *cstring2text(const char *cstring);
 extern char *text2cstring(const text *textptr);
 
-/* PostgreSQL call helpers */
+/* Input/output functions */
 
-extern Datum call_input(Oid typid, char *str);
-extern char *call_output(Oid typid, Datum value);
-extern bytea *call_send(Oid typid, Datum value);
-extern Datum call_recv(Oid typid, StringInfo buf);
-extern Datum call_function1(PGFunction func, Datum arg1);
-extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
-extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2,
-  Datum arg3);
-extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2,
-  Datum arg3, Datum arg4);
-
-extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
-  Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
-
-extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
-    Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+extern Datum basetype_input(CachedType type, char *str);
+extern char *basetype_output(CachedType type, Datum value);
+extern Datum basetype_recv(CachedType type, StringInfo buf);
+extern bytea *basetype_send(CachedType type, Datum value);
 
 /* Array functions */
 
@@ -141,12 +129,32 @@ extern double hypot4d(double x, double y, double z, double m);
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 #include <utils/array.h>
 #include <utils/rangetypes.h>
 
-/* Range  functions */
+/* PostgreSQL call helpers */
+
+extern Datum call_input(Oid typid, char *str);
+extern char *call_output(Oid typid, Datum value);
+extern Datum call_recv(Oid typid, StringInfo buf);
+extern bytea *call_send(Oid typid, Datum value);
+
+extern Datum call_function1(PGFunction func, Datum arg1);
+extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
+extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2,
+  Datum arg3);
+extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2,
+  Datum arg3, Datum arg4);
+
+extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
+  Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+
+extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
+    Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+
+/* Range functions */
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
   bool upper_inc, CachedType basetype);
@@ -167,7 +175,7 @@ extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/
 

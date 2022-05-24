@@ -34,12 +34,13 @@
 
 #include "npoint/tnpoint_distance.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include <libmeos.h>
 #include "general/lifting.h"
+#include "general/temporal_util.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"
 #include "npoint/tnpoint.h"
@@ -74,7 +75,7 @@ distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 Temporal *
 distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
-  GSERIALIZED *geom = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
+  GSERIALIZED *geom = DatumGetGserializedP(npoint_geom(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo(tempgeom, geom);
   pfree(DatumGetPointer(geom));
@@ -119,9 +120,9 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
-  bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
+  bool found = temporal_value_at_timestamp(temp, resultgeom->t, false, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, resultgeom->t, temp->temptype);
+  TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   return result;
 }
@@ -140,9 +141,9 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
-  bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
+  bool found = temporal_value_at_timestamp(temp, resultgeom->t, false, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, resultgeom->t, temp->temptype);
+  TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -172,9 +173,9 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
     const TInstant *min = temporal_min_instant((const Temporal *) dist);
     /* The closest point may be at an exclusive bound. */
     Datum value;
-    bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
+    bool found = temporal_value_at_timestamp(temp1, min->t, false, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->temptype);
+    result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   return result;
@@ -185,8 +186,8 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return the nearest approach distance of the temporal network point and the
- * geometry
+ * @brief Return the nearest approach distance of the temporal network point
+ * and the geometry
  */
 double
 nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo)
@@ -245,7 +246,9 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
   if (gserialized_is_empty(geo))
     return false;
   Datum traj = tnpoint_geom(temp);
-  *result = call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(geo));
+  GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+  *result = PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, geo));
+  PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return true;
 }
@@ -260,10 +263,11 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
-  Datum result = call_function2(LWGEOM_shortestline2d, traj,
-    PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
+  GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+  Datum result = PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, gs));
+  PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+  pfree(DatumGetPointer(traj));
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -295,7 +299,7 @@ shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Temporal distance
@@ -660,6 +664,6 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

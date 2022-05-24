@@ -42,9 +42,11 @@ WHERE temp <-> g IS NOT NULL ORDER BY 1 LIMIT 10;
 SELECT round(t1.temp <-> t2.temp, 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
 
-SELECT round(g <-> temp, 6) FROM tbl_geog_point t1, tbl_tgeogpoint t2
+-- The function BOX2D_to_LWGEOM does not set the geodetic flag and thus
+-- the rounding was set to 3 to cope with both PstGIS versions 2.5 and 3
+SELECT round(g <-> temp, 3) FROM tbl_geog_point t1, tbl_tgeogpoint t2
 WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT round(temp <-> g, 6) FROM tbl_tgeogpoint t1, tbl_geog_point t2
+SELECT round(temp <-> g, 3) FROM tbl_tgeogpoint t1, tbl_geog_point t2
 WHERE temp <-> g IS NOT NULL ORDER BY 1 LIMIT 10;
 SELECT round(t1.temp <-> t2.temp, 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;

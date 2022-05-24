@@ -37,17 +37,19 @@
 
 #include "npoint/tnpoint_static.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
+/* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
+#include <libmeos.h>
+#include "general/pg_call.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint.h"
@@ -99,8 +101,10 @@ npointarr_geom(Npoint **points, int count)
   for (int i = 0; i < count; i++)
   {
     Datum line = route_geom(points[i]->rid);
+    GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
     geoms[i] = call_function2(LWGEOM_line_interpolate_point, line,
       Float8GetDatum(points[i]->pos));
+    PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
     pfree(DatumGetPointer(line));
   }
   Datum result;
@@ -131,7 +135,8 @@ nsegmentarr_geom(Nsegment **segments, int count)
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
       geoms[i] = PointerGetDatum(gserialized_copy((GSERIALIZED *) PG_DETOAST_DATUM(line)));
     else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = call_function2(LWGEOM_line_interpolate_point, line, Float8GetDatum(segments[i]->pos1));
+      geoms[i] = call_function2(LWGEOM_line_interpolate_point, line,
+        Float8GetDatum(segments[i]->pos1));
     else
       geoms[i] = call_function3(LWGEOM_line_substring, line,
         Float8GetDatum(segments[i]->pos1), Float8GetDatum(segments[i]->pos2));
@@ -243,25 +248,34 @@ npoint_remove_duplicates(Npoint **values, int count)
  *****************************************************************************/
 
 /**
- * @brief Output function for network points
+ * @brief Return a network point from its string representation.
+ */
+Npoint *
+npoint_in(char *str)
+{
+  return npoint_parse(&str);
+}
+
+/**
+ * @brief Return the string representation of a network point
  */
 char *
-npoint_to_string(const Npoint *np)
+npoint_out(const Npoint *np)
 {
   static size_t size = MAXNPOINTLEN + 1;
   char *result = (char *) palloc(size);
-  char *rid = call_output(INT8OID, Int64GetDatum(np->rid));
-  char *pos = call_output(FLOAT8OID, Float8GetDatum(np->pos));
+  char *rid = basetype_output(T_INT8, Int64GetDatum(np->rid));
+  char *pos = basetype_output(T_FLOAT8, Float8GetDatum(np->pos));
   snprintf(result, size, "NPoint(%s,%s)", rid, pos);
   return result;
 }
 
 /**
- * @brief Return a new network point value from its binary representation read
- * from the buffer.
+ * @brief Return a network point from its binary representation read
+ * from a buffer.
  */
 Npoint *
-npoint_read(StringInfo buf)
+npoint_recv(StringInfo buf)
 {
   Npoint *result = (Npoint *) palloc0(sizeof(Npoint));
   result->rid = pq_getmsgint64(buf);
@@ -270,27 +284,36 @@ npoint_read(StringInfo buf)
 }
 
 /**
- * @brief Write the binary representation of the network point value into the
- * buffer.
+ * @brief Return the binary representation of a network point
  *
- * @param[in] np Network point value
- * @param[in] buf Buffer
+ * @param[in] np Network point
  */
-void
-npoint_write(const Npoint *np, StringInfo buf)
+bytea *
+npoint_send(const Npoint *np)
 {
-  pq_sendint64(buf, (uint64) np->rid);
-  pq_sendfloat8(buf, np->pos);
-  return;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, (uint64) np->rid);
+  pq_sendfloat8(&buf, np->pos);
+  return pq_endtypsend(&buf);
 }
 
 /*****************************************************************************/
 
 /**
+ * @brief Return a network point from its string representation.
+ */
+Nsegment *
+nsegment_in(char *str)
+{
+  return nsegment_parse(&str);
+}
+
+/**
  * @brief Output function for network segments
  */
 char *
-nsegment_to_string(Nsegment *ns)
+nsegment_out(const Nsegment *ns)
 {
   char *result = psprintf("NSegment(%ld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
   return result;
@@ -300,9 +323,9 @@ nsegment_to_string(Nsegment *ns)
  * @brief Receive function for network segments
  */
 Nsegment *
-nsegment_read(StringInfo buf)
+nsegment_recv(StringInfo buf)
 {
-  Nsegment *result = (Nsegment *) palloc(sizeof(Nsegment));
+  Nsegment *result = (Nsegment *) palloc0(sizeof(Nsegment));
   result->rid = pq_getmsgint64(buf);
   result->pos1 = pq_getmsgfloat8(buf);
   result->pos2 = pq_getmsgfloat8(buf);
@@ -312,13 +335,15 @@ nsegment_read(StringInfo buf)
 /**
  * @brief Send function for network segments
  */
-void
-nsegment_write(Nsegment *ns, StringInfo buf)
+bytea *
+nsegment_send(const Nsegment *ns)
 {
-  pq_sendint64(buf, (uint64) ns->rid);
-  pq_sendfloat8(buf, ns->pos1);
-  pq_sendfloat8(buf, ns->pos2);
-  return;
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, (uint64) ns->rid);
+  pq_sendfloat8(&buf, ns->pos1);
+  pq_sendfloat8(&buf, ns->pos2);
+  return pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -326,7 +351,7 @@ nsegment_write(Nsegment *ns, StringInfo buf)
  *****************************************************************************/
 
 /**
- * @brief Construct an network point value from the arguments
+ * @brief Construct a network segment from the arguments
  */
 Npoint *
 npoint_make(int64 rid, double pos)
@@ -338,7 +363,7 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
- * @brief Set a network point value from the arguments.
+ * @brief Set a network segment from the arguments.
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -355,7 +380,7 @@ npoint_set(int64 rid, double pos, Npoint *np)
 }
 
 /**
- * @brief Construct an network segment value from the arguments
+ * @brief Construct a network segment from the arguments
  */
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
@@ -367,12 +392,12 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
- * @brief Set a network segment value from the arguments.
+ * @brief Set a network segment from the arguments.
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
-  if (!route_exists(rid))
+  if (! route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("there is no route with gid value %lu in table ways", rid)));
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
@@ -389,10 +414,10 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @brief Construct an network segment value from the arguments
+ * @brief Cast a network point as a network segment
  */
 Nsegment *
-npoint_nsegment(const Npoint *np)
+npoint_to_nsegment(const Npoint *np)
 {
   return nsegment_make(np->rid, np->pos, np->pos);
 }
@@ -405,7 +430,7 @@ npoint_nsegment(const Npoint *np)
  * @brief Return the route of the network point
  */
 int64
-npoint_route(Npoint *np)
+npoint_route(const Npoint *np)
 {
   return np->rid;
 }
@@ -414,7 +439,7 @@ npoint_route(Npoint *np)
  * @brief Return the position of the network point
  */
 double
-npoint_position(Npoint *np)
+npoint_position(const Npoint *np)
 {
   return np->pos;
 }
@@ -423,7 +448,7 @@ npoint_position(Npoint *np)
  * @brief Return the route of the network segment
  */
 int64
-nsegment_route(Nsegment *ns)
+nsegment_route(const Nsegment *ns)
 {
   return ns->rid;
 }
@@ -432,7 +457,7 @@ nsegment_route(Nsegment *ns)
  * @brief Return the start position of the network segment
  */
 double
-nsegment_start_position(Nsegment *ns)
+nsegment_start_position(const Nsegment *ns)
 {
   return ns->pos1;
 }
@@ -441,7 +466,7 @@ nsegment_start_position(Nsegment *ns)
  * @brief Return the end position of the network segment
  */
 double
-nsegment_end_position(Nsegment *ns)
+nsegment_end_position(const Nsegment *ns)
 {
   return ns->pos2;
 }
@@ -449,7 +474,6 @@ nsegment_end_position(Nsegment *ns)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
 
 /**
  * @brief Set the precision of the position of a network point to the number of
@@ -470,7 +494,7 @@ datum_npoint_round(Datum npoint, Datum size)
  * decimal places
  */
 Npoint *
-npoint_round(Npoint *np, Datum size)
+npoint_round(const Npoint *np, Datum size)
 {
   /* Set precision of position */
   double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
@@ -483,7 +507,7 @@ npoint_round(Npoint *np, Datum size)
  * decimal places
  */
 Nsegment *
-nsegment_round(Nsegment *ns, Datum size)
+nsegment_round(const Nsegment *ns, Datum size)
 {
   /* Set precision of positions */
   double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
@@ -625,7 +649,10 @@ Datum
 npoint_geom(const Npoint *np)
 {
   Datum line = route_geom(np->rid);
-  Datum result = call_function2(LWGEOM_line_interpolate_point, line, Float8GetDatum(np->pos));
+  GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
+  Datum result = call_function2(LWGEOM_line_interpolate_point, line,
+    Float8GetDatum(np->pos));
+  PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
   pfree(DatumGetPointer(line));
   return result;
 }
@@ -720,12 +747,14 @@ geom_nsegment(Datum geom)
   }
   else /* geomtype == LINETYPE */
   {
-    int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring, geom));
+    int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring,
+      geom));
     points = palloc0(sizeof(Npoint *) * numpoints);
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      Datum point = call_function2(LWGEOM_pointn_linestring, geom, Int32GetDatum(i + 1));
+      Datum point = call_function2(LWGEOM_pointn_linestring, geom,
+        Int32GetDatum(i + 1));
       np = geom_npoint(point);
       if (np != NULL)
         points[k++] = np;
@@ -766,7 +795,7 @@ int
 npoint_srid(const Npoint *np)
 {
   Datum line = route_geom(np->rid);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int result = gserialized_get_srid(gs);
   pfree(DatumGetPointer(line));
   return result;
@@ -779,7 +808,7 @@ int
 nsegment_srid(const Nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
+  GSERIALIZED *gs = DatumGetGserializedP(line);
   int result = gserialized_get_srid(gs);
   pfree(DatumGetPointer(line));
   return result;
@@ -959,13 +988,36 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
   return (cmp >= 0);
 }
 
+/*****************************************************************************
+ * Function for defining hash index
+ * The function reuses the approach for span types for combining the hash of
+ * the lower and upper bounds.
+ *****************************************************************************/
+
+/**
+ * @brief Return the 32-bit hash value of a network point.
+ */
+uint32
+npoint_hash(const Npoint *np)
+{
+  /* Compute hashes of value and position */
+  uint32 rid_hash =  pg_hashint8(np->rid);
+  uint32 pos_hash = pg_hashfloat8(np->pos);
+
+  /* Merge hashes of value and position */
+  uint32 result = rid_hash;
+  result = (result << 1) | (result >> 31);
+  result ^= pos_hash;
+  return result;
+}
+
 /*****************************************************************************/
 /*****************************************************************************/
 /*                        MobilityDB - PostgreSQL                            */
 /*****************************************************************************/
 /*****************************************************************************/
 
-#ifndef MEOS
+#if ! MEOS
 
 /*****************************************************************************
  * Input/Output functions for network point
@@ -981,7 +1033,7 @@ PGDLLEXPORT Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(npoint_parse(&str));
+  PG_RETURN_POINTER(npoint_in(str));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_out);
@@ -992,7 +1044,7 @@ PGDLLEXPORT Datum
 Npoint_out(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_CSTRING(npoint_to_string(np));
+  PG_RETURN_CSTRING(npoint_out(np));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_recv);
@@ -1003,7 +1055,7 @@ PGDLLEXPORT Datum
 Npoint_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(npoint_read(buf));
+  PG_RETURN_POINTER(npoint_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_send);
@@ -1014,10 +1066,7 @@ PGDLLEXPORT Datum
 Npoint_send(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  npoint_write(np, &buf) ;
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(npoint_send(np));
 }
 
 /*****************************************************************************
@@ -1034,7 +1083,7 @@ PGDLLEXPORT Datum
 Nsegment_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(nsegment_parse(&str));
+  PG_RETURN_POINTER(nsegment_in(str));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_out);
@@ -1045,7 +1094,7 @@ PGDLLEXPORT Datum
 Nsegment_out(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_CSTRING(nsegment_to_string(ns));
+  PG_RETURN_CSTRING(nsegment_out(ns));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_recv);
@@ -1056,7 +1105,7 @@ PGDLLEXPORT Datum
 Nsegment_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(nsegment_read(buf));
+  PG_RETURN_POINTER(nsegment_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_send);
@@ -1067,10 +1116,7 @@ PGDLLEXPORT Datum
 Nsegment_send(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  nsegment_write(ns, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  PG_RETURN_BYTEA_P(nsegment_send(ns));
 }
 
 /*****************************************************************************
@@ -1079,7 +1125,7 @@ Nsegment_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_constructor);
 /**
- * Construct an network point value from the arguments
+ * Construct a network segment from the arguments
  */
 PGDLLEXPORT Datum
 Npoint_constructor(PG_FUNCTION_ARGS)
@@ -1091,7 +1137,7 @@ Npoint_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_constructor);
 /**
- * Construct an network segment value from the arguments
+ * Construct a network segment from the arguments
  */
 PGDLLEXPORT Datum
 Nsegment_constructor(PG_FUNCTION_ARGS)
@@ -1104,13 +1150,13 @@ Nsegment_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
- * Construct an network segment value from the network point
+ * Cast a network segment from a network point
  */
 PGDLLEXPORT Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_POINTER(npoint_nsegment(np));
+  PG_RETURN_POINTER(npoint_to_nsegment(np));
 }
 
 /*****************************************************************************
@@ -1171,10 +1217,6 @@ Nsegment_end_position(PG_FUNCTION_ARGS)
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   PG_RETURN_FLOAT8(nsegment_end_position(ns));
 }
-
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Npoint_round);
 /**
@@ -1470,6 +1512,6 @@ Nsegment_gt(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(nsegment_gt(ns1, ns2));
 }
 
-#endif /* #ifndef MEOS */
+#endif /* #if ! MEOS */
 
 /*****************************************************************************/

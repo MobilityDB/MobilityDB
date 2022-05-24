@@ -38,12 +38,10 @@
 
 #include "general/temporal_posops.h"
 
-/* PostgreSQL */
+/* C */
 #include <assert.h>
 /* MobilityDB */
-#include "general/span_ops.h"
-#include "general/time_ops.h"
-#include "general/temporal.h"
+#include <libmeos.h>
 #include "general/temporal_boxops.h"
 
 /*****************************************************************************/
@@ -429,8 +427,7 @@ Overafter_temporal_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_number_tnumber);
 /**
- * Return true if the number value is strictly to the left of the
- * temporal number
+ * Return true if a number is strictly to the left of a temporal number
  */
 PGDLLEXPORT Datum
 Left_number_tnumber(PG_FUNCTION_ARGS)
@@ -440,8 +437,7 @@ Left_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_number_tnumber);
 /**
- * Return true if the number value is not to the right of the
- * temporal number
+ * Return true if a number is not to the right of a temporal number
  */
 PGDLLEXPORT Datum
 Overleft_number_tnumber(PG_FUNCTION_ARGS)
@@ -451,8 +447,7 @@ Overleft_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_number_tnumber);
 /**
- * Return true if the number value is strictly to the right of the
- * temporal number
+ * Return true if a number is strictly to the right of a temporal number
  */
 PGDLLEXPORT Datum
 Right_number_tnumber(PG_FUNCTION_ARGS)
@@ -462,8 +457,7 @@ Right_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_number_tnumber);
 /**
- * Return true if the number value is not to the left of the
- * temporal number
+ * Return true if a number is not to the left of a temporal number
  */
 PGDLLEXPORT Datum
 Overright_number_tnumber(PG_FUNCTION_ARGS)
@@ -476,8 +470,7 @@ Overright_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_span_tnumber);
 /**
- * Return true if the number span value is strictly to the left of the
- * temporal number
+ * Return true if a number span is strictly to the left of a temporal number
  */
 PGDLLEXPORT Datum
 Left_span_tnumber(PG_FUNCTION_ARGS)
@@ -487,8 +480,7 @@ Left_span_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_span_tnumber);
 /**
- * Return true if the number span value is not to the right of the
- * temporal number
+ * Return true if a number span is not to the right of a temporal number
  */
 PGDLLEXPORT Datum
 Overleft_span_tnumber(PG_FUNCTION_ARGS)
@@ -498,8 +490,7 @@ Overleft_span_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_span_tnumber);
 /**
- * Return true if the number span value is strictly to the right of the
- * temporal number
+ * Return true if a number span is strictly to the right of a temporal number
  */
 PGDLLEXPORT Datum
 Right_span_tnumber(PG_FUNCTION_ARGS)
@@ -509,8 +500,7 @@ Right_span_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_span_tnumber);
 /**
- * Return true if the number span value is not to the left of the
- * temporal number
+ * Return true if a number span is not to the left of a temporal number
  */
 PGDLLEXPORT Datum
 Overright_span_tnumber(PG_FUNCTION_ARGS)
@@ -523,8 +513,7 @@ Overright_span_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnumber_number);
 /**
- * Return true if the temporal number is strictly to the left of the
- * number value
+ * Return true if a temporal number is strictly to the left of a number
  */
 PGDLLEXPORT Datum
 Left_tnumber_number(PG_FUNCTION_ARGS)
@@ -534,8 +523,7 @@ Left_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnumber_number);
 /**
- * Return true if the temporal number is not to the right of the
- * number value
+ * Return true if a temporal number is not to the right of a number
  */
 PGDLLEXPORT Datum
 Overleft_tnumber_number(PG_FUNCTION_ARGS)
@@ -545,8 +533,7 @@ Overleft_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnumber_number);
 /**
- * Return true if the temporal number is strictly to the right of the
- * number value
+ * Return true if a temporal number is strictly to the right of a number
  */
 PGDLLEXPORT Datum
 Right_tnumber_number(PG_FUNCTION_ARGS)
@@ -556,8 +543,7 @@ Right_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnumber_number);
 /**
- * Return true if the temporal number is not to the left of the
- * number value
+ * Return true if a temporal number is not to the left of a number
  */
 PGDLLEXPORT Datum
 Overright_tnumber_number(PG_FUNCTION_ARGS)
@@ -570,8 +556,7 @@ Overright_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnumber_span);
 /**
- * Return true if the temporal number is strictly to the left of the
- * number span value
+ * Return true if a temporal number is strictly to the left of a number span
  */
 PGDLLEXPORT Datum
 Left_tnumber_span(PG_FUNCTION_ARGS)
@@ -581,8 +566,7 @@ Left_tnumber_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnumber_span);
 /**
- * Return true if the temporal number is not to the right of the
- * number span value
+ * Return true if a temporal number is not to the right of a number span
  */
 PGDLLEXPORT Datum
 Overleft_tnumber_span(PG_FUNCTION_ARGS)
@@ -592,8 +576,7 @@ Overleft_tnumber_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnumber_span);
 /**
- * Return true if the temporal number is strictly to the right of the
- * number span value
+ * Return true if a temporal number is strictly to the right of a number span
  */
 PGDLLEXPORT Datum
 Right_tnumber_span(PG_FUNCTION_ARGS)
@@ -603,8 +586,7 @@ Right_tnumber_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnumber_span);
 /**
- * Return true if the temporal number is not to the left of the
- * number span value
+ * Return true if a temporal number is not to the left of a number span
  */
 PGDLLEXPORT Datum
 Overright_tnumber_span(PG_FUNCTION_ARGS)
@@ -617,8 +599,7 @@ Overright_tnumber_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tbox_tnumber);
 /**
- * Return true if the temporal box value is strictly to the left of the
- * temporal number
+ * Return true if a temporal box is strictly to the left of a temporal number
  */
 PGDLLEXPORT Datum
 Left_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -628,8 +609,7 @@ Left_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tbox_tnumber);
 /**
- * Return true if the temporal box value is not to the right of the
- * temporal number
+ * Return true if a temporal box is not to the right of a temporal number
  */
 PGDLLEXPORT Datum
 Overleft_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -639,8 +619,7 @@ Overleft_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tbox_tnumber);
 /**
- * Return true if the temporal box value is strictly to the right of the
- * temporal number
+ * Return true if a temporal box is strictly to the right of a temporal number
  */
 PGDLLEXPORT Datum
 Right_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -650,8 +629,7 @@ Right_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tbox_tnumber);
 /**
- * Return true if the temporal box value is not to the left of the
- * temporal number
+ * Return true if a temporal box is not to the left of a temporal number
  */
 PGDLLEXPORT Datum
 Overright_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -661,8 +639,7 @@ Overright_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_tbox_tnumber);
 /**
- * Return true if the temporal box value is strictly before the
- * temporal number
+ * Return true if a temporal box is strictly before a temporal number
  */
 PGDLLEXPORT Datum
 Before_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -672,8 +649,7 @@ Before_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_tbox_tnumber);
 /**
- * Return true if the temporal box value is not after the
- * temporal number
+ * Return true if a temporal box is not after a temporal number
  */
 PGDLLEXPORT Datum
 Overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -683,8 +659,7 @@ Overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_tbox_tnumber);
 /**
- * Return true if the temporal box value is strictly after the
- * temporal number
+ * Return true if a temporal box is strictly after a temporal number
  */
 PGDLLEXPORT Datum
 After_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -694,8 +669,7 @@ After_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_tbox_tnumber);
 /**
- * Return true if the temporal box value is not before the
- * temporal number
+ * Return true if a temporal box is not before a temporal number
  */
 PGDLLEXPORT Datum
 Overafter_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -708,8 +682,7 @@ Overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnumber_tbox);
 /**
- * Return true if the temporal number is strictly to the left of
- * the temporal box value
+ * Return true if a temporal number is strictly to the left of a temporal box
  */
 PGDLLEXPORT Datum
 Left_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -719,8 +692,7 @@ Left_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnumber_tbox);
 /**
- * Return true if the temporal number is not to the right of
- * the temporal box value
+ * Return true if a temporal number is not to the right of a temporal box
  */
 PGDLLEXPORT Datum
 Overleft_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -730,8 +702,7 @@ Overleft_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnumber_tbox);
 /**
- * Return true if the temporal number is strictly to the right of
- * the temporal box value
+ * Return true if a temporal number is strictly to the right of a temporal box
  */
 PGDLLEXPORT Datum
 Right_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -741,8 +712,7 @@ Right_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnumber_tbox);
 /**
- * Return true if the temporal number is not to the left of the
- * temporal box value
+ * Return true if a temporal number is not to the left of a temporal box
  */
 PGDLLEXPORT Datum
 Overright_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -752,8 +722,7 @@ Overright_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_tnumber_tbox);
 /**
- * Return true if the temporal number is strictly before the
- * temporal box value
+ * Return true if a temporal number is strictly before a temporal box
  */
 PGDLLEXPORT Datum
 Before_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -763,8 +732,7 @@ Before_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_tnumber_tbox);
 /**
- * Return true if the temporal number is not after the
- * temporal box value
+ * Return true if a temporal number is not after a temporal box
  */
 PGDLLEXPORT Datum
 Overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -774,8 +742,7 @@ Overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_tnumber_tbox);
 /**
- * Return true if the temporal number is strictly after the
- * temporal box value
+ * Return true if a temporal number is strictly after a temporal box
  */
 PGDLLEXPORT Datum
 After_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -785,8 +752,7 @@ After_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_tnumber_tbox);
 /**
- * Return true if the temporal number is not before the
- * temporal box value
+ * Return true if a temporal number is not before a temporal box
  */
 PGDLLEXPORT Datum
 Overafter_tnumber_tbox(PG_FUNCTION_ARGS)
