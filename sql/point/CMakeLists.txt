@@ -1,7 +1,7 @@
 # Postgres version dependant files
 
 if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
-  set(FILE_072 072_tpoint_spgist)
+  set(072_tpoint_spgist 072_tpoint_spgist)
 endif()
 
 SET(LOCAL_FILES
@@ -21,7 +21,7 @@ SET(LOCAL_FILES
   066_tpoint_spatialrels
   068_tpoint_tempspatialrels
   070_tpoint_gist
-  ${FILE_072}
+  ${072_tpoint_spgist}
   074_tpoint_datagen
   076_tpoint_analytics
   )

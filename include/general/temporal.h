@@ -214,7 +214,39 @@ typedef enum
 #define MOBDB_WKB_INT8_SIZE        8
 #define MOBDB_WKB_BYTE_SIZE        1
 
-/* Subtype */
+/* MobilityDB Types */
+#define MOBDB_WKB_T_BOOL           1   /**< boolean type */
+#define MOBDB_WKB_T_DOUBLE2        2   /**< double2 type */
+#define MOBDB_WKB_T_DOUBLE3        3   /**< double3 type */
+#define MOBDB_WKB_T_DOUBLE4        4   /**< double4 type */
+#define MOBDB_WKB_T_FLOAT8         5   /**< float8 type */
+#define MOBDB_WKB_T_FLOATSPAN      6   /**< float8 span type */
+#define MOBDB_WKB_T_INT4           7   /**< int4 type */
+#define MOBDB_WKB_T_INTSPAN        8   /**< int4 span type */
+#define MOBDB_WKB_T_INT8           9   /**< int8 type */
+#define MOBDB_WKB_T_PERIOD         10  /**< period type */
+#define MOBDB_WKB_T_PERIODSET      11  /**< period set type */
+#define MOBDB_WKB_T_STBOX          12  /**< spatiotemporal box type */
+#define MOBDB_WKB_T_TBOOL          13  /**< temporal boolean type */
+#define MOBDB_WKB_T_TBOX           14  /**< temporal box type */
+#define MOBDB_WKB_T_TDOUBLE2       15  /**< temporal double2 type */
+#define MOBDB_WKB_T_TDOUBLE3       16  /**< temporal double3 type */
+#define MOBDB_WKB_T_TDOUBLE4       17  /**< temporal double4 type */
+#define MOBDB_WKB_T_TEXT           18  /**< text type */
+#define MOBDB_WKB_T_TFLOAT         19  /**< temporal float type */
+#define MOBDB_WKB_T_TIMESTAMPSET   20  /**< timestamp set type */
+#define MOBDB_WKB_T_TIMESTAMPTZ    21  /**< timestamp with time zone type */
+#define MOBDB_WKB_T_TINT           22  /**< temporal integer type */
+#define MOBDB_WKB_T_TTEXT          23  /**< temporal text type */
+#define MOBDB_WKB_T_GEOMETRY       24  /**< geometry type */
+#define MOBDB_WKB_T_GEOGRAPHY      25  /**< geography type */
+#define MOBDB_WKB_T_TGEOMPOINT     26  /**< temporal geometry point type */
+#define MOBDB_WKB_T_TGEOGPOINT     27  /**< temporal geography point type */
+#define MOBDB_WKB_T_NPOINT         28  /**< network point type */
+#define MOBDB_WKB_T_NSEGMENT       29  /**< network segment type */
+#define MOBDB_WKB_T_TNPOINT        30  /**< temporal network point type */
+
+/* Temporal subtype */
 #define MOBDB_WKB_INSTANT          1
 #define MOBDB_WKB_INSTANTSET       2
 #define MOBDB_WKB_SEQUENCE         3

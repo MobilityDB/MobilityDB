@@ -781,7 +781,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the flag containing the temporal type and
+ * Writes into the buffer the flag containing the temporal subtype and
  * other characteristics represented in Well-Known Binary (WKB) format.
  * In binary format it is a byte as follows
  * LSGZxTTT
@@ -789,7 +789,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
  * TTT = Temporal subtype with values 1 to 4
  */
 static uint8_t *
-tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
+tpoint_wkb_flags(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -821,7 +821,7 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * - 1 timestamp
  */
 static uint8_t *
-coords_ts_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+coords_time_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
@@ -846,7 +846,7 @@ coords_ts_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
- * - Output of a single instant by function coords_ts_to_wkb_buf
+ * - Output of a single instant by function coords_time_to_wkb_buf
  */
 static uint8_t *
 tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
@@ -854,11 +854,11 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_type((Temporal *) inst, buf, variant);
+  buf = tpoint_wkb_flags((Temporal *) inst, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
-  return coords_ts_to_wkb_buf(inst, buf, variant);
+  return coords_time_to_wkb_buf(inst, buf, variant);
 }
 
 /**
@@ -868,7 +868,7 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
  * - Number of instants
- * - Output of the instants by function coords_ts_to_wkb_buf
+ * - Output of the instants by function coords_time_to_wkb_buf
  */
 static uint8_t *
 tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
@@ -876,7 +876,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_type((Temporal *) ti, buf, variant);
+  buf = tpoint_wkb_flags((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
     buf = int32_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
@@ -886,7 +886,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    buf = coords_ts_to_wkb_buf(inst, buf, variant);
+    buf = coords_time_to_wkb_buf(inst, buf, variant);
   }
   return buf;
 }
@@ -900,7 +900,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
  * - Number of instants
  * - Lower/upper inclusive
  * - For each instant
- *   - Output of the instant by function coords_ts_to_wkb_buf
+ *   - Output of the instant by function coords_time_to_wkb_buf
  */
 static uint8_t *
 tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
@@ -908,7 +908,7 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags and interpolation */
-  buf = tpoint_wkb_type((Temporal *) seq, buf, variant);
+  buf = tpoint_wkb_flags((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
     buf = int32_to_wkb_buf(tpointseq_srid(seq), buf, variant);
@@ -920,7 +920,7 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    buf = coords_ts_to_wkb_buf(inst, buf, variant);
+    buf = coords_time_to_wkb_buf(inst, buf, variant);
   }
   return buf;
 }
@@ -936,15 +936,17 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
  *   - Number or instants
  *   - Lower/upper inclusive
  *   - For each instant of the sequence
- *      - Output of the instant by function coords_ts_to_wkb_buf
+ *      - Output of the instant by function coords_time_to_wkb_buf
  */
 static uint8_t *
 tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
+  /* Set the temporal type */
+  buf = tpoint_wkb_flags((Temporal *) ts, buf, variant);
   /* Set the temporal and interpolation flags */
-  buf = tpoint_wkb_type((Temporal *) ts, buf, variant);
+  buf = tpoint_wkb_flags((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
     buf = int32_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
@@ -962,7 +964,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      buf = coords_ts_to_wkb_buf(inst, buf, variant);
+      buf = coords_time_to_wkb_buf(inst, buf, variant);
     }
   }
   return buf;
@@ -1010,11 +1012,7 @@ tpoint_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   if (! (variant & WKB_NDR || variant & WKB_XDR) ||
     (variant & WKB_NDR && variant & WKB_XDR))
   {
-#if POSTGIS_VERSION_NUMBER >= 30000
-    if (IS_BIG_ENDIAN)
-#else
-    if (getMachineEndian() != NDR)
-#endif
+    if (MOBDB_IS_BIG_ENDIAN)
       variant = variant | (uint8_t) WKB_XDR;
     else
       variant = variant | (uint8_t) WKB_NDR;

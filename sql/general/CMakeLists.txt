@@ -1,10 +1,10 @@
 # Postgres version dependant files
 if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
-  set(FILE_013 013_span_spgist)
-  set(FILE_014 014_time_spgist)
-  set(FILE_044 044_temporal_spgist)
+  set(013_span_spgist 013_span_spgist)
+  set(014_time_spgist 014_time_spgist)
+  set(044_temporal_spgist 044_temporal_spgist)
   if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 120000)
-    set(FILE_019 019_geo_constructors)
+    set(019_geo_constructors 019_geo_constructors)
   endif()
 endif()
 
@@ -16,11 +16,11 @@ SET(LOCAL_FILES
   009_time_ops
   011_span_gist
   012_time_gist
-  ${FILE_013}
-  ${FILE_014}
+  ${013_span_spgist}
+  ${014_time_spgist}
   015_span_aggfuncs
   017_time_aggfuncs
-  ${FILE_019}
+  ${019_geo_constructors}
   021_tbox
   022_temporal
   023_temporal_tile
@@ -35,7 +35,7 @@ SET(LOCAL_FILES
   038_temporal_aggfuncs
   040_temporal_waggfuncs
   042_temporal_gist
-  ${FILE_044}
+  ${044_temporal_spgist}
   999_tempcache
   )
 

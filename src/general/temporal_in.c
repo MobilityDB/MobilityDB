@@ -146,23 +146,23 @@ timestamp_from_wkb_state(wkb_parse_state *s)
  * onto the high bits).
  */
 void
-temporal_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
+temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
-  // if (wkb_type & MOBDB_WKB_ZFLAG)
+  // if (wkb_flags & MOBDB_WKB_ZFLAG)
     // s->hasz = true;
-  // if (wkb_type & MOBDB_WKB_GEODETICFLAG)
+  // if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     // s->geodetic = true;
-  // if (wkb_type & MOBDB_WKB_SRIDFLAG)
+  // if (wkb_flags & MOBDB_WKB_SRIDFLAG)
     // s->has_srid = true;
-  if (wkb_type & MOBDB_WKB_LINEAR_INTERP)
+  if (wkb_flags & MOBDB_WKB_LINEAR_INTERP)
     s->linear = true;
   /* Mask off the upper flags to get the subtype */
-  wkb_type = wkb_type & (uint8_t) 0x0F;
+  wkb_flags = wkb_flags & (uint8_t) 0x0F;
 
-  switch (wkb_type)
+  switch (wkb_flags)
   {
     case MOBDB_WKB_INSTANT:
       s->subtype = INSTANT;
@@ -177,7 +177,7 @@ temporal_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
       s->subtype = SEQUENCESET;
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown WKB temporal type (%d)!", wkb_type);
+      elog(ERROR, "Unknown WKB flags (%d)!", wkb_flags);
       break;
   }
   return;
@@ -357,28 +357,20 @@ temporal_from_wkb_state(wkb_parse_state *s)
   /* Check the endianness of our input */
   s->swap_bytes = false;
   /* Machine arch is big endian, request is for little */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  if (IS_BIG_ENDIAN && wkb_little_endian)
-#else
-  if (getMachineEndian() != NDR && wkb_little_endian)
-#endif
+  if (MOBDB_IS_BIG_ENDIAN && wkb_little_endian)
     s->swap_bytes = true;
   /* Machine arch is little endian, request is for big */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  else if ((!IS_BIG_ENDIAN) && (!wkb_little_endian))
-#else
-  else if (getMachineEndian() == NDR && ! wkb_little_endian)
-#endif
+  else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
     s->swap_bytes = true;
 
   /* Read the temporal and interpolation flags */
-  uint8_t wkb_type = (uint8_t) byte_from_wkb_state(s);
-  temporal_type_from_wkb_state(s, wkb_type);
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  temporal_flags_from_wkb_state(s, wkb_flags);
 
   /* Read the SRID, if necessary */
   // if (s->has_srid)
     // s->srid = int32_from_wkb_state(s);
-  // else if (wkb_type & MOBDB_WKB_GEODETICFLAG)
+  // else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     // s->srid = SRID_DEFAULT;
 
   ensure_valid_tempsubtype(s->subtype);
