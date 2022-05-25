@@ -28,21 +28,22 @@
  */
 #include "postgres.h"
 
-#if 0 /* MobilityDB not used */
 
 #include <ctype.h>
 #include <limits.h>
 #include <math.h>
 
-#include "catalog/pg_type.h"
+// #include "catalog/pg_type.h"
 #include "common/int.h"
-#include "funcapi.h"
-#include "libpq/pqformat.h"
-#include "nodes/nodeFuncs.h"
-#include "nodes/supportnodes.h"
-#include "optimizer/optimizer.h"
-#include "utils/array.h"
-#include "utils/builtins.h"
+// #include "funcapi.h"
+// #include "libpq/pqformat.h"
+// #include "nodes/nodeFuncs.h"
+// #include "nodes/supportnodes.h"
+// #include "optimizer/optimizer.h"
+// #include "utils/array.h"
+// #include "utils/builtins.h"
+
+#if 0 /* MobilityDB not used */
 
 #define Int2VectorSize(n)	(offsetof(int2vector, values) + (n) * sizeof(int16))
 

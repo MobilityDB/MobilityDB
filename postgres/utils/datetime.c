@@ -267,6 +267,8 @@ static const datetkn *abbrevcache[MAXDATEFIELDS] = {NULL};
  * and associated commentary in timestamp.h.
  */
 
+#endif /* MobilityDB not used */
+
 int
 date2j(int y, int m, int d)
 {
@@ -291,6 +293,8 @@ date2j(int y, int m, int d)
 
 	return julian;
 }								/* date2j() */
+
+#if 0 /* MobilityDB not used */
 
 void
 j2date(int jd, int *year, int *month, int *day)

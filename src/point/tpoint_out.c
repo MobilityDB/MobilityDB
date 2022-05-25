@@ -853,6 +853,8 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
+  /* Set the temporal type */
+  // buf = tpoint_wkb_temptype((Temporal *) inst, buf, variant);
   /* Set the temporal flags */
   buf = tpoint_wkb_flags((Temporal *) inst, buf, variant);
   /* Set the optional SRID for extended variant */
@@ -875,6 +877,8 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
+  /* Set the temporal type */
+  // buf = tpoint_wkb_temptype((Temporal *) ti, buf, variant);
   /* Set the temporal flags */
   buf = tpoint_wkb_flags((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
@@ -907,6 +911,8 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
+  /* Set the temporal type */
+  // buf = tpoint_wkb_temptype((Temporal *) seq, buf, variant);
   /* Set the temporal flags and interpolation */
   buf = tpoint_wkb_flags((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
@@ -944,7 +950,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  buf = tpoint_wkb_flags((Temporal *) ts, buf, variant);
+  // buf = tpoint_wkb_temptype((Temporal *) ts, buf, variant);
   /* Set the temporal and interpolation flags */
   buf = tpoint_wkb_flags((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */

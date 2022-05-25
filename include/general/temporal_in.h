@@ -54,6 +54,7 @@ typedef struct
   const uint8_t *wkb;  /**< Points to start of WKB */
   size_t wkb_size;     /**< Expected size of WKB */
   bool swap_bytes;     /**< Do an endian flip? */
+  uint8_t temptype;     /**< Current temporal type we are handling */
   uint8_t subtype;     /**< Current subtype we are handling */
   int32_t srid;        /**< Current SRID we are handling */
   bool hasz;           /**< Z? */

@@ -141,6 +141,54 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
+ * Take in an unknown temporal type of WKB type number and ensure it comes out
+ * as an extended WKB temporal type number.
+ */
+void
+temporal_temptype_from_wkb_state(wkb_parse_state *s, uint8_t wkb_temptype)
+{
+  switch (wkb_temptype)
+  {
+    case MOBDB_WKB_T_TBOOL:
+      s->temptype = T_TBOOL;
+      break;
+    case MOBDB_WKB_T_TINT:
+      s->temptype = T_TINT;
+      break;
+    case MOBDB_WKB_T_TFLOAT:
+      s->temptype = T_TFLOAT;
+      break;
+    case MOBDB_WKB_T_TTEXT:
+      s->temptype = T_TTEXT;
+      break;
+    case MOBDB_WKB_T_TDOUBLE2:
+      s->temptype = T_TDOUBLE2;
+      break;
+    case MOBDB_WKB_T_TDOUBLE3:
+      s->temptype = T_TDOUBLE3;
+      break;
+    case MOBDB_WKB_T_TDOUBLE4:
+      s->temptype = T_TDOUBLE4;
+      break;
+    case MOBDB_WKB_T_TGEOMPOINT:
+      s->temptype = T_TGEOMPOINT;
+      break;
+    case MOBDB_WKB_T_TGEOGPOINT:
+      s->temptype = T_TGEOGPOINT;
+      break;
+#if ! MEOS
+    case MOBDB_WKB_T_TNPOINT:
+      s->temptype = T_TNPOINT;
+      break;
+#endif /* ! MEOS */
+    default: /* Error! */
+      elog(ERROR, "Unknown WKB temporal type (%d)!", wkb_temptype);
+      break;
+  }
+  return;
+}
+
+/**
  * Take in an unknown kind of WKB type number and ensure it comes out as an
  * extended WKB type number (with Z/GEODETIC/SRID/LINEAR_INTERP flags masked
  * onto the high bits).
@@ -362,6 +410,10 @@ temporal_from_wkb_state(wkb_parse_state *s)
   /* Machine arch is little endian, request is for big */
   else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
     s->swap_bytes = true;
+
+  /* Read the temporal type */
+  uint8_t wkb_temptype = (uint8_t) byte_from_wkb_state(s);
+  temporal_temptype_from_wkb_state(s, wkb_temptype);
 
   /* Read the temporal and interpolation flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
