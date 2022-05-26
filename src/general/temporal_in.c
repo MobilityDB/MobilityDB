@@ -39,9 +39,13 @@
 #include <float.h>
 /* MobilityDB */
 #include <libmeos.h>
+#include "general/doublen.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
-// #include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_in.h"
+#if ! MEOS
+  #include "npoint/tnpoint_static.h"
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Input in WKB format
@@ -65,20 +69,49 @@ char
 byte_from_wkb_state(wkb_parse_state *s)
 {
   char char_value = 0;
+  /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MOBDB_WKB_BYTE_SIZE);
+  /* Get the data */
   char_value = s->pos[0];
   s->pos += MOBDB_WKB_BYTE_SIZE;
   return char_value;
 }
 
 /**
- * Read 4-byte integer and advance the parse state forward
+ * Read a 2-byte integer and advance the parse state forward
+ */
+uint16_t
+int16_from_wkb_state(wkb_parse_state *s)
+{
+  uint16_t i = 0;
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MOBDB_WKB_INT2_SIZE);
+  /* Get the data */
+  memcpy(&i, s->pos, MOBDB_WKB_INT2_SIZE);
+  /* Swap? Copy into a stack-allocated integer. */
+  if (s->swap_bytes)
+  {
+    for (int j = 0; j < MOBDB_WKB_INT2_SIZE/2; j++)
+    {
+      uint8_t tmp = ((uint8_t*)(&i))[j];
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT2_SIZE - j - 1];
+      ((uint8_t*)(&i))[MOBDB_WKB_INT2_SIZE - j - 1] = tmp;
+    }
+  }
+  s->pos += MOBDB_WKB_INT2_SIZE;
+  return i;
+}
+
+/**
+ * Read a 4-byte integer and advance the parse state forward
  */
 uint32_t
 int32_from_wkb_state(wkb_parse_state *s)
 {
   uint32_t i = 0;
+  /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MOBDB_WKB_INT4_SIZE);
+  /* Get the data */
   memcpy(&i, s->pos, MOBDB_WKB_INT4_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
@@ -95,15 +128,42 @@ int32_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
+ * Read an 8-byte integer and advance the parse state forward
+ */
+uint64_t
+int64_from_wkb_state(wkb_parse_state *s)
+{
+  uint64_t i = 0;
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MOBDB_WKB_INT8_SIZE);
+  /* Get the data */
+  memcpy(&i, s->pos, MOBDB_WKB_INT8_SIZE);
+  /* Swap? Copy into a stack-allocated integer. */
+  if (s->swap_bytes)
+  {
+    for (int j = 0; j < MOBDB_WKB_INT8_SIZE/2; j++)
+    {
+      uint8_t tmp = ((uint8_t*)(&i))[j];
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT8_SIZE - j - 1];
+      ((uint8_t*)(&i))[MOBDB_WKB_INT8_SIZE - j - 1] = tmp;
+    }
+  }
+  s->pos += MOBDB_WKB_INT8_SIZE;
+  return i;
+}
+
+/**
  * Read an 8-byte double and advance the parse state forward
  */
 double
 double_from_wkb_state(wkb_parse_state *s)
 {
   double d = 0;
+  /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE);
+  /* Get the data */
   memcpy(&d, s->pos, MOBDB_WKB_DOUBLE_SIZE);
-  /* Swap? Copy into a stack-allocated integer. */
+  /* Swap? Copy into a stack-allocated double */
   if (s->swap_bytes)
   {
     for (int i = 0; i < MOBDB_WKB_DOUBLE_SIZE/2; i++)
@@ -124,9 +184,11 @@ TimestampTz
 timestamp_from_wkb_state(wkb_parse_state *s)
 {
   int64_t t = 0;
+  /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MOBDB_WKB_TIMESTAMP_SIZE);
+  /* Get the data */
   memcpy(&t, s->pos, MOBDB_WKB_TIMESTAMP_SIZE);
-  /* Swap? Copy into a stack-allocated integer. */
+  /* Swap? Copy into a stack-allocated timestamp */
   if (s->swap_bytes)
   {
     for (int i = 0; i < MOBDB_WKB_TIMESTAMP_SIZE/2; i++)
@@ -141,11 +203,112 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
+ * Read a text and advance the parse state forward
+ */
+text *
+text_from_wkb_state(wkb_parse_state *s)
+{
+  /* Get the size of the text value */
+  size_t size = int64_from_wkb_state(s);
+  assert(size > 0);
+  s->pos += MOBDB_WKB_INT8_SIZE;
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, size);
+  /* Get the data */
+  char *str = palloc(size + 1);
+  memcpy(str, s->pos, size);
+  s->pos += size;
+  text *result = cstring2text(str);
+  pfree(str);
+  /* Advance the state and return */
+  return result;
+}
+
+/**
+ * Read a double2 and advance the parse state forward
+ */
+double2 *
+double2_from_wkb_state(wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE * 2);
+  /* Get the data */
+  double a = double_from_wkb_state(s);
+  double b = double_from_wkb_state(s);
+  double2 *result = palloc(sizeof(double2));
+  double2_set(a, b, result);
+  /* Advance the state and return */
+  s->pos += MOBDB_WKB_DOUBLE_SIZE * 2;
+  return result;
+}
+
+/**
+ * Read a double3 and advance the parse state forward
+ */
+double3 *
+double3_from_wkb_state(wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE * 3);
+  /* Get the data */
+  double a = double_from_wkb_state(s);
+  double b = double_from_wkb_state(s);
+  double c = double_from_wkb_state(s);
+  double3 *result = palloc(sizeof(double3));
+  double3_set(a, b, c, result);
+  /* Advance the state and return */
+  s->pos += MOBDB_WKB_DOUBLE_SIZE * 3;
+  return result;
+}
+
+/**
+ * Read a double4 and advance the parse state forward
+ */
+double4 *
+double4_from_wkb_state(wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE * 4);
+  /* Get the data */
+  double a = double_from_wkb_state(s);
+  double b = double_from_wkb_state(s);
+  double c = double_from_wkb_state(s);
+  double d = double_from_wkb_state(s);
+  double4 *result = palloc(sizeof(double4));
+  double4_set(a, b, c, d, result);
+  /* Advance the state and return */
+  s->pos += MOBDB_WKB_DOUBLE_SIZE * 4;
+  return result;
+}
+
+#if ! MEOS
+/**
+ * Read an npoint and advance the parse state forward
+ */
+Npoint *
+npoint_from_wkb_state(wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE);
+  /* Get the data */
+  int64 rid = int64_from_wkb_state(s);
+  double pos = double_from_wkb_state(s);
+  Npoint *result = palloc(sizeof(Npoint));
+  npoint_set(rid, pos, result);
+  /* Advance the state and return */
+  s->pos += MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
+  return result;
+}
+#endif /* ! MEOS */
+
+
+
+/**
  * Take in an unknown temporal type of WKB type number and ensure it comes out
  * as an extended WKB temporal type number.
  */
 void
-temporal_temptype_from_wkb_state(wkb_parse_state *s, uint8_t wkb_temptype)
+temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
 {
   switch (wkb_temptype)
   {
@@ -199,12 +362,12 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
-  // if (wkb_flags & MOBDB_WKB_ZFLAG)
-    // s->hasz = true;
-  // if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
-    // s->geodetic = true;
-  // if (wkb_flags & MOBDB_WKB_SRIDFLAG)
-    // s->has_srid = true;
+  if (wkb_flags & MOBDB_WKB_ZFLAG)
+    s->hasz = true;
+  if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+    s->geodetic = true;
+  if (wkb_flags & MOBDB_WKB_SRIDFLAG)
+    s->has_srid = true;
   if (wkb_flags & MOBDB_WKB_LINEAR_INTERP)
     s->linear = true;
   /* Mask off the upper flags to get the subtype */
@@ -232,14 +395,55 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 }
 
 /**
- * Return a point from its WKB representation. A WKB point has just a set of doubles,
- * with the quantity depending on the dimension of the point.
+ * Return a value from its WKB representation.
  */
 static Datum
 basetype_from_wkb_state(wkb_parse_state *s)
 {
-  // TODO !!!!!
-  Datum result = Int32GetDatum(0);
+  Datum result;
+  CachedType basetype = temptype_basetype(s->temptype);
+  ensure_temporal_basetype(basetype);
+  switch (basetype)
+  {
+    case T_BOOL:
+      result = BoolGetDatum(byte_from_wkb_state(s));
+      break;
+    case T_INT4:
+      result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
+#if 0 /* not used */
+    case T_INT8:
+      result = Int64GetDatum(int64_from_wkb_state(s));
+      break;
+#endif /* not used */
+    case T_FLOAT8:
+      result = Float8GetDatum(double_from_wkb_state(s));
+      break;
+    case T_TEXT:
+      result = PointerGetDatum(text_from_wkb_state(s));
+      break;
+    case T_DOUBLE2:
+      result = PointerGetDatum(double2_from_wkb_state(s));
+      break;
+    case T_DOUBLE3:
+      result = PointerGetDatum(double3_from_wkb_state(s));
+      break;
+    case T_DOUBLE4:
+      result = PointerGetDatum(double4_from_wkb_state(s));
+      break;
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      result = point_from_wkb_state(s);
+      break;
+#if ! MEOS
+    case T_NPOINT:
+      result = PointerGetDatum(npoint_from_wkb_state(s));
+      break;
+#endif
+    default: /* Error! */
+      elog(ERROR, "unknown base type: %d", basetype);
+      break;
+  }
   return result;
 }
 
@@ -258,7 +462,7 @@ tinstant_from_wkb_state(wkb_parse_state *s)
   /* Does the data we want to read exist? */
   size_t size = (ndims * MOBDB_WKB_DOUBLE_SIZE) + MOBDB_WKB_TIMESTAMP_SIZE;
   wkb_parse_state_check(s, size);
-  /* Create the instant point */
+  /* Create the instant  */
   Datum value = basetype_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
   CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
@@ -412,7 +616,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
     s->swap_bytes = true;
 
   /* Read the temporal type */
-  uint8_t wkb_temptype = (uint8_t) byte_from_wkb_state(s);
+  uint16_t wkb_temptype = (uint16_t) int16_from_wkb_state(s);
   temporal_temptype_from_wkb_state(s, wkb_temptype);
 
   /* Read the temporal and interpolation flags */
@@ -420,10 +624,10 @@ temporal_from_wkb_state(wkb_parse_state *s)
   temporal_flags_from_wkb_state(s, wkb_flags);
 
   /* Read the SRID, if necessary */
-  // if (s->has_srid)
-    // s->srid = int32_from_wkb_state(s);
-  // else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
-    // s->srid = SRID_DEFAULT;
+  if (s->has_srid)
+    s->srid = int32_from_wkb_state(s);
+  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+    s->srid = SRID_DEFAULT;
 
   ensure_valid_tempsubtype(s->subtype);
   if (s->subtype == INSTANT)
@@ -508,7 +712,7 @@ Temporal_from_wkb(PG_FUNCTION_ARGS)
  * Input in HEXEWKB format
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Temporal_from_hexewkb);
+PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
 /**
  * Return a temporal point from its HEXEWKB representation
  */

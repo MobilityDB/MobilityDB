@@ -49,7 +49,7 @@
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/temporal_util.h"
-// #include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_out.h"
 #if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
@@ -101,7 +101,7 @@ wkb_swap_bytes(uint8_t variant)
  * Writes into the buffer the int4 represented in Well-Known Binary (WKB) format
  */
 uint8_t *
-bytes_to_wkb_buf(char *valptr, uint8_t *buf, uint8_t variant, size_t size)
+bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
 {
   if (variant & WKB_HEX)
   {
@@ -163,7 +163,20 @@ bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
     elog(ERROR, "Machine bool size is not %d bytes!", MOBDB_WKB_BYTE_SIZE);
 
   char *bptr = (char *)(&b);
-  return bytes_to_wkb_buf(bptr, buf, variant, MOBDB_WKB_BYTE_SIZE);
+  return bytes_to_wkb_buf(bptr, MOBDB_WKB_BYTE_SIZE, buf, variant);
+}
+
+/**
+ * Writes into the buffer the int4 represented in Well-Known Binary (WKB) format
+ */
+uint8_t *
+int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
+{
+  if (sizeof(int16) != MOBDB_WKB_INT2_SIZE)
+    elog(ERROR, "Machine int16 size is not %d bytes!", MOBDB_WKB_INT2_SIZE);
+
+  char *iptr = (char *)(&i);
+  return bytes_to_wkb_buf(iptr, MOBDB_WKB_INT2_SIZE, buf, variant);
 }
 
 /**
@@ -173,10 +186,10 @@ uint8_t *
 int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int) != MOBDB_WKB_INT4_SIZE)
-    elog(ERROR, "Machine int size is not %d bytes!", MOBDB_WKB_INT4_SIZE);
+    elog(ERROR, "Machine int32 size is not %d bytes!", MOBDB_WKB_INT4_SIZE);
 
   char *iptr = (char *)(&i);
-  return bytes_to_wkb_buf(iptr, buf, variant, MOBDB_WKB_INT4_SIZE);
+  return bytes_to_wkb_buf(iptr, MOBDB_WKB_INT4_SIZE, buf, variant);
 }
 
 /**
@@ -186,23 +199,23 @@ uint8_t *
 int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int64) != MOBDB_WKB_INT8_SIZE)
-    elog(ERROR, "Machine int size is not %d bytes!", MOBDB_WKB_INT8_SIZE);
+    elog(ERROR, "Machine int64 size is not %d bytes!", MOBDB_WKB_INT8_SIZE);
 
   char *iptr = (char *)(&i);
-  return bytes_to_wkb_buf(iptr, buf, variant, MOBDB_WKB_INT8_SIZE);
+  return bytes_to_wkb_buf(iptr, MOBDB_WKB_INT8_SIZE, buf, variant);
 }
 
 /**
  * Writes into the buffer the float64 represented in Well-Known Binary (WKB) format
  */
 uint8_t*
-double_to_wkb_buf(double d, uint8_t *buf, uint8_t variant)
+double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(double) != MOBDB_WKB_DOUBLE_SIZE)
     elog(ERROR, "Machine double size is not %d bytes!", MOBDB_WKB_DOUBLE_SIZE);
 
   char *dptr = (char *)(&d);
-  return bytes_to_wkb_buf(dptr, buf, variant, MOBDB_WKB_DOUBLE_SIZE);
+  return bytes_to_wkb_buf(dptr, MOBDB_WKB_DOUBLE_SIZE, buf, variant);
 }
 
 /**
@@ -210,14 +223,14 @@ double_to_wkb_buf(double d, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
+timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(TimestampTz) != MOBDB_WKB_TIMESTAMP_SIZE)
     elog(ERROR, "Machine timestamp size is not %d bytes!",
       MOBDB_WKB_TIMESTAMP_SIZE);
 
   char *tptr = (char *)(&t);
-  return bytes_to_wkb_buf(tptr, buf, variant, MOBDB_WKB_TIMESTAMP_SIZE);
+  return bytes_to_wkb_buf(tptr, MOBDB_WKB_TIMESTAMP_SIZE, buf, variant);
 }
 
 /**
@@ -225,11 +238,12 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 static uint8_t *
-text_to_wkb_buf(text *txt, uint8_t *buf, uint8_t variant)
+text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 {
   char *str = text2cstring(txt);
   size_t size = VARSIZE_ANY_EXHDR(txt) + 1;
-  buf = bytes_to_wkb_buf(str, buf, variant, size);
+  buf = int64_to_wkb_buf(size, buf, variant);
+  buf = bytes_to_wkb_buf(str, size, buf, variant);
   pfree(str);
   return buf;
 }
@@ -239,7 +253,7 @@ text_to_wkb_buf(text *txt, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-double2_to_wkb_buf(double2 *d, uint8_t *buf, uint8_t variant)
+double2_to_wkb_buf(const double2 *d, uint8_t *buf, uint8_t variant)
 {
   buf = double_to_wkb_buf(d->a, buf, variant);
   buf = double_to_wkb_buf(d->b, buf, variant);
@@ -251,7 +265,7 @@ double2_to_wkb_buf(double2 *d, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-double3_to_wkb_buf(double3 *d, uint8_t *buf, uint8_t variant)
+double3_to_wkb_buf(const double3 *d, uint8_t *buf, uint8_t variant)
 {
   buf = double_to_wkb_buf(d->a, buf, variant);
   buf = double_to_wkb_buf(d->b, buf, variant);
@@ -264,7 +278,7 @@ double3_to_wkb_buf(double3 *d, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-double4_to_wkb_buf(double4 *d, uint8_t *buf, uint8_t variant)
+double4_to_wkb_buf(const double4 *d, uint8_t *buf, uint8_t variant)
 {
   buf = double_to_wkb_buf(d->a, buf, variant);
   buf = double_to_wkb_buf(d->b, buf, variant);
@@ -279,7 +293,7 @@ double4_to_wkb_buf(double4 *d, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-npoint_to_wkb_buf(Npoint *np, uint8_t *buf, uint8_t variant)
+npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 {
   buf = int64_to_wkb_buf(np->rid, buf, variant);
   buf = double_to_wkb_buf(np->pos, buf, variant);
@@ -295,13 +309,37 @@ npoint_to_wkb_buf(Npoint *np, uint8_t *buf, uint8_t variant)
 static size_t
 basetype_to_wkb_size(Datum value, CachedType basetype)
 {
-  /* For types passed by value */
-  if (basetype_byvalue(basetype))
-    return sizeof(Datum);
-  /* For types passed by reference */
-  int typlen = basetype_length(basetype);
-  size_t result = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
-  return result;
+  switch (basetype)
+  {
+    case T_BOOL:
+      return MOBDB_WKB_BYTE_SIZE;
+    case T_INT4:
+      return MOBDB_WKB_INT4_SIZE;
+  #if 0 /* not used */
+    case T_INT8:
+      return MOBDB_WKB_INT8_SIZE;
+  #endif /* not used */
+    case T_FLOAT8:
+      return MOBDB_WKB_DOUBLE_SIZE;
+    case T_TEXT:
+      return MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
+    case T_DOUBLE2:
+      return MOBDB_WKB_DOUBLE_SIZE * 2;
+    case T_DOUBLE3:
+      return MOBDB_WKB_DOUBLE_SIZE * 3;
+    case T_DOUBLE4:
+      return MOBDB_WKB_DOUBLE_SIZE * 4;
+    // case T_GEOMETRY:
+    // case T_GEOGRAPHY:
+      // return MOBDB_WKB_BYTE_SIZE;
+  #if ! MEOS
+    case T_NPOINT:
+      return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
+  #endif
+    default: /* Error! */
+      elog(ERROR, "unknown base type in basetype_to_wkb_size function: %d",
+        basetype);
+  }
 }
 
 /**
@@ -312,11 +350,11 @@ static size_t
 tinstarr_to_wkb_size(const TInstant **instants, int count)
 {
   size_t result = 0;
+  CachedType basetype = temptype_basetype(instants[0]->temptype);
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_value(instants[i]);
-    result += basetype_to_wkb_size(value,
-      temptype_basetype(instants[i]->temptype));
+    result += basetype_to_wkb_size(value, basetype);
   }
   /* size of the TInstant array */
   result += count * MOBDB_WKB_TIMESTAMP_SIZE;
@@ -331,10 +369,11 @@ static size_t
 tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 3;
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  // if (temporal_wkb_needs_srid((Temporal *) inst, variant))
-    // size += MOBDB_WKB_INT4_SIZE;
+  if (tgeo_type(inst->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) inst, variant))
+    size += MOBDB_WKB_INT4_SIZE;
   /* TInstant */
   size += tinstarr_to_wkb_size(&inst, 1);
   return size;
@@ -347,11 +386,12 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 static size_t
 tinstantset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
 {
-  /* Endian flag + temporal type flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  /* Endian flag + temporal type + temporal flag */
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  // if (temporal_wkb_needs_srid((Temporal *) ti, variant))
-    // size += MOBDB_WKB_INT4_SIZE;
+  if (tgeo_type(ti->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) ti, variant))
+    size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants */
   size += MOBDB_WKB_INT4_SIZE;
   int count;
@@ -369,11 +409,12 @@ tinstantset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
 static size_t
 tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
 {
-  /* Endian flag + temporal type flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  /* Endian flag + temporal type + temporal flag */
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  // if (temporal_wkb_needs_srid((Temporal *) seq, variant))
-    // size += MOBDB_WKB_INT4_SIZE;
+  if (tgeo_type(seq->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) seq, variant))
+    size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   size += MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE;
   int count;
@@ -391,11 +432,12 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
 static size_t
 tsequenceset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
 {
-  /* Endian flag + temporal type flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  /* Endian flag + temporal type + temporal flag */
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  // if (temporal_wkb_needs_srid((Temporal *) ts, variant))
-    // size += MOBDB_WKB_INT4_SIZE;
+  if (tgeo_type(ts->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) ts, variant))
+    size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of sequences */
   size += MOBDB_WKB_INT4_SIZE;
   /* For each sequence include the number of instants and the period bounds flag */
@@ -426,6 +468,59 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
   else /* temp->subtype == SEQUENCESET */
     size = tsequenceset_to_wkb_size((TSequenceSet *) temp, variant);
   return size;
+}
+
+/**
+ * Writes into the buffer the flag containing the temporal type and
+ * other characteristics represented in Well-Known Binary (WKB) format.
+ * In binary format it is a byte as follows
+ * LSGZxTTT
+ * L = Linear, S = SRID, G = Geodetic, Z = has Z, x = unused bit
+ * TTT = Temporal subtype with values 1 to 4
+ */
+static uint8_t *
+temporal_wkb_temptype(const Temporal *temp, uint8_t *buf, uint8_t variant)
+{
+  uint8_t wkb_temptype;
+  switch (temp->temptype)
+  {
+    case T_TBOOL:
+      wkb_temptype = MOBDB_WKB_T_TBOOL;
+      break;
+    case T_TINT:
+      wkb_temptype = MOBDB_WKB_T_TINT;
+      break;
+    case T_TFLOAT:
+      wkb_temptype = MOBDB_WKB_T_TFLOAT;
+      break;
+    case T_TTEXT:
+      wkb_temptype = MOBDB_WKB_T_TTEXT;
+      break;
+    case T_TDOUBLE2:
+      wkb_temptype = MOBDB_WKB_T_TDOUBLE2;
+      break;
+    case T_TDOUBLE3:
+      wkb_temptype = MOBDB_WKB_T_TDOUBLE3;
+      break;
+    case T_TDOUBLE4:
+      wkb_temptype = MOBDB_WKB_T_TDOUBLE4;
+      break;
+    case T_TGEOMPOINT:
+      wkb_temptype = MOBDB_WKB_T_TGEOMPOINT;
+      break;
+    case T_TGEOGPOINT:
+      wkb_temptype = MOBDB_WKB_T_TGEOGPOINT;
+      break;
+#if ! MEOS
+    case T_TNPOINT:
+      wkb_temptype = MOBDB_WKB_T_TNPOINT;
+      break;
+#endif /* ! MEOS */
+    default: /* Error! */
+      elog(ERROR, "Unknown temporal type (%d)!", temp->temptype);
+      break;
+  }
+  return int16_to_wkb_buf(wkb_temptype, buf, variant);
 }
 
 /**
@@ -468,34 +563,46 @@ value_time_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   Datum value = tinstant_value(inst);
   CachedType basetype = temptype_basetype(inst->temptype);
   ensure_temporal_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(value), buf, variant);
-  if (basetype == T_BOOL)
-    buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
-  if (basetype == T_INT4)
-    buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
-#if 0 /* not used */
-  if (basetype == T_INT8)
-    buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
-#endif /* not used */
-  if (basetype == T_FLOAT8)
-    buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
-  if (basetype == T_TEXT)
-    buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
-  if (basetype == T_DOUBLE2)
-    buf = double2_to_wkb_buf(DatumGetDouble2P(value), buf, variant);
-  if (basetype == T_DOUBLE3)
-    buf = double3_to_wkb_buf(DatumGetDouble3P(value), buf, variant);
-  if (basetype == T_DOUBLE4)
-    buf = double4_to_wkb_buf(DatumGetDouble4P(value), buf, variant);
-  /* Notice that T_GEOMETRY and T_GEOGRAPHY are not taken into account here
-   * but in tpoint_out.c */
-#if ! MEOS
-  if (basetype == T_NPOINT)
-    buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);
-#endif
-  else
-    elog(ERROR, "unknown type_input function for base type: %d", basetype);
+  switch (basetype)
+  {
+    case T_BOOL:
+      buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
+      break;
+    case T_INT4:
+      buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
+      break;
+  #if 0 /* not used */
+    case T_INT8:
+      buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
+      break;
+  #endif /* not used */
+    case T_FLOAT8:
+      buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
+      break;
+    case T_TEXT:
+      buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
+      break;
+    case T_DOUBLE2:
+      buf = double2_to_wkb_buf(DatumGetDouble2P(value), buf, variant);
+      break;
+    case T_DOUBLE3:
+      buf = double3_to_wkb_buf(DatumGetDouble3P(value), buf, variant);
+      break;
+    case T_DOUBLE4:
+      buf = double4_to_wkb_buf(DatumGetDouble4P(value), buf, variant);
+      break;
+    // case T_GEOMETRY:
+    // case T_GEOGRAPHY:
+      // buf = coords_to_wkb_buf(inst, buf, variant);
+      // break;
+  #if ! MEOS
+    case T_NPOINT:
+      buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);
+      break;
+  #endif
+    default: /* Error! */
+      elog(ERROR, "unknown type_input function for base type: %d", basetype);
+  }
 
   buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   return buf;
@@ -515,7 +622,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  // buf = tpoint_wkb_temptype((Temporal *) inst, buf, variant);
+  buf = temporal_wkb_temptype((Temporal *) inst, buf, variant);
   /* Set the temporal flags */
   buf = temporal_wkb_flags((Temporal *) inst, buf, variant);
   return value_time_to_wkb_buf(inst, buf, variant);
@@ -536,7 +643,7 @@ tinstantset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  // buf = tpoint_wkb_temptype((Temporal *) ti, buf, variant);
+  buf = temporal_wkb_temptype((Temporal *) ti, buf, variant);
   /* Set the temporal flags */
   buf = temporal_wkb_flags((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
@@ -562,20 +669,20 @@ tinstantset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
 uint8_t *
 tsequence_wkb_bounds(const TSequence *seq, uint8_t *buf, uint8_t variant)
 {
-  uint8_t wkb_flags = 0;
+  uint8_t wkb_bounds = 0;
   if (seq->period.lower_inc)
-    wkb_flags |= MOBDB_WKB_LOWER_INC;
+    wkb_bounds |= MOBDB_WKB_LOWER_INC;
   if (seq->period.upper_inc)
-    wkb_flags |= MOBDB_WKB_UPPER_INC;
+    wkb_bounds |= MOBDB_WKB_UPPER_INC;
   if (variant & WKB_HEX)
   {
     buf[0] = '0';
-    buf[1] = (uint8_t) hexchr[wkb_flags];
+    buf[1] = (uint8_t) hexchr[wkb_bounds];
     return buf + 2;
   }
   else
   {
-    buf[0] = wkb_flags;
+    buf[0] = wkb_bounds;
     return buf + 1;
   }
 }
@@ -597,7 +704,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  // buf = tpoint_wkb_temptype((Temporal *) seq, buf, variant);
+  buf = temporal_wkb_temptype((Temporal *) seq, buf, variant);
   /* Set the temporal flags and interpolation */
   buf = temporal_wkb_flags((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
@@ -635,9 +742,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  // buf = tpoint_wkb_temptype((Temporal *) ts, buf, variant);
-  /* Set the temporal type */
-  buf = endian_to_wkb_buf(buf, variant);
+  buf = temporal_wkb_temptype((Temporal *) ts, buf, variant);
   /* Set the temporal and interpolation flags */
   buf = temporal_wkb_flags((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */

@@ -375,6 +375,9 @@ npoint_set(int64 rid, double pos, Npoint *np)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("the relative position must be a real number between 0 and 1")));
 
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(np, 0, sizeof(Npoint));
+  /* Fill in the network point */
   np->rid = rid;
   np->pos = pos;
 }

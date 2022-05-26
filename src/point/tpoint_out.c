@@ -659,7 +659,7 @@ static char *hexchr = "0123456789ABCDEF";
 /**
  * Return true if the temporal point needs to output the SRID
  */
-static bool
+bool
 tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
   /* Add an SRID if the WKB form is extended and if the geometry has one */
@@ -820,8 +820,8 @@ tpoint_wkb_flags(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * - 2 or 3 doubles for the coordinates depending on whether there is Z
  * - 1 timestamp
  */
-static uint8_t *
-coords_time_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+uint8_t *
+coords_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
@@ -836,7 +836,6 @@ coords_time_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
   }
-  buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   return buf;
 }
 
@@ -846,7 +845,7 @@ coords_time_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
- * - Output of a single instant by function coords_time_to_wkb_buf
+ * - Output of a single instant by function coords_to_wkb_buf
  */
 static uint8_t *
 tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
@@ -860,7 +859,8 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
-  return coords_time_to_wkb_buf(inst, buf, variant);
+  buf = coords_to_wkb_buf(inst, buf, variant);
+  return timestamp_to_wkb_buf(inst->t, buf, variant);
 }
 
 /**
@@ -870,7 +870,7 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
  * - Number of instants
- * - Output of the instants by function coords_time_to_wkb_buf
+ * - Output of the instants by function coords_to_wkb_buf
  */
 static uint8_t *
 tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
@@ -890,7 +890,8 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    buf = coords_time_to_wkb_buf(inst, buf, variant);
+    buf = coords_to_wkb_buf(inst, buf, variant);
+    buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   }
   return buf;
 }
@@ -904,7 +905,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
  * - Number of instants
  * - Lower/upper inclusive
  * - For each instant
- *   - Output of the instant by function coords_time_to_wkb_buf
+ *   - Output of the instant by function coords_to_wkb_buf
  */
 static uint8_t *
 tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
@@ -926,7 +927,8 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    buf = coords_time_to_wkb_buf(inst, buf, variant);
+    buf = coords_to_wkb_buf(inst, buf, variant);
+    buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   }
   return buf;
 }
@@ -942,7 +944,7 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
  *   - Number or instants
  *   - Lower/upper inclusive
  *   - For each instant of the sequence
- *      - Output of the instant by function coords_time_to_wkb_buf
+ *      - Output of the instant by function coords_to_wkb_buf
  */
 static uint8_t *
 tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
@@ -970,7 +972,8 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      buf = coords_time_to_wkb_buf(inst, buf, variant);
+      buf = coords_to_wkb_buf(inst, buf, variant);
+      buf = timestamp_to_wkb_buf(inst->t, buf, variant);
     }
   }
   return buf;

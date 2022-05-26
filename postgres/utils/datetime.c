@@ -14,6 +14,9 @@
  */
 #include "postgres.h"
 
+// MobilityDB
+#include "datatype/timestamp.h"
+
 #if 0 /* MobilityDB not used */
 
 #include <ctype.h>
@@ -57,12 +60,15 @@ static bool DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t,
 												  int *offset, int *isdst);
 static pg_tz *FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp);
 
+#endif /* MobilityDB not used */
 
 const int	day_tab[2][13] =
 {
 	{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0},
 	{31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0}
 };
+
+#if 0 /* MobilityDB not used */
 
 const char *const months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
@@ -294,8 +300,6 @@ date2j(int y, int m, int d)
 	return julian;
 }								/* date2j() */
 
-#if 0 /* MobilityDB not used */
-
 void
 j2date(int jd, int *year, int *month, int *day)
 {
@@ -321,6 +325,7 @@ j2date(int jd, int *year, int *month, int *day)
 	*month = (quad + 10) % MONTHS_PER_YEAR + 1;
 }								/* j2date() */
 
+#if 0 /* MobilityDB not used */
 
 /*
  * j2day - convert Julian date to day-of-week (0..6 == Sun..Sat)

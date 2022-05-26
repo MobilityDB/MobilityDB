@@ -475,6 +475,13 @@ float8in_internal_opt_error(char *num, char **endptr_p,
 			 */
 			if (val == 0.0 || val >= HUGE_VAL || val <= -HUGE_VAL)
 			{
+#if MEOS
+				char	   *errnumber = strdup(num);
+				errnumber[endptr - num] = '\0';
+				elog(ERROR, "\"%s\" is out of range for type double precision",
+											 errnumber);
+				pfree(errnumber);
+#else
 				char	   *errnumber = pstrdup(num);
 
 				errnumber[endptr - num] = '\0';
@@ -483,6 +490,7 @@ float8in_internal_opt_error(char *num, char **endptr_p,
 									  errmsg("\"%s\" is out of range for type double precision",
 											 errnumber))),
 							 have_error);
+#endif /* MEOS */
 			}
 		}
 		else

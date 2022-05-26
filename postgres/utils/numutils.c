@@ -14,14 +14,12 @@
  */
 #include "postgres.h"
 
-#if 0 /* MobilityDB not used */
-
 #include <math.h>
 #include <limits.h>
 #include <ctype.h>
 
 #include "common/int.h"
-#include "utils/builtins.h"
+// #include "utils/builtins.h"
 #include "port/pg_bitutils.h"
 
 /*
@@ -86,6 +84,8 @@ decimalLength64(const uint64 v)
 	t = (pg_leftmost_one_pos64(v) + 1) * 1233 / 4096;
 	return t + (v >= PowersOfTen[t]);
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_atoi: convert string to integer
@@ -251,6 +251,8 @@ invalid_syntax:
 	return 0;					/* keep compiler quiet */
 }
 
+#endif /* MobilityDB not used */
+
 /*
  * Convert input string to a signed 32 bit integer.
  *
@@ -327,6 +329,8 @@ invalid_syntax:
 	return 0;					/* keep compiler quiet */
 }
 
+#if 0 /* MobilityDB not used */
+
 /*
  * pg_itoa: converts a signed 16-bit integer to its string representation
  * and returns strlen(a).
@@ -341,6 +345,8 @@ pg_itoa(int16 i, char *a)
 {
 	return pg_ltoa((int32) i, a);
 }
+
+#endif /* MobilityDB not used */
 
 /*
  * pg_ultoa_n: converts an unsigned 32-bit integer to its string representation,
@@ -514,6 +520,7 @@ pg_ltoa(int32 value, char *a)
 	return len;
 }
 
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_lltoa: converts a signed 64-bit integer to its string representation and

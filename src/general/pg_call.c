@@ -563,7 +563,11 @@ pg_timestamptz_out(TimestampTz dt)
   else
     elog(ERROR, "timestamp out of range");
 
+#if MEOS
+  result = strdup(buf);
+#else
   result = pstrdup(buf);
+#endif
   return result;
 }
 

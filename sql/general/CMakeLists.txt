@@ -23,11 +23,12 @@ SET(LOCAL_FILES
   ${019_geo_constructors}
   021_tbox
   022_temporal
-  023_temporal_tile
-  024_tnumber_mathfuncs
-  026_tbool_boolops
-  027_ttext_textfuncs
-  028_temporal_compops
+  023_temporal_inout
+  025_temporal_tile
+  026_tnumber_mathfuncs
+  028_tbool_boolops
+  029_ttext_textfuncs
+  030_temporal_compops
   032_temporal_boxops
   034_temporal_posops
   036_tnumber_distance

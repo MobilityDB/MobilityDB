@@ -460,7 +460,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(s, 0, sizeof(Span));
-  /* Now fill in the span */
+  /* Fill in the span */
   s->lower = lower;
   s->upper = upper;
   s->lower_inc = lower_inc;

@@ -431,7 +431,7 @@ tpoint_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
  * Return a point from its WKB representation. A WKB point has just a set of doubles,
  * with the quantity depending on the dimension of the point.
  */
-static Datum
+Datum
 point_from_wkb_state(wkb_parse_state *s)
 {
   double x, y, z;

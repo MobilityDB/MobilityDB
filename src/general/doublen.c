@@ -50,6 +50,8 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
 #endif
+/* MobilityDB */
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * Functions
@@ -74,7 +76,12 @@ double2_make(double a, double b)
 char *
 double2_out(double2 *d)
 {
-  char *result = psprintf("(%g,%g)", d->a, d->b);
+  char *astr = basetype_output(T_FLOAT8, Float8GetDatum(d->a));
+  char *bstr = basetype_output(T_FLOAT8, Float8GetDatum(d->b));
+  char *result = palloc(strlen(astr) + strlen(bstr) + 4);
+  sprintf(result, "(%s,%s)", astr, bstr);
+  pfree(astr);
+  pfree(bstr);
   return result;
 }
 #endif
@@ -174,7 +181,14 @@ double3_make(double a, double b, double c)
 char *
 double3_out(double3 *d)
 {
-  char *result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
+  char *astr = basetype_output(T_FLOAT8, Float8GetDatum(d->a));
+  char *bstr = basetype_output(T_FLOAT8, Float8GetDatum(d->b));
+  char *cstr = basetype_output(T_FLOAT8, Float8GetDatum(d->c));
+  char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) + 5);
+  sprintf(result, "(%s,%s,%s)", astr, bstr, cstr);
+  pfree(astr);
+  pfree(bstr);
+  pfree(cstr);
   return result;
 }
 #endif
@@ -280,7 +294,17 @@ double4_make(double a, double b, double c, double d)
 char *
 double4_out(double4 *d)
 {
-  char *result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
+  char *astr = basetype_output(T_FLOAT8, Float8GetDatum(d->a));
+  char *bstr = basetype_output(T_FLOAT8, Float8GetDatum(d->b));
+  char *cstr = basetype_output(T_FLOAT8, Float8GetDatum(d->c));
+  char *dstr = basetype_output(T_FLOAT8, Float8GetDatum(d->d));
+  char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) +
+    strlen(dstr) + 6);
+  sprintf(result, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);
+  pfree(astr);
+  pfree(bstr);
+  pfree(cstr);
+  pfree(dstr);
   return result;
 }
 #endif

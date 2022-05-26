@@ -210,6 +210,7 @@ typedef enum
 /* Data type size */
 #define MOBDB_WKB_TIMESTAMP_SIZE   8
 #define MOBDB_WKB_DOUBLE_SIZE      8
+#define MOBDB_WKB_INT2_SIZE        2
 #define MOBDB_WKB_INT4_SIZE        4
 #define MOBDB_WKB_INT8_SIZE        8
 #define MOBDB_WKB_BYTE_SIZE        1
