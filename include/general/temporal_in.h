@@ -39,6 +39,7 @@
 #include <postgres.h>
 /* MobilityDB */
 #include "general/timetypes.h"
+#include "general/temporal.h"
 
 /*****************************************************************************
  * Input in EWKB format
@@ -54,10 +55,13 @@ typedef struct
   const uint8_t *wkb;  /**< Points to start of WKB */
   size_t wkb_size;     /**< Expected size of WKB */
   bool swap_bytes;     /**< Do an endian flip? */
-  uint8_t temptype;     /**< Current temporal type we are handling */
+  uint8_t temptype;    /**< Current temporal type we are handling */
+  uint8_t basetype;    /**< Current base type we are handling */
   uint8_t subtype;     /**< Current subtype we are handling */
   int32_t srid;        /**< Current SRID we are handling */
+  bool hasx;           /**< X? */
   bool hasz;           /**< Z? */
+  bool hast;           /**< T? */
   bool geodetic;       /**< Geodetic? */
   bool has_srid;       /**< SRID? */
   bool linear;         /**< Linear interpolation? */
@@ -73,6 +77,8 @@ extern double double_from_wkb_state(wkb_parse_state *s);
 extern TimestampTz timestamp_from_wkb_state(wkb_parse_state *s);
 extern void temporal_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc,
   bool *upper_inc);
+
+extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
 
 /*****************************************************************************/
 

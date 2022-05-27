@@ -458,6 +458,7 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
  * @brief Compute the Frechet distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
+ * @param[out] count Number of elements of the output array
  */
 Match *
 temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
@@ -470,6 +471,7 @@ temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
+ * @param[out] count Number of elements of the output array
  */
 Match *
 temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count)

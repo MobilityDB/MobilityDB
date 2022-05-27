@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file libmeso.h
+ * @file libmeos.h
  * API of the Mobility Engine Open Source (MEOS) library.
  */
 
@@ -551,24 +551,18 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
 
 extern Temporal *temporal_in(char *str, CachedType temptype);
 extern char *temporal_out(const Temporal *temp);
-extern Temporal *temporal_recv(StringInfo buf);
-extern void temporal_write(const Temporal *temp, StringInfo buf);
-extern bytea *temporal_send(const Temporal *temp);
+Temporal *temporal_from_wkb (uint8_t *wkb, int size);
+Temporal *temporal_from_hexwkb (const char *hexwkb);
+uint8_t *temporal_as_wkb (const Temporal *temp, uint8_t variant, size_t *size_out);
+char *temporal_as_hexewkb (const Temporal *temp, uint8_t variant, size_t *size);
 extern TInstant *tinstant_in(char *str, CachedType temptype);
 extern char *tinstant_out(const TInstant *inst);
-extern TInstant *tinstant_recv(StringInfo buf, CachedType temptype);
-extern void tinstant_write(const TInstant *inst, StringInfo buf);
 extern TInstantSet *tinstantset_in(char *str, CachedType temptype);
 extern char *tinstantset_out(const TInstantSet *ti);
-extern TInstantSet *tinstantset_recv(StringInfo buf, CachedType temptype);
 extern TSequence *tsequence_in(char *str, CachedType temptype, bool linear);
 extern char *tsequence_out(const TSequence *seq);
-extern TSequence *tsequence_recv(StringInfo buf, CachedType temptype);
-extern void tsequence_write(const TSequence *seq, StringInfo buf);
 extern TSequenceSet *tsequenceset_in(char *str, CachedType temptype, bool linear);
 extern char *tsequenceset_out(const TSequenceSet *ts);
-extern TSequenceSet *tsequenceset_recv(StringInfo buf, CachedType temptype);
-extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
 extern TInstant *tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype);
 extern TInstantSet *tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype);
 extern TSequence *tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype, bool linear);

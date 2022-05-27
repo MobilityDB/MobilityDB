@@ -49,6 +49,8 @@
 #include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_aggfuncs.h"
+#include "general/temporal_in.h"
+#include "general/temporal_out.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -577,6 +579,23 @@ skiplist_values(SkipList *list)
  *****************************************************************************/
 
 /**
+ * Writes a temporal value into the buffer
+ *
+ * @param[in] temp Temporal value
+ * @param[in] buf Buffer
+ */
+static void
+temporal_write(Temporal *temp, StringInfo buf)
+{
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
+  uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
+  pq_sendbytes(buf, (char *) wkb, wkb_size);
+  pfree(wkb);
+  return;
+}
+
+/**
  * Writes the state value into the buffer
  *
  * @param[in] state State
@@ -650,7 +669,8 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   else /* elemtype == TEMPORAL */
   {
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_recv(buf);
+      // values[i] = temporal_recv(buf);
+      values[i] = temporal_from_wkb((uint8_t *) buf->data, buf->len);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

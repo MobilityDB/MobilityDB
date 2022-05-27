@@ -520,45 +520,6 @@ tsequenceset_out(const TSequenceSet *ts)
   return tsequenceset_to_string(ts, &basetype_output);
 }
 
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal sequence set from its binary representation
- * read from a buffer.
- *
- * @param[in] buf Buffer
- * @param[in] temptype Temporal type
- */
-TSequenceSet *
-tsequenceset_recv(StringInfo buf, CachedType temptype)
-{
-  int count = (int) pq_getmsgint(buf, 4);
-  assert(count > 0);
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  for (int i = 0; i < count; i++)
-    sequences[i] = tsequence_recv(buf, temptype);
-  return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Write the binary representation of a temporal sequence set
- * into a buffer.
- *
- * @param[in] ts Temporal sequence set
- * @param[in] buf Buffer
- */
-void
-tsequenceset_write(const TSequenceSet *ts, StringInfo buf)
-{
-  pq_sendint32(buf, ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    tsequence_write(seq, buf);
-  }
-  return;
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

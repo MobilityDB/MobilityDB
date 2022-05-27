@@ -261,7 +261,14 @@ typedef enum
 #define XDR                        0  /* big endian */
 #define NDR                        1  /* little endian */
 
-/* Variation flags */
+/* Variation flags
+ * The first byte of the variation flag depends on the type we are sending
+ * - Box types: xxTX where X and T state whether the corresponding dimensions
+ *   are present and x are unused
+ * - Temporal types: xSSS where SSS correspond to the subtype and x is unused
+ */
+#define MOBDB_WKB_XFLAG            0x01
+#define MOBDB_WKB_TFLAG            0x02
 #define MOBDB_WKB_ZFLAG            0x10
 #define MOBDB_WKB_GEODETICFLAG     0x20
 #define MOBDB_WKB_SRIDFLAG         0x40

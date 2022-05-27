@@ -44,6 +44,8 @@
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/time_ops.h"
+#include "general/temporal_in.h"
+#include "general/temporal_out.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
@@ -171,6 +173,7 @@ tbox_recv(StringInfo buf)
   return result;
 }
 
+
 /**
  * @brief Write the binary representation of a box into a buffer.
  */
@@ -206,6 +209,235 @@ tbox_send(TBOX *box)
   pq_begintypsend(&buf);
   tbox_write(box, &buf);
   return (bytea *) pq_endtypsend(&buf);
+}
+
+/*****************************************************************************
+ * Output in WKB format
+ *****************************************************************************/
+
+/**
+ * Look-up table for hex writer
+ */
+static char *hexchr = "0123456789ABCDEF";
+
+/**
+ * Return the maximum size in bytes of the temporal box represented in
+ * Well-Known Binary (WKB) format
+ */
+static size_t
+tbox_to_wkb_size(const TBOX *box)
+{
+  /* Endian flag + temporal flag */
+  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  if (MOBDB_FLAGS_GET_X(box->flags))
+    size += MOBDB_WKB_DOUBLE_SIZE * 2;
+  if (MOBDB_FLAGS_GET_T(box->flags))
+    size += MOBDB_WKB_DOUBLE_SIZE * 2;
+  return size;
+}
+
+/**
+ * Writes into the buffer the flag of the temporal box and
+ * other characteristics represented in Well-Known Binary (WKB) format.
+ * In binary format it is a byte as follows
+ * xxxxxxTX
+ * X = has X, T = has T, x = unused bit
+ */
+static uint8_t *
+tbox_wkb_flags(const TBOX *box, uint8_t *buf, uint8_t variant)
+{
+  uint8_t wkb_flags = 0;
+  if (MOBDB_FLAGS_GET_X(box->flags))
+    wkb_flags |= MOBDB_WKB_XFLAG;
+  if (MOBDB_FLAGS_GET_T(box->flags))
+    wkb_flags |= MOBDB_WKB_XFLAG;
+  if (variant & WKB_HEX)
+  {
+    buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
+    buf[1] = (uint8_t) hexchr[0];
+    return buf + 2;
+  }
+  else
+  {
+    buf[0] = wkb_flags;
+    return buf + 1;
+  }
+}
+
+/**
+ * Writes into the buffer the temporal box represented in Well-Known Binary
+ * (WKB) format as follows
+ * - Endian
+ * - Flag stating whether the X and T dimensions are present
+ * - Output the 2 doubles for the X dimension and the 2 timestamps for the
+ *   T dimension
+ */
+static uint8_t *
+tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
+{
+  /* Set the endian flag */
+  buf = endian_to_wkb_buf(buf, variant);
+  /* Set the temporal flags */
+  buf = tbox_wkb_flags(box, buf, variant);
+  if (MOBDB_FLAGS_GET_X(box->flags))
+  {
+    buf = double_to_wkb_buf(box->xmin, buf, variant);
+    buf = double_to_wkb_buf(box->xmax, buf, variant);
+  }
+  if (MOBDB_FLAGS_GET_T(box->flags))
+  {
+    buf = timestamp_to_wkb_buf(box->tmin, buf, variant);
+    buf = timestamp_to_wkb_buf(box->tmax, buf, variant);
+  }
+  return buf;
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the WKB representation of a temporal box.
+ *
+ * @param[in] box Temporal box
+ * @param[in] variant Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
+ * Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
+ * return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
+ * would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
+ * @param[out] size_out If supplied, will return the size of the returned
+ * memory segment, including the null terminator in the case of ASCII.
+ * @note Caller is responsible for freeing the returned array.
+ */
+uint8_t *
+tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
+{
+  size_t buf_size;
+  uint8_t *buf = NULL;
+  uint8_t *wkb_out = NULL;
+
+  /* Initialize output size */
+  if (size_out) *size_out = 0;
+
+  /* Calculate the required size of the output buffer */
+  buf_size = tbox_to_wkb_size(box);
+  if (buf_size == 0)
+  {
+    elog(ERROR, "Error calculating output WKB buffer size.");
+    return NULL;
+  }
+
+  /* Hex string takes twice as much space as binary + a null character */
+  if (variant & WKB_HEX)
+    buf_size = 2 * buf_size + 1;
+
+  /* If neither or both variants are specified, choose the native order */
+  if (! (variant & WKB_NDR || variant & WKB_XDR) ||
+    (variant & WKB_NDR && variant & WKB_XDR))
+  {
+    if (MOBDB_IS_BIG_ENDIAN)
+      variant = variant | (uint8_t) WKB_XDR;
+    else
+      variant = variant | (uint8_t) WKB_NDR;
+  }
+
+  /* Allocate the buffer */
+  buf = palloc(buf_size);
+  if (buf == NULL)
+  {
+    elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
+    return NULL;
+  }
+
+  /* Retain a pointer to the front of the buffer for later */
+  wkb_out = buf;
+
+  /* Write the WKB into the output buffer */
+  buf = tbox_to_wkb_buf(box, buf, variant);
+
+  /* Null the last byte if this is a hex output */
+  if (variant & WKB_HEX)
+  {
+    *buf = '\0';
+    buf++;
+  }
+
+  /* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
+  if (buf_size != (size_t) (buf - wkb_out))
+  {
+    elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
+    pfree(wkb_out);
+    return NULL;
+  }
+
+  /* Report output size */
+  if (size_out)
+    *size_out = buf_size;
+
+  return wkb_out;
+}
+
+/*****************************************************************************/
+
+/**
+ * Take in an unknown kind of WKB type number and ensure it comes out as an
+ * extended WKB type number (with Z/GEODETIC/SRID/LINEAR_INTERP flags masked
+ * onto the high bits).
+ */
+void
+tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
+{
+  s->hasx = false;
+  s->hast = false;
+  if (wkb_flags & MOBDB_WKB_XFLAG)
+    s->hasx = true;
+  if (wkb_flags & MOBDB_WKB_TFLAG)
+    s->hast = true;
+  return;
+}
+
+/**
+ * Return a temporal point from its WKB representation
+ */
+static TBOX *
+tbox_from_wkb_state(wkb_parse_state *s)
+{
+  /* Fail when handed incorrect starting byte */
+  char wkb_little_endian = byte_from_wkb_state(s);
+  if (wkb_little_endian != 1 && wkb_little_endian != 0)
+    elog(ERROR, "Invalid endian flag value encountered.");
+
+  /* Check the endianness of our input */
+  s->swap_bytes = false;
+  /* Machine arch is big endian, request is for little */
+  if (MOBDB_IS_BIG_ENDIAN && wkb_little_endian)
+    s->swap_bytes = true;
+  /* Machine arch is little endian, request is for big */
+  else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
+    s->swap_bytes = true;
+
+  /* Read the temporal flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  tbox_flags_from_wkb_state(s, wkb_flags);
+
+  double xmin = double_from_wkb_state(s);
+  double xmax = double_from_wkb_state(s);
+  TimestampTz tmin = timestamp_from_wkb_state(s);
+  TimestampTz tmax = timestamp_from_wkb_state(s);
+  TBOX *result = tbox_make(s->hasx, s->hast, xmin, xmax, tmin, tmax);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Return a temporal box from its Well-Known Binary (WKB)
+ * representation.
+ */
+TBOX *
+tbox_from_wkb(uint8_t *wkb, int size)
+{
+  /* Initialize the state appropriately */
+  wkb_parse_state s;
+  memset(&s, 0, sizeof(wkb_parse_state));
+  s.wkb = s.pos = wkb;
+  s.wkb_size = size;
+  return tbox_from_wkb_state(&s);
 }
 
 /*****************************************************************************

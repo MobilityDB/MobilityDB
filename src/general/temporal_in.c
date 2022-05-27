@@ -211,7 +211,6 @@ text_from_wkb_state(wkb_parse_state *s)
   /* Get the size of the text value */
   size_t size = int64_from_wkb_state(s);
   assert(size > 0);
-  s->pos += MOBDB_WKB_INT8_SIZE;
   /* Does the data we want to read exist? */
   wkb_parse_state_check(s, size);
   /* Get the data */
@@ -301,8 +300,6 @@ npoint_from_wkb_state(wkb_parse_state *s)
 }
 #endif /* ! MEOS */
 
-
-
 /**
  * Take in an unknown temporal type of WKB type number and ensure it comes out
  * as an extended WKB temporal type number.
@@ -348,6 +345,7 @@ temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
       elog(ERROR, "Unknown WKB temporal type (%d)!", wkb_temptype);
       break;
   }
+  s->basetype = temptype_basetype(s->temptype);
   return;
 }
 
@@ -398,76 +396,77 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
  * Return a value from its WKB representation.
  */
 static Datum
-basetype_from_wkb_state(wkb_parse_state *s)
+basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
-  CachedType basetype = temptype_basetype(s->temptype);
-  ensure_temporal_basetype(basetype);
-  switch (basetype)
+  ensure_temporal_basetype(s->basetype);
+  switch (s->temptype)
   {
-    case T_BOOL:
+    case T_TBOOL:
       result = BoolGetDatum(byte_from_wkb_state(s));
       break;
-    case T_INT4:
+    case T_TINT:
       result = Int32GetDatum(int32_from_wkb_state(s));
       break;
 #if 0 /* not used */
-    case T_INT8:
+    case T_TINT8:
       result = Int64GetDatum(int64_from_wkb_state(s));
       break;
 #endif /* not used */
-    case T_FLOAT8:
+    case T_TFLOAT:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
-    case T_TEXT:
+    case T_TTEXT:
       result = PointerGetDatum(text_from_wkb_state(s));
       break;
-    case T_DOUBLE2:
+    case T_TDOUBLE2:
       result = PointerGetDatum(double2_from_wkb_state(s));
       break;
-    case T_DOUBLE3:
+    case T_TDOUBLE3:
       result = PointerGetDatum(double3_from_wkb_state(s));
       break;
-    case T_DOUBLE4:
+    case T_TDOUBLE4:
       result = PointerGetDatum(double4_from_wkb_state(s));
       break;
-    case T_GEOMETRY:
-    case T_GEOGRAPHY:
+    case T_TGEOMPOINT:
+    case T_TGEOGPOINT:
       result = point_from_wkb_state(s);
       break;
 #if ! MEOS
-    case T_NPOINT:
+    case T_TNPOINT:
       result = PointerGetDatum(npoint_from_wkb_state(s));
       break;
 #endif
     default: /* Error! */
-      elog(ERROR, "unknown base type: %d", basetype);
+      elog(ERROR, "unknown temporal type in function basevalue_from_wkb_state: %d",
+        s->temptype);
       break;
   }
   return result;
 }
 
 /**
- * Return a temporal instant point from its WKB representation.
+ * @brief Return a temporal instant point from its WKB representation.
  *
- * It starts reading it just after the endian byte,
- * the type byte and the optional srid number.
- * Advance the parse state forward appropriately.
+ * It reads the base type value and the timestamp and advances the parse state
+ * forward appropriately.
+ * @note It starts reading it just after the endian byte, the temporal type
+ * int16, and the temporal flags byte.
  */
 static TInstant *
 tinstant_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
-  uint32_t ndims = (s->hasz) ? 3 : 2;
+  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Does the data we want to read exist? */
-  size_t size = (ndims * MOBDB_WKB_DOUBLE_SIZE) + MOBDB_WKB_TIMESTAMP_SIZE;
-  wkb_parse_state_check(s, size);
+  // size_t size = (ndims * MOBDB_WKB_DOUBLE_SIZE) + MOBDB_WKB_TIMESTAMP_SIZE;
+  // wkb_parse_state_check(s, size);
   /* Create the instant  */
-  Datum value = basetype_from_wkb_state(s);
+  Datum value = basevalue_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
-  CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
-  TInstant *result = tinstant_make(value, temptype, t);
-  pfree(DatumGetPointer(value));
+  TInstant *result = tinstant_make(value, s->temptype, t);
+  if (! basetype_byvalue(s->basetype))
+    pfree(DatumGetPointer(value));
   return result;
 }
 
@@ -478,14 +477,14 @@ static TInstant **
 tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 {
   TInstant **result = palloc(sizeof(TInstant *) * count);
-  CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < count; i++)
   {
     /* Parse the point and the timestamp to create the instant point */
-    Datum value = basetype_from_wkb_state(s);
+    Datum value = basevalue_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make(value, temptype, t);
-    pfree(DatumGetPointer(value));
+    result[i] = tinstant_make(value, s->temptype, t);
+    if (! basetype_byvalue(s->basetype))
+      pfree(DatumGetPointer(value));
   }
   return result;
 }
@@ -496,15 +495,15 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 static TInstantSet *
 tinstantset_from_wkb_state(wkb_parse_state *s)
 {
-  /* Count the dimensions */
-  uint32_t ndims = (s->hasz) ? 3 : 2;
+  // /* Count the dimensions */
+  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of instants */
   int count = int32_from_wkb_state(s);
   assert(count > 0);
   /* Does the data we want to read exist? */
-  size_t size = count * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
-    MOBDB_WKB_TIMESTAMP_SIZE);
-  wkb_parse_state_check(s, size);
+  // size_t size = count * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
+    // MOBDB_WKB_TIMESTAMP_SIZE);
+  // wkb_parse_state_check(s, size);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
   return tinstantset_make_free(instants, count, MERGE_NO);
@@ -535,7 +534,7 @@ static TSequence *
 tsequence_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
-  uint32_t ndims = (s->hasz) ? 3 : 2;
+  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of instants */
   int count = int32_from_wkb_state(s);
   assert(count > 0);
@@ -544,9 +543,9 @@ tsequence_from_wkb_state(wkb_parse_state *s)
   bool lower_inc, upper_inc;
   temporal_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
   /* Does the data we want to read exist? */
-  size_t size = count * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
-    MOBDB_WKB_TIMESTAMP_SIZE);
-  wkb_parse_state_check(s, size);
+  // size_t size = count * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
+    // MOBDB_WKB_TIMESTAMP_SIZE);
+  // wkb_parse_state_check(s, size);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
   return tsequence_make_free(instants, count, lower_inc, upper_inc,
@@ -560,7 +559,7 @@ static TSequenceSet *
 tsequenceset_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
-  uint32_t ndims = (s->hasz) ? 3 : 2;
+  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of sequences */
   int count = int32_from_wkb_state(s);
   assert(count > 0);
@@ -575,19 +574,19 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
     bool lower_inc, upper_inc;
     temporal_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
     /* Does the data we want to read exist? */
-    size_t size = countinst * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
-      MOBDB_WKB_TIMESTAMP_SIZE);
-    wkb_parse_state_check(s, size);
+    // size_t size = countinst * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
+      // MOBDB_WKB_TIMESTAMP_SIZE);
+    // wkb_parse_state_check(s, size);
     /* Parse the instants */
-    CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)
     {
       /* Parse the point and the timestamp to create the instant point */
-      Datum value = basetype_from_wkb_state(s);
+      Datum value = basevalue_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make(value, temptype, t);
-      pfree(DatumGetPointer(value));
+      instants[j] = tinstant_make(value, s->temptype, t);
+      if (! basetype_byvalue(s->basetype))
+        pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
       upper_inc, s->linear, NORMALIZE);
@@ -629,6 +628,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
   else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
+  /* Read the temporal value */
   ensure_valid_tempsubtype(s->subtype);
   if (s->subtype == INSTANT)
     return (Temporal *) tinstant_from_wkb_state(s);
@@ -638,12 +638,11 @@ temporal_from_wkb_state(wkb_parse_state *s)
     return (Temporal *) tsequence_from_wkb_state(s);
   else /* s->subtype == SEQUENCESET */
     return (Temporal *) tsequenceset_from_wkb_state(s);
-  return NULL; /* make compiler quiet */
 }
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its Extended Well-Known Binary (EWKB)
+ * @brief Return a temporal type from its Well-Known Binary (WKB)
  * representation.
  */
 Temporal *
@@ -651,16 +650,9 @@ temporal_from_wkb(uint8_t *wkb, int size)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
-  s.wkb = wkb;
+  memset(&s, 0, sizeof(wkb_parse_state));
+  s.wkb = s.pos = wkb;
   s.wkb_size = size;
-  s.swap_bytes = false;
-  s.subtype = ANYTEMPSUBTYPE;
-  s.srid = SRID_UNKNOWN;
-  s.hasz = false;
-  s.geodetic = false;
-  s.has_srid = false;
-  s.linear = false;
-  s.pos = wkb;
   return temporal_from_wkb_state(&s);
 }
 

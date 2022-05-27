@@ -43,6 +43,8 @@
 #include "general/doxygen_libmeos_api.h"
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
+#include "general/temporal_in.h"
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
@@ -586,76 +588,6 @@ temporal_out(const Temporal *temp)
   else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_out((TSequenceSet *) temp);
   return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal value from its binary representation read from
- * a buffer.
- *
- * @param[in] buf Buffer
- * @see tinstant_recv
- * @see tinstantset_recv
- * @see tsequence_recv
- * @see tsequenceset_recv
- */
-Temporal *
-temporal_recv(StringInfo buf)
-{
-  uint8 temptype = pq_getmsgbyte(buf);
-  uint8 subtype = pq_getmsgbyte(buf);
-  Temporal *result;
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
-    result = (Temporal *) tinstant_recv(buf, temptype);
-  else if (subtype == INSTANTSET)
-    result = (Temporal *) tinstantset_recv(buf, temptype);
-  else if (subtype == SEQUENCE)
-    result = (Temporal *) tsequence_recv(buf, temptype);
-  else /* subtype == SEQUENCESET */
-    result = (Temporal *) tsequenceset_recv(buf, temptype);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Write the binary representation of a temporal value into a buffer.
- *
- * @param[in] temp Temporal value
- * @param[in] buf Buffer
- * @see tinstant_write
- * @see tinstantset_write
- * @see tsequence_write
- * @see tsequenceset_write
- */
-void
-temporal_write(const Temporal *temp, StringInfo buf)
-{
-  pq_sendbyte(buf, temp->temptype);
-  pq_sendbyte(buf, temp->subtype);
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    tinstant_write((TInstant *) temp, buf);
-  else if (temp->subtype == INSTANTSET)
-    tinstantset_write((TInstantSet *) temp, buf);
-  else if (temp->subtype == SEQUENCE)
-    tsequence_write((TSequence *) temp, buf);
-  else /* temp->subtype == SEQUENCESET */
-    tsequenceset_write((TSequenceSet *) temp, buf);
-  return;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the binary representation of a temporal value
- */
-bytea *
-temporal_send(const Temporal *temp)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  temporal_write(temp, &buf) ;
-  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -3630,7 +3562,7 @@ PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  Temporal *result = temporal_recv(buf);
+  Temporal *result = temporal_from_wkb((uint8_t *) buf->data, buf->len);
   PG_RETURN_POINTER(result);
 }
 
@@ -3642,7 +3574,15 @@ PGDLLEXPORT Datum
 Temporal_send(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bytea *result = temporal_send(temp);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
+  uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  /* Clean up and return */
+  pfree(wkb);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BYTEA_P(result);
 }

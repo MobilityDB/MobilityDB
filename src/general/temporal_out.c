@@ -98,7 +98,8 @@ wkb_swap_bytes(uint8_t variant)
 }
 
 /**
- * Writes into the buffer the int4 represented in Well-Known Binary (WKB) format
+ * Writes into the buffer the bytes of the value represented in Well-Known
+ * Binary (WKB) format
  */
 uint8_t *
 bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
@@ -793,7 +794,6 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
   /* Calculate the required size of the output buffer */
   buf_size = temporal_to_wkb_size(temp, variant);
-
   if (buf_size == 0)
   {
     elog(ERROR, "Error calculating output WKB buffer size.");
@@ -802,9 +802,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
   /* Hex string takes twice as much space as binary + a null character */
   if (variant & WKB_HEX)
-  {
     buf_size = 2 * buf_size + 1;
-  }
 
   /* If neither or both variants are specified, choose the native order */
   if (! (variant & WKB_NDR || variant & WKB_XDR) ||
@@ -818,7 +816,6 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
   /* Allocate the buffer */
   buf = palloc(buf_size);
-
   if (buf == NULL)
   {
     elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
@@ -938,7 +935,7 @@ temporal_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
     temporal_as_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
     temporal_as_wkb(temp, variant, &wkb_size);
 
-  /* Prepare the PostgreSQL text return type */
+  /* Prepare the PostgreSQL bytea return type */
   bytea *result = palloc(wkb_size + VARHDRSZ);
   memcpy(VARDATA(result), wkb, wkb_size);
   SET_VARSIZE(result, wkb_size + VARHDRSZ);

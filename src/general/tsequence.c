@@ -1350,50 +1350,6 @@ tsequence_out(const TSequence *seq)
   return tsequence_to_string(seq, false, &basetype_output);
 }
 
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal sequence from its binary representation read from
- * a buffer.
- *
- * @param[in] buf Buffer
- * @param[in] temptype Temporal type
- */
-TSequence *
-tsequence_recv(StringInfo buf, CachedType temptype)
-{
-  int count = (int) pq_getmsgint(buf, 4);
-  bool lower_inc = (char) pq_getmsgbyte(buf);
-  bool upper_inc = (char) pq_getmsgbyte(buf);
-  bool linear = (char) pq_getmsgbyte(buf);
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-    instants[i] = tinstant_recv(buf, temptype);
-  return tsequence_make_free(instants, count, lower_inc,
-    upper_inc, linear, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Write the binary representation of a temporal sequence into a buffer.
- *
- * @param[in] seq Temporal sequence
- * @param[in] buf Buffer
- */
-void
-tsequence_write(const TSequence *seq, StringInfo buf)
-{
-  pq_sendint32(buf, seq->count);
-  pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    tinstant_write(inst, buf);
-  }
-  return;
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
