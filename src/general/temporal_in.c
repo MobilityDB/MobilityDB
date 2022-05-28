@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_in.c
- * @brief Input of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON format.
+ * @brief Input of temporal types in WKT, EWKT, WKB, EWKB, and MF-JSON format.
  */
 
 #include "general/temporal_in.h"
@@ -461,7 +461,7 @@ tinstant_from_wkb_state(wkb_parse_state *s)
   /* Does the data we want to read exist? */
   // size_t size = (ndims * MOBDB_WKB_DOUBLE_SIZE) + MOBDB_WKB_TIMESTAMP_SIZE;
   // wkb_parse_state_check(s, size);
-  /* Create the instant  */
+  /* Read the values from the buffer and create the instant */
   Datum value = basevalue_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
   TInstant *result = tinstant_make(value, s->temptype, t);
@@ -490,7 +490,7 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 }
 
 /**
- * Return a temporal instant set point from its WKB representation
+ * Return a temporal instant set value from its WKB representation
  */
 static TInstantSet *
 tinstantset_from_wkb_state(wkb_parse_state *s)
@@ -528,7 +528,7 @@ temporal_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc,
 }
 
 /**
- * Return a temporal sequence point from its WKB representation
+ * Return a temporal sequence value from its WKB representation
  */
 static TSequence *
 tsequence_from_wkb_state(wkb_parse_state *s)
@@ -553,7 +553,7 @@ tsequence_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal sequence set point from its WKB representation
+ * Return a temporal sequence set value from its WKB representation
  */
 static TSequenceSet *
 tsequenceset_from_wkb_state(wkb_parse_state *s)
@@ -581,7 +581,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)
     {
-      /* Parse the point and the timestamp to create the instant point */
+      /* Parse the value and the timestamp to create the temporal instant */
       Datum value = basevalue_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
       instants[j] = tinstant_make(value, s->temptype, t);
@@ -595,7 +595,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal point from its WKB representation
+ * Return a temporal value from its WKB representation
  */
 static Temporal *
 temporal_from_wkb_state(wkb_parse_state *s)
@@ -656,13 +656,11 @@ temporal_from_wkb(uint8_t *wkb, int size)
   return temporal_from_wkb_state(&s);
 }
 
-/*****************************************************************************
- * Input in HEXEWKB format
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal point from its HEXEWKB representation
+ * @brief Return a temporal type from its HexEWKB representation
  */
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)
@@ -683,12 +681,12 @@ temporal_from_hexwkb(const char *hexwkb)
 #if ! MEOS
 
 /*****************************************************************************
- * Input in WKB format
+ * Input in WKB and in HEXWKB format
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Temporal_from_wkb);
 /**
- * Return a temporal point from its EWKB representation
+ * Return a temporal type from its WKB representation
  */
 PGDLLEXPORT Datum
 Temporal_from_wkb(PG_FUNCTION_ARGS)
@@ -700,13 +698,9 @@ Temporal_from_wkb(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(temp);
 }
 
-/*****************************************************************************
- * Input in HEXEWKB format
- *****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
 /**
- * Return a temporal point from its HEXEWKB representation
+ * Return a temporal type from its HEXWKB representation
  */
 PGDLLEXPORT Datum
 Temporal_from_hexwkb(PG_FUNCTION_ARGS)

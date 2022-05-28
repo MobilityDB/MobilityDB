@@ -36,8 +36,6 @@
 
 /* C */
 #include <assert.h>
-/* PostgreSQL */
-#include <libpq/pqformat.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/doxygen_libmeos_api.h"
@@ -3561,8 +3559,10 @@ PG_FUNCTION_INFO_V1(Temporal_recv);
 PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
 {
-  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
   Temporal *result = temporal_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
   PG_RETURN_POINTER(result);
 }
 

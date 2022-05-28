@@ -65,6 +65,35 @@ CREATE TYPE stbox (
   alignment = double
 );
 
+-- Input/output in WKB and HexWKB format
+
+CREATE FUNCTION stboxFromBinary(bytea)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxFromHexWKB(text)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(stbox)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Stbox_as_binary'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(stbox, endianenconding text)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Stbox_as_binary'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(stbox)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Stbox_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(stbox, endianenconding text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Stbox_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/

@@ -72,6 +72,35 @@ CREATE TYPE timestampset (
   analyze = timestampset_analyze
 );
 
+-- Input/output in WKB and HexWKB format
+
+CREATE FUNCTION timestampsetFromBinary(bytea)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timestampsetFromHexWKB(text)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(timestampset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Timestampset_as_binary'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(timestampset, endianenconding text)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Timestampset_as_binary'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(timestampset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Timestampset_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(timestampset, endianenconding text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Timestampset_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructor
  ******************************************************************************/

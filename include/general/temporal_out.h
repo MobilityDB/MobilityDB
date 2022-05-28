@@ -43,12 +43,14 @@
 
 /*****************************************************************************/
 
+extern void ensure_valid_endian_flag(const char *endian);
 extern uint8_t *endian_to_wkb_buf(uint8_t *buf, uint8_t variant);
+extern uint8_t *int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant);
 extern uint8_t *int32_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant);
 extern uint8_t *double_to_wkb_buf(double d, uint8_t *buf, uint8_t variant);
 extern uint8_t *timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf,
   uint8_t variant);
-extern uint8_t *tsequence_wkb_bounds(const TSequence *seq, uint8_t *buf,
+extern uint8_t *tsequence_bounds_to_wkb(const TSequence *seq, uint8_t *buf,
   uint8_t variant);
 
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant,

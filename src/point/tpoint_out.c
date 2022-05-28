@@ -83,7 +83,7 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 }
 
 /**
- * Writes into the buffer the coordinate array represented in MF-JSON format
+ * Write into the buffer the coordinate array represented in MF-JSON format
  */
 static size_t
 coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
@@ -140,7 +140,7 @@ datetimes_mfjson_size(int npoints)
 }
 
 /**
- * Writes into the buffer the datetimes array represented in MF-JSON format
+ * Write into the buffer the datetimes array represented in MF-JSON format
  */
 static size_t
 datetimes_mfjson_buf(char *output, const TInstant *inst)
@@ -167,7 +167,7 @@ srs_mfjson_size(char *srs)
 }
 
 /**
- * Writes into the buffer the SRS represented in MF-JSON format
+ * Write into the buffer the SRS represented in MF-JSON format
  */
 static size_t
 srs_mfjson_buf(char *output, char *srs)
@@ -202,7 +202,7 @@ bbox_mfjson_size(int hasz, int precision)
 }
 
 /**
- * Writes into the buffer the bouding box represented in MF-JSON format
+ * Write into the buffer the bouding box represented in MF-JSON format
  */
 static size_t
 bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
@@ -245,7 +245,7 @@ tpointinst_as_mfjson_size(const TInstant *inst, int precision,
 }
 
 /**
- * Writes into the buffer the temporal instant point represented in MF-JSON format
+ * Write into the buffer the temporal instant point represented in MF-JSON format
  */
 static size_t
 tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
@@ -299,7 +299,7 @@ tpointinstset_as_mfjson_size(const TInstantSet *ti, int precision, const STBOX *
 }
 
 /**
- * Writes into the buffer the temporal instant set point represented in MF-JSON format
+ * Write into the buffer the temporal instant set point represented in MF-JSON format
  */
 static size_t
 tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *bbox,
@@ -362,7 +362,7 @@ tpointseq_as_mfjson_size(const TSequence *seq, int precision,
 }
 
 /**
- * Writes into the buffer the temporal sequence point represented in MF-JSON format
+ * Write into the buffer the temporal sequence point represented in MF-JSON format
  */
 static size_t
 tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
@@ -427,7 +427,7 @@ tpointseqset_as_mfjson_size(const TSequenceSet *ts, int precision, const STBOX *
 }
 
 /**
- * Writes into the buffer the temporal sequence set point represented in MF-JSON format
+ * Write into the buffer the temporal sequence set point represented in MF-JSON format
  */
 static size_t
 tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *bbox, char *srs,
@@ -662,7 +662,7 @@ static char *hexchr = "0123456789ABCDEF";
 bool
 tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
-  /* Add an SRID if the WKB form is extended and if the geometry has one */
+  /* Add an SRID if the WKB form is extended and if the temporal point has one */
   if ((variant & WKB_EXTENDED) && tpoint_srid(temp) != SRID_UNKNOWN)
     return true;
 
@@ -781,7 +781,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the flag containing the temporal subtype and
+ * Write into the buffer the flag containing the temporal subtype and
  * other characteristics represented in Well-Known Binary (WKB) format.
  * In binary format it is a byte as follows
  * LSGZxTTT
@@ -789,7 +789,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
  * TTT = Temporal subtype with values 1 to 4
  */
 static uint8_t *
-tpoint_wkb_flags(const Temporal *temp, uint8_t *buf, uint8_t variant)
+tpoint_flags_to_wkb(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -815,7 +815,7 @@ tpoint_wkb_flags(const Temporal *temp, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the coordinates of the temporal instant point
+ * Write into the buffer the coordinates of the temporal instant point
  * represented in Well-Known Binary (WKB) format as follows
  * - 2 or 3 doubles for the coordinates depending on whether there is Z
  * - 1 timestamp
@@ -840,7 +840,7 @@ coords_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal instant point represented in
+ * Write into the buffer the temporal instant point represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -850,13 +850,13 @@ coords_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
-  /* Set the endian flag */
+  /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Set the temporal type */
+  /* Write the temporal type */
   // buf = tpoint_wkb_temptype((Temporal *) inst, buf, variant);
-  /* Set the temporal flags */
-  buf = tpoint_wkb_flags((Temporal *) inst, buf, variant);
-  /* Set the optional SRID for extended variant */
+  /* Write the temporal flags */
+  buf = tpoint_flags_to_wkb((Temporal *) inst, buf, variant);
+  /* Write the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
   buf = coords_to_wkb_buf(inst, buf, variant);
@@ -864,7 +864,7 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal instant set point represented in
+ * Write into the buffer the temporal instant set point represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -880,7 +880,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   /* Set the temporal type */
   // buf = tpoint_wkb_temptype((Temporal *) ti, buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_flags((Temporal *) ti, buf, variant);
+  buf = tpoint_flags_to_wkb((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
     buf = int32_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
@@ -897,7 +897,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal sequence point represented in
+ * Write into the buffer the temporal sequence point represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -915,14 +915,14 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the temporal type */
   // buf = tpoint_wkb_temptype((Temporal *) seq, buf, variant);
   /* Set the temporal flags and interpolation */
-  buf = tpoint_wkb_flags((Temporal *) seq, buf, variant);
+  buf = tpoint_flags_to_wkb((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
     buf = int32_to_wkb_buf(tpointseq_srid(seq), buf, variant);
   /* Set the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Set the period bounds */
-  buf = tsequence_wkb_bounds(seq, buf, variant);
+  buf = tsequence_bounds_to_wkb(seq, buf, variant);
   /* Set the array of instants */
   for (int i = 0; i < seq->count; i++)
   {
@@ -934,7 +934,7 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal sequence set point represented in
+ * Write into the buffer the temporal sequence set point represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -954,7 +954,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   /* Set the temporal type */
   // buf = tpoint_wkb_temptype((Temporal *) ts, buf, variant);
   /* Set the temporal and interpolation flags */
-  buf = tpoint_wkb_flags((Temporal *) ts, buf, variant);
+  buf = tpoint_flags_to_wkb((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */
   if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
     buf = int32_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
@@ -967,7 +967,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
     /* Set the number of instants */
     buf = int32_to_wkb_buf(seq->count, buf, variant);
     /* Set the period bounds */
-    buf = tsequence_wkb_bounds(seq, buf, variant);
+    buf = tsequence_bounds_to_wkb(seq, buf, variant);
     /* Set the array of instants */
     for (int j = 0; j < seq->count; j++)
     {
@@ -1305,18 +1305,6 @@ Tpoint_as_mfjson(PG_FUNCTION_ARGS)
  * (instant, instant set, ...). The specific binary format is specified in
  * the function corresponding to the subtype below.
  *****************************************************************************/
-
-/**
- * Ensures that the spatiotemporal boxes have the same type of coordinates,
- * either planar or geodetic
- */
-static void
-ensure_valid_endian_flag(const char *endian)
-{
-  if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
-    elog(ERROR, "Invalid value for endian flag");
-  return;
-}
 
 /**
  * Output the temporal point in WKB or EWKB format

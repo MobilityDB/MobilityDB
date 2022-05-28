@@ -158,6 +158,18 @@ SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_stbox3d_tmp;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
+ count 
+-------
+     0
+(1 row)
+
 SELECT stbox_t('2001-01-03','2001-01-06');
                             stbox_t                             
 ----------------------------------------------------------------
@@ -1068,13 +1080,13 @@ ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
  count 
 -------
@@ -1148,13 +1160,13 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
-ERROR:  The temporal value must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
       ?column?      
 --------------------
@@ -1187,45 +1199,45 @@ SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX T(( 
 
 /* Errors */
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX ZT((11.0, 2.0, 3.0, 2001-01-01), (14.0, 5.0, 6.0, 2001-01-02))';
 ERROR:  Result of box union would not be contiguous
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX ZT((1.0, 12.0, 3.0, 2001-01-01), (4.0, 15.0, 6.0, 2001-01-02))';
@@ -1254,17 +1266,17 @@ SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))' + stbox 'GEODST
 
 /* Errors */
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' + stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' + stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' + stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' + stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))' + stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))' + stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' * stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';

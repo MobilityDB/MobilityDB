@@ -53,16 +53,22 @@
 
 extern PeriodSet *periodset_in(char *str);
 extern char *periodset_out(const PeriodSet *ps);
-extern PeriodSet *periodset_recv(StringInfo buf);
-extern bytea *periodset_send(const PeriodSet *ps);
+extern uint8_t *periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
+extern char *periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size);
+extern PeriodSet *periodset_from_wkb(uint8_t *wkb, int size);
+extern PeriodSet *periodset_from_hexwkb(const char *hexwkb);
 extern Span *span_in(char *str, CachedType spantype);
 extern char *span_out(const Span *s);
-extern Span *span_recv(StringInfo buf);
-extern bytea *span_send(const Span *s);
+extern Span *span_from_wkb(uint8_t *wkb, int size);
+extern Span *span_from_hexwkb(const char *hexwkb);
+extern uint8_t *span_as_wkb(const Span *s, uint8_t variant, size_t *size_out);
+extern char *span_as_hexwkb (const Span *s, uint8_t variant, size_t *size);
 extern TimestampSet *timestampset_in(char *str);
 extern char *timestampset_out(const TimestampSet *ts);
-extern TimestampSet *timestampset_recv(StringInfo buf);
-extern bytea *timestampset_send(const TimestampSet *ts);
+extern uint8_t *timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
+extern char *timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size);
+extern TimestampSet *timestampset_from_wkb(uint8_t *wkb, int size);
+extern TimestampSet *timestampset_from_hexwkb(const char *hexwkb);
 
 /*****************************************************************************/
 
@@ -377,12 +383,16 @@ extern bool timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2);
 
 extern TBOX *tbox_in(char *str);
 extern char *tbox_out(const TBOX *box);
-extern TBOX *tbox_recv(StringInfo buf);
-extern bytea *tbox_send(TBOX *box);
+extern uint8_t *tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out);
+extern char *tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size);
+extern TBOX *tbox_from_wkb(uint8_t *wkb, int size);
+extern TBOX *tbox_from_hexwkb(const char *hexwkb);
 extern STBOX *stbox_in(char *str);
 extern char *stbox_out(const STBOX *box);
-extern STBOX *stbox_recv(StringInfo buf);
-extern bytea *stbox_send(STBOX *box);
+extern uint8_t *stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out);
+extern char *stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size);
+extern STBOX *stbox_from_wkb(uint8_t *wkb, int size);
+extern STBOX *stbox_from_hexwkb(const char *hexwkb);
 
 /*****************************************************************************/
 
@@ -551,10 +561,10 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
 
 extern Temporal *temporal_in(char *str, CachedType temptype);
 extern char *temporal_out(const Temporal *temp);
-Temporal *temporal_from_wkb (uint8_t *wkb, int size);
-Temporal *temporal_from_hexwkb (const char *hexwkb);
-uint8_t *temporal_as_wkb (const Temporal *temp, uint8_t variant, size_t *size_out);
-char *temporal_as_hexewkb (const Temporal *temp, uint8_t variant, size_t *size);
+Temporal *temporal_from_wkb(uint8_t *wkb, int size);
+Temporal *temporal_from_hexwkb(const char *hexwkb);
+uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
+char *temporal_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size);
 extern TInstant *tinstant_in(char *str, CachedType temptype);
 extern char *tinstant_out(const TInstant *inst);
 extern TInstantSet *tinstantset_in(char *str, CachedType temptype);

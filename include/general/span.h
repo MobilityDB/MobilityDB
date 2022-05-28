@@ -100,9 +100,8 @@ extern int span_upper_cmp(const Span *a, const Span *b);
 extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
-/* Input/output functions */
-
-extern void span_write(const Span *s, StringInfo buf);
+extern size_t span_to_wkb_size(const Span *s);
+extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
 /* Transformation functions */
 

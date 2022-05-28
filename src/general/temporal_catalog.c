@@ -188,7 +188,7 @@ span_type(CachedType spantype)
 }
 
 /**
- * Ensure that the type corresponds to a time type
+ * Ensure that the type corresponds to a span type
  */
 void
 ensure_span_type(CachedType spantype)
@@ -199,7 +199,7 @@ ensure_span_type(CachedType spantype)
 }
 
 /**
- * Ensures that the base type is supported by MobilityDB
+ * Ensure that the span base type is supported by MobilityDB
  */
 void
 ensure_span_basetype(CachedType basetype)
@@ -212,7 +212,7 @@ ensure_span_basetype(CachedType basetype)
 /*****************************************************************************/
 
 /**
- * Return true if the temporal type is an EXTERNAL temporal type
+ * @brief Return true if the temporal type is an EXTERNAL temporal type
  *
  * @note Function used in particular in the indexes
  */

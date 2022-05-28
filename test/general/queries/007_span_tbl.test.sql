@@ -28,8 +28,41 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for extensions of span data type.
+-- Tests for span data type.
 -- File span.c
+-------------------------------------------------------------------------------
+
+-- Send/receive functions
+
+COPY tbl_intspan TO '/tmp/tbl_intspan' (FORMAT BINARY);
+COPY tbl_floatspan TO '/tmp/tbl_floatspan' (FORMAT BINARY);
+COPY tbl_period TO '/tmp/tbl_period' (FORMAT BINARY);
+
+DROP TABLE IF EXISTS tbl_intspan_tmp;
+DROP TABLE IF EXISTS tbl_floatspan_tmp;
+DROP TABLE IF EXISTS tbl_period_tmp;
+
+CREATE TABLE tbl_intspan_tmp AS TABLE tbl_intspan WITH NO DATA;
+CREATE TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
+CREATE TABLE tbl_period_tmp AS TABLE tbl_period WITH NO DATA;
+
+COPY tbl_intspan_tmp FROM '/tmp/tbl_intspan' (FORMAT BINARY);
+COPY tbl_floatspan_tmp FROM '/tmp/tbl_floatspan' (FORMAT BINARY);
+COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
+
+DROP TABLE tbl_intspan_tmp;
+DROP TABLE tbl_floatspan_tmp;
+DROP TABLE tbl_period_tmp;
+
+-- Input/output from/to WKB and HexWKB
+
+SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
+SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromHexWKB(asHexWKB(i)) <> i;
+
 -------------------------------------------------------------------------------
 
 SELECT SUM(width(i)) FROM tbl_intspan;

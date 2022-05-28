@@ -36,8 +36,6 @@
 
 /* C */
 #include <assert.h>
-/* PostgreSQL */
-#include <libpq/pqformat.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/pg_call.h"
@@ -147,73 +145,97 @@ tbox_out(const TBOX *box)
   return result;
 }
 
-/**
- * @ingroup libmeos_box_input_output
- * @brief Return a temporal box from its binary representation read from
- * a buffer.
- */
-TBOX *
-tbox_recv(StringInfo buf)
-{
-  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
-  bool hasx = (char) pq_getmsgbyte(buf);
-  bool hast = (char) pq_getmsgbyte(buf);
-  MOBDB_FLAGS_SET_X(result->flags, hasx);
-  MOBDB_FLAGS_SET_T(result->flags, hast);
-  if (hasx)
-  {
-    result->xmin = pq_getmsgfloat8(buf);
-    result->xmax = pq_getmsgfloat8(buf);
-  }
-  if (hast)
-  {
-    result->tmin = basetype_recv(T_TIMESTAMPTZ, buf);
-    result->tmax = basetype_recv(T_TIMESTAMPTZ, buf);
-  }
-  return result;
-}
-
+/*****************************************************************************
+ * Input/output in WKB and HexWKB format
+ *****************************************************************************/
 
 /**
- * @brief Write the binary representation of a box into a buffer.
+ * Set the state flags according to a box byte flag read from the buffer.
  */
-void
-tbox_write(const TBOX *box, StringInfo buf)
+static void
+tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_T(box->flags) ? (uint8) 1 : (uint8) 0);
-  if (MOBDB_FLAGS_GET_X(box->flags))
-  {
-    pq_sendfloat8(buf, box->xmin);
-    pq_sendfloat8(buf, box->xmax);
-  }
-  if (MOBDB_FLAGS_GET_T(box->flags))
-  {
-    bytea *tmin = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
-    bytea *tmax = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
-    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
-    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
-    pfree(tmin); pfree(tmax);
-  }
+  s->hasx = false;
+  s->hast = false;
+  if (wkb_flags & MOBDB_WKB_XFLAG)
+    s->hasx = true;
+  if (wkb_flags & MOBDB_WKB_TFLAG)
+    s->hast = true;
   return;
 }
 
 /**
- * @ingroup libmeos_box_input_output
- * @brief Retun the binary representation of a temporal box
+ * Return a temporal box from its WKB representation
  */
-bytea *
-tbox_send(TBOX *box)
+static TBOX *
+tbox_from_wkb_state(wkb_parse_state *s)
 {
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  tbox_write(box, &buf);
-  return (bytea *) pq_endtypsend(&buf);
+  /* Fail when handed incorrect starting byte */
+  char wkb_little_endian = byte_from_wkb_state(s);
+  if (wkb_little_endian != 1 && wkb_little_endian != 0)
+    elog(ERROR, "Invalid endian flag value encountered.");
+
+  /* Check the endianness of our input */
+  s->swap_bytes = false;
+  /* Machine arch is big endian, request is for little */
+  if (MOBDB_IS_BIG_ENDIAN && wkb_little_endian)
+    s->swap_bytes = true;
+  /* Machine arch is little endian, request is for big */
+  else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
+    s->swap_bytes = true;
+
+  /* Read the temporal flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  tbox_flags_from_wkb_state(s, wkb_flags);
+
+  /* Read and create the box */
+  double xmin = 0, xmax = 0; /* make compiler quiet */
+  TimestampTz tmin = 0, tmax = 0; /* make compiler quiet */
+  if (s->hasx)
+  {
+    xmin = double_from_wkb_state(s);
+    xmax = double_from_wkb_state(s);
+  }
+  if (s->hast)
+  {
+    tmin = timestamp_from_wkb_state(s);
+    tmax = timestamp_from_wkb_state(s);
+  }
+  TBOX *result = tbox_make(s->hasx, s->hast, xmin, xmax, tmin, tmax);
+  return result;
 }
 
-/*****************************************************************************
- * Output in WKB format
- *****************************************************************************/
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Return a temporal box from its Well-Known Binary (WKB)
+ * representation.
+ */
+TBOX *
+tbox_from_wkb(uint8_t *wkb, int size)
+{
+  /* Initialize the state appropriately */
+  wkb_parse_state s;
+  memset(&s, 0, sizeof(wkb_parse_state));
+  s.wkb = s.pos = wkb;
+  s.wkb_size = size;
+  return tbox_from_wkb_state(&s);
+}
+
+/**
+ * @ingroup libmeos_box_input_output
+ * @brief Return a temporal box from its HexWKB representation
+ */
+TBOX *
+tbox_from_hexwkb(const char *hexwkb)
+{
+  int hexwkb_len = strlen(hexwkb);
+  uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
+  TBOX *result = tbox_from_wkb(wkb, hexwkb_len / 2);
+  pfree(wkb);
+  return result;
+}
+
+/*****************************************************************************/
 
 /**
  * Look-up table for hex writer
@@ -221,40 +243,41 @@ tbox_send(TBOX *box)
 static char *hexchr = "0123456789ABCDEF";
 
 /**
- * Return the maximum size in bytes of the temporal box represented in
- * Well-Known Binary (WKB) format
+ * Return the size in bytes of a temporal box represented in Well-Known Binary
+ * (WKB) format
  */
 static size_t
 tbox_to_wkb_size(const TBOX *box)
 {
   /* Endian flag + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  /* If there is a value dimension */
   if (MOBDB_FLAGS_GET_X(box->flags))
     size += MOBDB_WKB_DOUBLE_SIZE * 2;
+  /* If there is a time dimension */
   if (MOBDB_FLAGS_GET_T(box->flags))
     size += MOBDB_WKB_DOUBLE_SIZE * 2;
   return size;
 }
 
 /**
- * Writes into the buffer the flag of the temporal box and
- * other characteristics represented in Well-Known Binary (WKB) format.
- * In binary format it is a byte as follows
+ * Write into the buffer the flag of a temporal box represented in
+ * Well-Known Binary (WKB) format. It is a byte as follows
  * xxxxxxTX
- * X = has X, T = has T, x = unused bit
+ * T = has T, X = has X, x = unused bit
  */
 static uint8_t *
-tbox_wkb_flags(const TBOX *box, uint8_t *buf, uint8_t variant)
+tbox_to_wkb_flags(const TBOX *box, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   if (MOBDB_FLAGS_GET_X(box->flags))
     wkb_flags |= MOBDB_WKB_XFLAG;
   if (MOBDB_FLAGS_GET_T(box->flags))
-    wkb_flags |= MOBDB_WKB_XFLAG;
+    wkb_flags |= MOBDB_WKB_TFLAG;
   if (variant & WKB_HEX)
   {
-    buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
-    buf[1] = (uint8_t) hexchr[0];
+    buf[0] = '0';
+    buf[1] = (uint8_t) hexchr[wkb_flags];
     return buf + 2;
   }
   else
@@ -265,25 +288,27 @@ tbox_wkb_flags(const TBOX *box, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal box represented in Well-Known Binary
- * (WKB) format as follows
- * - Endian
- * - Flag stating whether the X and T dimensions are present
- * - Output the 2 doubles for the X dimension and the 2 timestamps for the
- *   T dimension
+ * Write into the buffer a temporal box represented in Well-Known Binary (WKB)
+ * format as follows
+ * - Endian byte
+ * - Flag byte stating whether the are a value and/or a time dimensions
+ * - Output the 2 doubles for the value dimension (if there is one) and the
+ *   2 timestamps for the time dimension (if there is one)
  */
 static uint8_t *
 tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
 {
-  /* Set the endian flag */
+  /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Set the temporal flags */
-  buf = tbox_wkb_flags(box, buf, variant);
+  /* Write the temporal flags */
+  buf = tbox_to_wkb_flags(box, buf, variant);
+  /* Write the value dimension if any */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
     buf = double_to_wkb_buf(box->xmin, buf, variant);
     buf = double_to_wkb_buf(box->xmax, buf, variant);
   }
+  /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))
   {
     buf = timestamp_to_wkb_buf(box->tmin, buf, variant);
@@ -293,14 +318,15 @@ tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_box_input_output
  * @brief Return the WKB representation of a temporal box.
  *
  * @param[in] box Temporal box
- * @param[in] variant Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
- * Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
- * return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
- * would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
+ * @param[in] variant Unsigned bitmask value.
+ * Accepts either WKB_NDR or WKB_XDR, and WKB_HEX.
+ * For example: Variant = WKB_NDR would return the little-endian WKB form.
+ * For example: Variant = (WKB_XDR | WKB_HEX) would return the big-endian
+ * WKB form as hex-encoded ASCII.
  * @param[out] size_out If supplied, will return the size of the returned
  * memory segment, including the null terminator in the case of ASCII.
  * @note Caller is responsible for freeing the returned array.
@@ -373,71 +399,20 @@ tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
   return wkb_out;
 }
 
-/*****************************************************************************/
-
-/**
- * Take in an unknown kind of WKB type number and ensure it comes out as an
- * extended WKB type number (with Z/GEODETIC/SRID/LINEAR_INTERP flags masked
- * onto the high bits).
- */
-void
-tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
-{
-  s->hasx = false;
-  s->hast = false;
-  if (wkb_flags & MOBDB_WKB_XFLAG)
-    s->hasx = true;
-  if (wkb_flags & MOBDB_WKB_TFLAG)
-    s->hast = true;
-  return;
-}
-
-/**
- * Return a temporal point from its WKB representation
- */
-static TBOX *
-tbox_from_wkb_state(wkb_parse_state *s)
-{
-  /* Fail when handed incorrect starting byte */
-  char wkb_little_endian = byte_from_wkb_state(s);
-  if (wkb_little_endian != 1 && wkb_little_endian != 0)
-    elog(ERROR, "Invalid endian flag value encountered.");
-
-  /* Check the endianness of our input */
-  s->swap_bytes = false;
-  /* Machine arch is big endian, request is for little */
-  if (MOBDB_IS_BIG_ENDIAN && wkb_little_endian)
-    s->swap_bytes = true;
-  /* Machine arch is little endian, request is for big */
-  else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
-    s->swap_bytes = true;
-
-  /* Read the temporal flags */
-  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
-  tbox_flags_from_wkb_state(s, wkb_flags);
-
-  double xmin = double_from_wkb_state(s);
-  double xmax = double_from_wkb_state(s);
-  TimestampTz tmin = timestamp_from_wkb_state(s);
-  TimestampTz tmax = timestamp_from_wkb_state(s);
-  TBOX *result = tbox_make(s->hasx, s->hast, xmin, xmax, tmin, tmax);
-  return result;
-}
-
 /**
  * @ingroup libmeos_box_input_output
- * @brief Return a temporal box from its Well-Known Binary (WKB)
- * representation.
+ * @brief Return the HexWKB representation of a temporal box.
  */
-TBOX *
-tbox_from_wkb(uint8_t *wkb, int size)
+char *
+tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size)
 {
-  /* Initialize the state appropriately */
-  wkb_parse_state s;
-  memset(&s, 0, sizeof(wkb_parse_state));
-  s.wkb = s.pos = wkb;
-  s.wkb_size = size;
-  return tbox_from_wkb_state(&s);
+  /* Create WKB hex string */
+  size_t hexwkb_size;
+  char *result = (char *) tbox_as_wkb(box, variant | (uint8_t) WKB_HEX,
+    &hexwkb_size);
+  /* Set the output argument and return */
+  *size = hexwkb_size;
+  return result;
 }
 
 /*****************************************************************************
@@ -499,7 +474,7 @@ tbox_copy(const TBOX *box)
 
 /*****************************************************************************
  * Casting
- * The functions set the argument box to 0
+ * The functions start by setting the output argument box to 0
  *****************************************************************************/
 
 /**
@@ -1386,17 +1361,6 @@ Tbox_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(tbox_out(box));
 }
 
-PG_FUNCTION_INFO_V1(Tbox_send);
-/**
- * Send function for TBOX
- */
-PGDLLEXPORT Datum
-Tbox_send(PG_FUNCTION_ARGS)
-{
-  TBOX *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_BYTEA_P(tbox_send(box));
-}
-
 PG_FUNCTION_INFO_V1(Tbox_recv);
 /**
  * Receive function for TBOX
@@ -1405,7 +1369,136 @@ PGDLLEXPORT Datum
 Tbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(tbox_recv(buf));
+  TBOX *result = tbox_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tbox_send);
+/**
+ * Send function for TBOX
+ */
+PGDLLEXPORT Datum
+Tbox_send(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(box);
+  uint8_t *wkb = tbox_as_wkb(box, variant, &wkb_size);
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  /* Clean up and return */
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Input/output in WKB and in HexWKB format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tbox_from_wkb);
+/**
+ * Return a temporal box from its WKB representation
+ */
+PGDLLEXPORT Datum
+Tbox_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  TBOX *box = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_POINTER(box);
+}
+
+PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
+/**
+ * Return a temporal point from its HexWKB representation
+ */
+PGDLLEXPORT Datum
+Tbox_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
+  TBOX *box = tbox_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_POINTER(box);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tbox_as_binary);
+/**
+ * Output a temporal box in WKB format.
+ */
+PGDLLEXPORT Datum
+Tbox_as_binary(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  uint8_t variant = 0;
+  /* If user specified endianness, respect it */
+  if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
+  {
+    text *type = PG_GETARG_TEXT_P(1);
+    const char *endian = text2cstring(type);
+    ensure_valid_endian_flag(endian);
+    if (strncasecmp(endian, "ndr", 3) == 0)
+      variant = variant | (uint8_t) WKB_NDR;
+    else /* type = XDR */
+      variant = variant | (uint8_t) WKB_XDR;
+  }
+
+  /* Create WKB hex string */
+  size_t wkb_size = VARSIZE_ANY_EXHDR(box);
+  uint8_t *wkb = tbox_as_wkb(box, variant, &wkb_size);
+
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+
+  /* Clean up and return */
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
+/**
+ * Output the temporal box in HexWKB format.
+ */
+PGDLLEXPORT Datum
+Tbox_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  uint8_t variant = 0;
+  /* If user specified endianness, respect it */
+  if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
+  {
+    text *type = PG_GETARG_TEXT_P(1);
+    const char *endian = text2cstring(type);
+    ensure_valid_endian_flag(endian);
+    if (strncasecmp(endian, "ndr", 3) == 0)
+      variant = variant | (uint8_t) WKB_NDR;
+    else
+      variant = variant | (uint8_t) WKB_XDR;
+  }
+
+  /* Create WKB hex string */
+  size_t hexwkb_size;
+  char *hexwkb = tbox_as_hexwkb(box, variant, &hexwkb_size);
+
+  /* Prepare the PgSQL text return type */
+  size_t text_size = hexwkb_size - 1 + VARHDRSZ;
+  text *result = palloc(text_size);
+  memcpy(VARDATA(result), hexwkb, hexwkb_size - 1);
+  SET_VARSIZE(result, text_size);
+
+  /* Clean up and return */
+  pfree(hexwkb);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************

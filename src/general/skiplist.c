@@ -579,6 +579,24 @@ skiplist_values(SkipList *list)
  *****************************************************************************/
 
 /**
+ * Writes a span value into the buffer
+ *
+ * @param[in] s Span value
+ * @param[in] buf Buffer
+ */
+static void
+span_write(const Span *s, StringInfo buf)
+{
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(s);
+  uint8_t *wkb = span_as_wkb(s, variant, &wkb_size);
+  pq_sendbytes(buf, (char *) wkb, wkb_size);
+  pfree(wkb);
+  return;
+}
+
+
+/**
  * Writes a temporal value into the buffer
  *
  * @param[in] temp Temporal value
@@ -662,7 +680,8 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   else if (elemtype == PERIOD)
   {
     for (int i = 0; i < length; i ++)
-      values[i] = span_recv(buf);
+      // values[i] = span_recv(buf);
+      values[i] = span_from_wkb((uint8_t *) buf->data, buf->len);
     result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }

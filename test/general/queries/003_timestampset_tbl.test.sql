@@ -41,6 +41,11 @@ COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
 DROP TABLE tbl_timestampset_tmp;
 
+-- Input/output from/to WKB and HexWKB
+
+SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromBinary(asBinary(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromHexWKB(asHexWKB(ts)) <> ts;
+
 -------------------------------------------------------------------------------
 -- Constructor
 

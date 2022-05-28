@@ -71,6 +71,7 @@ typedef struct
 /*****************************************************************************/
 
 extern char byte_from_wkb_state(wkb_parse_state *s);
+extern uint16_t int16_from_wkb_state(wkb_parse_state *s);
 extern uint32_t int32_from_wkb_state(wkb_parse_state *s);
 extern uint64_t int64_from_wkb_state(wkb_parse_state *s);
 extern double double_from_wkb_state(wkb_parse_state *s);
