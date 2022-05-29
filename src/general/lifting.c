@@ -200,19 +200,19 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 /**
  * Apply the function to the temporal value
  *
- * @param[in] ti Temporal value
+ * @param[in] is Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
 TInstantSet *
-tfunc_tinstantset(const TInstantSet *ti, LiftedFunctionInfo *lfinfo)
+tfunc_tinstantset(const TInstantSet *is, LiftedFunctionInfo *lfinfo)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     instants[i] = tfunc_tinstant(inst, lfinfo);
   }
-  return tinstantset_make_free(instants, ti->count, MERGE_NO);
+  return tinstantset_make_free(instants, is->count, MERGE_NO);
 }
 
 /**
@@ -239,19 +239,19 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 /**
  * Apply the function to the temporal value
  *
- * @param[in] ts Temporal value
+ * @param[in] ss Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
 TSequenceSet *
-tfunc_tsequenceset(const TSequenceSet *ts, LiftedFunctionInfo *lfinfo)
+tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     sequences[i] = tfunc_tsequence(seq, lfinfo);
   }
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
@@ -335,21 +335,21 @@ tfunc_tinstant_base(const TInstant *inst, Datum value,
 /**
  * Apply the function to the temporal value and the base value
  *
- * @param[in] ti Temporal value
+ * @param[in] is Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
 TInstantSet *
-tfunc_tinstantset_base(const TInstantSet *ti, Datum value,
+tfunc_tinstantset_base(const TInstantSet *is, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     instants[i] = tfunc_tinstant_base(inst, value, lfinfo);
   }
-  return tinstantset_make_free(instants, ti->count, MERGE_NO);
+  return tinstantset_make_free(instants, is->count, MERGE_NO);
 }
 
 /**
@@ -612,24 +612,24 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
 /**
  * Apply the function to the temporal value and the base value
  *
- * @param[in] ts Temporal value
+ * @param[in] ss Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
 TSequenceSet *
-tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value,
+tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   int count;
   if (lfinfo->discont)
-    count = ts->totalcount * 3;
+    count = ss->totalcount * 3;
   else
-    count = ts->count;
+    count = ss->count;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (lfinfo->discont)
       k += tfunc_tsequence_base_discont(seq, value, lfinfo, &sequences[k]);
     else if (lfinfo->tpfunc_base != NULL)
@@ -712,15 +712,15 @@ tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] ti,inst Temporal values
+ * @param[in] is,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
-tfunc_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst,
+tfunc_tinstantset_to_tinstant(const TInstantSet *is, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tinstantset_value_at_timestamp(ti, inst->t, &value1))
+  if (! tinstantset_value_at_timestamp(is, inst->t, &value1))
     return NULL;
 
   Datum value2 = tinstant_value(inst);
@@ -733,15 +733,15 @@ tfunc_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] inst,ti Temporal values
+ * @param[in] inst,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
-tfunc_tinstant_to_tinstantset(const TInstant *inst, const TInstantSet *ti,
+tfunc_tinstant_to_tinstantset(const TInstant *inst, const TInstantSet *is,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return tfunc_tinstantset_to_tinstant(ti, inst, lfinfo);
+  return tfunc_tinstantset_to_tinstant(is, inst, lfinfo);
 }
 
 /**
@@ -786,15 +786,15 @@ tfunc_tinstant_to_tsequence(const TInstant *inst, const TSequence *seq,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ts,inst Temporal values
+ * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
-tfunc_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
+tfunc_tsequenceset_to_tinstant(const TSequenceSet *ss, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tsequenceset_value_at_timestamp(ts, inst->t, true, &value1))
+  if (! tsequenceset_value_at_timestamp(ss, inst->t, true, &value1))
     return NULL;
 
   Datum value2 = tinstant_value(inst);
@@ -808,15 +808,15 @@ tfunc_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] inst,ts Temporal values
+ * @param[in] inst,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
-tfunc_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
+tfunc_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return tfunc_tsequenceset_to_tinstant(ts, inst, lfinfo);
+  return tfunc_tsequenceset_to_tinstant(ss, inst, lfinfo);
 }
 
 /*****************************************************************************/
@@ -825,23 +825,23 @@ tfunc_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ti1,ti2 Temporal values
+ * @param[in] is1,is2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
  * function tfunc_temporal_temporal and thus the bounding period test is
  * repeated
  */
 TInstantSet *
-tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
+tfunc_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
   LiftedFunctionInfo *lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) *
-    Min(ti1->count, ti2->count));
+    Min(is1->count, is2->count));
   int i = 0, j = 0, k = 0;
-  const TInstant *inst1 = tinstantset_inst_n(ti1, i);
-  const TInstant *inst2 = tinstantset_inst_n(ti2, j);
+  const TInstant *inst1 = tinstantset_inst_n(is1, i);
+  const TInstant *inst2 = tinstantset_inst_n(is2, j);
   CachedType resbasetype = temptype_basetype(lfinfo->restype);
-  while (i < ti1->count && j < ti2->count)
+  while (i < is1->count && j < is2->count)
   {
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
@@ -851,13 +851,13 @@ tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
       Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
       instants[k++] = tinstant_make(resvalue, lfinfo->restype, inst1->t);
       DATUM_FREE(resvalue, resbasetype);
-      inst1 = tinstantset_inst_n(ti1, ++i);
-      inst2 = tinstantset_inst_n(ti2, ++j);
+      inst1 = tinstantset_inst_n(is1, ++i);
+      inst2 = tinstantset_inst_n(is2, ++j);
     }
     else if (cmp < 0)
-      inst1 = tinstantset_inst_n(ti1, ++i);
+      inst1 = tinstantset_inst_n(is1, ++i);
     else
-      inst2 = tinstantset_inst_n(ti2, ++j);
+      inst2 = tinstantset_inst_n(is2, ++j);
   }
   return tinstantset_make_free(instants, k, MERGE_NO);
 }
@@ -866,20 +866,20 @@ tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] seq,ti Temporal values
+ * @param[in] seq,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
-tfunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
+tfunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *is,
   LiftedFunctionInfo *lfinfo)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
   int k = 0;
   CachedType basetype = temptype_basetype(seq->temptype);
   CachedType resbasetype = temptype_basetype(lfinfo->restype);
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
@@ -899,40 +899,40 @@ tfunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ti,seq Temporal values
+ * @param[in] is,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
-tfunc_tinstantset_to_tsequence(const TInstantSet *ti, const TSequence *seq,
+tfunc_tinstantset_to_tsequence(const TInstantSet *is, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return tfunc_tsequence_to_tinstantset(seq, ti, lfinfo);
+  return tfunc_tsequence_to_tinstantset(seq, is, lfinfo);
 }
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ts,ti Temporal values
+ * @param[in] ss,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
-tfunc_tsequenceset_to_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
+tfunc_tsequenceset_to_tinstantset(const TSequenceSet *ss, const TInstantSet *is,
   LiftedFunctionInfo *lfinfo)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
   int i = 0, j = 0, k = 0;
-  CachedType basetype = temptype_basetype(ts->temptype);
+  CachedType basetype = temptype_basetype(ss->temptype);
   CachedType resbasetype = temptype_basetype(lfinfo->restype);
-  while (i < ts->count && j < ti->count)
+  while (i < ss->count && j < is->count)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    const TInstant *inst = tinstantset_inst_n(ti, j);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TInstant *inst = tinstantset_inst_n(is, j);
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
-      tsequenceset_value_at_timestamp(ts, inst->t, true, &value1);
+      tsequenceset_value_at_timestamp(ss, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
       instants[k++] = tinstant_make(resvalue, lfinfo->restype, inst->t);
@@ -955,15 +955,15 @@ tfunc_tsequenceset_to_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ti,ts Temporal values
+ * @param[in] is,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
-tfunc_tinstantset_to_tsequenceset(const TInstantSet *ti, const TSequenceSet *ts,
+tfunc_tinstantset_to_tsequenceset(const TInstantSet *is, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return tfunc_tsequenceset_to_tinstantset(ts, ti, lfinfo);
+  return tfunc_tsequenceset_to_tinstantset(ss, is, lfinfo);
 }
 
 /*****************************************************************************/
@@ -1439,32 +1439,32 @@ tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] ts,seq Temporal values
+ * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
-tfunc_tsequenceset_to_tsequence(const TSequenceSet *ts, const TSequence *seq,
+tfunc_tsequenceset_to_tsequence(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
   int loc;
-  tsequenceset_find_timestamp(ts, seq->period.lower, &loc);
-  /* We are sure that loc < ts->count due to the bounding period test made
+  tsequenceset_find_timestamp(ss, seq->period.lower, &loc);
+  /* We are sure that loc < ss->count due to the bounding period test made
    * in the dispatch function */
   int count;
   if (lfinfo->discont)
-    count = (ts->totalcount + seq->count) * 3;
+    count = (ss->totalcount + seq->count) * 3;
   else
   {
-    if (MOBDB_FLAGS_GET_LINEAR(ts->flags) == MOBDB_FLAGS_GET_LINEAR(seq->flags))
-      count = ts->count - loc;
+    if (MOBDB_FLAGS_GET_LINEAR(ss->flags) == MOBDB_FLAGS_GET_LINEAR(seq->flags))
+      count = ss->count - loc;
     else
-      count = (ts->totalcount + seq->count) * 2;
+      count = (ss->totalcount + seq->count) * 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
-  for (int i = loc; i < ts->count; i++)
+  for (int i = loc; i < ss->count; i++)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ts, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ss, i);
     k += tfunc_tsequence_tsequence_dispatch(seq1, seq, lfinfo, &sequences[k]);
     int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
     if (cmp < 0 ||
@@ -1478,41 +1478,41 @@ tfunc_tsequenceset_to_tsequence(const TSequenceSet *ts, const TSequence *seq,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] seq,ts Temporal values
+ * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
-tfunc_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
+tfunc_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return tfunc_tsequenceset_to_tsequence(ts, seq, lfinfo);
+  return tfunc_tsequenceset_to_tsequence(ss, seq, lfinfo);
 }
 
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] ts1,ts2 Temporal values
+ * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
-tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, LiftedFunctionInfo *lfinfo)
+tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo)
 {
-  int count = ts1->totalcount + ts2->totalcount;
+  int count = ss1->totalcount + ss2->totalcount;
   if (lfinfo->discont)
     count *= 3;
   else
   {
-    if (MOBDB_FLAGS_GET_LINEAR(ts1->flags) != MOBDB_FLAGS_GET_LINEAR(ts2->flags))
+    if (MOBDB_FLAGS_GET_LINEAR(ss1->flags) != MOBDB_FLAGS_GET_LINEAR(ss2->flags))
       count *= 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int i = 0, j = 0, k = 0;
-  while (i < ts1->count && j < ts2->count)
+  while (i < ss1->count && j < ss2->count)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    const TSequence *seq2 = tsequenceset_seq_n(ts2, j);
+    const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ss2, j);
     k += tfunc_tsequence_tsequence_dispatch(seq1, seq2, lfinfo, &sequences[k]);
     int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0)
@@ -1651,15 +1651,15 @@ efunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] ti,inst Temporal values
+ * @param[in] is,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst,
+efunc_tinstantset_to_tinstant(const TInstantSet *is, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tinstantset_value_at_timestamp(ti, inst->t, &value1))
+  if (! tinstantset_value_at_timestamp(is, inst->t, &value1))
     return -1;
 
   Datum value2 = tinstant_value(inst);
@@ -1670,15 +1670,15 @@ efunc_tinstantset_to_tinstant(const TInstantSet *ti, const TInstant *inst,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] inst,ti Temporal values
+ * @param[in] inst,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tinstant_to_tinstantset(const TInstant *inst, const TInstantSet *ti,
+efunc_tinstant_to_tinstantset(const TInstant *inst, const TInstantSet *is,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return efunc_tinstantset_to_tinstant(ti, inst, lfinfo);
+  return efunc_tinstantset_to_tinstant(is, inst, lfinfo);
 }
 
 /**
@@ -1720,15 +1720,15 @@ efunc_tinstant_to_tsequence(const TInstant *inst, const TSequence *seq,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ts,inst Temporal values
+ * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
+efunc_tsequenceset_to_tinstant(const TSequenceSet *ss, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tsequenceset_value_at_timestamp(ts, inst->t, true, &value1))
+  if (! tsequenceset_value_at_timestamp(ss, inst->t, true, &value1))
     return -1;
 
   Datum value2 = tinstant_value(inst);
@@ -1740,15 +1740,15 @@ efunc_tsequenceset_to_tinstant(const TSequenceSet *ts, const TInstant *inst,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] inst,ts Temporal values
+ * @param[in] inst,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
+efunc_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return efunc_tsequenceset_to_tinstant(ts, inst, lfinfo);
+  return efunc_tsequenceset_to_tinstant(ss, inst, lfinfo);
 }
 
 /*****************************************************************************/
@@ -1757,20 +1757,20 @@ efunc_tinstant_to_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ti1,ti2 Temporal values
+ * @param[in] is1,is2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
  * function efunc_temporal_temporal and thus the bounding period test is
  * repeated
  */
 static int
-efunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
+efunc_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
   LiftedFunctionInfo *lfinfo)
 {
   int i = 0, j = 0;
-  const TInstant *inst1 = tinstantset_inst_n(ti1, i);
-  const TInstant *inst2 = tinstantset_inst_n(ti2, j);
-  while (i < ti1->count && j < ti2->count)
+  const TInstant *inst1 = tinstantset_inst_n(is1, i);
+  const TInstant *inst2 = tinstantset_inst_n(is2, j);
+  while (i < is1->count && j < is2->count)
   {
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
@@ -1782,9 +1782,9 @@ efunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
       i++;
     }
     else if (cmp < 0)
-      inst1 = tinstantset_inst_n(ti1, ++i);
+      inst1 = tinstantset_inst_n(is1, ++i);
     else
-      inst2 = tinstantset_inst_n(ti2, ++j);
+      inst2 = tinstantset_inst_n(is2, ++j);
   }
   return 0;
 }
@@ -1793,16 +1793,16 @@ efunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] seq,ti Temporal values
+ * @param[in] seq,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
+efunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *is,
   LiftedFunctionInfo *lfinfo)
 {
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
@@ -1821,37 +1821,37 @@ efunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *ti,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ti,seq Temporal values
+ * @param[in] is,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tinstantset_to_tsequence(const TInstantSet *ti, const TSequence *seq,
+efunc_tinstantset_to_tsequence(const TInstantSet *is, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return efunc_tsequence_to_tinstantset(seq, ti, lfinfo);
+  return efunc_tsequence_to_tinstantset(seq, is, lfinfo);
 }
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ts,ti Temporal values
+ * @param[in] ss,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequenceset_to_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
+efunc_tsequenceset_to_tinstantset(const TSequenceSet *ss, const TInstantSet *is,
   LiftedFunctionInfo *lfinfo)
 {
   int i = 0, j = 0;
-  while (i < ts->count && j < ti->count)
+  while (i < ss->count && j < is->count)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    const TInstant *inst = tinstantset_inst_n(ti, j);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TInstant *inst = tinstantset_inst_n(is, j);
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       Datum value1;
-      tsequenceset_value_at_timestamp(ts, inst->t, true, &value1);
+      tsequenceset_value_at_timestamp(ss, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
         return 1;
@@ -1873,15 +1873,15 @@ efunc_tsequenceset_to_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] ti,ts Temporal values
+ * @param[in] is,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tinstantset_to_tsequenceset(const TInstantSet *ti, const TSequenceSet *ts,
+efunc_tinstantset_to_tsequenceset(const TInstantSet *is, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return efunc_tsequenceset_to_tinstantset(ts, ti, lfinfo);
+  return efunc_tsequenceset_to_tinstantset(ss, is, lfinfo);
 }
 
 /**
@@ -2046,20 +2046,20 @@ efunc_tsequence_tsequence(const TSequence *seq1,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] ts,seq Temporal values
+ * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequenceset_to_tsequence(const TSequenceSet *ts, const TSequence *seq,
+efunc_tsequenceset_to_tsequence(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
   int loc;
-  tsequenceset_find_timestamp(ts, seq->period.lower, &loc);
-  /* We are sure that loc < ts->count due to the bounding period test made
+  tsequenceset_find_timestamp(ss, seq->period.lower, &loc);
+  /* We are sure that loc < ss->count due to the bounding period test made
    * in the dispatch function */
-  for (int i = loc; i < ts->count; i++)
+  for (int i = loc; i < ss->count; i++)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ts, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ss, i);
     if (efunc_tsequence_tsequence(seq1, seq, lfinfo) == 1)
       return 1;
     int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
@@ -2073,32 +2073,32 @@ efunc_tsequenceset_to_tsequence(const TSequenceSet *ts, const TSequence *seq,
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] seq,ts Temporal values
+ * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
+efunc_tsequence_to_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert(lfinfo);
-  return efunc_tsequenceset_to_tsequence(ts, seq, lfinfo);
+  return efunc_tsequenceset_to_tsequence(ss, seq, lfinfo);
 }
 
 /**
  * Synchronizes the temporal values and applies to them the function
  *
- * @param[in] ts1,ts2 Temporal values
+ * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, LiftedFunctionInfo *lfinfo)
+efunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo)
 {
   int i = 0, j = 0;
-  while (i < ts1->count && j < ts2->count)
+  while (i < ss1->count && j < ss2->count)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    const TSequence *seq2 = tsequenceset_seq_n(ts2, j);
+    const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ss2, j);
     if (efunc_tsequence_tsequence(seq1, seq2, lfinfo) == 1)
       return 1;
     int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);

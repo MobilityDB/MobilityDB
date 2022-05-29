@@ -178,19 +178,18 @@ timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[inout] state Skiplist containing the state
- * @param[in] per Period value
+ * @param[in] p Period
  */
 static SkipList *
-period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const Period *per)
+period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state, const Period *p)
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) &per, 1, PERIOD);
+    result = skiplist_make(fcinfo, (void **) &p, 1, PERIOD);
   else
   {
     assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) &per, 1, NULL, CROSSINGS_NO);
+    skiplist_splice(fcinfo, state, (void **) &p, 1, NULL, CROSSINGS_NO);
     result = state;
   }
   return result;
@@ -339,8 +338,7 @@ PG_FUNCTION_INFO_V1(Timestampset_tunion_transfn);
 PGDLLEXPORT Datum
 Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
+  SkipList *state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {
     if (state)
@@ -362,8 +360,7 @@ PG_FUNCTION_INFO_V1(Period_tunion_transfn);
 PGDLLEXPORT Datum
 Period_tunion_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
+  SkipList *state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {
     if (state)

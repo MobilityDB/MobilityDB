@@ -82,8 +82,8 @@ extern bool intersection_tsequence_tinstant(const TSequence *seq,
 extern bool intersection_tinstant_tsequence(const TInstant *inst,
   const TSequence *seq, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tsequence_tinstantset(const TSequence *seq,
-  const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequence(const TInstantSet *ti,
+  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2);
+extern bool intersection_tinstantset_tsequence(const TInstantSet *is,
   const TSequence *seq, TInstantSet **inter1, TInstantSet **inter2);
 
 /* Input/output functions */
@@ -119,13 +119,24 @@ extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
 extern int tsequence_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
 extern int tsequence_minus_timestampset1(const TSequence *seq,
-  const TimestampSet *ts, TSequence **result);
+  const TimestampSet *ss, TSequence **result);
 extern int tsequence_minus_period1(const TSequence *seq, const Period *p,
   TSequence **result);
 extern int tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
   TSequence **result);
 extern int tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps,
   int from, TSequence **result);
+
+/*****************************************************************************/
+
+#if ! MEOS
+
+/* Send/receive functions */
+
+extern TSequence *tsequence_recv(StringInfo buf, CachedType temptype);
+extern void tsequence_write(const TSequence *seq, StringInfo buf);
+
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 

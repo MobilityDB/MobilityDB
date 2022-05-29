@@ -1036,6 +1036,61 @@ tinstant_hash(const TInstant *inst)
 
   return result;
 }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <libpq/pqformat.h>
+
+/**
+ * @brief Return a temporal instant from its binary representation read from
+ * a buffer.
+ *
+ * @param[in] buf Buffer
+ * @param[in] temptype Temporal type
+ */
+TInstant *
+tinstant_recv(StringInfo buf, CachedType temptype)
+{
+  TimestampTz t = basetype_recv(T_TIMESTAMPTZ, buf);
+  int size = pq_getmsgint(buf, 4) ;
+  StringInfoData buf2 =
+  {
+    .cursor = 0,
+    .len = size,
+    .maxlen = size,
+    .data = buf->data + buf->cursor
+  };
+  CachedType basetype = temptype_basetype(temptype);
+  Datum value = basetype_recv(basetype, &buf2);
+  buf->cursor += size ;
+  return tinstant_make(value, temptype, t);
+}
+
+/**
+ * @brief Write the binary representation of a temporal instant into
+ * a buffer.
+ *
+ * @param[in] inst Temporal instant
+ * @param[in] buf Buffer
+ */
+void
+tinstant_write(const TInstant *inst, StringInfo buf)
+{
+  CachedType basetype = temptype_basetype(inst->temptype);
+  bytea *bt = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
+  bytea *bv = basetype_send(basetype, tinstant_value(inst));
+  pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
+  pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
+  pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
+}
+
+#endif /* ! MEOS */
 
 /*****************************************************************************/

@@ -32,15 +32,10 @@
 --------------------------------------------------------------------------------
 
 COPY tbl_tnpoint TO '/tmp/tbl_tnpoint' (FORMAT BINARY);
-
 DROP TABLE IF EXISTS tbl_tnpoint_tmp;
-
 CREATE TABLE tbl_tnpoint_tmp AS TABLE tbl_tnpoint WITH NO DATA;
-
 COPY tbl_tnpoint_tmp FROM '/tmp/tbl_tnpoint' (FORMAT BINARY);
-
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
-
 DROP TABLE tbl_tnpoint_tmp;
 
 -------------------------------------------------------------------------------

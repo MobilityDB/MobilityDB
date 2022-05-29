@@ -627,7 +627,7 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
 /**
  * Split a temporal value into an array of fragments according to time buckets.
  *
- * @param[in] ti Temporal value
+ * @param[in] is Temporal value
  * @param[in] start Start timestamp of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
@@ -635,20 +635,20 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * @param[out] newcount Number of values in the output array
  */
 static TInstantSet **
-tinstantset_time_split(const TInstantSet *ti, TimestampTz start,
+tinstantset_time_split(const TInstantSet *is, TimestampTz start,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   TInstantSet **result = palloc(sizeof(TInstantSet *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
   int i = 0,  /* counter for instants of temporal value */
       k = 0,  /* counter for instants of next split */
       l = 0;  /* counter for resulting fragments */
   TimestampTz lower = start;
   TimestampTz upper = start + tunits;
-  while (i < ti->count)
+  while (i < is->count)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     if (lower <= inst->t && inst->t < upper)
     {
       instants[k++] = inst;
@@ -797,7 +797,7 @@ tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
 /**
  * Split a temporal value into an array of disjoint fragments
  *
- * @param[in] ts Temporal value
+ * @param[in] ss Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
@@ -805,13 +805,14 @@ tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
  * @param[out] newcount Number of values in the output array
  */
 static TSequenceSet **
-tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz end,
-  int64 tunits, int count, TimestampTz **buckets, int *newcount)
+tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
+  TimestampTz end, int64 tunits, int count, TimestampTz **buckets,
+  int *newcount)
 {
   /* Singleton sequence set */
-  if (ts->count == 1)
+  if (ss->count == 1)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, 0);
+    const TSequence *seq = tsequenceset_seq_n(ss, 0);
     TSequence **sequences = tsequence_time_split(seq, start, end, tunits,
       count, buckets, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
@@ -823,11 +824,11 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
 
   /* General case */
   /* Sequences obtained by spliting one composing sequence */
-  TSequence **sequences = palloc(sizeof(TSequence *) * (ts->count * count));
+  TSequence **sequences = palloc(sizeof(TSequence *) * (ss->count * count));
   /* Start timestamp of buckets obtained by spliting one composing sequence */
-  TimestampTz *times = palloc(sizeof(TimestampTz) * (ts->count + count));
+  TimestampTz *times = palloc(sizeof(TimestampTz) * (ss->count + count));
   /* Sequences composing the currently constructed bucket of the sequence set */
-  TSequence **fragments = palloc(sizeof(TSequence *) * (ts->count * count));
+  TSequence **fragments = palloc(sizeof(TSequence *) * (ss->count * count));
   /* Sequences for the buckets of the sequence set */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   /* Variable used to adjust the start timestamp passed to the
@@ -835,10 +836,10 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
   TimestampTz lower = start;
   int k = 0, /* Number of accumulated fragments of the current time bucket */
       m = 0; /* Number of time buckets already processed */
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
     TimestampTz upper = lower + tunits;
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     /* Output the accumulated fragments of the current time bucket (if any)
      * if the current sequence starts on the next time bucket */
     if (k > 0 && (TimestampTz) seq->period.lower >= upper)
@@ -1303,7 +1304,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
 /**
  * Split a temporal value into an array of fragments according to value buckets.
  *
- * @param[in] ti Temporal value
+ * @param[in] is Temporal value
  * @param[in] size Size of the value buckets
  * @param[in] start_bucket Value of the start bucket
  * @param[in] count Number of buckets
@@ -1311,20 +1312,20 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
  * @param[out] newcount Number of values in the output arrays
  */
 static TInstantSet **
-tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size,
-  int count, Datum **buckets, int *newcount)
+tnumberinstset_value_split(const TInstantSet *is, Datum start_bucket,
+  Datum size, int count, Datum **buckets, int *newcount)
 {
-  CachedType basetype = temptype_basetype(ti->temptype);
+  CachedType basetype = temptype_basetype(is->temptype);
   TInstantSet **result;
   Datum *values, value, bucket_value;
 
   /* Singleton instant set */
-  if (ti->count == 1)
+  if (is->count == 1)
   {
     result = palloc(sizeof(TInstantSet *));
     values = palloc(sizeof(Datum));
-    result[0] = tinstantset_copy(ti);
-    value = tinstant_value(tinstantset_inst_n(ti, 0));
+    result[0] = tinstantset_copy(is);
+    value = tinstant_value(tinstantset_inst_n(is, 0));
     values[0] = number_bucket(value, size, start_bucket, basetype);
     *buckets = values;
     *newcount = 1;
@@ -1332,17 +1333,17 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
   }
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * ti->count * count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * is->count * count);
   /* palloc0 to initialize the counters to 0 */
   int *numinsts = palloc0(sizeof(int) * count);
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     value = tinstant_value(inst);
     bucket_value = number_bucket(value, size, start_bucket, basetype);
     int bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     int inst_no = numinsts[bucket_no]++;
-    instants[bucket_no * ti->count + inst_no] = inst;
+    instants[bucket_no * is->count + inst_no] = inst;
   }
   /* Assemble the result for each value bucket */
   result = palloc(sizeof(TInstantSet *) * count);
@@ -1353,7 +1354,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
   {
     if (numinsts[i] > 0)
     {
-      result[k] = tinstantset_make(&instants[i * ti->count], numinsts[i], MERGE_NO);
+      result[k] = tinstantset_make(&instants[i * is->count], numinsts[i], MERGE_NO);
       values[k++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype, basetype);
@@ -1373,7 +1374,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
  * @param[inout] result Array containing the fragments of each bucket
  * @param[inout] numseqs Number of fragments for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
- *    seq->count for sequences or ts->totalcount for sequence sets
+ *    seq->count for sequences or ss->totalcount for sequence sets
  * @param[in] seq Temporal value
  * @param[in] start_bucket Value of the start bucket
  * @param[in] size Size of the value buckets
@@ -1449,7 +1450,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
  * @param[inout] result Array containing the fragments of each bucket
  * @param[inout] numseqs Number of fragments for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
- *    seq->count for sequences or ts->totalcount for sequence sets
+ *    seq->count for sequences or ss->totalcount for sequence sets
  * @param[in] seq Temporal value
  * @param[in] start_bucket Value of the start bucket
  * @param[in] size Size of the value buckets
@@ -1668,7 +1669,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
 /**
  * Split a temporal value into an array of fragments according to value buckets.
  *
- * @param[in] ts Temporal value
+ * @param[in] ss Temporal value
  * @param[in] start_bucket Start value of the first bucket
  * @param[in] size Size of the value buckets
  * @param[in] count Number of buckets
@@ -1676,27 +1677,27 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
  * @param[out] newcount Number of values in the output arrays
  */
 static TSequenceSet **
-tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size,
-  int count, Datum **buckets, int *newcount)
+tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
+  Datum size, int count, Datum **buckets, int *newcount)
 {
   /* Singleton sequence set */
-  if (ts->count == 1)
-    return tnumberseq_value_split(tsequenceset_seq_n(ts, 0), start_bucket, size,
-      count, buckets, newcount);
+  if (ss->count == 1)
+    return tnumberseq_value_split(tsequenceset_seq_n(ss, 0), start_bucket,
+      size, count, buckets, newcount);
 
   /* General case */
-  CachedType basetype = temptype_basetype(ts->temptype);
-  TSequence **bucketseqs = palloc(sizeof(TSequence *) * ts->totalcount * count);
+  CachedType basetype = temptype_basetype(ss->temptype);
+  TSequence **bucketseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
-      tnumberseq_linear_value_split(bucketseqs, numseqs, ts->totalcount, seq,
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+      tnumberseq_linear_value_split(bucketseqs, numseqs, ss->totalcount, seq,
         start_bucket, size, count);
     else
-      tnumberseq_step_value_split(bucketseqs, numseqs, ts->totalcount, seq,
+      tnumberseq_step_value_split(bucketseqs, numseqs, ss->totalcount, seq,
         start_bucket, size, count);
   }
   /* Assemble the result for each value bucket */
@@ -1708,7 +1709,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
   {
     if (numseqs[i] > 0)
     {
-      result[k] = tsequenceset_make((const TSequence **)(&bucketseqs[i * ts->totalcount]),
+      result[k] = tsequenceset_make((const TSequence **)(&bucketseqs[i * ss->totalcount]),
         numseqs[i], NORMALIZE);
       values[k++] = bucket_value;
     }

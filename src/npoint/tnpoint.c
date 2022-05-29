@@ -71,15 +71,15 @@ tnpointinst_tgeompointinst(const TInstant *inst)
  * @brief Cast a temporal network point as a temporal geometric point.
  */
 TInstantSet *
-tnpointinstset_tgeompointinstset(const TInstantSet *ti)
+tnpointinstset_tgeompointinstset(const TInstantSet *is)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     instants[i] = tnpointinst_tgeompointinst(inst);
   }
-  TInstantSet *result = tinstantset_make_free(instants, ti->count, MERGE_NO);
+  TInstantSet *result = tinstantset_make_free(instants, is->count, MERGE_NO);
   return result;
 }
 
@@ -119,15 +119,15 @@ tnpointseq_tgeompointseq(const TSequence *seq)
  * @brief Cast a temporal network point as a temporal geometric point.
  */
 TSequenceSet *
-tnpointseqset_tgeompointseqset(const TSequenceSet *ts)
+tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     sequences[i] = tnpointseq_tgeompointseq(seq);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, false);
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count, false);
   return result;
 }
 
@@ -171,12 +171,12 @@ tgeompointinst_tnpointinst(const TInstant *inst)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 TInstantSet *
-tgeompointinstset_tnpointinstset(const TInstantSet *ti)
+tgeompointinstset_tnpointinstset(const TInstantSet *is)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     TInstant *inst1 = tgeompointinst_tnpointinst(inst);
     if (inst1 == NULL)
     {
@@ -185,7 +185,7 @@ tgeompointinstset_tnpointinstset(const TInstantSet *ti)
     }
     instants[i] = inst1;
   }
-  TInstantSet *result = tinstantset_make_free(instants, ti->count, MERGE_NO);
+  TInstantSet *result = tinstantset_make_free(instants, is->count, MERGE_NO);
   return result;
 }
 
@@ -219,12 +219,12 @@ tgeompointseq_tnpointseq(const TSequence *seq)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 TSequenceSet *
-tgeompointseqset_tnpointseqset(const TSequenceSet *ts)
+tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     TSequence *seq1 = tgeompointseq_tnpointseq(seq);
     if (seq1 == NULL)
     {
@@ -235,7 +235,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ts)
     }
     sequences[i] = seq1;
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, true);
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count, true);
   return result;
 }
 
@@ -285,11 +285,11 @@ tnpointinst_positions(const TInstant *inst)
  * @brief Return the network segments covered by the temporal network point.
  */
 Nsegment **
-tnpointinstset_positions(const TInstantSet *ti, int *count)
+tnpointinstset_positions(const TInstantSet *is, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
-  Datum *values = tinstantset_values(ti, &count1);
+  Datum *values = tinstantset_values(is, &count1);
   Nsegment **result = palloc(sizeof(Nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -362,16 +362,16 @@ tnpointseq_positions(const TSequence *seq, int *count)
  * Return the network segments covered by the temporal network point.
  */
 Nsegment **
-tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
+tnpointseqset_linear_positions(const TSequenceSet *ss, int *count)
 {
-  Nsegment **segments = palloc(sizeof(Nsegment *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  Nsegment **segments = palloc(sizeof(Nsegment *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     segments[i] = tnpointseq_linear_positions(seq);
   }
   Nsegment **result = segments;
-  int count1 = ts->count;
+  int count1 = ss->count;
   if (count1 > 1)
     result = nsegmentarr_normalize(segments, &count1);
   *count = count1;
@@ -382,11 +382,11 @@ tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
  * Return the network segments covered by the temporal network point.
  */
 Nsegment **
-tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
+tnpointseqset_step_positions(const TSequenceSet *ss, int *count)
 {
   /* The following function removes duplicate values */
   int newcount;
-  Datum *values = tsequenceset_values(ts, &newcount);
+  Datum *values = tsequenceset_values(ss, &newcount);
   Nsegment **result = palloc(sizeof(Nsegment *) * newcount);
   for (int i = 0; i < newcount; i++)
   {
@@ -402,13 +402,13 @@ tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
  * @brief Return the network segments covered by the temporal network point.
  */
 Nsegment **
-tnpointseqset_positions(const TSequenceSet *ts, int *count)
+tnpointseqset_positions(const TSequenceSet *ss, int *count)
 {
   Nsegment **result;
-  if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
-    result = tnpointseqset_linear_positions(ts, count);
+  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+    result = tnpointseqset_linear_positions(ss, count);
   else
-    result = tnpointseqset_step_positions(ts, count);
+    result = tnpointseqset_step_positions(ss, count);
   return result;
 }
 
@@ -478,12 +478,12 @@ tnpointinst_routes(const TInstant *inst)
  * @brief Return the array of routes of a temporal network point
  */
 int64 *
-tnpointinstset_routes(const TInstantSet *ti)
+tnpointinstset_routes(const TInstantSet *is)
 {
-  int64 *result = palloc(sizeof(int64) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  int64 *result = palloc(sizeof(int64) * is->count);
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     Npoint *np = DatumGetNpointP(tinstant_value(inst));
     result[i] = np->rid;
   }
@@ -507,12 +507,12 @@ tnpointseq_routes(const TSequence *seq)
  * @brief Return the array of routes of a temporal network point
  */
 int64 *
-tnpointseqset_routes(const TSequenceSet *ts)
+tnpointseqset_routes(const TSequenceSet *ss)
 {
-  int64 *result = palloc(sizeof(int64) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  int64 *result = palloc(sizeof(int64) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     const TInstant *inst = tsequence_inst_n(seq, 0);
     Npoint *np = DatumGetNpointP(tinstant_value(inst));
     result[i] = np->rid;

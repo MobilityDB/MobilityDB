@@ -392,7 +392,7 @@ timestamp_as_wkb(const TimestampTz t, uint8_t variant, size_t *size_out)
  * Return the size of the WKB representation of a base value.
  */
 static size_t
-basetype_to_wkb_size(Datum value, CachedType basetype)
+basetype_to_wkb_size(Datum value, CachedType basetype, int16 flags)
 {
   switch (basetype)
   {
@@ -416,13 +416,16 @@ basetype_to_wkb_size(Datum value, CachedType basetype)
       return MOBDB_WKB_DOUBLE_SIZE * 4;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return MOBDB_WKB_BYTE_SIZE;
+    {
+      int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
+      return dims * MOBDB_WKB_DOUBLE_SIZE;
+    }
   #if ! MEOS
     case T_NPOINT:
       return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
   #endif
     default: /* Error! */
-      elog(ERROR, "unknown base type in basetype_to_wkb_size function: %d",
+      elog(ERROR, "Unknown base type: %d",
         basetype);
   }
 }
@@ -439,7 +442,7 @@ tinstarr_to_wkb_size(const TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_value(instants[i]);
-    result += basetype_to_wkb_size(value, basetype);
+    result += basetype_to_wkb_size(value, basetype, instants[i]->flags);
   }
   /* size of the TInstant array */
   result += count * MOBDB_WKB_TIMESTAMP_SIZE;
@@ -469,18 +472,18 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
-tinstantset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
+tinstantset_to_wkb_size(const TInstantSet *is, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(ti->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) ti, variant))
+  if (tgeo_type(is->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) is, variant))
     size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants */
   size += MOBDB_WKB_INT4_SIZE;
   int count;
-  const TInstant **instants = tinstantset_instants(ti, &count);
+  const TInstant **instants = tinstantset_instants(is, &count);
   /* Include the TInstant array */
   size += tinstarr_to_wkb_size(instants, count);
   pfree(instants);
@@ -515,21 +518,21 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
-tsequenceset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
+tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(ts->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) ts, variant))
+  if (tgeo_type(ss->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) ss, variant))
     size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of sequences */
   size += MOBDB_WKB_INT4_SIZE;
   /* For each sequence include the number of instants and the period bounds flag */
-  size += ts->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
+  size += ss->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
   int count;
-  const TInstant **instants = tsequenceset_instants(ts, &count);
+  const TInstant **instants = tsequenceset_instants(ss, &count);
   size += tinstarr_to_wkb_size(instants, count);
   pfree(instants);
   return size;
@@ -615,8 +618,19 @@ static uint8_t *
 temporal_flags_to_wkb(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
+  /* Set the flags */
+  if (tgeo_type(temp->temptype))
+  {
+    if (MOBDB_FLAGS_GET_Z(temp->flags))
+      wkb_flags |= MOBDB_WKB_ZFLAG;
+    if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+      wkb_flags |= MOBDB_WKB_GEODETICFLAG;
+    if (tpoint_wkb_needs_srid(temp, variant))
+      wkb_flags |= MOBDB_WKB_SRIDFLAG;
+  }
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     wkb_flags |= MOBDB_WKB_LINEAR_INTERP;
+  /* Set the subtype */
   uint8 subtype = temp->subtype;
   if (variant & WKB_HEX)
   {
@@ -706,6 +720,10 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   buf = temporal_temptype_to_wkb((Temporal *) inst, buf, variant);
   /* Write the temporal flags */
   buf = temporal_flags_to_wkb((Temporal *) inst, buf, variant);
+  /* Set the optional SRID for extended variant */
+  if (tgeo_type(inst->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) inst, variant))
+    buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
   return basevalue_time_to_wkb_buf(inst, buf, variant);
 }
 
@@ -719,23 +737,24 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Output of the instants by function basevalue_time_to_wkb_buf
  */
 static uint8_t *
-tinstantset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
+tinstantset_to_wkb_buf(const TInstantSet *is, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  buf = temporal_temptype_to_wkb((Temporal *) ti, buf, variant);
+  buf = temporal_temptype_to_wkb((Temporal *) is, buf, variant);
   /* Set the temporal flags */
-  buf = temporal_flags_to_wkb((Temporal *) ti, buf, variant);
+  buf = temporal_flags_to_wkb((Temporal *) is, buf, variant);
   /* Set the optional SRID for extended variant */
-  // if (temporal_wkb_needs_srid((Temporal *) ti, variant))
-    // buf = int32_to_wkb_buf(tinstantset_srid(ti), buf, variant);
+  if (tgeo_type(is->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) is, variant))
+    buf = int32_to_wkb_buf(tpointinstset_srid(is), buf, variant);
   /* Set the count */
-  buf = int32_to_wkb_buf(ti->count, buf, variant);
+  buf = int32_to_wkb_buf(is->count, buf, variant);
   /* Set the array of instants */
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     buf = basevalue_time_to_wkb_buf(inst, buf, variant);
   }
   return buf;
@@ -789,8 +808,9 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the temporal flags and interpolation */
   buf = temporal_flags_to_wkb((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
-  // if (temporal_wkb_needs_srid((Temporal *) seq, variant))
-    // buf = int32_to_wkb_buf(tseq_srid(seq), buf, variant);
+  if (tgeo_type(seq->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) seq, variant))
+    buf = int32_to_wkb_buf(tpointseq_srid(seq), buf, variant);
   /* Set the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Set the period bounds */
@@ -818,23 +838,24 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
  *      - Output of the instant by function basevalue_time_to_wkb_buf
  */
 static uint8_t *
-tsequenceset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
+tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  buf = temporal_temptype_to_wkb((Temporal *) ts, buf, variant);
+  buf = temporal_temptype_to_wkb((Temporal *) ss, buf, variant);
   /* Set the temporal and interpolation flags */
-  buf = temporal_flags_to_wkb((Temporal *) ts, buf, variant);
+  buf = temporal_flags_to_wkb((Temporal *) ss, buf, variant);
   /* Set the optional SRID for extended variant */
-  // if (temporal_wkb_needs_srid((Temporal *) ts, variant))
-    // buf = int32_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
+  if (tgeo_type(ss->temptype) &&
+      tpoint_wkb_needs_srid((Temporal *) ss, variant))
+    buf = int32_to_wkb_buf(tpointseqset_srid(ss), buf, variant);
   /* Set the count */
-  buf = int32_to_wkb_buf(ts->count, buf, variant);
+  buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Set the sequences */
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     /* Set the number of instants */
     buf = int32_to_wkb_buf(seq->count, buf, variant);
     /* Set the period bounds */

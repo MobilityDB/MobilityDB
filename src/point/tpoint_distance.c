@@ -443,17 +443,17 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * Return the nearest approach instant between the temporal instant set point
  * and a geometry/geography
  *
- * @param[in] ti Temporal point
+ * @param[in] is Temporal point
  * @param[in] geo Geometry/geography
  */
 static TInstant *
-NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
+NAI_tpointinstset_geo(const TInstantSet *is, const LWGEOM *geo)
 {
   double mindist = DBL_MAX;
   int number = 0; /* keep compiler quiet */
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = DatumGetGserializedP(value);
     LWGEOM *point = lwgeom_from_gserialized(gs);
@@ -465,7 +465,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
     }
     lwgeom_free(point);
   }
-  return tinstant_copy(tinstantset_inst_n(ti, number));
+  return tinstant_copy(tinstantset_inst_n(is, number));
 }
 
 /*****************************************************************************/
@@ -522,17 +522,17 @@ NAI_tpointseq_step_geo(const TSequence *seq, const LWGEOM *geo)
  * Return the nearest approach instant between the temporal sequence set
  * point with stepwise interpolation and a geometry/geography
  *
- * @param[in] ts Temporal point
+ * @param[in] ss Temporal point
  * @param[in] geo Geometry/geography
  */
 static TInstant *
-NAI_tpointseqset_step_geo(const TSequenceSet *ts, const LWGEOM *geo)
+NAI_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
 {
   const TInstant *inst = NULL; /* make compiler quiet */
   double mindist = DBL_MAX;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, &inst);
   }
   assert(inst != NULL);
@@ -667,13 +667,13 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
  * point with linear interpolation and a geometry
  */
 static TInstant *
-NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
+NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 {
   TimestampTz t;
   double mindist = DBL_MAX;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     TimestampTz t1;
     double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, &t1);
     if (dist < mindist)
@@ -686,9 +686,9 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
   }
   /* The closest point may be at an exclusive bound. */
   Datum value;
-  bool found = tsequenceset_value_at_timestamp(ts, t, false, &value);
+  bool found = tsequenceset_value_at_timestamp(ss, t, false, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, ts->temptype, t);
+  TInstant *result = tinstant_make(value, ss->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
 }

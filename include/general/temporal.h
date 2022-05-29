@@ -660,6 +660,11 @@ extern void _PG_init(void);
 extern const char *tempsubtype_name(int16 subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
+/* Send/receive functions */
+
+extern Temporal *temporal_recv(StringInfo buf);
+extern void temporal_write(const Temporal *temp, StringInfo buf);
+
 /* Parameter tests */
 
 extern void ensure_non_empty_array(ArrayType *array);

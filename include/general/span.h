@@ -103,10 +103,21 @@ extern void span_bounds(const Span *s, double *xmin, double *xmax);
 extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
+/*****************************************************************************/
+
+#if ! MEOS
+
+/* Send/receive functions */
+
+extern Span *span_recv(StringInfo buf);
+extern void span_write(const Span *s, StringInfo buf);
+
 /* Transformation functions */
 
 extern Span *floatspan_round(Span *span, Datum size);
 
+#endif /* ! MEOS */
+
 /*****************************************************************************/
 
-#endif
+#endif /* __SPAN_H__ */

@@ -294,8 +294,6 @@ npoint_from_wkb_state(wkb_parse_state *s)
   double pos = double_from_wkb_state(s);
   Npoint *result = palloc(sizeof(Npoint));
   npoint_set(rid, pos, result);
-  /* Advance the state and return */
-  s->pos += MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
   return result;
 }
 #endif /* ! MEOS */
@@ -362,7 +360,7 @@ temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
       break;
 #endif /* ! MEOS */
     default: /* Error! */
-      elog(ERROR, "Unknown WKB temporal type (%d)!", wkb_temptype);
+      elog(ERROR, "Unknown WKB temporal type: %d", wkb_temptype);
       break;
   }
   s->basetype = temptype_basetype(s->temptype);
@@ -380,17 +378,20 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
-  if (wkb_flags & MOBDB_WKB_ZFLAG)
-    s->hasz = true;
-  if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
-    s->geodetic = true;
-  if (wkb_flags & MOBDB_WKB_SRIDFLAG)
-    s->has_srid = true;
+  /* Get the flags */
+  if (tgeo_type(s->temptype))
+  {
+    if (wkb_flags & MOBDB_WKB_ZFLAG)
+      s->hasz = true;
+    if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+      s->geodetic = true;
+    if (wkb_flags & MOBDB_WKB_SRIDFLAG)
+      s->has_srid = true;
+  }
   if (wkb_flags & MOBDB_WKB_LINEAR_INTERP)
     s->linear = true;
   /* Mask off the upper flags to get the subtype */
   wkb_flags = wkb_flags & (uint8_t) 0x0F;
-
   switch (wkb_flags)
   {
     case MOBDB_WKB_INSTANT:
@@ -406,7 +407,7 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
       s->subtype = SEQUENCESET;
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown WKB flags (%d)!", wkb_flags);
+      elog(ERROR, "Unknown WKB flags: %d", wkb_flags);
       break;
   }
   return;
@@ -458,7 +459,7 @@ basevalue_from_wkb_state(wkb_parse_state *s)
       break;
 #endif
     default: /* Error! */
-      elog(ERROR, "unknown temporal type in function basevalue_from_wkb_state: %d",
+      elog(ERROR, "Unknown temporal type: %d",
         s->temptype);
       break;
   }

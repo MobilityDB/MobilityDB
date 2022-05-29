@@ -52,7 +52,7 @@ COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
 
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
-SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
 
 DROP TABLE tbl_intspan_tmp;
 DROP TABLE tbl_floatspan_tmp;
@@ -61,7 +61,12 @@ DROP TABLE tbl_period_tmp;
 -- Input/output from/to WKB and HexWKB
 
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
+SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromBinary(asBinary(f)) <> f;
+SELECT COUNT(*) FROM tbl_period WHERE periodFromBinary(asBinary(p)) <> p;
+
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromHexWKB(asHexWKB(i)) <> i;
+SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
+SELECT COUNT(*) FROM tbl_period WHERE periodFromHexWKB(asHexWKB(p)) <> p;
 
 -------------------------------------------------------------------------------
 

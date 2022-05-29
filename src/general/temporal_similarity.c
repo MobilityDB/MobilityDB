@@ -88,7 +88,7 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
     return tnumberinst_distance(inst1, inst2);
   if (tgeo_type(inst1->temptype))
     return tpointinst_distance(inst1, inst2);
-  elog(ERROR, "Unexpected base type in function tinstant_distance");
+  elog(ERROR, "Unexpected temporal type: inst1->temptype");
 }
 
 /*****************************************************************************

@@ -59,7 +59,7 @@ span_elem_min(Datum l, Datum r, CachedType type)
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
   if (type == T_FLOAT8)
     return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
-  elog(ERROR, "unknown span_elem_min function for span base type: %d", type);
+  elog(ERROR, "Unknown Min function for span base type: %d", type);
 }
 
 /**
@@ -76,7 +76,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
     return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
   if (type == T_FLOAT8)
     return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
-  elog(ERROR, "unknown span_elem_max function for span base type: %d", type);
+  elog(ERROR, "Unknown Max function for span base type: %d", type);
 }
 
 /*****************************************************************************/

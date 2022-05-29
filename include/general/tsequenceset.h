@@ -45,38 +45,49 @@
 
 /* General functions */
 
-extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
-extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t,
+extern void *tsequenceset_bbox_ptr(const TSequenceSet *ss);
+extern bool tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t,
   int *loc);
 
 /* Synchronize functions */
 
-extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts,
+extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ss,
   const TSequence *seq, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
-extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, SyncMode mode,
+extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
 /* Intersection functions */
 
-extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ts,
+extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ss,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstant_tsequenceset(const TInstant *inst,
-  const TSequenceSet *ts, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
-  const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti,
-  const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2);
+  const TSequenceSet *ss, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
+  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2);
+extern bool intersection_tinstantset_tsequenceset(const TInstantSet *is,
+  const TSequenceSet *ss, TInstantSet **inter1, TInstantSet **inter2);
 extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
-  const TSequenceSet *ts, SyncMode mode,
+  const TSequenceSet *ss, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
 /* Input/output functions */
 
-extern char *tsequenceset_to_string(const TSequenceSet *ts,
+extern char *tsequenceset_to_string(const TSequenceSet *ss,
   char *(*value_out)(CachedType, Datum));
 
+
+/*****************************************************************************/
+
+#if ! MEOS
+
+/* Send/receive functions */
+
+extern TSequenceSet *tsequenceset_recv(StringInfo buf, CachedType temptype);
+extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
+
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 

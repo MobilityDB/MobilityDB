@@ -421,7 +421,7 @@ tpoint_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
       s->subtype = SEQUENCESET;
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown WKB flags (%d)!", wkb_flags);
+      elog(ERROR, "Unknown WKB flags: %d", wkb_flags);
       break;
   }
   return;

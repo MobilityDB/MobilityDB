@@ -408,7 +408,7 @@ span_spantype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spantype)
       s->temptype = T_PERIOD;
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown WKB span type: %d!", wkb_spantype);
+      elog(ERROR, "Unknown WKB span type: %d", wkb_spantype);
       break;
   }
   s->basetype = spantype_basetype(s->temptype);
@@ -447,19 +447,19 @@ basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
   ensure_span_basetype(s->basetype);
-  switch (s->temptype)
+  switch (s->basetype)
   {
-    case T_INTSPAN:
+    case T_INT4:
       result = Int32GetDatum(int32_from_wkb_state(s));
       break;
-    case T_FLOATSPAN:
+    case T_FLOAT8:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
-    case T_PERIOD:
+    case T_TIMESTAMPTZ:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
-      elog(ERROR, "unknown span type in function basevalue_from_wkb_state: %d",
+      elog(ERROR, "Unknown span type: %d",
         s->temptype);
       break;
   }
@@ -650,8 +650,8 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       buf = double_to_wkb_buf(DatumGetFloat8(s->upper), buf, variant);
       break;
     case T_TIMESTAMPTZ:
-      buf = timestamp_to_wkb_buf(DatumGetBool(s->lower), buf, variant);
-      buf = timestamp_to_wkb_buf(DatumGetBool(s->upper), buf, variant);
+      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(s->lower), buf, variant);
+      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(s->upper), buf, variant);
       break;
   }
   return buf;
@@ -1167,6 +1167,8 @@ span_hash_extended(const Span *s, Datum seed)
 
 #if ! MEOS
 
+#include <libpq/pqformat.h>
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -1194,6 +1196,41 @@ Span_out(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   PG_RETURN_CSTRING(span_out(s));
 }
+
+// TEST Needed for time aggregation
+
+/**
+ * @brief Return a span from its binary representation read from a buffer.
+ */
+Span *
+span_recv(StringInfo buf)
+{
+  Span *result = (Span *) palloc0(sizeof(Span));
+  result->spantype = (char) pq_getmsgbyte(buf);
+  result->basetype = spantype_basetype(result->spantype);
+  result->lower = basetype_recv(result->basetype, buf);
+  result->upper = basetype_recv(result->basetype, buf);
+  result->lower_inc = (char) pq_getmsgbyte(buf);
+  result->upper_inc = (char) pq_getmsgbyte(buf);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of a span into a buffer.
+ */
+void
+span_write(const Span *s, StringInfo buf)
+{
+  pq_sendbyte(buf, s->spantype);
+  bytea *lower = basetype_send(s->basetype, s->lower);
+  bytea *upper = basetype_send(s->basetype, s->upper);
+  pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
+  pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
+  pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, s->upper_inc ? (uint8) 1 : (uint8) 0);
+  pfree(lower); pfree(upper);
+}
+
 
 PG_FUNCTION_INFO_V1(Span_recv);
 /**

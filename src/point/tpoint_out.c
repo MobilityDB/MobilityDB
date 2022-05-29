@@ -285,12 +285,12 @@ tpointinst_as_mfjson(const TInstant *inst, int precision,
  * represented in MF-JSON format
  */
 static size_t
-tpointinstset_as_mfjson_size(const TInstantSet *ti, int precision, const STBOX *bbox,
+tpointinstset_as_mfjson_size(const TInstantSet *is, int precision, const STBOX *bbox,
   char *srs)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
-  size_t size = coordinates_mfjson_size(ti->count, hasz, precision);
-  size += datetimes_mfjson_size(ti->count);
+  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
+  size_t size = coordinates_mfjson_size(is->count, hasz, precision);
+  size += datetimes_mfjson_size(is->count);
   size += sizeof("{'type':'MovingPoint',");
   size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
   if (srs) size += srs_mfjson_size(srs);
@@ -302,25 +302,25 @@ tpointinstset_as_mfjson_size(const TInstantSet *ti, int precision, const STBOX *
  * Write into the buffer the temporal instant set point represented in MF-JSON format
  */
 static size_t
-tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *bbox,
+tpointinstset_as_mfjson_buf(const TInstantSet *is, int precision, const STBOX *bbox,
   char *srs, char *output)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
   if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags),
+  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(is->flags),
     precision);
   ptr += sprintf(ptr, "\"coordinates\":[");
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
     if (i) ptr += sprintf(ptr, ",");
-    ptr += coordinates_mfjson_buf(ptr, tinstantset_inst_n(ti, i), precision);
+    ptr += coordinates_mfjson_buf(ptr, tinstantset_inst_n(is, i), precision);
   }
   ptr += sprintf(ptr, "],\"datetimes\":[");
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
     if (i) ptr += sprintf(ptr, ",");
-    ptr += datetimes_mfjson_buf(ptr, tinstantset_inst_n(ti, i));
+    ptr += datetimes_mfjson_buf(ptr, tinstantset_inst_n(is, i));
   }
   ptr += sprintf(ptr, "],\"interpolations\":[\"Discrete\"]}");
   return (ptr - output);
@@ -331,12 +331,12 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
  * @brief Return the MF-JSON representation of a temporal instant set point.
  */
 char *
-tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox,
+tpointinstset_as_mfjson(const TInstantSet *is, int precision, const STBOX *bbox,
   char *srs)
 {
-  size_t size = tpointinstset_as_mfjson_size(ti, precision, bbox, srs);
+  size_t size = tpointinstset_as_mfjson_size(is, precision, bbox, srs);
   char *output = palloc(size);
-  tpointinstset_as_mfjson_buf(ti, precision, bbox, srs, output);
+  tpointinstset_as_mfjson_buf(is, precision, bbox, srs, output);
   return output;
 }
 
@@ -411,14 +411,14 @@ tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
  * represented in MF-JSON format
  */
 static size_t
-tpointseqset_as_mfjson_size(const TSequenceSet *ts, int precision, const STBOX *bbox,
-  char *srs)
+tpointseqset_as_mfjson_size(const TSequenceSet *ss, int precision,
+  const STBOX *bbox, char *srs)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
   size_t size = sizeof("{'type':'MovingPoint','sequences':[],");
-  size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ts->count;
-  size += coordinates_mfjson_size(ts->totalcount, hasz, precision);
-  size += datetimes_mfjson_size(ts->totalcount);
+  size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ss->count;
+  size += coordinates_mfjson_size(ss->totalcount, hasz, precision);
+  size += datetimes_mfjson_size(ss->totalcount);
   /* We reserve space for the largest interpolation string, i.e., "Stepwise" */
   size += sizeof(",interpolations':['Stepwise']}");
   if (srs) size += srs_mfjson_size(srs);
@@ -430,18 +430,18 @@ tpointseqset_as_mfjson_size(const TSequenceSet *ts, int precision, const STBOX *
  * Write into the buffer the temporal sequence set point represented in MF-JSON format
  */
 static size_t
-tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *bbox, char *srs,
-  char *output)
+tpointseqset_as_mfjson_buf(const TSequenceSet *ss, int precision,
+  const STBOX *bbox, char *srs, char *output)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
   if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags),
+  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ss->flags),
     precision);
   ptr += sprintf(ptr, "\"sequences\":[");
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (i) ptr += sprintf(ptr, ",");
     ptr += sprintf(ptr, "{\"coordinates\":[");
     for (int j = 0; j < seq->count; j++)
@@ -459,7 +459,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
       seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false");
   }
   ptr += sprintf(ptr, "],\"interpolations\":[\"%s\"]}",
-    MOBDB_FLAGS_GET_LINEAR(ts->flags) ? "Linear" : "Stepwise");
+    MOBDB_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Stepwise");
   return (ptr - output);
 }
 
@@ -468,12 +468,12 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
  * @brief Return the MF-JSON representation of a temporal sequence set point.
  */
 char *
-tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
+tpointseqset_as_mfjson(const TSequenceSet *ss, int precision, const STBOX *bbox,
   char *srs)
 {
-  size_t size = tpointseqset_as_mfjson_size(ts, precision, bbox, srs);
+  size_t size = tpointseqset_as_mfjson_size(ss, precision, bbox, srs);
   char *output = palloc(size);
-  tpointseqset_as_mfjson_buf(ts, precision, bbox, srs, output);
+  tpointseqset_as_mfjson_buf(ss, precision, bbox, srs, output);
   return output;
 }
 
@@ -706,17 +706,17 @@ tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
-tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
+tpointinstset_to_wkb_size(const TInstantSet *is, uint8_t variant)
 {
   /* Endian flag + temporal type flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) is, variant))
     size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants */
   size += MOBDB_WKB_INT4_SIZE;
   /* Include the TInstant array */
-  size += tpointinstarr_to_wkb_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags));
+  size += tpointinstarr_to_wkb_size(is->count, MOBDB_FLAGS_GET_Z(is->flags));
   return size;
 }
 
@@ -744,19 +744,19 @@ tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
-tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
+tpointseqset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 {
   /* Endian flag + temporal type flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ss, variant))
     size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of sequences */
   size += MOBDB_WKB_INT4_SIZE;
   /* For each sequence include the number of instants and the period bounds flag */
-  size += ts->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
+  size += ss->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
   /* Include all the TInstant of all the sequences */
-  size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags));
+  size += tpointinstarr_to_wkb_size(ss->totalcount, MOBDB_FLAGS_GET_Z(ss->flags));
   return size;
 }
 
@@ -873,23 +873,23 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Output of the instants by function coords_to_wkb_buf
  */
 static uint8_t *
-tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
+tpointinstset_to_wkb_buf(const TInstantSet *is, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  // buf = tpoint_wkb_temptype((Temporal *) ti, buf, variant);
+  // buf = tpoint_wkb_temptype((Temporal *) is, buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_flags_to_wkb((Temporal *) ti, buf, variant);
+  buf = tpoint_flags_to_wkb((Temporal *) is, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
-    buf = int32_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
+  if (tpoint_wkb_needs_srid((Temporal *) is, variant))
+    buf = int32_to_wkb_buf(tpointinstset_srid(is), buf, variant);
   /* Set the count */
-  buf = int32_to_wkb_buf(ti->count, buf, variant);
+  buf = int32_to_wkb_buf(is->count, buf, variant);
   /* Set the array of instants */
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     buf = coords_to_wkb_buf(inst, buf, variant);
     buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   }
@@ -947,23 +947,23 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
  *      - Output of the instant by function coords_to_wkb_buf
  */
 static uint8_t *
-tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
+tpointseqset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
 {
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal type */
-  // buf = tpoint_wkb_temptype((Temporal *) ts, buf, variant);
+  // buf = tpoint_wkb_temptype((Temporal *) ss, buf, variant);
   /* Set the temporal and interpolation flags */
-  buf = tpoint_flags_to_wkb((Temporal *) ts, buf, variant);
+  buf = tpoint_flags_to_wkb((Temporal *) ss, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
-    buf = int32_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
+  if (tpoint_wkb_needs_srid((Temporal *) ss, variant))
+    buf = int32_to_wkb_buf(tpointseqset_srid(ss), buf, variant);
   /* Set the count */
-  buf = int32_to_wkb_buf(ts->count, buf, variant);
+  buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Set the sequences */
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     /* Set the number of instants */
     buf = int32_to_wkb_buf(seq->count, buf, variant);
     /* Set the period bounds */

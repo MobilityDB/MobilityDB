@@ -3228,6 +3228,7 @@ temporal_hash(const Temporal *temp)
 #else
   #include <access/tuptoaster.h>
 #endif
+#include <libpq/pqformat.h>
 
 /* To avoid including fmgrprotos.h */
 extern Datum timestamp_mi(PG_FUNCTION_ARGS);
@@ -3550,6 +3551,63 @@ Temporal_out(PG_FUNCTION_ARGS)
   char *result = temporal_out(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
+}
+
+// TEST Needed for temporal aggregation
+
+/**
+ * @brief Return a temporal value from its binary representation read from
+ * a buffer.
+ *
+ * @param[in] buf Buffer
+ * @see tinstant_recv
+ * @see tinstantset_recv
+ * @see tsequence_recv
+ * @see tsequenceset_recv
+ */
+Temporal *
+temporal_recv(StringInfo buf)
+{
+  uint8 temptype = pq_getmsgbyte(buf);
+  uint8 subtype = pq_getmsgbyte(buf);
+  Temporal *result;
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
+    result = (Temporal *) tinstant_recv(buf, temptype);
+  else if (subtype == INSTANTSET)
+    result = (Temporal *) tinstantset_recv(buf, temptype);
+  else if (subtype == SEQUENCE)
+    result = (Temporal *) tsequence_recv(buf, temptype);
+  else /* subtype == SEQUENCESET */
+    result = (Temporal *) tsequenceset_recv(buf, temptype);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of a temporal value into a buffer.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] buf Buffer
+ * @see tinstant_write
+ * @see tinstantset_write
+ * @see tsequence_write
+ * @see tsequenceset_write
+ */
+void
+temporal_write(const Temporal *temp, StringInfo buf)
+{
+  pq_sendbyte(buf, temp->temptype);
+  pq_sendbyte(buf, temp->subtype);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    tinstant_write((TInstant *) temp, buf);
+  else if (temp->subtype == INSTANTSET)
+    tinstantset_write((TInstantSet *) temp, buf);
+  else if (temp->subtype == SEQUENCE)
+    tsequence_write((TSequence *) temp, buf);
+  else /* temp->subtype == SEQUENCESET */
+    tsequenceset_write((TSequenceSet *) temp, buf);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(Temporal_recv);

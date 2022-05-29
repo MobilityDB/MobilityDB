@@ -1232,26 +1232,26 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
 /**
  * Temporally intersect two temporal sequences
  *
- * @param[in] seq,ti Input values
+ * @param[in] seq,is Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
+intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *is,
   TInstantSet **inter1, TInstantSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
-  tinstantset_set_period(ti, &p);
+  tinstantset_set_period(is, &p);
   if (! overlaps_span_span(&seq->period, &p))
     return false;
 
-  TInstant **instants1 = palloc(sizeof(TInstant *) * ti->count);
-  const TInstant **instants2 = palloc(sizeof(TInstant *) * ti->count);
+  TInstant **instants1 = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants2 = palloc(sizeof(TInstant *) * is->count);
   int k = 0;
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     if (contains_period_timestamp(&seq->period, inst->t))
     {
       instants1[k] = tsequence_at_timestamp(seq, inst->t);
@@ -1275,15 +1275,15 @@ intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
 /**
  * Temporally intersect two temporal values
  *
- * @param[in] ti,seq Temporal values
+ * @param[in] is,seq Temporal values
  * @param[out] inter1,inter2 Output values
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
+intersection_tinstantset_tsequence(const TInstantSet *is, const TSequence *seq,
   TInstantSet **inter1, TInstantSet **inter2)
 {
-  return intersection_tsequence_tinstantset(seq, ti, inter2, inter1);
+  return intersection_tsequence_tinstantset(seq, is, inter2, inter1);
 }
 
 /*****************************************************************************
@@ -1511,11 +1511,11 @@ tinstant_to_tsequence(const TInstant *inst, bool linear)
  * value.
  */
 TSequence *
-tinstantset_to_tsequence(const TInstantSet *ti, bool linear)
+tinstantset_to_tsequence(const TInstantSet *is, bool linear)
 {
-  if (ti->count != 1)
+  if (is->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal sequence");
-  return tinstant_to_tsequence(tinstantset_inst_n(ti, 0), linear);
+  return tinstant_to_tsequence(tinstantset_inst_n(is, 0), linear);
 }
 
 /**
@@ -1524,11 +1524,11 @@ tinstantset_to_tsequence(const TInstantSet *ti, bool linear)
  * value.
  */
 TSequence *
-tsequenceset_to_tsequence(const TSequenceSet *ts)
+tsequenceset_to_tsequence(const TSequenceSet *ss)
 {
-  if (ts->count != 1)
+  if (ss->count != 1)
     elog(ERROR, "Cannot transform input to a temporal sequence");
-  return tsequence_copy(tsequenceset_seq_n(ts, 0));
+  return tsequence_copy(tsequenceset_seq_n(ss, 0));
 }
 
 /**
@@ -3242,15 +3242,15 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
      * since we kept the span values instead of the projected values when
      * computing atSpans
      */
-    TSequenceSet *ts = tnumberseq_restrict_spans(seq, newspans, newcount,
+    TSequenceSet *ss = tnumberseq_restrict_spans(seq, newspans, newcount,
       REST_AT, bboxtest);
-    if (ts == NULL)
+    if (ss == NULL)
     {
       result[0] = tsequence_copy(seq);
       return 1;
     }
 
-    PeriodSet *ps1 = tsequenceset_time(ts);
+    PeriodSet *ps1 = tsequenceset_time(ss);
     PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
     int newcount = 0;
     if (ps2 != NULL)
@@ -3258,7 +3258,7 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
       newcount = tsequence_at_periodset(seq, ps2, result);
       pfree(ps2);
     }
-    pfree(ts); pfree(ps1);
+    pfree(ss); pfree(ps1);
     if (bboxtest)
       pfree(newspans);
     return newcount;
@@ -3477,21 +3477,21 @@ tsequence_minus_timestamp(const TSequence *seq, TimestampTz t)
  * @brief Restrict a temporal sequence to a timestamp set.
  */
 TInstantSet *
-tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
+tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ss)
 {
   TInstant *inst;
 
   /* Singleton timestamp set */
-  if (ts->count == 1)
+  if (ss->count == 1)
   {
-    inst = tsequence_at_timestamp(seq, timestampset_time_n(ts, 0));
+    inst = tsequence_at_timestamp(seq, timestampset_time_n(ss, 0));
     if (inst == NULL)
       return NULL;
     return tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
   }
 
   /* Bounding box test */
-  const Period *p = timestampset_period_ptr(ts);
+  const Period *p = timestampset_period_ptr(ss);
   if (! overlaps_span_span(&seq->period, p))
     return NULL;
 
@@ -3500,7 +3500,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (! contains_timestampset_timestamp(ts, inst->t))
+    if (! contains_timestampset_timestamp(ss, inst->t))
       return NULL;
     return tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
   }
@@ -3508,12 +3508,12 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   /* General case */
   TimestampTz t = Max(seq->period.lower, p->lower);
   int loc;
-  timestampset_find_timestamp(ts, t, &loc);
-  TInstant **instants = palloc(sizeof(TInstant *) * (ts->count - loc));
+  timestampset_find_timestamp(ss, t, &loc);
+  TInstant **instants = palloc(sizeof(TInstant *) * (ss->count - loc));
   int k = 0;
-  for (int i = loc; i < ts->count; i++)
+  for (int i = loc; i < ss->count; i++)
   {
-    t = timestampset_time_n(ts, i);
+    t = timestampset_time_n(ss, i);
     inst = tsequence_at_timestamp(seq, t);
     if (inst != NULL)
       instants[k++] = inst;
@@ -3529,20 +3529,20 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq Temporal sequence
- * @param[in] ts Timestampset
+ * @param[in] ss Timestampset
  * @return Number of resulting sequences returned
  */
 int
-tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
+tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ss,
   TSequence **result)
 {
   /* Singleton timestamp set */
-  if (ts->count == 1)
-    return tsequence_minus_timestamp1(seq, timestampset_time_n(ts, 0),
+  if (ss->count == 1)
+    return tsequence_minus_timestamp1(seq, timestampset_time_n(ss, 0),
       result);
 
   /* Bounding box test */
-  const Period *p = timestampset_period_ptr(ts);
+  const Period *p = timestampset_period_ptr(ss);
   if (! overlaps_span_span(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
@@ -3556,7 +3556,7 @@ tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (contains_timestampset_timestamp(ts,inst->t))
+    if (contains_timestampset_timestamp(ss,inst->t))
       return 0;
     result[0] = tsequence_copy(seq);
     return 1;
@@ -3571,10 +3571,10 @@ tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
     j = 0,  /* current timestamp of the argument timestamp set */
     k = 0,  /* current number of new sequences */
     l = 1;  /* number of instants in the currently constructed sequence */
-  while (i < seq->count && j < ts->count)
+  while (i < seq->count && j < ss->count)
   {
     inst = tsequence_inst_n(seq, i);
-    TimestampTz t = timestampset_time_n(ts, j);
+    TimestampTz t = timestampset_time_n(ss, j);
     if (inst->t < t)
     {
       instants[l++] = (TInstant *) inst;
@@ -3646,10 +3646,10 @@ tsequence_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
  * @brief Restrict a temporal sequence to the complement of a timestamp set.
  */
 TSequenceSet *
-tsequence_minus_timestampset(const TSequence *seq, const TimestampSet *ts)
+tsequence_minus_timestampset(const TSequence *seq, const TimestampSet *ss)
 {
-  TSequence **sequences = palloc0(sizeof(TSequence *) * (ts->count + 1));
-  int count = tsequence_minus_timestampset1(seq, ts, sequences);
+  TSequence **sequences = palloc0(sizeof(TSequence *) * (ss->count + 1));
+  int count = tsequence_minus_timestampset1(seq, ss, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -3946,10 +3946,10 @@ tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t)
  * @brief Return true if a temporal sequence intersects a timestamp set.
  */
 bool
-tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ts)
+tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ss)
 {
-  for (int i = 0; i < ts->count; i++)
-    if (tsequence_intersects_timestamp(seq, timestampset_time_n(ts, i)))
+  for (int i = 0; i < ss->count; i++)
+    if (tsequence_intersects_timestamp(seq, timestampset_time_n(ss, i)))
       return true;
   return false;
 }
@@ -4138,5 +4138,61 @@ tsequence_hash(const TSequence *seq)
   }
   return result;
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <libpq/pqformat.h>
+
+// TEST Needed for temporal aggregation
+
+/**
+ * @brief Return a temporal sequence from its binary representation read from
+ * a buffer.
+ *
+ * @param[in] buf Buffer
+ * @param[in] temptype Temporal type
+ */
+TSequence *
+tsequence_recv(StringInfo buf, CachedType temptype)
+{
+  int count = (int) pq_getmsgint(buf, 4);
+  bool lower_inc = (char) pq_getmsgbyte(buf);
+  bool upper_inc = (char) pq_getmsgbyte(buf);
+  bool linear = (char) pq_getmsgbyte(buf);
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+    instants[i] = tinstant_recv(buf, temptype);
+  return tsequence_make_free(instants, count, lower_inc,
+    upper_inc, linear, NORMALIZE);
+}
+
+/**
+ * @brief Write the binary representation of a temporal sequence into a buffer.
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] buf Buffer
+ */
+void
+tsequence_write(const TSequence *seq, StringInfo buf)
+{
+  pq_sendint32(buf, seq->count);
+  pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    tinstant_write(inst, buf);
+  }
+  return;
+}
+
+#endif /* ! MEOS */
 
 /*****************************************************************************/

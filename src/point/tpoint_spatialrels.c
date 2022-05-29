@@ -407,17 +407,17 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
  * @brief Return true if a temporal point instant set and a geometry are ever
  * disjoint
  *
- * @param[in] ti Temporal point
+ * @param[in] is Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be called
  */
 bool
-disjoint_tpointinstset_geo(const TInstantSet *ti, Datum geo,
+disjoint_tpointinstset_geo(const TInstantSet *is, Datum geo,
   Datum (*func)(Datum, ...))
 {
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     if (DatumGetBool(func(tinstant_value(inst), geo)))
       return true;
   }
@@ -449,17 +449,17 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
  * @brief Return true if a temporal sequence set point and a geometry are ever
  * disjoint
  *
- * @param[in] ts Temporal point
+ * @param[in] ss Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be used for instantaneous sequences
  */
 bool
-disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
+disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
   Datum (*func)(Datum, ...))
 {
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (disjoint_tpointseq_geo(seq, geo, func))
       return true;
   }
@@ -596,19 +596,19 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 /**
  * Return true if the temporal points are ever within the given distance
  *
- * @param[in] ti1,ti2 Temporal points
+ * @param[in] is1,is2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointinstset_tpointinstset(const TInstantSet *ti1,
-  const TInstantSet *ti2, Datum dist, datum_func3 func)
+dwithin_tpointinstset_tpointinstset(const TInstantSet *is1,
+  const TInstantSet *is2, Datum dist, datum_func3 func)
 {
-  for (int i = 0; i < ti1->count; i++)
+  for (int i = 0; i < is1->count; i++)
   {
-    const TInstant *inst1 = tinstantset_inst_n(ti1, i);
-    const TInstant *inst2 = tinstantset_inst_n(ti2, i);
+    const TInstant *inst1 = tinstantset_inst_n(is1, i);
+    const TInstant *inst2 = tinstantset_inst_n(is2, i);
     if (dwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
       return true;
   }
@@ -690,19 +690,19 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 /**
  * Return true if the temporal points are ever within the given distance
  *
- * @param[in] ts1,ts2 Temporal points
+ * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, Datum dist, datum_func3 func)
+dwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, Datum dist, datum_func3 func)
 {
-  for (int i = 0; i < ts1->count; i++)
+  for (int i = 0; i < ss1->count; i++)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ss2, i);
     if (dwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
       return true;
   }
