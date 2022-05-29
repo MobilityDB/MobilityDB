@@ -340,9 +340,11 @@ span_in(char *str, CachedType spantype)
 /**
  * Remove the quotes from the string representation of a span
  */
-static void
+static char *
 unquote(char *str)
 {
+  /* Save the initial pointer */
+  char *result = str;
   char *last = str;
   while (*str != '\0')
   {
@@ -353,7 +355,7 @@ unquote(char *str)
     str++;
   }
   *last = '\0';
-  return;
+  return result;
 }
 
 /**
@@ -363,18 +365,14 @@ unquote(char *str)
 char *
 span_out(const Span *s)
 {
-  char *lower = basetype_output(s->basetype, s->lower);
-  char *upper = basetype_output(s->basetype, s->upper);
-  StringInfoData buf;
-  initStringInfo(&buf);
-  appendStringInfoChar(&buf, s->lower_inc ? (char) '[' : (char) '(');
-  appendStringInfoString(&buf, lower);
-  appendStringInfoString(&buf, ", ");
-  appendStringInfoString(&buf, upper);
-  appendStringInfoChar(&buf, s->upper_inc ? (char) ']' : (char) ')');
-  unquote(buf.data);
+  char *lower = unquote(basetype_output(s->basetype, s->lower));
+  char *upper = unquote(basetype_output(s->basetype, s->upper));
+  char open = s->lower_inc ? (char) '[' : (char) '(';
+  char close = s->upper_inc ? (char) ']' : (char) ')';
+  char *result = palloc(strlen(lower) + strlen(upper) + 5);
+  sprintf(result, "%c%s, %s%c", open, lower, upper, close);
   pfree(lower); pfree(upper);
-  return buf.data;
+  return result;
 }
 
 /*****************************************************************************

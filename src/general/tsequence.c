@@ -44,7 +44,7 @@
 #else
   #include <access/hash.h>
 #endif
-#include <libpq/pqformat.h>
+// #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>

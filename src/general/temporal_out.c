@@ -305,6 +305,90 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
+ * @ingroup libmeos_spantime_input_output
+ * @brief Return the WKB representation of a timestamp.
+ *
+ * @param[in] s Span
+ * @param[in] variant Unsigned bitmask value.
+ * Accepts either WKB_NDR or WKB_XDR, and WKB_HEX.
+ * For example: Variant = WKB_NDR would return the little-endian WKB form.
+ * For example: Variant = (WKB_XDR | WKB_HEX) would return the big-endian
+ * WKB form as hex-encoded ASCII.
+ * @param[out] size_out If supplied, will return the size of the returned
+ * memory segment, including the null terminator in the case of ASCII.
+ * @note Caller is responsible for freeing the returned array.
+ */
+uint8_t *
+timestamp_as_wkb(const TimestampTz t, uint8_t variant, size_t *size_out)
+{
+  size_t buf_size;
+  uint8_t *buf = NULL;
+  uint8_t *wkb_out = NULL;
+
+  /* Initialize output size */
+  if (size_out) *size_out = 0;
+
+  /* Calculate the required size of the output buffer */
+  buf_size = MOBDB_WKB_TIMESTAMP_SIZE;
+  if (buf_size == 0)
+  {
+    elog(ERROR, "Error calculating output WKB buffer size.");
+    return NULL;
+  }
+
+  /* Hex string takes twice as much space as binary + a null character */
+  if (variant & WKB_HEX)
+    buf_size = 2 * buf_size + 1;
+
+  /* If neither or both variants are specified, choose the native order */
+  if (! (variant & WKB_NDR || variant & WKB_XDR) ||
+    (variant & WKB_NDR && variant & WKB_XDR))
+  {
+    if (MOBDB_IS_BIG_ENDIAN)
+      variant = variant | (uint8_t) WKB_XDR;
+    else
+      variant = variant | (uint8_t) WKB_NDR;
+  }
+
+  /* Allocate the buffer */
+  buf = palloc(buf_size);
+  if (buf == NULL)
+  {
+    elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
+    return NULL;
+  }
+
+  /* Retain a pointer to the front of the buffer for later */
+  wkb_out = buf;
+
+  /* Write the WKB into the output buffer */
+  buf = timestamp_to_wkb_buf(t, buf, variant);
+
+  /* Null the last byte if this is a hex output */
+  if (variant & WKB_HEX)
+  {
+    *buf = '\0';
+    buf++;
+  }
+
+  /* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
+  if (buf_size != (size_t) (buf - wkb_out))
+  {
+    elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
+    pfree(wkb_out);
+    return NULL;
+  }
+
+  /* Report output size */
+  if (size_out)
+    *size_out = buf_size;
+
+  return wkb_out;
+}
+
+/*****************************************************************************/
+
+/**
  * Return the size of the WKB representation of a base value.
  */
 static size_t

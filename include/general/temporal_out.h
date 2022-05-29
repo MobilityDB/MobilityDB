@@ -53,6 +53,8 @@ extern uint8_t *timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf,
 extern uint8_t *tsequence_bounds_to_wkb(const TSequence *seq, uint8_t *buf,
   uint8_t variant);
 
+extern uint8_t *timestamp_as_wkb(const TimestampTz t, uint8_t variant,
+  size_t *size_out);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant,
   size_t *size_out);
 

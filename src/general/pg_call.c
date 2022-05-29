@@ -45,7 +45,9 @@
 /* PostgreSQL */
 #include <common/int128.h>
 #include <common/hashfn.h>
-#include <libpq/pqformat.h>
+#if ! MEOS
+  #include <libpq/pqformat.h>
+#endif
 #include <utils/datetime.h>
 #include <utils/float.h>
 /* MobilityDB */
@@ -119,6 +121,7 @@ pg_boolout(bool b)
   return result;
 }
 
+#if ! MEOS
 /**
  * @brief Convert external binary format to bool
  *
@@ -146,6 +149,7 @@ pg_boolsend(bool arg1)
   pq_sendbyte(&buf, arg1 ? 1 : 0);
   return pq_endtypsend(&buf);
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from int.c
@@ -173,6 +177,7 @@ pg_int4out(int32 val)
   return result;
 }
 
+#if ! MEOS
 /**
  * @brief CConvert an int4 to binary format
  * @note PostgreSQL function: Datum int4send(PG_FUNCTION_ARGS)
@@ -195,6 +200,7 @@ pg_int4recv(StringInfo buf)
 {
  return (int32) pq_getmsgint(buf, sizeof(int32));
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from int8.c
@@ -291,6 +297,7 @@ pg_int8recv(StringInfo buf)
  * Functions adapted from float.c
  *****************************************************************************/
 
+#if ! MEOS
 /**
  * @brief Convert external binary format to float8
  * @note PostgreSQL function: Datum float8recv(PG_FUNCTION_ARGS)
@@ -313,6 +320,7 @@ pg_float8send(float8 num)
   pq_sendfloat8(&buf, num);
   return pq_endtypsend(&buf);
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 
@@ -431,6 +439,7 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from varlena.c
  *****************************************************************************/
 
+#if ! MEOS
 /**
  * @brief Convert external binary format to text
  * @note PostgreSQL function: Datum textrecv(PG_FUNCTION_ARGS)
@@ -459,6 +468,7 @@ pg_textsend(text *t)
   pq_sendtext(&buf, VARDATA_ANY(t), VARSIZE_ANY_EXHDR(t));
   return pq_endtypsend(&buf);
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
@@ -571,6 +581,7 @@ pg_timestamptz_out(TimestampTz dt)
   return result;
 }
 
+#if ! MEOS
 /**
  * @brief Convert timestamptz to binary format
  * @note PostgreSQL function: Datum timestamptz_send(PG_FUNCTION_ARGS)
@@ -591,7 +602,7 @@ pg_timestamptz_send(TimestampTz timestamp)
 TimestampTz
 pg_timestamptz_recv(StringInfo buf)
 {
-  // We do not use typmod
+  /* We do not use typmod */
   int32 typmod = -1;
   TimestampTz timestamp;
   int tz;
@@ -612,6 +623,7 @@ pg_timestamptz_recv(StringInfo buf)
 
   return timestamp;
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 

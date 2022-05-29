@@ -300,6 +300,26 @@ npoint_from_wkb_state(wkb_parse_state *s)
 }
 #endif /* ! MEOS */
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal type from its Well-Known Binary (WKB)
+ * representation.
+ */
+TimestampTz
+timestamp_from_wkb(uint8_t *wkb, int size)
+{
+  /* Initialize the state appropriately */
+  wkb_parse_state s;
+  memset(&s, 0, sizeof(wkb_parse_state));
+  s.wkb = s.pos = wkb;
+  s.wkb_size = size;
+  return timestamp_from_wkb_state(&s);
+}
+
+/*****************************************************************************/
+
 /**
  * Take in an unknown temporal type of WKB type number and ensure it comes out
  * as an extended WKB temporal type number.

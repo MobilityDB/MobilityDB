@@ -46,7 +46,9 @@
 /* C */
 #include <float.h>
 /* PostgreSQL */
-#include <libpq/pqformat.h>
+#if ! MEOS
+  #include <libpq/pqformat.h>
+#endif
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
 #endif
@@ -84,8 +86,7 @@ double2_out(double2 *d)
   pfree(bstr);
   return result;
 }
-#endif
-
+#else
 /**
  * @brief Receive function for double2 values
  */
@@ -109,6 +110,7 @@ double2_send(double2 *d)
   pq_sendbytes(&buf, (void *) d, sizeof(double2));
   return (bytea *) pq_endtypsend(&buf);
 }
+#endif /* MEOS */
 
 /**
  * Set a double2 value from the double values
@@ -191,8 +193,7 @@ double3_out(double3 *d)
   pfree(cstr);
   return result;
 }
-#endif
-
+#else
 /**
  * @brief Receive function for double3 values
  */
@@ -216,6 +217,7 @@ double3_send(double3 *d)
   pq_sendbytes(&buf, (void *) d, sizeof(double3));
   return (bytea *) pq_endtypsend(&buf);
 }
+#endif /* MEOS */
 
 /**
  * Set a double3 value from the double values
@@ -307,8 +309,7 @@ double4_out(double4 *d)
   pfree(dstr);
   return result;
 }
-#endif
-
+#else
 /**
  * @brief Receive function for double4 values
  */
@@ -332,6 +333,7 @@ double4_send(double4 *d)
   pq_sendbytes(&buf, (void *) d, sizeof(double4));
   return (bytea *) pq_endtypsend(&buf);
 }
+#endif /* MEOS */
 
 /**
  * Set a double4 value from the double values

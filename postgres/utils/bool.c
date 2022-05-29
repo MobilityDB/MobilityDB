@@ -17,7 +17,7 @@
 
 #include <ctype.h>
 
-#include "libpq/pqformat.h"
+// #include "libpq/pqformat.h" // MobilityDB
 // #include "utils/builtins.h" // MobilityDB
 
 bool

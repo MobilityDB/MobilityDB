@@ -23,7 +23,7 @@
 
 // #include "access/xact.h"
 #include "common/hashfn.h"
-#include "libpq/pqformat.h"
+// #include "libpq/pqformat.h"
 // #include "miscadmin.h"
 // #include "nodes/supportnodes.h"
 // #include "parser/scansup.h"

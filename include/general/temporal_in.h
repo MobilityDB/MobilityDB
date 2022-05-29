@@ -79,6 +79,7 @@ extern TimestampTz timestamp_from_wkb_state(wkb_parse_state *s);
 extern void temporal_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc,
   bool *upper_inc);
 
+extern TimestampTz timestamp_from_wkb(uint8_t *wkb, int size);
 extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
 
 /*****************************************************************************/

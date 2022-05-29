@@ -584,6 +584,23 @@ skiplist_values(SkipList *list)
  * @param[in] s Span value
  * @param[in] buf Buffer
  */
+// static void
+// timestamp_write(const TimestampTz t, StringInfo buf)
+// {
+  // uint8_t variant = 0;
+  // size_t wkb_size = VARSIZE_ANY_EXHDR(s);
+  // uint8_t *wkb = timestamp_as_wkb(s, variant, &wkb_size);
+  // pq_sendbytes(buf, (char *) wkb, wkb_size);
+  // pfree(wkb);
+  // return;
+// }
+
+/**
+ * Writes a span value into the buffer
+ *
+ * @param[in] s Span value
+ * @param[in] buf Buffer
+ */
 static void
 span_write(const Span *s, StringInfo buf)
 {
@@ -594,7 +611,6 @@ span_write(const Span *s, StringInfo buf)
   pfree(wkb);
   return;
 }
-
 
 /**
  * Writes a temporal value into the buffer

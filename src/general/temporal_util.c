@@ -963,6 +963,49 @@ basetype_output(CachedType basetype, Datum value)
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
+#else /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/**
+ * Call input function of the base type
+ */
+Datum
+basetype_input(CachedType basetype, char *str)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_input(basetypid, str);
+}
+
+/**
+ * Call output function of the base type
+ */
+char *
+basetype_output(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_output(basetypid, value);
+}
+
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <utils/lsyscache.h>
+#include <catalog/pg_collation_d.h>
+#include <utils/varlena.h>
+
+/*****************************************************************************
+ * Send/receive PostgreSQL functions
+ *****************************************************************************/
+ 
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
  * Call receive function of the base type
  */
@@ -993,15 +1036,9 @@ basetype_recv(CachedType basetype, StringInfo buf)
   if (basetype == T_GEOMETRY)
     return PointerGetDatum(PGIS_LWGEOM_recv(buf));
   if (basetype == T_GEOGRAPHY)
-#if ! MEOS
     return call_recv(type_oid(T_GEOGRAPHY), buf);
-#else
-    return PointerGetDatum(PGIS_geography_recv(buf));
-#endif
-#if ! MEOS
   if (basetype == T_NPOINT)
     return PointerGetDatum(npoint_recv(buf));
-#endif
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
@@ -1036,36 +1073,12 @@ basetype_send(CachedType basetype, Datum value)
     return PGIS_LWGEOM_send(DatumGetGserializedP(value));
   if (basetype == T_GEOGRAPHY)
     return PGIS_geography_send(DatumGetGserializedP(value));
-#if ! MEOS
   if (basetype == T_NPOINT)
     return npoint_send(DatumGetNpointP(value));
-#endif
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
 #else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 */
-
-/**
- * Call input function of the base type
- */
-Datum
-basetype_input(CachedType basetype, char *str)
-{
-  ensure_temporal_basetype(basetype);
-  Oid basetypid = type_oid(basetype);
-  return call_input(basetypid, str);
-}
-
-/**
- * Call output function of the base type
- */
-char *
-basetype_output(CachedType basetype, Datum value)
-{
-  ensure_temporal_basetype(basetype);
-  Oid basetypid = type_oid(basetype);
-  return call_output(basetypid, value);
-}
 
 /**
  * Call receive function of the base type
@@ -1104,18 +1117,6 @@ basetype_send(CachedType basetype, Datum value)
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <utils/lsyscache.h>
-#include <catalog/pg_collation_d.h>
-#include <utils/varlena.h>
 
 /*****************************************************************************
  * Call PostgreSQL functions
