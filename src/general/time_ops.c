@@ -4938,7 +4938,7 @@ Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   if (result == NULL)
-    PG_RETURN_NULL() ;
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -5105,7 +5105,7 @@ Minus_periodset_periodset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
   if (! result)
-    PG_RETURN_NULL() ;
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

@@ -38,7 +38,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <lib/stringinfo.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporal_catalog.h"
@@ -106,6 +105,8 @@ extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 /*****************************************************************************/
 
 #if ! MEOS
+
+#include <lib/stringinfo.h>
 
 /* Send/receive functions */
 

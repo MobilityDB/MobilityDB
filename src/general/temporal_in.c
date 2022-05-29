@@ -42,7 +42,7 @@
 #include "general/doublen.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
-#include "point/tpoint_in.h"
+#include "point/tpoint_spatialfuncs.h"
 #if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif /* ! MEOS */
@@ -280,6 +280,26 @@ double4_from_wkb_state(wkb_parse_state *s)
   return result;
 }
 
+/**
+ * Return a point from its WKB representation. A WKB point has just a set of
+ * doubles, with the quantity depending on the dimension of the point.
+ */
+Datum
+point_from_wkb_state(wkb_parse_state *s)
+{
+  double x, y, z;
+  x = double_from_wkb_state(s);
+  y = double_from_wkb_state(s);
+  if (s->hasz)
+    z = double_from_wkb_state(s);
+  LWPOINT *point = s->hasz ? lwpoint_make3dz(s->srid, x, y, z) :
+    lwpoint_make2d(s->srid, x, y);
+  FLAGS_SET_GEODETIC(point->flags, s->geodetic);
+  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
+  lwpoint_free(point);
+  return result;
+}
+
 #if ! MEOS
 /**
  * Read an npoint and advance the parse state forward
@@ -477,11 +497,6 @@ basevalue_from_wkb_state(wkb_parse_state *s)
 static TInstant *
 tinstant_from_wkb_state(wkb_parse_state *s)
 {
-  /* Count the dimensions. */
-  // uint32_t ndims = (s->hasz) ? 3 : 2;
-  /* Does the data we want to read exist? */
-  // size_t size = (ndims * MOBDB_WKB_DOUBLE_SIZE) + MOBDB_WKB_TIMESTAMP_SIZE;
-  // wkb_parse_state_check(s, size);
   /* Read the values from the buffer and create the instant */
   Datum value = basevalue_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
@@ -516,15 +531,9 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 static TInstantSet *
 tinstantset_from_wkb_state(wkb_parse_state *s)
 {
-  // /* Count the dimensions */
-  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of instants */
   int count = int32_from_wkb_state(s);
   assert(count > 0);
-  /* Does the data we want to read exist? */
-  // size_t size = count * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
-    // MOBDB_WKB_TIMESTAMP_SIZE);
-  // wkb_parse_state_check(s, size);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
   return tinstantset_make_free(instants, count, MERGE_NO);
@@ -554,8 +563,6 @@ temporal_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc,
 static TSequence *
 tsequence_from_wkb_state(wkb_parse_state *s)
 {
-  /* Count the dimensions. */
-  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of instants */
   int count = int32_from_wkb_state(s);
   assert(count > 0);
@@ -563,10 +570,6 @@ tsequence_from_wkb_state(wkb_parse_state *s)
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
   bool lower_inc, upper_inc;
   temporal_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
-  /* Does the data we want to read exist? */
-  // size_t size = count * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
-    // MOBDB_WKB_TIMESTAMP_SIZE);
-  // wkb_parse_state_check(s, size);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
   return tsequence_make_free(instants, count, lower_inc, upper_inc,
@@ -579,8 +582,6 @@ tsequence_from_wkb_state(wkb_parse_state *s)
 static TSequenceSet *
 tsequenceset_from_wkb_state(wkb_parse_state *s)
 {
-  /* Count the dimensions. */
-  // uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of sequences */
   int count = int32_from_wkb_state(s);
   assert(count > 0);
@@ -594,10 +595,6 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
     uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
     bool lower_inc, upper_inc;
     temporal_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
-    /* Does the data we want to read exist? */
-    // size_t size = countinst * ((ndims * MOBDB_WKB_DOUBLE_SIZE) +
-      // MOBDB_WKB_TIMESTAMP_SIZE);
-    // wkb_parse_state_check(s, size);
     /* Parse the instants */
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)

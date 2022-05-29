@@ -781,7 +781,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
   if (duration != NULL && ! instant)
     scale =
       (double) (result->period.upper - result->period.lower) /
-      (double) (ps->period.upper - ps->period.lower) ;
+      (double) (ps->period.upper - ps->period.lower);
   for (int i = 0; i < ps->count; i++)
   {
     if (start != NULL)

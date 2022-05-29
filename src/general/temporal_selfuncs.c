@@ -135,7 +135,7 @@ var_eq_const(VariableStatData *vardata, Oid operid,
      * operator...)
      */
     if (get_attstatsslot(&sslot, vardata->statsTuple,
-               // EZ replaced InvalidOid by operator
+               // MobilityDB replaced InvalidOid by operator
                STATISTIC_KIND_MCV, operid,
                ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
     {

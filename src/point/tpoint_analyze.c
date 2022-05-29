@@ -244,7 +244,7 @@ nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
   double ivol = 1.0;
   double vol2 = 1.0;
 
-  for (d = 0 ; d < ndims; d++)
+  for (d = 0; d < ndims; d++)
   {
     if (b1->max[d] <= b2->min[d] || b1->min[d] >= b2->max[d])
       return 0.0; /* Disjoint */

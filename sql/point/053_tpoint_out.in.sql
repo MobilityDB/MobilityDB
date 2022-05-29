@@ -99,19 +99,19 @@ CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15,
 
 CREATE FUNCTION asBinary(tgeompoint)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tpoint_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tgeogpoint)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tpoint_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tgeompoint, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tpoint_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tgeogpoint, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tpoint_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKB(tgeompoint)
@@ -133,19 +133,19 @@ CREATE FUNCTION asEWKB(tgeogpoint, endianenconding text)
 
 CREATE FUNCTION asHexEWKB(tgeompoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tpoint_as_hexewkb'
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexEWKB(tgeogpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tpoint_as_hexewkb'
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexEWKB(tgeompoint, endianenconding text)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tpoint_as_hexewkb'
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexEWKB(tgeogpoint, endianenconding text)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tpoint_as_hexewkb'
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

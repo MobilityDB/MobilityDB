@@ -1004,7 +1004,7 @@ basetype_output(CachedType basetype, Datum value)
 /*****************************************************************************
  * Send/receive PostgreSQL functions
  *****************************************************************************/
- 
+
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
  * Call receive function of the base type
@@ -1213,7 +1213,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
   LOCAL_FCINFO(fcinfo, 2);
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_nargs = 2;
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
@@ -1236,7 +1236,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
   LOCAL_FCINFO(fcinfo, 3);
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
   InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
@@ -1280,7 +1280,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
   FunctionCallInfoData fcinfo;
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
   InitFunctionCallInfoData(fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
@@ -1302,7 +1302,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
   FunctionCallInfoData fcinfo;
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
   InitFunctionCallInfoData(fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);

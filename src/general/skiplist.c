@@ -344,7 +344,7 @@ skiplist_headval(SkipList *list)
   return list->elems[list->elems[0].next[0]].value;
 }
 
-/*  Function not currently used
+#if 0 /* not used */
 void *
 skiplist_tailval(SkipList *list)
 {
@@ -356,7 +356,7 @@ skiplist_tailval(SkipList *list)
     e = &list->elems[e->next[height - 1]];
   return e->value;
 }
-*/
+#endif /* not used */
 
 /**
  * Splice the skiplist with the array of values using the aggregation
@@ -580,57 +580,6 @@ skiplist_values(SkipList *list)
  *****************************************************************************/
 
 /**
- * Writes a span value into the buffer
- *
- * @param[in] s Span value
- * @param[in] buf Buffer
- */
-// static void
-// timestamp_write(const TimestampTz t, StringInfo buf)
-// {
-  // uint8_t variant = 0;
-  // size_t wkb_size = VARSIZE_ANY_EXHDR(s);
-  // uint8_t *wkb = timestamp_as_wkb(s, variant, &wkb_size);
-  // pq_sendbytes(buf, (char *) wkb, wkb_size);
-  // pfree(wkb);
-  // return;
-// }
-
-// /**
- // * Writes a span value into the buffer
- // *
- // * @param[in] s Span value
- // * @param[in] buf Buffer
- // */
-// static void
-// span_write(const Span *s, StringInfo buf)
-// {
-  // uint8_t variant = 0;
-  // size_t wkb_size = VARSIZE_ANY_EXHDR(s);
-  // uint8_t *wkb = span_as_wkb(s, variant, &wkb_size);
-  // pq_sendbytes(buf, (char *) wkb, wkb_size);
-  // pfree(wkb);
-  // return;
-// }
-
-// /**
- // * Writes a temporal value into the buffer
- // *
- // * @param[in] temp Temporal value
- // * @param[in] buf Buffer
- // */
-// static void
-// temporal_write(Temporal *temp, StringInfo buf)
-// {
-  // uint8_t variant = 0;
-  // size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
-  // uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
-  // pq_sendbytes(buf, (char *) wkb, wkb_size);
-  // pfree(wkb);
-  // return;
-// }
-
-/**
  * Writes the state value into the buffer
  *
  * @param[in] state State
@@ -698,7 +647,6 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   {
     for (int i = 0; i < length; i ++)
       values[i] = span_recv(buf);
-      // values[i] = span_from_wkb((uint8_t *) buf->data, buf->len);
     result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }
@@ -706,7 +654,6 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   {
     for (int i = 0; i < length; i ++)
       values[i] = temporal_recv(buf);
-      // values[i] = temporal_from_wkb((uint8_t *) buf->data, buf->len);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

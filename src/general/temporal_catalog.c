@@ -644,7 +644,7 @@ populate_typeoid_cache()
 static void
 populate_operoid_cache()
 {
-  Oid namespaceId = LookupNamespaceNoError("public") ;
+  Oid namespaceId = LookupNamespaceNoError("public");
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
   PushOverrideSearchPath(overridePath);
@@ -691,7 +691,7 @@ populate_operoid_cache()
   }
   PG_CATCH();
   {
-    PopOverrideSearchPath() ;
+    PopOverrideSearchPath();
     PG_RE_THROW();
   }
   PG_END_TRY();

@@ -101,6 +101,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <lib/stringinfo.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */

@@ -116,7 +116,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
   {
     TInstant *inst2 = (TInstant *) tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
-    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
+    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 
     /* Stepwise interpolation or constant segment */
     if (! linear || datum_eq(value1, value2, basetype))
@@ -312,7 +312,7 @@ tsequence_transform_wcount(const TSequence *seq, const Interval *interval,
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
+    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     result[i] = tinstant_transform_wcount1(inst1->t, inst2->t, lower_inc,
       upper_inc, interval);
     inst1 = inst2;
@@ -469,7 +469,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
+    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
     double2_set(value, 1, &dvalue);

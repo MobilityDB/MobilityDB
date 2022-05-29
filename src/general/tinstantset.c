@@ -37,7 +37,6 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-// #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
@@ -1691,7 +1690,7 @@ tinstantset_hash(const TInstantSet *is)
 
 #include <libpq/pqformat.h>
 
-// TEST Needed for temporal aggregation
+/* The send and receive functions are needed for temporal aggregation */
 
 /**
  * @brief Return a temporal instant set from its binary representation

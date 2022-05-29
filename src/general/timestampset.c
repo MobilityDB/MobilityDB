@@ -584,7 +584,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
     if (duration != NULL)
       scale =
         (double) (result->period.upper - result->period.lower) /
-        (double) (ts->period.upper - ts->period.lower) ;
+        (double) (ts->period.upper - ts->period.lower);
     for (int i = 1; i < ts->count - 1; i++)
     {
       if (start != NULL)

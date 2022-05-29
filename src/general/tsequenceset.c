@@ -37,7 +37,6 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-// #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
@@ -1247,7 +1246,7 @@ tsequenceset_timestamp_n(const TSequenceSet *ss, int n, TimestampTz *result)
   if (n == 1)
   {
     *result = tsequence_inst_n(tsequenceset_seq_n(ss, 0), 0)->t;
-    return true ;
+    return true;
   }
 
   /* Continue the search 0-based */
@@ -2434,7 +2433,7 @@ tsequenceset_hash(const TSequenceSet *ss)
 
 #include <libpq/pqformat.h>
 
-// TEST Needed for temporal aggregation
+/* The send and receive functions are needed for temporal aggregation */
 
 /**
  * @brief Return a temporal sequence set from its binary representation

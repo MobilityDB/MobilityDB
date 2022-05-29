@@ -1197,7 +1197,7 @@ Span_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(span_out(s));
 }
 
-// TEST Needed for time aggregation
+/* Needed for time aggregation */
 
 /**
  * @brief Return a span from its binary representation read from a buffer.

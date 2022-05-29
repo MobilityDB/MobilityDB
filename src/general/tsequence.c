@@ -44,7 +44,6 @@
 #else
   #include <access/hash.h>
 #endif
-// #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
@@ -1626,7 +1625,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
   {
     scale =
       (double) (result->period.upper - result->period.lower) /
-      (double) (seq->period.upper - seq->period.lower) ;
+      (double) (seq->period.upper - seq->period.lower);
   }
 
   /* Set the first instant */
@@ -4149,7 +4148,7 @@ tsequence_hash(const TSequence *seq)
 
 #include <libpq/pqformat.h>
 
-// TEST Needed for temporal aggregation
+/* The send and receive functions are needed for temporal aggregation */
 
 /**
  * @brief Return a temporal sequence from its binary representation read from

@@ -358,7 +358,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
           waitTime = gsl_ran_exponential(_rng, P_DEST_EXPMU);
           if (waitTime < P_EPSILON)
             waitTime = P_DEST_EXPMU;
-          t = t + (int) (waitTime * 1e6) ; /* microseconds */
+          t = t + (int) (waitTime * 1e6); /* microseconds */
           totalWaitTime += waitTime;
           if (verbosity == 3)
             ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
@@ -401,7 +401,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
           travelTime = curDist / (curSpeed / 3.6);
           if (travelTime < P_EPSILON)
             travelTime = P_DEST_EXPMU;
-          t = t + (int) (travelTime * 1e6) ; /* microseconds */
+          t = t + (int) (travelTime * 1e6); /* microseconds */
           totalTravelTime += travelTime;
           twSumSpeed += travelTime * curSpeed;
           k++;

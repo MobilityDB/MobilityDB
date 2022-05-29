@@ -134,7 +134,6 @@
  * tgeompoint_tgeogpoint(PG_FUNCTION_ARGS)
  * {
  *   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
- *   // We only need to fill these parameters for tfunc_temporal
  *   LiftedFunctionInfo *lfinfo;
  *   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
  *   lfinfo->func = (varfunc) &geom_to_geog;

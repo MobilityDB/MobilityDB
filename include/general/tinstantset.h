@@ -54,7 +54,6 @@ extern bool tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t,
 
 extern char *tinstantset_to_string(const TInstantSet *is,
   char *(*value_out)(CachedType, Datum));
-extern void tinstantset_write(const TInstantSet *is, StringInfo buf);
 
 /* Intersection functions */
 

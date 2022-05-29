@@ -38,10 +38,6 @@
 /* C */
 #include <assert.h>
 #include <float.h>
-// /* PostGIS */
-// #if POSTGIS_VERSION_NUMBER >= 30000
-  // #include <liblwgeom_internal.h>
-// #endif
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/tinstant.h"
@@ -49,7 +45,7 @@
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/temporal_util.h"
-#include "point/tpoint_out.h"
+#include "point/tpoint_spatialfuncs.h"
 #if ! MEOS
   #include "npoint/tnpoint_static.h"
 #endif
@@ -288,6 +284,31 @@ double4_to_wkb_buf(const double4 *d, uint8_t *buf, uint8_t variant)
   return buf;
 }
 
+/**
+ * Write into the buffer the coordinates of the temporal instant point
+ * represented in Well-Known Binary (WKB) format as follows
+ * - 2 or 3 doubles for the coordinates depending on whether there is Z
+ * - 1 timestamp
+ */
+uint8_t *
+coords_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+{
+  if (MOBDB_FLAGS_GET_Z(inst->flags))
+  {
+    const POINT3DZ *point = datum_point3dz_p(tinstant_value(inst));
+    buf = double_to_wkb_buf(point->x, buf, variant);
+    buf = double_to_wkb_buf(point->y, buf, variant);
+    buf = double_to_wkb_buf(point->z, buf, variant);
+  }
+  else
+  {
+    const POINT2D *point = datum_point2d_p(tinstant_value(inst));
+    buf = double_to_wkb_buf(point->x, buf, variant);
+    buf = double_to_wkb_buf(point->y, buf, variant);
+  }
+  return buf;
+}
+
 #if ! MEOS
 /**
  * Write into the buffer a network point represented in
@@ -384,6 +405,20 @@ timestamp_as_wkb(const TimestampTz t, uint8_t variant, size_t *size_out)
     *size_out = buf_size;
 
   return wkb_out;
+}
+
+/**
+ * Return true if the temporal point needs to output the SRID
+ */
+bool
+tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
+{
+  /* Add an SRID if the WKB form is extended and if the temporal point has one */
+  if ((variant & WKB_EXTENDED) && tpoint_srid(temp) != SRID_UNKNOWN)
+    return true;
+
+  /* Everything else doesn't get an SRID */
+  return false;
 }
 
 /*****************************************************************************/
@@ -952,10 +987,9 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
     return NULL;
   }
 
-  /* Report output size */
+  /* Report output size and return */
   if (size_out)
     *size_out = buf_size;
-
   return wkb_out;
 }
 
@@ -967,12 +1001,12 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 char *
 temporal_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size)
 {
-  size_t hexwkb_size;
   /* Create WKB hex string */
+  size_t hexwkb_size;
   char *result = (char *) temporal_as_wkb(temp,
     variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, &hexwkb_size);
-
   *size = hexwkb_size;
+  /* Report output size and return */
   return result;
 }
 
@@ -1010,7 +1044,7 @@ ensure_valid_endian_flag(const char *endian)
 }
 
 /**
- * Output the temporal type in WKB or EWKB format
+ * @brief Output the temporal type in WKB or EWKB format
  */
 Datum
 temporal_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
@@ -1048,7 +1082,8 @@ temporal_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
 
 PG_FUNCTION_INFO_V1(Temporal_as_binary);
 /**
- * Output a temporal value in WKB format.
+ * @brief Output a temporal value in WKB format.
+ * @note This will have no 'SRID=#;' for temporal points
  */
 PGDLLEXPORT Datum
 Temporal_as_binary(PG_FUNCTION_ARGS)
@@ -1056,10 +1091,21 @@ Temporal_as_binary(PG_FUNCTION_ARGS)
   return temporal_as_binary_ext(fcinfo, false);
 }
 
+PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
+/**
+ * @brief Output a temporal point in EWKB format.
+ * @note This will have 'SRID=#;' for temporal points
+ */
+PGDLLEXPORT Datum
+Tpoint_as_ewkb(PG_FUNCTION_ARGS)
+{
+  return temporal_as_binary_ext(fcinfo, true);
+}
+
 PG_FUNCTION_INFO_V1(Temporal_as_hexwkb);
 /**
- * Output the temporal point in HexEWKB format.
- * This will have 'SRID=#;'
+ * @brief Output the temporal point in HexEWKB format.
+ * @note This will have 'SRID=#;' for temporal points
  */
 PGDLLEXPORT Datum
 Temporal_as_hexwkb(PG_FUNCTION_ARGS)
@@ -1067,7 +1113,7 @@ Temporal_as_hexwkb(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+  if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
   {
     text *type = PG_GETARG_TEXT_P(1);
     const char *endian = text2cstring(type);

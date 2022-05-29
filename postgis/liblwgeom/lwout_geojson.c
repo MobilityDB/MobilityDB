@@ -425,7 +425,6 @@ asgeojson_multipoint(const LWMPOINT *mpoint, const char *srs, GBOX *bbox, int pr
 /**
  * Multiline Geometry
  */
-
 static size_t
 asgeojson_multiline_size(const LWMLINE *mline, const char *srs, GBOX *bbox, int precision)
 {
@@ -438,7 +437,7 @@ asgeojson_multiline_size(const LWMLINE *mline, const char *srs, GBOX *bbox, int 
 	if (bbox) size += asgeojson_bbox_size(FLAGS_GET_Z(mline->flags), precision);
 	size += sizeof("'coordinates':[]}");
 
-	for (i=0 ; i<mline->ngeoms; i++)
+	for (i = 0; i<mline->ngeoms; i++)
 	{
 		line = mline->geoms[i];
 		size += pointArray_geojson_size(line->points, precision);

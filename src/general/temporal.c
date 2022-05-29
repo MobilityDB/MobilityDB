@@ -3553,7 +3553,7 @@ Temporal_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-// TEST Needed for temporal aggregation
+/* The send and receive functions are needed for temporal aggregation */
 
 /**
  * @brief Return a temporal value from its binary representation read from

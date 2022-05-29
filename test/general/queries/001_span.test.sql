@@ -28,8 +28,8 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for period data type.
--- File period.c
+-- Tests for span data type.
+-- File span.c
 -------------------------------------------------------------------------------
 
 /* Errors */
@@ -137,5 +137,48 @@ SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-0
 
 SELECT period_hash_extended('[2000-01-01,2000-01-02]', 1) = period_hash_extended('[2000-01-01,2000-01-02]', 1);
 SELECT period_hash_extended('[2000-01-01,2000-01-02]', 1) <> period_hash_extended('[2000-01-02,2000-01-02]', 1);
+
+-------------------------------------------------------------------------------
+
+-- canonicalize
+SELECT intspan '[1,2]';
+
+SELECT round(floatspan '[1.123456789,2.123456789]',6);
+SELECT round(floatspan '[-inf,2.123456789]',6);
+select round(floatspan '[1.123456789,inf]',6);
+
+-------------------------------------------------------------------------------
+
+SELECT intspan '[3,5)' << 5;
+SELECT 5 << intspan '[3,5)';
+
+SELECT intspan '[3,5)' >> 5;
+SELECT 5 >> intspan '[3,5)';
+
+SELECT intspan '[3,5)' &< 5;
+SELECT 5 &< intspan '[3,5)';
+
+SELECT intspan '[3,5)' &> 5;
+SELECT 5 &> intspan '[3,5)';
+
+SELECT intspan '[3,5)' -|- 5;
+SELECT 5 -|- intspan '[3,5)';
+
+-------------------------------------------------------------------------------
+
+SELECT floatspan '[3.5, 5.5]' << 5.5;
+SELECT 5.5 << floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' >> 5.5;
+SELECT 5.5 >> floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' &< 5.5;
+SELECT 5.5 &< floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' &> 5.5;
+SELECT 5.5 &> floatspan '[3.5, 5.5]';
+
+SELECT floatspan '[3.5, 5.5]' -|- 5.5;
+SELECT 5.5 -|- floatspan '[3.5, 5.5]';
 
 -------------------------------------------------------------------------------

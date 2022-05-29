@@ -1293,24 +1293,6 @@ PGIS_LWGEOM_send(GSERIALIZED *geo)
 }
 
 /*****************************************************************************
- * Functions adapted from lwgeom_btree.c
- *****************************************************************************/
-
-/**
- * @brief Return true if the first geometry is less than the second one
- * @note PostGIS function: Datum lwgeom_lt(PG_FUNCTION_ARGS)
- */
-// bool
-// PGIS_lwgeom_lt(GSERIALIZED *g1, GSERIALIZED *g2)
-// {
-  // int cmp = gserialized_cmp(g1, g2);
-  // if (cmp < 0)
-    // return true;
-  // else
-    // return false;
-// }
-
-/*****************************************************************************
  * Functions adapted from geography_inout.c
  *****************************************************************************/
 

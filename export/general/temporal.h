@@ -57,6 +57,9 @@ extern Datum Temporal_in(PG_FUNCTION_ARGS);
 extern Datum Temporal_out(PG_FUNCTION_ARGS);
 extern Datum Temporal_send(PG_FUNCTION_ARGS);
 extern Datum Temporal_recv(PG_FUNCTION_ARGS);
+extern Datum Temporal_as_binary(PG_FUNCTION_ARGS);
+extern Datum Temporal_as_hexwkb(PG_FUNCTION_ARGS);
+extern Datum Tpoint_as_ewkb(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
