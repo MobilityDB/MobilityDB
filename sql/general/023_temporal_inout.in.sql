@@ -70,36 +70,36 @@ CREATE FUNCTION ttextFromHexWKB(text)
 
 CREATE FUNCTION asBinary(tbool)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tint)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tfloat)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(ttext)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tbool, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tint, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tfloat, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(ttext, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(tbool)

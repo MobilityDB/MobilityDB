@@ -99,19 +99,19 @@ CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15,
 
 CREATE FUNCTION asBinary(tgeompoint)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tgeogpoint)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tgeompoint, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tgeogpoint, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_binary'
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKB(tgeompoint)

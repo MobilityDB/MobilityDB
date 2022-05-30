@@ -85,11 +85,11 @@ CREATE FUNCTION timestampsetFromHexWKB(text)
 
 CREATE FUNCTION asBinary(timestampset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Timestampset_as_binary'
+  AS 'MODULE_PATHNAME', 'Timestampset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(timestampset, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Timestampset_as_binary'
+  AS 'MODULE_PATHNAME', 'Timestampset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(timestampset)

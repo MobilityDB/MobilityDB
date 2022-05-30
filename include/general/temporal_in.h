@@ -70,18 +70,4 @@ typedef struct
 
 /*****************************************************************************/
 
-extern char byte_from_wkb_state(wkb_parse_state *s);
-extern uint16_t int16_from_wkb_state(wkb_parse_state *s);
-extern uint32_t int32_from_wkb_state(wkb_parse_state *s);
-extern uint64_t int64_from_wkb_state(wkb_parse_state *s);
-extern double double_from_wkb_state(wkb_parse_state *s);
-extern TimestampTz timestamp_from_wkb_state(wkb_parse_state *s);
-extern void temporal_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc,
-  bool *upper_inc);
-
-extern TimestampTz timestamp_from_wkb(uint8_t *wkb, int size);
-extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
-
-/*****************************************************************************/
-
 #endif /* __TEMPORAL_IN_H__ */

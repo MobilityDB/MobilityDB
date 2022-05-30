@@ -78,11 +78,11 @@ CREATE FUNCTION tboxFromHexWKB(text)
 
 CREATE FUNCTION asBinary(tbox)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tbox_as_binary'
+  AS 'MODULE_PATHNAME', 'Tbox_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tbox, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tbox_as_binary'
+  AS 'MODULE_PATHNAME', 'Tbox_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(tbox)

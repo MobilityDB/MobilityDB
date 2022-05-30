@@ -43,8 +43,6 @@
 #include <libmeos.h>
 #include "general/pg_call.h"
 #include "general/time_ops.h"
-#include "general/temporal_in.h"
-#include "general/temporal_out.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 
@@ -152,205 +150,6 @@ timestampset_out(const TimestampSet *ts)
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
-}
-
-/*****************************************************************************
- * Input/output in WKB and HexWKB format
- *****************************************************************************/
-
-/**
- * Return the size in bytes of a timestamp set represented in Well-Known Binary
- * (WKB) format
- */
-static size_t
-timestampset_to_wkb_size(const TimestampSet *ts)
-{
-  /* Endian flag + count + timestamps */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT4_SIZE +
-    MOBDB_WKB_TIMESTAMP_SIZE * ts->count;
-  return size;
-}
-
-/**
- * Write into the buffer a timestamp set represented in Well-Known Binary (WKB)
- * format as follows
- * - Endian byte
- * - int32 stating the number of timestamps
- * - Timestamps
- */
-static uint8_t *
-timestampset_to_wkb_buf(const TimestampSet *ts, uint8_t *buf, uint8_t variant)
-{
-  /* Write the endian flag */
-  buf = endian_to_wkb_buf(buf, variant);
-  /* Write the count */
-  buf = int32_to_wkb_buf(ts->count, buf, variant);
-  /* Write the timestamps */
-  for (int i = 0; i < ts->count; i++)
-    buf = timestamp_to_wkb_buf(ts->elems[i], buf, variant);
-  /* Write the temporal dimension if any */
-  return buf;
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return the WKB representation of a timestamp set.
- *
- * @param[in] ts Timestamp set
- * @param[in] variant Unsigned bitmask value.
- * Accepts either WKB_NDR or WKB_XDR, and WKB_HEX.
- * For example: Variant = WKB_NDR would return the little-endian WKB form.
- * For example: Variant = (WKB_XDR | WKB_HEX) would return the big-endian
- * WKB form as hex-encoded ASCII.
- * @param[out] size_out If supplied, will return the size of the returned
- * memory segment, including the null terminator in the case of ASCII.
- * @note Caller is responsible for freeing the returned array.
- */
-uint8_t *
-timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
-{
-  size_t buf_size;
-  uint8_t *buf = NULL;
-  uint8_t *wkb_out = NULL;
-
-  /* Initialize output size */
-  if (size_out) *size_out = 0;
-
-  /* Calculate the required size of the output buffer */
-  buf_size = timestampset_to_wkb_size(ts);
-  if (buf_size == 0)
-  {
-    elog(ERROR, "Error calculating output WKB buffer size.");
-    return NULL;
-  }
-
-  /* Hex string takes twice as much space as binary + a null character */
-  if (variant & WKB_HEX)
-    buf_size = 2 * buf_size + 1;
-
-  /* If neither or both variants are specified, choose the native order */
-  if (! (variant & WKB_NDR || variant & WKB_XDR) ||
-    (variant & WKB_NDR && variant & WKB_XDR))
-  {
-    if (MOBDB_IS_BIG_ENDIAN)
-      variant = variant | (uint8_t) WKB_XDR;
-    else
-      variant = variant | (uint8_t) WKB_NDR;
-  }
-
-  /* Allocate the buffer */
-  buf = palloc(buf_size);
-  if (buf == NULL)
-  {
-    elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
-    return NULL;
-  }
-
-  /* Retain a pointer to the front of the buffer for later */
-  wkb_out = buf;
-
-  /* Write the WKB into the output buffer */
-  buf = timestampset_to_wkb_buf(ts, buf, variant);
-
-  /* Null the last byte if this is a hex output */
-  if (variant & WKB_HEX)
-  {
-    *buf = '\0';
-    buf++;
-  }
-
-  /* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
-  if (buf_size != (size_t) (buf - wkb_out))
-  {
-    elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
-    pfree(wkb_out);
-    return NULL;
-  }
-
-  /* Report output size */
-  if (size_out)
-    *size_out = buf_size;
-
-  return wkb_out;
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return the HexWKB representation of a timestamp set.
- */
-char *
-timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size)
-{
-  /* Create WKB hex string */
-  size_t hexwkb_size;
-  char *result = (char *) timestampset_as_wkb(ts, variant | (uint8_t) WKB_HEX,
-    &hexwkb_size);
-  /* Set the output argument and return */
-  *size = hexwkb_size;
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Return a timestamp set from its WKB representation
- */
-static TimestampSet *
-timestampset_from_wkb_state(wkb_parse_state *s)
-{
-  /* Fail when handed incorrect starting byte */
-  char wkb_little_endian = byte_from_wkb_state(s);
-  if (wkb_little_endian != 1 && wkb_little_endian != 0)
-    elog(ERROR, "Invalid endian flag value encountered.");
-
-  /* Check the endianness of our input */
-  s->swap_bytes = false;
-  /* Machine arch is big endian, request is for little */
-  if (MOBDB_IS_BIG_ENDIAN && wkb_little_endian)
-    s->swap_bytes = true;
-  /* Machine arch is little endian, request is for big */
-  else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
-    s->swap_bytes = true;
-
-  /* Read the number of timestamps and allocate space for them */
-  int count = int32_from_wkb_state(s);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-
-  /* Read and create the timestamp set */
-  for (int i = 0; i < count; i++)
-    times[i] = timestamp_from_wkb_state(s);
-  TimestampSet *result = timestampset_make_free(times, count);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return a timestamp set from its Well-Known Binary (WKB)
- * representation.
- */
-TimestampSet *
-timestampset_from_wkb(uint8_t *wkb, int size)
-{
-  /* Initialize the state appropriately */
-  wkb_parse_state s;
-  memset(&s, 0, sizeof(wkb_parse_state));
-  s.wkb = s.pos = wkb;
-  s.wkb_size = size;
-  return timestampset_from_wkb_state(&s);
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return a timestamp set from its HexWKB representation
- */
-TimestampSet *
-timestampset_from_hexwkb(const char *hexwkb)
-{
-  int hexwkb_len = strlen(hexwkb);
-  uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
-  TimestampSet *result = timestampset_from_wkb(wkb, hexwkb_len / 2);
-  pfree(wkb);
-  return result;
 }
 
 /*****************************************************************************
@@ -796,6 +595,10 @@ Timestampset_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
+/* Defined in temporal_wkb_in.c and temporal_wkb_out.c */
+extern Datum Timestampset_from_wkb(PG_FUNCTION_ARGS);
+extern Datum Timestampset_as_wkb(PG_FUNCTION_ARGS);
+
 PG_FUNCTION_INFO_V1(Timestampset_recv);
 /**
  * Receive function for timestamp set
@@ -803,11 +606,7 @@ PG_FUNCTION_INFO_V1(Timestampset_recv);
 PGDLLEXPORT Datum
 Timestampset_recv(PG_FUNCTION_ARGS)
 {
-  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  TimestampSet *result = timestampset_from_wkb((uint8_t *) buf->data, buf->len);
-  /* Set cursor to the end of buffer (so the backend is happy) */
-  buf->cursor = buf->len;
-  PG_RETURN_POINTER(result);
+  return(Timestampset_from_wkb(fcinfo));
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_send);
@@ -817,123 +616,7 @@ PG_FUNCTION_INFO_V1(Timestampset_send);
 PGDLLEXPORT Datum
 Timestampset_send(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  uint8_t variant = 0;
-  size_t wkb_size = VARSIZE_ANY_EXHDR(ts);
-  uint8_t *wkb = timestampset_as_wkb(ts, variant, &wkb_size);
-  /* Prepare the PostgreSQL bytea return type */
-  bytea *result = palloc(wkb_size + VARHDRSZ);
-  memcpy(VARDATA(result), wkb, wkb_size);
-  SET_VARSIZE(result, wkb_size + VARHDRSZ);
-  /* Clean up and return */
-  pfree(wkb);
-  PG_RETURN_BYTEA_P(result);
-}
-
-/*****************************************************************************
- * Input/output in WKB and in HexWKB format
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
-/**
- * Return a timestamp set from its WKB representation
- */
-PGDLLEXPORT Datum
-Timestampset_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TimestampSet *ts = timestampset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ts);
-}
-
-PG_FUNCTION_INFO_V1(Timestampset_from_hexwkb);
-/**
- * Return a temporal point from its HexWKB representation
- */
-PGDLLEXPORT Datum
-Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  TimestampSet *ts = timestampset_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ts);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Timestampset_as_binary);
-/**
- * Output a timestamp set in WKB format.
- */
-PGDLLEXPORT Datum
-Timestampset_as_binary(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  uint8_t variant = 0;
-  /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
-  {
-    text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text2cstring(type);
-    ensure_valid_endian_flag(endian);
-    if (strncasecmp(endian, "ndr", 3) == 0)
-      variant = variant | (uint8_t) WKB_NDR;
-    else /* type = XDR */
-      variant = variant | (uint8_t) WKB_XDR;
-  }
-
-  /* Create WKB hex string */
-  size_t wkb_size = VARSIZE_ANY_EXHDR(ts);
-  uint8_t *wkb = timestampset_as_wkb(ts, variant, &wkb_size);
-
-  /* Prepare the PostgreSQL bytea return type */
-  bytea *result = palloc(wkb_size + VARHDRSZ);
-  memcpy(VARDATA(result), wkb, wkb_size);
-  SET_VARSIZE(result, wkb_size + VARHDRSZ);
-
-  /* Clean up and return */
-  pfree(wkb);
-  PG_RETURN_BYTEA_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Timestampset_as_hexwkb);
-/**
- * Output the timestamp set in HexWKB format.
- */
-PGDLLEXPORT Datum
-Timestampset_as_hexwkb(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  uint8_t variant = 0;
-  /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
-  {
-    text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text2cstring(type);
-    ensure_valid_endian_flag(endian);
-    if (strncasecmp(endian, "ndr", 3) == 0)
-      variant = variant | (uint8_t) WKB_NDR;
-    else
-      variant = variant | (uint8_t) WKB_XDR;
-  }
-
-  /* Create WKB hex string */
-  size_t hexwkb_size;
-  char *hexwkb = timestampset_as_hexwkb(ts, variant, &hexwkb_size);
-
-  /* Prepare the PgSQL text return type */
-  size_t text_size = hexwkb_size - 1 + VARHDRSZ;
-  text *result = palloc(text_size);
-  memcpy(VARDATA(result), hexwkb, hexwkb_size - 1);
-  SET_VARSIZE(result, text_size);
-
-  /* Clean up and return */
-  pfree(hexwkb);
-  PG_RETURN_TEXT_P(result);
+  return(Timestampset_as_wkb(fcinfo));
 }
 
 /*****************************************************************************

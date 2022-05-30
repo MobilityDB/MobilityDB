@@ -47,7 +47,6 @@
 #include "general/tinstantset.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "point/tpoint_spatialfuncs.h"
 

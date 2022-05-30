@@ -161,29 +161,29 @@ CREATE FUNCTION periodFromHexWKB(text)
 
 CREATE FUNCTION asBinary(intspan)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_binary'
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(intspan, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_binary'
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(floatspan)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_binary'
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(floatspan, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_binary'
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(period)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_binary'
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(period, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_binary'
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(intspan)

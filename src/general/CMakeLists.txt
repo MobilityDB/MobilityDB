@@ -52,8 +52,6 @@ add_library(general OBJECT
   temporal_catalog.c
   temporal_compops.c
   ${temporal_gist.c}
-  temporal_in.c
-  temporal_out.c
   temporal_parser.c
   ${temporal_posops.c}
   ${temporal_selfuncs.c}
@@ -63,6 +61,8 @@ add_library(general OBJECT
   ${temporal_tile.c}
   temporal_util.c
   ${temporal_waggfuncs.c}
+  temporal_wkb_in.c
+  temporal_wkb_out.c
   ${time_aggfuncs.c}
   time_ops.c
   timestampset.c

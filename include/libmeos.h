@@ -44,7 +44,6 @@
 #include "general/temporal.h"
 #include "point/stbox.h"
 
-
 /*****************************************************************************
  * Functions for span and time types
  *****************************************************************************/
@@ -54,7 +53,7 @@
 extern PeriodSet *periodset_in(char *str);
 extern char *periodset_out(const PeriodSet *ps);
 extern uint8_t *periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
-extern char *periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size);
+extern char *periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
 extern PeriodSet *periodset_from_wkb(uint8_t *wkb, int size);
 extern PeriodSet *periodset_from_hexwkb(const char *hexwkb);
 extern Span *span_in(char *str, CachedType spantype);
@@ -66,7 +65,7 @@ extern char *span_as_hexwkb (const Span *s, uint8_t variant, size_t *size);
 extern TimestampSet *timestampset_in(char *str);
 extern char *timestampset_out(const TimestampSet *ss);
 extern uint8_t *timestampset_as_wkb(const TimestampSet *ss, uint8_t variant, size_t *size_out);
-extern char *timestampset_as_hexwkb(const TimestampSet *ss, uint8_t variant, size_t *size);
+extern char *timestampset_as_hexwkb(const TimestampSet *ss, uint8_t variant, size_t *size_out);
 extern TimestampSet *timestampset_from_wkb(uint8_t *wkb, int size);
 extern TimestampSet *timestampset_from_hexwkb(const char *hexwkb);
 
@@ -579,7 +578,7 @@ extern TSequence *tpointseq_from_mfjson(json_object *mfjson, int srid, CachedTyp
 extern TSequenceSet *tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype, bool linear);
 extern Temporal *tpoint_from_text(const char *wkt, CachedType temptype);
 extern Temporal *tpoint_from_ewkt(const char *wkt, Oid temptypid);
-extern Temporal *tpoint_from_ewkb(uint8_t *wkb, int size);
+extern Temporal *tpoint_from_ewkb(uint8_t *wkb, size_t size);
 extern Temporal *tpoint_from_hexewkb(const char *hexwkb);
 extern char *tpointinst_as_mfjson(const TInstant *inst, int precision, const STBOX *bbox, char *srs);
 extern char *tpointinstset_as_mfjson(const TInstantSet *is, int precision, const STBOX *bbox, char *srs);
