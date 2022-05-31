@@ -595,10 +595,6 @@ Timestampset_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-/* Defined in temporal_wkb_in.c and temporal_wkb_out.c */
-extern Datum Timestampset_from_wkb(PG_FUNCTION_ARGS);
-extern Datum Timestampset_as_wkb(PG_FUNCTION_ARGS);
-
 PG_FUNCTION_INFO_V1(Timestampset_recv);
 /**
  * Receive function for timestamp set
@@ -606,7 +602,11 @@ PG_FUNCTION_INFO_V1(Timestampset_recv);
 PGDLLEXPORT Datum
 Timestampset_recv(PG_FUNCTION_ARGS)
 {
-  return(Timestampset_from_wkb(fcinfo));
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  TimestampSet *result = timestampset_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_send);
@@ -616,7 +616,17 @@ PG_FUNCTION_INFO_V1(Timestampset_send);
 PGDLLEXPORT Datum
 Timestampset_send(PG_FUNCTION_ARGS)
 {
-  return(Timestampset_as_wkb(fcinfo));
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(ts);
+  uint8_t *wkb = timestampset_as_wkb(ts, variant, &wkb_size);
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  /* Clean up and return */
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************

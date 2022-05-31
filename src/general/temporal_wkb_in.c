@@ -32,7 +32,7 @@
  * @brief Input of temporal types in WKB, EWKB, and HexWKB format.
  */
 
-#include "general/temporal_in.h"
+#include "general/temporal_wkb_in.h"
 
 /* C */
 #include <assert.h>
@@ -49,9 +49,33 @@
   #include "npoint/tnpoint_static.h"
 #endif /* ! MEOS */
 
+/*****************************************************************************/
+ 
+/**
+ * Structure used for passing the parse state between the parsing functions.
+ */
+typedef struct
+{
+  const uint8_t *wkb;  /**< Points to start of WKB */
+  size_t wkb_size;     /**< Expected size of WKB */
+  bool swap_bytes;     /**< Do an endian flip? */
+  uint8_t temptype;    /**< Current temporal type we are handling */
+  uint8_t basetype;    /**< Current base type we are handling */
+  uint8_t subtype;     /**< Current subtype we are handling */
+  int32_t srid;        /**< Current SRID we are handling */
+  bool hasx;           /**< X? */
+  bool hasz;           /**< Z? */
+  bool hast;           /**< T? */
+  bool geodetic;       /**< Geodetic? */
+  bool has_srid;       /**< SRID? */
+  bool linear;         /**< Linear interpolation? */
+  const uint8_t *pos;  /**< Current parse position */
+} wkb_parse_state;
+
 /*****************************************************************************
  * Input in WKB format
- * Please refer to the file temporal_out.c where the binary format is explained
+ * Please refer to the file temporal_wkb_out.c where the binary format is
+ * explained
  *****************************************************************************/
 
 /**
@@ -379,16 +403,16 @@ static Datum
 span_basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
-  ensure_span_basetype(s->basetype);
-  switch (s->basetype)
+  ensure_span_type(s->temptype);
+  switch (s->temptype)
   {
-    case T_INT4:
+    case T_INTSPAN:
       result = Int32GetDatum(int32_from_wkb_state(s));
       break;
-    case T_FLOAT8:
+    case T_FLOATSPAN:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
-    case T_TIMESTAMPTZ:
+    case T_PERIOD:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
@@ -464,6 +488,28 @@ timestampset_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
+ * Optimized version of span_from_wkb_state for reading the periods in a period
+ * set. The endian byte and the basetype int16 are not read from the buffer.
+ */
+static Period *
+period_from_wkb_state(wkb_parse_state *s)
+{
+  /* Read the span bounds */
+  uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
+  bool lower_inc, upper_inc;
+  bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
+
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, 2 * MOBDB_WKB_TIMESTAMP_SIZE);
+
+  /* Read the values and create the span */
+  Datum lower = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+  Datum upper = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+  Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
+  return result;
+}
+
+/**
  * Return a period set from its WKB representation
  */
 static PeriodSet *
@@ -473,12 +519,12 @@ periodset_from_wkb_state(wkb_parse_state *s)
   int count = int32_from_wkb_state(s);
   Period **periods = palloc(sizeof(Period *) * count);
 
-  /* Set the state basetype to period */
-  s->basetype = T_PERIOD;
+  /* Set the state basetype to TimestampTz */
+  s->basetype = T_TIMESTAMPTZ;
 
   /* Read and create the period set */
   for (int i = 0; i < count; i++)
-    periods[i] = (Period *) span_from_wkb_state(s);
+    periods[i] = (Period *) period_from_wkb_state(s);
   PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);
   return result;
 }

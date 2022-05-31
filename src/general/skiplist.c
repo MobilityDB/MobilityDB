@@ -49,8 +49,6 @@
 #include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_aggfuncs.h"
-#include "general/temporal_in.h"
-#include "general/temporal_out.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists

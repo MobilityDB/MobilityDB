@@ -28,46 +28,16 @@
  *****************************************************************************/
 
 /**
- * @file temporal_in.h
- * Input of temporal types in WKB (Well-Known Binary) format
+ * @file temporal_wkb_out.h
+ * Output of temporal types in WKB (Well-Known Binary) format
  */
 
-#ifndef __TEMPORAL_IN_H__
-#define __TEMPORAL_IN_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-/* MobilityDB */
-#include "general/timetypes.h"
-#include "general/temporal.h"
-
-/*****************************************************************************
- * Input in EWKB format
- * Please refer to the files temporal_out.c and tpoint_out.c where the binary
- * format is explained
- *****************************************************************************/
-
-/**
- * Structure used for passing the parse state between the parsing functions.
- */
-typedef struct
-{
-  const uint8_t *wkb;  /**< Points to start of WKB */
-  size_t wkb_size;     /**< Expected size of WKB */
-  bool swap_bytes;     /**< Do an endian flip? */
-  uint8_t temptype;    /**< Current temporal type we are handling */
-  uint8_t basetype;    /**< Current base type we are handling */
-  uint8_t subtype;     /**< Current subtype we are handling */
-  int32_t srid;        /**< Current SRID we are handling */
-  bool hasx;           /**< X? */
-  bool hasz;           /**< Z? */
-  bool hast;           /**< T? */
-  bool geodetic;       /**< Geodetic? */
-  bool has_srid;       /**< SRID? */
-  bool linear;         /**< Linear interpolation? */
-  const uint8_t *pos;  /**< Current parse position */
-} wkb_parse_state;
+#ifndef __TEMPORAL_WKB_OUT_H__
+#define __TEMPORAL_WKB_OUT_H__
 
 /*****************************************************************************/
 
-#endif /* __TEMPORAL_IN_H__ */
+
+/*****************************************************************************/
+
+#endif /* __TEMPORAL_WKB_OUT_H__ */

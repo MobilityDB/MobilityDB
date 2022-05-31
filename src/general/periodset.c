@@ -789,28 +789,38 @@ Periodset_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-/* Defined in temporal_wkb_in.c and temporal_wkb_out.c */
-extern Datum Periodset_from_wkb(PG_FUNCTION_ARGS);
-extern Datum Periodset_as_wkb(PG_FUNCTION_ARGS);
-
 PG_FUNCTION_INFO_V1(Periodset_recv);
 /**
- * Receive function for timestamp set
+ * Receive function for period set
  */
 PGDLLEXPORT Datum
 Periodset_recv(PG_FUNCTION_ARGS)
 {
-  return(Periodset_from_wkb(fcinfo));
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PeriodSet *result = periodset_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_send);
 /**
- * Send function for timestamp set
+ * Send function for period set
  */
 PGDLLEXPORT Datum
 Periodset_send(PG_FUNCTION_ARGS)
 {
-  return(Periodset_as_wkb(fcinfo));
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(ps);
+  uint8_t *wkb = periodset_as_wkb(ps, variant, &wkb_size);
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  /* Clean up and return */
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************

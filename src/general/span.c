@@ -827,10 +827,6 @@ span_write(const Span *s, StringInfo buf)
   pfree(lower); pfree(upper);
 }
 
-/* Defined in temporal_wkb_in.c in temporal_wkb_out.c */
-extern Datum Span_from_wkb(PG_FUNCTION_ARGS);
-extern Datum Span_as_wkb(PG_FUNCTION_ARGS);
-
 PG_FUNCTION_INFO_V1(Span_recv);
 /**
  * Generic receive function for spans
@@ -838,7 +834,11 @@ PG_FUNCTION_INFO_V1(Span_recv);
 PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
-  return(Span_from_wkb(fcinfo));
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  Span *result = span_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Span_send);
@@ -848,7 +848,18 @@ PG_FUNCTION_INFO_V1(Span_send);
 PGDLLEXPORT Datum
 Span_send(PG_FUNCTION_ARGS)
 {
-  return(Span_as_wkb(fcinfo));
+  Span *span = PG_GETARG_SPAN_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(span);
+  uint8_t *wkb = span_as_wkb(span, variant, &wkb_size);
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  /* Clean up and return */
+  pfree(wkb);
+  PG_FREE_IF_COPY(span, 0);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************

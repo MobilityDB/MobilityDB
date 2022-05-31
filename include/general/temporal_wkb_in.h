@@ -28,16 +28,16 @@
  *****************************************************************************/
 
 /**
- * @file temporal_out.h
- * Output of temporal types in WKB (Well-Known Binary) format
+ * @file temporal_wkb_in.h
+ * Input of temporal types in WKB (Well-Known Binary) format
  */
 
-#ifndef __TEMPORAL_OUT_H__
-#define __TEMPORAL_OUT_H__
+#ifndef __TEMPORAL_WKB_IN_H__
+#define __TEMPORAL_WKB_IN_H__
 
 /*****************************************************************************/
 
 
 /*****************************************************************************/
 
-#endif /* __TEMPORAL_OUT_H__ */
+#endif /* __TEMPORAL_WKB_IN_H__ */

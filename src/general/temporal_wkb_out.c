@@ -32,7 +32,7 @@
  * @brief Output of temporal types in WKB, EWKB, and HexWKB format.
  */
 
-#include "general/temporal_out.h"
+#include "general/temporal_wkb_out.h"
 
 /* C */
 #include <assert.h>
@@ -132,15 +132,17 @@ timestampset_to_wkb_size(const TimestampSet *ts)
 /*****************************************************************************/
 
 /**
- * Return the size in bytes of a period set represented in Well-Known Binary
- * (WKB) format
+ * @brief Return the size in bytes of a period set represented in Well-Known
+ * Binary (WKB) format
+ * @note The size of the elements is smaller than a full span since it does not
+ * contain neither the endian flag nor the span type
  */
 static size_t
 periodset_to_wkb_size(const PeriodSet *ps)
 {
-  /* Endian flag + count + periods */
+  /* Endian flag + count + ( bound flag + 2 timestamps ) * count */
   size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT4_SIZE +
-    span_to_wkb_size((Span *) &ps->elems[0]) * ps->count;
+    (MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_TIMESTAMP_SIZE * 2) * ps->count;
   return size;
 }
 
@@ -819,6 +821,20 @@ timestampset_to_wkb_buf(const TimestampSet *ts, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
+ * Optimized version of span_to_wkb_buf for writing the periods in a period set.
+ * The endian byte and the basetype int16 are not written into the buffer.
+ */
+uint8_t *
+period_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
+{
+  /* Write the span bounds */
+  buf = span_bounds_to_wkb_buf(s, buf, variant);
+  /* Write the base values */
+  buf = lower_upper_to_wkb_buf(s, buf, variant);
+  return buf;
+}
+
+/**
  * Write into the buffer a period set represented in Well-Known Binary (WKB)
  * format as follows
  * - Endian byte
@@ -834,7 +850,7 @@ periodset_to_wkb_buf(const PeriodSet *ps, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(ps->count, buf, variant);
   /* Write the periods */
   for (int i = 0; i < ps->count; i++)
-    buf = span_to_wkb_buf((Period *) &ps->elems[i], buf, variant);
+    buf = period_to_wkb_buf(&ps->elems[i], buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -1464,10 +1480,6 @@ datum_as_hexwkb(Datum value, CachedType type, uint8_t variant, size_t *size)
  * WKB and HexWKB functions for the MEOS API
  *****************************************************************************/
 
-#if MEOS
-
-/*****************************************************************************/
-
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a span.
@@ -1475,7 +1487,8 @@ datum_as_hexwkb(Datum value, CachedType type, uint8_t variant, size_t *size)
 uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
+    size_out);
   return result;
 }
 
@@ -1484,9 +1497,9 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
  * @brief Return the WKB representation of a span in hex-encoded ASCII.
  */
 char *
-span_as_hexwkb(const Span *s, uint8_t variant, size_t *size)
+span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_as_wkb(PointerGetDatum(s), s->spantype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
@@ -1500,7 +1513,8 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size)
 uint8_t *
 timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(ts), T_TIMESTAMPSET, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(ts), T_TIMESTAMPSET, variant,
+    size_out);
   return result;
 }
 
@@ -1512,7 +1526,7 @@ char *
 timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
   size_t *size_out)
 {
-  char *result = (char *) datum_as_as_wkb(PointerGetDatum(ts), T_TIMESTAMPSET,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), T_TIMESTAMPSET,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
@@ -1526,7 +1540,8 @@ timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
 uint8_t *
 periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(ps), T_PERIODSET, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(ps), T_PERIODSET, variant,
+    size_out);
   return result;
 }
 
@@ -1537,7 +1552,7 @@ periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 char *
 periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_as_wkb(PointerGetDatum(ps), T_PERIODSET,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ps), T_PERIODSET,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
@@ -1551,7 +1566,8 @@ periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 uint8_t *
 tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
+    size_out);
   return result;
 }
 
@@ -1562,7 +1578,7 @@ tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
 char *
 tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_as_wkb(PointerGetDatum(box), T_TBOX,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
@@ -1576,7 +1592,8 @@ tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
 uint8_t *
 stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
+    size_out);
   return result;
 }
 
@@ -1587,7 +1604,7 @@ stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
 char *
 stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_as_wkb(PointerGetDatum(box), T_STBOX,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
@@ -1601,7 +1618,8 @@ stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size_out)
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(temp), temp->spantype, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(temp), temp->temptype,
+    variant, size_out);
   return result;
 }
 
@@ -1610,16 +1628,12 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
  * @brief Return the WKB representation of a temporal value in hex-encoded ASCII.
  */
 char *
-temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size)
+temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_as_wkb(PointerGetDatum(temp), temp->spantype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
-
-/*****************************************************************************/
-
-#endif /* MEOS */
 
 /*****************************************************************************/
 /*****************************************************************************/

@@ -41,8 +41,6 @@
 #include "general/doxygen_libmeos_api.h"
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_in.h"
-#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
@@ -3610,10 +3608,6 @@ temporal_write(const Temporal *temp, StringInfo buf)
   return;
 }
 
-/* Defined in temporal_wkb_in.c and temporal_wkb_out.c */
-extern Datum Temporal_from_wkb(PG_FUNCTION_ARGS);
-extern Datum Temporal_as_wkb(PG_FUNCTION_ARGS);
-
 PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
  * Generic receive function for temporal types
@@ -3621,7 +3615,11 @@ PG_FUNCTION_INFO_V1(Temporal_recv);
 PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
 {
-  return(Temporal_from_wkb(fcinfo));
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  Temporal *result = temporal_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_send);
@@ -3631,7 +3629,18 @@ PG_FUNCTION_INFO_V1(Temporal_send);
 PGDLLEXPORT Datum
 Temporal_send(PG_FUNCTION_ARGS)
 {
-  return(Temporal_as_wkb(fcinfo));
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
+  uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
+  /* Prepare the PostgreSQL bytea return type */
+  bytea *result = palloc(wkb_size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, wkb_size);
+  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  /* Clean up and return */
+  pfree(wkb);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************
