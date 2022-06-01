@@ -158,7 +158,6 @@ CREATE FUNCTION periodFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Span_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-
 CREATE FUNCTION asBinary(intspan)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'

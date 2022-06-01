@@ -250,63 +250,6 @@ text_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read a double2 and advance the parse state forward
- */
-double2 *
-double2_from_wkb_state(wkb_parse_state *s)
-{
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE * 2);
-  /* Get the data */
-  double a = double_from_wkb_state(s);
-  double b = double_from_wkb_state(s);
-  double2 *result = palloc(sizeof(double2));
-  double2_set(a, b, result);
-  /* Advance the state and return */
-  s->pos += MOBDB_WKB_DOUBLE_SIZE * 2;
-  return result;
-}
-
-/**
- * Read a double3 and advance the parse state forward
- */
-double3 *
-double3_from_wkb_state(wkb_parse_state *s)
-{
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE * 3);
-  /* Get the data */
-  double a = double_from_wkb_state(s);
-  double b = double_from_wkb_state(s);
-  double c = double_from_wkb_state(s);
-  double3 *result = palloc(sizeof(double3));
-  double3_set(a, b, c, result);
-  /* Advance the state and return */
-  s->pos += MOBDB_WKB_DOUBLE_SIZE * 3;
-  return result;
-}
-
-/**
- * Read a double4 and advance the parse state forward
- */
-double4 *
-double4_from_wkb_state(wkb_parse_state *s)
-{
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE * 4);
-  /* Get the data */
-  double a = double_from_wkb_state(s);
-  double b = double_from_wkb_state(s);
-  double c = double_from_wkb_state(s);
-  double d = double_from_wkb_state(s);
-  double4 *result = palloc(sizeof(double4));
-  double4_set(a, b, c, d, result);
-  /* Advance the state and return */
-  s->pos += MOBDB_WKB_DOUBLE_SIZE * 4;
-  return result;
-}
-
-/**
  * Return a point from its WKB representation. A WKB point has just a set of
  * doubles, with the quantity depending on the dimension of the point.
  */
@@ -663,15 +606,6 @@ temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
     case MOBDB_WKB_T_TTEXT:
       s->temptype = T_TTEXT;
       break;
-    case MOBDB_WKB_T_TDOUBLE2:
-      s->temptype = T_TDOUBLE2;
-      break;
-    case MOBDB_WKB_T_TDOUBLE3:
-      s->temptype = T_TDOUBLE3;
-      break;
-    case MOBDB_WKB_T_TDOUBLE4:
-      s->temptype = T_TDOUBLE4;
-      break;
     case MOBDB_WKB_T_TGEOMPOINT:
       s->temptype = T_TGEOMPOINT;
       break;
@@ -763,15 +697,6 @@ temporal_basevalue_from_wkb_state(wkb_parse_state *s)
       break;
     case T_TTEXT:
       result = PointerGetDatum(text_from_wkb_state(s));
-      break;
-    case T_TDOUBLE2:
-      result = PointerGetDatum(double2_from_wkb_state(s));
-      break;
-    case T_TDOUBLE3:
-      result = PointerGetDatum(double3_from_wkb_state(s));
-      break;
-    case T_TDOUBLE4:
-      result = PointerGetDatum(double4_from_wkb_state(s));
       break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
@@ -982,9 +907,6 @@ datum_from_wkb(uint8_t *wkb, int size, CachedType type)
     case T_TINT:
     case T_TFLOAT:
     case T_TTEXT:
-    case T_TDOUBLE2:
-    case T_TDOUBLE3:
-    case T_TDOUBLE4:
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
 #if ! MEOS

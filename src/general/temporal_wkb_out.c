@@ -47,7 +47,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #if ! MEOS
   #include "npoint/tnpoint_static.h"
-#endif
+#endif /* ! MEOS */
 
 /* The following definitions are taken from PostGIS */
 
@@ -226,12 +226,6 @@ temporal_basevalue_to_wkb_size(Datum value, CachedType basetype, int16 flags)
       return MOBDB_WKB_DOUBLE_SIZE;
     case T_TEXT:
       return MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
-    case T_DOUBLE2:
-      return MOBDB_WKB_DOUBLE_SIZE * 2;
-    case T_DOUBLE3:
-      return MOBDB_WKB_DOUBLE_SIZE * 3;
-    case T_DOUBLE4:
-      return MOBDB_WKB_DOUBLE_SIZE * 4;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
@@ -423,9 +417,6 @@ datum_to_wkb_size(Datum value, CachedType type, uint8_t variant)
     case T_TINT:
     case T_TFLOAT:
     case T_TTEXT:
-    case T_TDOUBLE2:
-    case T_TDOUBLE3:
-    case T_TDOUBLE4:
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
 #if ! MEOS
@@ -620,31 +611,6 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-double2_to_wkb_buf(const double2 *d, uint8_t *buf, uint8_t variant)
-{
-  buf = double_to_wkb_buf(d->a, buf, variant);
-  buf = double_to_wkb_buf(d->b, buf, variant);
-  return buf;
-}
-
-/**
- * Write into the buffer a network point represented in
- * Well-Known Binary (WKB) format
- */
-uint8_t *
-double3_to_wkb_buf(const double3 *d, uint8_t *buf, uint8_t variant)
-{
-  buf = double_to_wkb_buf(d->a, buf, variant);
-  buf = double_to_wkb_buf(d->b, buf, variant);
-  buf = double_to_wkb_buf(d->c, buf, variant);
-  return buf;
-}
-
-/**
- * Write into the buffer a network point represented in
- * Well-Known Binary (WKB) format
- */
-uint8_t *
 double4_to_wkb_buf(const double4 *d, uint8_t *buf, uint8_t variant)
 {
   buf = double_to_wkb_buf(d->a, buf, variant);
@@ -726,13 +692,13 @@ span_spantype_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
  * xxxxxxUL
  * x = Unused bits, U = Upper inclusive, L = Lower inclusive
  */
-uint8_t *
-span_bounds_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
+static uint8_t *
+bounds_to_wkb_buf(bool lower_inc, bool upper_inc, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_bounds = 0;
-  if (s->lower_inc)
+  if (lower_inc)
     wkb_bounds |= MOBDB_WKB_LOWER_INC;
-  if (s->upper_inc)
+  if (upper_inc)
     wkb_bounds |= MOBDB_WKB_UPPER_INC;
   if (variant & WKB_HEX)
   {
@@ -789,7 +755,7 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
   /* Write the span type */
   buf = span_spantype_to_wkb_buf(s, buf, variant);
   /* Write the span bounds */
-  buf = span_bounds_to_wkb_buf(s, buf, variant);
+  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
   /* Write the base values */
   buf = lower_upper_to_wkb_buf(s, buf, variant);
   return buf;
@@ -828,7 +794,7 @@ uint8_t *
 period_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the span bounds */
-  buf = span_bounds_to_wkb_buf(s, buf, variant);
+  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
   /* Write the base values */
   buf = lower_upper_to_wkb_buf(s, buf, variant);
   return buf;
@@ -1017,15 +983,6 @@ temporal_temptype_to_wkb_buf(const Temporal *temp, uint8_t *buf,
     case T_TTEXT:
       wkb_temptype = MOBDB_WKB_T_TTEXT;
       break;
-    case T_TDOUBLE2:
-      wkb_temptype = MOBDB_WKB_T_TDOUBLE2;
-      break;
-    case T_TDOUBLE3:
-      wkb_temptype = MOBDB_WKB_T_TDOUBLE3;
-      break;
-    case T_TDOUBLE4:
-      wkb_temptype = MOBDB_WKB_T_TDOUBLE4;
-      break;
     case T_TGEOMPOINT:
       wkb_temptype = MOBDB_WKB_T_TGEOMPOINT;
       break;
@@ -1115,15 +1072,6 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
     case T_TEXT:
       buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
       break;
-    case T_DOUBLE2:
-      buf = double2_to_wkb_buf(DatumGetDouble2P(value), buf, variant);
-      break;
-    case T_DOUBLE3:
-      buf = double3_to_wkb_buf(DatumGetDouble3P(value), buf, variant);
-      break;
-    case T_DOUBLE4:
-      buf = double4_to_wkb_buf(DatumGetDouble4P(value), buf, variant);
-      break;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       buf = coords_to_wkb_buf(inst, buf, variant);
@@ -1200,33 +1148,6 @@ tinstantset_to_wkb_buf(const TInstantSet *is, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer the flag containing the bounds represented
- * in Well-Known Binary (WKB) format as follows
- * xxxxxxUL
- * x = Unused bits, U = Upper inclusive, L = Lower inclusive
- */
-uint8_t *
-tsequence_bounds_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
-{
-  uint8_t wkb_bounds = 0;
-  if (seq->period.lower_inc)
-    wkb_bounds |= MOBDB_WKB_LOWER_INC;
-  if (seq->period.upper_inc)
-    wkb_bounds |= MOBDB_WKB_UPPER_INC;
-  if (variant & WKB_HEX)
-  {
-    buf[0] = '0';
-    buf[1] = (uint8_t) hexchr[wkb_bounds];
-    return buf + 2;
-  }
-  else
-  {
-    buf[0] = wkb_bounds;
-    return buf + 1;
-  }
-}
-
-/**
  * Write into the buffer the temporal sequence point represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
@@ -1253,7 +1174,8 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Write the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Write the period bounds */
-  buf = tsequence_bounds_to_wkb_buf(seq, buf, variant);
+  buf = bounds_to_wkb_buf(seq->period.lower_inc, seq->period.upper_inc, buf,
+    variant);
   /* Write the array of instants */
   for (int i = 0; i < seq->count; i++)
   {
@@ -1298,7 +1220,8 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
     /* Write the number of instants */
     buf = int32_to_wkb_buf(seq->count, buf, variant);
     /* Write the period bounds */
-    buf = tsequence_bounds_to_wkb_buf(seq, buf, variant);
+    buf = bounds_to_wkb_buf(seq->period.lower_inc, seq->period.upper_inc, buf,
+      variant);
     /* Write the array of instants */
     for (int j = 0; j < seq->count; j++)
     {
@@ -1362,9 +1285,6 @@ datum_to_wkb_buf(Datum value, CachedType type, uint8_t *buf, uint8_t variant)
     case T_TINT:
     case T_TFLOAT:
     case T_TTEXT:
-    case T_TDOUBLE2:
-    case T_TDOUBLE3:
-    case T_TDOUBLE4:
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
 #if ! MEOS

@@ -15,6 +15,18 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset_tmp t2 WHERE t1.k = t2.k AN
 
 DROP TABLE tbl_periodset_tmp;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromBinary(asBinary(ps)) <> ps;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromHexWKB(asHexWKB(ps)) <> ps;
+ count 
+-------
+     0
+(1 row)
+
 SELECT MAX(memSize(ps)) FROM tbl_periodset;
  max 
 -----
