@@ -1347,10 +1347,6 @@ datum_as_wkb(Datum value, CachedType type, uint8_t variant, size_t *size_out)
       variant = variant | (uint8_t) WKB_NDR;
   }
 
-  /* For temporal points, use the extended representation to ouput the SRID */
-  if (tgeo_type(type))
-    variant = variant | (uint8_t) WKB_EXTENDED;
-
   /* Allocate the buffer */
   buf = palloc(buf_size);
   if (buf == NULL)
