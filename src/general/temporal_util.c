@@ -653,8 +653,20 @@ tinstarr_remove_duplicates(const TInstant **instants, int count)
 }
 
 /*****************************************************************************
- * Text functions
+ * Text and binary string functions
  *****************************************************************************/
+
+/**
+ * Convert a C binary string into a bytea
+ */
+bytea *
+bstring2bytea(const uint8_t *wkb, size_t size)
+{
+  bytea *result = palloc(size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, size);
+  SET_VARSIZE(result, size + VARHDRSZ);
+  return result;
+}
 
 /**
  * Convert a C string into a text value
@@ -662,12 +674,11 @@ tinstarr_remove_duplicates(const TInstant **instants, int count)
  * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
  */
-
 text *
 cstring2text(const char *cstring)
 {
   size_t len = strlen(cstring);
-  text *result = (text *) palloc(len + VARHDRSZ);
+  text *result = palloc(len + VARHDRSZ);
   SET_VARSIZE(result, len + VARHDRSZ);
   memcpy(VARDATA(result), cstring, len);
   return result;
@@ -697,10 +708,8 @@ text2cstring(const text *textptr)
 int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
-  char  *a1p,
-      *a2p;
-  int    len1,
-      len2;
+  char *a1p, *a2p;
+  int len1, len2;
 
   a1p = VARDATA_ANY(arg1);
   a2p = VARDATA_ANY(arg2);

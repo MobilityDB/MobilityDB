@@ -1566,18 +1566,24 @@ temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 /**
  * @brief Ensure that a string represents a valid endian flag
  */
-void
-ensure_valid_endian_flag(const char *endian)
+static uint8_t
+get_endian_variant(const text *txt)
 {
+  uint8_t variant = 0;
+  const char *endian = text2cstring(txt);
   if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
     elog(ERROR, "Invalid value for endian flag");
-  return;
+  if (strncasecmp(endian, "ndr", 3) == 0)
+    variant = variant | (uint8_t) WKB_NDR;
+  else /* txt = XDR */
+    variant = variant | (uint8_t) WKB_XDR;
+  return variant;
 }
 
 /**
  * @brief Output a generic value in WKB or EWKB format
  */
-bytea *
+static bytea *
 datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, CachedType type,
   bool extended)
 {
@@ -1585,25 +1591,16 @@ datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, CachedType type,
   /* If user specified endianness, respect it */
   if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
   {
-    text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text2cstring(type);
-    ensure_valid_endian_flag(endian);
-    if (strncasecmp(endian, "ndr", 3) == 0)
-      variant = variant | (uint8_t) WKB_NDR;
-    else /* type = XDR */
-      variant = variant | (uint8_t) WKB_XDR;
+    text *txt = PG_GETARG_TEXT_P(1);
+    variant = get_endian_variant(txt);
   }
 
-  /* Create WKB hex string */
+  /* Create WKB string */
   size_t wkb_size;
   uint8_t *wkb = extended ?
     datum_as_wkb(value, type, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
     datum_as_wkb(value, type, variant, &wkb_size);
-
-  /* Prepare the PostgreSQL bytea return type */
-  bytea *result = palloc(wkb_size + VARHDRSZ);
-  memcpy(VARDATA(result), wkb, wkb_size);
-  SET_VARSIZE(result, wkb_size + VARHDRSZ);
+  bytea *result = bstring2bytea(wkb, wkb_size);
 
   /* Clean up and return */
   pfree(wkb);
@@ -1613,33 +1610,21 @@ datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, CachedType type,
 /**
  * @brief Output a generic value in WKB or EWKB format as hex-encoded ASCII
  */
-bytea *
+static text *
 datum_as_hexwkb_ext(FunctionCallInfo fcinfo, Datum value, CachedType type)
 {
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
   if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
   {
-    text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text2cstring(type);
-    ensure_valid_endian_flag(endian);
-    if (strncasecmp(endian, "ndr", 3) == 0)
-      variant = variant | (uint8_t) WKB_NDR;
-    else
-      variant = variant | (uint8_t) WKB_XDR;
+    text *txt = PG_GETARG_TEXT_P(1);
+    variant = get_endian_variant(txt);
   }
 
   /* Create WKB hex string */
   size_t hexwkb_size;
   char *hexwkb = datum_as_hexwkb(value, type, variant, &hexwkb_size);
-
-  /* Prepare the PgSQL text return type */
-  size_t text_size = hexwkb_size - 1 + VARHDRSZ;
-  text *result = palloc(text_size);
-  memcpy(VARDATA(result), hexwkb, hexwkb_size - 1);
-  SET_VARSIZE(result, text_size);
-
-  /* Clean up and return */
+  text *result = cstring2text(hexwkb);
   pfree(hexwkb);
   return result;
 }

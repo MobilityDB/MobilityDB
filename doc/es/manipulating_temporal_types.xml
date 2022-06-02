@@ -270,6 +270,10 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 				<programlisting xml:space="preserve">
 SELECT tbool_inst(true, '2001-01-01');
 SELECT tint_inst(1, '2001-01-01');
+SELECT tfloat_inst(1.5, '2001-01-01');
+SELECT ttext_inst('AAA', '2001-01-01');
+SELECT tgeompoint_inst('Point(1 1)', '2001-01-01');
+SELECT tgeogpoint_inst('SRID=7844;Point(1 1)', '2001-01-01');
 </programlisting>
 			</listitem>
 
@@ -278,6 +282,14 @@ SELECT tint_inst(1, '2001-01-01');
 				<para>Constructor para tipos temporales de subtipo conjunto de instantes</para>
 				<para><varname>ttype_instset(base,timestampset): ttype_instset</varname></para>
 				<para><varname>ttype_instset(ttype_inst[]): ttype_instset</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tbool_instset(true, '{2001-01-01, 2001-01-02}');
+SELECT tint_instset(1, '{2001-01-01, 2001-01-02}');
+SELECT tfloat_instset(1.5, '{2001-01-01, 2001-01-02}');
+SELECT ttext_instset('AAA', '{2001-01-01, 2001-01-02}');
+SELECT tgeompoint_instset('Point(1 1)', '{2001-01-01, 2001-01-02}');
+SELECT tgeogpoint_instset('SRID=7844;Point(1 1)', '{2001-01-01, 2001-01-02}');
+</programlisting>
 				<programlisting xml:space="preserve">
 SELECT tfloat_instset(1.5, '{2001-01-01, 2001-01-02}');
 SELECT ttext_instset('AAA', '{2001-01-01, 2001-01-02}');
@@ -300,8 +312,14 @@ SELECT tgeogpoint_instset(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
 				<para><varname>tcont_seq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): tcont_seq</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]');
+SELECT tbool_seq(true, '[2001-01-01, 2001-01-02]');
+SELECT tint_seq(1, '[2001-01-01, 2001-01-02]');
+SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]', false);
+SELECT ttext_seq('AAA', '[2001-01-01, 2001-01-02]');
 SELECT tgeompoint_seq('Point(0 0)', '[2001-01-01, 2001-01-02]', false);
+SELECT tgeogpoint_seq('SRID=7844;Point(0 0)', '[2001-01-01, 2001-01-02]');
+</programlisting>
+				<programlisting xml:space="preserve">
 SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
 SELECT tint_seq(ARRAY[tint(2,'2001-01-01 08:00:00'), tint(2,'2001-01-01 08:10:00')],
@@ -326,9 +344,16 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
 				<programlisting xml:space="preserve">
+SELECT tbool_seqset(true, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tint_seqset(1, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tfloat_seqset(1.5, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
 SELECT ttext_seqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
-SELECT tgeogpoint_seqset('Point(0 0)', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}',
-  false);
+SELECT tgeompoint_seqset('Point(0 0)', '{[2001-01-01, 2001-01-02],
+  [2001-01-03, 2001-01-04]}', false);
+SELECT tgeogpoint_seqset('SRID=7844;Point(0 0)', '{[2001-01-01, 2001-01-02],
+  [2001-01-03, 2001-01-04]}', false);
+</programlisting>
+				<programlisting xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
 SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
@@ -350,6 +375,16 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  Input sequences must have the same interpolation
+</programlisting>
+				<programlisting xml:space="preserve">
+SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
+  '5@2000-01-05'], 1, '1 day');
+-- {[1@2000-01-01], [3@2000-01-02, 4@2000-01-03], [5@2000-01-05]}
+SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
+  'Point(2 2)@2000-01-02', 'Point(3 2)@2000-01-03', 'Point(3 2)@2000-01-05'],
+  true, 1, '1 day'));
+-- {[POINT(1 1)@2000-01-01], [POINT(2 2)@2000-01-02, POINT(3 2)@2000-01-03],
+  [POINT(3 2)@2000-01-05]}
 </programlisting>
 			</listitem>
 		</itemizedlist>

@@ -852,11 +852,7 @@ Span_send(PG_FUNCTION_ARGS)
   uint8_t variant = 0;
   size_t wkb_size = VARSIZE_ANY_EXHDR(span);
   uint8_t *wkb = span_as_wkb(span, variant, &wkb_size);
-  /* Prepare the PostgreSQL bytea return type */
-  bytea *result = palloc(wkb_size + VARHDRSZ);
-  memcpy(VARDATA(result), wkb, wkb_size);
-  SET_VARSIZE(result, wkb_size + VARHDRSZ);
-  /* Clean up and return */
+  bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_FREE_IF_COPY(span, 0);
   PG_RETURN_BYTEA_P(result);
