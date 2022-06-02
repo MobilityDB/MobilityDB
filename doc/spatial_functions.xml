@@ -11,7 +11,7 @@
 		<title>Spatial Functions and Operators</title>
 		<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
 
-		<sect2>
+		<sect2 id="tpoint_inout">
 			<title>Input/Output Functions</title>
 
 			<itemizedlist>

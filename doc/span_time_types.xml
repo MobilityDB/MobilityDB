@@ -63,7 +63,7 @@
 			<title>Input/Output Functions</title>
 
 			<para>
-				MobilityDB extends Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
+				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
 			</para>
 
 			<para>
@@ -172,7 +172,7 @@ SELECT asHexWKB(periodset '{[2012-01-01, 2012-01-03], [2012-01-04, 2012-01-05]}'
 
 				<listitem id="intspanFromBinary">
 					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
-					<para>Input an integer span from a Well-Known Binary (WKB) representation &Z_support;</para>
+					<para>Input an integer span from a Well-Known Binary (WKB) representation</para>
 					<para><varname>intspanFromBinary(bytea): intspan</varname></para>
 					<programlisting xml:space="preserve">
 SELECT intspanFromBinary('\x010800010100000003000000');
@@ -223,7 +223,7 @@ SELECT periodsetFromBinary(
 
 				<listitem id="intspanFromHexWKB">
 					<indexterm><primary><varname>intspanFromHexWKB</varname></primary></indexterm>
-					<para>Input an integer span from an Hexadecimal Well-Known Binary (HexWKB) representation &Z_support;</para>
+					<para>Input an integer span from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>intspanFromHexWKB(text): intspan</varname></para>
 					<programlisting xml:space="preserve">
 SELECT intspanFromHexWKB('010800010100000003000000');
@@ -253,7 +253,7 @@ SELECT periodFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
 
 				<listitem id="timestampsetFromHexWKB">
 					<indexterm><primary><varname>timestampsetFromHexWKB</varname></primary></indexterm>
-					<para>Input a timestamp set from an Hexadecimal Well-Known Binary (HexWKB) representation &Z_support;</para>
+					<para>Input a timestamp set from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>timestampsetFromHexWKB(text): timestampset</varname></para>
 					<programlisting xml:space="preserve">
 SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');

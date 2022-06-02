@@ -21,6 +21,10 @@
 
 	<sect1 id="input_output_box_tyes">
 		<title>Entrada/salida de tipos cuadro delimitador</title>
+			<para>
+				MobilityDB generaliza los formatos de entrada/salida Well-Known Text (WKT) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. Presentamos a continuación las funciones de entrada y salida para los tipos de cuadro delimitador.
+			</para>
+
 		<para>Un <varname>tbox</varname> se compone de dimensiones de valor numérico y/o de tiempo. Para cada dimensión, se dan los valores mínimos y máximos. Ejemplos de entrada de valores <varname>tbox</varname> son los siguientes:
 			<programlisting xml:space="preserve">
 -- Dimensiones de valor y tiempo
@@ -55,6 +59,87 @@ SELECT stbox 'SRID=5676;STBOX T((1.0, 2.0, 2001-01-04), (1.0, 2.0, 2001-01-04))'
 SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 </programlisting>
 		</para>
+
+			<para>
+				Damos a continuación las funciones de entrada/salida de tipos de cuadro delimitador en formato binario conocido.
+			</para>
+
+			<itemizedlist>
+				<listitem id="box_asBinary">
+					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
+					<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><varname>asBinary(box): bytea</varname></para>
+					<para><varname>asBinary(box,endian text): bytea</varname></para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+					<programlisting xml:space="preserve">
+SELECT asBinary(tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
+-- \x0103000000000000f03f0000000000000040005c6c29ffffffff00bc434713000000
+SELECT asBinary(tbox 'TBOX((1,2000-01-01),(2,2000-01-02))', 'XDR');
+-- \x00033ff00000000000004000000000000000ffffffff296c5c00000000134743bc00
+SELECT asBinary(stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))');
+-- \x0103000000000000f03f0000000000000040000000000000f03f0000000000000040005c6c29ffffffff00bc434713000000
+</programlisting>
+				</listitem>
+
+				<listitem id="box_asHexWKB">
+					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
+					<para><varname>asHexWKB(box): text</varname></para>
+					<para><varname>asHexWKB(box,endian text): text</varname></para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+					<programlisting xml:space="preserve">
+SELECT asHexWKB(tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
+-- 0103000000000000F03F0000000000000040005C6C29FFFFFFFF00BC434713000000
+SELECT asHexWKB(tbox 'TBOX((1,2000-01-01),(2,2000-01-02))', 'XDR');
+-- 00033FF00000000000004000000000000000FFFFFFFF296C5C00000000134743BC00
+SELECT asHexWKB(stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))');
+-- 0103000000000000F03F0000000000000040000000000000F03F0000000000000040005C6C29FFFFFFFF00BC434713000000
+</programlisting>
+				</listitem>
+
+				<listitem id="tboxFromBinary">
+					<indexterm><primary><varname>tboxFromBinary</varname></primary></indexterm>
+					<para>Entrar un cuadro delimitador temporal en una representación binaria conocida (WKB)</para>
+					<para><varname>tboxFromBinary(bytea): tbox</varname></para>
+					<programlisting xml:space="preserve">
+SELECT tboxFromBinary(
+  '\x0103000000000000f03f0000000000000040005c6c29ffffffff00bc434713000000');
+-- TBOX((1,2000-01-01),(2,2000-01-02))
+</programlisting>
+				</listitem>
+
+				<listitem id="stboxFromBinary">
+					<indexterm><primary><varname>stboxFromBinary</varname></primary></indexterm>
+					<para>Entrar un cuadro delimitador espacio-temporal en una representación binaria conocida (WKB)</para>
+					<para><varname>stboxFromBinary(bytea): stbox</varname></para>
+					<programlisting xml:space="preserve">
+SELECT stboxFromBinary('\x0103000000000000f03f0000000000000040000000000000f03f0000000000000040005c6c29ffffffff00bc434713000000');
+-- [1.5, 2.5)
+</programlisting>
+				</listitem>
+
+				<listitem id="tboxFromHexWKB">
+					<indexterm><primary><varname>tboxFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un cuadro delimitador temporal en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>tboxFromHexWKB(text): tbox</varname></para>
+					<programlisting xml:space="preserve">
+SELECT tboxFromHexWKB(
+  '0103000000000000F03F0000000000000040005C6C29FFFFFFFF00BC434713000000');
+-- TBOX((1,2000-01-01),(2,2000-01-02))
+</programlisting>
+				</listitem>
+
+				<listitem id="stboxFromHexWKB">
+					<indexterm><primary><varname>stboxFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un cuadro delimitador espacio-temporal en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>stboxFromHexWKB(text): stbox</varname></para>
+					<programlisting xml:space="preserve">
+SELECT stboxFromHexWKB(
+  '0103000000000000F03F0000000000000040000000000000F03F0000000000000040005C6C29FFFFFFFF00BC434713000000');
+-- STBOX T((1,1,2000-01-01),(2,2,2000-01-02))
+</programlisting>
+				</listitem>
+			</itemizedlist>
 	</sect1>
 
 	<sect1 id="constructor_box_types">

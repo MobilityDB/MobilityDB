@@ -139,6 +139,10 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 
 	<sect1 id="input_output_temporal_types">
 		<title>Entrada/salida de tipos temporales</title>
+			<para>
+				MobilityDB generaliza los formatos de entrada/salida Well-Known Text (WKT) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. Presentamos a continuación las funciones de entrada y salida para los tipos temporales.
+			</para>
+
 		<para>
 			Un valor de instante es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Un valor de secuencia es un conjunto de valores <varname>v1@t1,...,vn@tn</varname> delimitado por límites superior e inferior, que pueden ser inclusivo (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>&rsquo; y &lsquo;<varname>)</varname>&rsquo;). Ejemplos de entrada de valores temporales unitarios son los siguientes:
 		</para>
@@ -229,6 +233,128 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
   SRID=4326;Point(0 1)@2000-01-02]'
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 </programlisting>
+
+		<para>
+			Damos a continuación las funciones de entrada/salida en formato binario conocido (WKB) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />.
+		</para>
+
+		<itemizedlist>
+			<listitem id="temporal_asBinary">
+				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
+				<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+				<para><varname>asBinary(ttype): bytea</varname></para>
+				<para><varname>asBinary(ttype,endian text): bytea</varname></para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+				<programlisting xml:space="preserve">
+SELECT asBinary(tbool 'true@2001-01-01');
+-- \x010d000101009c57d3c11c0000
+SELECT asBinary(tint '1@2001-01-01', 'XDR');
+-- \x000016010000000100001cc1d3579c00
+SELECT asBinary(tfloat '1.5@2001-01-01');
+-- \x01130081000000000000f83f009c57d3c11c0000
+SELECT asBinary(ttext 'AAA@2001-01-01');
+-- \x01170001040000000000000041414100009c57d3c11c0000
+</programlisting>
+			</listitem>
+
+			<listitem id="temporal_asHexWKB">
+				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
+				<para><varname>asHexWKB(ttype): text</varname></para>
+				<para><varname>asHexWKB(ttype,endian text): text</varname></para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+				<programlisting xml:space="preserve">
+SELECT asHexWKB(tbool 'true@2001-01-01');
+-- 010D000101009C57D3C11C0000
+SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
+-- 000016010000000100001CC1D3579C00
+SELECT asHexWKB(tfloat '1.5@2001-01-01');
+-- 01130081000000000000F83F009C57D3C11C0000
+SELECT asHexWKB(ttext 'AAA@2001-01-01');
+-- 01170001040000000000000041414100009C57D3C11C0000
+</programlisting>
+			</listitem>
+
+			<listitem id="tboolFromBinary">
+				<indexterm><primary><varname>tboolFromBinary</varname></primary></indexterm>
+				<para>Entrar un booleano temporal de su representación binaria conocida (WKB)</para>
+				<para><varname>tboolFromBinary(bytea): tbool</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tintFromBinary">
+				<indexterm><primary><varname>tintFromBinary</varname></primary></indexterm>
+				<para>Entrar un entero temporal de su representación binaria conocida (WKB)</para>
+				<para><varname>tintFromBinary(bytea): tint</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tintFromBinary('\x000016010000000100001cc1d3579c00');
+-- 1@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tfloatFromBinary">
+				<indexterm><primary><varname>tfloatFromBinary</varname></primary></indexterm>
+				<para>Entrar un flotante temporal de su representación binaria conocida (WKB)</para>
+				<para><varname>tfloatFromBinary(bytea): tfloat</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tfloatFromBinary('\x01130081000000000000f83f009c57d3c11c0000');
+-- 1.5@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="ttextFromBinary">
+				<indexterm><primary><varname>ttextFromBinary</varname></primary></indexterm>
+				<para>Entrar un texto temporal de su representación binaria conocida (WKB)</para>
+				<para><varname>ttextFromBinary(bytea): ttext</varname></para>
+				<programlisting xml:space="preserve">
+SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
+-- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tboolFromHexWKB">
+				<indexterm><primary><varname>tboolFromHexWKB</varname></primary></indexterm>
+				<para>Entrar un booleano temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
+				<para><varname>tboolFromHexWKB(text): tbool</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tintFromHexWKB">
+				<indexterm><primary><varname>tintFromHexWKB</varname></primary></indexterm>
+				<para>Entrar un entero temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
+				<para><varname>tintFromHexWKB(text): tint</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tintFromHexWKB('000016010000000100001CC1D3579C00');
+-- 1@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tfloatFromHexWKB">
+				<indexterm><primary><varname>tfloatFromHexWKB</varname></primary></indexterm>
+				<para>Entrar un flotante temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
+				<para><varname>tfloatFromHexWKB(text): tfloat</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tfloatFromHexWKB('01130081000000000000F83F009C57D3C11C0000');
+-- 1.5@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="ttextFromHexWKB">
+				<indexterm><primary><varname>ttextFromHexWKB</varname></primary></indexterm>
+				<para>Entrar un texto temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
+				<para><varname>ttextFromHexWKB(text): ttext</varname></para>
+				<programlisting xml:space="preserve">
+SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
+-- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
 	</sect1>
 
 	<sect1 id="constructor_temporal_tyes">
@@ -427,9 +553,9 @@ SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floa
 				<para><varname>tnumber::tbox</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
--- "TBOX((1,2001-01-01 00:00:00+01),(2,2001-01-03 00:00:00+01))"
+-- "TBOX((1,2001-01-01),(2,2001-01-03))"
 SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::tbox;
--- "TBOX((1,2000-01-01 00:00:00+01),(3,2000-01-05 00:00:00+01))"
+-- "TBOX((1,2000-01-01),(3,2000-01-05))"
 </programlisting>
 			</listitem>
 
