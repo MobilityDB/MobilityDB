@@ -1042,6 +1042,12 @@ basetype_recv(CachedType basetype, StringInfo buf)
     return PointerGetDatum(double3_recv(buf));
   if (basetype == T_DOUBLE4)
     return PointerGetDatum(double4_recv(buf));
+  if (basetype == T_GEOMETRY)
+    return PointerGetDatum(PGIS_LWGEOM_recv(buf));
+  if (basetype == T_GEOGRAPHY)
+    return call_recv(type_oid(T_GEOGRAPHY), buf);
+  if (basetype == T_NPOINT)
+    return PointerGetDatum(npoint_recv(buf));
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
@@ -1072,6 +1078,12 @@ basetype_send(CachedType basetype, Datum value)
     return double3_send(DatumGetDouble3P(value));
   if (basetype == T_DOUBLE4)
     return double4_send(DatumGetDouble4P(value));
+  if (basetype == T_GEOMETRY)
+    return PGIS_LWGEOM_send(DatumGetGserializedP(value));
+  if (basetype == T_GEOGRAPHY)
+    return PGIS_geography_send(DatumGetGserializedP(value));
+  if (basetype == T_NPOINT)
+    return npoint_send(DatumGetNpointP(value));
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 

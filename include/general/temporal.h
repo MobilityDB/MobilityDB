@@ -443,11 +443,11 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /* Temporal types */
 
-#define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstantP(X)       ((TInstant *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstantSetP(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequenceP(X)      ((TSequence *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequenceSetP(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
+#if MEOS
+  #define DatumGetTemporalP(X)       ((Temporal *) DatumGetPointer(X))
+#else
+  #define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
+#endif /* MEOS */
 
 #define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
 
