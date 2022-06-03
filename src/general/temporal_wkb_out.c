@@ -32,8 +32,6 @@
  * @brief Output of temporal types in WKB, EWKB, and HexWKB format.
  */
 
-#include "general/temporal_wkb_out.h"
-
 /* C */
 #include <assert.h>
 #include <float.h>
