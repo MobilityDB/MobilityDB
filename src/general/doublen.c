@@ -67,7 +67,7 @@ double2 *
 double2_make(double a, double b)
 {
   /* Note: zero-fill is done in function double2_set */
-  double2 *result = (double2 *) palloc(sizeof(double2));
+  double2 *result = palloc(sizeof(double2));
   double2_set(a, b, result);
   return result;
 }
@@ -130,7 +130,7 @@ double2_set(double a, double b, double2 *result)
 double2 *
 double2_add(const double2 *d1, const double2 *d2)
 {
-  double2 *result = (double2 *) palloc(sizeof(double2));
+  double2 *result = palloc0(sizeof(double2));
   result->a = d1->a + d2->a;
   result->b = d1->b + d2->b;
   return result;
@@ -172,7 +172,7 @@ double3 *
 double3_make(double a, double b, double c)
 {
   /* Note: zero-fill is done in function double3_set */
-  double3 *result = (double3 *) palloc(sizeof(double3));
+  double3 *result = palloc(sizeof(double3));
   double3_set(a, b, c, result);
   return result;
 }
@@ -238,7 +238,7 @@ double3_set(double a, double b, double c, double3 *result)
 double3 *
 double3_add(const double3 *d1, const double3 *d2)
 {
-  double3 *result = (double3 *) palloc(sizeof(double3));
+  double3 *result = palloc0(sizeof(double3));
   result->a = d1->a + d2->a;
   result->b = d1->b + d2->b;
   result->c = d1->c + d2->c;
@@ -285,7 +285,7 @@ double4 *
 double4_make(double a, double b, double c, double d)
 {
   /* Note: zero-fill is done in function double4_set */
-  double4 *result = (double4 *) palloc(sizeof(double4));
+  double4 *result = palloc(sizeof(double4));
   double4_set(a, b, c, d, result);
   return result;
 }
@@ -355,7 +355,7 @@ double4_set(double a, double b, double c, double d, double4 *result)
 double4 *
 double4_add(const double4 *d1, const double4 *d2)
 {
-  double4 *result = (double4 *) palloc(sizeof(double4));
+  double4 *result = palloc0(sizeof(double4));
   result->a = d1->a + d2->a;
   result->b = d1->b + d2->b;
   result->c = d1->c + d2->c;

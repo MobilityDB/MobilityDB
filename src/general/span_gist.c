@@ -275,8 +275,8 @@ Timestampset_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
-    Period *period = (Period *) palloc(sizeof(Period));
+    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+    Period *period = palloc(sizeof(Period));
     timestampset_period_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
       entry->offset, false);
@@ -295,8 +295,8 @@ Periodset_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
-    Period *period = (Period *) palloc(sizeof(Period));
+    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+    Period *period = palloc(sizeof(Period));
     periodset_period_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
       entry->offset, false);
@@ -584,8 +584,8 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   context.first = true;
 
   /* Allocate arrays for sorted span bounds */
-  by_lower = (SpanBounds *) palloc(nentries * sizeof(SpanBounds));
-  by_upper = (SpanBounds *) palloc(nentries * sizeof(SpanBounds));
+  by_lower = palloc(nentries * sizeof(SpanBounds));
+  by_upper = palloc(nentries * sizeof(SpanBounds));
   /* Fill arrays of bounds */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
@@ -727,8 +727,8 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
    */
 
   /* Allocate vectors for results */
-  v->spl_left = (OffsetNumber *) palloc(nentries * sizeof(OffsetNumber));
-  v->spl_right = (OffsetNumber *) palloc(nentries * sizeof(OffsetNumber));
+  v->spl_left = palloc(nentries * sizeof(OffsetNumber));
+  v->spl_right = palloc(nentries * sizeof(OffsetNumber));
   v->spl_nleft = 0;
   v->spl_nright = 0;
 
@@ -737,7 +737,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
    * either group without affecting overlap along selected axis.
    */
   common_entries_count = 0;
-  common_entries = (CommonEntry *) palloc(nentries * sizeof(CommonEntry));
+  common_entries = palloc(nentries * sizeof(CommonEntry));
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect
@@ -846,8 +846,8 @@ Span_gist_picksplit(PG_FUNCTION_ARGS)
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
   nbytes = (maxoff + 1) * sizeof(OffsetNumber);
-  v->spl_left = (OffsetNumber *) palloc(nbytes);
-  v->spl_right = (OffsetNumber *) palloc(nbytes);
+  v->spl_left = palloc(nbytes);
+  v->spl_right = palloc(nbytes);
 
   span_gist_double_sorting_split(entryvec, v);
 

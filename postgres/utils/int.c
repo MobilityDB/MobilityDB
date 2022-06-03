@@ -77,7 +77,7 @@ Datum
 int2out(PG_FUNCTION_ARGS)
 {
 	int16		arg1 = PG_GETARG_INT16(0);
-	char	   *result = (char *) palloc(7);	/* sign, 5 digits, '\0' */
+	char	   *result = palloc(7);	/* sign, 5 digits, '\0' */
 
 	pg_itoa(arg1, result);
 	PG_RETURN_CSTRING(result);
@@ -118,7 +118,7 @@ buildint2vector(const int16 *int2s, int n)
 {
 	int2vector *result;
 
-	result = (int2vector *) palloc0(Int2VectorSize(n));
+	result = palloc0(Int2VectorSize(n));
 
 	if (n > 0 && int2s)
 		memcpy(result->values, int2s, n * sizeof(int16));
@@ -147,7 +147,7 @@ int2vectorin(PG_FUNCTION_ARGS)
 	int2vector *result;
 	int			n;
 
-	result = (int2vector *) palloc0(Int2VectorSize(FUNC_MAX_ARGS));
+	result = palloc0(Int2VectorSize(FUNC_MAX_ARGS));
 
 	for (n = 0; *intString && n < FUNC_MAX_ARGS; n++)
 	{
@@ -189,7 +189,7 @@ int2vectorout(PG_FUNCTION_ARGS)
 	char	   *result;
 
 	/* assumes sign, 5 digits, ' ' */
-	rp = result = (char *) palloc(nnums * 7 + 1);
+	rp = result = palloc(nnums * 7 + 1);
 	for (num = 0; num < nnums; num++)
 	{
 		if (num != 0)
@@ -280,7 +280,7 @@ Datum
 int4out(PG_FUNCTION_ARGS)
 {
 	int32		arg1 = PG_GETARG_INT32(0);
-	char	   *result = (char *) palloc(12);	/* sign, 10 digits, '\0' */
+	char	   *result = palloc(12);	/* sign, 10 digits, '\0' */
 
 	pg_ltoa(arg1, result);
 	PG_RETURN_CSTRING(result);
@@ -1519,7 +1519,7 @@ generate_series_step_int4(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		/* allocate memory for user context */
-		fctx = (generate_series_fctx *) palloc(sizeof(generate_series_fctx));
+		fctx = palloc(sizeof(generate_series_fctx));
 
 		/*
 		 * Use fctx to keep state from call to call. Seed current with the

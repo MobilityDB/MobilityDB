@@ -315,16 +315,10 @@ pg_strtoint32(const char *s)
 	return tmp;
 
 out_of_range:
-	ereport(ERROR,
-			(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-			 errmsg("value \"%s\" is out of range for type %s",
-					s, "integer")));
+	elog(ERROR, "value \"%s\" is out of range for type %s", s, "integer");
 
 invalid_syntax:
-	ereport(ERROR,
-			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			 errmsg("invalid input syntax for type %s: \"%s\"",
-					"integer", s)));
+	elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
 
 	return 0;					/* keep compiler quiet */
 }

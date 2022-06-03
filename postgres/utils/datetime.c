@@ -4701,7 +4701,7 @@ pg_timezone_abbrevs(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		/* allocate memory for user context */
-		pindex = (int *) palloc(sizeof(int));
+		pindex = palloc(sizeof(int));
 		*pindex = 0;
 		funcctx->user_fctx = (void *) pindex;
 
@@ -4779,7 +4779,7 @@ pg_timezone_abbrevs(PG_FUNCTION_ARGS)
 	/* Convert offset (in seconds) to an interval */
 	MemSet(&tm, 0, sizeof(struct pg_tm));
 	tm.tm_sec = gmtoffset;
-	resInterval = (Interval *) palloc(sizeof(Interval));
+	resInterval = palloc(sizeof(Interval));
 	tm2interval(&tm, 0, resInterval);
 	values[1] = IntervalPGetDatum(resInterval);
 
@@ -4874,7 +4874,7 @@ pg_timezone_names(PG_FUNCTION_ARGS)
 
 		MemSet(&itm, 0, sizeof(struct pg_tm));
 		itm.tm_sec = -tzoff;
-		resInterval = (Interval *) palloc(sizeof(Interval));
+		resInterval = palloc(sizeof(Interval));
 		tm2interval(&itm, 0, resInterval);
 		values[2] = IntervalPGetDatum(resInterval);
 

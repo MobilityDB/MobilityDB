@@ -71,7 +71,7 @@ bitmatrix_make(int *count, int numdims)
    * already one byte allocated in the struct */
   size_t size = sizeof(BitMatrix) + byteCount - 1;
   /* palloc0 to set all bits to 0 */
-  BitMatrix *result = (BitMatrix *) palloc0(size);
+  BitMatrix *result = palloc0(size);
   /* Fill the structure */
   result->numdims = numdims;
   for (i = 0; i < numdims; i++)
@@ -443,7 +443,7 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
-  STboxGridState *state = (STboxGridState *) palloc0(sizeof(STboxGridState));
+  STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* Fill in state */
   state->done = false;
   state->i = 1;
@@ -674,7 +674,7 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
   }
 
   /* Allocate box */
-  STBOX *box = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *box = palloc(sizeof(STBOX));
   /* Get current tile and advance state
    * There is no need to test if the tile is found since all tiles should be
    * generated and thus there is no associated bit matrix */
@@ -756,7 +756,7 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
     tmin = timestamptz_bucket(t, tunits, torigin);
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc0(sizeof(STBOX));
   stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz,
     hast, srid);
   PG_RETURN_POINTER(result);

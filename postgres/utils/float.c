@@ -32,6 +32,7 @@
 #include "utils/sortsupport.h"
 #include "utils/timestamp.h"
 
+#endif /* MobilityDB not used */
 
 /*
  * Configurable GUC parameter
@@ -42,6 +43,8 @@
  * decimal rounding method.
  */
 int			extra_float_digits = 1;
+
+#if 0 /* MobilityDB not used */
 
 /* Cached constants for degree-based trig functions */
 static bool degree_consts_set = false;
@@ -86,25 +89,19 @@ static void init_degree_constants(void);
 pg_noinline void
 float_overflow_error(void)
 {
-	ereport(ERROR,
-			(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-			 errmsg("value out of range: overflow")));
+	elog(ERROR, "value out of range: overflow");
 }
 
 pg_noinline void
 float_underflow_error(void)
 {
-	ereport(ERROR,
-			(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-			 errmsg("value out of range: underflow")));
+	elog(ERROR, "value out of range: underflow");
 }
 
 pg_noinline void
 float_zero_divide_error(void)
 {
-	ereport(ERROR,
-			(errcode(ERRCODE_DIVISION_BY_ZERO),
-			 errmsg("division by zero")));
+	elog(ERROR, "division by zero");
 }
 
 #if 0 /* MobilityDB not used */
@@ -298,7 +295,7 @@ Datum
 float4out(PG_FUNCTION_ARGS)
 {
 	float4		num = PG_GETARG_FLOAT4(0);
-	char	   *ascii = (char *) palloc(32);
+	char	   *ascii = palloc(32);
 	int			ndig = FLT_DIG + extra_float_digits;
 
 	if (extra_float_digits > 0)
@@ -401,10 +398,8 @@ float8in_internal_opt_error(char *num, char **endptr_p,
 	 * strtod() on different platforms.
 	 */
 	if (*num == '\0')
-		RETURN_ERROR(ereport(ERROR,
-							 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-							  errmsg("invalid input syntax for type %s: \"%s\"",
-									 type_name, orig_string))),
+		RETURN_ERROR(elog(ERROR,
+				"invalid input syntax for type %s: \"%s\"", type_name, orig_string),
 					 have_error);
 
 	errno = 0;
@@ -485,20 +480,17 @@ float8in_internal_opt_error(char *num, char **endptr_p,
 				char	   *errnumber = pstrdup(num);
 
 				errnumber[endptr - num] = '\0';
-				RETURN_ERROR(ereport(ERROR,
-									 (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-									  errmsg("\"%s\" is out of range for type double precision",
-											 errnumber))),
+				RETURN_ERROR(elog(ERROR,
+									 "\"%s\" is out of range for type double precision",
+											 errnumber),
 							 have_error);
 #endif /* MEOS */
 			}
 		}
 		else
-			RETURN_ERROR(ereport(ERROR,
-								 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-								  errmsg("invalid input syntax for type "
-										 "%s: \"%s\"",
-										 type_name, orig_string))),
+			RETURN_ERROR(elog(ERROR,
+								 "invalid input syntax for type %s: \"%s\"",
+										 type_name, orig_string),
 						 have_error);
 	}
 
@@ -510,11 +502,9 @@ float8in_internal_opt_error(char *num, char **endptr_p,
 	if (endptr_p)
 		*endptr_p = endptr;
 	else if (*endptr != '\0')
-		RETURN_ERROR(ereport(ERROR,
-							 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-							  errmsg("invalid input syntax for type "
-									 "%s: \"%s\"",
-									 type_name, orig_string))),
+		RETURN_ERROR(elog(ERROR,
+							 "invalid input syntax for type %s: \"%s\"", type_name, 
+               orig_string),
 					 have_error);
 
 	return val;
@@ -555,7 +545,7 @@ float8out(PG_FUNCTION_ARGS)
 char *
 float8out_internal(double num)
 {
-	char	   *ascii = (char *) palloc(32);
+	char	   *ascii = palloc(32);
 	int			ndig = DBL_DIG + extra_float_digits;
 
 	if (extra_float_digits > 0)

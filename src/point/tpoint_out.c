@@ -584,7 +584,7 @@ tpoint_as_ewkt(const Temporal *temp)
   else
     str1[0] = '\0';
   char *str2 = tpoint_as_text(temp);
-  char *result = (char *) palloc(strlen(str1) + strlen(str2) + 1);
+  char *result = palloc(strlen(str1) + strlen(str2) + 1);
   strcpy(result, str1);
   strcat(result, str2);
   pfree(str2);

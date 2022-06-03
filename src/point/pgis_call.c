@@ -46,17 +46,13 @@
 #include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/elog.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>
 #include <lwgeom_geos.h>
 /* MobilityDB */
+#include "general/temporal.h"
 #include "point/tpoint_spatialfuncs.h"
-
-/* To avoid including lwgeom_geos.h */
-GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
-GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *g);
 
 /* To avoid including lwgeom_functions_analytic.h */
 extern int point_in_polygon(LWPOLY *polygon, LWPOINT *point);
@@ -688,6 +684,22 @@ MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   }
 }
 
+GEOSGeometry *
+POSTGIS2GEOS(const GSERIALIZED *pglwgeom)
+{
+	GEOSGeometry *ret;
+	LWGEOM *lwgeom = lwgeom_from_gserialized(pglwgeom);
+	if ( ! lwgeom )
+	{
+		elog(ERROR, "POSTGIS2GEOS: unable to deserialize input");
+		return NULL;
+	}
+	ret = LWGEOM2GEOS(lwgeom, 0);
+	lwgeom_free(lwgeom);
+
+	return ret;
+}
+
 /**
  * @brief Transform the GSERIALIZED geometries into GEOSGeometry and
  * call the GEOS function passed as argument
@@ -1300,7 +1312,7 @@ PGIS_geography_in(char *str, int32 geog_typmod)
 
   /* Empty string. */
   if ( str[0] == '\0' )
-    ereport(ERROR,(errmsg("parse error - invalid geometry")));
+    elog(ERROR, "parse error - invalid geometry");
 
   /* WKB? Let's find out. */
   if ( str[0] == '0' )
@@ -1310,7 +1322,7 @@ PGIS_geography_in(char *str, int32 geog_typmod)
     lwgeom = lwgeom_from_hexwkb(str, LW_PARSER_CHECK_NONE);
     /* Error out if something went sideways */
     if ( ! lwgeom )
-      ereport(ERROR,(errmsg("parse error - invalid geometry")));
+      elog(ERROR, "parse error - invalid geometry");
   }
   /* WKT then. */
   else

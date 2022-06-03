@@ -106,7 +106,7 @@ char *
 tbox_out(const TBOX *box)
 {
   static size_t size = MAXTBOXLEN + 1;
-  char *result = (char *) palloc(size);
+  char *result = palloc(size);
   char *xmin = NULL, *xmax = NULL, *tmin = NULL, *tmax = NULL;
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
@@ -156,7 +156,7 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax)
 {
   /* Note: zero-fill is done in function tbox_set */
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
   return result;
 }
@@ -195,7 +195,7 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
 TBOX *
 tbox_copy(const TBOX *box)
 {
-  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   memcpy(result, box, sizeof(TBOX));
   return result;
 }
@@ -1179,7 +1179,7 @@ PGDLLEXPORT Datum
 Int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   int_set_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
@@ -1192,7 +1192,7 @@ PGDLLEXPORT Datum
 Float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
@@ -1206,7 +1206,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
@@ -1219,7 +1219,7 @@ PGDLLEXPORT Datum
 Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   span_set_tbox(span, result);
   PG_RETURN_POINTER(result);
 }
@@ -1232,7 +1232,7 @@ PGDLLEXPORT Datum
 Timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   timestamp_set_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
@@ -1263,7 +1263,7 @@ PGDLLEXPORT Datum
 Timestampset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   timestampset_tbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -1276,7 +1276,7 @@ PGDLLEXPORT Datum
 Period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   period_set_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
@@ -1307,7 +1307,7 @@ PGDLLEXPORT Datum
 Periodset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   periodset_tbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -1772,7 +1772,7 @@ Tbox_extent_transfn(PG_FUNCTION_ARGS)
   /* Can't do anything with null inputs */
   if (! box1 && ! box2)
     PG_RETURN_NULL();
-  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   /* One of the boxes is null, return the other one */
   if (! box1)
   {

@@ -454,7 +454,7 @@ datum_copy(Datum value, CachedType basetype)
   /* For types passed by reference */
   int typlen = basetype_length(basetype);
   size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
-  void *result = palloc0(value_size);
+  void *result = palloc(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
   return PointerGetDatum(result);
 }
@@ -1502,7 +1502,7 @@ ArrayType *
 strarr_to_textarray(char **strarr, int count)
 {
   assert(count > 0);
-  text **textarr = (text **) palloc(sizeof(text *) * count);
+  text **textarr = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
     textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,

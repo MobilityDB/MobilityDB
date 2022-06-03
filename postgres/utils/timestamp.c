@@ -376,10 +376,8 @@ AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
 				return false;
 			}
 
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("timestamp(%d) precision must be between %d and %d",
-							typmod, 0, MAX_TIMESTAMP_PRECISION)));
+			elog(ERROR, "timestamp(%d) precision must be between %d and %d",
+							typmod, 0, MAX_TIMESTAMP_PRECISION);
 		}
 
 		if (*time >= INT64CONST(0))
@@ -939,7 +937,7 @@ interval_in(PG_FUNCTION_ARGS)
 		DateTimeParseError(dterr, str, "interval");
 	}
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	switch (dtype)
 	{
@@ -996,7 +994,7 @@ interval_recv(PG_FUNCTION_ARGS)
 	int32		typmod = PG_GETARG_INT32(2);
 	Interval   *interval;
 
-	interval = (Interval *) palloc(sizeof(Interval));
+	interval = palloc(sizeof(Interval));
 
 	interval->time = pq_getmsgint64(buf);
 	interval->day = pq_getmsgint(buf, sizeof(interval->day));
@@ -1118,7 +1116,7 @@ Datum
 intervaltypmodout(PG_FUNCTION_ARGS)
 {
 	int32		typmod = PG_GETARG_INT32(0);
-	char	   *res = (char *) palloc(64);
+	char	   *res = palloc(64);
 	int			fields;
 	int			precision;
 	const char *fieldstr;
@@ -1523,7 +1521,7 @@ make_interval(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
 				 errmsg("interval out of range")));
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 	result->month = years * MONTHS_PER_YEAR + months;
 	result->day = weeks * 7 + days;
 
@@ -2665,7 +2663,7 @@ timestamp_mi(PG_FUNCTION_ARGS)
 	Timestamp	dt2 = PG_GETARG_TIMESTAMP(1);
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	if (TIMESTAMP_NOT_FINITE(dt1) || TIMESTAMP_NOT_FINITE(dt2))
 		ereport(ERROR,
@@ -2728,7 +2726,7 @@ interval_justify_interval(PG_FUNCTION_ARGS)
 	TimeOffset	wholeday;
 	int32		wholemonth;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 	result->month = span->month;
 	result->day = span->day;
 	result->time = span->time;
@@ -2782,7 +2780,7 @@ interval_justify_hours(PG_FUNCTION_ARGS)
 	Interval   *result;
 	TimeOffset	wholeday;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 	result->month = span->month;
 	result->day = span->day;
 	result->time = span->time;
@@ -2817,7 +2815,7 @@ interval_justify_days(PG_FUNCTION_ARGS)
 	Interval   *result;
 	int32		wholemonth;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 	result->month = span->month;
 	result->day = span->day;
 	result->time = span->time;
@@ -3062,7 +3060,7 @@ interval_um(PG_FUNCTION_ARGS)
 	Interval   *interval = PG_GETARG_INTERVAL_P(0);
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	result->time = -interval->time;
 	/* overflow check copied from int4um */
@@ -3121,7 +3119,7 @@ interval_pl(PG_FUNCTION_ARGS)
 	Interval   *span2 = PG_GETARG_INTERVAL_P(1);
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	result->month = span1->month + span2->month;
 	/* overflow check copied from int4pl */
@@ -3155,7 +3153,7 @@ interval_mi(PG_FUNCTION_ARGS)
 	Interval   *span2 = PG_GETARG_INTERVAL_P(1);
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	result->month = span1->month - span2->month;
 	/* overflow check copied from int4mi */
@@ -3200,7 +3198,7 @@ interval_mul(PG_FUNCTION_ARGS)
 				orig_day = span->day;
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	result_double = span->month * factor;
 	if (isnan(result_double) ||
@@ -3286,7 +3284,7 @@ interval_div(PG_FUNCTION_ARGS)
 				orig_day = span->day;
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	if (factor == 0.0)
 		ereport(ERROR,
@@ -3600,7 +3598,7 @@ timestamp_age(PG_FUNCTION_ARGS)
 	struct pg_tm tt2,
 			   *tm2 = &tt2;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	if (timestamp2tm(dt1, NULL, tm1, &fsec1, NULL, NULL) == 0 &&
 		timestamp2tm(dt2, NULL, tm2, &fsec2, NULL, NULL) == 0)
@@ -3721,7 +3719,7 @@ timestamptz_age(PG_FUNCTION_ARGS)
 	int			tz1;
 	int			tz2;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	if (timestamp2tm(dt1, &tz1, tm1, &fsec1, NULL, NULL) == 0 &&
 		timestamp2tm(dt2, &tz2, tm2, &fsec2, NULL, NULL) == 0)
@@ -4299,7 +4297,7 @@ interval_trunc(PG_FUNCTION_ARGS)
 	struct pg_tm tt,
 			   *tm = &tt;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	lowunits = downcase_truncate_identifier(VARDATA_ANY(units),
 											VARSIZE_ANY_EXHDR(units),

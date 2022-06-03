@@ -59,7 +59,7 @@ point_constructor(PG_FUNCTION_ARGS)
 {
   double    x = PG_GETARG_FLOAT8(0);
   double    y = PG_GETARG_FLOAT8(1);
-  Point     *point = (Point *) palloc(sizeof(Point));
+  Point     *point = palloc(sizeof(Point));
 
   point->x = x;
   point->y = y;
@@ -76,7 +76,7 @@ line_constructor(PG_FUNCTION_ARGS)
   double    A = PG_GETARG_FLOAT8(0);
   double    B = PG_GETARG_FLOAT8(1);
   double    C = PG_GETARG_FLOAT8(2);
-  LINE     *line = (LINE *) palloc(sizeof(LINE));
+  LINE     *line = palloc(sizeof(LINE));
 
   line->A = A;
   line->B = B;
@@ -93,7 +93,7 @@ lseg_constructor(PG_FUNCTION_ARGS)
 {
   Point     *point1 = PG_GETARG_POINT_P(0);
   Point     *point2 = PG_GETARG_POINT_P(1);
-  LSEG     *lseg = (LSEG *) palloc(sizeof(LSEG));
+  LSEG     *lseg = palloc(sizeof(LSEG));
 
   lseg->p[0].x = point1->x;
   lseg->p[0].y = point1->y;
@@ -111,7 +111,7 @@ box_constructor(PG_FUNCTION_ARGS)
 {
   Point     *high = PG_GETARG_POINT_P(0);
   Point     *low = PG_GETARG_POINT_P(1);
-  BOX       *box = (BOX *) palloc(sizeof(BOX));
+  BOX       *box = palloc(sizeof(BOX));
 
   box->high.x = high->x;
   box->high.y = high->y;
@@ -129,7 +129,7 @@ circle_constructor(PG_FUNCTION_ARGS)
 {
   Point     *center = PG_GETARG_POINT_P(0);
   double    radius = PG_GETARG_FLOAT8(1);
-  CIRCLE   *circle = (CIRCLE *) palloc(sizeof(CIRCLE));
+  CIRCLE   *circle = palloc(sizeof(CIRCLE));
 
   circle->center.x = center->x;
   circle->center.y = center->y;
@@ -170,7 +170,7 @@ path_constructor(PG_FUNCTION_ARGS)
         (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
          errmsg("too many points requested")));
 
-  path = (PATH *) palloc(size);
+  path = palloc(size);
 
   SET_VARSIZE(path, size);
   path->npts = npts;
@@ -257,7 +257,7 @@ poly_constructor(PG_FUNCTION_ARGS)
         (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
          errmsg("too many points requested")));
 
-  poly = (POLYGON *) palloc0(size);  /* zero any holes */
+  poly = palloc0(size);  /* zero any holes */
 
   SET_VARSIZE(poly, size);
   poly->npts = npts;

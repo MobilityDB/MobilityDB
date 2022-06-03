@@ -601,7 +601,7 @@ temporal_out(const Temporal *temp)
 Temporal *
 temporal_copy(const Temporal *temp)
 {
-  Temporal *result = (Temporal *) palloc0(VARSIZE(temp));
+  Temporal *result = palloc(VARSIZE(temp));
   memcpy(result, temp, VARSIZE(temp));
   return result;
 }
@@ -1076,7 +1076,7 @@ temporal_set_period(const Temporal *temp, Period *p)
 TBOX *
 tnumber_to_tbox(Temporal *temp)
 {
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   temporal_set_bbox(temp, result);
   return result;
 }
@@ -1586,7 +1586,7 @@ temporal_timespan(const Temporal *temp)
   Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Interval *) palloc0(sizeof(Interval));
+    result = palloc0(sizeof(Interval));
   else if (temp->subtype == INSTANTSET)
     result = tinstantset_timespan((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
@@ -1608,7 +1608,7 @@ temporal_duration(const Temporal *temp)
   Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-    result = (Interval *) palloc0(sizeof(Interval));
+    result = palloc0(sizeof(Interval));
   else if (temp->subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
@@ -3431,7 +3431,7 @@ PG_FUNCTION_INFO_V1(Temporal_typmod_out);
 PGDLLEXPORT Datum
 Temporal_typmod_out(PG_FUNCTION_ARGS)
 {
-  char *s = (char *) palloc(64);
+  char *s = palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
   int16 subtype = TYPMOD_GET_SUBTYPE(typmod);
@@ -3956,7 +3956,7 @@ PGDLLEXPORT Datum
 Temporal_to_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   temporal_set_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
@@ -3970,7 +3970,7 @@ PGDLLEXPORT Datum
 Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }

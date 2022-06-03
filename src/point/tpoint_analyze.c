@@ -963,9 +963,9 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int slot_idx = 2;         /* Starting slot for storing temporal statistics */
   double total_width = 0;   /* # of bytes used by sample */
 
-  SpanBound *time_lowers = (SpanBound *) palloc(sizeof(SpanBound) * sample_rows);
-  SpanBound *time_uppers = (SpanBound *) palloc(sizeof(SpanBound) * sample_rows);
-  float8 *time_lengths = (float8 *) palloc(sizeof(float8) * sample_rows);
+  SpanBound *time_lowers = palloc(sizeof(SpanBound) * sample_rows);
+  SpanBound *time_uppers = palloc(sizeof(SpanBound) * sample_rows);
+  float8 *time_lengths = palloc(sizeof(float8) * sample_rows);
 
   /*
    * First scan for obtaining the number of nulls and not nulls, the total

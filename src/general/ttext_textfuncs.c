@@ -68,7 +68,7 @@ text_catenate(text *t1, text *t2)
     len2 = 0;
 
   len = len1 + len2 + VARHDRSZ;
-  result = (text *) palloc(len);
+  result = palloc(len);
 
   /* Set size of result string... */
   SET_VARSIZE(result, len);

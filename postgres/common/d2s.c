@@ -1069,7 +1069,7 @@ double_to_shortest_decimal_buf(double f, char *result)
 char *
 double_to_shortest_decimal(double f)
 {
-	char	   *const result = (char *) palloc(DOUBLE_SHORTEST_DECIMAL_LEN);
+	char	   *const result = palloc(DOUBLE_SHORTEST_DECIMAL_LEN);
 
 	double_to_shortest_decimal_buf(f, result);
 	return result;

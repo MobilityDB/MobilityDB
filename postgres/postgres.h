@@ -45,7 +45,11 @@
 
 #include "c.h"
 #include "utils/elog.h"
-#include "utils/palloc.h"
+
+/* MobilityDB redirecting palloc0, palloc, and pfree */
+#define palloc0(X) (calloc(1, X))
+#define palloc malloc
+#define pfree free
 
 /* ----------------------------------------------------------------
  *				Section 1:	variable-length datatypes (TOAST support)

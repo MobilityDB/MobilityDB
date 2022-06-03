@@ -175,7 +175,7 @@ tinstarr_similarity(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
   /* Allocate memory for two rows of the distance matrix */
-  double *dist = (double *) palloc(sizeof(double) * 2 * count2);
+  double *dist = palloc(sizeof(double) * 2 * count2);
   /* Initialise it with -1.0 */
   for (int i = 0; i < 2 * count2; i++)
     *(dist + i) = -1.0;
@@ -413,7 +413,7 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, int *count, SimFunc simfunc)
 {
   /* Allocate memory for dist */
-  double *dist = (double *) palloc(sizeof(double) * count1 * count2);
+  double *dist = palloc(sizeof(double) * count1 * count2);
   /* Initialise it with -1.0 */
   for (int i = 0; i < count1 * count2; i++)
     *(dist + i) = -1.0;

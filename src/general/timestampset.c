@@ -687,7 +687,7 @@ PGDLLEXPORT Datum
 Timestampset_to_period(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   timestampset_period_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }

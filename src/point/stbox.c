@@ -175,14 +175,14 @@ char *
 stbox_out(const STBOX *box)
 {
   static size_t size = MAXSTBOXLEN + 1;
-  char *str, *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL,
+  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL,
     *zmin = NULL, *zmax = NULL, *tmin = NULL, *tmax = NULL;
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
 
-  str = (char *) palloc(size);
+  char *str = palloc(size);
   char srid[20];
   if (hasx && box->srid > 0)
     sprintf(srid, "SRID=%d;", box->srid);
@@ -271,7 +271,7 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
   double zmax, TimestampTz tmin, TimestampTz tmax)
 {
   /* Note: zero-fill is done in function stbox_set */
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   stbox_set(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
     zmin, zmax, tmin, tmax, result);
   return result;
@@ -325,7 +325,7 @@ stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 STBOX *
 stbox_copy(const STBOX *box)
 {
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   memcpy(result, box, sizeof(STBOX));
   return result;
 }
@@ -342,6 +342,7 @@ void
 stbox_set_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
+  memset(gbox, 0, sizeof(GBOX));
   gbox_set(MOBDB_FLAGS_GET_Z(box->flags), false,
     MOBDB_FLAGS_GET_GEODETIC(box->flags), box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax, gbox);
@@ -403,7 +404,7 @@ stbox_to_geometry(const STBOX *box)
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX
- * The functions assume that the argument box is set to 0 before with palloc0
+ * The functions assume set the argument box to 0
  *****************************************************************************/
 
 /**
@@ -548,7 +549,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   geo_set_stbox(gs, result);
   result->tmin = result->tmax = t;
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -564,7 +565,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   geo_set_stbox(gs, result);
   result->tmin = p->lower;
   result->tmax = p->upper;
@@ -1715,7 +1716,7 @@ Stbox_to_box2d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
-  GBOX *result = (GBOX *) palloc0(sizeof(GBOX));
+  GBOX *result = palloc(sizeof(GBOX));
   stbox_set_gbox(box, result);
   PG_RETURN_POINTER(result);
 }
@@ -1729,7 +1730,7 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
-  BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
+  BOX3D *result = palloc(sizeof(BOX3D));
   stbox_set_box3d(box, result);
   PG_RETURN_POINTER(result);
 }
@@ -1748,7 +1749,6 @@ Stbox_to_geometry(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX
- * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Box2d_to_stbox);
@@ -1785,7 +1785,7 @@ PGDLLEXPORT Datum
 Geo_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   bool found = geo_set_stbox(gs, result);
   PG_FREE_IF_COPY(gs, 0);
   if (! found)
@@ -1801,7 +1801,7 @@ PGDLLEXPORT Datum
 Timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   timestamp_set_stbox(t, result);
   PG_RETURN_POINTER(result);
 }
@@ -1832,7 +1832,7 @@ PGDLLEXPORT Datum
 Timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   timestampset_stbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -1845,7 +1845,7 @@ PGDLLEXPORT Datum
 Period_to_stbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   period_set_stbox(p, result);
   PG_RETURN_POINTER(result);
 }
@@ -1876,7 +1876,7 @@ PGDLLEXPORT Datum
 Periodset_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   periodset_stbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -2527,7 +2527,7 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   /* Can't do anything with null inputs */
   if (! box1 && ! box2)
     PG_RETURN_NULL();
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   /* One of the boxes is null, return the other one */
   if (! box1)
   {

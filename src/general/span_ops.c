@@ -397,6 +397,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
   if (! overlaps_span_span(s1, s2))
     return false;
 
+  memset(result, 0, sizeof(Span));
   Datum lower = span_elem_max(s1->lower, s2->lower, s1->basetype);
   Datum upper = span_elem_min(s1->upper, s2->upper, s1->basetype);
   bool lower_inc = s1->lower == s2->lower ? s1->lower_inc && s2->lower_inc :
@@ -414,7 +415,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
-  Span *result = palloc0(sizeof(Span));
+  Span *result = palloc(sizeof(Span));
   if (! inter_span_span(s1, s2, result))
   {
     pfree(result);

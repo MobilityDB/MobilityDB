@@ -202,7 +202,7 @@ cstring_to_text(const char *s)
 text *
 cstring_to_text_with_len(const char *s, int len)
 {
-	text	   *result = (text *) palloc(len + VARHDRSZ);
+	text	   *result = palloc(len + VARHDRSZ);
 
 	SET_VARSIZE(result, len + VARHDRSZ);
 	memcpy(VARDATA(result), s, len);
@@ -228,7 +228,7 @@ text_to_cstring(const text *t)
 	int			len = VARSIZE_ANY_EXHDR(tunpacked);
 	char	   *result;
 
-	result = (char *) palloc(len + 1);
+	result = palloc(len + 1);
 	memcpy(result, VARDATA_ANY(tunpacked), len);
 	result[len] = '\0';
 
@@ -341,7 +341,7 @@ byteain(PG_FUNCTION_ARGS)
 
 	bc += VARHDRSZ;
 
-	result = (bytea *) palloc(bc);
+	result = palloc(bc);
 	SET_VARSIZE(result, bc);
 
 	tp = inputText;
@@ -432,7 +432,7 @@ byteaout(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
 					 errmsg_internal("result of bytea output conversion is too large")));
-		rp = result = (char *) palloc(len);
+		rp = result = palloc(len);
 
 		vp = VARDATA_ANY(vlena);
 		for (i = VARSIZE_ANY_EXHDR(vlena); i != 0; i--, vp++)
@@ -480,7 +480,7 @@ bytearecv(PG_FUNCTION_ARGS)
 	int			nbytes;
 
 	nbytes = buf->len - buf->cursor;
-	result = (bytea *) palloc(nbytes + VARHDRSZ);
+	result = palloc(nbytes + VARHDRSZ);
 	SET_VARSIZE(result, nbytes + VARHDRSZ);
 	pq_copymsgbytes(buf, VARDATA(result), nbytes);
 	PG_RETURN_BYTEA_P(result);
@@ -545,7 +545,7 @@ bytea_string_agg_finalfn(PG_FUNCTION_ARGS)
 	{
 		bytea	   *result;
 
-		result = (bytea *) palloc(state->len + VARHDRSZ);
+		result = palloc(state->len + VARHDRSZ);
 		SET_VARSIZE(result, state->len + VARHDRSZ);
 		memcpy(VARDATA(result), state->data, state->len);
 		PG_RETURN_BYTEA_P(result);
@@ -762,7 +762,7 @@ text_catenate(text *t1, text *t2)
 		len2 = 0;
 
 	len = len1 + len2 + VARHDRSZ;
-	result = (text *) palloc(len);
+	result = palloc(len);
 
 	/* Set size of result string... */
 	SET_VARSIZE(result, len);
@@ -1047,7 +1047,7 @@ text_substring(Datum str, int32 start, int32 length, bool length_not_specified)
 		for (i = S1; i < E1; i++)
 			p += pg_mblen(p);
 
-		ret = (text *) palloc(VARHDRSZ + (p - s));
+		ret = palloc(VARHDRSZ + (p - s));
 		SET_VARSIZE(ret, VARHDRSZ + (p - s));
 		memcpy(VARDATA(ret), s, (p - s));
 
@@ -1663,11 +1663,11 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oid collid)
 #endif							/* WIN32 */
 
 		if (len1 >= TEXTBUFLEN)
-			a1p = (char *) palloc(len1 + 1);
+			a1p = palloc(len1 + 1);
 		else
 			a1p = a1buf;
 		if (len2 >= TEXTBUFLEN)
-			a2p = (char *) palloc(len2 + 1);
+			a2p = palloc(len2 + 1);
 		else
 			a2p = a2buf;
 
@@ -3259,7 +3259,7 @@ bytea_catenate(bytea *t1, bytea *t2)
 		len2 = 0;
 
 	len = len1 + len2 + VARHDRSZ;
-	result = (bytea *) palloc(len);
+	result = palloc(len);
 
 	/* Set size of result string... */
 	SET_VARSIZE(result, len);
@@ -4515,7 +4515,7 @@ replace_text_regexp(text *src_text, void *regexp,
 	initStringInfo(&buf);
 
 	/* Convert data string to wide characters. */
-	data = (pg_wchar *) palloc((src_text_len + 1) * sizeof(pg_wchar));
+	data = palloc((src_text_len + 1) * sizeof(pg_wchar));
 	data_len = pg_mb2wchar_with_len(VARDATA_ANY(src_text), data, src_text_len);
 
 	/* Check whether replace_text has escape char. */

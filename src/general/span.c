@@ -386,7 +386,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   CachedType basetype)
 {
   /* Note: zero-fill is done in the span_set function */
-  Span *s = (Span *) palloc(sizeof(Span));
+  Span *s = palloc(sizeof(Span));
   span_set(lower, upper, lower_inc, upper_inc, basetype, s);
   return s;
 }
@@ -429,7 +429,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 Span *
 span_copy(const Span *s)
 {
-  Span *result = (Span *) palloc(sizeof(Span));
+  Span *result = palloc(sizeof(Span));
   memcpy((char *) result, (char *) s, sizeof(Span));
   return result;
 }
@@ -801,7 +801,7 @@ Span_out(PG_FUNCTION_ARGS)
 Span *
 span_recv(StringInfo buf)
 {
-  Span *result = (Span *) palloc0(sizeof(Span));
+  Span *result = palloc0(sizeof(Span));
   result->spantype = (char) pq_getmsgbyte(buf);
   result->basetype = spantype_basetype(result->spantype);
   result->lower = basetype_recv(result->basetype, buf);

@@ -116,18 +116,12 @@ scanint8(const char *str, bool errorOK, int64 *result)
 
 out_of_range:
 	if (!errorOK)
-		ereport(ERROR,
-				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("value \"%s\" is out of range for type %s",
-						str, "bigint")));
+		elog(ERROR, "value \"%s\" is out of range for type %s", str, "bigint");
 	return false;
 
 invalid_syntax:
 	if (!errorOK)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type %s: \"%s\"",
-						"bigint", str)));
+		elog(ERROR, "invalid input syntax for type %s: \"%s\"", "bigint", str);
 	return false;
 }
 
@@ -1459,7 +1453,7 @@ generate_series_step_int8(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		/* allocate memory for user context */
-		fctx = (generate_series_fctx *) palloc(sizeof(generate_series_fctx));
+		fctx = palloc(sizeof(generate_series_fctx));
 
 		/*
 		 * Use fctx to keep state from call to call. Seed current with the
