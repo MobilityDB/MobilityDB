@@ -100,7 +100,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
   const int numcoord = json_object_array_length(poObj);
   if (numcoord < 2)
     elog(ERROR, "Too few elements in 'coordinates' values in MFJSON string");
-  else if (numcoord > 3)
+  if (numcoord > 3)
     elog(ERROR, "Too many elements in 'coordinates' values in MFJSON string");
 
   double x, y;

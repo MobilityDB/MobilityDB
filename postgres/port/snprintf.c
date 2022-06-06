@@ -708,9 +708,10 @@ nextch2:
 				break;
 			case 'm':
 				{
-					char		errbuf[PG_STRERROR_R_BUFLEN];
-					const char *errm = strerror_r(save_errno,
-												  errbuf, sizeof(errbuf));
+          /* MobilityDB */
+					// char		errbuf[PG_STRERROR_R_BUFLEN];
+					// const char *errm = strerror_r(save_errno, errbuf, sizeof(errbuf));
+					const char *errm = strerror(save_errno);
 
 					dostr(errm, strlen(errm), target);
 				}

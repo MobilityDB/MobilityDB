@@ -700,6 +700,19 @@ text2cstring(const text *textptr)
   return str;
 }
 
+#if MEOS
+/* Simplified version of the function in varlena.c where LC_COLLATE is C */
+int
+varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
+  Oid collid __attribute__((unused)))
+{
+	int result = memcmp(arg1, arg2, Min(len1, len2));
+  if ((result == 0) && (len1 != len2))
+    result = (len1 < len2) ? -1 : 1;
+  return result;
+	}
+#endif /* MEOS */
+
 /**
  * Comparison function for text values
  *

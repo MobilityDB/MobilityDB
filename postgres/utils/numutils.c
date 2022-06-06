@@ -540,6 +540,7 @@ pg_lltoa(int64 value, char *a)
 	return len;
 }
 
+#endif /* MobilityDB not used */
 
 /*
  * pg_ultostr_zeropad
@@ -610,6 +611,8 @@ pg_ultostr(char *str, uint32 value)
 
 	return str + len;
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_strtouint64

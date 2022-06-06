@@ -92,6 +92,83 @@ datum_textcat(Datum l, Datum r)
   return PointerGetDatum(text_catenate(DatumGetTextP(l), DatumGetTextP(r)));
 }
 
+#if MEOS
+
+char *
+pnstrdup(const char *in, Size size)
+{
+	char	   *tmp;
+	int			len;
+
+	if (!in)
+	{
+		fprintf(stderr,
+				_("cannot duplicate null pointer (internal error)\n"));
+		exit(EXIT_FAILURE);
+	}
+
+	len = strnlen(in, size);
+	tmp = malloc(len + 1);
+	if (tmp == NULL)
+	{
+		fprintf(stderr, _("out of memory\n"));
+		exit(EXIT_FAILURE);
+	}
+
+	memcpy(tmp, in, len);
+	tmp[len] = '\0';
+
+	return tmp;
+}
+
+/*
+ * ASCII-only lower function
+ *
+ * We pass the number of bytes so we can pass varlena and char*
+ * to this function.  The result is a palloc'd, null-terminated string.
+ */
+char *
+asc_tolower(const char *buff, size_t nbytes)
+{
+	char	   *result;
+	char	   *p;
+
+	if (!buff)
+		return NULL;
+
+	result = pnstrdup(buff, nbytes);
+
+	for (p = result; *p; p++)
+		*p = pg_ascii_tolower((unsigned char) *p);
+
+	return result;
+}
+
+/*
+ * ASCII-only upper function
+ *
+ * We pass the number of bytes so we can pass varlena and char*
+ * to this function.  The result is a palloc'd, null-terminated string.
+ */
+char *
+asc_toupper(const char *buff, size_t nbytes)
+{
+	char	   *result;
+	char	   *p;
+
+	if (!buff)
+		return NULL;
+
+	result = pnstrdup(buff, nbytes);
+
+	for (p = result; *p; p++)
+		*p = pg_ascii_toupper((unsigned char) *p);
+
+	return result;
+}
+
+#endif /* MEOS */
+
 /**
  * @brief Convert the text value to lowercase
  * @note Function adapted from the external function lower() in varlena.c.
@@ -103,8 +180,12 @@ pg_lower(text *txt)
   char *out_string;
   text *result;
 
+#if MEOS
+  out_string = asc_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
   out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     DEFAULT_COLLATION_OID);
+#endif /* MEOS */
   result = cstring2text(out_string);
   pfree(out_string);
 
@@ -131,8 +212,12 @@ pg_upper(text *txt)
   char *out_string;
   text *result;
 
+#if MEOS
+  out_string = asc_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
   out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     DEFAULT_COLLATION_OID);
+#endif /* MEOS */
   result = cstring2text(out_string);
   pfree(out_string);
 

@@ -19,20 +19,17 @@
 #include <math.h>
 #include <limits.h>
 
-#if 0 /* MobilityDB not used */
-
-#include "catalog/pg_type.h"
-#include "common/int.h"
+/* MobilityDB */
+// #include "catalog/pg_type.h"
+// #include "common/int.h"
 #include "common/shortest_dec.h"
-#include "libpq/pqformat.h"
-#include "miscadmin.h"
-#include "utils/array.h"
-#include "utils/float.h"
-#include "utils/fmgrprotos.h"
-#include "utils/sortsupport.h"
-#include "utils/timestamp.h"
-
-#endif /* MobilityDB not used */
+// #include "libpq/pqformat.h"
+// #include "miscadmin.h"
+// #include "utils/array.h"
+// #include "utils/float.h"
+// #include "utils/fmgrprotos.h"
+// #include "utils/sortsupport.h"
+// #include "utils/timestamp.h"
 
 /*
  * Configurable GUC parameter
@@ -503,7 +500,7 @@ float8in_internal_opt_error(char *num, char **endptr_p,
 		*endptr_p = endptr;
 	else if (*endptr != '\0')
 		RETURN_ERROR(elog(ERROR,
-							 "invalid input syntax for type %s: \"%s\"", type_name, 
+							 "invalid input syntax for type %s: \"%s\"", type_name,
                orig_string),
 					 have_error);
 
@@ -535,6 +532,11 @@ float8out(PG_FUNCTION_ARGS)
 	PG_RETURN_CSTRING(float8out_internal(num));
 }
 
+#endif /* MobilityDB not used */
+
+/* Definition taken from GCC's float.h */
+#define DBL_DIG                __DBL_DIG__
+
 /*
  * float8out_internal - guts of float8out()
  *
@@ -557,6 +559,8 @@ float8out_internal(double num)
 	(void) pg_strfromd(ascii, 32, ndig, num);
 	return ascii;
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  *		float8recv			- converts external binary format to float8

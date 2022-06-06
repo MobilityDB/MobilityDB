@@ -46,7 +46,7 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /* PostgreSQL removed pg_atoi in version 15 */
-#if POSTGRESQL_VERSION_NUMBER >= 150000
+#if !MEOS && POSTGRESQL_VERSION_NUMBER >= 150000
 /*
  * pg_atoi: convert string to integer
  *

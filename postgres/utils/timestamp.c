@@ -17,31 +17,33 @@
 
 #include "datatype/timestamp.h"
 
-#if 0 /* MobilityDB not used */
-
-#include <ctype.h>
-#include <math.h>
+// #include <ctype.h>
+// #include <math.h>
 #include <limits.h>
-#include <sys/time.h>
+// #include <sys/time.h>
 
-#include "access/xact.h"
-#include "catalog/pg_type.h"
-#include "common/int.h"
-#include "common/int128.h"
-#include "funcapi.h"
-#include "libpq/pqformat.h"
-#include "miscadmin.h"
-#include "nodes/makefuncs.h"
-#include "nodes/nodeFuncs.h"
-#include "nodes/supportnodes.h"
-#include "parser/scansup.h"
-#include "utils/array.h"
-#include "utils/builtins.h"
-#include "utils/date.h"
+// #include "access/xact.h"
+// #include "catalog/pg_type.h"
+// #include "common/int.h"
+// #include "common/int128.h"
+// #include "funcapi.h"
+// #include "libpq/pqformat.h"
+// #include "miscadmin.h"
+// #include "nodes/makefuncs.h"
+// #include "nodes/nodeFuncs.h"
+// #include "nodes/supportnodes.h"
+// #include "parser/scansup.h"
+// #include "utils/array.h"
+// #include "utils/builtins.h"
+// #include "utils/date.h"
 #include "utils/datetime.h"
-#include "utils/float.h"
-#include "utils/numeric.h"
+// #include "utils/float.h"
+// #include "utils/numeric.h"
 
+static TimeOffset time2t(const int hour, const int min, const int sec, const fsec_t fsec);
+static Timestamp dt2local(Timestamp dt, int timezone);
+
+#if 0 /* MobilityDB not used */
 
 /*
  * gcc's -ffast-math switch breaks routines that expect exact results from
@@ -1533,6 +1535,8 @@ make_interval(PG_FUNCTION_ARGS)
 	PG_RETURN_INTERVAL_P(result);
 }
 
+#endif /* MobilityDB not used */
+
 /* EncodeSpecialTimestamp()
  * Convert reserved timestamp data type to string.
  */
@@ -1546,6 +1550,8 @@ EncodeSpecialTimestamp(Timestamp dt, char *str)
 	else						/* shouldn't happen */
 		elog(ERROR, "invalid argument for EncodeSpecialTimestamp");
 }
+
+#if 0 /* MobilityDB not used */
 
 Datum
 now(PG_FUNCTION_ARGS)
@@ -1792,11 +1798,13 @@ timestamptz_to_str(TimestampTz t)
 	else if (timestamp2tm(t, &tz, tm, &fsec, &tzn, NULL) == 0)
 		EncodeDateTime(tm, fsec, true, tz, tzn, USE_ISO_DATES, buf);
 	else
-		strlcpy(buf, "(timestamp out of range)", sizeof(buf));
+		// strlcpy(buf, "(timestamp out of range)", sizeof(buf)); /* MobilityDB */
+		strncpy(buf, "(timestamp out of range)", sizeof(buf));
 
 	return buf;
 }
 
+#endif /* MobilityDB not used */
 
 void
 dt2time(Timestamp jd, int *hour, int *min, int *sec, fsec_t *fsec)
@@ -1812,7 +1820,6 @@ dt2time(Timestamp jd, int *hour, int *min, int *sec, fsec_t *fsec)
 	*sec = time / USECS_PER_SEC;
 	*fsec = time - (*sec * USECS_PER_SEC);
 }								/* dt2time() */
-
 
 /*
  * timestamp2tm() - Convert timestamp data type to POSIX time structure.
@@ -1965,6 +1972,7 @@ tm2timestamp(struct pg_tm *tm, fsec_t fsec, int *tzp, Timestamp *result)
 	return 0;
 }
 
+#if 0 /* MobilityDB not used */
 
 /* interval2tm()
  * Convert an interval data type to a tm structure.
@@ -2013,6 +2021,8 @@ tm2interval(struct pg_tm *tm, fsec_t fsec, Interval *span)
 	return 0;
 }
 
+#endif /* MobilityDB not used */
+
 static TimeOffset
 time2t(const int hour, const int min, const int sec, const fsec_t fsec)
 {
@@ -2026,6 +2036,7 @@ dt2local(Timestamp dt, int tz)
 	return dt;
 }
 
+#if 0 /* MobilityDB not used */
 
 /*****************************************************************************
  *	 PUBLIC ROUTINES														 *
@@ -2050,6 +2061,8 @@ interval_finite(PG_FUNCTION_ARGS)
 /*----------------------------------------------------------
  *	Relational operators for timestamp.
  *---------------------------------------------------------*/
+
+#endif /* MobilityDB not used */
 
 void
 GetEpochTime(struct pg_tm *tm)
@@ -2086,8 +2099,6 @@ SetEpochTimestamp(void)
 
 	return dt;
 }								/* SetEpochTimestamp() */
-
-#endif /* MobilityDB not used */
 
 /*
  * We are currently sharing some code between timestamp and timestamptz.

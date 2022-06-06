@@ -1,7 +1,3 @@
-# if(NOT MEOS)
-  # set(lwgeom_transform.c lwgeom_transform.c)
-# endif()
-
 add_library(utils OBJECT
   bool.c
   date.c
@@ -11,5 +7,4 @@ add_library(utils OBJECT
   int8.c
   numutils.c
   timestamp.c
-  varlena.c
   )

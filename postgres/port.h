@@ -225,12 +225,13 @@ extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
 extern int	pg_strfromd(char *str, size_t count, int precision, double value);
 
 /* Replace strerror() with our own, somewhat more robust wrapper */
-extern char *pg_strerror(int errnum);
-#define strerror pg_strerror
+/* MobilityDB */
+// extern char *pg_strerror(int errnum);
+// #define strerror pg_strerror
 
 /* Likewise for strerror_r(); note we prefer the GNU API for that */
-extern char *pg_strerror_r(int errnum, char *buf, size_t buflen);
-#define strerror_r pg_strerror_r
+// extern char *pg_strerror_r(int errnum, char *buf, size_t buflen); /* MobilityDB */
+// #define strerror_r pg_strerror_r /* MobilityDB */
 #define PG_STRERROR_R_BUFLEN 256	/* Recommended buffer size for strerror_r */
 
 /* Wrap strsignal(), or provide our own version if necessary */
