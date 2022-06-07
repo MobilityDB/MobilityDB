@@ -518,6 +518,7 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between the elements
+ * @sqlop @p <->
  */
 double
 distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -544,6 +545,7 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between an element and a span.
+ * @sqlop @p <->
  */
 double
 distance_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -554,6 +556,7 @@ distance_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between a span and a element.
+ * @sqlop @p <->
  */
 double
 distance_span_elem(const Span *s, Datum d, CachedType basetype)

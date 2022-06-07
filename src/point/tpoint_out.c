@@ -265,6 +265,7 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the MF-JSON representation of a temporal instant point.
+ * @sqlfunc asMFJSON()
  */
 char *
 tpointinst_as_mfjson(const TInstant *inst, int precision,
@@ -327,6 +328,7 @@ tpointinstset_as_mfjson_buf(const TInstantSet *is, int precision, const STBOX *b
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the MF-JSON representation of a temporal instant set point.
+ * @sqlfunc asMFJSON()
  */
 char *
 tpointinstset_as_mfjson(const TInstantSet *is, int precision, const STBOX *bbox,
@@ -391,6 +393,7 @@ tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the MF-JSON representation of a temporal sequence point.
+ * @sqlfunc asMFJSON()
  */
 char *
 tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
@@ -464,6 +467,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ss, int precision,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the MF-JSON representation of a temporal sequence set point.
+ * @sqlfunc asMFJSON()
  */
 char *
 tpointseqset_as_mfjson(const TSequenceSet *ss, int precision, const STBOX *bbox,
@@ -480,6 +484,7 @@ tpointseqset_as_mfjson(const TSequenceSet *ss, int precision, const STBOX *bbox,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the MF-JSON representation of a temporal point.
+ * @sqlfunc asMFJSON()
  */
 char *
 tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
@@ -551,6 +556,7 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the Well-Known Text (WKT) representation of a temporal point.
+ * @sqlfunc asText()
  */
 char *
 tpoint_as_text(const Temporal *temp)
@@ -572,6 +578,7 @@ tpoint_as_text(const Temporal *temp)
  * @ingroup libmeos_temporal_input_output
  * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
  * point.
+ * @sqlfunc asEWKT()
  */
 char *
 tpoint_as_ewkt(const Temporal *temp)
@@ -601,6 +608,7 @@ tpoint_as_ewkt(const Temporal *temp)
  * @param[in] geoarr Array of geometries/geographies
  * @param[in] count Number of elements in the input array
  * @param[in] extended True when the output is in EWKT
+ * @sqlfunc asText(), asEWKT()
  */
 char **
 geoarr_as_text(const Datum *geoarr, int count, bool extended)
@@ -617,6 +625,7 @@ geoarr_as_text(const Datum *geoarr, int count, bool extended)
  * @ingroup libmeos_temporal_input_output
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a temporal point array
+ * @sqlfunc asText(), asEWKT()
  */
 char **
 tpointarr_as_text(const Temporal **temparr, int count, bool extended)

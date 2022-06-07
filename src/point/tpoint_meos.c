@@ -54,6 +54,7 @@
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of a point and a temporal point
+ * @sqlop @p #=
  */
 Temporal *
 teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -64,6 +65,7 @@ teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of a temporal point and a point
+ * @sqlop @p #=
  */
 Temporal *
 teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
@@ -74,6 +76,7 @@ teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return the temporal difference of a point and a temporal point
+ * @sqlop @p #<>
  */
 Temporal *
 tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -84,6 +87,7 @@ tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return the temporal difference of the temporal point and a point
+ * @sqlop @p #<>
  */
 Temporal *
 tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)

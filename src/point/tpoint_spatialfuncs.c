@@ -715,6 +715,7 @@ point_on_segment(Datum start, Datum end, Datum point)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal instant point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @sqlop @p ?=
  */
 bool
 tpointinst_ever_eq(const TInstant *inst, Datum value)
@@ -727,6 +728,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal instant set point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @sqlop @p ?=
  */
 bool
 tpointinstset_ever_eq(const TInstantSet *is, Datum value)
@@ -748,6 +750,7 @@ tpointinstset_ever_eq(const TInstantSet *is, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @sqlop @p ?=
  */
 bool
 tpointseq_ever_eq(const TSequence *seq, Datum value)
@@ -806,6 +809,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence set point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @sqlop @p ?=
  */
 bool
 tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
@@ -830,6 +834,7 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
  * @see tpointinstset_ever_eq
  * @see tpointseq_ever_eq
  * @see tpointseqset_ever_eq
+ * @sqlop @p ?=
  */
 bool
 tpoint_ever_eq(const Temporal *temp, Datum value)
@@ -860,6 +865,7 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal instant point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @sqlop @p %=
  */
 bool
 tpointinst_always_eq(const TInstant *inst, Datum value)
@@ -871,6 +877,7 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal instant set point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @sqlop @p %=
  */
 bool
 tpointinstset_always_eq(const TInstantSet *is, Datum value)
@@ -888,6 +895,7 @@ tpointinstset_always_eq(const TInstantSet *is, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @sqlop @p %=
  */
 bool
 tpointseq_always_eq(const TSequence *seq, Datum value)
@@ -905,6 +913,7 @@ tpointseq_always_eq(const TSequence *seq, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence set point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @sqlop @p %=
  */
 bool
 tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
@@ -925,6 +934,7 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
  * @see tpointinstset_always_eq
  * @see tpointseq_always_eq
  * @see tpointseqset_always_eq
+ * @sqlop @p %=
  */
 bool
 tpoint_always_eq(const Temporal *temp, Datum value)
@@ -1616,6 +1626,7 @@ line_make(Datum value1, Datum value2)
  *
  * @param[in] is Temporal value
  * @note Notice that this function does not remove duplicate points
+ * @sqlfunc trajectory()
  */
 Datum
 tpointinstset_trajectory(const TInstantSet *is)
@@ -1648,6 +1659,7 @@ tpointinstset_trajectory(const TInstantSet *is)
  * @note Since the sequence has been already validated there is no
  * verification of the input in this function, in particular for geographies
  * it is supposed that the composing points are geodetic
+ * @sqlfunc trajectory()
  */
 Datum
 tpointseq_trajectory(const TSequence *seq)
@@ -1683,8 +1695,8 @@ tpointseq_trajectory(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
- *
  * @note The function does not remove duplicates point/linestring components.
+ * @sqlfunc trajectory()
  */
 Datum
 tpointseqset_trajectory(const TSequenceSet *ss)
@@ -1759,6 +1771,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point.
+ * @sqlfunc trajectory()
  */
 Datum
 tpoint_trajectory(const Temporal *temp)
@@ -1783,6 +1796,7 @@ tpoint_trajectory(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant point.
+ * @sqlfunc SRID()
  */
 int
 tpointinst_srid(const TInstant *inst)
@@ -1794,6 +1808,7 @@ tpointinst_srid(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant set point.
+ * @sqlfunc SRID()
  */
 int
 tpointinstset_srid(const TInstantSet *is)
@@ -1805,6 +1820,7 @@ tpointinstset_srid(const TInstantSet *is)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence point.
+ * @sqlfunc SRID()
  */
 int
 tpointseq_srid(const TSequence *seq)
@@ -1816,6 +1832,7 @@ tpointseq_srid(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence set point.
+ * @sqlfunc SRID()
  */
 int
 tpointseqset_srid(const TSequenceSet *ss)
@@ -1827,6 +1844,7 @@ tpointseqset_srid(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal point.
+ * @sqlfunc SRID()
  */
 int
 tpoint_srid(const Temporal *temp)
@@ -1849,6 +1867,7 @@ tpoint_srid(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant point
+ * @sqlfunc setSRID()
  */
 TInstant *
 tpointinst_set_srid(const TInstant *inst, int32 srid)
@@ -1862,6 +1881,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant set point
+ * @sqlfunc setSRID()
  */
 TInstantSet *
 tpointinstset_set_srid(const TInstantSet *is, int32 srid)
@@ -1881,6 +1901,7 @@ tpointinstset_set_srid(const TInstantSet *is, int32 srid)
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence point
+ * @sqlfunc setSRID()
  */
 TSequence *
 tpointseq_set_srid(const TSequence *seq, int32 srid)
@@ -1907,6 +1928,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence set point
+ * @sqlfunc setSRID()
  */
 TSequenceSet *
 tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
@@ -1942,6 +1964,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
  * @see tpointinstset_set_srid
  * @see tpointseq_set_srid
  * @see tpointseqset_set_srid
+ * @sqlfunc setSRID()
  */
 Temporal *
 tpoint_set_srid(const Temporal *temp, int32 srid)
@@ -1973,6 +1996,7 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
  * @param[in] inst Temporal instant point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @sqlop ::
  */
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
@@ -1993,6 +2017,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
  * @param[in] is Temporal instant set point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @sqlop ::
  */
 TInstantSet *
 tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper)
@@ -2039,6 +2064,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper)
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @sqlop ::
  */
 TSequence *
 tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
@@ -2086,6 +2112,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
  * @param[in] ss Temporal sequence set point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @sqlop ::
  */
 TSequenceSet *
 tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
@@ -2109,6 +2136,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
  * @see tgeompointinstset_tgeogpointinstset
  * @see tgeompointseq_tgeogpointseq
  * @see tgeompointseqset_tgeogpointseqset
+ * @sqlop ::
  */
 Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)

@@ -1299,7 +1299,6 @@ datum_to_wkb_buf(Datum value, CachedType type, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a datum value.
  *
  * @param[in] value Value
@@ -1382,7 +1381,6 @@ datum_as_wkb(Datum value, CachedType type, uint8_t variant, size_t *size_out)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
  * @brief Return the HexWKB representation of a datum value.
  */
 char *
@@ -1401,6 +1399,7 @@ datum_as_hexwkb(Datum value, CachedType type, uint8_t variant, size_t *size)
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a span.
+ * @sqlfunc asBinary()
  */
 uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
@@ -1413,6 +1412,7 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a span in hex-encoded ASCII.
+ * @sqlfunc asHexWKB()
  */
 char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
@@ -1427,6 +1427,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a timestamp set.
+ * @sqlfunc asBinary()
  */
 uint8_t *
 timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
@@ -1439,6 +1440,7 @@ timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a timestamp set in hex-encoded ASCII.
+ * @sqlfunc asHexWKB()
  */
 char *
 timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
@@ -1454,6 +1456,7 @@ timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a period set.
+ * @sqlfunc asBinary()
  */
 uint8_t *
 periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
@@ -1466,6 +1469,7 @@ periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_spantime_input_output
  * @brief Return the WKB representation of a period set in hex-encoded ASCII.
+ * @sqlfunc asHexWKB()
  */
 char *
 periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
@@ -1480,6 +1484,7 @@ periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_box_input_output
  * @brief Return the WKB representation of a temporal box.
+ * @sqlfunc asBinary()
  */
 uint8_t *
 tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
@@ -1492,6 +1497,7 @@ tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_box_input_output
  * @brief Return the WKB representation of a temporal box in hex-encoded ASCII.
+ * @sqlfunc asHexWKB()
  */
 char *
 tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
@@ -1506,6 +1512,7 @@ tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_box_input_output
  * @brief Return the WKB representation of a spatiotemporal box.
+ * @sqlfunc asBinary()
  */
 uint8_t *
 stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
@@ -1518,6 +1525,7 @@ stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_box_input_output
  * @brief Return the WKB representation of a spatiotemporal box in hex-encoded ASCII.
+ * @sqlfunc asHexWKB()
  */
 char *
 stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size_out)
@@ -1532,6 +1540,7 @@ stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the WKB representation of a temporal value.
+ * @sqlfunc asBinary()
  */
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
@@ -1544,6 +1553,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return the WKB representation of a temporal value in hex-encoded ASCII.
+ * @sqlfunc asHexWKB()
  */
 char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)

@@ -205,6 +205,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant point from its MF-JSON representation.
+ * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -270,6 +271,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant set point from its MF-JSON representation.
+ * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -283,6 +285,7 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence point from its MF-JSON representation.
+ * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TSequence *
 tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -315,6 +318,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence set point from its MF-JSON representation.
+ * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TSequenceSet *
 tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -350,6 +354,7 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its WKT representation
+ * @sqlfunc tgeompointFromText(), tgeogpointFromText()
  */
 Temporal *
 tpoint_from_text(const char *wkt, CachedType temptype)
@@ -362,6 +367,7 @@ tpoint_from_text(const char *wkt, CachedType temptype)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its EWKT representation
+ * @sqlfunc tgeompointFromEWKT(), tgeogpointFromEWKT()
  */
 Temporal *
 tpoint_from_ewkt(const char *ewkt, CachedType temptype)

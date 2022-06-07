@@ -150,6 +150,7 @@ tbox_out(const TBOX *box)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from the arguments.
+ * @sqlfunc tbox()
  */
 TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
@@ -412,6 +413,7 @@ span_period_to_tbox(const Span *span, const Period *p)
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a temporal box to an integer span.
+ * @sqlop @p ::
  */
 Span *
 tbox_to_intspan(const TBOX *box)
@@ -426,6 +428,7 @@ tbox_to_intspan(const TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a temporal box as a float span.
+ * @sqlop @p ::
  */
 Span *
 tbox_to_floatspan(const TBOX *box)
@@ -440,6 +443,7 @@ tbox_to_floatspan(const TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a temporal box as a period
+ * @sqlop @p ::
  */
 Period *
 tbox_to_period(const TBOX *box)
@@ -457,6 +461,7 @@ tbox_to_period(const TBOX *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a temporal box has value dimension
+ * @sqlfunc hasX()
  */
 bool
 tbox_hasx(const TBOX *box)
@@ -468,6 +473,7 @@ tbox_hasx(const TBOX *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a temporal box has time dimension
+ * @sqlfunc hasT()
  */
 bool
 tbox_hast(const TBOX *box)
@@ -483,6 +489,7 @@ tbox_hast(const TBOX *box)
  *
  * @param[in] box Box
  * @param[out] result Result
+ * @sqlfunc Xmin()
  */
 bool
 tbox_xmin(const TBOX *box, double *result)
@@ -500,6 +507,7 @@ tbox_xmin(const TBOX *box, double *result)
  *
  * @param[in] box Box
  * @param[out] result Result
+ * @sqlfunc Xmax()
  */
 bool
 tbox_xmax(const TBOX *box, double *result)
@@ -517,6 +525,7 @@ tbox_xmax(const TBOX *box, double *result)
  *
  * @param[in] box Box
  * @param[out] result Result
+ * @sqlfunc Tmin()
  */
 bool
 tbox_tmin(const TBOX *box, TimestampTz *result)
@@ -534,6 +543,7 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
  *
  * @param[in] box Box
  * @param[out] result Result
+ * @sqlfunc Tmin()
  */
 bool
 tbox_tmax(const TBOX *box, TimestampTz *result)
@@ -572,6 +582,7 @@ tbox_expand(const TBOX *box1, TBOX *box2)
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box shifted and/or scaled in the time dimension by
  * an interval
+ * @sqlfunc shiftTscale()
  */
 void
 tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
