@@ -84,8 +84,9 @@ tsequenceset_offsets_ptr(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence set.
+ * @pre The argument @p index is less than the number of sequences in the
+ * sequence set
  */
 const TSequence *
 tsequenceset_seq_n(const TSequenceSet *ss, int index)
@@ -651,6 +652,8 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
  * @param[in] normalize True when the resulting value should be normalized.
  * In particular, normalize is false when synchronizing two
  * temporal sequence sets before applying an operation to them.
+ * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(),
+ * tgeompoint_seqset(), tgeogpoint_seqset()
  */
 TSequenceSet *
 tsequenceset_make(const TSequence **sequences, int count, bool normalize)
@@ -708,6 +711,8 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_in
  * @param[in] linear True when the resulting value has linear interpolation.
  * @param[in] maxdist Maximum distance for defining a gap.
  * @param[in] maxt Maximum time interval for defining a gap.
+ * @sqlfunc tint_seqset_gaps(), tfloat_seqset_gaps(),
+ * tgeompoint_seqset_gaps(), tgeogpoint_seqset_gaps()
  */
 TSequenceSet *
 tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
@@ -795,6 +800,8 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @param[in] temptype Temporal type
  * @param[in] ps Period set
  * @param[in] linear True when the resulting value has linear interpolation
+ * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(),
+ * tgeompoint_seqset(), tgeogpoint_seqset()
 */
 TSequenceSet *
 tsequenceset_from_base(Datum value, CachedType temptype, const PeriodSet *ps,
@@ -821,6 +828,7 @@ tsequenceset_from_base(Datum value, CachedType temptype, const PeriodSet *ps,
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of elements in the output array
  * @result Array of Datums
+ * @sqlfunc getValues()
  */
 Datum *
 tsequenceset_values(const TSequenceSet *ss, int *count)
@@ -847,6 +855,7 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of spans of base values of a temporal float
  * sequence set.
+ * @sqlfunc getValues()
  */
 Span **
 tfloatseqset_spans(const TSequenceSet *ss, int *count)
@@ -873,6 +882,7 @@ tfloatseqset_spans(const TSequenceSet *ss, int *count)
  * exclusive bound or not
  * @note Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance.
+ * @sqlfunc minInstant()
  */
 const TInstant *
 tsequenceset_min_instant(const TSequenceSet *ss)
@@ -905,6 +915,7 @@ tsequenceset_min_instant(const TSequenceSet *ss)
  *
  * @note The function does not take into account whether the instant is at an
  * exclusive bound or not
+ * @sqlfunc maxInstant()
  */
 const TInstant *
 tsequenceset_max_instant(const TSequenceSet *ss)
@@ -1603,6 +1614,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start,
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence set is ever equal to a base value.
+ * @sqlop @p ?=
  */
 bool
 tsequenceset_ever_eq(const TSequenceSet *ss, Datum value)
@@ -1620,6 +1632,7 @@ tsequenceset_ever_eq(const TSequenceSet *ss, Datum value)
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence set is always equal to a base value.
+ * @sqlop @p %=
  */
 bool
 tsequenceset_always_eq(const TSequenceSet *ss, Datum value)
@@ -1644,6 +1657,7 @@ tsequenceset_always_eq(const TSequenceSet *ss, Datum value)
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence set is ever less than a base value.
+ * @sqlop @p ?<
  */
 bool
 tsequenceset_ever_lt(const TSequenceSet *ss, Datum value)
@@ -1665,6 +1679,7 @@ tsequenceset_ever_lt(const TSequenceSet *ss, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal sequence set is ever less than or equal
  * to a base value.
+ * @sqlop @p ?<=
  */
 bool
 tsequenceset_ever_le(const TSequenceSet *ss, Datum value)
@@ -1734,10 +1749,11 @@ tsequenceset_always_le(const TSequenceSet *ss, Datum value)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal sequence set to a base value.
+ * @brief Restrict a temporal sequence set to (the complement of) a base value.
  *
  * @note There is no bounding box test in this function, it is done in the
  * dispatch function for all temporal types.
+ * @sqlfunc atValue(), minusValue()
  */
 TSequenceSet *
 tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
@@ -1771,6 +1787,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
  * @pre There are no duplicates values in the array
+ * @sqlfunc atValues(), minusValues()
  */
 TSequenceSet *
 tsequenceset_restrict_values(const TSequenceSet *ss, const Datum *values,
@@ -1820,6 +1837,7 @@ tsequenceset_restrict_values(const TSequenceSet *ss, const Datum *values,
  *
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
+ * @sqlfunc atSpan(), minusSpan()
  */
 TSequenceSet *
 tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
@@ -1857,6 +1875,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
  * @return Resulting temporal number value
  * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
+ * @sqlfunc atSpans(), minusSpans()
  */
 TSequenceSet *
 tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
@@ -1892,6 +1911,7 @@ tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
  * @param[in] min True when restricted to the minumum value, false for the
  * maximum value
  * @param[in] atfunc True when the restriction is at, false for minus
+ * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
 TSequenceSet *
 tsequenceset_restrict_minmax(const TSequenceSet *ss, bool min, bool atfunc)
@@ -1903,6 +1923,7 @@ tsequenceset_restrict_minmax(const TSequenceSet *ss, bool min, bool atfunc)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a timestamp.
+ * @sqlfunc atTimestamp(), minusTimestamp()
  */
 Temporal *
 tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
@@ -1958,6 +1979,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a timestamp set.
+ * @sqlfunc atTimestampSet(), minusTimestampSet()
  */
 Temporal *
 tsequenceset_restrict_timestampset(const TSequenceSet *ss1,
@@ -2038,6 +2060,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss1,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a period.
+ * @sqlfunc aPeriod(), minusPeriod()
  */
 TSequenceSet *
 tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
@@ -2122,6 +2145,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a period set.
+ * @sqlfunc aPeriodSet(), minusPeriodSet()
  */
 TSequenceSet *
 tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
@@ -2216,6 +2240,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal sequence set intersects a timestamp.
+ * @sqlfunc intersectsTimestamp()
  */
 bool
 tsequenceset_intersects_timestamp(const TSequenceSet *ss, TimestampTz t)
@@ -2229,6 +2254,7 @@ tsequenceset_intersects_timestamp(const TSequenceSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal sequence set intersects a timestamp set.
+ * @sqlfunc intersectsTimestampSet()
  */
 bool
 tsequenceset_intersects_timestampset(const TSequenceSet *ss,
@@ -2243,6 +2269,7 @@ tsequenceset_intersects_timestampset(const TSequenceSet *ss,
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal sequence set intersects a period.
+ * @sqlfunc intersectsPeriod()
  */
 bool
 tsequenceset_intersects_period(const TSequenceSet *ss, const Period *p)
@@ -2267,6 +2294,7 @@ tsequenceset_intersects_period(const TSequenceSet *ss, const Period *p)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal sequence set intersects a period set.
+ * @sqlfunc intersectsPeriod()
  */
 bool
 tsequenceset_intersects_periodset(const TSequenceSet *ss, const PeriodSet *ps)
@@ -2312,6 +2340,7 @@ tsequenceset_interval_double(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighted average of a temporal number
+ * @sqlfunc twAvg()
  */
 double
 tnumberseqset_twavg(const TSequenceSet *ss)
@@ -2340,6 +2369,7 @@ tnumberseqset_twavg(const TSequenceSet *ss)
  *
  * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p =
  */
 bool
 tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2)

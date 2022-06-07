@@ -14,19 +14,27 @@
 
 	<itemizedlist>
 		<listitem>
-			<para><varname>ttype</varname> representa cualquier tipo temporal,</para>
-		</listitem>
-
-		<listitem>
 			<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tnumber</varname> representa cualquier tipo de número temporal, es decir, <varname>tint</varname> o <varname>tfloat</varname>,</para>
+			<para><varname>ttype</varname> representa cualquier tipo temporal,</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>tdisc</varname> representa cualquier tipo temporal con tipo de base discreto, es decir, <varname>tbool</varname>, <varname>tint</varname> o <varname>ttext</varname>,</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>tcont</varname> representa cualquier tipo temporal con tipo de base continuo, es decir, <varname>tfloat</varname>, <varname>tgeompoint</varname> o <varname>tgeogpoint</varname>,</para>
 		</listitem>
 
 		<listitem>
 			<para><varname>torder</varname> representa cualquier tipo temporal cuyo tipo de base tiene definido un orden total, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>,</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>tnumber</varname> representa cualquier tipo de número temporal, es decir, <varname>tint</varname> o <varname>tfloat</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -43,14 +51,6 @@
 
 		<listitem>
 			<para><varname>ttype_seq</varname> representa cualquier tipo temporal con subtipo secuencia,</para>
-		</listitem>
-
-		<listitem>
-			<para><varname>tdisc_seq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base discreto,</para>
-		</listitem>
-
-		<listitem>
-			<para><varname>tcont_seq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base continuo,</para>
 		</listitem>
 
 		<listitem>
@@ -469,6 +469,9 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
 				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
+				<para><varname>tint_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes'): tint_seqset</varname></para>
+				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
+				<para><varname>  tcont_seqset</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tbool_seqset(true, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
 SELECT tint_seqset(1, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');

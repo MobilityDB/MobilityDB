@@ -380,6 +380,7 @@ span_out(const Span *s)
 /**
  * @ingroup libmeos_spantime_constructor
  * @brief Construct a span from the bounds.
+ * @sqlfunc intspan(), floatspan(), period()
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
@@ -441,6 +442,7 @@ span_copy(const Span *s)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast an element as a span
+ * @sqlop @p ::
  */
 Span *
 elem_to_span(Datum d, CachedType basetype)
@@ -453,6 +455,7 @@ elem_to_span(Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp as a period
+ * @sqlop @p ::
  */
 Period *
 timestamp_to_period(TimestampTz t)
@@ -469,6 +472,7 @@ timestamp_to_period(TimestampTz t)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the lower bound of a span
+ * @sqlfunc lower()
  */
 Datum
 span_lower(Span *s)
@@ -479,6 +483,7 @@ span_lower(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the upper bound of a span
+ * @sqlfunc upper()
  */
 Datum
 span_upper(Span *s)
@@ -489,6 +494,7 @@ span_upper(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return true if the lower bound of a span is inclusive
+ * @sqlfunc lower_inc()
  */
 bool
 span_lower_inc(Span *s)
@@ -499,6 +505,7 @@ span_lower_inc(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return true if the upper bound of a span is inclusive
+ * @sqlfunc upper_inc()
  */
 bool
 span_upper_inc(Span *s)
@@ -510,6 +517,7 @@ span_upper_inc(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the width of a span as a double.
+ * @sqlfunc width()
  */
 double
 span_width(const Span *s)
@@ -520,6 +528,7 @@ span_width(const Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of a period as an interval.
+ * @sqlfunc duration()
  */
 Interval *
 period_duration(const Span *s)
@@ -553,6 +562,7 @@ span_expand(const Span *s1, Span *s2)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale a period by the intervals.
+ * @sqlfunc shiftTscale()
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,
@@ -583,8 +593,8 @@ period_shift_tscale(const Interval *start, const Interval *duration,
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is equal to the second one.
- *
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p =
  */
 bool
 span_eq(const Span *s1, const Span *s2)
@@ -599,6 +609,7 @@ span_eq(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is different from the second one.
+ * @sqlop @p <>
  */
 bool
 span_ne(const Span *s1, const Span *s2)
@@ -636,6 +647,7 @@ span_cmp(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than the second one.
+ * @sqlop @p <
  */
 bool
 span_lt(const Span *s1, const Span *s2)
@@ -648,6 +660,7 @@ span_lt(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than or equal to the
  * second one.
+ * @sqlop @p <=
  */
 bool
 span_le(const Span *s1, const Span *s2)
@@ -660,6 +673,7 @@ span_le(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than or equal to the
  * second one.
+ * @sqlop @p >=
  */
 bool
 span_ge(const Span *s1, const Span *s2)
@@ -671,6 +685,7 @@ span_ge(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than the second one.
+ * @sqlop @p >
  */
 bool
 span_gt(const Span *s1, const Span *s2)

@@ -108,7 +108,7 @@ extern int periodset_num_periods(const PeriodSet *ps);
 extern Period *periodset_start_period(const PeriodSet *ps);
 extern Period *periodset_end_period(const PeriodSet *ps);
 extern Period *periodset_period_n(const PeriodSet *ps, int i);
-extern const Period **periodset_periods(const PeriodSet *ps);
+extern const Period **periodset_periods(const PeriodSet *ps, int *count);
 extern int periodset_num_timestamps(const PeriodSet *ps);
 extern TimestampTz periodset_start_timestamp(const PeriodSet *ps);
 extern TimestampTz periodset_end_timestamp(const PeriodSet *ps);

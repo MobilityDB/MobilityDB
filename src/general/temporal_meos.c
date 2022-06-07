@@ -44,6 +44,7 @@
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to its minimum base value
+ * @sqlfunc atMin()
  */
 Temporal *
 temporal_at_min(const Temporal *temp)
@@ -55,6 +56,7 @@ temporal_at_min(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of its minimum base value
+ * @sqlfunc minusMin()
  */
 Temporal *
 temporal_minus_min(const Temporal *temp)
@@ -66,6 +68,7 @@ temporal_minus_min(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to its maximum base value
+ * @sqlfunc atMax()
  */
 Temporal *
 temporal_at_max(const Temporal *temp)
@@ -77,6 +80,7 @@ temporal_at_max(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of its maximum base value
+ * @sqlfunc minusMax()
  */
 Temporal *
 temporal_minus_max(const Temporal *temp)
@@ -90,6 +94,7 @@ temporal_minus_max(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a timestamp
+ * @sqlfunc atTimestamp()
  */
 Temporal *
 temporal_at_timestamp(const Temporal *temp, TimestampTz t)
@@ -101,6 +106,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp
+ * @sqlfunc minusTimestamp()
  */
 Temporal *
 temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
@@ -112,6 +118,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
+ * @sqlfunc atTimestampSet()
  */
 Temporal *
 temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -123,6 +130,7 @@ temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
+ * @sqlfunc minusTimestampSet()
  */
 Temporal *
 temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -134,6 +142,7 @@ temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a period
+ * @sqlfunc atPeriod()
  */
 Temporal *
 temporal_at_period(const Temporal *temp, const Period *p)
@@ -145,6 +154,7 @@ temporal_at_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period
+ * @sqlfunc minusPeriod()
  */
 Temporal *
 temporal_minus_period(const Temporal *temp, const Period *p)
@@ -156,6 +166,7 @@ temporal_minus_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a period set
+ * @sqlfunc atPeriodSet()
  */
 Temporal *
 temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -167,6 +178,7 @@ temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period set
+ * @sqlfunc minusPeriodSet()
  */
 Temporal *
 temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -174,3 +186,5 @@ temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
   return result;
 }
+
+/*****************************************************************************/

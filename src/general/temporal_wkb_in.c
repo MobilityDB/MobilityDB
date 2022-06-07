@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_in.c
+ * @file temporal_wkb_in.c
  * @brief Input of temporal types in WKB, EWKB, and HexWKB format.
  */
 
@@ -48,7 +48,7 @@
 #endif /* ! MEOS */
 
 /*****************************************************************************/
- 
+
 /**
  * Structure used for passing the parse state between the parsing functions.
  */

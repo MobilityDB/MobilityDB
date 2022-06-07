@@ -51,8 +51,9 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of a timestamp set
+ * @pre The argument @p index is less than or equal to the number of timestamps
+ * in the timestamp set
  */
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
@@ -172,6 +173,7 @@ timestampset_out(const TimestampSet *ts)
  *
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
+ * @sqlfunc timestampset()
  */
 TimestampSet *
 timestampset_make(const TimestampTz *times, int count)
@@ -207,6 +209,7 @@ timestampset_make(const TimestampTz *times, int count)
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
  * @see timestampset_make
+ * @sqlfunc timestampset()
  */
 TimestampSet *
 timestampset_make_free(TimestampTz *times, int count)
@@ -240,6 +243,7 @@ timestampset_copy(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp as a timestamp set
+ * @sqlop @p ::
  */
 TimestampSet *
 timestamp_to_timestampset(TimestampTz t)
@@ -255,6 +259,7 @@ timestamp_to_timestampset(TimestampTz t)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the size in bytes of a timestamp set.
+ * @sqlfunc memSize()
  */
 int
 timestampset_mem_size(const TimestampSet *ts)
@@ -265,6 +270,7 @@ timestampset_mem_size(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the timespan of a timestamp set.
+ * @sqlfunc timespan()
  */
 Interval *
 timestampset_timespan(const TimestampSet *ts)
@@ -278,6 +284,7 @@ timestampset_timespan(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Set a period to the bounding period of a timestamp set
+ * @sqlfunc period()
  */
 void
 timestampset_set_period(const TimestampSet *ts, Period *p)
@@ -290,6 +297,7 @@ timestampset_set_period(const TimestampSet *ts, Period *p)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of a timestamp set.
+ * @sqlfunc numTimestamps()
  */
 int
 timestampset_num_timestamps(const TimestampSet *ts)
@@ -300,6 +308,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the start timestamp of a timestamp set.
+ * @sqlfunc startTimestamp()
  */
 TimestampTz
 timestampset_start_timestamp(const TimestampSet *ts)
@@ -311,6 +320,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the end timestamp of a timestamp set.
+ * @sqlfunc endTimestamp()
  */
 TimestampTz
 timestampset_end_timestamp(const TimestampSet *ts)
@@ -328,6 +338,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
  * @param[out] result Timestamp
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
+ * @sqlfunc timestampN()
  */
 bool
 timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
@@ -341,6 +352,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the array of timestamps of a timestamp set.
+ * @sqlfunc timestamps()
  */
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
@@ -358,6 +370,7 @@ timestampset_timestamps(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Return a timestamp set shifted and/or scaled by the intervals
+ * @sqlfunc shiftTscale()
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
@@ -404,10 +417,9 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set is equal to the
- * second one.
- *
+ * @brief Return true if the first timestamp set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p =
  */
 bool
 timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -430,8 +442,8 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is different from the
  * second one.
- *
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p <>
  */
 bool
 timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -443,7 +455,6 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
- *
  * @note Function used for B-tree comparison
  */
 int
@@ -475,6 +486,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is less than the second one
+ * @sqlop @p <
  */
 bool
 timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -487,6 +499,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is less than
  * or equal to the second one
+ * @sqlop @p <=
  */
 bool
 timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -499,6 +512,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
+ * @sqlop @p >=
  */
 bool
 timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -510,6 +524,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is greater than the second one
+ * @sqlop @p >
  */
 bool
 timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)

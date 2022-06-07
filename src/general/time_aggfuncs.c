@@ -206,7 +206,8 @@ static SkipList *
 periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const PeriodSet *ps)
 {
-  const Period **periods = periodset_periods(ps);
+  int count;
+  const Period **periods = periodset_periods(ps, &count);
   SkipList *result;
   if (! state)
     /* Periods are copied while constructing the skiplist */

@@ -588,6 +588,7 @@ tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box expanded in the value dimension by a double.
+ * @sqlfunc @p expandValue()
  */
 TBOX *
 tbox_expand_value(const TBOX *box, const double d)
@@ -602,6 +603,7 @@ tbox_expand_value(const TBOX *box, const double d)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box expanded in the time dimension by an interval.
+ * @sqlfunc expandTemporal()
  */
 TBOX *
 tbox_expand_temporal(const TBOX *box, const Interval *interval)
@@ -649,6 +651,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the first temporal box contains the second one.
+ * @sqlop @p @>
  */
 bool
 contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -665,6 +668,7 @@ contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the first temporal box is contained by the second one.
+ * @sqlop @p @<
  */
 bool
 contained_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -675,6 +679,7 @@ contained_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the temporal boxes overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -691,6 +696,7 @@ overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the temporal boxes are equal on the common dimensions.
+ * @sqlop @p ~=
  */
 bool
 same_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -707,6 +713,7 @@ same_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the temporal boxes are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -736,6 +743,7 @@ adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly to the left of
  * the second one.
+ * @sqlop @p <<
  */
 bool
 left_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -749,6 +757,7 @@ left_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
+ * @sqlop @p &<
  */
 bool
 overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -762,6 +771,7 @@ overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly to the right of
  * the second one.
+ * @sqlop @p >>
  */
 bool
 right_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -775,6 +785,7 @@ right_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one.
+ * @sqlop @p &>
  */
 bool
 overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -788,6 +799,7 @@ overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly before
  * the second one.
+ * @sqlop @p <<#
  */
 bool
 before_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -801,6 +813,7 @@ before_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend after
  * the second one.
+ * @sqlop @p &<#
  */
 bool
 overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -814,6 +827,7 @@ overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly after the
  * second one.
+ * @sqlop @p #>>
  */
 bool
 after_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -827,6 +841,7 @@ after_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend before
  * the second one.
+ * @sqlop @p #&>
  */
 bool
 overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -843,6 +858,7 @@ overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_set
  * @brief Return the union of the temporal boxes.
+ * @sqlop @p +
  */
 TBOX *
 union_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -874,6 +890,7 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_set
  * @brief Set a temporal box with the result of the intersection of the first
  * two temporal boxes.
+ * @sqlop @p *
  */
 bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -906,6 +923,7 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
 /**
  * @ingroup libmeos_box_set
  * @brief Return the intersection of the spatiotemporal boxes.
+ * @sqlop @p *
  */
 TBOX *
 intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -926,8 +944,8 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the temporal boxes are equal
- *
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p =
  */
 bool
 tbox_eq(const TBOX *box1, const TBOX *box2)
@@ -945,6 +963,7 @@ tbox_eq(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the temporal boxes are different
+ * @sqlop @p <>
  */
 bool
 tbox_ne(const TBOX *box1, const TBOX *box2)
@@ -958,7 +977,6 @@ tbox_ne(const TBOX *box1, const TBOX *box2)
  * is less than, equal to, or greater than the second one.
  *
  * The time dimension is compared first and then the value dimension.
- *
  * @note Function used for B-tree comparison
  */
 int
@@ -1004,6 +1022,7 @@ tbox_cmp(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is less than the second one
+ * @sqlop @p <
  */
 bool
 tbox_lt(const TBOX *box1, const TBOX *box2)
@@ -1016,6 +1035,7 @@ tbox_lt(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is less than or equal to
  * the second one
+ * @sqlop @p <=
  */
 bool
 tbox_le(const TBOX *box1, const TBOX *box2)
@@ -1028,6 +1048,7 @@ tbox_le(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is greater than or equal
  * to the second one
+ * @sqlop @p >=
  */
 bool
 tbox_ge(const TBOX *box1, const TBOX *box2)
@@ -1039,6 +1060,7 @@ tbox_ge(const TBOX *box1, const TBOX *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is greater than the second one
+ * @sqlop @p >
  */
 bool
 tbox_gt(const TBOX *box1, const TBOX *box2)

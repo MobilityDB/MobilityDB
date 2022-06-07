@@ -50,6 +50,7 @@
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of a number and a temporal number
+ * @sqlop @p +
  */
 Temporal *
 add_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -61,6 +62,7 @@ add_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of a temporal number and a number
+ * @sqlop @p +
  */
 Temporal *
 add_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -72,6 +74,7 @@ add_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of the temporal numbers
+ * @sqlop @p +
  */
 Temporal *
 add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -86,6 +89,7 @@ add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of a number and a temporal number
+ * @sqlop @p -
  */
 Temporal *
 sub_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -97,6 +101,7 @@ sub_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of a temporal number and a number
+ * @sqlop @p -
  */
 Temporal *
 sub_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -108,6 +113,7 @@ sub_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of the temporal numbers
+ * @sqlop @p -
  */
 Temporal *
 sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -122,6 +128,7 @@ sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of a number and a temporal number
+ * @sqlop @p *
  */
 Temporal *
 mult_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -133,6 +140,7 @@ mult_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of a temporal number and a number
+ * @sqlop @p *
  */
 Temporal *
 mult_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -144,6 +152,7 @@ mult_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
+ * @sqlop @p *
  */
 Temporal *
 mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -159,6 +168,7 @@ mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of a number and a temporal number
+ * @sqlop @p /
  */
 Temporal *
 div_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -170,6 +180,7 @@ div_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of a temporal number and a number
+ * @sqlop @p /
  */
 Temporal *
 div_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -181,6 +192,7 @@ div_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of the temporal numbers
+ * @sqlop @p /
  */
 Temporal *
 div_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
