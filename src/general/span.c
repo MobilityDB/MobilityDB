@@ -332,7 +332,7 @@ span_bounds(const Span *s, double *xmin, double *xmax)
 Span *
 span_in(char *str, CachedType spantype)
 {
-  return span_parse(&str, spantype, true);
+  return span_parse(&str, spantype, true, true);
 }
 
 /**
@@ -395,6 +395,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 /**
  * @ingroup libmeos_spantime_constructor
  * @brief Set a span from the arguments.
+ * @see span_make()
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
@@ -562,7 +563,7 @@ span_expand(const Span *s1, Span *s2)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale a period by the intervals.
- * @sqlfunc shiftTscale()
+ * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,
@@ -623,8 +624,8 @@ span_ne(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal, or greater than the second one.
- *
  * @note Function used for B-tree comparison
+ * @sqlfunc intspan_cmp(), floatspan_cmp(), period_cmp()
  */
 int
 span_cmp(const Span *s1, const Span *s2)
@@ -701,6 +702,7 @@ span_gt(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a span.
+ * @sqlfunc intspan_hash(), floatspan_hash(), period_hash()
  */
 uint32
 span_hash(const Span *s)
@@ -734,6 +736,8 @@ span_hash(const Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a span using a seed
+ * @sqlfunc intspan_hash_extended(), floatspan_hash_extended(),
+ * period_hash_extended()
  */
 uint64
 span_hash_extended(const Span *s, Datum seed)

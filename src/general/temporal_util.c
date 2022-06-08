@@ -47,10 +47,12 @@
 #include "general/temporal.h"
 #include "general/pg_call.h"
 #include "general/doublen.h"
+#include "general/temporal_parser.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #if ! MEOS
   #include "npoint/tnpoint_static.h"
+  #include "npoint/tnpoint_parser.h"
 #endif
 
 /* To avoid including varlena.h */
@@ -924,35 +926,40 @@ hypot4d(double x, double y, double z, double m)
  * Call input function of the base type
  */
 Datum
-basetype_input(CachedType basetype, char *str)
+basetype_input(CachedType basetype, char *str, bool end)
 {
   ensure_temporal_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
-  if (basetype == T_BOOL)
-    return BoolGetDatum(pg_boolin(str));
-  if (basetype == T_INT4)
-    return Int32GetDatum(pg_int4in(str));
-  if (basetype == T_INT8)
-    return Int64GetDatum(pg_int8in(str));
-  if (basetype == T_FLOAT8)
-    return Float8GetDatum(float8in_internal(str, NULL, "double precision",
-      str));
-  if (basetype == T_TEXT)
-    return PointerGetDatum(cstring2text(str));
-  if (basetype == T_GEOMETRY)
-    return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
-  if (basetype == T_GEOGRAPHY)
+  switch (basetype)
+  {
+    case T_TIMESTAMPTZ:
+      return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
+    case T_BOOL:
+      return BoolGetDatum(pg_boolin(str));
+    case T_INT4:
+      return Int32GetDatum(pg_int4in(str));
+    case T_INT8:
+      return Int64GetDatum(pg_int8in(str));
+    case T_FLOAT8:
+      return Float8GetDatum(float8in_internal(str, NULL, "double precision",
+        str));
+    case T_TEXT:
+      return PointerGetDatum(cstring2text(str));
+    case T_GEOMETRY:
+      return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
+    case T_GEOGRAPHY:
 #if ! MEOS
-    return call_input(type_oid(T_GEOGRAPHY), str);
+      return call_input(type_oid(T_GEOGRAPHY), str, end);
 #else
-    return PointerGetDatum(PGIS_geography_in(str, -1));
+      return PointerGetDatum(PGIS_geography_in(str, -1));
 #endif
 #if ! MEOS
-  if (basetype == T_NPOINT)
-    return PointerGetDatum(npoint_in(str));
+    case T_NPOINT:
+      return PointerGetDatum(npoint_parse(&str, end));
 #endif
-  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+    default: /* Error! */
+      elog(ERROR, "Unknown base type: %d", basetype);
+      break;
+  }
 }
 
 /**
@@ -991,11 +998,13 @@ basetype_output(CachedType basetype, Datum value)
  * Call input function of the base type
  */
 Datum
-basetype_input(CachedType basetype, char *str)
+basetype_input(CachedType basetype, char *str, bool end)
 {
   ensure_temporal_basetype(basetype);
   Oid basetypid = type_oid(basetype);
-  return call_input(basetypid, str);
+  Datum result = call_input(basetypid, str, end);
+  ensure_end_input(&str, end, "base type");
+  return result;
 }
 
 /**
@@ -1138,14 +1147,16 @@ basetype_send(CachedType basetype, Datum value)
  * Call input function of the base type
  */
 Datum
-call_input(Oid typid, char *str)
+call_input(Oid typid, char *str, bool end)
 {
   Oid infunc;
   Oid basetypid;
   FmgrInfo infuncinfo;
   getTypeInputInfo(typid, &infunc, &basetypid);
   fmgr_info(infunc, &infuncinfo);
-  return InputFunctionCall(&infuncinfo, str, basetypid, -1);
+  Datum result = InputFunctionCall(&infuncinfo, str, basetypid, -1);
+  ensure_end_input(&str, end, "base type");
+  return result;
 }
 
 #if POSTGRESQL_VERSION_NUMBER < 140000

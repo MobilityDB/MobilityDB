@@ -235,8 +235,7 @@ temporal_basevalue_to_wkb_size(Datum value, CachedType basetype, int16 flags)
       return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
   #endif
     default: /* Error! */
-      elog(ERROR, "Unknown base type: %d",
-        basetype);
+      elog(ERROR, "Unknown base type: %d", basetype);
   }
 }
 

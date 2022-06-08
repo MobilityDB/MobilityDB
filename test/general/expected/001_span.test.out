@@ -1,10 +1,22 @@
 /* Errors */
+SELECT intspan '[1,2] xxx';
+ERROR:  Could not parse span value
+LINE 2: SELECT intspan '[1,2] xxx';
+                       ^
+SELECT floatspan '[1,2] xxx';
+ERROR:  Could not parse span value
+LINE 1: SELECT floatspan '[1,2] xxx';
+                         ^
+SELECT period '[2000-01-01,2000-01-02] xxx';
+ERROR:  Could not parse span value
+LINE 1: SELECT period '[2000-01-01,2000-01-02] xxx';
+                      ^
 SELECT period '2000-01-01, 2000-01-02';
-ERROR:  Could not parse span
-LINE 2: SELECT period '2000-01-01, 2000-01-02';
+ERROR:  Could not parse span: Missing opening bracket/parenthesis
+LINE 1: SELECT period '2000-01-01, 2000-01-02';
                       ^
 SELECT period '[2000-01-01, 2000-01-02';
-ERROR:  Could not parse span
+ERROR:  Could not parse span: Missing closing bracket/parenthesis
 LINE 1: SELECT period '[2000-01-01, 2000-01-02';
                       ^
 SELECT period ('2000-01-01','2000-01-02');

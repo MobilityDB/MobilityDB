@@ -47,7 +47,7 @@
  * @brief Parse a network point from its string representation.
  */
 Npoint *
-npoint_parse(char **str)
+npoint_parse(char **str, bool end)
 {
   p_whitespace(str);
 
@@ -79,6 +79,9 @@ npoint_parse(char **str)
   p_whitespace(str);
   if (! p_cparen(str))
     elog(ERROR, "Could not parse network point: Missing closing parenthesis");
+
+  /* Ensure there is no more input */
+  ensure_end_input(str, end, "network point");
 
   return npoint_make(rid, pos);
 }
@@ -116,6 +119,9 @@ nsegment_parse(char **str)
       errmsg("the relative position must be a real number between 0 and 1")));
 
   *str += delim + 1;
+
+  /* Ensure there is no more input */
+  ensure_end_input(str, true, "network segment");
 
   return nsegment_make(rid, pos1, pos2);
 }

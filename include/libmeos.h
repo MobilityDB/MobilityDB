@@ -748,7 +748,7 @@ extern uint32 tsequenceset_hash(const TSequenceSet *ss);
 
 /* Transformation functions for temporal types */
 
-extern Temporal *temporal_append_tinstant(const Temporal *temp, const Temporal *inst);
+extern Temporal *temporal_append_tinstant(const Temporal *temp, const TInstant *inst);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 extern Temporal *temporal_to_tinstant(const Temporal *temp);

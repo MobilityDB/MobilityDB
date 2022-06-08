@@ -43,7 +43,7 @@
 
 /*****************************************************************************/
 
-extern void ensure_end_input(char **str, bool end);
+extern void ensure_end_input(char **str, bool end, const char *type);
 
 extern void p_whitespace(char **str);
 extern bool p_obrace(char **str);
@@ -62,7 +62,7 @@ extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
 extern Datum elem_parse(char **str, CachedType basetype);
-extern Span *span_parse(char **str, CachedType spantype, bool make);
+extern Span *span_parse(char **str, CachedType spantype, bool end, bool make);
 
 extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end,
   bool make);

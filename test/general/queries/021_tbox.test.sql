@@ -48,6 +48,7 @@ SELECT tbox 'TBOX((1, 2000-01-01),2, 2000-01-02))';
 SELECT tbox 'TBOX((1, 2000-01-01),(AA, 2000-01-02))';
 SELECT tbox 'TBOX((1, 2000-01-01),(2, AA))';
 SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
+SELECT tbox 'TBOX((2,2000-01-02),(1,2000-01-01))XXXX';
 
 -- Send/receive functions
 

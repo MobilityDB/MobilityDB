@@ -193,7 +193,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
       strcpy(datetime, strdatevalue);
       /* Replace 'T' by ' ' before converting to timestamptz */
       datetime[10] = ' ';
-      times[i] = basetype_input(T_TIMESTAMPTZ, datetime);
+      times[i] = basetype_input(T_TIMESTAMPTZ, datetime, false);
     }
   }
   *count = numdates;
@@ -235,7 +235,7 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
   strcpy(str, strdatetimes);
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
-  TimestampTz t = basetype_input(T_TIMESTAMPTZ, str);
+  TimestampTz t = basetype_input(T_TIMESTAMPTZ, str, false);
   TInstant *result = tinstant_make(value, temptype, t);
   pfree(DatumGetPointer(value));
   return result;

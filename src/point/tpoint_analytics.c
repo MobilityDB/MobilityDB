@@ -358,6 +358,7 @@ tpointseqset_to_geo_segmentize(const TSequenceSet *ss)
  * @brief Converts the temporal point into a PostGIS trajectory geometry/geography
  * where the M coordinates encode the timestamps in number of seconds since
  * '1970-01-01'
+ * @sqlop @p ::
  */
 Datum
 tpoint_to_geo(const Temporal *temp, bool segmentize)
@@ -569,6 +570,8 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
  * @ingroup libmeos_temporal_input_analytics
  * @brief Converts the PostGIS trajectory geometry/geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal point.
+ * @sqlfunc tgeompoint(), tgeogpoint()
+ * @sqlop @p ::
  */
 Temporal *
 geo_to_tpoint(const GSERIALIZED *geo)
@@ -911,6 +914,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
  * @ingroup libmeos_temporal_input_analytics
  * @brief Construct a geometry/geography with M measure from the temporal
  * point and the temporal float
+ * @sqlfunc geoMeasure()
  */
 bool
 tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
@@ -1123,6 +1127,7 @@ tfloatseqset_simplify(const TSequenceSet *ss, double eps_dist, uint32_t minpts)
  * @ingroup libmeos_temporal_input_analytics
  * @brief Simplify the temporal number using a Douglas-Peucker-like line
  * simplification algorithm.
+ * @sqlfunc simplify()
  */
 Temporal *
 tfloat_simplify(Temporal *temp, double eps_dist)
@@ -1541,8 +1546,9 @@ tpointseqset_simplify(const TSequenceSet *ss, double eps_dist,
 
 /**
  * @ingroup libmeos_temporal_input_analytics
- * @brief Simplify the temporal sequence (set) point using a spatio-temporal
+ * @brief Simplify the temporal point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
+ * @sqlfunc simplify()
  */
 Temporal *
 tpoint_simplify(Temporal *temp, double eps_dist, double eps_speed)
@@ -1553,11 +1559,11 @@ tpoint_simplify(Temporal *temp, double eps_dist, double eps_speed)
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) tpointseq_simplify((TSequence *)temp,
-      eps_dist, eps_speed, 2);
+    result = (Temporal *) tpointseq_simplify((TSequence *)temp, eps_dist,
+      eps_speed, 2);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp,
-      eps_dist, eps_speed, 2);
+    result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp, eps_dist,
+      eps_speed, 2);
   return result;
 }
 
@@ -2339,6 +2345,7 @@ tpoint_decouple(const Temporal *temp, TimestampTz **timesarr, int *count)
 /**
  * @ingroup libmeos_temporal_input_analytics
  * @brief Transform the temporal point to Mapbox Vector Tile format
+ * @sqlfunc AsMVTGeom()
  */
 bool
 tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,

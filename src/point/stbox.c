@@ -61,8 +61,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Expand the second spatiotemporal box with the first one
- *
+ * @brief Expand the second spatiotemporal box with the first one.
  * @pre No tests are made concerning the srid, dimensionality, etc.
  * This should be ensured by the calling function.
  */
@@ -93,7 +92,7 @@ stbox_expand(const STBOX *box1, STBOX *box2)
 /**
  * @ingroup libmeos_box_transf
  * @brief Shift and/or scale a spatiotemporal box by the intervals
- * @sqlfunc shiftTscale()
+ * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
 stbox_shift_tscale(const Interval *start, const Interval *duration, STBOX *box)
@@ -282,6 +281,8 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 /**
  * @ingroup libmeos_box_constructor
  * @brief Set a spatiotemporal box from the arguments.
+ * @note This function is equivalent to @ref stbox_make without memory
+ * allocation
  */
 void
 stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
@@ -628,6 +629,7 @@ stbox_hast(const STBOX *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
+ * @sqlfunc isGeodetic()
  */
 bool
 stbox_isgeodetic(const STBOX *box)
@@ -1287,6 +1289,8 @@ union_stbox_stbox(const STBOX *box1, const STBOX *box2, bool strict)
  * @ingroup libmeos_box_set
  * @brief Set a spatiotemporal box with the result of the intersection of the
  * first two boxes
+ * @note This function is equivalent to @ref intersection_stbox_stbox without
+ * memory allocation
  */
 bool
 inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
@@ -1389,6 +1393,7 @@ stbox_ne(const STBOX *box1, const STBOX *box2)
  * @ingroup libmeos_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal, or greater than the second one
+ * @sqlfunc stbox_cmp()
  */
 int
 stbox_cmp(const STBOX *box1, const STBOX *box2)

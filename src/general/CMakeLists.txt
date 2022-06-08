@@ -63,6 +63,7 @@ add_library(general OBJECT
   ${temporal_waggfuncs.c}
   temporal_wkb_in.c
   temporal_wkb_out.c
+  temporal_wkt_out.c
   ${time_aggfuncs.c}
   time_ops.c
   timestampset.c

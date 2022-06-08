@@ -54,7 +54,7 @@ extern char *text2cstring(const text *textptr);
 
 /* Input/output functions */
 
-extern Datum basetype_input(CachedType type, char *str);
+extern Datum basetype_input(CachedType type, char *str, bool end);
 extern char *basetype_output(CachedType type, Datum value);
 
 /* Array functions */
@@ -135,7 +135,7 @@ extern double hypot4d(double x, double y, double z, double m);
 
 /* PostgreSQL call helpers */
 
-extern Datum call_input(Oid typid, char *str);
+extern Datum call_input(Oid typid, char *str, bool end);
 extern char *call_output(Oid typid, Datum value);
 extern Datum call_recv(Oid typid, StringInfo buf);
 extern bytea *call_send(Oid typid, Datum value);

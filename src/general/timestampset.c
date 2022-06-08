@@ -285,6 +285,7 @@ timestampset_timespan(const TimestampSet *ts)
  * @ingroup libmeos_spantime_accessor
  * @brief Set a period to the bounding period of a timestamp set
  * @sqlfunc period()
+ * @sqlop @p ::
  */
 void
 timestampset_set_period(const TimestampSet *ts, Period *p)
@@ -370,7 +371,7 @@ timestampset_timestamps(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Return a timestamp set shifted and/or scaled by the intervals
- * @sqlfunc shiftTscale()
+ * @sqlfunc shift(), tscale(), shiftTscale()
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
@@ -456,6 +457,7 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  * @note Function used for B-tree comparison
+ * @sqlfunc timestampset_cmp()
  */
 int
 timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -542,6 +544,7 @@ timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a timestamp set.
+ * @sqlfunc timestampset_hash()
  */
 uint32
 timestampset_hash(const TimestampSet *ts)
@@ -559,6 +562,7 @@ timestampset_hash(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed.
+ * @sqlfunc timestampset_hash_extended()
  */
 uint64
 timestampset_hash_extended(const TimestampSet *ts, uint64 seed)

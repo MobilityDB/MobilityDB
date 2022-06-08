@@ -911,6 +911,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a fragment
  * @param[out] newcount Number of values in the output array
+ * @sqlfunc timeSplit()
  */
 Temporal **
 temporal_time_split(Temporal *temp, TimestampTz start, TimestampTz end,

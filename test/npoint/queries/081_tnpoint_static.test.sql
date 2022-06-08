@@ -40,6 +40,7 @@ SELECT npoint 'npoint(1,0.5';
 SELECT npoint 'npoint(1 0.5)';
 SELECT npoint 'npoint(1000,0.5)';
 SELECT npoint 'npoint(1,1.5)';
+SELECT npoint 'npoint(1,0.5)xxx';
 
 SELECT nsegment 'nsegment(1,0.5,0.7)';
 SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
@@ -49,6 +50,7 @@ SELECT nsegment 'nsegment(1,0.5,0.7';
 SELECT nsegment 'nsegment(1 0.5 0.7)';
 SELECT nsegment 'nsegment(1000,0.5,0.7)';
 SELECT nsegment 'nsegment(1,1.5,0.7)';
+SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
 
 -------------------------------------------------------------------------------
 -- Constructors

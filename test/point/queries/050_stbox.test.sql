@@ -63,6 +63,7 @@ SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2)';
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)';
 SELECT stbox 'SRID=4326;STBOX T((,2001-01-08), (,2001-01-04))';
 SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01-04))';
+SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))xxxx';
 
 -- Send/receive functions
 

@@ -165,6 +165,8 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
 /**
  * @ingroup libmeos_box_constructor
  * @brief Set a temporal box from the arguments
+ * @note This function is equivalent to @ref tbox_make without memory
+ * allocation
  */
 void
 tbox_set(bool hasx, bool hast, double xmin, double xmax,
@@ -209,6 +211,7 @@ tbox_copy(const TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a number.
+ * @sqlop @p ::
  */
 void
 number_set_tbox(Datum value, CachedType basetype, TBOX *box)
@@ -228,6 +231,7 @@ number_set_tbox(Datum value, CachedType basetype, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from an integer.
+ * @sqlop @p ::
  */
 void
 int_set_tbox(int i, TBOX *box)
@@ -243,6 +247,7 @@ int_set_tbox(int i, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a float.
+ * @sqlop @p ::
  */
 void
 float_set_tbox(double d, TBOX *box)
@@ -258,6 +263,7 @@ float_set_tbox(double d, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a span.
+ * @sqlop @p ::
  */
 void
 span_set_tbox(const Span *span, TBOX *box)
@@ -274,6 +280,7 @@ span_set_tbox(const Span *span, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a timestamp.
+ * @sqlop @p ::
  */
 void
 timestamp_set_tbox(TimestampTz t, TBOX *box)
@@ -289,6 +296,7 @@ timestamp_set_tbox(TimestampTz t, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a period set.
+ * @sqlop @p ::
  */
 void
 timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
@@ -306,6 +314,7 @@ timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a period.
+ * @sqlop @p ::
  */
 void
 period_set_tbox(const Period *p, TBOX *box)
@@ -322,6 +331,7 @@ period_set_tbox(const Period *p, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Set a temporal box from a period set.
+ * @sqlop @p ::
  */
 void
 periodset_set_tbox(const PeriodSet *ps, TBOX *box)
@@ -339,6 +349,7 @@ periodset_set_tbox(const PeriodSet *ps, TBOX *box)
 /**
  * @ingroup libmeos_box_cast
  * @brief Return a temporal box from an integer and a timestamp
+ * @sqlfunc tbox()
  */
 TBOX *
 int_timestamp_to_tbox(int i, TimestampTz t)
@@ -350,6 +361,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 /**
  * @ingroup libmeos_box_cast
  * @brief Return a temporal box from a float and a timestamp
+ * @sqlfunc tbox()
  */
 TBOX *
 float_timestamp_to_tbox(double d, TimestampTz t)
@@ -361,6 +373,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 /**
  * @ingroup libmeos_box_cast
  * @brief Return a temporal box from an integer and a period
+ * @sqlfunc tbox()
  */
 TBOX *
 int_period_to_tbox(int i, const Period *p)
@@ -373,6 +386,7 @@ int_period_to_tbox(int i, const Period *p)
 /**
  * @ingroup libmeos_box_cast
  * @brief Return a temporal box from a float and a period
+ * @sqlfunc tbox()
  */
 TBOX *
 float_period_to_tbox(double d, const Period *p)
@@ -384,6 +398,7 @@ float_period_to_tbox(double d, const Period *p)
 /**
  * @ingroup libmeos_box_cast
  * @brief Return a temporal box from a span and a timestamp
+ * @sqlfunc tbox()
  */
 TBOX *
 span_timestamp_to_tbox(const Span *span, TimestampTz t)
@@ -397,6 +412,7 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 /**
  * @ingroup libmeos_box_cast
  * @brief Return a temporal box from a span and a period
+ * @sqlfunc tbox()
  */
 TBOX *
 span_period_to_tbox(const Span *span, const Period *p)
@@ -543,7 +559,7 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
  *
  * @param[in] box Box
  * @param[out] result Result
- * @sqlfunc Tmin()
+ * @sqlfunc Tmax()
  */
 bool
 tbox_tmax(const TBOX *box, TimestampTz *result)
@@ -581,8 +597,8 @@ tbox_expand(const TBOX *box1, TBOX *box2)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box shifted and/or scaled in the time dimension by
- * an interval
- * @sqlfunc shiftTscale()
+ * the intervals
+ * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
 tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
@@ -901,7 +917,8 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_set
  * @brief Set a temporal box with the result of the intersection of the first
  * two temporal boxes.
- * @sqlop @p *
+ * @note This function is equivalent to @ref intersection_tbox_tbox without
+ * memory allocation
  */
 bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -989,6 +1006,7 @@ tbox_ne(const TBOX *box1, const TBOX *box2)
  *
  * The time dimension is compared first and then the value dimension.
  * @note Function used for B-tree comparison
+ * @sqlfunc tbox_cmp()
  */
 int
 tbox_cmp(const TBOX *box1, const TBOX *box2)

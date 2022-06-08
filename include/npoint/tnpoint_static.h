@@ -54,7 +54,7 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
 /* Input/Output functions */
 
-extern Npoint *npoint_in(char *str);
+extern Npoint *npoint_in(char *str, bool end);
 extern char *npoint_out(const Npoint *np);
 extern Npoint *npoint_recv(StringInfo buf);
 extern bytea *npoint_send(const Npoint *np);

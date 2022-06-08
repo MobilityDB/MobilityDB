@@ -266,6 +266,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from radians to degrees
+ * @sqlfunc degrees()
  */
 Temporal *
 tnumber_degrees(const Temporal *temp)
@@ -291,6 +292,7 @@ tnumber_degrees(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the derivative of a temporal sequence number.
+ * @sqlfunc derivative()
  */
 TSequence *
 tnumberseq_derivative(const TSequence *seq)
@@ -330,6 +332,7 @@ tnumberseq_derivative(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the derivative of a temporal sequence set number
+ * @sqlfunc derivative()
  */
 TSequenceSet *
 tnumberseqset_derivative(const TSequenceSet *ts)
@@ -351,6 +354,7 @@ tnumberseqset_derivative(const TSequenceSet *ts)
  * @brief Return the derivative of a temporal number
  * @see tnumberseq_derivative
  * @see tnumberseqset_derivative
+ * @sqlfunc derivative()
  */
 Temporal *
 tnumber_derivative(const Temporal *temp)

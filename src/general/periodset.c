@@ -246,6 +246,7 @@ periodset_copy(const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp as a period set.
+ * @sqlop @p ::
  */
 PeriodSet *
 timestamp_to_periodset(TimestampTz t)
@@ -259,6 +260,7 @@ timestamp_to_periodset(TimestampTz t)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp set as a period set.
+ * @sqlop @p ::
  */
 PeriodSet *
 timestampset_to_periodset(const TimestampSet *ts)
@@ -276,6 +278,7 @@ timestampset_to_periodset(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a period as a period set.
+ * @sqlop @p ::
  */
 PeriodSet *
 period_to_periodset(const Period *period)
@@ -571,7 +574,7 @@ periodset_timestamps(const PeriodSet *ps, int *count)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Return a period set shifted and/or scaled by the intervals.
- * @sqlfunc shift(), scale(), shiftTscale()
+ * @sqlfunc shift(), tscale(), shiftTscale()
  */
 PeriodSet *
 periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
@@ -657,6 +660,7 @@ periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
  * @brief Return -1, 0, or 1 depending on whether the first period set
  * is less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
+ * @sqlfunc periodset_cmp()
  */
 int
 periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -745,6 +749,7 @@ periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a period set.
+ * @sqlfunc periodset_hash()
  */
 uint32
 periodset_hash(const PeriodSet *ps)
@@ -762,6 +767,7 @@ periodset_hash(const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 64-bit hash value of a period set using a seed
+ * @sqlfunc periodset_hash_extended()
  */
 uint64
 periodset_hash_extended(const PeriodSet *ps, uint64 seed)

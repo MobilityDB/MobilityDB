@@ -172,6 +172,8 @@ temporal_bbox_size(CachedType temptype)
  *
  * @param[in] box Bounding box
  * @param[in] inst Temporal value
+ * @sqlfunc period(), tbox(), stbox()
+ * @sqlop @p ::
  */
 void
 tinstant_set_bbox(const TInstant *inst, void *box)

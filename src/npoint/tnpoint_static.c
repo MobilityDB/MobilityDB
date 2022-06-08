@@ -251,9 +251,9 @@ npoint_remove_duplicates(Npoint **values, int count)
  * @brief Return a network point from its string representation.
  */
 Npoint *
-npoint_in(char *str)
+npoint_in(char *str, bool end)
 {
-  return npoint_parse(&str);
+  return npoint_parse(&str, end);
 }
 
 /**
@@ -1036,7 +1036,7 @@ PGDLLEXPORT Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(npoint_in(str));
+  PG_RETURN_POINTER(npoint_in(str, true));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_out);

@@ -271,6 +271,25 @@
 		</sect2>
 
 		<sect2>
+			<title>Funciones de cuadro delimitador</title>
+
+			<itemizedlist>
+				<listitem id="tpoint_expandSpatial">
+					<indexterm><primary><varname>expandSpatial</varname></primary></indexterm>
+					<para>Obtener el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante &Z_support; &geography_support;</para>
+					<para><varname>expandSpatial({geo,tpoint},float): stbox</varname></para>
+					<programlisting xml:space="preserve">
+SELECT expandSpatial(geography 'Linestring(0 0,1 1)', 2);
+-- SRID=4326;GEODSTBOX((-1.000304586490452,-2,-2),
+  (3,2.0174497483512503,2.0174524064372834))
+SELECT expandSpatial(tgeompoint 'Point(0 0)@2012-01-01', 2);
+-- STBOX T((-2,-2,2012-01-01),(2,2,2012-01-01))
+</programlisting>
+				</listitem>
+		</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Funciones de accessor</title>
 			<itemizedlist>
 				<listitem id="getX">

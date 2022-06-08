@@ -268,8 +268,8 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
  * @sqlfunc asMFJSON()
  */
 char *
-tpointinst_as_mfjson(const TInstant *inst, int precision,
-  const STBOX *bbox, char *srs)
+tpointinst_as_mfjson(const TInstant *inst, int precision, const STBOX *bbox,
+  char *srs)
 {
   size_t size = tpointinst_as_mfjson_size(inst, precision, bbox, srs);
   char *output = palloc(size);
@@ -284,8 +284,8 @@ tpointinst_as_mfjson(const TInstant *inst, int precision,
  * represented in MF-JSON format
  */
 static size_t
-tpointinstset_as_mfjson_size(const TInstantSet *is, int precision, const STBOX *bbox,
-  char *srs)
+tpointinstset_as_mfjson_size(const TInstantSet *is, int precision,
+  const STBOX *bbox, char *srs)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
   size_t size = coordinates_mfjson_size(is->count, hasz, precision);

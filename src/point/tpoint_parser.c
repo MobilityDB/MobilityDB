@@ -85,7 +85,7 @@ stbox_parse(char **str)
       srid = 4326;
   }
   else
-    elog(ERROR, "Could not parse STBOX");
+    elog(ERROR, "Could not parse spatiotemporal box");
 
   if (strncasecmp(*str, "ZT", 2) == 0)
   {
@@ -106,7 +106,7 @@ stbox_parse(char **str)
 
   /* Parse double opening parenthesis */
   if (!p_oparen(str) || !p_oparen(str))
-    elog(ERROR, "Could not parse STBOX: Missing opening parenthesis");
+    elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
 
   /* Determine whether there is an XY(Z) dimension */
   p_whitespace(str);
@@ -114,7 +114,7 @@ stbox_parse(char **str)
     hasx = true;
 
   if (! hasx && ! hast)
-    elog(ERROR, "Could not parse STBOX");
+    elog(ERROR, "Could not parse spatiotemporal box");
   if (! hasx && hassrid)
     elog(ERROR, "An SRID is specified but not coordinates are given");
 
@@ -153,14 +153,14 @@ stbox_parse(char **str)
   }
   p_whitespace(str);
   if (!p_cparen(str))
-    elog(ERROR, "Could not parse STBOX: Missing closing parenthesis");
+    elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
   p_whitespace(str);
   p_comma(str);
   p_whitespace(str);
 
   /* Parse upper bounds */
   if (!p_oparen(str))
-    elog(ERROR, "Could not parse STBOX: Missing opening parenthesis");
+    elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
 
   if (hasx)
   {
@@ -194,7 +194,10 @@ stbox_parse(char **str)
   }
   p_whitespace(str);
   if (!p_cparen(str) || !p_cparen(str) )
-    elog(ERROR, "Could not parse STBOX: Missing closing parenthesis");
+    elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+
+  /* Ensure there is no more input */
+  ensure_end_input(str, true, "spatiotemporal box");
 
   return stbox_make(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
     zmin, zmax, tmin, tmax);
@@ -238,7 +241,7 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
       geo_srid, *tpoint_srid);
   /* The next instruction will throw an exception if it fails */
   TimestampTz t = timestamp_parse(str);
-  ensure_end_input(str, end);
+  ensure_end_input(str, end, "temporal point");
   TInstant *result = make ?
     tinstant_make(PointerGetDatum(gs), temptype, t) : NULL;
   pfree(gs);
@@ -270,8 +273,8 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
     tpointinst_parse(str, temptype, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal value");
-  ensure_end_input(str, true);
+    elog(ERROR, "Could not parse temporal point value: Missing closing brace");
+  ensure_end_input(str, true, "temporal point");
 
   /* Second parsing */
   *str = bak;
@@ -323,8 +326,8 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
   else if (p_cparen(str))
     upper_inc = false;
   else
-    elog(ERROR, "Could not parse temporal value");
-  ensure_end_input(str, end);
+    elog(ERROR, "Could not parse temporal point value: Missing closing bracket/parenthesis");
+  ensure_end_input(str, end, "temporal point");
   if (! make)
     return NULL;
 
@@ -369,8 +372,8 @@ tpointseqset_parse(char **str, CachedType temptype, bool linear,
     tpointseq_parse(str, temptype, linear, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal value");
-  ensure_end_input(str, true);
+    elog(ERROR, "Could not parse temporal point value: Missing closing brace");
+  ensure_end_input(str, true, "temporal point");
 
   /* Second parsing */
   *str = bak;

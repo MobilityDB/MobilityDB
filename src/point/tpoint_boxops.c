@@ -71,7 +71,7 @@ tpointinst_set_stbox(const TInstant *inst, STBOX *box)
 {
   Datum value = tinstant_value(inst);
   GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
-  /* Non-empty geometries have a bounding box 
+  /* Non-empty geometries have a bounding box
    * The argument box is set to 0 on the next call */
   geo_set_stbox(gs, box);
   box->tmin = box->tmax = inst->t;
@@ -273,6 +273,7 @@ tpointseqset_stboxes(const TSequenceSet *ts, int *count)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from a temporal point
+ * @sqlfunc stboxes()
  */
 STBOX *
 tpoint_stboxes(const Temporal *temp, int *count)

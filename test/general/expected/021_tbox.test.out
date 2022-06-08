@@ -63,6 +63,10 @@ SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
 ERROR:  Could not parse TBOX: Missing closing parenthesis
 LINE 1: SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
                     ^
+SELECT tbox 'TBOX((2,2000-01-02),(1,2000-01-01))XXXX';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tbox 'TBOX((2,2000-01-02),(1,2000-01-01))XXXX';
+                    ^
 COPY tbl_tbox TO '/tmp/tbl_tbox' (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_tbox_tmp;

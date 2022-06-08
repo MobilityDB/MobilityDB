@@ -141,6 +141,10 @@ SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01-04))';
 ERROR:  An SRID is specified but not coordinates are given
 LINE 1: SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01...
                      ^
+SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))xxxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04...
+                     ^
 COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_stbox3d_tmp;

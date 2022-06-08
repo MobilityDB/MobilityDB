@@ -2203,8 +2203,9 @@ point_get_z(Datum point)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the coordinates of a temporal point as a temporal float.
  *
- * param[in] temp Temporal point
- * param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
+ * @param[in] temp Temporal point
+ * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
+ * @sqlfunc getX(), getY(), getZ()
  */
 Temporal *
 tpoint_get_coord(const Temporal *temp, int coord)
@@ -2284,6 +2285,7 @@ tpointseq_length_3d(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence point.
+ * @sqlfunc length()
  */
 double
 tpointseq_length(const TSequence *seq)
@@ -2312,6 +2314,7 @@ tpointseq_length(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence set point.
+ * @sqlfunc length()
  */
 double
 tpointseqset_length(const TSequenceSet *ss)
@@ -2326,6 +2329,7 @@ tpointseqset_length(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence (set) point
+ * @sqlfunc length()
  */
 double
 tpoint_length(const Temporal *temp)
@@ -2347,6 +2351,7 @@ tpoint_length(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
+ * @sqlfunc cumulativeLength()
  */
 TInstant *
 tpointinst_cumulative_length(const TInstant *inst)
@@ -2357,6 +2362,7 @@ tpointinst_cumulative_length(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
+ * @sqlfunc cumulativeLength()
  */
 TInstantSet *
 tpointinstset_cumulative_length(const TInstantSet *is)
@@ -2374,6 +2380,7 @@ tpointinstset_cumulative_length(const TInstantSet *is)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
+ * @sqlfunc cumulativeLength()
  */
 TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
@@ -2431,6 +2438,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
+ * @sqlfunc cumulativeLength()
  */
 TSequenceSet *
 tpointseqset_cumulative_length(const TSequenceSet *ss)
@@ -2458,6 +2466,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
+ * @sqlfunc cumulativeLength()
  */
 Temporal *
 tpoint_cumulative_length(const Temporal *temp)
@@ -2483,6 +2492,7 @@ tpoint_cumulative_length(const Temporal *temp)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the speed of a temporal point.
  * @pre The temporal point has linear interpolation
+ * @sqlfunc speed()
  */
 TSequence *
 tpointseq_speed(const TSequence *seq)
@@ -2522,6 +2532,7 @@ tpointseq_speed(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
+ * @sqlfunc speed()
  */
 TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ss)
@@ -2541,6 +2552,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
+ * @sqlfunc speed()
  */
 Temporal *
 tpoint_speed(const Temporal *temp)
@@ -2564,6 +2576,7 @@ tpoint_speed(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @sqlfunc twCentroid()
  */
 Datum
 tpointinstset_twcentroid(const TInstantSet *is)
@@ -2603,6 +2616,7 @@ tpointinstset_twcentroid(const TInstantSet *is)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @sqlfunc twCentroid()
  */
 Datum
 tpointseq_twcentroid(const TSequence *seq)
@@ -2646,6 +2660,7 @@ tpointseq_twcentroid(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @sqlfunc twCentroid()
  */
 Datum
 tpointseqset_twcentroid(const TSequenceSet *ss)
@@ -2702,6 +2717,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @sqlfunc twCentroid()
  */
 Datum
 tpoint_twcentroid(const Temporal *temp)
@@ -2823,6 +2839,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
+ * @sqlfunc azimuth()
  */
 TSequenceSet *
 tpointseq_azimuth(const TSequence *seq)
@@ -2836,6 +2853,7 @@ tpointseq_azimuth(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
+ * @sqlfunc azimuth()
  */
 TSequenceSet *
 tpointseqset_azimuth(const TSequenceSet *ss)
@@ -2857,6 +2875,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
+ * @sqlfunc azimuth()
  */
 Temporal *
 tpoint_azimuth(const Temporal *temp)
@@ -3108,8 +3127,8 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two geometry/geography points
- *
  * @note The following function could be included in PostGIS one day
+ * @sqlfunc bearing()
  */
 bool
 bearing_geo_geo(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
@@ -3131,6 +3150,7 @@ bearing_geo_geo(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between a temporal point and a
  * geometry/geography point.
+ * @sqlfunc bearing()
  */
 Temporal *
 bearing_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool invert)
@@ -3160,6 +3180,7 @@ bearing_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two temporal points
+ * @sqlfunc bearing()
  */
 Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -3488,6 +3509,7 @@ tpoint_instarr_is_simple(const Temporal *temp, int count)
  * @brief Return true if a temporal point does not self-intersect.
  *
  * @param[in] is Temporal point
+ * @sqlfunc isSimple()
  */
 bool
 tpointinstset_is_simple(const TInstantSet *is)
@@ -3502,6 +3524,7 @@ tpointinstset_is_simple(const TInstantSet *is)
  * @brief Return true if a temporal point does not self-intersect.
  *
  * @param[in] seq Temporal point
+ * @sqlfunc isSimple();
  */
 bool
 tpointseq_is_simple(const TSequence *seq)
@@ -3523,6 +3546,7 @@ tpointseq_is_simple(const TSequence *seq)
  * @brief Return true if a temporal point does not self-intersect.
  *
  * @param[in] ss Temporal point
+ * @sqlfunc isSimple()
  */
 bool
 tpointseqset_is_simple(const TSequenceSet *ss)
@@ -3541,6 +3565,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
+ * @sqlfunc isSimple()
  */
 bool
 tpoint_is_simple(const Temporal *temp)
@@ -3600,6 +3625,7 @@ tpointinstset_split(const TInstantSet *is, bool *splits, int count)
  *
  * @param[in] is Temporal instant set point
  * @param[in] count Number of elements in the resulting array
+ * @sqlfunc makeSimple()
  */
 TInstantSet **
 tpointinstset_make_simple(const TInstantSet *is, int *count)
@@ -3703,6 +3729,7 @@ tpointseq_split(const TSequence *seq, bool *splits, int count)
  * @param[in] seq Temporal sequence point
  * @param[out] count Number of elements in the resulting array
  * @note This function is called for each sequence of a sequence set
+ * @sqlfunc makeSimple()
  */
 TSequence **
 tpointseq_make_simple(const TSequence *seq, int *count)
@@ -3744,6 +3771,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
  *
  * @param[in] ss Temporal sequence set point
  * @param[out] count Number of elements in the output array
+ * @sqlfunc makeSimple()
  */
 TSequence **
 tpointseqset_make_simple(const TSequenceSet *ss, int *count)
@@ -3778,6 +3806,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
  * @see tpointinstset_make_simple
  * @see tpointseq_make_simple
  * @see tpointseqset_make_simple
+ * @sqlfunc makeSimple()
  */
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
@@ -3814,6 +3843,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  * @param[in] atfunc True when the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @sqlfunc atGeometry(), minusGeometry()
  */
 TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
@@ -3834,6 +3864,7 @@ tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
  * @param[in] atfunc True when the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @sqlfunc atGeometry(), minusGeometry()
  */
 TInstantSet *
 tpointinstset_restrict_geometry(const TInstantSet *is, Datum geom, bool atfunc)
@@ -4346,6 +4377,7 @@ tpointseq_minus_geometry(const TSequence *seq, Datum geom, int *count)
  * @note The test for instantaneous sequences is done at the function
  * tpointseq_at_geometry since the latter function is called for each sequence
  * of a sequence set
+ * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
 tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
@@ -4372,6 +4404,7 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
  * @param[in] atfunc True when the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
 tpointseqset_restrict_geometry(const TSequenceSet *ss, Datum geom,
@@ -4433,6 +4466,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, Datum geom,
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] atfunc True when the restriction is at, false for minus
+ * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
 tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
@@ -4681,6 +4715,7 @@ tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
  * @param[in] box Box
  * @param[in] atfunc True when the restriction is at, false for minus
  * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
+ * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
 tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
@@ -5429,6 +5464,7 @@ datum_round_geo(Datum value, Datum prec)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
+ * @sqlfunc round()
  */
 Temporal *
 tpoint_round(const Temporal *temp, int prec)

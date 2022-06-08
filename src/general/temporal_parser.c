@@ -53,20 +53,22 @@ p_whitespace(char **str)
 {
   while (**str == ' ' || **str == '\n' || **str == '\r' || **str == '\t')
     *str += 1;
+  return;
 }
 
 /**
  * Ensure there is no more input excepted white spaces
  */
 void
-ensure_end_input(char **str, bool end)
+ensure_end_input(char **str, bool end, const char *type)
 {
   if (end)
   {
     p_whitespace(str);
     if (**str != 0)
-      elog(ERROR, "Could not parse temporal value");
+      elog(ERROR, "Could not parse %s value", type);
   }
+  return;
 }
 
 /**
@@ -218,7 +220,7 @@ basetype_parse(char **str, CachedType basetype)
   if ((*str)[delim] == '\0')
     elog(ERROR, "Could not parse element value");
   (*str)[delim] = '\0';
-  Datum result = basetype_input(basetype, *str);
+  Datum result = basetype_input(basetype, *str, false);
   if (isttext)
     /* Replace the double quote */
     (*str)[delim++] = '"';
@@ -249,11 +251,11 @@ tbox_parse(char **str)
     p_whitespace(str);
   }
   else
-    elog(ERROR, "Could not parse TBOX");
+    elog(ERROR, "Could not parse temporal box");
 
   /* Parse double opening parenthesis */
   if (! p_oparen(str) || ! p_oparen(str))
-    elog(ERROR, "Could not parse TBOX: Missing opening parenthesis");
+    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
 
   /* Determine whether there is an X dimension */
   p_whitespace(str);
@@ -275,18 +277,18 @@ tbox_parse(char **str)
   }
 
   if (! hasx && ! hast)
-    elog(ERROR, "Could not parse TBOX: Both value and time dimensions are empty");
+    elog(ERROR, "Could not parse temporal box: Both value and time dimensions are empty");
 
   p_whitespace(str);
   if (!p_cparen(str))
-    elog(ERROR, "Could not parse TBOX: Missing closing parenthesis");
+    elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
   p_whitespace(str);
   p_comma(str);
   p_whitespace(str);
 
   /* Parse upper bounds */
   if (!p_oparen(str))
-    elog(ERROR, "Could not parse TBOX: Missing opening parenthesis");
+    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
 
   if (hasx)
     xmax = double_parse(str);
@@ -297,7 +299,10 @@ tbox_parse(char **str)
     tmax = timestamp_parse(str);
   p_whitespace(str);
   if (!p_cparen(str) || !p_cparen(str) )
-  elog(ERROR, "Could not parse TBOX: Missing closing parenthesis");
+  elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
+
+  /* Ensure there is no more input */
+  ensure_end_input(str, true, "temporal box");
 
   return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
 }
@@ -318,7 +323,7 @@ timestamp_parse(char **str)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = basetype_input(T_TIMESTAMPTZ, *str);
+  Datum result = basetype_input(T_TIMESTAMPTZ, *str, false);
   (*str)[delim] = bak;
   *str += delim;
   return result;
@@ -367,12 +372,12 @@ periodset_parse(char **str)
 
   /* First parsing */
   char *bak = *str;
-  span_parse(str, T_PERIOD, false);
+  span_parse(str, T_PERIOD, false, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    span_parse(str, T_PERIOD, false);
+    span_parse(str, T_PERIOD, false, false);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse period set");
@@ -383,7 +388,7 @@ periodset_parse(char **str)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    periods[i] = span_parse(str, T_PERIOD, true);
+    periods[i] = span_parse(str, T_PERIOD, false, true);
   }
   p_cbrace(str);
   PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);
@@ -406,7 +411,7 @@ elem_parse(char **str, CachedType basetype)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = basetype_input(basetype, *str);
+  Datum result = basetype_input(basetype, *str, false);
   (*str)[delim] = bak;
   *str += delim;
   return result;
@@ -416,7 +421,7 @@ elem_parse(char **str, CachedType basetype)
  * @brief Parse a span value from the buffer.
  */
 Span *
-span_parse(char **str, CachedType spantype, bool make)
+span_parse(char **str, CachedType spantype, bool end, bool make)
 {
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
@@ -424,7 +429,7 @@ span_parse(char **str, CachedType spantype, bool make)
   else if (p_oparen(str))
     lower_inc = false;
   else
-    elog(ERROR, "Could not parse span");
+    elog(ERROR, "Could not parse span: Missing opening bracket/parenthesis");
 
   CachedType basetype = spantype_basetype(spantype);
   /* The next two instructions will throw an exception if they fail */
@@ -437,7 +442,10 @@ span_parse(char **str, CachedType spantype, bool make)
   else if (p_cparen(str))
     upper_inc = false;
   else
-    elog(ERROR, "Could not parse span");
+    elog(ERROR, "Could not parse span: Missing closing bracket/parenthesis");
+
+  /* Ensure there is no more input */
+  ensure_end_input(str, end, "span");
 
   if (! make)
     return NULL;
@@ -464,7 +472,8 @@ tinstant_parse(char **str, CachedType temptype, bool end, bool make)
   /* The next two instructions will throw an exception if they fail */
   Datum elem = basetype_parse(str, basetype);
   TimestampTz t = timestamp_parse(str);
-  ensure_end_input(str, end);
+  /* Ensure there is no more input */
+  ensure_end_input(str, end, "temporal");
   if (! make)
     return NULL;
   return tinstant_make(elem, temptype, t);
@@ -495,7 +504,8 @@ tinstantset_parse(char **str, CachedType temptype)
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse temporal value");
-  ensure_end_input(str, true);
+  /* Ensure there is no more input */
+  ensure_end_input(str, true, "temporal");
 
   /* Second parsing */
   *str = bak;
@@ -546,8 +556,9 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
   else if (p_cparen(str))
     upper_inc = false;
   else
-    elog(ERROR, "Could not parse temporal value");
-  ensure_end_input(str, end);
+    elog(ERROR, "Could not parse temporal value: Missing closing bracket/parenthesis");
+  /* Ensure there is no more input */
+  ensure_end_input(str, end, "temporal");
   if (! make)
     return NULL;
 
@@ -590,8 +601,9 @@ tsequenceset_parse(char **str, CachedType temptype, bool linear)
     tsequence_parse(str, temptype, linear, false, false);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal value");
-  ensure_end_input(str, true);
+    elog(ERROR, "Could not parse temporal value: Missing closing brace");
+  /* Ensure there is no more input */
+  ensure_end_input(str, true, "temporal");
 
   /* Second parsing */
   *str = bak;

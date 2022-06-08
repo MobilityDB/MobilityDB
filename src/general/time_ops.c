@@ -2594,6 +2594,7 @@ minus_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period set and a timestamp.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)

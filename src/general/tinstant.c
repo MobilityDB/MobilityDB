@@ -71,6 +71,7 @@ tinstant_value_ptr(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the base value of a temporal instant
+ * @sqlfunc getValue()
  */
 Datum
 tinstant_value(const TInstant *inst)
@@ -219,8 +220,7 @@ tinstant_out(const TInstant *inst)
  * @param value Base value
  * @param t Timestamp
  * @param temptype Base type
- * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(),
- * tgeompoint_inst(), tgeogpoint_inst()
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
 tinstant_make(Datum value, CachedType temptype, TimestampTz t)
@@ -323,6 +323,7 @@ tfloatinst_spans(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the time frame of a temporal instant as a period set.
+ * @sqlfunc getTime()
  */
 PeriodSet *
 tinstant_time(const TInstant *inst)
@@ -334,6 +335,8 @@ tinstant_time(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal instant.
+ * @sqlfunc period()
+ * @sqlop @p ::
  */
 void
 tinstant_set_period(const TInstant *inst, Period *p)
@@ -345,6 +348,7 @@ tinstant_set_period(const TInstant *inst, Period *p)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal instant.
  * @post The output parameter @p count is equal to 1
+ * @sqlfunc sequences()
  */
 TSequence **
 tinstant_sequences(const TInstant *inst, int *count)
@@ -360,6 +364,7 @@ tinstant_sequences(const TInstant *inst, int *count)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of timestamps of a temporal instant.
  * @post The output parameter @p count is equal to 1
+ * @sqlfunc timestamps()
  */
 TimestampTz *
 tinstant_timestamps(const TInstant *inst, int *count)
@@ -374,6 +379,7 @@ tinstant_timestamps(const TInstant *inst, int *count)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the singleton array of instants of a temporal instant.
  * @post The output parameter @p count is equal to 1
+ * @sqlfunc instants()
  */
 const TInstant **
 tinstant_instants(const TInstant *inst, int *count)
@@ -390,6 +396,7 @@ tinstant_instants(const TInstant *inst, int *count)
  *
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
+ * @sqlfunc valueAtTimestamp()
  */
 bool
 tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
@@ -407,6 +414,7 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal instant integer to a temporal instant float.
+ * @sqlop @p ::
  */
 TInstant *
 tintinst_to_tfloatinst(const TInstant *inst)
@@ -422,6 +430,7 @@ tintinst_to_tfloatinst(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal instant float to a temporal instant integer.
+ * @sqlop @p ::
  */
 TInstant *
 tfloatinst_to_tintinst(const TInstant *inst)
@@ -441,6 +450,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal instant set transformed into a temporal instant.
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
 tinstantset_to_tinstant(const TInstantSet *ti)
@@ -454,6 +464,7 @@ tinstantset_to_tinstant(const TInstantSet *ti)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal instant.
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
 tsequence_to_tinstant(const TSequence *seq)
@@ -467,6 +478,7 @@ tsequence_to_tinstant(const TSequence *seq)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal sequence set transformed into a temporal instant.
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ts)
@@ -481,6 +493,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ts)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal instant shifted by an interval.
+ * @sqlfunc shift()
  */
 TInstant *
 tinstant_shift(const TInstant *inst, const Interval *interval)
@@ -949,6 +962,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
  * two temporal instants of the same base type are equal.
  * This hypothesis may change in the future and the function must be
  * adapted accordingly.
+ * @sqlfunc tbool_cmp(), tint_cmp(), tfloat_cmp(), ttext_cmp(), etc.
  */
 int
 tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
@@ -980,6 +994,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal instant.
+ * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
  */
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 uint32
