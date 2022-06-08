@@ -32,10 +32,7 @@
  * @brief MobilityDB functions pg_func(...) corresponding to external
  * PostgreSQL functions func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.
- * @note These functions are only available for PG version >= 14.
  */
-
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 
 #include "general/pg_call.h"
 
@@ -981,4 +978,3 @@ pg_hashtext(text *key)
 }
 /*****************************************************************************/
 
-#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */

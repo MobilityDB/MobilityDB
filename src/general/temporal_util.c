@@ -920,8 +920,6 @@ hypot4d(double x, double y, double z, double m)
  * Input/output PostgreSQL functions
  *****************************************************************************/
 
-#if POSTGRESQL_VERSION_NUMBER >= 140000
-
 /**
  * Call input function of the base type
  */
@@ -969,56 +967,33 @@ char *
 basetype_output(CachedType basetype, Datum value)
 {
   ensure_temporal_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return pg_timestamptz_out(DatumGetTimestampTz(value));
-  if (basetype == T_BOOL)
-    return pg_boolout(DatumGetBool(value));
-  if (basetype == T_INT4)
-    return pg_int4out(DatumGetInt32(value));
-  if (basetype == T_INT8)
-    return pg_int8out(DatumGetInt64(value));
-  if (basetype == T_FLOAT8)
-    return float8out_internal(DatumGetFloat8(value));
-  if (basetype == T_TEXT)
-    return text2cstring(DatumGetTextP(value));
-  if (basetype == T_GEOMETRY)
+  switch (basetype)
+  {
+    case T_TIMESTAMPTZ:
+      return pg_timestamptz_out(DatumGetTimestampTz(value));
+    case T_BOOL:
+      return pg_boolout(DatumGetBool(value));
+    case T_INT4:
+      return pg_int4out(DatumGetInt32(value));
+    case T_INT8:
+      return pg_int8out(DatumGetInt64(value));
+    case T_FLOAT8:
+      return float8out_internal(DatumGetFloat8(value));
+    case T_TEXT:
+      return text2cstring(DatumGetTextP(value));
+    case T_GEOMETRY:
     return PGIS_LWGEOM_out(DatumGetGserializedP(value));
-  if (basetype == T_GEOGRAPHY)
-    return PGIS_geography_out(DatumGetGserializedP(value));
+    case T_GEOGRAPHY:
+      return PGIS_geography_out(DatumGetGserializedP(value));
 #if ! MEOS
-  if (basetype == T_NPOINT)
-    return npoint_out(DatumGetNpointP(value));
+    case T_NPOINT:
+      return npoint_out(DatumGetNpointP(value));
 #endif
-  elog(ERROR, "unknown type_input function for base type: %d", basetype);
+    default: /* Error! */
+      elog(ERROR, "Unknown base type: %d", basetype);
+      break;
+  }
 }
-
-#else /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-
-/**
- * Call input function of the base type
- */
-Datum
-basetype_input(CachedType basetype, char *str, bool end)
-{
-  ensure_temporal_basetype(basetype);
-  Oid basetypid = type_oid(basetype);
-  Datum result = call_input(basetypid, str, end);
-  ensure_end_input(&str, end, "base type");
-  return result;
-}
-
-/**
- * Call output function of the base type
- */
-char *
-basetype_output(CachedType basetype, Datum value)
-{
-  ensure_temporal_basetype(basetype);
-  Oid basetypid = type_oid(basetype);
-  return call_output(basetypid, value);
-}
-
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -1036,7 +1011,6 @@ basetype_output(CachedType basetype, Datum value)
  * Send/receive PostgreSQL functions
  *****************************************************************************/
 
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
  * Call receive function of the base type
  */
@@ -1097,46 +1071,6 @@ basetype_send(CachedType basetype, Datum value)
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
-#else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 */
-
-/**
- * Call receive function of the base type
- */
-Datum
-basetype_recv(CachedType basetype, StringInfo buf)
-{
-  ensure_temporal_basetype(basetype);
-  /* Internal types are not known by PostgreSQL */
-  if (basetype == T_DOUBLE2)
-    return PointerGetDatum(double2_recv(buf));
-  if (basetype == T_DOUBLE3)
-    return PointerGetDatum(double3_recv(buf));
-  if (basetype == T_DOUBLE4)
-    return PointerGetDatum(double4_recv(buf));
-  Oid basetypid = type_oid(basetype);
-  return call_recv(basetypid, buf);
-}
-
-/**
- * Call send function of the base type
- */
-bytea *
-basetype_send(CachedType basetype, Datum value)
-{
-  ensure_temporal_basetype(basetype);
-  /* Internal types are not known by PostgreSQL */
-  if (basetype == T_DOUBLE2)
-    return double2_send(DatumGetDouble2P(value));
-  if (basetype == T_DOUBLE3)
-    return double3_send(DatumGetDouble3P(value));
-  if (basetype == T_DOUBLE4)
-    return double4_send(DatumGetDouble4P(value));
-  Oid basetypid = type_oid(basetype);
-  return call_send(basetypid, value);
-}
-
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-
 /*****************************************************************************
  * Call PostgreSQL functions
  * The call_input and call_output functions are needed for the geography
@@ -1159,22 +1093,6 @@ call_input(Oid typid, char *str, bool end)
   return result;
 }
 
-#if POSTGRESQL_VERSION_NUMBER < 140000
-/**
- * Call output function of the base type
- */
-char *
-call_output(Oid typid, Datum value)
-{
-  Oid outfunc;
-  bool isvarlena;
-  FmgrInfo outfuncinfo;
-  getTypeOutputInfo(typid, &outfunc, &isvarlena);
-  fmgr_info(outfunc, &outfuncinfo);
-  return OutputFunctionCall(&outfuncinfo, value);
-}
-#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
-
 /**
  * Call receive function of the base type
  */
@@ -1188,22 +1106,6 @@ call_recv(Oid typid, StringInfo buf)
   fmgr_info(recvfunc, &recvfuncinfo);
   return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
 }
-
-#if POSTGRESQL_VERSION_NUMBER < 140000
-/**
- * Call send function of the base type
- */
-bytea *
-call_send(Oid typid, Datum value)
-{
-  Oid sendfunc;
-  bool isvarlena;
-  FmgrInfo sendfuncinfo;
-  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
-  fmgr_info(sendfunc, &sendfuncinfo);
-  return SendFunctionCall(&sendfuncinfo, value);
-}
-#endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
 
 /**
  * Call PostgreSQL function with 1 argument
