@@ -41,7 +41,11 @@
 #include <math.h>
 /* PostgreSQL */
 #include <common/int128.h>
-#include <common/hashfn.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
+#endif
 #if ! MEOS
   #include <libpq/pqformat.h>
 #endif
@@ -50,73 +54,9 @@
 /* MobilityDB */
 #include "general/temporal_util.h"
 
-/* Definitions from builtins.h to avoid including it */
-#if POSTGRESQL_VERSION_NUMBER >= 150000
-  extern int64 pg_strtoint64(const char *s);
-#else
-  extern bool scanint8(const char *str, bool errorOK, int64 *result);
-#endif
-
-/* Sign + the most decimal digits an 8-byte number could have */
-#define MAXINT8LEN 20
-extern int32 pg_strtoint32(const char *s);
-extern bool parse_bool_with_len(const char *value, size_t len, bool *result);
-extern int pg_ltoa(int32 l, char *a);
-extern int pg_lltoa(int64 ll, char *a);
-extern int pg_ulltoa_n(uint64 l, char *a);
-
 /*****************************************************************************
  * Functions adapted from bool.c
  *****************************************************************************/
-
-/**
- * @brief Convert "t" or "f" to 1 or 0
- *
- * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
- * Reject other values.
- *
- * In the switch statement, check the most-used possibilities first.
- * @note PostgreSQL function: Datum boolin(PG_FUNCTION_ARGS)
- */
-bool
-pg_boolin(const char *in_str)
-{
-  const char *str;
-  size_t len;
-  bool result;
-
-  /*
-   * Skip leading and trailing whitespace
-   */
-  str = in_str;
-  while (isspace((unsigned char) *str))
-    str++;
-
-  len = strlen(str);
-  while (len > 0 && isspace((unsigned char) str[len - 1]))
-    len--;
-
-  if (parse_bool_with_len(str, len, &result))
-    return result;
-
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "boolean", in_str);
-
-  /* not reached */
-  return false;
-}
-
-/**
- * @brief Convert 1 or 0 to "t" or "f"
- * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
- */
-char *
-pg_boolout(bool b)
-{
-  char *result = palloc(2);
-  result[0] = (b) ? 't' : 'f';
-  result[1] = '\0';
-  return result;
-}
 
 #if ! MEOS
 /**
@@ -152,28 +92,6 @@ pg_boolsend(bool arg1)
  * Functions adapted from int.c
  *****************************************************************************/
 
-/**
- * @brief Return an int4 from a string
- * @note PostgreSQL function: Datum int4in(PG_FUNCTION_ARGS)
- */
-int32
-pg_int4in(char *str)
-{
-  return pg_strtoint32(str);
-}
-
-/**
- * @brief Return a string from an int4
- * @note PostgreSQL function: Datum int4out(PG_FUNCTION_ARGS)
- */
-char *
-pg_int4out(int32 val)
-{
-  char *result = palloc(12);  /* sign, 10 digits, '\0' */
-  pg_ltoa(val, result);
-  return result;
-}
-
 #if ! MEOS
 /**
  * @brief CConvert an int4 to binary format
@@ -203,67 +121,6 @@ pg_int4recv(StringInfo buf)
  * Functions adapted from int8.c
  *****************************************************************************/
 
-/**
- * @brief Return an int8 from a string
- * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
- */
-int64
-pg_int8in(char *str)
-{
-#if POSTGRESQL_VERSION_NUMBER >= 150000
-  int64 result = pg_strtoint64(str);
-#else
-  int64 result;
-  (void) scanint8(str, false, &result);
-#endif
-  return result;
-}
-
-/**
- * @brief convert a signed 64-bit integer to its string representation
- *
- * Caller must ensure that 'a' points to enough memory to hold the result
- * (at least MAXINT8LEN + 1 bytes, counting a leading sign and trailing NUL).
- * @note We need to copy this function since this function has been fixed in
- * PG version 14, previouly the function returned void
- */
-static int
-mobdb_lltoa(int64 value, char *a)
-{
-  uint64 uvalue = value;
-  int len = 0;
-
-  if (value < 0)
-  {
-    uvalue = (uint64) 0 - uvalue;
-    a[len++] = '-';
-  }
-
-  len += pg_ulltoa_n(uvalue, a + len);
-  a[len] = '\0';
-  return len;
-}
-
-/**
- * @brief Return a string from an int8
- * @note PostgreSQL function: Datum int8out(PG_FUNCTION_ARGS)
- */
-char *
-pg_int8out(int64 val)
-{
-  char buf[MAXINT8LEN + 1];
-  char *result;
-  int len;
-
-  len = mobdb_lltoa(val, buf) + 1;
-  /*
-   * Since the length is already known, we do a manual palloc() and memcpy()
-   * to avoid the strlen() call that would otherwise be done in pstrdup().
-   */
-  result = palloc(len);
-  memcpy(result, buf, len);
-  return result;
-}
 
 #if 0 /* not used */
 /**
@@ -525,6 +382,83 @@ DateTimeParseError(int dterr, const char *str, const char *datatype)
 			elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
 			break;
 	}
+}
+
+/*
+ * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
+ * Works for either timestamp or timestamptz.
+ */
+bool
+AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
+{
+	static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
+		INT64CONST(1000000),
+		INT64CONST(100000),
+		INT64CONST(10000),
+		INT64CONST(1000),
+		INT64CONST(100),
+		INT64CONST(10),
+		INT64CONST(1)
+	};
+
+	static const int64 TimestampOffsets[MAX_TIMESTAMP_PRECISION + 1] = {
+		INT64CONST(500000),
+		INT64CONST(50000),
+		INT64CONST(5000),
+		INT64CONST(500),
+		INT64CONST(50),
+		INT64CONST(5),
+		INT64CONST(0)
+	};
+
+	if (!TIMESTAMP_NOT_FINITE(*time)
+		&& (typmod != -1) && (typmod != MAX_TIMESTAMP_PRECISION))
+	{
+		if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
+		{
+			if (error)
+			{
+				*error = true;
+				return false;
+			}
+
+			elog(ERROR, "timestamp(%d) precision must be between %d and %d",
+							typmod, 0, MAX_TIMESTAMP_PRECISION);
+		}
+
+		if (*time >= INT64CONST(0))
+		{
+			*time = ((*time + TimestampOffsets[typmod]) / TimestampScales[typmod]) *
+				TimestampScales[typmod];
+		}
+		else
+		{
+			*time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
+					  * TimestampScales[typmod]);
+		}
+	}
+
+	return true;
+}
+
+void
+AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
+{
+	(void) AdjustTimestampForTypmodError(time, typmod, NULL);
+}
+
+/* EncodeSpecialTimestamp()
+ * Convert reserved timestamp data type to string.
+ */
+void
+EncodeSpecialTimestamp(Timestamp dt, char *str)
+{
+	if (TIMESTAMP_IS_NOBEGIN(dt))
+		strcpy(str, EARLY);
+	else if (TIMESTAMP_IS_NOEND(dt))
+		strcpy(str, LATE);
+	else						/* shouldn't happen */
+		elog(ERROR, "invalid argument for EncodeSpecialTimestamp");
 }
 
 /**

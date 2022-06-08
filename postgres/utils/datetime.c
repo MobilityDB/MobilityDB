@@ -41,12 +41,10 @@ static const datetkn *datebsearch(const char *key, const datetkn *base, int nel)
 
 int			DateOrder = DATEORDER_MDY;
 
-/* Defined in numutils.c */
-extern char *pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth);
-extern char *pg_ultostr(char *str, uint32 value);
-
 /* Defined below */
 
+extern char *pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth);
+extern char *pg_ultostr(char *str, uint32 value);
 static int	DecodeDate(char *str, int fmask, int *tmask, bool *is2digits,
 					   struct pg_tm *tm);
 static int	DecodeTime(char *str, int fmask, int range,
@@ -326,6 +324,78 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 	*fsec = cache_fsec;
 	if (tzp != NULL)
 		*tzp = cache_tz;
+}
+
+/*
+ * pg_ultostr_zeropad
+ *    Converts 'value' into a decimal string representation stored at 'str'.
+ *    'minwidth' specifies the minimum width of the result; any extra space
+ *    is filled up by prefixing the number with zeros.
+ *    MobilityDB: Function copied from numutils.c
+ *
+ * Returns the ending address of the string result (the last character written
+ * plus 1).  Note that no NUL terminator is written.
+ *
+ * The intended use-case for this function is to build strings that contain
+ * multiple individual numbers, for example:
+ *
+ *  str = pg_ultostr_zeropad(str, hours, 2);
+ *  *str++ = ':';
+ *  str = pg_ultostr_zeropad(str, mins, 2);
+ *  *str++ = ':';
+ *  str = pg_ultostr_zeropad(str, secs, 2);
+ *  *str = '\0';
+ *
+ * Note: Caller must ensure that 'str' points to enough memory to hold the
+ * result.
+ */
+static char *
+pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth)
+{
+  int      len;
+
+  Assert(minwidth > 0);
+
+  if (value < 100 && minwidth == 2)  /* Short cut for common case */
+  {
+    memcpy(str, DIGIT_TABLE + value * 2, 2);
+    return str + 2;
+  }
+
+  len = pg_ultoa_n(value, str);
+  if (len >= minwidth)
+    return str + len;
+
+  memmove(str + minwidth - len, str, len);
+  memset(str, '0', minwidth - len);
+  return str + minwidth;
+}
+
+/*
+ * pg_ultostr
+ *    Converts 'value' into a decimal string representation stored at 'str'.
+ *    MobilityDB: Function copied from numutils.c
+ *
+ * Returns the ending address of the string result (the last character written
+ * plus 1).  Note that no NUL terminator is written.
+ *
+ * The intended use-case for this function is to build strings that contain
+ * multiple individual numbers, for example:
+ *
+ *  str = pg_ultostr(str, a);
+ *  *str++ = ' ';
+ *  str = pg_ultostr(str, b);
+ *  *str = '\0';
+ *
+ * Note: Caller must ensure that 'str' points to enough memory to hold the
+ * result.
+ */
+static char *
+pg_ultostr(char *str, uint32 value)
+{
+  int      len = pg_ultoa_n(value, str);
+
+  return str + len;
 }
 
 /*

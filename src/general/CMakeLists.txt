@@ -30,6 +30,7 @@ else()
 endif()
 
 add_library(general OBJECT
+  basetype_inout.c
   doublen.c
   ${geo_constructors.c}
   lifting.c

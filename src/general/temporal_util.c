@@ -936,14 +936,13 @@ basetype_input(CachedType basetype, char *str, bool end __attribute__((unused)))
     case T_TIMESTAMPTZ:
       return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
     case T_BOOL:
-      return BoolGetDatum(pg_boolin(str));
+      return BoolGetDatum(bool_in(str));
     case T_INT4:
-      return Int32GetDatum(pg_int4in(str));
+      return Int32GetDatum(int4_in(str));
     case T_INT8:
-      return Int64GetDatum(pg_int8in(str));
+      return Int64GetDatum(int8_in(str));
     case T_FLOAT8:
-      return Float8GetDatum(float8in_internal(str, NULL, "double precision",
-        str));
+      return Float8GetDatum(float8_in(str, "double precision", str));
     case T_TEXT:
       return PointerGetDatum(cstring2text(str));
     case T_GEOMETRY:
@@ -976,13 +975,13 @@ basetype_output(CachedType basetype, Datum value)
     case T_TIMESTAMPTZ:
       return pg_timestamptz_out(DatumGetTimestampTz(value));
     case T_BOOL:
-      return pg_boolout(DatumGetBool(value));
+      return bool_out(DatumGetBool(value));
     case T_INT4:
-      return pg_int4out(DatumGetInt32(value));
+      return int4_out(DatumGetInt32(value));
     case T_INT8:
-      return pg_int8out(DatumGetInt64(value));
+      return int8_out(DatumGetInt64(value));
     case T_FLOAT8:
-      return float8out_internal(DatumGetFloat8(value));
+      return float8_out(DatumGetFloat8(value));
     case T_TEXT:
       return text2cstring(DatumGetTextP(value));
     case T_GEOMETRY:

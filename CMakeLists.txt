@@ -126,6 +126,22 @@ else()
   endif()
 endif()
 
+# if(NOT MEOS)
+  # include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
+  # if(WIN32)
+    # include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
+    # if(MSVC)
+        # include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+    # endif()
+    # link_directories(${POSTGRESQL_LIBRARIES})
+    # link_libraries(postgres)
+  # endif()
+# endif()
+
+# message(STATUS "Building MEOS: Including embedded PostgreSQL files")
+# include_directories("postgres")
+# add_subdirectory("postgres")
+
 #-------------------------------------
 # Verify PostGIS Version
 #-------------------------------------

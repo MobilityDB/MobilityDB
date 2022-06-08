@@ -44,27 +44,30 @@
 
 /* Functions adadpted from bool.c */
 
-extern bool pg_boolin(const char *in_str);
-extern char *pg_boolout(bool b);
+extern bool bool_in(const char *in_str);
+extern char *bool_out(bool b);
 extern bool pg_boolrecv(StringInfo buf);
 extern bytea *pg_boolsend(bool arg1);
 
 /* Functions adapted from int.c */
 
-extern int32 pg_int4in(char *str);
-extern char *pg_int4out(int32 val);
+extern int32 int4_in(char *str);
+extern char *int4_out(int32 val);
 extern int32 pg_int4recv(StringInfo buf);
 extern bytea *pg_int4send(int32 arg1);
 
 /* Functions adapted from int8.c */
 
-extern int64 pg_int8in(char *str);
-extern char *pg_int8out(int64 val);
+extern int64 int8_in(char *str);
+extern char *int8_out(int64 val);
 extern int64 pg_int8recv(StringInfo buf);
 extern bytea *pg_int8send(int64 arg1);
 
 /* Functions adapted from float.c */
 
+extern float8 float8_in(char *num, const char *type_name,
+  const char *orig_string);
+extern char *float8_out(int64 val);
 extern float8 pg_float8recv(StringInfo buf);
 extern bytea *pg_float8send(float8 num);
 
