@@ -924,7 +924,11 @@ hypot4d(double x, double y, double z, double m)
  * Call input function of the base type
  */
 Datum
+#if ! MEOS
 basetype_input(CachedType basetype, char *str, bool end)
+#else
+basetype_input(CachedType basetype, char *str, bool end __attribute__((unused)))
+#endif
 {
   ensure_temporal_basetype(basetype);
   switch (basetype)

@@ -15,24 +15,10 @@
 
 #include "postgres.h"
 
-#include <ctype.h>
 #include <limits.h>
-#include <float.h>
-#include <math.h>
-#include <time.h>
 
-// #include "access/xact.h"
-#include "common/hashfn.h"
-// #include "libpq/pqformat.h"
-// #include "miscadmin.h"
-// #include "nodes/supportnodes.h"
-// #include "parser/scansup.h"
-// #include "utils/array.h"
-// #include "utils/builtins.h"
-#include "utils/date.h"
+// #include "utils/date.h"
 #include "utils/datetime.h"
-// #include "utils/numeric.h"
-// #include "utils/sortsupport.h"
 
 /*
  * gcc's -ffast-math switch breaks routines that expect exact results from
