@@ -14,14 +14,12 @@
  */
 #include "postgres.h"
 
-#if 0 /* MobilityDB not used */
-
 #include <math.h>
 #include <limits.h>
 #include <ctype.h>
 
 #include "common/int.h"
-#include "utils/builtins.h"
+// #include "utils/builtins.h"
 #include "port/pg_bitutils.h"
 
 /*
@@ -86,6 +84,8 @@ decimalLength64(const uint64 v)
 	t = (pg_leftmost_one_pos64(v) + 1) * 1233 / 4096;
 	return t + (v >= PowersOfTen[t]);
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_atoi: convert string to integer
@@ -251,6 +251,8 @@ invalid_syntax:
 	return 0;					/* keep compiler quiet */
 }
 
+#endif /* MobilityDB not used */
+
 /*
  * Convert input string to a signed 32 bit integer.
  *
@@ -313,19 +315,15 @@ pg_strtoint32(const char *s)
 	return tmp;
 
 out_of_range:
-	ereport(ERROR,
-			(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-			 errmsg("value \"%s\" is out of range for type %s",
-					s, "integer")));
+	elog(ERROR, "value \"%s\" is out of range for type %s", s, "integer");
 
 invalid_syntax:
-	ereport(ERROR,
-			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			 errmsg("invalid input syntax for type %s: \"%s\"",
-					"integer", s)));
+	elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
 
 	return 0;					/* keep compiler quiet */
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_itoa: converts a signed 16-bit integer to its string representation
@@ -341,6 +339,8 @@ pg_itoa(int16 i, char *a)
 {
 	return pg_ltoa((int32) i, a);
 }
+
+#endif /* MobilityDB not used */
 
 /*
  * pg_ultoa_n: converts an unsigned 32-bit integer to its string representation,
@@ -514,6 +514,7 @@ pg_ltoa(int32 value, char *a)
 	return len;
 }
 
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_lltoa: converts a signed 64-bit integer to its string representation and
@@ -539,6 +540,7 @@ pg_lltoa(int64 value, char *a)
 	return len;
 }
 
+#endif /* MobilityDB not used */
 
 /*
  * pg_ultostr_zeropad
@@ -609,6 +611,8 @@ pg_ultostr(char *str, uint32 value)
 
 	return str + len;
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  * pg_strtouint64

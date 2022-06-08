@@ -71,7 +71,7 @@ bitmatrix_make(int *count, int numdims)
    * already one byte allocated in the struct */
   size_t size = sizeof(BitMatrix) + byteCount - 1;
   /* palloc0 to set all bits to 0 */
-  BitMatrix *result = (BitMatrix *) palloc0(size);
+  BitMatrix *result = palloc0(size);
   /* Fill the structure */
   result->numdims = numdims;
   for (i = 0; i < numdims; i++)
@@ -443,7 +443,7 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
-  STboxGridState *state = (STboxGridState *) palloc0(sizeof(STboxGridState));
+  STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* Fill in state */
   state->done = false;
   state->i = 1;
@@ -674,7 +674,7 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
   }
 
   /* Allocate box */
-  STBOX *box = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *box = palloc(sizeof(STBOX));
   /* Get current tile and advance state
    * There is no need to test if the tile is found since all tiles should be
    * generated and thus there is no associated bit matrix */
@@ -756,7 +756,7 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
     tmin = timestamptz_bucket(t, tunits, torigin);
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc0(sizeof(STBOX));
   stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz,
     hast, srid);
   PG_RETURN_POINTER(result);
@@ -843,21 +843,21 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
  * Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
- * @param[in] ti Temporal point
+ * @param[in] is Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 static void
-tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
+tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *is, bool hasz,
   bool hast, const STboxGridState *state)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
   memset(coords, 0, sizeof(coords));
-  for (int i = 0; i < ti->count; i++)
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
     bitmatrix_set_cell(bm, coords, true);
   }
@@ -896,18 +896,18 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
  * Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
- * @param[in] ts Temporal point
+ * @param[in] ss Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 static void
-tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
+tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ss, bool hasz,
   bool hast, const STboxGridState *state)
 {
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     tpointseq_set_tiles(bm, seq, hasz, hast, state);
   }
   return;

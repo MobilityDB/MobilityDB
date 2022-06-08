@@ -86,6 +86,7 @@ number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
  * @param[in] value Value
  * @param[in] valuetype Type of the value
  * @param[in] restype Type of the result
+ * @sqlop @p <->
  */
 Temporal *
 distance_tnumber_number(const Temporal *temp, Datum value,
@@ -136,6 +137,7 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  *
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] restype Type of the result
+ * @sqlop @p <->
  */
 Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
@@ -166,6 +168,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
+ * @sqlop @p |=|
  */
 double
 nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
@@ -183,6 +186,7 @@ nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes.
+ * @sqlop @p |=|
  */
 double
 nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
@@ -211,6 +215,7 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a temporal box.
+ * @sqlop @p |=|
  */
 double
 nad_tnumber_tbox(const Temporal *temp, const TBOX *box)

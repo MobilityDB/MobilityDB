@@ -36,8 +36,6 @@
 
 /* C */
 #include <assert.h>
-/* PostgreSQL */
-#include <libpq/pqformat.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/doxygen_libmeos_api.h"
@@ -309,7 +307,8 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
       result[k++] = i;
     value1 = value2;
 #if ! MEOS
-    geom1 = geom2;
+    if (basetype == T_NPOINT)
+      geom1 = geom2;
 #endif
   }
   *countsplits = k;
@@ -326,13 +325,16 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
 {
   for (int i = 1; i < count; i++)
   {
-    ensure_same_interpolation((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
-    if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
-      (sequences[i - 1]->period.upper == sequences[i]->period.lower &&
-      sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
+    ensure_same_interpolation((Temporal *) sequences[i - 1],
+      (Temporal *) sequences[i]);
+    TimestampTz upper1 = DatumGetTimestampTz(sequences[i - 1]->period.upper);
+    TimestampTz lower2 = DatumGetTimestampTz(sequences[i]->period.lower);
+    if ( upper1 > lower2 ||
+         ( upper1 == lower2 && sequences[i - 1]->period.upper_inc &&
+           sequences[i]->period.lower_inc ) )
     {
-      char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(sequences[i - 1]->period.upper));
-      char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(sequences[i]->period.lower));
+      char *t1 = basetype_output(T_TIMESTAMPTZ, sequences[i - 1]->period.upper);
+      char *t2 = basetype_output(T_TIMESTAMPTZ, sequences[i]->period.lower);
       elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
     }
     ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
@@ -588,76 +590,6 @@ temporal_out(const Temporal *temp)
   return result;
 }
 
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal value from its binary representation read from
- * a buffer.
- *
- * @param[in] buf Buffer
- * @see tinstant_recv
- * @see tinstantset_recv
- * @see tsequence_recv
- * @see tsequenceset_recv
- */
-Temporal *
-temporal_recv(StringInfo buf)
-{
-  uint8 temptype = pq_getmsgbyte(buf);
-  uint8 subtype = pq_getmsgbyte(buf);
-  Temporal *result;
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
-    result = (Temporal *) tinstant_recv(buf, temptype);
-  else if (subtype == INSTANTSET)
-    result = (Temporal *) tinstantset_recv(buf, temptype);
-  else if (subtype == SEQUENCE)
-    result = (Temporal *) tsequence_recv(buf, temptype);
-  else /* subtype == SEQUENCESET */
-    result = (Temporal *) tsequenceset_recv(buf, temptype);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Write the binary representation of a temporal value into a buffer.
- *
- * @param[in] temp Temporal value
- * @param[in] buf Buffer
- * @see tinstant_write
- * @see tinstantset_write
- * @see tsequence_write
- * @see tsequenceset_write
- */
-void
-temporal_write(const Temporal *temp, StringInfo buf)
-{
-  pq_sendbyte(buf, temp->temptype);
-  pq_sendbyte(buf, temp->subtype);
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    tinstant_write((TInstant *) temp, buf);
-  else if (temp->subtype == INSTANTSET)
-    tinstantset_write((TInstantSet *) temp, buf);
-  else if (temp->subtype == SEQUENCE)
-    tsequence_write((TSequence *) temp, buf);
-  else /* temp->subtype == SEQUENCESET */
-    tsequenceset_write((TSequenceSet *) temp, buf);
-  return;
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the binary representation of a temporal value
- */
-bytea *
-temporal_send(const Temporal *temp)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  temporal_write(temp, &buf) ;
-  return (bytea *) pq_endtypsend(&buf);
-}
-
 /*****************************************************************************
  * Constructor functions
  ****************************************************************************/
@@ -673,7 +605,7 @@ temporal_send(const Temporal *temp)
 Temporal *
 temporal_copy(const Temporal *temp)
 {
-  Temporal *result = (Temporal *) palloc0(VARSIZE(temp));
+  Temporal *result = palloc(VARSIZE(temp));
   memcpy(result, temp, VARSIZE(temp));
   return result;
 }
@@ -1014,7 +946,6 @@ temporal_merge_array(Temporal **temparr, int count)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal integer to an integer span.
- *
  * @note The temporal subtype INSTANT does not have bounding box.
  */
 Span *
@@ -1042,7 +973,6 @@ tint_to_span(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal float to a float span.
- *
  * @note Note that the temporal subtype INSTANT does not have bounding box.
  */
 Span *
@@ -1148,7 +1078,7 @@ temporal_set_period(const Temporal *temp, Period *p)
 TBOX *
 tnumber_to_tbox(Temporal *temp)
 {
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   temporal_set_bbox(temp, result);
   return result;
 }
@@ -1658,7 +1588,7 @@ temporal_timespan(const Temporal *temp)
   Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Interval *) palloc0(sizeof(Interval));
+    result = palloc0(sizeof(Interval));
   else if (temp->subtype == INSTANTSET)
     result = tinstantset_timespan((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
@@ -1680,7 +1610,7 @@ temporal_duration(const Temporal *temp)
   Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-    result = (Interval *) palloc0(sizeof(Interval));
+    result = palloc0(sizeof(Interval));
   else if (temp->subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
@@ -2142,6 +2072,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
  * @see tinstantset_ever_eq
  * @see tsequence_ever_eq
  * @see tsequenceset_ever_eq
+ * @sqlop @p ?=
  */
 bool
 temporal_ever_eq(const Temporal *temp, Datum value)
@@ -2166,6 +2097,7 @@ temporal_ever_eq(const Temporal *temp, Datum value)
  * @see tinstantset_always_eq
  * @see tsequence_always_eq
  * @see tsequenceset_always_eq
+ * @sqlop @p %=
  */
 bool
 temporal_always_eq(const Temporal *temp, Datum value)
@@ -2190,6 +2122,7 @@ temporal_always_eq(const Temporal *temp, Datum value)
  * @see tinstantset_ever_lt
  * @see tsequence_ever_lt
  * @see tsequenceset_ever_lt
+ * @sqlop @p ?<
  */
 bool
 temporal_ever_lt(const Temporal *temp, Datum value)
@@ -2214,6 +2147,7 @@ temporal_ever_lt(const Temporal *temp, Datum value)
  * @see tinstantset_always_lt
  * @see tsequence_always_lt
  * @see tsequenceset_always_lt
+ * @sqlop @p %<
  */
 bool
 temporal_always_lt(const Temporal *temp, Datum value)
@@ -2239,6 +2173,7 @@ temporal_always_lt(const Temporal *temp, Datum value)
  * @see tinstantset_ever_le
  * @see tsequence_ever_le
  * @see tsequenceset_ever_le
+ * @sqlop @p ?<=
  */
 bool
 temporal_ever_le(const Temporal *temp, Datum value)
@@ -2264,6 +2199,7 @@ temporal_ever_le(const Temporal *temp, Datum value)
  * @see tinstantset_always_le
  * @see tsequence_always_le
  * @see tsequenceset_always_le
+ * @sqlop @p %<=
  */
 bool
 temporal_always_le(const Temporal *temp, Datum value)
@@ -2454,6 +2390,7 @@ tnumber_bbox_restrict_spans(const Temporal *temp, Span **spans,
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
+ * @sqlfunc atValue(), minusValue()
  */
 Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
@@ -2492,6 +2429,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of base
  * values.
+ * @sqlfunc atValues(), minusValues()
  */
 Temporal *
 temporal_restrict_values(const Temporal *temp, Datum *values, int count,
@@ -2535,6 +2473,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span of base values.
+ * @sqlfunc atSpan(), minusSpan()
  */
 Temporal *
 tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc)
@@ -2573,6 +2512,7 @@ tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc)
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of spans
  * of base values.
+ * @sqlfunc atSpans(), minusSpans()
  */
 Temporal *
 tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
@@ -2619,6 +2559,7 @@ tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a minimum base value
+ * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
 Temporal *
 temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
@@ -2644,6 +2585,7 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a timestamp.
+ * @sqlfunc atTimestamp(), minusTimestamp()
  */
 Temporal *
 temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
@@ -2694,6 +2636,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamp set
+ * @sqlfunc atTimestampSet(), minusTimestampSet()
  */
 Temporal *
 temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
@@ -2722,6 +2665,7 @@ temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period.
+ * @sqlfunc atPeriod(), minusPeriod()
  */
 Temporal *
 temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
@@ -2749,6 +2693,7 @@ temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period set.
+ * @sqlfunc atPeriodSet(), minusPeriodSet()
  */
 Temporal *
 temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
@@ -2776,6 +2721,7 @@ temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to a temporal box.
+ * @sqlfunc atTbox()
  */
 Temporal *
 tnumber_at_tbox(const Temporal *temp, const TBOX *box)
@@ -2834,7 +2780,7 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
  * We cannot make the difference from each dimension separately, i.e.,
  * restrict at the period and then restrict to the span. Therefore, we
  * compute the atTbox and then compute the complement of the value obtained.
- *
+ * @sqlfunc minusTbox()
  */
 Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
@@ -2873,6 +2819,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
  * @see tinstantset_intersects_timestamp
  * @see tsequence_intersects_timestamp
  * @see tsequenceset_intersects_timestamp
+ * @sqlfunc intersectsTimestamp()
  */
 bool
 temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
@@ -2897,6 +2844,7 @@ temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
  * @see tinstantset_intersects_timestampset
  * @see tsequence_intersects_timestampset
  * @see tsequenceset_intersects_timestampset
+ * @sqlfunc intersectsTimestampSet()
  */
 bool
 temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -2921,6 +2869,7 @@ temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @see tinstantset_intersects_period
  * @see tsequence_intersects_period
  * @see tsequenceset_intersects_period
+ * @sqlfunc intersectsPeriod()
  */
 bool
 temporal_intersects_period(const Temporal *temp, const Period *p)
@@ -2945,6 +2894,7 @@ temporal_intersects_period(const Temporal *temp, const Period *p)
  * @see tinstantset_intersects_periodset
  * @see tsequence_intersects_periodset
  * @see tsequenceset_intersects_periodset
+ * @sqlfunc intersectsPeriodSet()
  */
 bool
 temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -2992,6 +2942,7 @@ tnumber_integral(const Temporal *temp)
  * @see tnumberinstset_twavg
  * @see tnumberseq_twavg
  * @see tnumberseqset_twavg
+ * @sqlfunc twAvg()
  */
 double
 tnumber_twavg(const Temporal *temp)
@@ -3022,6 +2973,7 @@ tnumber_twavg(const Temporal *temp)
  * @see tinstantset_eq
  * @see tsequence_eq
  * @see tsequenceset_eq
+ * @sqlop @p =
  */
 bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
@@ -3125,6 +3077,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the temporal values are different
+ * @sqlop @p <>
  */
 bool
 temporal_ne(const Temporal *temp1, const Temporal *temp2)
@@ -3217,6 +3170,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is less than the second one
+ * @sqlop @p <
  */
 bool
 temporal_lt(const Temporal *temp1, const Temporal *temp2)
@@ -3229,6 +3183,7 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
+ * @sqlop @p <=
  */
 bool
 temporal_le(const Temporal *temp1, const Temporal *temp2)
@@ -3241,6 +3196,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
+ * @sqlop @p >
  */
 bool
 temporal_ge(const Temporal *temp1, const Temporal *temp2)
@@ -3252,6 +3208,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is greater than the second one
+ * @sqlop @p >=
  */
 bool
 temporal_gt(const Temporal *temp1, const Temporal *temp2)
@@ -3298,6 +3255,7 @@ temporal_hash(const Temporal *temp)
 #else
   #include <access/tuptoaster.h>
 #endif
+#include <libpq/pqformat.h>
 
 /* To avoid including fmgrprotos.h */
 extern Datum timestamp_mi(PG_FUNCTION_ARGS);
@@ -3502,7 +3460,7 @@ PG_FUNCTION_INFO_V1(Temporal_typmod_out);
 PGDLLEXPORT Datum
 Temporal_typmod_out(PG_FUNCTION_ARGS)
 {
-  char *s = (char *) palloc(64);
+  char *s = palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
   int16 subtype = TYPMOD_GET_SUBTYPE(typmod);
@@ -3622,6 +3580,44 @@ Temporal_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
+/**
+ * @brief Return a temporal value from its binary representation read from
+ * a buffer.
+ * @note Function needed for temporal aggregation and thus only instant and
+ * sequence subtypes must be considered
+ */
+Temporal *
+temporal_recv(StringInfo buf)
+{
+  uint8 temptype = pq_getmsgbyte(buf);
+  uint8 subtype = pq_getmsgbyte(buf);
+  Temporal *result;
+  assert(subtype == INSTANT || subtype == SEQUENCE);
+  if (subtype == INSTANT)
+    result = (Temporal *) tinstant_recv(buf, temptype);
+  else /* subtype == SEQUENCE */
+    result = (Temporal *) tsequence_recv(buf, temptype);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of a temporal value into a buffer.
+ * @note Function needed for temporal aggregation and thus only instant and
+ * sequence subtypes must be considered
+ */
+void
+temporal_write(const Temporal *temp, StringInfo buf)
+{
+  pq_sendbyte(buf, temp->temptype);
+  pq_sendbyte(buf, temp->subtype);
+  assert(temp->subtype == INSTANT || temp->subtype == SEQUENCE);
+  if (temp->subtype == INSTANT)
+    tinstant_write((TInstant *) temp, buf);
+  else /* temp->subtype == SEQUENCE */
+    tsequence_write((TSequence *) temp, buf);
+  return;
+}
+
 PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
  * Generic receive function for temporal types
@@ -3629,8 +3625,10 @@ PG_FUNCTION_INFO_V1(Temporal_recv);
 PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
 {
-  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-  Temporal *result = temporal_recv(buf);
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  Temporal *result = temporal_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
   PG_RETURN_POINTER(result);
 }
 
@@ -3642,7 +3640,11 @@ PGDLLEXPORT Datum
 Temporal_send(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bytea *result = temporal_send(temp);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
+  uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BYTEA_P(result);
 }
@@ -3983,7 +3985,7 @@ PGDLLEXPORT Datum
 Temporal_to_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   temporal_set_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
@@ -3997,7 +3999,7 @@ PGDLLEXPORT Datum
 Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  TBOX *result = palloc(sizeof(TBOX));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }

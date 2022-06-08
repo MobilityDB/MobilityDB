@@ -28,44 +28,18 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for period data type.
--- File Period.c
---------------------------------------------------------------------------------
--- Send/receive functions
-
-COPY tbl_period TO '/tmp/tbl_period' (FORMAT BINARY);
-DROP TABLE IF EXISTS tbl_period_tmp;
-CREATE TABLE tbl_period_tmp AS TABLE tbl_period WITH NO DATA;
-COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
-DROP TABLE tbl_period_tmp;
-
+-- Tests for constructors of PostgreSQL geometry types.
+-- File geo_constructors.c
 -------------------------------------------------------------------------------
 
-SELECT MAX(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(period(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(period(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(period(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(period(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
-
-SELECT tstzrange(p) FROM tbl_period;
-SELECT period(r) FROM tbl_tstzrange;
-SELECT t::period FROM tbl_timestamptz;
-
-SELECT lower(p) FROM tbl_period;
-SELECT upper(p) FROM tbl_period;
-SELECT lower_inc(p) FROM tbl_period;
-SELECT upper_inc(p) FROM tbl_period;
-SELECT duration(p) FROM tbl_period;
-SELECT shift(p, '5 min') FROM tbl_period;
-
-SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
-SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
-SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
-SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
-SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
-
-SELECT MAX(period_hash(p)) FROM tbl_period;
-SELECT MAX(period_hash_extended(p, 1)) FROM tbl_period;
+SELECT point(1.5, 2.5);
+SELECT line(1.5, 2.5, 3.5);
+SELECT lseg(point(1.5, 2.5), point(3.5, 4.5));
+SELECT box(point(1.5, 2.5), point(3.5, 4.5));
+SELECT circle(point(1.5, 2.5), 2.5);
+SELECT path(ARRAY[point(1.5, 1.5), point(2.5, 2.5)]);
+SELECT path(ARRAY[point(1.5, 1.5), point(2.5, 2.5), point(1.5, 1.5)]);
+SELECT polygon(ARRAY[point(1.5, 1.5), point(2.5, 2.5), point(1.5, 1.5)]);
+SELECT polygon(ARRAY[point(2.5, 2.5), point(3.5, 1.5), point(1.5, 1.5), point(2.5, 2.5)]);
 
 -------------------------------------------------------------------------------

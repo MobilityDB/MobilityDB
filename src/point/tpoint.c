@@ -46,7 +46,7 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /* PostgreSQL removed pg_atoi in version 15 */
-#if POSTGRESQL_VERSION_NUMBER >= 150000
+#if !MEOS && POSTGRESQL_VERSION_NUMBER >= 150000
 /*
  * pg_atoi: convert string to integer
  *
@@ -131,7 +131,7 @@ pg_atoi(const char *s, int size, int c)
 GSERIALIZED *
 gserialized_copy(const GSERIALIZED *g)
 {
-  GSERIALIZED *result = (GSERIALIZED *) palloc(VARSIZE(g));
+  GSERIALIZED *result = palloc(VARSIZE(g));
   memcpy(result, g, VARSIZE(g));
   return result;
 }
@@ -147,7 +147,7 @@ gserialized_copy(const GSERIALIZED *g)
 STBOX *
 tpoint_to_stbox(const Temporal *temp)
 {
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   temporal_set_bbox(temp, result);
   return result;
 }
@@ -499,7 +499,7 @@ PG_FUNCTION_INFO_V1(Tpoint_typmod_out);
 PGDLLEXPORT Datum
 Tpoint_typmod_out(PG_FUNCTION_ARGS)
 {
-  char *s = (char *) palloc(64);
+  char *s = palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
   int16 tempsubtype = TYPMOD_GET_SUBTYPE(typmod);
@@ -585,7 +585,7 @@ PGDLLEXPORT Datum
 Tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }

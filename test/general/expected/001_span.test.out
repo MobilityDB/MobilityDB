@@ -1,10 +1,10 @@
 /* Errors */
 SELECT period '2000-01-01, 2000-01-02';
-ERROR:  Could not parse period
+ERROR:  Could not parse span
 LINE 2: SELECT period '2000-01-01, 2000-01-02';
                       ^
 SELECT period '[2000-01-01, 2000-01-02';
-ERROR:  Could not parse period
+ERROR:  Could not parse span
 LINE 1: SELECT period '[2000-01-01, 2000-01-02';
                       ^
 SELECT period ('2000-01-01','2000-01-02');
@@ -21,9 +21,9 @@ SELECT period ('2000-01-01','2000-01-01', true, true);
 
 /* Errors */
 SELECT period ('2000-01-01','2000-01-01');
-ERROR:  Period cannot be empty
+ERROR:  Span cannot be empty
 SELECT period ('2000-01-02','2000-01-01');
-ERROR:  Period lower bound must be less than or equal to period upper bound
+ERROR:  Span lower bound must be less than or equal to span upper bound
 SELECT tstzrange(period '[2000-01-01,2000-01-01]');
                       tstzrange                      
 -----------------------------------------------------
@@ -419,5 +419,149 @@ SELECT period_hash_extended('[2000-01-01,2000-01-02]', 1) <> period_hash_extende
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT intspan '[1,2]';
+ intspan 
+---------
+ [1, 3)
+(1 row)
+
+SELECT round(floatspan '[1.123456789,2.123456789]',6);
+        round         
+----------------------
+ [1.123457, 2.123457]
+(1 row)
+
+SELECT round(floatspan '[-inf,2.123456789]',6);
+         round         
+-----------------------
+ [-Infinity, 2.123457]
+(1 row)
+
+select round(floatspan '[1.123456789,inf]',6);
+        round         
+----------------------
+ [1.123457, Infinity]
+(1 row)
+
+SELECT intspan '[3,5)' << 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5 << intspan '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intspan '[3,5)' >> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 >> intspan '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspan '[3,5)' &< 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5 &< intspan '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intspan '[3,5)' &> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5 &> intspan '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspan '[3,5)' -|- 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5 -|- intspan '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspan '[3.5, 5.5]' << 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 << floatspan '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatspan '[3.5, 5.5]' >> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 >> floatspan '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatspan '[3.5, 5.5]' &< 5.5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5.5 &< floatspan '[3.5, 5.5]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspan '[3.5, 5.5]' &> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 &> floatspan '[3.5, 5.5]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspan '[3.5, 5.5]' -|- 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT 5.5 -|- floatspan '[3.5, 5.5]';
+ ?column? 
+----------
+ f
 (1 row)
 

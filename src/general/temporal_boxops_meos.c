@@ -57,6 +57,7 @@
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a timestamp contains the bounding period of a
  * temporal value
+ * @sqlop @p @>
  */
 bool
 contains_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -68,6 +69,7 @@ contains_timestamp_temporal(TimestampTz t, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value contains a
  * timestamp
+ * @sqlop @p @>
  */
 bool
 contains_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -79,6 +81,7 @@ contains_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a timestamp set contains the
  * one of a temporal value
+ * @sqlop @p @>
  */
 bool
 contains_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -90,6 +93,7 @@ contains_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value contains the
  * the one of a timestamp set
+ * @sqlop @p @>
  */
 bool
 contains_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -102,6 +106,7 @@ contains_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a period contains the bounding period of a
  * temporal value
+ * @sqlop @p @>
  */
 bool
 contains_period_temporal(const Period *p, const Temporal *temp)
@@ -113,6 +118,7 @@ contains_period_temporal(const Period *p, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value contains
  * a period
+ * @sqlop @p @>
  */
 bool
 contains_temporal_period(const Temporal *temp, const Period *p)
@@ -124,6 +130,7 @@ contains_temporal_period(const Temporal *temp, const Period *p)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a period set contains the
  * one of a temporal value
+ * @sqlop @p @>
  */
 bool
 contains_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -135,6 +142,7 @@ contains_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value contains
  * the one of a period set
+ * @sqlop @p @>
  */
 bool
 contains_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -146,6 +154,7 @@ contains_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of the first temporal value
  * contains the one of the second temporal value.
+ * @sqlop @p @>
  */
 bool
 contains_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -159,6 +168,7 @@ contains_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a timestamp is contained in the bounding period of
  * a temporal value
+ * @sqlop @p <@
  */
 bool
 contained_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -170,6 +180,7 @@ contained_timestamp_temporal(TimestampTz t, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value is contained
  * in a timestamp
+ * @sqlop @p <@
  */
 bool
 contained_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -181,6 +192,7 @@ contained_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a timestamp set is contained
  * in the one of a temporal value
+ * @sqlop @p <@
  */
 bool
 contained_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -192,6 +204,7 @@ contained_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value is contained
  * in the one of a timestamp set
+ * @sqlop @p <@
  */
 bool
 contained_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -204,6 +217,7 @@ contained_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a period is contained the bounding period of a
  * temporal value
+ * @sqlop @p <@
  */
 bool
 contained_period_temporal(const Period *p, const Temporal *temp)
@@ -215,6 +229,7 @@ contained_period_temporal(const Period *p, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value is contained
  * in a period
+ * @sqlop @p <@
  */
 bool
 contained_temporal_period(const Temporal *temp, const Period *p)
@@ -226,6 +241,7 @@ contained_temporal_period(const Temporal *temp, const Period *p)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a period set is contained
  * in the one of a temporal value
+ * @sqlop @p <@
  */
 bool
 contained_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -237,6 +253,7 @@ contained_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value is contained
  * in the one of a period set
+ * @sqlop @p <@
  */
 bool
 contained_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -248,6 +265,7 @@ contained_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of the first temporal value is
  * contained in the one of the second temporal value.
+ * @sqlop @p <@
  */
 bool
 contained_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -261,6 +279,7 @@ contained_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a timestamp and the bounding period of a temporal
  * value overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -272,6 +291,7 @@ overlaps_timestamp_temporal(TimestampTz t, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and a
  * timestamp overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -283,6 +303,7 @@ overlaps_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a timestamp set and of
  * a temporal value overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -294,6 +315,7 @@ overlaps_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
  * a timestamp set overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -306,6 +328,7 @@ overlaps_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a period and the bounding period of a temporal
  * value overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_period_temporal(const Period *p, const Temporal *temp)
@@ -317,6 +340,7 @@ overlaps_period_temporal(const Period *p, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and the
  * period overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_temporal_period(const Temporal *temp, const Period *p)
@@ -328,6 +352,7 @@ overlaps_temporal_period(const Temporal *temp, const Period *p)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a period set and of
  * a temporal value overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -339,6 +364,7 @@ overlaps_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
  * a period set overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -349,6 +375,7 @@ overlaps_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of the temporal values overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -362,6 +389,7 @@ overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a timestamp and the bounding period of a temporal
  * value are equal
+ * @sqlop @p ~=
  */
 bool
 same_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -373,6 +401,7 @@ same_timestamp_temporal(TimestampTz t, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and a
  * timestamp are equal
+ * @sqlop @p ~=
  */
 bool
 same_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -384,6 +413,7 @@ same_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a timestamp set and of the
  * a temporal value are equal
+ * @sqlop @p ~=
  */
 bool
 same_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -395,6 +425,7 @@ same_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
  * a timestamp set are equal
+ * @sqlop @p ~=
  */
 bool
 same_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -406,6 +437,7 @@ same_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a period and the bounding period of a temporal
  * value are equal
+ * @sqlop @p ~=
  */
 bool
 same_period_temporal(const Period *p, const Temporal *temp)
@@ -417,6 +449,7 @@ same_period_temporal(const Period *p, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and the
  * period are equal
+ * @sqlop @p ~=
  */
 bool
 same_temporal_period(const Temporal *temp, const Period *p)
@@ -428,6 +461,7 @@ same_temporal_period(const Temporal *temp, const Period *p)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a period set and of
  * a temporal value are equal
+ * @sqlop @p ~=
  */
 bool
 same_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -439,6 +473,7 @@ same_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and
  * a period set are equal
+ * @sqlop @p ~=
  */
 bool
 same_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -449,6 +484,7 @@ same_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of the temporal values are equal
+ * @sqlop @p ~=
  */
 bool
 same_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -462,6 +498,7 @@ same_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a timestamp and the bounding period of a temporal
  * value are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -473,6 +510,7 @@ adjacent_timestamp_temporal(TimestampTz t, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and a
  * timestamp are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -484,6 +522,7 @@ adjacent_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a timestamp set and
  * a temporal value are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -495,6 +534,7 @@ adjacent_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
  * a timestamp set are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -507,6 +547,7 @@ adjacent_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a period and the bounding period of a temporal
  * value are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_period_temporal(const Period *p, const Temporal *temp)
@@ -518,6 +559,7 @@ adjacent_period_temporal(const Period *p, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and the
  * period are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_temporal_period(const Temporal *temp, const Period *p)
@@ -529,6 +571,7 @@ adjacent_temporal_period(const Temporal *temp, const Period *p)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a period set and
  * a temporal value are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -540,6 +583,7 @@ adjacent_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of a temporal value and
  * a period set are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -551,6 +595,7 @@ adjacent_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of the temporal values are
  * adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -566,6 +611,7 @@ adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a number contains the bounding box of a temporal
  * number
+ * @sqlop @p @>
  */
 bool
 contains_number_tnumber(Datum number, CachedType basetype,
@@ -579,6 +625,7 @@ contains_number_tnumber(Datum number, CachedType basetype,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number contains a
  * number
+ * @sqlop @p @>
  */
 bool
 contains_tnumber_number(const Temporal *tnumber, Datum number,
@@ -592,6 +639,7 @@ contains_tnumber_number(const Temporal *tnumber, Datum number,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span contains the bounding box of a temporal
  * number
+ * @sqlop @p @>
  */
 bool
 contains_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -603,6 +651,7 @@ contains_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number contains a
  * span
+ * @sqlop @p @>
  */
 bool
 contains_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -614,6 +663,7 @@ contains_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box contains the bounding box of a
  * temporal number
+ * @sqlop @p @>
  */
 bool
 contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -625,6 +675,7 @@ contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number contains a
  * temporal box
+ * @sqlop @p @>
  */
 bool
 contains_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -636,6 +687,7 @@ contains_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the first temporal number contains
  * the one of the second temporal number
+ * @sqlop @p @>
  */
 bool
 contains_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -649,6 +701,7 @@ contains_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a number is contained in the bounding box of a
  * temporal number
+ * @sqlop @p <@
  */
 bool
 contained_number_tnumber(Datum number, CachedType basetype,
@@ -662,6 +715,7 @@ contained_number_tnumber(Datum number, CachedType basetype,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number is contained
  * in a number
+ * @sqlop @p <@
  */
 bool
 contained_tnumber_number(const Temporal *tnumber, Datum number,
@@ -675,6 +729,7 @@ contained_tnumber_number(const Temporal *tnumber, Datum number,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span is contained in the bounding box of a
  * temporal number
+ * @sqlop @p <@
  */
 bool
 contained_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -686,6 +741,7 @@ contained_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number is contained
  * in a span
+ * @sqlop @p <@
  */
 bool
 contained_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -697,6 +753,7 @@ contained_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box is contained in the bounding box of
  * a temporal number
+ * @sqlop @p <@
  */
 bool
 contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -708,6 +765,7 @@ contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number is contained
  * in a temporal box
+ * @sqlop @p <@
  */
 bool
 contained_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -719,6 +777,7 @@ contained_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of the first temporal number is
  * contained in the one of the second temporal number
+ * @sqlop @p <@
  */
 bool
 contained_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -732,6 +791,7 @@ contained_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_number_tnumber(Datum number, CachedType basetype,
@@ -745,6 +805,7 @@ overlaps_number_tnumber(Datum number, CachedType basetype,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a span
  * overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_tnumber_number(const Temporal *tnumber, Datum number,
@@ -758,6 +819,7 @@ overlaps_tnumber_number(const Temporal *tnumber, Datum number,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -769,6 +831,7 @@ overlaps_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a span
  * overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -780,6 +843,7 @@ overlaps_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box
  * of a temporal number overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -791,6 +855,7 @@ overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a
  * temporal box overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -801,6 +866,7 @@ overlaps_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 /**
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding boxes of the temporal numbers overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -814,6 +880,7 @@ overlaps_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * are equal on the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -826,6 +893,7 @@ same_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a span
  * are equal on the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -838,6 +906,7 @@ same_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * are equal on the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -849,6 +918,7 @@ same_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a span
  * are equal on the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -860,6 +930,7 @@ same_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box
  * of a temporal number are equal in the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -871,6 +942,7 @@ same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a
  * temporal box are equal in the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -882,6 +954,7 @@ same_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding boxes of the temporal numbers are equal
  * in the common dimensions
+ * @sqlop @p ~=
  */
 bool
 same_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -895,6 +968,7 @@ same_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_number_tnumber(Datum number, CachedType basetype,
@@ -908,6 +982,7 @@ adjacent_number_tnumber(Datum number, CachedType basetype,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a span
  * are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_tnumber_number(const Temporal *tnumber, Datum number,
@@ -921,6 +996,7 @@ adjacent_tnumber_number(const Temporal *tnumber, Datum number,
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -932,6 +1008,7 @@ adjacent_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and the
  * a span are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -943,6 +1020,7 @@ adjacent_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box of a
  * temporal number are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -954,6 +1032,7 @@ adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding box of a temporal number and a
  * temporal box are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -965,6 +1044,7 @@ adjacent_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding boxes of the temporal numbers are
  * adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)

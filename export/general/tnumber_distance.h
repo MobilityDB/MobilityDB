@@ -55,9 +55,6 @@ extern Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-// NAI and shortestline functions are not yet implemented
-// Are they useful ?
-
 /*****************************************************************************/
 
 #endif

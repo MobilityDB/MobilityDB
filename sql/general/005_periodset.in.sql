@@ -75,6 +75,35 @@ CREATE TYPE periodset (
   analyze = periodset_analyze
 );
 
+-- Input/output in WKB and HexWKB format
+
+CREATE FUNCTION periodsetFromBinary(bytea)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION periodsetFromHexWKB(text)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(periodset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Periodset_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(periodset, endianenconding text)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Periodset_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(periodset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Periodset_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(periodset, endianenconding text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Periodset_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructor
  ******************************************************************************/

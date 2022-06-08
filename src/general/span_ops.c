@@ -59,7 +59,7 @@ span_elem_min(Datum l, Datum r, CachedType type)
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
   if (type == T_FLOAT8)
     return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
-  elog(ERROR, "unknown span_elem_min function for span base type: %d", type);
+  elog(ERROR, "Unknown Min function for span base type: %d", type);
 }
 
 /**
@@ -76,7 +76,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
     return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
   if (type == T_FLOAT8)
     return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
-  elog(ERROR, "unknown span_elem_max function for span base type: %d", type);
+  elog(ERROR, "Unknown Max function for span base type: %d", type);
 }
 
 /*****************************************************************************/
@@ -85,6 +85,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a span contains an element.
+ * @sqlop @p @>
  */
 bool
 contains_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -103,6 +104,7 @@ contains_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span contains the second one.
+ * @sqlop @p @>
  */
 bool
 contains_span_span(const Span *s1, const Span *s2)
@@ -124,6 +126,7 @@ contains_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if an element is contained by a span
+ * @sqlop @p <@
  */
 bool
 contained_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -134,6 +137,7 @@ contained_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span is contained by the second one
+ * @sqlop @p <@
  */
 bool
 contained_span_span(const Span *s1, const Span *s2)
@@ -147,6 +151,7 @@ contained_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the spans overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
@@ -168,6 +173,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if an element and a span are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -183,6 +189,7 @@ adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a span and an element are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -193,6 +200,7 @@ adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the spans are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_span_span(const Span *s1, const Span *s2)
@@ -215,6 +223,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an element is strictly to the left of a span.
+ * @sqlop @p <<
  */
 bool
 left_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -226,6 +235,7 @@ left_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is strictly to the left of an element.
+ * @sqlop @p <<
  */
 bool
 left_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -238,6 +248,7 @@ left_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span is strictly to the left of the second one.
+ * @sqlop @p <<
  */
 bool
 left_span_span(const Span *s1, const Span *s2)
@@ -253,6 +264,7 @@ left_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an element is strictly to the right of a span.
+ * @sqlop @p >>
  */
 bool
 right_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -264,6 +276,7 @@ right_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is strictly to the right of an element
+ * @sqlop @p >>
  */
 bool
 right_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -275,6 +288,7 @@ right_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span is strictly to right the of the second one.
+ * @sqlop @p >>
  */
 bool
 right_span_span(const Span *s1, const Span *s2)
@@ -290,6 +304,7 @@ right_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an element is not to the right of a span.
+ * @sqlop @p &<
  */
 bool
 overleft_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -301,6 +316,7 @@ overleft_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is not to the right of an element.
+ * @sqlop @p &<
  */
 bool
 overleft_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -311,6 +327,7 @@ overleft_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span is not to the right of the second one.
+ * @sqlop @p &<
  */
 bool
 overleft_span_span(const Span *s1, const Span *s2)
@@ -326,6 +343,7 @@ overleft_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an element is not the left of a span.
+ * @sqlop @p &>
  */
 bool
 overright_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -337,6 +355,7 @@ overright_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is not to the left of an element.
+ * @sqlop @p &>
  */
 bool
 overright_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -347,6 +366,7 @@ overright_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span is not to the left of the second one.
+ * @sqlop @p &>
  */
 bool
 overright_span_span(const Span *s1, const Span *s2)
@@ -363,6 +383,7 @@ overright_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the spans.
+ * @sqlop @p +
  */
 Span *
 union_span_span(const Span *s1, const Span *s2, bool strict)
@@ -397,6 +418,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
   if (! overlaps_span_span(s1, s2))
     return false;
 
+  memset(result, 0, sizeof(Span));
   Datum lower = span_elem_max(s1->lower, s2->lower, s1->basetype);
   Datum upper = span_elem_min(s1->upper, s2->upper, s1->basetype);
   bool lower_inc = s1->lower == s2->lower ? s1->lower_inc && s2->lower_inc :
@@ -410,11 +432,12 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the spans.
+ * @sqlop @p *
  */
 Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
-  Span *result = palloc0(sizeof(Span));
+  Span *result = palloc(sizeof(Span));
   if (! inter_span_span(s1, s2, result))
   {
     pfree(result);
@@ -425,12 +448,12 @@ intersection_span_span(const Span *s1, const Span *s2)
 
 /*****************************************************************************
  * Set difference
- * The functions produce new results that must be freed right
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the spans.
+ * @sqlop @p -
  */
 Span *
 minus_span_span(const Span *s1, const Span *s2)
@@ -495,6 +518,7 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between the elements
+ * @sqlop @p <->
  */
 double
 distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -521,6 +545,7 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between an element and a span.
+ * @sqlop @p <->
  */
 double
 distance_elem_span(Datum d, CachedType basetype, const Span *s)
@@ -531,6 +556,7 @@ distance_elem_span(Datum d, CachedType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between a span and a element.
+ * @sqlop @p <->
  */
 double
 distance_span_elem(const Span *s, Datum d, CachedType basetype)

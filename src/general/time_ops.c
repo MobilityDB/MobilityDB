@@ -250,6 +250,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set contains a timestamp.
+ * @sqlop @p @>
  */
 bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -266,6 +267,7 @@ contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first timestamp set contains the second one.
+ * @sqlop @p @>
  */
 bool
 contains_timestampset_timestampset(const TimestampSet *ts1,
@@ -298,6 +300,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a timestamp.
+ * @sqlop @p @>
  */
 bool
 contains_period_timestamp(const Period *p, TimestampTz t)
@@ -316,6 +319,7 @@ contains_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a timestamp set.
+ * @sqlop @p @>
  */
 bool
 contains_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -330,6 +334,7 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set contains a timestamp.
+ * @sqlop @p @>
  */
 bool
 contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -348,6 +353,7 @@ contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set contains a timestamp set.
+ * @sqlop @p @>
  */
 bool
 contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -379,6 +385,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set contains a period.
+ * @sqlop @p @>
  */
 bool
 contains_periodset_period(const PeriodSet *ps, const Period *p)
@@ -397,6 +404,7 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a period set.
+ * @sqlop @p @>
  */
 bool
 contains_period_periodset(const Period *p, const PeriodSet *ps)
@@ -408,6 +416,7 @@ contains_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first period set contains the second one.
+ * @sqlop @p @>
  */
 bool
 contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -454,6 +463,7 @@ contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp is contained by a timestamp set
+ * @sqlop @p <@
  */
 bool
 contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -464,6 +474,7 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp is contained by a period
+ * @sqlop @p <@
  */
 bool
 contained_timestamp_period(TimestampTz t, const Period *p)
@@ -474,6 +485,7 @@ contained_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp is contained by a period set
+ * @sqlop @p <@
  */
 bool
 contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -484,6 +496,7 @@ contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set is contained by the second one
+ * @sqlop @p <@
  */
 bool
 contained_timestampset_timestampset(const TimestampSet *ts1,
@@ -495,6 +508,7 @@ contained_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set is contained by a period
+ * @sqlop @p <@
  */
 bool
 contained_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -505,6 +519,7 @@ contained_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set is contained by a period set
+ * @sqlop @p <@
  */
 bool
 contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -515,6 +530,7 @@ contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period is contained by a period
+ * @sqlop @p <@
  */
 bool
 contained_period_periodset(const Period *p, const PeriodSet *ps)
@@ -525,6 +541,7 @@ contained_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set is contained by a period
+ * @sqlop @p <@
  */
 bool
 contained_periodset_period(const PeriodSet *ps, const Period *p)
@@ -535,6 +552,7 @@ contained_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first period set is contained by the second one
+ * @sqlop @p <@
  */
 bool
 contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -548,6 +566,7 @@ contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the timestamp sets overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_timestampset_timestampset(const TimestampSet *ts1,
@@ -578,6 +597,7 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set and a period overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -599,6 +619,7 @@ overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set and a period set overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -627,6 +648,7 @@ overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period and a timestamp set overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -637,6 +659,7 @@ overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period and a period set overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_period_periodset(const Period *p, const PeriodSet *ps)
@@ -663,6 +686,7 @@ overlaps_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set and a timestamp set overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -673,6 +697,7 @@ overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a periodset and a period overlap
+ * @sqlop @p &&
  */
 bool
 overlaps_periodset_period(const PeriodSet *ps, const Period *p)
@@ -683,6 +708,7 @@ overlaps_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if two period sets overlap.
+ * @sqlop @p &&
  */
 bool
 overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -719,6 +745,7 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp and a period are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_timestamp_period(TimestampTz t, const Period *p)
@@ -734,6 +761,7 @@ adjacent_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp and a period set are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -751,6 +779,7 @@ adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set and a period are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -768,6 +797,7 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set and a period set are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -787,6 +817,7 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period and a timestamp are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_period_timestamp(const Period *p, TimestampTz t)
@@ -797,6 +828,7 @@ adjacent_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period and a timestamp set are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -807,6 +839,7 @@ adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period and a period set are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_period_periodset(const Period *p, const PeriodSet *ps)
@@ -824,6 +857,7 @@ adjacent_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set a timestamp are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -834,6 +868,7 @@ adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set and a timestamp set are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -844,6 +879,7 @@ adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set and a period are adjacent
+ * @sqlop @p -|-
  */
 bool
 adjacent_periodset_period(const PeriodSet *ps, const Period *p)
@@ -854,6 +890,7 @@ adjacent_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set and a period are adjacent.
+ * @sqlop @p -|-
  */
 bool
 adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -875,8 +912,8 @@ adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a timestamp is strictly before the second
- * one.
+ * @brief Return true if a timestamp is strictly before the second one.
+ * @sqlop @p <<#
  */
 bool
 before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -888,6 +925,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly before a period.
+ * @sqlop @p <<#
  */
 bool
 before_timestamp_period(TimestampTz t, const Period *p)
@@ -899,6 +937,7 @@ before_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly before a period set.
+ * @sqlop @p <<#
  */
 bool
 before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -910,6 +949,7 @@ before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly before a timestamp set.
+ * @sqlop @p <<#
  */
 bool
 before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -921,6 +961,7 @@ before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly before the second one.
+ * @sqlop @p <<#
  */
 bool
 before_timestampset_timestampset(const TimestampSet *ts1,
@@ -934,6 +975,7 @@ before_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly before a period.
+ * @sqlop @p <<#
  */
 bool
 before_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -945,6 +987,7 @@ before_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly before a period set.
+ * @sqlop @p <<#
  */
 bool
 before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -957,6 +1000,7 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is strictly before a timestamp.
+ * @sqlop @p <<#
  */
 bool
 before_period_timestamp(const Period *p, TimestampTz t)
@@ -967,7 +1011,9 @@ before_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * Return true if a period is strictly before a timestamp set
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a period is strictly before a timestamp set
+ * @sqlop @p <<#
  */
 bool
 before_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -979,6 +1025,7 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is strictly before a period set.
+ * @sqlop @p <<#
  */
 bool
 before_period_periodset(const Period *p, const PeriodSet *ps)
@@ -990,6 +1037,7 @@ before_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly before a timestamp.
+ * @sqlop @p <<#
  */
 bool
 before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1001,6 +1049,7 @@ before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly before a timestamp set.
+ * @sqlop @p <<#
  */
 bool
 before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1013,6 +1062,7 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly before a period.
+ * @sqlop @p <<#
  */
 bool
 before_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1024,6 +1074,7 @@ before_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first period set is strictly before the second one.
+ * @sqlop @p <<#
  */
 bool
 before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1039,6 +1090,7 @@ before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly after a timestamp set.
+ * @sqlop @p #>>
  */
 bool
 after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1050,6 +1102,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly after a period.
+ * @sqlop @p #>>
  */
 bool
 after_timestamp_period(TimestampTz t, const Period *p)
@@ -1061,6 +1114,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly after a period set.
+ * @sqlop @p #>>
  */
 bool
 after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1072,6 +1126,7 @@ after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly after a timestamp.
+ * @sqlop @p #>>
  */
 bool
 after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -1083,6 +1138,7 @@ after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first timestamp set is strictly after the second one.
+ * @sqlop @p #>>
  */
 bool
 after_timestampset_timestampset(const TimestampSet *ts1,
@@ -1096,6 +1152,7 @@ after_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly after a period.
+ * @sqlop @p #>>
  */
 bool
 after_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1107,6 +1164,7 @@ after_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is strictly after a period set.
+ * @sqlop @p #>>
  */
 bool
 after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1119,6 +1177,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is strictly after a timestamp.
+ * @sqlop @p #>>
  */
 bool
 after_period_timestamp(const Period *p, TimestampTz t)
@@ -1130,6 +1189,7 @@ after_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is strictly after a timestamp set.
+ * @sqlop @p #>>
  */
 bool
 after_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1141,6 +1201,7 @@ after_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is strictly after a period set.
+ * @sqlop @p #>>
  */
 bool
 after_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1152,6 +1213,7 @@ after_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly after a timestamp.
+ * @sqlop @p #>>
  */
 bool
 after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1163,6 +1225,7 @@ after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly after a timestamp set.
+ * @sqlop @p #>>
  */
 bool
 after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1175,6 +1238,7 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly after a period.
+ * @sqlop @p #>>
  */
 bool
 after_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1186,6 +1250,7 @@ after_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first period set is strictly after the second one.
+ * @sqlop @p #>>
  */
 bool
 after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1201,6 +1266,7 @@ after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not after a timestamp set.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1212,6 +1278,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not after a period.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestamp_period(TimestampTz t, const Period *p)
@@ -1223,6 +1290,7 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not after a period set.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1234,6 +1302,7 @@ overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is not after a timestamp.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -1245,6 +1314,7 @@ overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first timestamp set is not after the second one.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestampset_timestampset(const TimestampSet *ts1,
@@ -1258,6 +1328,7 @@ overbefore_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is not after a period.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1269,6 +1340,7 @@ overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is not after a period set.
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1281,6 +1353,7 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is not after a timestamp.
+ * @sqlop @p &<#
  */
 bool
 overbefore_period_timestamp(const Period *p, TimestampTz t)
@@ -1291,6 +1364,7 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is not after a timestamp set.
+ * @sqlop @p &<#
  */
 bool
 overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1302,6 +1376,7 @@ overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is not after a period set.
+ * @sqlop @p &<#
  */
 bool
 overbefore_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1313,6 +1388,7 @@ overbefore_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not after a timestamp.
+ * @sqlop @p &<#
  */
 bool
 overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1324,6 +1400,7 @@ overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not after a timestamp set.
+ * @sqlop @p &<#
  */
 bool
 overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1336,6 +1413,7 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not after a period.
+ * @sqlop @p &<#
  */
 bool
 overbefore_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1347,6 +1425,7 @@ overbefore_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first a period set is not after the second one.
+ * @sqlop @p &<#
  */
 bool
 overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1362,6 +1441,7 @@ overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not before a timestamp set.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1373,6 +1453,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not before a period.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestamp_period(TimestampTz t, const Period *p)
@@ -1384,6 +1465,7 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not before a period set.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1395,6 +1477,7 @@ overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is not before a timestamp.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -1406,6 +1489,7 @@ overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first timestamp set is not before the second one.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestampset_timestampset(const TimestampSet *ts1,
@@ -1419,6 +1503,7 @@ overafter_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is not before a period.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1430,6 +1515,7 @@ overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp set is not before a period set.
+ * @sqlop @p #&>
  */
 bool
 overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1442,6 +1528,7 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is not before a timestamp.
+ * @sqlop @p #&>
  */
 bool
 overafter_period_timestamp(const Period *p, TimestampTz t)
@@ -1452,6 +1539,7 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is not before a timestamp set.
+ * @sqlop @p #&>
  */
 bool
 overafter_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1463,6 +1551,7 @@ overafter_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period is not before a period set.
+ * @sqlop @p #&>
  */
 bool
 overafter_period_periodset(const Period *p, const PeriodSet *ps)
@@ -1474,6 +1563,7 @@ overafter_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not before a timestamp.
+ * @sqlop @p #&>
  */
 bool
 overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -1485,6 +1575,7 @@ overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not before a timestamp set.
+ * @sqlop @p #&>
  */
 bool
 overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -1497,6 +1588,7 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not before a period.
+ * @sqlop @p #&>
  */
 bool
 overafter_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1508,6 +1600,7 @@ overafter_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first period set is not before the second one.
+ * @sqlop @p #&>
  */
 bool
 overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1524,6 +1617,7 @@ overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the timestamps
+ * @sqlop @p +
  */
 TimestampSet *
 union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
@@ -1553,6 +1647,7 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp and a timestamp set.
+ * @sqlop @p +
  */
 TimestampSet *
 union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -1584,6 +1679,7 @@ union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp and a period
+ * @sqlop @p +
  */
 PeriodSet *
 union_timestamp_period(TimestampTz t, const Period *p)
@@ -1597,6 +1693,7 @@ union_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp and a period set
+ * @sqlop @p +
  */
 PeriodSet *
 union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -1612,6 +1709,7 @@ union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp set and a timestamp
+ * @sqlop @p +
  */
 TimestampSet *
 union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
@@ -1622,6 +1720,7 @@ union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the timestamp sets.
+ * @sqlop @p +
  */
 TimestampSet *
 union_timestampset_timestampset(const TimestampSet *ts1,
@@ -1633,6 +1732,7 @@ union_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp set and a period
+ * @sqlop @p +
  */
 PeriodSet *
 union_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1646,6 +1746,7 @@ union_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp set and a period set
+ * @sqlop @p +
  */
 PeriodSet *
 union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1661,6 +1762,7 @@ union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a period and a timestamp
+ * @sqlop @p +
  */
 PeriodSet *
 union_period_timestamp(const Period *p, TimestampTz t)
@@ -1674,6 +1776,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a period and a timestamp set
+ * @sqlop @p +
  */
 PeriodSet *
 union_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -1687,6 +1790,7 @@ union_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the periods.
+ * @sqlop @p +
  */
 PeriodSet *
 union_period_period(const Period *p1, const Period *p2)
@@ -1720,6 +1824,7 @@ union_period_period(const Period *p1, const Period *p2)
 
 /**
  * @ingroup libmeos_spantime_set
+ * @sqlop @p +
  * @brief Return the union of a period and a period set.
  */
 PeriodSet *
@@ -1738,6 +1843,7 @@ union_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a period set and a timestamp.
+ * @sqlop @p +
  */
 PeriodSet *
 union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
@@ -1751,6 +1857,7 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a period set and a timestamp set.
+ * @sqlop @p +
  */
 PeriodSet *
 union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
@@ -1764,6 +1871,7 @@ union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a period set and a period
+ * @sqlop @p +
  */
 PeriodSet *
 union_periodset_period(const PeriodSet *ps, const Period *p)
@@ -1774,6 +1882,7 @@ union_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the period sets.
+ * @sqlop @p +
  */
 PeriodSet *
 union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -1880,6 +1989,7 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the timestamps
+ * @sqlop @p *
  */
 bool
 intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
@@ -1894,6 +2004,7 @@ intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp and a timestamp set
+ * @sqlop @p *
  */
 bool
 intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
@@ -1908,6 +2019,7 @@ intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp and a period
+ * @sqlop @p *
  */
 bool
 intersection_timestamp_period(TimestampTz t, const Period *p,
@@ -1922,6 +2034,7 @@ intersection_timestamp_period(TimestampTz t, const Period *p,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp and a period set
+ * @sqlop @p *
  */
 bool
 intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
@@ -1938,6 +2051,7 @@ intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp set and a timestamp
+ * @sqlop @p *
  */
 bool
 intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
@@ -1952,6 +2066,7 @@ intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the timestamp sets.
+ * @sqlop @p *
  */
 TimestampSet *
 intersection_timestampset_timestampset(const TimestampSet *ts1,
@@ -1963,6 +2078,7 @@ intersection_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp set and a period.
+ * @sqlop @p *
  */
 TimestampSet *
 intersection_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -1973,6 +2089,7 @@ intersection_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp set and a period set.
+ * @sqlop @p *
  */
 TimestampSet *
 intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -1985,6 +2102,7 @@ intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period and a timestamp
+ * @sqlop @p *
  */
 bool
 intersection_period_timestamp(const Period *p, TimestampTz t,
@@ -1999,6 +2117,7 @@ intersection_period_timestamp(const Period *p, TimestampTz t,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period and a timestamp set
+ * @sqlop @p *
  */
 TimestampSet *
 intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
@@ -2009,6 +2128,7 @@ intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period and a period set.
+ * @sqlop @p *
  */
 PeriodSet *
 intersection_period_periodset(const Period *p, const PeriodSet *ps)
@@ -2045,6 +2165,7 @@ intersection_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period set and a timestamp
+ * @sqlop @p *
  */
 bool
 intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
@@ -2059,6 +2180,7 @@ intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period set and a timestamp set
+ * @sqlop @p *
  */
 TimestampSet *
 intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -2069,6 +2191,7 @@ intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period set and a period
+ * @sqlop @p *
  */
 PeriodSet *
 intersection_periodset_period(const PeriodSet *ps, const Period *p)
@@ -2079,6 +2202,7 @@ intersection_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the period sets.
+ * @sqlop @p *
  */
 PeriodSet *
 intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -2125,6 +2249,7 @@ intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the timestamps
+ * @sqlop @p -
  */
 bool
 minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
@@ -2138,6 +2263,7 @@ minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp and a timestamp set
+ * @sqlop @p -
  */
 bool
 minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
@@ -2152,6 +2278,7 @@ minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp and a period
+ * @sqlop @p -
  */
 bool
 minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
@@ -2165,6 +2292,7 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp and a period set
+ * @sqlop @p -
  */
 bool
 minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
@@ -2181,6 +2309,7 @@ minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp set and a timestamp.
+ * @sqlop @p -
  */
 TimestampSet *
 minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -2204,6 +2333,7 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the timestamp sets.
+ * @sqlop @p -
  */
 TimestampSet *
 minus_timestampset_timestampset(const TimestampSet *ts1,
@@ -2215,6 +2345,7 @@ minus_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp set and a period.
+ * @sqlop @p -
  */
 TimestampSet *
 minus_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -2225,6 +2356,7 @@ minus_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp set and a period set.
+ * @sqlop @p -
  */
 TimestampSet *
 minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
@@ -2271,6 +2403,7 @@ minus_period_timestamp1(const Period *p, TimestampTz t, Period **result)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period and a timestamp.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_period_timestamp(const Period *p, TimestampTz t)
@@ -2289,6 +2422,7 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period and a timestamp set.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -2377,6 +2511,7 @@ minus_period_period1(const Period *p1, const Period *p2, Period **result)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the periods.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_period_period(const Period *p1, const Period *p2)
@@ -2438,6 +2573,7 @@ minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period and a period set.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_period_periodset(const Period *p, const PeriodSet *ps)
@@ -2482,6 +2618,7 @@ minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period set and a timestamp set.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -2595,6 +2732,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period set and a period.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_periodset_period(const PeriodSet *ps, const Period *p)
@@ -2619,6 +2757,7 @@ minus_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the period sets.
+ * @sqlop @p -
  */
 PeriodSet *
 minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -2678,6 +2817,7 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between the timestamps
+ * @sqlop @p <->
  */
 double
 distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
@@ -2694,6 +2834,7 @@ distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp and a timestamp set.
+ * @sqlop @p <->
  */
 double
 distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
@@ -2707,6 +2848,7 @@ distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp and a period.
+ * @sqlop @p <->
  */
 double
 distance_timestamp_period(TimestampTz t, const Period *p)
@@ -2717,6 +2859,7 @@ distance_timestamp_period(TimestampTz t, const Period *p)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp and a period set
+ * @sqlop @p <->
  */
 double
 distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
@@ -2734,6 +2877,7 @@ distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
+ * @sqlop @p <->
  */
 double
 distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -2747,6 +2891,7 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between the timestamp sets
+ * @sqlop @p <->
  */
 double
 distance_timestampset_timestampset(const TimestampSet *ts1,
@@ -2762,6 +2907,7 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp set and a period.
+ * @sqlop @p <->
  */
 double
 distance_timestampset_period(const TimestampSet *ts, const Period *p)
@@ -2775,6 +2921,7 @@ distance_timestampset_period(const TimestampSet *ts, const Period *p)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a timestamp set and a period set
+ * @sqlop @p <->
  */
 double
 distance_timestampset_periodset(const TimestampSet *ts,
@@ -2793,6 +2940,7 @@ distance_timestampset_periodset(const TimestampSet *ts,
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period and a timestamp.
+ * @sqlop @p <->
  */
 double
 distance_period_timestamp(const Period *p, TimestampTz t)
@@ -2815,6 +2963,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period and a timestamp set
+ * @sqlop @p <->
  */
 double
 distance_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -2825,6 +2974,7 @@ distance_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period and a period set
+ * @sqlop @p <->
  */
 double
 distance_period_periodset(const Period *p, const PeriodSet *ps)
@@ -2842,6 +2992,7 @@ distance_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period set and a timestamp
+ * @sqlop @p <->
  */
 double
 distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -2852,6 +3003,7 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period set and a timestamp set
+ * @sqlop @p <->
  */
 double
 distance_periodset_timestampset(const PeriodSet *ps,
@@ -2863,6 +3015,7 @@ distance_periodset_timestampset(const PeriodSet *ps,
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between a period set and a period
+ * @sqlop @p <->
  */
 double
 distance_periodset_period(const PeriodSet *ps, const Period *p)
@@ -2873,6 +3026,7 @@ distance_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance in seconds between the period sets
+ * @sqlop @p <->
  */
 double
 distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -4938,7 +5092,7 @@ Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   if (result == NULL)
-    PG_RETURN_NULL() ;
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -5105,7 +5259,7 @@ Minus_periodset_periodset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
   if (! result)
-    PG_RETURN_NULL() ;
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

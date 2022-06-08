@@ -45,7 +45,9 @@
 /* PostgreSQL */
 #include <common/int128.h>
 #include <common/hashfn.h>
-#include <libpq/pqformat.h>
+#if ! MEOS
+  #include <libpq/pqformat.h>
+#endif
 #include <utils/datetime.h>
 #include <utils/float.h>
 /* MobilityDB */
@@ -113,12 +115,13 @@ pg_boolin(const char *in_str)
 char *
 pg_boolout(bool b)
 {
-  char *result = (char *) palloc(2);
+  char *result = palloc(2);
   result[0] = (b) ? 't' : 'f';
   result[1] = '\0';
   return result;
 }
 
+#if ! MEOS
 /**
  * @brief Convert external binary format to bool
  *
@@ -146,6 +149,7 @@ pg_boolsend(bool arg1)
   pq_sendbyte(&buf, arg1 ? 1 : 0);
   return pq_endtypsend(&buf);
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from int.c
@@ -168,11 +172,12 @@ pg_int4in(char *str)
 char *
 pg_int4out(int32 val)
 {
-  char *result = (char *) palloc(12);  /* sign, 10 digits, '\0' */
+  char *result = palloc(12);  /* sign, 10 digits, '\0' */
   pg_ltoa(val, result);
   return result;
 }
 
+#if ! MEOS
 /**
  * @brief CConvert an int4 to binary format
  * @note PostgreSQL function: Datum int4send(PG_FUNCTION_ARGS)
@@ -195,6 +200,7 @@ pg_int4recv(StringInfo buf)
 {
  return (int32) pq_getmsgint(buf, sizeof(int32));
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from int8.c
@@ -291,6 +297,7 @@ pg_int8recv(StringInfo buf)
  * Functions adapted from float.c
  *****************************************************************************/
 
+#if ! MEOS
 /**
  * @brief Convert external binary format to float8
  * @note PostgreSQL function: Datum float8recv(PG_FUNCTION_ARGS)
@@ -313,6 +320,7 @@ pg_float8send(float8 num)
   pq_sendfloat8(&buf, num);
   return pq_endtypsend(&buf);
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 
@@ -431,6 +439,7 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from varlena.c
  *****************************************************************************/
 
+#if ! MEOS
 /**
  * @brief Convert external binary format to text
  * @note PostgreSQL function: Datum textrecv(PG_FUNCTION_ARGS)
@@ -459,6 +468,7 @@ pg_textsend(text *t)
   pq_sendtext(&buf, VARDATA_ANY(t), VARSIZE_ANY_EXHDR(t));
   return pq_endtypsend(&buf);
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
@@ -484,6 +494,41 @@ pg_textsend(text *t)
 
 int DateStyle = USE_ISO_DATES;
 // int DateOrder = DATEORDER_MDY;
+
+/*
+ * Report an error detected by one of the datetime input processing routines.
+ *
+ * dterr is the error code, str is the original input string, datatype is
+ * the name of the datatype we were trying to accept.
+ *
+ * Note: it might seem useless to distinguish DTERR_INTERVAL_OVERFLOW and
+ * DTERR_TZDISP_OVERFLOW from DTERR_FIELD_OVERFLOW, but SQL99 mandates three
+ * separate SQLSTATE codes, so ...
+ */
+void
+DateTimeParseError(int dterr, const char *str, const char *datatype)
+{
+	switch (dterr)
+	{
+		case DTERR_FIELD_OVERFLOW:
+			elog(ERROR, "date/time field value out of range: \"%s\"", str);
+			break;
+		case DTERR_MD_FIELD_OVERFLOW:
+			/* <nanny>same as above, but add hint about DateStyle</nanny> */
+			elog(ERROR, "date/time field value out of range: \"%s\"", str);
+			break;
+		case DTERR_INTERVAL_OVERFLOW:
+			elog(ERROR, "interval field value out of range: \"%s\"", str);
+			break;
+		case DTERR_TZDISP_OVERFLOW:
+			elog(ERROR, "time zone displacement out of range: \"%s\"", str);
+			break;
+		case DTERR_BAD_FORMAT:
+		default:
+			elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
+			break;
+	}
+}
 
 /**
  * @brief Convert a string to a timestamp.
@@ -563,10 +608,15 @@ pg_timestamptz_out(TimestampTz dt)
   else
     elog(ERROR, "timestamp out of range");
 
+#if MEOS
+  result = strdup(buf);
+#else
   result = pstrdup(buf);
+#endif
   return result;
 }
 
+#if ! MEOS
 /**
  * @brief Convert timestamptz to binary format
  * @note PostgreSQL function: Datum timestamptz_send(PG_FUNCTION_ARGS)
@@ -587,7 +637,7 @@ pg_timestamptz_send(TimestampTz timestamp)
 TimestampTz
 pg_timestamptz_recv(StringInfo buf)
 {
-  // We do not use typmod
+  /* We do not use typmod */
   int32 typmod = -1;
   TimestampTz timestamp;
   int tz;
@@ -608,6 +658,7 @@ pg_timestamptz_recv(StringInfo buf)
 
   return timestamp;
 }
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 

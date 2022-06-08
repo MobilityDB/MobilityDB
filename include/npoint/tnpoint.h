@@ -84,15 +84,15 @@ typedef struct
 /* Cast functions */
 
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
-extern TInstantSet *tnpointinstset_tgeompointinstset(const TInstantSet *ti);
+extern TInstantSet *tnpointinstset_tgeompointinstset(const TInstantSet *is);
 extern TSequence *tnpointseq_tgeompointseq(const TSequence *seq);
-extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ts);
+extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss);
 extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 
 extern TInstant *tgeompointinst_tnpointinst(const TInstant *inst);
-extern TInstantSet *tgeompointinstset_tnpointinstset(const TInstantSet *ti);
+extern TInstantSet *tgeompointinstset_tnpointinstset(const TInstantSet *is);
 extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);
-extern TSequenceSet *tgeompointseqset_tnpointseqset(const TSequenceSet *ts);
+extern TSequenceSet *tgeompointseqset_tnpointseqset(const TSequenceSet *ss);
 extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 
 /* Transformation functions */
@@ -102,16 +102,16 @@ extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
 /* Accessor functions */
 
 extern Nsegment **tnpointinst_positions(const TInstant *inst);
-extern Nsegment **tnpointinstset_positions(const TInstantSet *ti, int *count);
+extern Nsegment **tnpointinstset_positions(const TInstantSet *is, int *count);
 extern Nsegment **tnpointseq_positions(const TSequence *seq, int *count);
-extern Nsegment **tnpointseqset_positions(const TSequenceSet *ts, int *count);
+extern Nsegment **tnpointseqset_positions(const TSequenceSet *ss, int *count);
 extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpointinst_route(const TInstant *inst);
 extern int64 tnpoint_route(const Temporal *temp);
 extern int64 *tnpointinst_routes(const TInstant *inst);
-extern int64 *tnpointinstset_routes(const TInstantSet *ti);
+extern int64 *tnpointinstset_routes(const TInstantSet *is);
 extern int64 *tnpointseq_routes(const TSequence *seq);
-extern int64 *tnpointseqset_routes(const TSequenceSet *ts);
+extern int64 *tnpointseqset_routes(const TSequenceSet *ss);
 extern int64 *tnpoint_routes(const Temporal *temp, int *count);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);

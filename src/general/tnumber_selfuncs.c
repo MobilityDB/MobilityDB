@@ -139,7 +139,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   }
   else if (type == T_TIMESTAMPSET)
   {
-    *p = (Period *) palloc(sizeof(Period));
+    *p = palloc(sizeof(Period));
     timestampset_period_slice(((Const *) other)->constvalue, *p);
   }
   else if (type == T_PERIOD)
@@ -149,7 +149,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   }
   else if (type == T_PERIODSET)
   {
-    *p = (Period *) palloc(sizeof(Period));
+    *p = palloc(sizeof(Period));
     periodset_period_slice(((Const *) other)->constvalue, *p);
   }
   else if (type == T_TBOX)

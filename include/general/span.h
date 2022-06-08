@@ -38,7 +38,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <lib/stringinfo.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/temporal_catalog.h"
@@ -100,14 +99,26 @@ extern int span_upper_cmp(const Span *a, const Span *b);
 extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
-/* Input/output functions */
+extern size_t span_to_wkb_size(const Span *s);
+extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <lib/stringinfo.h>
+
+/* Send/receive functions */
+
+extern Span *span_recv(StringInfo buf);
 extern void span_write(const Span *s, StringInfo buf);
 
 /* Transformation functions */
 
 extern Span *floatspan_round(Span *span, Datum size);
 
+#endif /* ! MEOS */
+
 /*****************************************************************************/
 
-#endif
+#endif /* __SPAN_H__ */

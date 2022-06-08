@@ -652,8 +652,8 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
    * bounds.
    */
   nhist = hslot->nvalues;
-  hist_lower = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
-  hist_upper = (SpanBound *) palloc(sizeof(SpanBound) * nhist);
+  hist_lower = palloc(sizeof(SpanBound) * nhist);
+  hist_upper = palloc(sizeof(SpanBound) * nhist);
   for (i = 0; i < nhist; i++)
       span_deserialize(DatumGetSpanP(hslot->values[i]),
         &hist_lower[i], &hist_upper[i]);
@@ -1226,16 +1226,16 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
    * bounds for vardata1 and vardata2.
    */
   nhist1 = hslot1->nvalues;
-  lower1 = (SpanBound *) palloc(sizeof(SpanBound) * nhist1);
-  upper1 = (SpanBound *) palloc(sizeof(SpanBound) * nhist1);
+  lower1 = palloc(sizeof(SpanBound) * nhist1);
+  upper1 = palloc(sizeof(SpanBound) * nhist1);
   for (i = 0; i < nhist1; i++)
   {
     span_deserialize(DatumGetSpanP(hslot1->values[i]),
       &lower1[i], &upper1[i]);
   }
   nhist2 = hslot2->nvalues;
-  lower2 = (SpanBound *) palloc(sizeof(SpanBound) * nhist2);
-  upper2 = (SpanBound *) palloc(sizeof(SpanBound) * nhist2);
+  lower2 = palloc(sizeof(SpanBound) * nhist2);
+  upper2 = palloc(sizeof(SpanBound) * nhist2);
   for (i = 0; i < nhist2; i++)
   {
     span_deserialize(DatumGetSpanP(hslot2->values[i]),

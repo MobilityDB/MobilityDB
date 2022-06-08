@@ -65,6 +65,35 @@ CREATE TYPE tbox (
   alignment = double
 );
 
+-- Input/output in WKB and HexWKB format
+
+CREATE FUNCTION tboxFromBinary(bytea)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tboxFromHexWKB(text)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(tbox)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Tbox_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(tbox, endianenconding text)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Tbox_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(tbox)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tbox_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(tbox, endianenconding text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tbox_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/

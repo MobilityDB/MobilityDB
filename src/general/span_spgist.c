@@ -530,7 +530,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   {
     /* Report that all nodes should be visited */
     out->nNodes = in->nNodes;
-    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
     {
       out->nodeNumbers[i] = i;
@@ -560,18 +560,18 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   /* Transform the queries into spans */
   if (in->nkeys > 0)
   {
-    queries = (Span *) palloc0(sizeof(Span) * in->nkeys);
+    queries = palloc0(sizeof(Span) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
       span_spgist_get_span(&in->scankeys[i], &queries[i]);
   }
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
-  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-  out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = palloc(sizeof(void *) * in->nNodes);
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
-    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+    out->distances = palloc(sizeof(double *) * in->nNodes);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   /* Loop for each child */
@@ -736,7 +736,7 @@ PGDLLEXPORT Datum
 Timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   timestampset_period_slice(tsdatum, result);
   PG_RETURN_SPAN_P(result);
 }
@@ -749,7 +749,7 @@ PGDLLEXPORT Datum
 Periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   periodset_period_slice(psdatum, result);
   PG_RETURN_SPAN_P(result);
 }

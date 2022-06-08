@@ -14,6 +14,59 @@
  */
 #include "postgres.h"
 
+// MobilityDB
+#include "datatype/timestamp.h"
+#include "utils/datetime.h"
+#include "utils/date.h"
+
+static const datetkn *datebsearch(const char *key, const datetkn *base, int nel);
+
+/* Definitions from miscadmin.h */
+
+/* valid DateOrder values */
+#define DATEORDER_YMD			0
+#define DATEORDER_DMY			1
+#define DATEORDER_MDY			2
+
+/* valid DateStyle values */
+#define USE_POSTGRES_DATES		0
+#define USE_ISO_DATES			1
+#define USE_SQL_DATES			2
+#define USE_GERMAN_DATES		3
+#define USE_XSD_DATES			4
+
+#define MAXTZLEN		10		/* max TZ name len, not counting tr. null */
+
+/* Definitions from globals.h */
+
+int			DateOrder = DATEORDER_MDY;
+
+/* Defined in numutils.c */
+extern char *pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth);
+extern char *pg_ultostr(char *str, uint32 value);
+
+/* Defined below */
+
+static int	DecodeDate(char *str, int fmask, int *tmask, bool *is2digits,
+					   struct pg_tm *tm);
+static int	DecodeTime(char *str, int fmask, int range,
+					   int *tmask, struct pg_tm *tm, fsec_t *fsec);
+static int	DecodeNumber(int flen, char *field, bool haveTextMonth,
+						 int fmask, int *tmask,
+						 struct pg_tm *tm, fsec_t *fsec, bool *is2digits);
+static int	DecodeNumberField(int len, char *str,
+							  int fmask, int *tmask,
+							  struct pg_tm *tm, fsec_t *fsec, bool *is2digits);
+static pg_tz *FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp);
+static bool DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t,
+												  const char *abbr, pg_tz *tzp,
+												  int *offset, int *isdst);
+static int	DetermineTimeZoneOffsetInternal(struct pg_tm *tm, pg_tz *tzp,
+											pg_time_t *tp);
+
+//TODO: Replace this function
+extern TimestampTz GetCurrentTransactionStartTimestamp(void);
+
 #if 0 /* MobilityDB not used */
 
 #include <ctype.h>
@@ -28,17 +81,12 @@
 #include "miscadmin.h"
 #include "nodes/nodeFuncs.h"
 #include "utils/builtins.h"
-#include "utils/date.h"
-#include "utils/datetime.h"
 #include "utils/memutils.h"
 #include "utils/tzparser.h"
 
 static int	DecodeNumber(int flen, char *field, bool haveTextMonth,
 						 int fmask, int *tmask,
 						 struct pg_tm *tm, fsec_t *fsec, bool *is2digits);
-static int	DecodeNumberField(int len, char *str,
-							  int fmask, int *tmask,
-							  struct pg_tm *tm, fsec_t *fsec, bool *is2digits);
 static int	DecodeTime(char *str, int fmask, int range,
 					   int *tmask, struct pg_tm *tm, fsec_t *fsec);
 static const datetkn *datebsearch(const char *key, const datetkn *base, int nel);
@@ -52,11 +100,9 @@ static void AdjustFractDays(double frac, struct pg_tm *tm, fsec_t *fsec,
 							int scale);
 static int	DetermineTimeZoneOffsetInternal(struct pg_tm *tm, pg_tz *tzp,
 											pg_time_t *tp);
-static bool DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t,
-												  const char *abbr, pg_tz *tzp,
-												  int *offset, int *isdst);
 static pg_tz *FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp);
 
+#endif /* MobilityDB not used */
 
 const int	day_tab[2][13] =
 {
@@ -165,6 +211,8 @@ static const datetkn datetktbl[] = {
 
 static const int szdatetktbl = sizeof datetktbl / sizeof datetktbl[0];
 
+#if 0 /* MobilityDB not used */
+
 /*
  * deltatktbl: same format as datetktbl, but holds keywords used to represent
  * time units (eg, for intervals, and for EXTRACT).
@@ -236,16 +284,19 @@ static const datetkn deltatktbl[] = {
 
 static const int szdeltatktbl = sizeof deltatktbl / sizeof deltatktbl[0];
 
+#endif /* MobilityDB not used */
+
 static TimeZoneAbbrevTable *zoneabbrevtbl = NULL;
 
 /* Caches of recent lookup results in the above tables */
 
 static const datetkn *datecache[MAXDATEFIELDS] = {NULL};
 
-static const datetkn *deltacache[MAXDATEFIELDS] = {NULL};
+// static const datetkn *deltacache[MAXDATEFIELDS] = {NULL};
 
 static const datetkn *abbrevcache[MAXDATEFIELDS] = {NULL};
 
+#if 0 /* MobilityDB not used */
 
 /*
  * Calendar time to Julian date conversions.
@@ -266,6 +317,8 @@ static const datetkn *abbrevcache[MAXDATEFIELDS] = {NULL};
  * We rely on it to do so back to Nov 1, -4713; see IS_VALID_JULIAN()
  * and associated commentary in timestamp.h.
  */
+
+#endif /* MobilityDB not used */
 
 int
 date2j(int y, int m, int d)
@@ -317,7 +370,6 @@ j2date(int jd, int *year, int *month, int *day)
 	*month = (quad + 10) % MONTHS_PER_YEAR + 1;
 }								/* j2date() */
 
-
 /*
  * j2day - convert Julian date to day-of-week (0..6 == Sun..Sat)
  *
@@ -336,7 +388,6 @@ j2day(int date)
 
 	return date;
 }								/* j2day() */
-
 
 /*
  * GetCurrentDateTime()
@@ -402,9 +453,7 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 		 */
 		if (timestamp2tm(cur_ts, &cache_tz, &cache_tm, &cache_fsec,
 						 NULL, session_timezone) != 0)
-			ereport(ERROR,
-					(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
-					 errmsg("timestamp out of range")));
+			elog(ERROR, "timestamp out of range");
 
 		/* OK, so mark the cache valid. */
 		cache_ts = cur_ts;
@@ -416,7 +465,6 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 	if (tzp != NULL)
 		*tzp = cache_tz;
 }
-
 
 /*
  * Append seconds and fractional seconds (if any) at *cp.
@@ -485,7 +533,6 @@ AppendSeconds(char *cp, int sec, fsec_t fsec, int precision, bool fillzeros)
 		return cp;
 }
 
-
 /*
  * Variant of above that's specialized to timestamp case.
  *
@@ -497,6 +544,8 @@ AppendTimestampSeconds(char *cp, struct pg_tm *tm, fsec_t fsec)
 {
 	return AppendSeconds(cp, tm->tm_sec, fsec, MAX_TIMESTAMP_PRECISION, true);
 }
+
+#if 0 /* MobilityDB not used */
 
 /*
  * Multiply frac by scale (to produce seconds) and add to *tm & *fsec.
@@ -531,6 +580,8 @@ AdjustFractDays(double frac, struct pg_tm *tm, fsec_t *fsec, int scale)
 	AdjustFractSeconds(frac, tm, fsec, SECS_PER_DAY);
 }
 
+#endif /* MobilityDB not used */
+
 /* Fetch a fractional-second value with suitable error checking */
 static int
 ParseFractionalSecond(char *cp, fsec_t *fsec)
@@ -547,7 +598,6 @@ ParseFractionalSecond(char *cp, fsec_t *fsec)
 	*fsec = rint(frac * 1000000);
 	return 0;
 }
-
 
 /* ParseDateTime()
  *	Break string into tokens based on a date/time context.
@@ -776,6 +826,20 @@ ParseDateTime(const char *timestr, char *workbuf, size_t buflen,
 	return 0;
 }
 
+/*
+ * strtoint --- just like strtol, but returns int not long
+ * MobilityDB: Function copied from string.c
+ */
+int
+strtoint(const char *pg_restrict str, char **pg_restrict endptr, int base)
+{
+	long		val;
+
+	val = strtol(str, endptr, base);
+	if (val != (int) val)
+		errno = ERANGE;
+	return (int) val;
+}
 
 /* DecodeDateTime()
  * Interpret previously parsed fields for general date and time.
@@ -948,10 +1012,7 @@ DecodeDateTime(char **field, int *ftype, int nf,
 							 * ereport'ing directly, but then there is no way
 							 * to report the bad time zone name.
 							 */
-							ereport(ERROR,
-									(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-									 errmsg("time zone \"%s\" not recognized",
-											field[i])));
+							elog(ERROR, "time zone \"%s\" not recognized", field[i]);
 						}
 						/* we'll apply the zone setting below */
 						tmask = DTK_M(TZ);
@@ -1463,7 +1524,6 @@ DecodeDateTime(char **field, int *ftype, int nf,
 	return 0;
 }
 
-
 /* DetermineTimeZoneOffset()
  *
  * Given a struct pg_tm in which tm_year, tm_mon, tm_mday, tm_hour, tm_min,
@@ -1483,7 +1543,6 @@ DetermineTimeZoneOffset(struct pg_tm *tm, pg_tz *tzp)
 
 	return DetermineTimeZoneOffsetInternal(tm, tzp, &t);
 }
-
 
 /* DetermineTimeZoneOffsetInternal()
  *
@@ -1622,7 +1681,6 @@ overflow:
 	return 0;
 }
 
-
 /* DetermineTimeZoneAbbrevOffset()
  *
  * Determine the GMT offset and DST flag to be attributed to a dynamic
@@ -1669,6 +1727,7 @@ DetermineTimeZoneAbbrevOffset(struct pg_tm *tm, const char *abbr, pg_tz *tzp)
 	return zone_offset;
 }
 
+#if 0 /* MobilityDB not used */
 
 /* DetermineTimeZoneAbbrevOffsetTS()
  *
@@ -1706,6 +1765,7 @@ DetermineTimeZoneAbbrevOffsetTS(TimestampTz ts, const char *abbr,
 	return zone_offset;
 }
 
+#endif /* MobilityDB not used */
 
 /* DetermineTimeZoneAbbrevOffsetInternal()
  *
@@ -1721,7 +1781,8 @@ DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t, const char *abbr, pg_tz *tzp,
 	long int	gmtoff;
 
 	/* We need to force the abbrev to upper case */
-	strlcpy(upabbr, abbr, sizeof(upabbr));
+	// strlcpy(upabbr, abbr, sizeof(upabbr)); /* MobilityDB */
+	strncpy(upabbr, abbr, sizeof(upabbr));
 	for (p = (unsigned char *) upabbr; *p; p++)
 		*p = pg_toupper(*p);
 
@@ -1739,6 +1800,7 @@ DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t, const char *abbr, pg_tz *tzp,
 	return false;
 }
 
+#if 0 /* MobilityDB not used */
 
 /* DecodeTimeOnly()
  * Interpret parsed string as time fields only.
@@ -2358,6 +2420,8 @@ DecodeTimeOnly(char **field, int *ftype, int nf,
 	return 0;
 }
 
+#endif /* MobilityDB not used */
+
 /* DecodeDate()
  * Decode date string which includes delimiters.
  * Return 0 if okay, a DTERR code if not.
@@ -2369,7 +2433,7 @@ DecodeTimeOnly(char **field, int *ftype, int nf,
  *	*tm: field values are stored into appropriate members of this struct
  */
 static int
-DecodeDate(char *str, int fmask, int *tmask, bool *is2digits,
+DecodeDate(char *str, int fmask __attribute__((unused)), int *tmask, bool *is2digits,
 		   struct pg_tm *tm)
 {
 	fsec_t		fsec;
@@ -2549,7 +2613,6 @@ ValidateDate(int fmask, bool isjulian, bool is2digits, bool bc,
 	return 0;
 }
 
-
 /* DecodeTime()
  * Decode time string which includes delimiters.
  * Return 0 if okay, a DTERR code if not.
@@ -2558,7 +2621,7 @@ ValidateDate(int fmask, bool isjulian, bool is2digits, bool bc,
  * used to represent time spans.
  */
 static int
-DecodeTime(char *str, int fmask, int range,
+DecodeTime(char *str, int fmask __attribute__((unused)), int range,
 		   int *tmask, struct pg_tm *tm, fsec_t *fsec)
 {
 	char	   *cp;
@@ -2627,7 +2690,6 @@ DecodeTime(char *str, int fmask, int range,
 
 	return 0;
 }
-
 
 /* DecodeNumber()
  * Interpret plain numeric field as a date value in context.
@@ -2810,7 +2872,6 @@ DecodeNumber(int flen, char *str, bool haveTextMonth, int fmask,
 	return 0;
 }
 
-
 /* DecodeNumberField()
  * Interpret numeric string as a concatenated date or time field.
  * Return a DTK token (>= 0) if successful, a DTERR code (< 0) if not.
@@ -2899,7 +2960,6 @@ DecodeNumberField(int len, char *str, int fmask,
 	return DTERR_BAD_FORMAT;
 }
 
-
 /* DecodeTimezone()
  * Interpret string as a numeric timezone.
  *
@@ -2968,7 +3028,6 @@ DecodeTimezone(char *str, int *tzp)
 	return 0;
 }
 
-
 /* DecodeTimezoneAbbrev()
  * Interpret string as a timezone abbreviation, if possible.
  *
@@ -3025,7 +3084,6 @@ DecodeTimezoneAbbrev(int field, char *lowtoken,
 	return type;
 }
 
-
 /* DecodeSpecial()
  * Decode text string using lookup table.
  *
@@ -3065,6 +3123,7 @@ DecodeSpecial(int field, char *lowtoken, int *val)
 	return type;
 }
 
+#if 0 /* MobilityDB not used */
 
 /* ClearPgTm
  *
@@ -3807,6 +3866,8 @@ DateTimeParseError(int dterr, const char *str, const char *datatype)
 	}
 }
 
+#endif /* MobilityDB not used */
+
 /* datebsearch()
  * Binary search -- from Knuth (6.2.1) Algorithm B.  Special case like this
  * is WAY faster than the generic bsearch().
@@ -3881,6 +3942,8 @@ EncodeTimezone(char *str, int tz, int style)
 		str = pg_ultostr_zeropad(str, hour, 2);
 	return str;
 }
+
+#if 0 /* MobilityDB not used */
 
 /* EncodeDateOnly()
  * Encode date as local time.
@@ -3983,6 +4046,7 @@ EncodeTimeOnly(struct pg_tm *tm, fsec_t fsec, bool print_tz, int tz, int style, 
 	*str = '\0';
 }
 
+#endif /* MobilityDB not used */
 
 /* EncodeDateTime()
  * Encode date and time interpreted as local time.
@@ -4165,6 +4229,7 @@ EncodeDateTime(struct pg_tm *tm, fsec_t fsec, bool print_tz, int tz, const char 
 	*str = '\0';
 }
 
+#if 0 /* MobilityDB not used */
 
 /*
  * Helper functions to avoid duplicated code in EncodeInterval.
@@ -4621,6 +4686,8 @@ InstallTimeZoneAbbrevs(TimeZoneAbbrevTable *tbl)
 	memset(abbrevcache, 0, sizeof(abbrevcache));
 }
 
+#endif /* MobilityDB not used */
+
 /*
  * Helper subroutine to locate pg_tz timezone for a dynamic abbreviation.
  */
@@ -4645,16 +4712,12 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp)
 		 * then there is no way to report the bad time zone name.
 		 */
 		if (dtza->tz == NULL)
-			ereport(ERROR,
-					(errcode(ERRCODE_CONFIG_FILE_ERROR),
-					 errmsg("time zone \"%s\" not recognized",
-							dtza->zone),
-					 errdetail("This time zone name appears in the configuration file for time zone abbreviation \"%s\".",
-							   tp->token)));
+			elog(ERROR, "time zone \"%s\" not recognized", dtza->zone);
 	}
 	return dtza->tz;
 }
 
+#if 0 /* MobilityDB not used */
 
 /*
  * This set-returning function reads all the available time zone abbreviations
@@ -4692,7 +4755,7 @@ pg_timezone_abbrevs(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		/* allocate memory for user context */
-		pindex = (int *) palloc(sizeof(int));
+		pindex = palloc(sizeof(int));
 		*pindex = 0;
 		funcctx->user_fctx = (void *) pindex;
 
@@ -4770,7 +4833,7 @@ pg_timezone_abbrevs(PG_FUNCTION_ARGS)
 	/* Convert offset (in seconds) to an interval */
 	MemSet(&tm, 0, sizeof(struct pg_tm));
 	tm.tm_sec = gmtoffset;
-	resInterval = (Interval *) palloc(sizeof(Interval));
+	resInterval = palloc(sizeof(Interval));
 	tm2interval(&tm, 0, resInterval);
 	values[1] = IntervalPGetDatum(resInterval);
 
@@ -4865,7 +4928,7 @@ pg_timezone_names(PG_FUNCTION_ARGS)
 
 		MemSet(&itm, 0, sizeof(struct pg_tm));
 		itm.tm_sec = -tzoff;
-		resInterval = (Interval *) palloc(sizeof(Interval));
+		resInterval = palloc(sizeof(Interval));
 		tm2interval(&itm, 0, resInterval);
 		values[2] = IntervalPGetDatum(resInterval);
 

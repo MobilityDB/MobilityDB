@@ -28,17 +28,29 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for constructors of PostgreSQL geometry types.
--- File geo_constructors.c
--------------------------------------------------------------------------------
+-- Combination of input/output functions
 
-SELECT point(1.5, 2.5);
-SELECT line(1.5, 2.5, 3.5);
-SELECT lseg(point(1.5, 2.5), point(3.5, 4.5));
-SELECT box(point(1.5, 2.5), point(3.5, 4.5));
-SELECT circle(point(1.5, 2.5), 2.5);
-SELECT path(ARRAY[point(1.5, 1.5), point(2.5, 2.5)]);
-SELECT path(ARRAY[point(1.5, 1.5), point(2.5, 2.5), point(1.5, 1.5)]);
-SELECT polygon(ARRAY[point(1.5, 1.5), point(2.5, 2.5), point(1.5, 1.5)]);
+-- We need to add asewkt to avoid problems due to floating point precision
+-- SELECT DISTINCT asText(tintFromText(asText(temp))) = asText(temp) FROM tbl_tint;
+-- SELECT DISTINCT asText(tfloatFromText(asText(temp))) = asText(temp) FROM tbl_tfloat;
 
--------------------------------------------------------------------------------
+-- We need to add asewkt to avoid problems due to floating point precision
+-- SELECT DISTINCT asEWKT(tintFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tint;
+-- SELECT DISTINCT asEWKT(tfloatFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tfloat;
+
+-- We need to add asewkt to avoid problems due to floating point precision
+-- SELECT DISTINCT asEWKT(tintFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tint;
+-- SELECT DISTINCT asEWKT(tfloatFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tfloat;
+
+SELECT DISTINCT tboolFromBinary(asBinary(temp)) = temp FROM tbl_tbool;
+SELECT DISTINCT tintFromBinary(asBinary(temp)) = temp FROM tbl_tint;
+SELECT DISTINCT tfloatFromBinary(asBinary(temp)) = temp FROM tbl_tfloat;
+SELECT DISTINCT ttextFromBinary(asBinary(temp)) = temp FROM tbl_ttext;
+
+SELECT DISTINCT tboolFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tbool;
+SELECT DISTINCT tintFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tint;
+SELECT DISTINCT tfloatFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tfloat;
+SELECT DISTINCT ttextFromHexWKB(asHexWKB(temp)) = temp FROM tbl_ttext;
+
+
+------------------------------------------------------------------------------

@@ -88,7 +88,7 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
     return tnumberinst_distance(inst1, inst2);
   if (tgeo_type(inst1->temptype))
     return tpointinst_distance(inst1, inst2);
-  elog(ERROR, "Unexpected base type in function tinstant_distance");
+  elog(ERROR, "Unexpected temporal type: inst1->temptype");
 }
 
 /*****************************************************************************
@@ -175,7 +175,7 @@ tinstarr_similarity(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
   /* Allocate memory for two rows of the distance matrix */
-  double *dist = (double *) palloc(sizeof(double) * 2 * count2);
+  double *dist = palloc(sizeof(double) * 2 * count2);
   /* Initialise it with -1.0 */
   for (int i = 0; i < 2 * count2; i++)
     *(dist + i) = -1.0;
@@ -214,6 +214,7 @@ temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
  * @brief Compute the Frechet distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
+ * @sqlfunc frechetDistance()
  */
 double
 temporal_frechet_distance(Temporal *temp1, Temporal *temp2)
@@ -226,6 +227,7 @@ temporal_frechet_distance(Temporal *temp1, Temporal *temp2)
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
+ * @sqlfunc dynamicTimeWarp()
  */
 double
 temporal_dyntimewarp_distance(Temporal *temp1, Temporal *temp2)
@@ -413,7 +415,7 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, int *count, SimFunc simfunc)
 {
   /* Allocate memory for dist */
-  double *dist = (double *) palloc(sizeof(double) * count1 * count2);
+  double *dist = palloc(sizeof(double) * count1 * count2);
   /* Initialise it with -1.0 */
   for (int i = 0; i < count1 * count2; i++)
     *(dist + i) = -1.0;
@@ -432,7 +434,6 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_similarity
  * @brief Compute the similarity path between two temporal values
  */
 Match *
@@ -458,6 +459,8 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
  * @brief Compute the Frechet distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
+ * @param[out] count Number of elements of the output array
+ * @sqlfunc frechetDistancePath()
  */
 Match *
 temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
@@ -470,6 +473,8 @@ temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
+ * @param[out] count Number of elements of the output array
+ * @sqlfunc dynamicTimeWarpPath()
  */
 Match *
 temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count)

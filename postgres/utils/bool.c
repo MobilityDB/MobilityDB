@@ -17,7 +17,7 @@
 
 #include <ctype.h>
 
-#include "libpq/pqformat.h"
+// #include "libpq/pqformat.h" // MobilityDB
 // #include "utils/builtins.h" // MobilityDB
 
 bool
@@ -166,7 +166,7 @@ Datum
 boolout(PG_FUNCTION_ARGS)
 {
 	bool		b = PG_GETARG_BOOL(0);
-	char	   *result = (char *) palloc(2);
+	char	   *result = palloc(2);
 
 	result[0] = (b) ? 't' : 'f';
 	result[1] = '\0';

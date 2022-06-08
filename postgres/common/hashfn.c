@@ -685,7 +685,7 @@ tag_hash(const void *key, Size keysize)
  * (tag_hash works for this case too, but is slower)
  */
 uint32
-uint32_hash(const void *key, Size keysize)
+uint32_hash(const void *key, Size keysize __attribute__((unused)))
 {
 	Assert(keysize == sizeof(uint32));
 	return hash_bytes_uint32(*((const uint32 *) key));

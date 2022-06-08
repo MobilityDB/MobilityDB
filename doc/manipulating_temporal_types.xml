@@ -14,19 +14,27 @@
 
 	<itemizedlist>
 		<listitem>
-			<para><varname>ttype</varname> represents any temporal type,</para>
-		</listitem>
-
-		<listitem>
 			<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
+			<para><varname>ttype</varname> represents any temporal type,</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>tdisc</varname> represents any temporal type with a discrete base type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>tcont</varname> represents any temporal type with a continuous base type, that is, <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname>,</para>
 		</listitem>
 
 		<listitem>
 			<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -43,14 +51,6 @@
 
 		<listitem>
 			<para><varname>ttype_seq</varname> represents any temporal type with sequence subtype,</para>
-		</listitem>
-
-		<listitem>
-			<para><varname>tdisc_seq</varname> represents any temporal type with sequence subtype and a discrete base type,</para>
-		</listitem>
-
-		<listitem>
-			<para><varname>tcont_seq</varname> represents any temporal type with sequence subtype and a continuous base type,</para>
 		</listitem>
 
 		<listitem>
@@ -139,6 +139,10 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 
 	<sect1 id="input_output_temporal_tyes">
 		<title>Input/Output of Temporal Types</title>
+			<para>
+				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. We present next the functions for input and output temporal types.
+			</para>
+
 		<para>
 			An instant value is a couple of the form <varname>v@t</varname>, where <varname>v</varname> is a value of the base type and <varname>t</varname> is a <varname>timestamptz</varname> value. A sequence value is a set of values <varname>v1@t1,...,vn@tn</varname> delimited by lower and upper bounds, which can be inclusive (represented by &lsquo;<varname>[</varname>&rsquo; and &lsquo;<varname>]</varname>&rsquo;) or exclusive (represented by &lsquo;<varname>(</varname>&rsquo; and &lsquo;<varname>)</varname>&rsquo;). Examples of input of temporal unit values are as follows:
 		</para>
@@ -229,6 +233,129 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
   SRID=4326;Point(0 1)@2000-01-02]'
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 </programlisting>
+
+
+		<para>
+			We give below the input/output functions in Well-Known Binary (WKB) format for temporal alphanumeric types. The corresponding functions for temporal points are detailed in <xref linkend="tpoint_inout" />.
+		</para>
+
+		<itemizedlist>
+			<listitem id="temporal_asBinary">
+				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
+				<para>Get the Well-Known Binary (WKB) representation</para>
+				<para><varname>asBinary(ttype): bytea</varname></para>
+				<para><varname>asBinary(ttype,endian text): bytea</varname></para>
+				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
+				<programlisting xml:space="preserve">
+SELECT asBinary(tbool 'true@2001-01-01');
+-- \x010d000101009c57d3c11c0000
+SELECT asBinary(tint '1@2001-01-01', 'XDR');
+-- \x000016010000000100001cc1d3579c00
+SELECT asBinary(tfloat '1.5@2001-01-01');
+-- \x01130081000000000000f83f009c57d3c11c0000
+SELECT asBinary(ttext 'AAA@2001-01-01');
+-- \x01170001040000000000000041414100009c57d3c11c0000
+</programlisting>
+			</listitem>
+
+			<listitem id="temporal_asHexWKB">
+				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Get the Hexadecimal Well-Known Binary (WKB) representation as text</para>
+				<para><varname>asHexWKB(ttype): text</varname></para>
+				<para><varname>asHexWKB(ttype,endian text): text</varname></para>
+				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
+				<programlisting xml:space="preserve">
+SELECT asHexWKB(tbool 'true@2001-01-01');
+-- 010D000101009C57D3C11C0000
+SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
+-- 000016010000000100001CC1D3579C00
+SELECT asHexWKB(tfloat '1.5@2001-01-01');
+-- 01130081000000000000F83F009C57D3C11C0000
+SELECT asHexWKB(ttext 'AAA@2001-01-01');
+-- 01170001040000000000000041414100009C57D3C11C0000
+</programlisting>
+			</listitem>
+
+			<listitem id="tboolFromBinary">
+				<indexterm><primary><varname>tboolFromBinary</varname></primary></indexterm>
+				<para>Input a temporal Boolean from its Well-Known Binary (WKB) representation</para>
+				<para><varname>tboolFromBinary(bytea): tbool</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tintFromBinary">
+				<indexterm><primary><varname>tintFromBinary</varname></primary></indexterm>
+				<para>Input a temporal integer from its Well-Known Binary (WKB) representation</para>
+				<para><varname>tintFromBinary(bytea): tint</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tintFromBinary('\x000016010000000100001cc1d3579c00');
+-- 1@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tfloatFromBinary">
+				<indexterm><primary><varname>tfloatFromBinary</varname></primary></indexterm>
+				<para>Input a temporal float from its Well-Known Binary (WKB) representation</para>
+				<para><varname>tfloatFromBinary(bytea): tfloat</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tfloatFromBinary('\x01130081000000000000f83f009c57d3c11c0000');
+-- 1.5@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="ttextFromBinary">
+				<indexterm><primary><varname>ttextFromBinary</varname></primary></indexterm>
+				<para>Input a temporal text from its Well-Known Binary (WKB) representation</para>
+				<para><varname>ttextFromBinary(bytea): ttext</varname></para>
+				<programlisting xml:space="preserve">
+SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
+-- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tboolFromHexWKB">
+				<indexterm><primary><varname>tboolFromHexWKB</varname></primary></indexterm>
+				<para>Input a temporal Boolean from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para><varname>tboolFromHexWKB(text): tbool</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tintFromHexWKB">
+				<indexterm><primary><varname>tintFromHexWKB</varname></primary></indexterm>
+				<para>Input a temporal integer from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para><varname>tintFromHexWKB(text): tint</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tintFromHexWKB('000016010000000100001CC1D3579C00');
+-- 1@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="tfloatFromHexWKB">
+				<indexterm><primary><varname>tfloatFromHexWKB</varname></primary></indexterm>
+				<para>Input a temporal float from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para><varname>tfloatFromHexWKB(text): tfloat</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tfloatFromHexWKB('01130081000000000000F83F009C57D3C11C0000');
+-- 1.5@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="ttextFromHexWKB">
+				<indexterm><primary><varname>ttextFromHexWKB</varname></primary></indexterm>
+				<para>Input a temporal text from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para><varname>ttextFromHexWKB(text): ttext</varname></para>
+				<programlisting xml:space="preserve">
+SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
+-- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
 	</sect1>
 
 	<sect1 id="constructor_temporal_tyes">
@@ -270,6 +397,10 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 				<programlisting xml:space="preserve">
 SELECT tbool_inst(true, '2001-01-01');
 SELECT tint_inst(1, '2001-01-01');
+SELECT tfloat_inst(1.5, '2001-01-01');
+SELECT ttext_inst('AAA', '2001-01-01');
+SELECT tgeompoint_inst('Point(1 1)', '2001-01-01');
+SELECT tgeogpoint_inst('SRID=7844;Point(1 1)', '2001-01-01');
 </programlisting>
 			</listitem>
 
@@ -279,8 +410,14 @@ SELECT tint_inst(1, '2001-01-01');
 				<para><varname>ttype_instset(base,timestampset): ttype_instset</varname></para>
 				<para><varname>ttype_instset(ttype_inst[]): ttype_instset</varname></para>
 				<programlisting xml:space="preserve">
+SELECT tbool_instset(true, '{2001-01-01, 2001-01-02}');
+SELECT tint_instset(1, '{2001-01-01, 2001-01-02}');
 SELECT tfloat_instset(1.5, '{2001-01-01, 2001-01-02}');
 SELECT ttext_instset('AAA', '{2001-01-01, 2001-01-02}');
+SELECT tgeompoint_instset('Point(1 1)', '{2001-01-01, 2001-01-02}');
+SELECT tgeogpoint_instset('SRID=7844;Point(1 1)', '{2001-01-01, 2001-01-02}');
+</programlisting>
+				<programlisting xml:space="preserve">
 SELECT tbool_instset(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
 SELECT tint_instset(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
 SELECT tfloat_instset(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00']);
@@ -300,8 +437,14 @@ SELECT tgeogpoint_instset(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
 				<para><varname>tcont_seq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): tcont_seq</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]');
+SELECT tbool_seq(true, '[2001-01-01, 2001-01-02]');
+SELECT tint_seq(1, '[2001-01-01, 2001-01-02]');
+SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]', false);
+SELECT ttext_seq('AAA', '[2001-01-01, 2001-01-02]');
 SELECT tgeompoint_seq('Point(0 0)', '[2001-01-01, 2001-01-02]', false);
+SELECT tgeogpoint_seq('SRID=7844;Point(0 0)', '[2001-01-01, 2001-01-02]');
+</programlisting>
+				<programlisting xml:space="preserve">
 SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
 SELECT tint_seq(ARRAY[tint(2,'2001-01-01 08:00:00'), tint(2,'2001-01-01 08:10:00')],
@@ -325,13 +468,20 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
 				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
-				<para><varname>tdisc_seqset_gaps(ttype_inst[],maxdist=0.0,maxt='0 minutes'): tdisc_seqset</varname></para>
-				<para><varname>tcont_seqset_gaps(ttype_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
+				<para><varname>tint_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes'): tint_seqset</varname></para>
+				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
 				<programlisting xml:space="preserve">
+SELECT tbool_seqset(true, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tint_seqset(1, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tfloat_seqset(1.5, '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
 SELECT ttext_seqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
-SELECT tgeogpoint_seqset('Point(0 0)', '{[2001-01-01, 2001-01-02],
+SELECT tgeompoint_seqset('Point(0 0)', '{[2001-01-01, 2001-01-02],
   [2001-01-03, 2001-01-04]}', false);
+SELECT tgeogpoint_seqset('SRID=7844;Point(0 0)', '{[2001-01-01, 2001-01-02],
+  [2001-01-03, 2001-01-04]}', false);
+</programlisting>
+				<programlisting xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
 SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
@@ -353,6 +503,8 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  Input sequences must have the same interpolation
+</programlisting>
+				<programlisting xml:space="preserve">
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
   '5@2000-01-05'], 1, '1 day');
 -- {[1@2000-01-01], [3@2000-01-02, 4@2000-01-03], [5@2000-01-05]}

@@ -116,7 +116,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     if (num_hist > num_bins)
       num_hist = num_bins + 1;
 
-    bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+    bound_hist_values = palloc(num_hist * sizeof(Datum));
 
     /*
      * The object of this loop is to construct spans from first and
@@ -172,7 +172,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     if (num_hist > num_bins)
       num_hist = num_bins + 1;
 
-    length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+    length_hist_values = palloc(num_hist * sizeof(Datum));
 
     /*
      * The object of this loop is to copy the first and last lengths[]
@@ -245,9 +245,9 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   double total_width = 0;
 
   /* Allocate memory to hold span bounds and lengths of the sample spans */
-  lowers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
-  uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
-  lengths = (float8 *) palloc(sizeof(float8) * samplerows);
+  lowers = palloc(sizeof(SpanBound) * samplerows);
+  uppers = palloc(sizeof(SpanBound) * samplerows);
+  lengths = palloc(sizeof(float8) * samplerows);
 
   /* Loop over the sample span values. */
   for (int i = 0; i < samplerows; i++)

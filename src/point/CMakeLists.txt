@@ -6,7 +6,6 @@ if(MEOS)
   set(tpoint_spatialrels_meos.c tpoint_spatialrels_meos.c)
   set(tpoint_tempspatialrels_meos.c tpoint_tempspatialrels_meos.c)
 else()
-  set(geography_functions.c geography_functions.c)
   set(projection_gk.c projection_gk.c)
   set(tpoint_aggfuncs.c tpoint_aggfuncs.c)
   set(tpoint_analytics.c tpoint_analytics.c)
@@ -20,7 +19,7 @@ else()
 endif()
 
 add_library(point OBJECT
-  ${geography_functions.c}
+  geography_functions.c
   ${projection_gk.c}
   pgis_call.c
   stbox.c

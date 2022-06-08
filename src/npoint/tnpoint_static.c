@@ -263,7 +263,7 @@ char *
 npoint_out(const Npoint *np)
 {
   static size_t size = MAXNPOINTLEN + 1;
-  char *result = (char *) palloc(size);
+  char *result = palloc(size);
   char *rid = basetype_output(T_INT8, Int64GetDatum(np->rid));
   char *pos = basetype_output(T_FLOAT8, Float8GetDatum(np->pos));
   snprintf(result, size, "NPoint(%s,%s)", rid, pos);
@@ -277,7 +277,7 @@ npoint_out(const Npoint *np)
 Npoint *
 npoint_recv(StringInfo buf)
 {
-  Npoint *result = (Npoint *) palloc0(sizeof(Npoint));
+  Npoint *result = palloc0(sizeof(Npoint));
   result->rid = pq_getmsgint64(buf);
   result->pos = pq_getmsgfloat8(buf);
   return result;
@@ -325,7 +325,7 @@ nsegment_out(const Nsegment *ns)
 Nsegment *
 nsegment_recv(StringInfo buf)
 {
-  Nsegment *result = (Nsegment *) palloc0(sizeof(Nsegment));
+  Nsegment *result = palloc0(sizeof(Nsegment));
   result->rid = pq_getmsgint64(buf);
   result->pos1 = pq_getmsgfloat8(buf);
   result->pos2 = pq_getmsgfloat8(buf);
@@ -357,7 +357,7 @@ Npoint *
 npoint_make(int64 rid, double pos)
 {
   /* Note: zero-fill is done in the npoint_set function */
-  Npoint *result = (Npoint *) palloc(sizeof(Npoint));
+  Npoint *result = palloc(sizeof(Npoint));
   npoint_set(rid, pos, result);
   return result;
 }
@@ -375,6 +375,9 @@ npoint_set(int64 rid, double pos, Npoint *np)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("the relative position must be a real number between 0 and 1")));
 
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(np, 0, sizeof(Npoint));
+  /* Fill in the network point */
   np->rid = rid;
   np->pos = pos;
 }
@@ -386,7 +389,7 @@ Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
 {
   /* Note: zero-fill is done in the nsegment_set function */
-  Nsegment *result = (Nsegment *) palloc(sizeof(Nsegment));
+  Nsegment *result = palloc(sizeof(Nsegment));
   nsegment_set(rid, pos1, pos2, result);
   return result;
 }
@@ -678,7 +681,7 @@ geom_npoint(Datum geom)
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
     DIST_EPSILON, geomstr);
   pfree(geomstr);
-  Npoint *result = (Npoint *) palloc(sizeof(Npoint));
+  Npoint *result = palloc(sizeof(Npoint));
   bool isNull = true;
   SPI_connect();
   int ret = SPI_execute(sql, true, 1);

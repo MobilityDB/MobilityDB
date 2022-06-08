@@ -74,12 +74,20 @@ typedef struct
  * fmgr macros for time types
  */
 
-#define DatumGetTimestampSetP(X)     ((TimestampSet *) PG_DETOAST_DATUM(X))
+#if MEOS
+  #define DatumGetTimestampSetP(X)   ((TimestampSet *) DatumGetPointer(X))
+#else
+  #define DatumGetTimestampSetP(X)   ((TimestampSet *) PG_DETOAST_DATUM(X))
+#endif /* MEOS */
 #define TimestampSetPGetDatum(X)     PointerGetDatum(X)
 #define PG_GETARG_TIMESTAMPSET_P(X)  ((TimestampSet *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_TIMESTAMPSET_P(X)  PG_RETURN_POINTER(X)
 
-#define DatumGetPeriodSetP(X)        ((PeriodSet *) PG_DETOAST_DATUM(X))
+#if MEOS
+  #define DatumGetPeriodSetP(X)      ((PeriodSet *) DatumGetPointer(X))
+#else
+  #define DatumGetPeriodSetP(X)      ((PeriodSet *) PG_DETOAST_DATUM(X))
+#endif /* MEOS */
 #define PeriodSetPGetDatum(X)        PointerGetDatum(X)
 #define PG_GETARG_PERIODSET_P(X)     ((PeriodSet *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_PERIODSET_P(X)     PG_RETURN_POINTER(X)

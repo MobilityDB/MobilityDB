@@ -404,8 +404,8 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
-    STBOX *box = (STBOX *) palloc(sizeof(STBOX));
+    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+    STBOX *box = palloc(sizeof(STBOX));
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
@@ -538,8 +538,8 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   maxoff = (OffsetNumber) (entryvec->n - 1);
 
   nbytes = (maxoff + 2) * sizeof(OffsetNumber);
-  v->spl_left = (OffsetNumber *) palloc(nbytes);
-  v->spl_right = (OffsetNumber *) palloc(nbytes);
+  v->spl_left = palloc(nbytes);
+  v->spl_right = palloc(nbytes);
   v->spl_nleft = v->spl_nright = 0;
 
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
@@ -550,7 +550,7 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
       v->spl_left[v->spl_nleft] = i;
       if (left_tbox == NULL)
       {
-        left_tbox = (STBOX *) palloc0(sizeof(STBOX));
+        left_tbox = palloc0(sizeof(STBOX));
         *left_tbox = *cur;
       }
       else
@@ -563,7 +563,7 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
       v->spl_right[v->spl_nright] = i;
       if (right_stbox == NULL)
       {
-        right_stbox = (STBOX *) palloc0(sizeof(STBOX));
+        right_stbox = palloc0(sizeof(STBOX));
         *right_stbox = *cur;
       }
       else
@@ -740,8 +740,8 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
   nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
 
   /* Allocate arrays for intervals along axes */
-  intervalsLower = (SplitInterval *) palloc(nentries * sizeof(SplitInterval));
-  intervalsUpper = (SplitInterval *) palloc(nentries * sizeof(SplitInterval));
+  intervalsLower = palloc(nentries * sizeof(SplitInterval));
+  intervalsUpper = palloc(nentries * sizeof(SplitInterval));
 
   /*
    * Calculate the overall minimum bounding box over all the entries.
@@ -935,21 +935,21 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
    */
 
   /* Allocate vectors for results */
-  v->spl_left = (OffsetNumber *) palloc(nentries * sizeof(OffsetNumber));
-  v->spl_right = (OffsetNumber *) palloc(nentries * sizeof(OffsetNumber));
+  v->spl_left = palloc(nentries * sizeof(OffsetNumber));
+  v->spl_right = palloc(nentries * sizeof(OffsetNumber));
   v->spl_nleft = 0;
   v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
-  leftBox = (STBOX *) palloc0(sizeof(STBOX));
-  rightBox = (STBOX *) palloc0(sizeof(STBOX));
+  leftBox = palloc0(sizeof(STBOX));
+  rightBox = palloc0(sizeof(STBOX));
 
   /*
    * Allocate an array for "common entries" - entries which can be placed to
    * either group without affecting overlap along selected axis.
    */
   commonEntriesCount = 0;
-  commonEntries = (CommonEntry *) palloc(nentries * sizeof(CommonEntry));
+  commonEntries = palloc(nentries * sizeof(CommonEntry));
 
   /* Helper macros to place an entry in the left or right group */
 #define PLACE_LEFT(box, off)          \

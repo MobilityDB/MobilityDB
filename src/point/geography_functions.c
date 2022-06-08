@@ -42,17 +42,23 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <utils/array.h>
+#if ! MEOS
+  #include <fmgr.h>
+  #include <utils/array.h>
+#endif /* ! MEOS */
 /* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
   #include <liblwgeom_internal.h>
+#if ! MEOS
   #include <lwgeom_pg.h>
+#endif /* ! MEOS */
   #include <lwgeodetic_tree.h>
 #endif
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"
+
+#if ! MEOS
 
 /*****************************************************************************
  * Definitions needed for PostGIS 2.5.5 since they are not exported in
@@ -392,6 +398,9 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+#endif /* ! MEOS */
+
+
 static LWGEOM *
 geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
   double threshold, const SPHEROID *spheroid)
@@ -469,11 +478,17 @@ geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,
   if (lwgeom_is_empty(line))
     return NULL;
 
+#if ! MEOS
   GSERIALIZED *result = geography_serialize(line);
+#else
+  GSERIALIZED *result = geo_serialize(line);
+#endif /* ! MEOS */
   lwgeom_free(line);
 
   return result;
 }
+
+#if ! MEOS
 
 /**
 Returns the point in first input geography that is closest to the second
@@ -1158,3 +1173,4 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+#endif /* ! MEOS */

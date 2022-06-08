@@ -43,12 +43,11 @@
 #else
   #include <access/hash.h>
 #endif
-#include <libpq/pqformat.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/pg_call.h"
-#include "general/temporal_util.h"
 #include "general/temporal_parser.h"
+#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
@@ -339,9 +338,11 @@ span_in(char *str, CachedType spantype)
 /**
  * Remove the quotes from the string representation of a span
  */
-static void
+static char *
 unquote(char *str)
 {
+  /* Save the initial pointer */
+  char *result = str;
   char *last = str;
   while (*str != '\0')
   {
@@ -352,7 +353,7 @@ unquote(char *str)
     str++;
   }
   *last = '\0';
-  return;
+  return result;
 }
 
 /**
@@ -362,64 +363,14 @@ unquote(char *str)
 char *
 span_out(const Span *s)
 {
-  char *lower = basetype_output(s->basetype, s->lower);
-  char *upper = basetype_output(s->basetype, s->upper);
-  StringInfoData buf;
-  initStringInfo(&buf);
-  appendStringInfoChar(&buf, s->lower_inc ? (char) '[' : (char) '(');
-  appendStringInfoString(&buf, lower);
-  appendStringInfoString(&buf, ", ");
-  appendStringInfoString(&buf, upper);
-  appendStringInfoChar(&buf, s->upper_inc ? (char) ']' : (char) ')');
-  unquote(buf.data);
+  char *lower = unquote(basetype_output(s->basetype, s->lower));
+  char *upper = unquote(basetype_output(s->basetype, s->upper));
+  char open = s->lower_inc ? (char) '[' : (char) '(';
+  char close = s->upper_inc ? (char) ']' : (char) ')';
+  char *result = palloc(strlen(lower) + strlen(upper) + 5);
+  sprintf(result, "%c%s, %s%c", open, lower, upper, close);
   pfree(lower); pfree(upper);
-  return buf.data;
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return a span from its binary representation read from a buffer.
- */
-Span *
-span_recv(StringInfo buf)
-{
-  Span *result = (Span *) palloc0(sizeof(Span));
-  result->spantype = (char) pq_getmsgbyte(buf);
-  result->basetype = spantype_basetype(result->spantype);
-  result->lower = basetype_recv(result->basetype, buf);
-  result->upper = basetype_recv(result->basetype, buf);
-  result->lower_inc = (char) pq_getmsgbyte(buf);
-  result->upper_inc = (char) pq_getmsgbyte(buf);
   return result;
-}
-
-/**
- * @brief Write the binary representation of a span into a buffer.
- */
-void
-span_write(const Span *s, StringInfo buf)
-{
-  pq_sendbyte(buf, s->spantype);
-  bytea *lower = basetype_send(s->basetype, s->lower);
-  bytea *upper = basetype_send(s->basetype, s->upper);
-  pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
-  pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
-  pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, s->upper_inc ? (uint8) 1 : (uint8) 0);
-  pfree(lower); pfree(upper);
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return the binary representation of a span.
- */
-bytea *
-span_send(const Span *s)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  span_write(s, &buf);
-  return (bytea *) pq_endtypsend(&buf);
 }
 
 /*****************************************************************************
@@ -429,13 +380,14 @@ span_send(const Span *s)
 /**
  * @ingroup libmeos_spantime_constructor
  * @brief Construct a span from the bounds.
+ * @sqlfunc intspan(), floatspan(), period()
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   CachedType basetype)
 {
   /* Note: zero-fill is done in the span_set function */
-  Span *s = (Span *) palloc(sizeof(Span));
+  Span *s = palloc(sizeof(Span));
   span_set(lower, upper, lower_inc, upper_inc, basetype, s);
   return s;
 }
@@ -460,7 +412,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(s, 0, sizeof(Span));
-  /* Now fill in the span */
+  /* Fill in the span */
   s->lower = lower;
   s->upper = upper;
   s->lower_inc = lower_inc;
@@ -478,7 +430,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 Span *
 span_copy(const Span *s)
 {
-  Span *result = (Span *) palloc(sizeof(Span));
+  Span *result = palloc(sizeof(Span));
   memcpy((char *) result, (char *) s, sizeof(Span));
   return result;
 }
@@ -490,6 +442,7 @@ span_copy(const Span *s)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast an element as a span
+ * @sqlop @p ::
  */
 Span *
 elem_to_span(Datum d, CachedType basetype)
@@ -502,6 +455,7 @@ elem_to_span(Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp as a period
+ * @sqlop @p ::
  */
 Period *
 timestamp_to_period(TimestampTz t)
@@ -518,6 +472,7 @@ timestamp_to_period(TimestampTz t)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the lower bound of a span
+ * @sqlfunc lower()
  */
 Datum
 span_lower(Span *s)
@@ -528,6 +483,7 @@ span_lower(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the upper bound of a span
+ * @sqlfunc upper()
  */
 Datum
 span_upper(Span *s)
@@ -538,6 +494,7 @@ span_upper(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return true if the lower bound of a span is inclusive
+ * @sqlfunc lower_inc()
  */
 bool
 span_lower_inc(Span *s)
@@ -548,6 +505,7 @@ span_lower_inc(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return true if the upper bound of a span is inclusive
+ * @sqlfunc upper_inc()
  */
 bool
 span_upper_inc(Span *s)
@@ -559,6 +517,7 @@ span_upper_inc(Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the width of a span as a double.
+ * @sqlfunc width()
  */
 double
 span_width(const Span *s)
@@ -569,6 +528,7 @@ span_width(const Span *s)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of a period as an interval.
+ * @sqlfunc duration()
  */
 Interval *
 period_duration(const Span *s)
@@ -602,6 +562,7 @@ span_expand(const Span *s1, Span *s2)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale a period by the intervals.
+ * @sqlfunc shiftTscale()
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,
@@ -632,8 +593,8 @@ period_shift_tscale(const Interval *start, const Interval *duration,
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is equal to the second one.
- *
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p =
  */
 bool
 span_eq(const Span *s1, const Span *s2)
@@ -648,6 +609,7 @@ span_eq(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is different from the second one.
+ * @sqlop @p <>
  */
 bool
 span_ne(const Span *s1, const Span *s2)
@@ -685,6 +647,7 @@ span_cmp(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than the second one.
+ * @sqlop @p <
  */
 bool
 span_lt(const Span *s1, const Span *s2)
@@ -697,6 +660,7 @@ span_lt(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than or equal to the
  * second one.
+ * @sqlop @p <=
  */
 bool
 span_le(const Span *s1, const Span *s2)
@@ -709,6 +673,7 @@ span_le(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than or equal to the
  * second one.
+ * @sqlop @p >=
  */
 bool
 span_ge(const Span *s1, const Span *s2)
@@ -720,6 +685,7 @@ span_ge(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than the second one.
+ * @sqlop @p >
  */
 bool
 span_gt(const Span *s1, const Span *s2)
@@ -812,6 +778,8 @@ span_hash_extended(const Span *s, Datum seed)
 
 #if ! MEOS
 
+#include <libpq/pqformat.h>
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -840,26 +808,69 @@ Span_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(span_out(s));
 }
 
-PG_FUNCTION_INFO_V1(Span_send);
+/* Needed for time aggregation */
+
 /**
- * Send function for periods
+ * @brief Return a span from its binary representation read from a buffer.
  */
-PGDLLEXPORT Datum
-Span_send(PG_FUNCTION_ARGS)
+Span *
+span_recv(StringInfo buf)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_BYTEA_P(span_send(s));
+  Span *result = palloc0(sizeof(Span));
+  result->spantype = (char) pq_getmsgbyte(buf);
+  result->basetype = spantype_basetype(result->spantype);
+  result->lower = basetype_recv(result->basetype, buf);
+  result->upper = basetype_recv(result->basetype, buf);
+  result->lower_inc = (char) pq_getmsgbyte(buf);
+  result->upper_inc = (char) pq_getmsgbyte(buf);
+  return result;
+}
+
+/**
+ * @brief Write the binary representation of a span into a buffer.
+ */
+void
+span_write(const Span *s, StringInfo buf)
+{
+  pq_sendbyte(buf, s->spantype);
+  bytea *lower = basetype_send(s->basetype, s->lower);
+  bytea *upper = basetype_send(s->basetype, s->upper);
+  pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
+  pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
+  pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, s->upper_inc ? (uint8) 1 : (uint8) 0);
+  pfree(lower); pfree(upper);
 }
 
 PG_FUNCTION_INFO_V1(Span_recv);
 /**
- * Receive function for periods
+ * Generic receive function for spans
  */
 PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(span_recv(buf));
+  Span *result = span_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Span_send);
+/*
+ * Generic send function for spans
+ */
+PGDLLEXPORT Datum
+Span_send(PG_FUNCTION_ARGS)
+{
+  Span *span = PG_GETARG_SPAN_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(span);
+  uint8_t *wkb = span_as_wkb(span, variant, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_FREE_IF_COPY(span, 0);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************

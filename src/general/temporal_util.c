@@ -454,7 +454,7 @@ datum_copy(Datum value, CachedType basetype)
   /* For types passed by reference */
   int typlen = basetype_length(basetype);
   size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
-  void *result = palloc0(value_size);
+  void *result = palloc(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
   return PointerGetDatum(result);
 }
@@ -653,8 +653,20 @@ tinstarr_remove_duplicates(const TInstant **instants, int count)
 }
 
 /*****************************************************************************
- * Text functions
+ * Text and binary string functions
  *****************************************************************************/
+
+/**
+ * Convert a C binary string into a bytea
+ */
+bytea *
+bstring2bytea(const uint8_t *wkb, size_t size)
+{
+  bytea *result = palloc(size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, size);
+  SET_VARSIZE(result, size + VARHDRSZ);
+  return result;
+}
 
 /**
  * Convert a C string into a text value
@@ -662,12 +674,11 @@ tinstarr_remove_duplicates(const TInstant **instants, int count)
  * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
  */
-
 text *
 cstring2text(const char *cstring)
 {
   size_t len = strlen(cstring);
-  text *result = (text *) palloc(len + VARHDRSZ);
+  text *result = palloc(len + VARHDRSZ);
   SET_VARSIZE(result, len + VARHDRSZ);
   memcpy(VARDATA(result), cstring, len);
   return result;
@@ -689,6 +700,19 @@ text2cstring(const text *textptr)
   return str;
 }
 
+#if MEOS
+/* Simplified version of the function in varlena.c where LC_COLLATE is C */
+int
+varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
+  Oid collid __attribute__((unused)))
+{
+	int result = memcmp(arg1, arg2, Min(len1, len2));
+  if ((result == 0) && (len1 != len2))
+    result = (len1 < len2) ? -1 : 1;
+  return result;
+	}
+#endif /* MEOS */
+
 /**
  * Comparison function for text values
  *
@@ -697,10 +721,8 @@ text2cstring(const text *textptr)
 int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
-  char  *a1p,
-      *a2p;
-  int    len1,
-      len2;
+  char *a1p, *a2p;
+  int len1, len2;
 
   a1p = VARDATA_ANY(arg1);
   a2p = VARDATA_ANY(arg2);
@@ -963,6 +985,49 @@ basetype_output(CachedType basetype, Datum value)
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
+#else /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/**
+ * Call input function of the base type
+ */
+Datum
+basetype_input(CachedType basetype, char *str)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_input(basetypid, str);
+}
+
+/**
+ * Call output function of the base type
+ */
+char *
+basetype_output(CachedType basetype, Datum value)
+{
+  ensure_temporal_basetype(basetype);
+  Oid basetypid = type_oid(basetype);
+  return call_output(basetypid, value);
+}
+
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#if ! MEOS
+
+#include <utils/lsyscache.h>
+#include <catalog/pg_collation_d.h>
+#include <utils/varlena.h>
+
+/*****************************************************************************
+ * Send/receive PostgreSQL functions
+ *****************************************************************************/
+
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
  * Call receive function of the base type
  */
@@ -990,18 +1055,6 @@ basetype_recv(CachedType basetype, StringInfo buf)
     return PointerGetDatum(double3_recv(buf));
   if (basetype == T_DOUBLE4)
     return PointerGetDatum(double4_recv(buf));
-  if (basetype == T_GEOMETRY)
-    return PointerGetDatum(PGIS_LWGEOM_recv(buf));
-  if (basetype == T_GEOGRAPHY)
-#if ! MEOS
-    return call_recv(type_oid(T_GEOGRAPHY), buf);
-#else
-    return PointerGetDatum(PGIS_geography_recv(buf));
-#endif
-#if ! MEOS
-  if (basetype == T_NPOINT)
-    return PointerGetDatum(npoint_recv(buf));
-#endif
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
@@ -1032,40 +1085,10 @@ basetype_send(CachedType basetype, Datum value)
     return double3_send(DatumGetDouble3P(value));
   if (basetype == T_DOUBLE4)
     return double4_send(DatumGetDouble4P(value));
-  if (basetype == T_GEOMETRY)
-    return PGIS_LWGEOM_send(DatumGetGserializedP(value));
-  if (basetype == T_GEOGRAPHY)
-    return PGIS_geography_send(DatumGetGserializedP(value));
-#if ! MEOS
-  if (basetype == T_NPOINT)
-    return npoint_send(DatumGetNpointP(value));
-#endif
   elog(ERROR, "unknown type_input function for base type: %d", basetype);
 }
 
 #else /* #if POSTGRESQL_VERSION_NUMBER >= 140000 */
-
-/**
- * Call input function of the base type
- */
-Datum
-basetype_input(CachedType basetype, char *str)
-{
-  ensure_temporal_basetype(basetype);
-  Oid basetypid = type_oid(basetype);
-  return call_input(basetypid, str);
-}
-
-/**
- * Call output function of the base type
- */
-char *
-basetype_output(CachedType basetype, Datum value)
-{
-  ensure_temporal_basetype(basetype);
-  Oid basetypid = type_oid(basetype);
-  return call_output(basetypid, value);
-}
 
 /**
  * Call receive function of the base type
@@ -1104,18 +1127,6 @@ basetype_send(CachedType basetype, Datum value)
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <utils/lsyscache.h>
-#include <catalog/pg_collation_d.h>
-#include <utils/varlena.h>
 
 /*****************************************************************************
  * Call PostgreSQL functions
@@ -1212,7 +1223,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
   LOCAL_FCINFO(fcinfo, 2);
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_nargs = 2;
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
@@ -1235,7 +1246,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
   LOCAL_FCINFO(fcinfo, 3);
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
   InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
@@ -1279,7 +1290,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
   FunctionCallInfoData fcinfo;
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
   InitFunctionCallInfoData(fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
@@ -1301,7 +1312,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
   FunctionCallInfoData fcinfo;
   FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo)) ;
+  memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
   InitFunctionCallInfoData(fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
@@ -1504,7 +1515,7 @@ ArrayType *
 strarr_to_textarray(char **strarr, int count)
 {
   assert(count > 0);
-  text **textarr = (text **) palloc(sizeof(text *) * count);
+  text **textarr = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
     textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,

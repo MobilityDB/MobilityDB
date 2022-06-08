@@ -622,7 +622,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   STBOX *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  STBOX *centroid = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *centroid = palloc0(sizeof(STBOX));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
   int  median, i;
@@ -773,7 +773,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   {
     /* Report that all nodes should be visited */
     out->nNodes = in->nNodes;
-    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
     {
       out->nodeNumbers[i] = i;
@@ -808,7 +808,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
    */
   if (in->nkeys > 0)
   {
-    queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
+    queries = palloc0(sizeof(STBOX) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
       /* If the argument is an empty geometry the following call will do nothing */
       tpoint_spgist_get_stbox(&in->scankeys[i], &queries[i]);
@@ -816,11 +816,11 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
-  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-  out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = palloc(sizeof(void *) * in->nNodes);
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
-    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+    out->distances = palloc(sizeof(double *) * in->nNodes);
 #endif
 
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)

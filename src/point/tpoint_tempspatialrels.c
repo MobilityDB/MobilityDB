@@ -150,27 +150,27 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
- * @param[in] ti Temporal point
+ * @param[in] is Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func PostGIS function to be called
  */
 TInstantSet *
-tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter,
+tinterrel_tpointinstset_geom(const TInstantSet *is, Datum geom, bool tinter,
   Datum (*func)(Datum, Datum))
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(is, i);
     bool result = DatumGetBool(func(tinstant_value(inst), geom));
     /* For disjoint we need to invert the result */
     if (! tinter)
       result = ! result;
     instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
-  TInstantSet *result = tinstantset_make(instants, ti->count, MERGE_NO);
-  pfree_array((void **) instants, ti->count);
+  TInstantSet *result = tinstantset_make(instants, is->count, MERGE_NO);
+  pfree_array((void **) instants, is->count);
   return result;
 }
 
@@ -413,33 +413,33 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
- * @param[in] ts Temporal point
+ * @param[in] ss Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func PostGIS function to be used for instantaneous sequences
  */
 TSequenceSet *
-tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
+tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
   const STBOX *box, bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Singleton sequence set */
-  if (ts->count == 1)
-    return tinterrel_tpointseq_geom(tsequenceset_seq_n(ts, 0), geom, box,
+  if (ss->count == 1)
+    return tinterrel_tpointseq_geom(tsequenceset_seq_n(ss, 0), geom, box,
       tinter, func);
 
-  TSequence ***sequences = palloc(sizeof(TSequence *) * ts->count);
+  TSequence ***sequences = palloc(sizeof(TSequence *) * ss->count);
   /* palloc0 used to initizalize the counters to 0 */
-  int *countseqs = palloc0(sizeof(int) * ts->count);
+  int *countseqs = palloc0(sizeof(int) * ss->count);
   int totalcount = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     sequences[i] = tinterrel_tpointseq_geom1(seq, geom, box, tinter, func,
         &countseqs[i]);
     totalcount += countseqs[i];
   }
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ts->count,
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count,
     totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
@@ -906,26 +906,26 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
  * Return the timestamps at which the segments of two temporal points are
  * within the given distance
  *
- * @param[in] ts1,ts2 Temporal points
+ * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
-tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, Datum dist, datum_func3 func)
+tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, Datum dist, datum_func3 func)
 {
   /* Singleton sequence set */
-  if (ts1->count == 1)
-    return tdwithin_tpointseq_tpointseq(tsequenceset_seq_n(ts1, 0),
-      tsequenceset_seq_n(ts2, 0), dist, func);
+  if (ss1->count == 1)
+    return tdwithin_tpointseq_tpointseq(tsequenceset_seq_n(ss1, 0),
+      tsequenceset_seq_n(ss2, 0), dist, func);
 
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts1->totalcount * 4);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss1->totalcount * 4);
   int k = 0;
-  for (int i = 0; i < ts1->count; i++)
+  for (int i = 0; i < ss1->count; i++)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ss2, i);
     k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -1221,25 +1221,25 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
  * Return the timestamps at which a temporal point and a point are
  * within the given distance
  *
- * @param[in] ts Temporal point
+ * @param[in] ss Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
  */
 static TSequenceSet *
-tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
+tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
   datum_func3 func)
 {
   /* Singleton sequence set */
-  if (ts->count == 1)
-    return tdwithin_tpointseq_point(tsequenceset_seq_n(ts, 0), point, dist,
+  if (ss->count == 1)
+    return tdwithin_tpointseq_point(tsequenceset_seq_n(ss, 0), point, dist,
       func);
 
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount * 4);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount * 4);
   int k = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     k += tdwithin_tpointseq_point1(seq, point, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);

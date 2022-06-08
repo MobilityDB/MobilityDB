@@ -38,7 +38,6 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <libmeos.h>
@@ -52,8 +51,9 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
  * @brief Return the n-th timestamp of a timestamp set
+ * @pre The argument @p index is less than or equal to the number of timestamps
+ * in the timestamp set
  */
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
@@ -122,7 +122,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 }
 
 /*****************************************************************************
- * Input/output functions
+ * Input/output functions in string format
  *****************************************************************************/
 
 /**
@@ -153,59 +153,8 @@ timestampset_out(const TimestampSet *ts)
   return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
 }
 
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return a timestampset from its binary representation read from
- * a buffer.
- *
- * @param[in] buf Buffer
- */
-TimestampSet *
-timestampset_recv(StringInfo buf)
-{
-  int count = (int) pq_getmsgint(buf, 4);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  for (int i = 0; i < count; i++)
-    times[i] = DatumGetTimestampTz(basetype_recv(T_TIMESTAMPTZ, buf));
-  TimestampSet *result = timestampset_make_free(times, count);
-  return result;
-}
-
-/**
- * Write the binary representation of a timestamp set into a buffer.
- *
- * @param[in] ts Timestamp set
- * @param[in] buf Buffer
- */
-void
-timestampset_write(const TimestampSet *ts, StringInfo buf)
-{
-  pq_sendint32(buf, ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TimestampTz t = timestampset_time_n(ts, i);
-    bytea *t1 = basetype_send(T_TIMESTAMPTZ, TimestampTzGetDatum(t));
-    pq_sendbytes(buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
-    pfree(t1);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_spantime_input_output
- * @brief Return the binary representation of a timestamp set
- */
-bytea *
-timestampset_send(const TimestampSet *ts)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  timestampset_write(ts, &buf) ;
-  return (bytea *) pq_endtypsend(&buf);
-}
-
 /*****************************************************************************
- * Constructor function
+ * Constructor functions
  *****************************************************************************/
 
 /**
@@ -224,6 +173,7 @@ timestampset_send(const TimestampSet *ts)
  *
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
+ * @sqlfunc timestampset()
  */
 TimestampSet *
 timestampset_make(const TimestampTz *times, int count)
@@ -259,6 +209,7 @@ timestampset_make(const TimestampTz *times, int count)
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
  * @see timestampset_make
+ * @sqlfunc timestampset()
  */
 TimestampSet *
 timestampset_make_free(TimestampTz *times, int count)
@@ -292,6 +243,7 @@ timestampset_copy(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast a timestamp as a timestamp set
+ * @sqlop @p ::
  */
 TimestampSet *
 timestamp_to_timestampset(TimestampTz t)
@@ -307,6 +259,7 @@ timestamp_to_timestampset(TimestampTz t)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the size in bytes of a timestamp set.
+ * @sqlfunc memSize()
  */
 int
 timestampset_mem_size(const TimestampSet *ts)
@@ -317,6 +270,7 @@ timestampset_mem_size(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the timespan of a timestamp set.
+ * @sqlfunc timespan()
  */
 Interval *
 timestampset_timespan(const TimestampSet *ts)
@@ -330,6 +284,7 @@ timestampset_timespan(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Set a period to the bounding period of a timestamp set
+ * @sqlfunc period()
  */
 void
 timestampset_set_period(const TimestampSet *ts, Period *p)
@@ -342,6 +297,7 @@ timestampset_set_period(const TimestampSet *ts, Period *p)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of a timestamp set.
+ * @sqlfunc numTimestamps()
  */
 int
 timestampset_num_timestamps(const TimestampSet *ts)
@@ -352,6 +308,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the start timestamp of a timestamp set.
+ * @sqlfunc startTimestamp()
  */
 TimestampTz
 timestampset_start_timestamp(const TimestampSet *ts)
@@ -363,6 +320,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the end timestamp of a timestamp set.
+ * @sqlfunc endTimestamp()
  */
 TimestampTz
 timestampset_end_timestamp(const TimestampSet *ts)
@@ -380,6 +338,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
  * @param[out] result Timestamp
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
+ * @sqlfunc timestampN()
  */
 bool
 timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
@@ -393,6 +352,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the array of timestamps of a timestamp set.
+ * @sqlfunc timestamps()
  */
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
@@ -410,6 +370,7 @@ timestampset_timestamps(const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_transf
  * @brief Return a timestamp set shifted and/or scaled by the intervals
+ * @sqlfunc shiftTscale()
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
@@ -435,7 +396,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
     if (duration != NULL)
       scale =
         (double) (result->period.upper - result->period.lower) /
-        (double) (ts->period.upper - ts->period.lower) ;
+        (double) (ts->period.upper - ts->period.lower);
     for (int i = 1; i < ts->count - 1; i++)
     {
       if (start != NULL)
@@ -456,10 +417,9 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first timestamp set is equal to the
- * second one.
- *
+ * @brief Return true if the first timestamp set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p =
  */
 bool
 timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -482,8 +442,8 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is different from the
  * second one.
- *
  * @note The internal B-tree comparator is not used to increase efficiency
+ * @sqlop @p <>
  */
 bool
 timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -495,7 +455,6 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
- *
  * @note Function used for B-tree comparison
  */
 int
@@ -527,6 +486,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is less than the second one
+ * @sqlop @p <
  */
 bool
 timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -539,6 +499,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is less than
  * or equal to the second one
+ * @sqlop @p <=
  */
 bool
 timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -551,6 +512,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
+ * @sqlop @p >=
  */
 bool
 timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -562,6 +524,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 /**
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first timestamp set is greater than the second one
+ * @sqlop @p >
  */
 bool
 timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -647,28 +610,34 @@ Timestampset_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_send);
-/**
- * Return the binary representation of a timestamp set
- */
-PGDLLEXPORT Datum
-Timestampset_send(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  bytea *result = timestampset_send(ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BYTEA_P(result);
-}
-
 PG_FUNCTION_INFO_V1(Timestampset_recv);
 /**
- * Return a timestamp set from its binary representation read from a buffer
+ * Receive function for timestamp set
  */
 PGDLLEXPORT Datum
 Timestampset_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(timestampset_recv(buf));
+  TimestampSet *result = timestampset_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_send);
+/**
+ * Send function for timestamp set
+ */
+PGDLLEXPORT Datum
+Timestampset_send(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(ts);
+  uint8_t *wkb = timestampset_as_wkb(ts, variant, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************
@@ -733,7 +702,7 @@ PGDLLEXPORT Datum
 Timestampset_to_period(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   timestampset_period_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }

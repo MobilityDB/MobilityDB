@@ -167,9 +167,9 @@ extern Datum line_make(Datum value1, Datum value2);
 /* Functions for spatial reference systems */
 
 extern TInstant *tpointinst_transform(const TInstant *inst, int srid);
-extern TInstantSet *tpointinstset_transform(const TInstantSet *ti, int srid);
+extern TInstantSet *tpointinstset_transform(const TInstantSet *is, int srid);
 extern TSequence *tpointseq_transform(const TSequence *seq, int srid);
-extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ts, int srid);
+extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int srid);
 extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 
 /* Set precision of the coordinates */

@@ -50,6 +50,7 @@
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly before a temporal value
+ * @sqlop @p <<#
  */
 bool
 before_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -60,6 +61,7 @@ before_timestamp_temporal(TimestampTz t, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not after a temporal value
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -70,6 +72,7 @@ overbefore_timestamp_temporal(TimestampTz t, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly after a temporal value
+ * @sqlop @p #>>
  */
 bool
 after_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -80,6 +83,7 @@ after_timestamp_temporal(TimestampTz t, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not before a temporal value
+ * @sqlop @p #&>
  */
 bool
 overafter_timestamp_temporal(TimestampTz t, const Temporal *temp)
@@ -90,6 +94,7 @@ overafter_timestamp_temporal(TimestampTz t, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly before a temporal value
+ * @sqlop @p <<#
  */
 bool
 before_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -100,6 +105,7 @@ before_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not after a temporal value
+ * @sqlop @p &<#
  */
 bool
 overbefore_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -111,6 +117,7 @@ overbefore_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly after a temporal value
+ * @sqlop @p #>>
  */
 bool
 after_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -121,6 +128,7 @@ after_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not before a temporal value
+ * @sqlop @p #&>
  */
 bool
 overafter_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
@@ -132,6 +140,7 @@ overafter_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly before a temporal value
+ * @sqlop @p <<#
  */
 bool
 before_period_temporal(const Period *p, const Temporal *temp)
@@ -142,6 +151,7 @@ before_period_temporal(const Period *p, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not after a temporal value
+ * @sqlop @p &<#
  */
 bool
 overbefore_period_temporal(const Period *p, const Temporal *temp)
@@ -152,6 +162,7 @@ overbefore_period_temporal(const Period *p, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly after a temporal value
+ * @sqlop @p #>>
  */
 bool
 after_period_temporal(const Period *p, const Temporal *temp)
@@ -162,6 +173,7 @@ after_period_temporal(const Period *p, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not before a temporal value
+ * @sqlop @p #&>
  */
 bool
 overafter_period_temporal(const Period *p, const Temporal *temp)
@@ -172,6 +184,7 @@ overafter_period_temporal(const Period *p, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly before a temporal value
+ * @sqlop @p <<#
  */
 bool
 before_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -182,6 +195,7 @@ before_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not after a temporal value
+ * @sqlop @p &<#
  */
 bool
 overbefore_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -192,6 +206,7 @@ overbefore_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is strictly after a temporal value
+ * @sqlop @p #>>
  */
 bool
 after_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -202,6 +217,7 @@ after_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a period is not before a temporal value
+ * @sqlop @p #&>
  */
 bool
 overafter_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
@@ -215,6 +231,7 @@ overafter_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly before a timestamp
+ * @sqlop @p <<#
  */
 bool
 before_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -225,6 +242,7 @@ before_temporal_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not after a timestamp
+ * @sqlop @p &<#
  */
 bool
 overbefore_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -235,6 +253,7 @@ overbefore_temporal_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly after a timestamp
+ * @sqlop @p #>>
  */
 bool
 after_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -245,6 +264,7 @@ after_temporal_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not before a timestamp
+ * @sqlop @p #&>
  */
 bool
 overafter_temporal_timestamp(const Temporal *temp, TimestampTz t)
@@ -258,6 +278,7 @@ overafter_temporal_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly before a timestamp set
+ * @sqlop @p <<#
  */
 bool
 before_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -268,6 +289,7 @@ before_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not after a timestamp set
+ * @sqlop @p &<#
  */
 bool
 overbefore_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -279,6 +301,7 @@ overbefore_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly after a timestamp set
+ * @sqlop @p #>>
  */
 bool
 after_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -289,6 +312,7 @@ after_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not before a timestamp set
+ * @sqlop @p #&>
  */
 bool
 overafter_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -303,6 +327,7 @@ overafter_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly before a period
+ * @sqlop @p <<#
  */
 bool
 before_temporal_period(const Temporal *temp, const Period *p)
@@ -313,6 +338,7 @@ before_temporal_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not after a period
+ * @sqlop @p &<#
  */
 bool
 overbefore_temporal_period(const Temporal *temp, const Period *p)
@@ -323,6 +349,7 @@ overbefore_temporal_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly after a period
+ * @sqlop @p #>>
  */
 bool
 after_temporal_period(const Temporal *temp, const Period *p)
@@ -333,6 +360,7 @@ after_temporal_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not before a period
+ * @sqlop @p #&>
  */
 bool
 overafter_temporal_period(const Temporal *temp, const Period *p)
@@ -346,6 +374,7 @@ overafter_temporal_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly before a period set
+ * @sqlop @p <<#
  */
 bool
 before_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -356,6 +385,7 @@ before_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not after a period set
+ * @sqlop @p &<#
  */
 bool
 overbefore_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -367,6 +397,7 @@ overbefore_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is strictly after a period set
+ * @sqlop @p #>>
  */
 bool
 after_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -377,6 +408,7 @@ after_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal value is not before a period set
+ * @sqlop @p #&>
  */
 bool
 overafter_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -392,6 +424,7 @@ overafter_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal value is strictly before the
  * second one
+ * @sqlop @p <<#
  */
 bool
 before_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -402,6 +435,7 @@ before_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal value is not after the second one
+ * @sqlop @p &<#
  */
 bool
 overbefore_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -413,6 +447,7 @@ overbefore_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal value is strictly after the
  * second one
+ * @sqlop @p #>>
  */
 bool
 after_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -423,6 +458,7 @@ after_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal value is not before the second one
+ * @sqlop @p #&>
  */
 bool
 overafter_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -436,6 +472,7 @@ overafter_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number is strictly to the left of a temporal number
+ * @sqlop @p <<
  */
 bool
 left_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -447,6 +484,7 @@ left_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number is not to the right of a temporal number
+ * @sqlop @p &<
  */
 bool
 overleft_number_tnumber(Datum number, CachedType basetype,
@@ -459,6 +497,7 @@ overleft_number_tnumber(Datum number, CachedType basetype,
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number is strictly to the right of a temporal number
+ * @sqlop @p >>
  */
 bool
 right_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
@@ -470,6 +509,7 @@ right_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number is not to the left of a temporal number
+ * @sqlop @p &>
  */
 bool
 overright_number_tnumber(Datum number, CachedType basetype,
@@ -486,6 +526,7 @@ overright_number_tnumber(Datum number, CachedType basetype,
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number span is strictly to the left of a
  * temporal number
+ * @sqlop @p <<
  */
 bool
 left_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -497,6 +538,7 @@ left_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number span is not to the right of a
  * temporal number
+ * @sqlop @p &<
  */
 bool
 overleft_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -508,6 +550,7 @@ overleft_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number span is strictly to the right of a
  * temporal number
+ * @sqlop @p >>
  */
 bool
 right_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -519,6 +562,7 @@ right_span_tnumber(const Span *span, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a number span is not to the left of a
  * temporal number
+ * @sqlop @p &>
  */
 bool
 overright_span_tnumber(const Span *span, const Temporal *tnumber)
@@ -532,6 +576,7 @@ overright_span_tnumber(const Span *span, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly to the left of a number
+ * @sqlop @p <<
  */
 bool
 left_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
@@ -543,6 +588,7 @@ left_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not to the right of a number
+ * @sqlop @p &<
  */
 bool
 overleft_tnumber_number(const Temporal *tnumber, Datum number,
@@ -555,6 +601,7 @@ overleft_tnumber_number(const Temporal *tnumber, Datum number,
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly to the right of a number
+ * @sqlop @p >>
  */
 bool
 right_tnumber_number(const Temporal *tnumber, Datum number,
@@ -567,6 +614,7 @@ right_tnumber_number(const Temporal *tnumber, Datum number,
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not to the left of a number
+ * @sqlop @p &>
  */
 bool
 overright_tnumber_number(const Temporal *tnumber, Datum number,
@@ -583,6 +631,7 @@ overright_tnumber_number(const Temporal *tnumber, Datum number,
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly to the left of a
  * number span
+ * @sqlop @p <<
  */
 bool
 left_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -594,6 +643,7 @@ left_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not to the right of a
  * number span
+ * @sqlop @p &<
  */
 bool
 overleft_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -605,6 +655,7 @@ overleft_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly to the right of a
  * number span
+ * @sqlop @p >>
  */
 bool
 right_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -616,6 +667,7 @@ right_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not to the left of a
  * number span
+ * @sqlop @p &>
  */
 bool
 overright_tnumber_span(const Temporal *tnumber, const Span *span)
@@ -630,6 +682,7 @@ overright_tnumber_span(const Temporal *tnumber, const Span *span)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is strictly to the left of a
  * temporal number
+ * @sqlop @p <<
  */
 bool
 left_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -641,6 +694,7 @@ left_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is not to the right of a
  * temporal number
+ * @sqlop @p &<
  */
 bool
 overleft_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -652,6 +706,7 @@ overleft_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is strictly to the right of a
  * temporal number
+ * @sqlop @p >>
  */
 bool
 right_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -663,6 +718,7 @@ right_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is not to the left of a
  * temporal number
+ * @sqlop @p &>
  */
 bool
 overright_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -674,6 +730,7 @@ overright_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is strictly before a
  * temporal number
+ * @sqlop @p <<#
  */
 bool
 before_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -684,6 +741,7 @@ before_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is not after a temporal number
+ * @sqlop @p &<#
  */
 bool
 overbefore_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -694,6 +752,7 @@ overbefore_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is strictly after a temporal number
+ * @sqlop @p #>>
  */
 bool
 after_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -704,6 +763,7 @@ after_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal box is not before a temporal number
+ * @sqlop @p #&>
  */
 bool
 overafter_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
@@ -718,6 +778,7 @@ overafter_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly to the left of
  * a temporal box
+ * @sqlop @p <<
  */
 bool
 left_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -729,6 +790,7 @@ left_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not to the right of
  * a temporal box
+ * @sqlop @p &<
  */
 bool
 overleft_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -740,6 +802,7 @@ overleft_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly to the right of
  * a temporal box
+ * @sqlop @p >>
  */
 bool
 right_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -750,6 +813,7 @@ right_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not to the left of a temporal box
+ * @sqlop @p &>
  */
 bool
 overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -760,6 +824,7 @@ overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly before a temporal box
+ * @sqlop @p <<#
  */
 bool
 before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -770,6 +835,7 @@ before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not after a temporal box
+ * @sqlop @p &<#
  */
 bool
 overbefore_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -780,6 +846,7 @@ overbefore_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is strictly after a temporal box
+ * @sqlop @p #>>
  */
 bool
 after_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -790,6 +857,7 @@ after_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 /**
  * @ingroup libmeos_temporal_pos
  * @brief Return true if a temporal number is not before a temporal box
+ * @sqlop @p #&>
  */
 bool
 overafter_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
@@ -804,6 +872,7 @@ overafter_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is strictly to the left of
  * the second one
+ * @sqlop @p <<
  */
 bool
 left_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -815,6 +884,7 @@ left_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is not to the right of
  * the second one
+ * @sqlop @p &<
  */
 bool
 overleft_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -826,6 +896,7 @@ overleft_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is strictly to the right of
  * the second one
+ * @sqlop @p >>
  */
 bool
 right_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -837,6 +908,7 @@ right_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is not to the left of
  * the second one
+ * @sqlop @p &>
  */
 bool
 overright_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -848,6 +920,7 @@ overright_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is strictly before
  * the second one
+ * @sqlop @p <<#
  */
 bool
 before_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -859,6 +932,7 @@ before_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is not after
  * the second one
+ * @sqlop @p &<#
  */
 bool
 overbefore_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -870,6 +944,7 @@ overbefore_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is strictly after
  * the second one
+ * @sqlop @p #>>
  */
 bool
 after_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
@@ -881,6 +956,7 @@ after_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal number is not before
  * the second one
+ * @sqlop @p #&>
  */
 bool
 overafter_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)

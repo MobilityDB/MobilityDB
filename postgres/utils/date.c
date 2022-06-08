@@ -23,7 +23,7 @@
 
 // #include "access/xact.h"
 #include "common/hashfn.h"
-#include "libpq/pqformat.h"
+// #include "libpq/pqformat.h"
 // #include "miscadmin.h"
 // #include "nodes/supportnodes.h"
 // #include "parser/scansup.h"
@@ -342,7 +342,7 @@ GetSQLCurrentTime(int32 typmod)
 
 	GetCurrentTimeUsec(tm, &fsec, &tz);
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 	tm2timetz(tm, fsec, tz, result);
 	AdjustTimeForTypmod(&(result->time), typmod);
 	return result;
@@ -1997,7 +1997,7 @@ time_interval(PG_FUNCTION_ARGS)
 	TimeADT		time = PG_GETARG_TIMEADT(0);
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	result->time = time;
 	result->day = 0;
@@ -2046,7 +2046,7 @@ time_mi_time(PG_FUNCTION_ARGS)
 	TimeADT		time2 = PG_GETARG_TIMEADT(1);
 	Interval   *result;
 
-	result = (Interval *) palloc(sizeof(Interval));
+	result = palloc(sizeof(Interval));
 
 	result->month = 0;
 	result->day = 0;
@@ -2295,7 +2295,7 @@ timetz_in(PG_FUNCTION_ARGS)
 	if (dterr != 0)
 		DateTimeParseError(dterr, str, "time with time zone");
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 	tm2timetz(tm, fsec, tz, result);
 	AdjustTimeForTypmod(&(result->time), typmod);
 
@@ -2334,7 +2334,7 @@ timetz_recv(PG_FUNCTION_ARGS)
 	int32		typmod = PG_GETARG_INT32(2);
 	TimeTzADT  *result;
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = pq_getmsgint64(buf);
 
@@ -2420,7 +2420,7 @@ timetz_scale(PG_FUNCTION_ARGS)
 	int32		typmod = PG_GETARG_INT32(1);
 	TimeTzADT  *result;
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = time->time;
 	result->zone = time->zone;
@@ -2591,7 +2591,7 @@ timetz_pl_interval(PG_FUNCTION_ARGS)
 	Interval   *span = PG_GETARG_INTERVAL_P(1);
 	TimeTzADT  *result;
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = time->time + span->time;
 	result->time -= result->time / USECS_PER_DAY * USECS_PER_DAY;
@@ -2613,7 +2613,7 @@ timetz_mi_interval(PG_FUNCTION_ARGS)
 	Interval   *span = PG_GETARG_INTERVAL_P(1);
 	TimeTzADT  *result;
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = time->time - span->time;
 	result->time -= result->time / USECS_PER_DAY * USECS_PER_DAY;
@@ -2818,7 +2818,7 @@ time_timetz(PG_FUNCTION_ARGS)
 	time2tm(time, tm, &fsec);
 	tz = DetermineTimeZoneOffset(tm, session_timezone);
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = time;
 	result->zone = tz;
@@ -2848,7 +2848,7 @@ timestamptz_timetz(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
 				 errmsg("timestamp out of range")));
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	tm2timetz(tm, fsec, tz, result);
 
@@ -3104,7 +3104,7 @@ timetz_zone(PG_FUNCTION_ARGS)
 		}
 	}
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = t->time + (t->zone - tz) * USECS_PER_SEC;
 	while (result->time < INT64CONST(0))
@@ -3137,7 +3137,7 @@ timetz_izone(PG_FUNCTION_ARGS)
 
 	tz = -(zone->time / USECS_PER_SEC);
 
-	result = (TimeTzADT *) palloc(sizeof(TimeTzADT));
+	result = palloc(sizeof(TimeTzADT));
 
 	result->time = time->time + (time->zone - tz) * USECS_PER_SEC;
 	while (result->time < INT64CONST(0))

@@ -76,6 +76,7 @@ datum_not(Datum d)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean not of a temporal boolean.
+ * @sqlop @p ~
  */
 Temporal *
 tnot_tbool(const Temporal *temp)

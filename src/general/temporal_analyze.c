@@ -142,13 +142,13 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       spantype = T_INTSPAN;
     else /* temporal_extra_data->value_typid == FLOAT8OID */
       spantype = T_FLOATSPAN;
-    value_lowers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
-    value_uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
-    value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
+    value_lowers = palloc(sizeof(SpanBound) * samplerows);
+    value_uppers = palloc(sizeof(SpanBound) * samplerows);
+    value_lengths = palloc(sizeof(float8) * samplerows);
   }
-  time_lowers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
-  time_uppers = (SpanBound *) palloc(sizeof(SpanBound) * samplerows);
-  time_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
+  time_lowers = palloc(sizeof(SpanBound) * samplerows);
+  time_uppers = palloc(sizeof(SpanBound) * samplerows);
+  time_lengths = palloc(sizeof(float8) * samplerows);
 
   /* Loop over the temporal values. */
   for (int i = 0; i < samplerows; i++)
@@ -261,7 +261,7 @@ temporal_extra_info(VacAttrStats *stats)
        stats->attrtypid);
 
   /* Store our findings for use by stats functions */
-  extra_data = (TemporalAnalyzeExtraData *) palloc(sizeof(TemporalAnalyzeExtraData));
+  extra_data = palloc(sizeof(TemporalAnalyzeExtraData));
 
   /*
    * Gather information about the temporal type and its value and time types.

@@ -342,7 +342,7 @@ skiplist_headval(SkipList *list)
   return list->elems[list->elems[0].next[0]].value;
 }
 
-/*  Function not currently used
+#if 0 /* not used */
 void *
 skiplist_tailval(SkipList *list)
 {
@@ -354,7 +354,7 @@ skiplist_tailval(SkipList *list)
     e = &list->elems[e->next[height - 1]];
   return e->value;
 }
-*/
+#endif /* not used */
 
 /**
  * Splice the skiplist with the array of values using the aggregation
@@ -378,30 +378,30 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
    * everything has to be deleted)
    */
   assert(list->length > 0);
-  Period p;
+  Period *p;
   uint8 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
-    span_set((TimestampTz) values[0], (TimestampTz) values[count - 1],
-      true, true, T_TIMESTAMPTZ, &p);
+    p = span_make((TimestampTz) values[0], (TimestampTz) values[count - 1],
+      true, true, T_TIMESTAMPTZ);
   }
   else if (list->elemtype == PERIOD)
   {
-    span_set(((Span *) values[0])->lower, ((Span *) values[count - 1])->upper,
+    p = span_make(((Span *) values[0])->lower, ((Span *) values[count - 1])->upper,
       ((Span *) values[0])->lower_inc, ((Span *) values[count - 1])->upper_inc,
-      T_TIMESTAMPTZ, &p);
+      T_TIMESTAMPTZ);
   }
   else /* list->elemtype == TEMPORAL */
   {
     subtype = ((Temporal *) skiplist_headval(list))->subtype;
     if (subtype == INSTANT)
-      span_set(((TInstant *) values[0])->t, ((TInstant *) values[count - 1])->t,
-        true, true, T_TIMESTAMPTZ, &p);
+      p = span_make(((TInstant *) values[0])->t, ((TInstant *) values[count - 1])->t,
+        true, true, T_TIMESTAMPTZ);
     else /* subtype == SEQUENCE */
-      span_set(((TSequence *)values[0])->period.lower,
+      p = span_make(((TSequence *)values[0])->period.lower,
         ((TSequence *) values[count - 1])->period.upper,
         ((TSequence *) values[0])->period.lower_inc,
-        ((TSequence *) values[count - 1])->period.upper_inc, T_TIMESTAMPTZ, &p);
+        ((TSequence *) values[count - 1])->period.upper_inc, T_TIMESTAMPTZ);
   }
 
   int update[SKIPLIST_MAXLEVEL];
@@ -412,7 +412,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   for (int level = height - 1; level >= 0; level --)
   {
     while (e->next[level] != -1 &&
-      skiplist_elmpos(list, e->next[level], p.lower) == AFTER)
+      skiplist_elmpos(list, e->next[level], p->lower) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -425,14 +425,14 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   e = &list->elems[cur];
 
   int spliced_count = 0;
-  while (skiplist_elmpos(list, cur, p.upper) == AFTER)
+  while (skiplist_elmpos(list, cur, p->upper) == AFTER)
   {
     cur = e->next[0];
     e = &list->elems[cur];
     spliced_count++;
   }
   int upper = cur;
-  if (upper >= 0 && skiplist_elmpos(list, upper, p.upper) == DURING)
+  if (upper >= 0 && skiplist_elmpos(list, upper, p->upper) == DURING)
   {
     upper = e->next[0]; /* if found upper, one more to remove */
     spliced_count++;
@@ -477,8 +477,8 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
     void **newtemps;
     if (list->elemtype == TIMESTAMPTZ)
     {
-      newtemps = (void **) timestamp_agg((TimestampTz *) spliced, spliced_count,
-        (TimestampTz *) values, count, &newcount);
+      newtemps = (void **) timestamp_agg((TimestampTz *) spliced,
+        spliced_count, (TimestampTz *) values, count, &newcount);
       pfree(spliced);
     }
     else if (list->elemtype == PERIOD)
@@ -495,7 +495,8 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
           spliced_count, (TInstant **) values, count, func, &newcount);
       else
         newtemps = (void **) tsequence_tagg((TSequence **) spliced,
-          spliced_count, (TSequence **) values, count, func, crossings, &newcount);
+          spliced_count, (TSequence **) values, count, func, crossings,
+          &newcount);
       /* We need to delete the spliced-out temporal values */
       pfree_array(spliced, spliced_count);
     }

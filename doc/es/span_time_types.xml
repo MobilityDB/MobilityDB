@@ -9,66 +9,15 @@
    ****************************************************************************
 -->
 <chapter id="time_span_types">
-	<title>Tipos de tiempo y de rango</title>
+	<title>Tipos de rango y de tiempo</title>
 
 	<para>
 		MobilityDB tiene tres tipos de rango, a saber, <varname>intspan</varname>, <varname>floatspan</varname> y <varname>period</varname>, para representar, respectivamente, rangos de <varname>integer</varname> , <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene dos tipos de tiempo adicionales, a saber, <varname>timestampset</varname> y <varname>periodset</varname>.
 	</para>
 
 	<para>
-		Los tipos de intervalo en MobilityDB corresponden a los tipos de rango en PostgreSQL, donde <varname>intspan</varname> y <varname>period</varname> corresponden a <varname>int4range</varname> y <varname>tstzrange</varname>. Sin embargo, los tipos de rango en MobilityDB tienen una implementación más eficiente que los tipos de rango en PostgreSQL. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, se permiten rangos vacíos y límites infinitos en valores de rango en PostgreSQL, mientras que esto no está permitido para valores de rango en MobilityDB.
+		Los tipos de rango en MobilityDB corresponden a los tipos de rango en PostgreSQL, donde <varname>intspan</varname> y <varname>period</varname> corresponden a <varname>int4range</varname> y <varname>tstzrange</varname>. Sin embargo, los tipos de rango en MobilityDB tienen una implementación más eficiente que los tipos de rango en PostgreSQL. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, se permiten rangos vacíos y límites infinitos en valores de rango en PostgreSQL, mientras que esto no está permitido para valores de rango en MobilityDB.
 	</para>
-
-	<para>
-		Un valor del tipo <varname>period</varname> tiene dos límites, el límite inferior y el límite superior, que son valores de <varname>timestamptz</varname>. Los límites pueden ser inclusivos o exclusivos. Un límite inclusivo significa que el instante límite está incluido en el período, mientras que un límite exclusivo significa que el instante límite no está incluido en el período. En el formato textual de un valor de <varname>period</varname>, los límites inferiores inclusivos y exclusivos están representados, respectivamente, por &ldquo;<varname>[</varname>&rdquo; y &ldquo;<varname>(</varname>&rdquo;. Asimismo, los límites superiores inclusivos y exclusivos se representan, respectivamente, por &ldquo;<varname>]</varname>&rdquo; y &ldquo;<varname>)</varname>&rdquo;. En un valor de <varname>period</varname>, el límite inferior debe ser menor o igual que el límite superior. Un valor de <varname>period</varname> con límites iguales e inclusivos se llama <emphasis>período instantáneo</emphasis> y corresponde a un valor de <varname>timestamptz</varname>. Ejemplos de valores de <varname>period</varname> son como sigue:
-	</para>
-	<programlisting xml:space="preserve">
-SELECT period '[2012-01-01 08:00:00, 2012-01-03 09:30:00)';
--- Período instantáneo
-SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';
--- Período erróneo: límites inválidos
-SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]';
--- Período erróneo: período vacío
-SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)';
-</programlisting>
-
-	<para>
-		El tipo <varname>timestampset</varname> representa un conjunto de valores <varname>timestamptz</varname> diferentes. Un valor de <varname>timestampset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>timestamptz</varname>. Los elementos que componen un valor de <varname>timestampset</varname> deben estar ordenados. Ejemplos de valores de <varname>timestampset</varname> son como sigue:
-	</para>
-	<programlisting xml:space="preserve">
-SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';
--- Conjunto unitario de marcas de tiempo
-SELECT timestampset '{2012-01-01 08:00:00}';
--- Conjunto de marcas de tiempo erróneo: elementos desordenados
-SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}';
--- Conjunto de marcas de tiempo erróneo: elementos duplicados
-SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}';
-</programlisting>
-
-	<para>
-		Finalmente, el tipo <varname>periodset</varname> representa un conjunto de valores disjuntos de <varname>period</varname>. Un valor de <varname>periodset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>period</varname>. Los elementos que componen un valor de <varname>periodset</varname> deben estar ordenados. Ejemplos de valores de <varname>periodset</varname> son come sigue:
-	</para>
-	<programlisting xml:space="preserve">
-SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
-  [2012-01-01 08:20:00, 2012-01-01 08:40:00]}';
--- Conjunto unitario de períodos
-SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
--- Conjunto de períodos erróneo: elementos desordenados
-SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],
-  [2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
--- Conjunto de períodos erróneo: elementos superpuestos
-SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
-  [2012-01-01 08:05:00, 2012-01-01 08:15:00]}';
-</programlisting>
-
-	<para>
-		Los valores del tipo <varname>periodset</varname> son convertidos en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores de períodos consecutivos que son adyacentes se fusionan cuando es posible. Un ejemplo de transformación a forma normal es el siguiente:
-	</para>
-	<programlisting xml:space="preserve">
-SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
-  [2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';
--- "{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}"
-</programlisting>
 
 	<sect1 id ="functions_operations_time_types">
 		<title>Funciones y operadores para tipos de rango y de tiempo</title>
@@ -109,6 +58,220 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 		<para>
 			A continuación, por concisión, la parte de tiempo de las marcas de tiempo se omite en los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>.
 		</para>
+
+		<sect2>
+			<title>Funciones de entrada/salida</title>
+			<para>
+				MobilityDB generaliza los formatos de entrada/salida Well-Known Text (WKT) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. De esta forma, las aplicaciones pueden intercambiar datos entre ellas utilizando un formato de intercambio estandarizado. El formato WKT es legible por humanos, mientras que el formato WKB es más compacto y más eficiente que el formato WKT. El formato WKB se puede generar como una cadena binaria o como una cadena de caracteres codificada en ASCII hexadecimal.
+			</para>
+
+			<para>
+				Un valor de un tipo de rango tiene dos límites, el <emphasis>límite inferior</emphasis> y el <emphasis>límite superior</emphasis>, que son valores del <emphasis>tipo de base</emphasis> subyacente. Por ejemplo, un valor del tipo <varname>period</varname> tiene dos límites, que son valores de <varname>timestamptz</varname>. Los límites pueden ser inclusivos o exclusivos. Un límite inclusivo significa que el instante límite está incluido en el rango, mientras que un límite exclusivo significa que el instante límite no está incluido en el rango. En el formato textual de un valor de un rango, los límites inferiores inclusivos y exclusivos están representados, respectivamente, por &ldquo;<varname>[</varname>&rdquo; y &ldquo;<varname>(</varname>&rdquo;. Asimismo, los límites superiores inclusivos y exclusivos se representan, respectivamente, por &ldquo;<varname>]</varname>&rdquo; y &ldquo;<varname>)</varname>&rdquo;. En un valor de un rango, el límite inferior debe ser menor o igual que el límite superior. Un valor de rango con límites iguales e inclusivos se llama <emphasis>rango instantáneo</emphasis> y corresponde a un valor del tipo de base. Ejemplos de valores de rango son como sigue:
+			</para>
+			<programlisting xml:space="preserve">
+SELECT intspan '[1, 3)';
+SELECT floatspan '[1.5, 3.5]';
+SELECT period '[2012-01-01 08:00:00, 2012-01-03 09:30:00)';
+-- Rangos instantáneos
+SELECT intspan '[1, 1]';
+SELECT floatspan '[1.5, 1.5]';
+SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';
+-- Rango erróneo: límites inválidos
+SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]';
+-- Rango erróneo: rango vacío
+SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)';
+		</programlisting>
+
+			<para>
+				El tipo <varname>timestampset</varname> representa un conjunto de valores <varname>timestamptz</varname> diferentes. Un valor de <varname>timestampset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>timestamptz</varname>. Los elementos que componen un valor de <varname>timestampset</varname> deben estar ordenados. Ejemplos de valores de <varname>timestampset</varname> son como sigue:
+			</para>
+			<programlisting xml:space="preserve">
+SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';
+-- Conjunto unitario de marcas de tiempo
+SELECT timestampset '{2012-01-01 08:00:00}';
+-- Conjunto de marcas de tiempo erróneo: elementos desordenados
+SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}';
+-- Conjunto de marcas de tiempo erróneo: elementos duplicados
+SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}';
+</programlisting>
+
+			<para>
+				Finalmente, el tipo <varname>periodset</varname> representa un conjunto de valores disjuntos de <varname>period</varname>. Un valor de <varname>periodset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>period</varname>. Los elementos que componen un valor de <varname>periodset</varname> deben estar ordenados. Ejemplos de valores de <varname>periodset</varname> son come sigue:
+			</para>
+			<programlisting xml:space="preserve">
+SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
+  [2012-01-01 08:20:00, 2012-01-01 08:40:00]}';
+-- Conjunto unitario de períodos
+SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
+-- Conjunto de períodos erróneo: elementos desordenados
+SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],
+  [2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
+-- Conjunto de períodos erróneo: elementos superpuestos
+SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
+  [2012-01-01 08:05:00, 2012-01-01 08:15:00]}';
+</programlisting>
+
+			<para>
+				Los valores del tipo <varname>periodset</varname> son convertidos en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores de períodos consecutivos que son adyacentes se fusionan cuando es posible. Un ejemplo de transformación a forma normal es el siguiente:
+			</para>
+			<programlisting xml:space="preserve">
+SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
+  [2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';
+-- "{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}"
+</programlisting>
+
+			<para>
+				Damos a continuación las funciones de entrada/salida de tipos de rango y de tiempo en formato binario conocido.
+			</para>
+
+			<itemizedlist>
+				<listitem id="spantime_asBinary">
+					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
+					<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><varname>asBinary({span,timestampset,periodset}): bytea</varname></para>
+					<para><varname>asBinary({span,timestampset,periodset},endian text): bytea</varname></para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+					<programlisting xml:space="preserve">
+SELECT asBinary(intspan '[1, 2]');
+-- \x010800010100000003000000
+SELECT asBinary(intspan '[1, 2]', 'XDR');
+-- \x000008010000000100000003
+SELECT asBinary(floatspan '[1.5, 2.5)');
+-- \x01060001000000000000f83f0000000000000440
+SELECT asBinary(period '[2012-01-01, 2012-01-03]');
+-- \x010a000300fce0136a58010000bc8f4f92580100
+SELECT asBinary(timestampset '{2012-01-01, 2012-01-03}');
+-- \x010200000000fce0136a58010000bc8f4f92580100
+SELECT asBinary(periodset '{[2012-01-01, 2012-01-03], [2012-01-04, 2012-01-05]}');
+-- \x01020000000300fce0136a58010000bc8f4f9258010003001c676da6580100007c3e8bba580100
+</programlisting>
+				</listitem>
+
+				<listitem id="spantime_asHexWKB">
+					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
+					<para><varname>asHexWKB({span,timestampset,periodset}): text</varname></para>
+					<para><varname>asHexWKB({span,timestampset,periodset},endian text): text</varname></para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+					<programlisting xml:space="preserve">
+SELECT asHexWKB(intspan '[1, 2]');
+-- 010800010100000003000000
+SELECT asHexWKB(intspan '[1, 2]', 'XDR');
+-- 000008010000000100000003
+SELECT asHexWKB(floatspan '[1.5, 2.5)');
+-- 01060001000000000000F83F0000000000000440
+SELECT asHexWKB(period '[2012-01-01, 2012-01-03]');
+-- 010A000300FCE0136A58010000BC8F4F92580100
+SELECT asHexWKB(timestampset '{2012-01-01, 2012-01-03}');
+-- 010200000000FCE0136A58010000BC8F4F92580100
+SELECT asHexWKB(periodset '{[2012-01-01, 2012-01-03], [2012-01-04, 2012-01-05]}');
+-- 01020000000300FCE0136A58010000BC8F4F9258010003001C676DA6580100007C3E8BBA580100
+</programlisting>
+				</listitem>
+
+				<listitem id="intspanFromBinary">
+					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
+					<para>Entrar un rango de enteros en una representación binaria conocida (WKB)</para>
+					<para><varname>intspanFromBinary(bytea): intspan</varname></para>
+					<programlisting xml:space="preserve">
+SELECT intspanFromBinary('\x010800010100000003000000');
+-- [1, 3)
+</programlisting>
+				</listitem>
+
+				<listitem id="floatspanFromBinary">
+					<indexterm><primary><varname>floatspanFromBinary</varname></primary></indexterm>
+					<para>Entrar un rango de flotantes en una representación binaria conocida (WKB)</para>
+					<para><varname>floatspanFromBinary(bytea): floatspan</varname></para>
+					<programlisting xml:space="preserve">
+SELECT floatspanFromBinary('\x01060001000000000000f83f0000000000000440');
+-- [1.5, 2.5)
+</programlisting>
+				</listitem>
+
+				<listitem id="periodFromBinary">
+					<indexterm><primary><varname>periodFromBinary</varname></primary></indexterm>
+					<para>Entrar un período en una representación binaria conocida (WKB)</para>
+					<para><varname>periodFromBinary(bytea): period</varname></para>
+					<programlisting xml:space="preserve">
+SELECT periodFromBinary('\x010a000300fce0136a58010000bc8f4f92580100');
+-- [2012-01-01, 2012-01-03]
+</programlisting>
+				</listitem>
+
+				<listitem id="timestampsetFromBinary">
+					<indexterm><primary><varname>timestampsetFromBinary</varname></primary></indexterm>
+					<para>Entrar un conjunto de marcas de tiempo en una representación binaria conocida (WKB)</para>
+					<para><varname>timestampsetFromBinary(bytea): timestampset</varname></para>
+					<programlisting xml:space="preserve">
+SELECT timestampsetFromBinary('\x010200000000fce0136a58010000bc8f4f92580100');
+-- {2012-01-01, 2012-01-03}
+</programlisting>
+				</listitem>
+
+				<listitem id="periodsetFromBinary">
+					<indexterm><primary><varname>periodsetFromBinary</varname></primary></indexterm>
+					<para>Entrar un conjunto de períodos en una representación binaria conocida (WKB)</para>
+					<para><varname>periodsetFromBinary(bytea): periodset</varname></para>
+					<programlisting xml:space="preserve">
+SELECT periodsetFromBinary(
+  '\x01020000000300fce0136a58010000bc8f4f9258010003001c676da6580100007c3e8bba580100');
+-- {[2012-01-01, 2012-01-03], [2012-01-04, 2012-01-05]}
+</programlisting>
+				</listitem>
+
+				<listitem id="intspanFromHexWKB">
+					<indexterm><primary><varname>intspanFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un rango de enteros en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>intspanFromHexWKB(text): intspan</varname></para>
+					<programlisting xml:space="preserve">
+SELECT intspanFromHexWKB('010800010100000003000000');
+-- [1, 3)
+</programlisting>
+				</listitem>
+
+				<listitem id="floatspanFromHexWKB">
+					<indexterm><primary><varname>floatspanFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un rango de flotantes en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>floatspanFromHexWKB(text): floatspan</varname></para>
+					<programlisting xml:space="preserve">
+SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
+-- [1.5, 2.5)
+</programlisting>
+				</listitem>
+
+				<listitem id="periodFromHexWKB">
+					<indexterm><primary><varname>periodFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un período en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>periodFromHexWKB(text): period</varname></para>
+					<programlisting xml:space="preserve">
+SELECT periodFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
+-- [2012-01-01, 2012-01-03]
+</programlisting>
+				</listitem>
+
+				<listitem id="timestampsetFromHexWKB">
+					<indexterm><primary><varname>timestampsetFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un conjunto de marcas de tiempo en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>timestampsetFromHexWKB(text): timestampset</varname></para>
+					<programlisting xml:space="preserve">
+SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
+--  {2012-01-01, 2012-01-03}
+</programlisting>
+				</listitem>
+
+				<listitem id="periodsetFromHexWKB">
+					<indexterm><primary><varname>periodsetFromHexWKB</varname></primary></indexterm>
+					<para>Entrar un conjunto de períodos en una representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>periodsetFromHexWKB(text): periodset</varname></para>
+					<programlisting xml:space="preserve">
+SELECT periodsetFromHexWKB(
+  '01020000000300FCE0136A58010000BC8F4F9258010003001C676DA6580100007C3E8BBA580100');
+--  {[2012-01-01, 2012-01-03], [2012-01-04, 2012-01-05]}
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Funciones de constructor</title>

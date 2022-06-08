@@ -37,10 +37,15 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
 extern char *ewkt_out(Oid typid, Datum value);
+extern bool tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant);
+extern uint8_t *coords_to_wkb_buf(const TInstant *inst, uint8_t *buf,
+  uint8_t variant);
 
 /*****************************************************************************/
 

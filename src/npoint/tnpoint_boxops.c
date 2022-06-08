@@ -318,7 +318,7 @@ PGDLLEXPORT Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc0(sizeof(STBOX));
   npoint_set_stbox(np, result);
   PG_RETURN_POINTER(result);
 }
@@ -331,7 +331,7 @@ PGDLLEXPORT Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc0(sizeof(STBOX));
   nsegment_set_stbox(result, ns);
   PG_RETURN_POINTER(result);
 }
@@ -345,7 +345,7 @@ Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc0(sizeof(STBOX));
   npoint_timestamp_set_stbox(np, t, result);
   PG_RETURN_POINTER(result);
 }
@@ -359,7 +359,7 @@ Npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *result = palloc0(sizeof(STBOX));
   npoint_period_set_stbox(np, p, result);
   PG_RETURN_POINTER(result);
 }

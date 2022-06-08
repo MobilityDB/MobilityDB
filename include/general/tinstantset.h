@@ -45,25 +45,35 @@
 
 /* General functions */
 
-extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
+extern void *tinstantset_bbox_ptr(const TInstantSet *is);
 extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
-extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
+extern bool tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t,
   int *pos);
 
 /* Input/output functions */
 
-extern char *tinstantset_to_string(const TInstantSet *ti,
+extern char *tinstantset_to_string(const TInstantSet *is,
   char *(*value_out)(CachedType, Datum));
-extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
 
 /* Intersection functions */
 
-extern bool intersection_tinstantset_tinstant(const TInstantSet *ti,
+extern bool intersection_tinstantset_tinstant(const TInstantSet *is,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstant_tinstantset(const TInstant *inst,
-  const TInstantSet *ti, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1,
-  const TInstantSet *ti2, TInstantSet **inter1, TInstantSet **inter2);
+  const TInstantSet *is, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tinstantset_tinstantset(const TInstantSet *is1,
+  const TInstantSet *is2, TInstantSet **inter1, TInstantSet **inter2);
+
+/*****************************************************************************/
+
+#if ! MEOS
+
+/* Send/receive functions */
+
+extern TInstantSet *tinstantset_recv(StringInfo buf, CachedType temptype);
+extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
+
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 

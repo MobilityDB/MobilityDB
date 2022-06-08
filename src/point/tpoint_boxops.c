@@ -71,7 +71,8 @@ tpointinst_set_stbox(const TInstant *inst, STBOX *box)
 {
   Datum value = tinstant_value(inst);
   GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
-  /* Non-empty geometries have a bounding box */
+  /* Non-empty geometries have a bounding box 
+   * The argument box is set to 0 on the next call */
   geo_set_stbox(gs, box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -240,7 +241,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
-  STBOX *result = palloc0(sizeof(STBOX) * newcount);
+  STBOX *result = palloc(sizeof(STBOX) * newcount);
   tpointseq_stboxes1(seq, result);
   *count = newcount;
   return result;
@@ -258,7 +259,7 @@ STBOX *
 tpointseqset_stboxes(const TSequenceSet *ts, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
-  STBOX *result = palloc0(sizeof(STBOX) * ts->totalcount);
+  STBOX *result = palloc(sizeof(STBOX) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {

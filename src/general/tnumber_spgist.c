@@ -506,7 +506,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
   median = in->nTuples / 2;
 
-  centroid = (TBOX *) palloc0(sizeof(TBOX));
+  centroid = palloc0(sizeof(TBOX));
   centroid->xmin = lowXs[median];
   centroid->xmax = highXs[median];
   centroid->tmin = (TimestampTz) lowTs[median];
@@ -596,7 +596,7 @@ Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   {
     /* Report that all nodes should be visited */
     out->nNodes = in->nNodes;
-    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
     {
       out->nodeNumbers[i] = i;
@@ -628,18 +628,18 @@ Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
    */
   if (in->nkeys > 0)
   {
-    queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
+    queries = palloc0(sizeof(TBOX) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
       tnumber_spgist_get_tbox(&in->scankeys[i], &queries[i]);
   }
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
-  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-  out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = palloc(sizeof(void *) * in->nNodes);
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
-    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+    out->distances = palloc(sizeof(double *) * in->nNodes);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   /* Loop for every node */

@@ -71,36 +71,6 @@
 #define TYPMOD_DEL_SUBTYPE(typmod) (typmod = typmod >> 4 )
 #define TYPMOD_SET_SUBTYPE(typmod, subtype) ((typmod) = typmod << 4 | subtype)
 
-/*****************************************************************************
- * Well-Known Binary (WKB)
- *****************************************************************************/
-
-/* Data type size */
-#define WKB_TIMESTAMP_SIZE   8  /* Internal use only */
-#define WKB_DOUBLE_SIZE      8  /* Internal use only */
-#define WKB_INT_SIZE         4  /* Internal use only */
-#define WKB_BYTE_SIZE        1  /* Internal use only */
-
-/* Subtype */
-#define MOBDB_WKB_INSTANT        1
-#define MOBDB_WKB_INSTANTSET     2
-#define MOBDB_WKB_SEQUENCE       3
-#define MOBDB_WKB_SEQUENCESET    4
-
-/* Period bounds */
-#define MOBDB_WKB_LOWER_INC      0x01
-#define MOBDB_WKB_UPPER_INC      0x02
-
-/* Machine endianness */
-#define XDR            0  /* big endian */
-#define NDR            1  /* little endian */
-
-/* Variation flags */
-#define MOBDB_WKB_ZFLAG            0x10
-#define MOBDB_WKB_GEODETICFLAG     0x20
-#define MOBDB_WKB_SRIDFLAG         0x40
-#define MOBDB_WKB_LINEAR_INTERP    0x80
-
 /*****************************************************************************/
 
 /* General functions */
