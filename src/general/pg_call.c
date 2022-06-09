@@ -46,137 +46,14 @@
 #else
   #include <access/hash.h>
 #endif
-#if ! MEOS
-  #include <libpq/pqformat.h>
-#endif
 #include <utils/datetime.h>
 #include <utils/float.h>
 /* MobilityDB */
 #include "general/temporal_util.h"
 
 /*****************************************************************************
- * Functions adapted from bool.c
- *****************************************************************************/
-
-#if ! MEOS
-/**
- * @brief Convert external binary format to bool
- *
- * The external representation is one byte.  Any nonzero value is taken
- * as "true".
- * @note PostgreSQL function: Datum boolrecv(PG_FUNCTION_ARGS)
- */
-bool
-pg_boolrecv(StringInfo buf)
-{
-  int ext;
-  ext = pq_getmsgbyte(buf);
-  return ((ext != 0) ? true : false);
-}
-
-/**
- * @brief Convert bool to binary format
- * @note PostgreSQL function: Datum boolsend(PG_FUNCTION_ARGS)
- */
-bytea *
-pg_boolsend(bool arg1)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbyte(&buf, arg1 ? 1 : 0);
-  return pq_endtypsend(&buf);
-}
-#endif /* ! MEOS */
-
-/*****************************************************************************
- * Functions adapted from int.c
- *****************************************************************************/
-
-#if ! MEOS
-/**
- * @brief CConvert an int4 to binary format
- * @note PostgreSQL function: Datum int4send(PG_FUNCTION_ARGS)
- */
-bytea *
-pg_int4send(int32 arg1)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint32(&buf, arg1);
-  return pq_endtypsend(&buf);
-}
-
-/**
- * @brief Convert external binary format to int4
- * @note PostgreSQL function: Datum int4recv(PG_FUNCTION_ARGS)
- */
-int32
-pg_int4recv(StringInfo buf)
-{
- return (int32) pq_getmsgint(buf, sizeof(int32));
-}
-#endif /* ! MEOS */
-
-/*****************************************************************************
- * Functions adapted from int8.c
- *****************************************************************************/
-
-
-#if 0 /* not used */
-/**
- * @brief Convert an int8 to binary format
- * @note PostgreSQL function: Datum int8send(PG_FUNCTION_ARGS)
- */
-bytea *
-pg_int8send(int64 arg1)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint64(&buf, arg1);
-  return pq_endtypsend(&buf);
-}
-
-/**
- * @brief Convert external binary format to int8
- * @note PostgreSQL function: Datum int8recv(PG_FUNCTION_ARGS)
- */
-int64
-pg_int8recv(StringInfo buf)
-{
-  return pq_getmsgint64(buf);
-}
-#endif /* not used */
-
-/*****************************************************************************
  * Functions adapted from float.c
  *****************************************************************************/
-
-#if ! MEOS
-/**
- * @brief Convert external binary format to float8
- * @note PostgreSQL function: Datum float8recv(PG_FUNCTION_ARGS)
- */
-float8
-pg_float8recv(StringInfo buf)
-{
-  return pq_getmsgfloat8(buf);
-}
-
-/**
- * @brief Convert float8 to binary format
- * @note PostgreSQL function: Datum float8send(PG_FUNCTION_ARGS)
- */
-bytea *
-pg_float8send(float8 num)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendfloat8(&buf, num);
-  return pq_endtypsend(&buf);
-}
-#endif /* ! MEOS */
-
-/*****************************************************************************/
 
 /**
  * @brief Return the sine of arg1 (radians)
@@ -288,41 +165,6 @@ pg_datan2(float8 arg1, float8 arg2)
 
   return result;
 }
-
-/*****************************************************************************
- * Functions adapted from varlena.c
- *****************************************************************************/
-
-#if ! MEOS
-/**
- * @brief Convert external binary format to text
- * @note PostgreSQL function: Datum textrecv(PG_FUNCTION_ARGS)
- */
-text *
-pg_textrecv(StringInfo buf)
-{
-  text *result;
-  char *str;
-  int nbytes;
-  str = pq_getmsgtext(buf, buf->len - buf->cursor, &nbytes);
-  result = cstring2text(str);
-  pfree(str);
-  return result;
-}
-
-/**
- * @brief Convert text to binary format
- * @note PostgreSQL function: Datum textsend(PG_FUNCTION_ARGS)
- */
-bytea *
-pg_textsend(text *t)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendtext(&buf, VARDATA_ANY(t), VARSIZE_ANY_EXHDR(t));
-  return pq_endtypsend(&buf);
-}
-#endif /* ! MEOS */
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
@@ -546,50 +388,6 @@ pg_timestamptz_out(TimestampTz dt)
 #endif
   return result;
 }
-
-#if ! MEOS
-/**
- * @brief Convert timestamptz to binary format
- * @note PostgreSQL function: Datum timestamptz_send(PG_FUNCTION_ARGS)
- */
-bytea *
-pg_timestamptz_send(TimestampTz timestamp)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint64(&buf, timestamp);
-  return pq_endtypsend(&buf);
-}
-
-/**
- * @brief Convert external binary format to timestamptz
- * @note PostgreSQL function: Datum timestamptz_recv(PG_FUNCTION_ARGS)
- */
-TimestampTz
-pg_timestamptz_recv(StringInfo buf)
-{
-  /* We do not use typmod */
-  int32 typmod = -1;
-  TimestampTz timestamp;
-  int tz;
-  struct pg_tm tt,
-         *tm = &tt;
-  fsec_t fsec;
-
-  timestamp = (TimestampTz) pq_getmsgint64(buf);
-
-  /* range check: see if timestamptz_out would like it */
-  if (TIMESTAMP_NOT_FINITE(timestamp))
-     /* ok */ ;
-  else if (timestamp2tm(timestamp, &tz, tm, &fsec, NULL, NULL) != 0 ||
-       ! IS_VALID_TIMESTAMP(timestamp))
-    elog(ERROR, "timestamp out of range");
-
-  AdjustTimestampForTypmod(&timestamp, typmod);
-
-  return timestamp;
-}
-#endif /* ! MEOS */
 
 /*****************************************************************************/
 

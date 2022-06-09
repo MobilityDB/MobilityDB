@@ -137,8 +137,8 @@ extern double hypot4d(double x, double y, double z, double m);
 
 extern Datum call_input(Oid typid, char *str, bool end);
 extern char *call_output(Oid typid, Datum value);
-extern Datum call_recv(Oid typid, StringInfo buf);
-extern bytea *call_send(Oid typid, Datum value);
+extern Datum call_recv(CachedType type, StringInfo buf);
+extern bytea *call_send(CachedType type, Datum value);
 
 extern Datum call_function1(PGFunction func, Datum arg1);
 extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
@@ -152,11 +152,6 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 
 extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
     Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
-
-/* Input/output functions */
-
-extern Datum basetype_recv(CachedType type, StringInfo buf);
-extern bytea *basetype_send(CachedType type, Datum value);
 
 /* Range functions */
 

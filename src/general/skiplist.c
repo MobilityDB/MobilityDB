@@ -594,7 +594,7 @@ aggstate_write(SkipList *state, StringInfo buf)
   {
     for (i = 0; i < state->length; i ++)
     {
-      bytea *time = basetype_send(T_TIMESTAMPTZ,
+      bytea *time = call_send(T_TIMESTAMPTZ,
         TimestampTzGetDatum((TimestampTz) values[i]));
       pq_sendbytes(buf, VARDATA(time), VARSIZE(time) - VARHDRSZ);
       pfree(time);
@@ -637,7 +637,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   if (elemtype == TIMESTAMPTZ)
   {
     for (int i = 0; i < length; i ++)
-      values[i] = (void **) DatumGetTimestampTz(basetype_recv(T_TIMESTAMPTZ, buf));
+      values[i] = (void **) DatumGetTimestampTz(call_recv(T_TIMESTAMPTZ, buf));
     result = skiplist_make(fcinfo, values, length, TIMESTAMPTZ);
     pfree(values);
   }

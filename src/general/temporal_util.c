@@ -1011,70 +1011,6 @@ basetype_output(CachedType basetype, Datum value)
 #include <utils/varlena.h>
 
 /*****************************************************************************
- * Send/receive PostgreSQL functions
- *****************************************************************************/
-
-/**
- * Call receive function of the base type
- */
-Datum
-basetype_recv(CachedType basetype, StringInfo buf)
-{
-  ensure_temporal_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return TimestampTzGetDatum(pg_timestamptz_recv(buf));
-  if (basetype == T_BOOL)
-    return BoolGetDatum(pg_boolrecv(buf));
-  if (basetype == T_INT4)
-    return Int32GetDatum(pg_int4recv(buf));
-#if 0 /* not used */
-  if (basetype == T_INT8)
-    return Int64GetDatum(pg_int8recv(buf));
-#endif /* not used */
-  if (basetype == T_FLOAT8)
-    return Float8GetDatum(pg_float8recv(buf));
-  if (basetype == T_TEXT)
-    return PointerGetDatum(pg_textrecv(buf));
-  if (basetype == T_DOUBLE2)
-    return PointerGetDatum(double2_recv(buf));
-  if (basetype == T_DOUBLE3)
-    return PointerGetDatum(double3_recv(buf));
-  if (basetype == T_DOUBLE4)
-    return PointerGetDatum(double4_recv(buf));
-  elog(ERROR, "unknown type_input function for base type: %d", basetype);
-}
-
-/**
- * Call send function of the base type
- */
-bytea *
-basetype_send(CachedType basetype, Datum value)
-{
-  ensure_temporal_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return pg_timestamptz_send(DatumGetTimestampTz(value));
-  if (basetype == T_BOOL)
-    return pg_boolsend(DatumGetBool(value));
-  if (basetype == T_INT4)
-    return pg_int4send(DatumGetInt32(value));
-#if 0 /* not used */
-  if (basetype == T_INT8)
-    return pg_int8send(DatumGetInt64(value));
-#endif /* not used */
-  if (basetype == T_FLOAT8)
-    return pg_float8send(DatumGetFloat8(value));
-  if (basetype == T_TEXT)
-    return pg_textsend(DatumGetTextP(value));
-  if (basetype == T_DOUBLE2)
-    return double2_send(DatumGetDouble2P(value));
-  if (basetype == T_DOUBLE3)
-    return double3_send(DatumGetDouble3P(value));
-  if (basetype == T_DOUBLE4)
-    return double4_send(DatumGetDouble4P(value));
-  elog(ERROR, "unknown type_input function for base type: %d", basetype);
-}
-
-/*****************************************************************************
  * Call PostgreSQL functions
  * The call_input and call_output functions are needed for the geography
  * type to call the function srid_is_latlong(fcinfo, srid)
@@ -1100,14 +1036,48 @@ call_input(Oid typid, char *str, bool end)
  * Call receive function of the base type
  */
 Datum
-call_recv(Oid typid, StringInfo buf)
+call_recv(CachedType type, StringInfo buf)
 {
+  if (type == T_DOUBLE2)
+    return PointerGetDatum(double2_recv(buf));
+  if (type == T_DOUBLE3)
+    return PointerGetDatum(double3_recv(buf));
+  if (type == T_DOUBLE4)
+    return PointerGetDatum(double4_recv(buf));
+
+  Oid typid = type_oid(type);
+  if (typid == 0)
+    elog(ERROR, "Unknown type when calling receive function: %d", type);
   Oid recvfunc;
   Oid basetypid;
   FmgrInfo recvfuncinfo;
   getTypeBinaryInputInfo(typid, &recvfunc, &basetypid);
   fmgr_info(recvfunc, &recvfuncinfo);
   return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
+}
+
+/**
+ * Call send function of the base type
+ */
+bytea *
+call_send(CachedType type, Datum value)
+{
+  if (type == T_DOUBLE2)
+    return double2_send(DatumGetDouble2P(value));
+  if (type == T_DOUBLE3)
+    return double3_send(DatumGetDouble3P(value));
+  if (type == T_DOUBLE4)
+    return double4_send(DatumGetDouble4P(value));
+
+  Oid typid = type_oid(type);
+  if (typid == 0)
+    elog(ERROR, "Unknown type when calling send function: %d", type);
+  Oid sendfunc;
+  bool isvarlena;
+  FmgrInfo sendfuncinfo;
+  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
+  fmgr_info(sendfunc, &sendfuncinfo);
+  return SendFunctionCall(&sendfuncinfo, value);
 }
 
 /**
