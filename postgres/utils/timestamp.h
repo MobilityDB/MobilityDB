@@ -14,7 +14,6 @@
 #define TIMESTAMP_H
 
 #include "datatype/timestamp.h"
-// #include "fmgr.h" // MobilityDB
 #include "pgtime.h"
 
 

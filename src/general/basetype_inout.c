@@ -399,7 +399,7 @@ pg_ultoa_n(uint32 value, char *a)
  * which is enough room to hold a minus sign, a maximally long int32, and the
  * above terminating NUL.
  */
-static int
+int
 pg_ltoa(int32 value, char *a)
 {
   uint32    uvalue = (uint32) value;
@@ -413,6 +413,78 @@ pg_ltoa(int32 value, char *a)
   len += pg_ultoa_n(uvalue, a + len);
   a[len] = '\0';
   return len;
+}
+
+/*
+ * pg_ultostr_zeropad
+ *    Converts 'value' into a decimal string representation stored at 'str'.
+ *    'minwidth' specifies the minimum width of the result; any extra space
+ *    is filled up by prefixing the number with zeros.
+ *    MobilityDB: Function copied from numutils.c
+ *
+ * Returns the ending address of the string result (the last character written
+ * plus 1).  Note that no NUL terminator is written.
+ *
+ * The intended use-case for this function is to build strings that contain
+ * multiple individual numbers, for example:
+ *
+ *  str = pg_ultostr_zeropad(str, hours, 2);
+ *  *str++ = ':';
+ *  str = pg_ultostr_zeropad(str, mins, 2);
+ *  *str++ = ':';
+ *  str = pg_ultostr_zeropad(str, secs, 2);
+ *  *str = '\0';
+ *
+ * Note: Caller must ensure that 'str' points to enough memory to hold the
+ * result.
+ */
+char *
+pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth)
+{
+  int      len;
+
+  Assert(minwidth > 0);
+
+  if (value < 100 && minwidth == 2)  /* Short cut for common case */
+  {
+    memcpy(str, DIGIT_TABLE + value * 2, 2);
+    return str + 2;
+  }
+
+  len = pg_ultoa_n(value, str);
+  if (len >= minwidth)
+    return str + len;
+
+  memmove(str + minwidth - len, str, len);
+  memset(str, '0', minwidth - len);
+  return str + minwidth;
+}
+
+/*
+ * pg_ultostr
+ *    Converts 'value' into a decimal string representation stored at 'str'.
+ *    MobilityDB: Function copied from numutils.c
+ *
+ * Returns the ending address of the string result (the last character written
+ * plus 1).  Note that no NUL terminator is written.
+ *
+ * The intended use-case for this function is to build strings that contain
+ * multiple individual numbers, for example:
+ *
+ *  str = pg_ultostr(str, a);
+ *  *str++ = ' ';
+ *  str = pg_ultostr(str, b);
+ *  *str = '\0';
+ *
+ * Note: Caller must ensure that 'str' points to enough memory to hold the
+ * result.
+ */
+char *
+pg_ultostr(char *str, uint32 value)
+{
+  int      len = pg_ultoa_n(value, str);
+
+  return str + len;
 }
 
 /*****************************************************************************
@@ -447,6 +519,83 @@ int4_out(int32 val)
 
 /* Sign + the most decimal digits an 8-byte number could have */
 #define MAXINT8LEN 20
+
+/*
+ * scanint8 --- try to parse a string into an int8.
+ *
+ * If errorOK is false, ereport a useful error message if the string is bad.
+ * If errorOK is true, just return "false" for bad input.
+ */
+bool
+scanint8(const char *str, bool errorOK, int64 *result)
+{
+	const char *ptr = str;
+	int64		tmp = 0;
+	bool		neg = false;
+
+	/*
+	 * Do our own scan, rather than relying on sscanf which might be broken
+	 * for long long.
+	 *
+	 * As INT64_MIN can't be stored as a positive 64 bit integer, accumulate
+	 * value as a negative number.
+	 */
+
+	/* skip leading spaces */
+	while (*ptr && isspace((unsigned char) *ptr))
+		ptr++;
+
+	/* handle sign */
+	if (*ptr == '-')
+	{
+		ptr++;
+		neg = true;
+	}
+	else if (*ptr == '+')
+		ptr++;
+
+	/* require at least one digit */
+	if (unlikely(!isdigit((unsigned char) *ptr)))
+		goto invalid_syntax;
+
+	/* process digits */
+	while (*ptr && isdigit((unsigned char) *ptr))
+	{
+		int8		digit = (*ptr++ - '0');
+
+		if (unlikely(pg_mul_s64_overflow(tmp, 10, &tmp)) ||
+			unlikely(pg_sub_s64_overflow(tmp, digit, &tmp)))
+			goto out_of_range;
+	}
+
+	/* allow trailing whitespace, but not other trailing chars */
+	while (*ptr != '\0' && isspace((unsigned char) *ptr))
+		ptr++;
+
+	if (unlikely(*ptr != '\0'))
+		goto invalid_syntax;
+
+	if (!neg)
+	{
+		/* could fail if input is most negative number */
+		if (unlikely(tmp == PG_INT64_MIN))
+			goto out_of_range;
+		tmp = -tmp;
+	}
+
+	*result = tmp;
+	return true;
+
+out_of_range:
+	if (!errorOK)
+		elog(ERROR, "value \"%s\" is out of range for type %s", str, "bigint");
+	return false;
+
+invalid_syntax:
+	if (!errorOK)
+		elog(ERROR, "invalid input syntax for type %s: \"%s\"", "bigint", str);
+	return false;
+}
 
 /**
  * @brief Return an int8 from a string

@@ -16,7 +16,7 @@
 #ifndef DATETIME_H
 #define DATETIME_H
 
-#include "nodes/nodes.h"
+// #include "nodes/nodes.h"
 #include "utils/timestamp.h"
 
 /* this struct is declared in utils/tzparser.h: */
@@ -328,7 +328,8 @@ extern int	DecodeUnits(int field, char *lowtoken, int *val);
 
 extern int	j2day(int jd);
 
-extern Node *TemporalSimplify(int32 max_precis, Node *node);
+// MobilityDB
+// extern Node *TemporalSimplify(int32 max_precis, Node *node);
 
 extern bool CheckDateTokenTables(void);
 

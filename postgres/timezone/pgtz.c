@@ -14,14 +14,10 @@
 
 #include <ctype.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <time.h>
 
 #include "datatype/timestamp.h"
-// #include "miscadmin.h"
 #include "pgtz.h"
-// #include "storage/fd.h"
-// #include "utils/hsearch.h"
 
 /* Current session timezone (controlled by TimeZone GUC) */
 pg_tz	   *session_timezone = NULL;
