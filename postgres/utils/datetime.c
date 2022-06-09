@@ -15,7 +15,8 @@
 #include "postgres.h"
 
 // MobilityDB
-#include "datatype/timestamp.h"
+// #include "datatype/timestamp.h"
+#include "utils/timestamp_def.h"
 #include "utils/datetime.h"
 #include "utils/date.h"
 
@@ -61,9 +62,6 @@ static bool DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t,
 												  int *offset, int *isdst);
 static int	DetermineTimeZoneOffsetInternal(struct pg_tm *tm, pg_tz *tzp,
 											pg_time_t *tp);
-
-//TODO: Replace this function
-extern TimestampTz GetCurrentTransactionStartTimestamp(void);
 
 const int	day_tab[2][13] =
 {
@@ -282,7 +280,9 @@ GetCurrentDateTime(struct pg_tm *tm)
 void
 GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 {
-	TimestampTz cur_ts = GetCurrentTransactionStartTimestamp();
+  // MobilityDB
+	// TimestampTz cur_ts = GetCurrentTransactionStartTimestamp();
+	TimestampTz cur_ts = GetCurrentTimestamp();
 
 	/*
 	 * The cache key must include both current time and current timezone.  By

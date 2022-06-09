@@ -13,9 +13,10 @@
 #ifndef TIMESTAMP_H
 #define TIMESTAMP_H
 
-#include "datatype/timestamp.h"
+// MobilityDB
+// #include "datatype/timestamp.h"
+#include "utils/timestamp_def.h"
 #include "pgtime.h"
-
 
 /*
  * Macros for fmgr-callable functions.

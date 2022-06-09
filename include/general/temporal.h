@@ -549,20 +549,24 @@ extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
 
 #if ! MEOS
 
+#include <c.h>
+#include <utils/palloc.h>
+#include <utils/elog.h>
+// #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
 #include "point/postgis.h"
 
-#if POSTGRESQL_VERSION_NUMBER < 130000
-#ifndef USE_FLOAT4_BYVAL
-#error Postgres needs to be configured with USE_FLOAT4_BYVAL
-#endif
-#endif
+// #if POSTGRESQL_VERSION_NUMBER < 130000
+// #if USE_FLOAT4_BYVAL
+// #error Postgres needs to be configured with USE_FLOAT4_BYVAL
+// #endif
+// #endif
 
-#ifndef USE_FLOAT8_BYVAL
-#error Postgres needs to be configured with USE_FLOAT8_BYVAL
-#endif
+// #if USE_FLOAT8_BYVAL
+// #error Postgres needs to be configured with USE_FLOAT8_BYVAL
+// #endif
 
 /* To avoid including fmgrprotos.h */
 extern Datum numeric_float8(PG_FUNCTION_ARGS);

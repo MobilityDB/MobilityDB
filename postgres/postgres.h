@@ -62,10 +62,12 @@
       exit(EXIT_FAILURE); \
   } while(0);
 
-/* MobilityDB: redefining palloc0, palloc, and pfree */
+/* MEOS: redefining palloc0, palloc, and pfree */
+#if MEOS
 #define palloc0(X) (calloc(1, X))
 #define palloc malloc
 #define pfree free
+#endif /* MEOS */
 
 /* ----------------------------------------------------------------
  *        Section 1:  variable-length datatypes (TOAST support)

@@ -10,7 +10,7 @@
 #define ST_SCOPE
 #define ST_DECLARE
 #define ST_DEFINE
-#include "lib/sort_template.h"
+#include "sort_template.h"
 
 /*
  * qsort comparator wrapper for strcmp.

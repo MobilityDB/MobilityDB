@@ -13,15 +13,41 @@
  *-------------------------------------------------------------------------
  */
 
+#include <limits.h>
+
 #include "postgres.h"
 
-#include "datatype/timestamp.h"
-
-#include <limits.h>
+// MobilityDB
+// #include "datatype/timestamp.h"
+#include "utils/timestamp_def.h"
 #include "utils/datetime.h"
 
 static TimeOffset time2t(const int hour, const int min, const int sec, const fsec_t fsec);
 static Timestamp dt2local(Timestamp dt, int timezone);
+
+/* Needed for gettimeofday */
+#include <sys/time.h>
+
+/*
+ * GetCurrentTimestamp -- get the current operating system time
+ *
+ * Result is in the form of a TimestampTz value, and is expressed to the
+ * full precision of the gettimeofday() syscall
+ */
+TimestampTz
+GetCurrentTimestamp(void)
+{
+	TimestampTz result;
+	struct timeval tp;
+
+	gettimeofday(&tp, NULL);
+
+	result = (TimestampTz) tp.tv_sec -
+		((POSTGRES_EPOCH_JDATE - UNIX_EPOCH_JDATE) * SECS_PER_DAY);
+	result = (result * USECS_PER_SEC) + tp.tv_usec;
+
+	return result;
+}
 
 void
 dt2time(Timestamp jd, int *hour, int *min, int *sec, fsec_t *fsec)

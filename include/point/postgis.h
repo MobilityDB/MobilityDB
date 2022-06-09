@@ -295,6 +295,8 @@ extern Datum geography_intersects(PG_FUNCTION_ARGS); /* For geography */
 extern Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS);
 extern Datum BOX3D_to_LWGEOM(PG_FUNCTION_ARGS);
 
+extern Datum LWGEOM_in(PG_FUNCTION_ARGS);
+extern Datum LWGEOM_out(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_addpoint(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_azimuth(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_closestpoint(PG_FUNCTION_ARGS); /* For 2D */
@@ -323,6 +325,8 @@ extern Datum lwgeom_eq(PG_FUNCTION_ARGS);
 extern Datum lwgeom_lt(PG_FUNCTION_ARGS);
 extern Datum lwgeom_hash(PG_FUNCTION_ARGS);
 
+extern Datum geography_in(PG_FUNCTION_ARGS);
+extern Datum geography_out(PG_FUNCTION_ARGS);
 extern Datum geography_covers(PG_FUNCTION_ARGS);
 extern Datum geography_length(PG_FUNCTION_ARGS);
 extern Datum geography_dwithin(PG_FUNCTION_ARGS);

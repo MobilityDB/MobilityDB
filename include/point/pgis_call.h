@@ -39,6 +39,16 @@
 
 #if POSTGIS_VERSION_NUMBER < 30000
 
+#define PGIS_LWGEOM_in(X) \
+  (call_function1(LWGEOM_in, PointerGetDatum(X)))
+#define PGIS_LWGEOM_out(X) \
+  (call_function1(LWGEOM_out, PointerGetDatum(X)))
+/* Notice that the typmod argument is not used */
+#define PGIS_geography_in(X) \
+  (call_function1(geography_in, PointerGetDatum(X)))
+#define PGIS_geography_out(X) \
+  (call_function1(geography_out, PointerGetDatum(X)))
+
 #define PGIS_relate_pattern(X, Y, Z) \
   (call_function3(relate_pattern, PointerGetDatum(X), PointerGetDatum(Y), \
     PointerGetDatum(cstring2text(Z))))
@@ -101,7 +111,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <lib/stringinfo.h>
+// #include <lib/stringinfo.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -163,15 +173,11 @@ extern double PGIS_geography_distance(const GSERIALIZED *g1,
 
 extern GSERIALIZED *PGIS_LWGEOM_in(char *input, int32 geom_typmod);
 extern char *PGIS_LWGEOM_out(GSERIALIZED *geom);
-extern GSERIALIZED *PGIS_LWGEOM_recv(StringInfo buf);
-extern bytea *PGIS_LWGEOM_send(GSERIALIZED *geo);
 
 /* Functions adapted from geography_inout.c */
 
 extern GSERIALIZED *PGIS_geography_in(char *str, int32 geog_typmod);
 extern char *PGIS_geography_out(GSERIALIZED *g);
-extern GSERIALIZED *PGIS_geography_recv(StringInfo buf);
-extern bytea *PGIS_geography_send(GSERIALIZED *g);
 
 extern GSERIALIZED *PGIS_geography_from_geometry(GSERIALIZED *geom);
 extern GSERIALIZED *PGIS_geometry_from_geography(GSERIALIZED *g_ser);

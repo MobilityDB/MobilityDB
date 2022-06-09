@@ -16,8 +16,9 @@
 
 #include <math.h>
 
-#include "datatype/timestamp.h"
-// #include "fmgr.h"
+// MobilityDB
+// #include "datatype/timestamp.h"
+#include "utils/timestamp_def.h"
 #include "pgtime.h"
 
 typedef int32 DateADT;

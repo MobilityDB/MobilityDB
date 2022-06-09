@@ -18,7 +18,9 @@
 
 #include <fcntl.h>
 
-#include "datatype/timestamp.h"
+// MobilityDB
+// #include "datatype/timestamp.h"
+#include "utils/timestamp_def.h"
 #include "pgtz.h"
 
 #include "private.h"

@@ -16,7 +16,9 @@
 #include <fcntl.h>
 #include <time.h>
 
-#include "datatype/timestamp.h"
+// MobilityDB
+// #include "datatype/timestamp.h"
+#include "utils/timestamp_def.h"
 #include "pgtz.h"
 
 /* Current session timezone (controlled by TimeZone GUC) */

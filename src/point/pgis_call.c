@@ -35,7 +35,7 @@
  * @note These functions are only available for PGIS version >= 3.
  */
 
-#if POSTGIS_VERSION_NUMBER >= 30000
+// #if POSTGIS_VERSION_NUMBER >= 30000
 
 #include "point/pgis_call.h"
 
@@ -1420,4 +1420,4 @@ PGIS_geometry_from_geography(GSERIALIZED *geom)
 
 /*****************************************************************************/
 
-#endif /* POSTGIS_VERSION_NUMBER >= 30000 */
+// #endif /* POSTGIS_VERSION_NUMBER >= 30000 */
