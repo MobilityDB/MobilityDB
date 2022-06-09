@@ -20,7 +20,7 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [11,12,13]
+          psql: [12,13]
           postgis: [2.5]
           os: [ubuntu-latest, ubuntu-18.04]
           coverage: [0]

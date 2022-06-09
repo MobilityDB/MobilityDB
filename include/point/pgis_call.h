@@ -40,12 +40,11 @@
 #if POSTGIS_VERSION_NUMBER < 30000
 
 #define PGIS_LWGEOM_in(X) \
-  (call_function1(LWGEOM_in, PointerGetDatum(X)))
+  (call_function2(LWGEOM_in, PointerGetDatum(X), Int32GetDatum(Y)))
 #define PGIS_LWGEOM_out(X) \
   (call_function1(LWGEOM_out, PointerGetDatum(X)))
-/* Notice that the typmod argument is not used */
-#define PGIS_geography_in(X) \
-  (call_function1(geography_in, PointerGetDatum(X)))
+#define PGIS_geography_in(X, Y) \
+  (call_function2(geography_in, PointerGetDatum(X), Int32GetDatum(Y)))
 #define PGIS_geography_out(X) \
   (call_function1(geography_out, PointerGetDatum(X)))
 
