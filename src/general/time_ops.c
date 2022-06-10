@@ -250,7 +250,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set contains a timestamp.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
@@ -267,7 +267,7 @@ contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first timestamp set contains the second one.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_timestampset_timestampset(const TimestampSet *ts1,
@@ -300,7 +300,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a timestamp.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_period_timestamp(const Period *p, TimestampTz t)
@@ -319,7 +319,7 @@ contains_period_timestamp(const Period *p, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a timestamp set.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_period_timestampset(const Period *p, const TimestampSet *ts)
@@ -334,7 +334,7 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set contains a timestamp.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
@@ -353,7 +353,7 @@ contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set contains a timestamp set.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
@@ -385,7 +385,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set contains a period.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_periodset_period(const PeriodSet *ps, const Period *p)
@@ -404,7 +404,7 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a period set.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_period_periodset(const Period *p, const PeriodSet *ps)
@@ -416,7 +416,7 @@ contains_period_periodset(const Period *p, const PeriodSet *ps)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first period set contains the second one.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)

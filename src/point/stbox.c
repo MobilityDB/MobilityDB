@@ -900,7 +900,7 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_stbox_stbox(const STBOX *box1, const STBOX *box2)

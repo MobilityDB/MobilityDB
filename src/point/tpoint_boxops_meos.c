@@ -110,7 +110,7 @@ overlaps_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of a geometry/geography contains
  * the one of a temporal point
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
@@ -122,7 +122,7 @@ contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if a spatiotemporal box contains the one
  * of a temporal point
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
@@ -134,7 +134,7 @@ contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point contains the
  * one of a geometry/geography
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
@@ -146,7 +146,7 @@ contains_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point contains
  * the spatiotemporal box
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
@@ -158,7 +158,7 @@ contains_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
  * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the first temporal point
  * contains the one of the second temporal point
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)

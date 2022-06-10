@@ -134,6 +134,8 @@ else()
   # PostgreSQL version default values for MEOS
   set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
   set(POSTGRESQL_VERSION_NUMBER "140200")
+  set(POSTGRESQL_VERSION_MAJOR "14")
+  set(POSTGRESQL_VERSION_MINOR "2")
 endif()
 
 # MobilityDB definitions for PostgreSQL version-dependent code
@@ -154,8 +156,9 @@ else()
 endif()
 
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
-math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
+math(EXPR POSTGIS_PGSQL_VERSION "(${POSTGRESQL_VERSION_MAJOR} * 10) +
   ${POSTGRESQL_VERSION_MINOR}")
+message(STATUS "POSTGIS_PGSQL_VERSION: ${POSTGIS_PGSQL_VERSION}")
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
@@ -294,11 +297,9 @@ endif()
 #--------------------------------
 
 if(MEOS)
-  message(STATUS "Building MEOS: SQL definitions and tests not included")
   install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
   message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
 else()
-  message(STATUS "Building MobilityDB: Including SQL definitions and tests")
   add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
   add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
   install(

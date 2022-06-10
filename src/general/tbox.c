@@ -678,7 +678,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the first temporal box contains the second one.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_tbox_tbox(const TBOX *box1, const TBOX *box2)

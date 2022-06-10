@@ -85,7 +85,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a span contains an element.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_span_elem(const Span *s, Datum d, CachedType basetype)
@@ -104,7 +104,7 @@ contains_span_elem(const Span *s, Datum d, CachedType basetype)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span contains the second one.
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 bool
 contains_span_span(const Span *s1, const Span *s2)
