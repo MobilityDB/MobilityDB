@@ -12,10 +12,6 @@ if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
   You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
 endif()
 
-# Specify search path for CMake modules to be loaded
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(CheckSymbolExists)
-
 #-------------------------------------
 # MobilityDB definitions
 #-------------------------------------
@@ -46,9 +42,6 @@ if(MEOS)
 else()
   message(STATUS "Building MobilityDB")
   project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
-  # Enable testing, must follow project() call above
-  include(CTest)
-  enable_testing()
 endif()
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
 set(MOBILITYDB_VERSION_STR "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
@@ -63,11 +56,17 @@ string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${PROJECT_VERSION}.sql")
 set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
 
-# Comment out code used for debugging purposes so it is not concerned by coverage
+# Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
   add_definitions(-DDEBUG_BUILD)
 endif()
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(CheckSymbolExists)
+
+include(CTest)
+enable_testing()
 
 # Check machine architecture: big endian vs. little endian
 # Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)
@@ -119,17 +118,17 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 #-------------------------------------
-# Get PostgreSQL Version
+# Verify PostgreSQL Version
 #-------------------------------------
 
 if(NOT MEOS)
-  # Find PostgreSQL
   set(PG_MIN_MAJOR_VERSION "12")
   set(PG_MAX_MAJOR_VERSION "14")
   find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
   if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
-    message(FATAL_ERROR "PostgreSQL ${POSTGRESQL_VERSION} is not supported")
+    message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
   endif()
+  math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
 else()
   # PostgreSQL version default values for MEOS
   set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
@@ -137,28 +136,35 @@ else()
   set(POSTGRESQL_VERSION_MAJOR "14")
   set(POSTGRESQL_VERSION_MINOR "2")
 endif()
-
-# MobilityDB definitions for PostgreSQL version-dependent code
 add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
+if(MEOS)
+  message(STATUS "Building MEOS: Including embedded PostgreSQL files")
+  include_directories("postgres")
+  add_subdirectory("postgres")
+else()
+  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
+  if(WIN32)
+    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
+    if(MSVC)
+        include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+    endif()
+    link_directories(${POSTGRESQL_LIBRARIES})
+    link_libraries(postgres)
+  endif()
+endif()
+
 #-------------------------------------
-# Get PostGIS Version
+# Verify PostGIS Version
 #-------------------------------------
 
 if(NOT MEOS)
-  # Find PostGIS
   find_package(POSTGIS REQUIRED)
 else()
-  # PostGIS version default values for MEOS
   set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
   set(POSTGIS_VERSION_NUMBER "30201")
 endif()
-
-# PostGIS definitions for PostgreSQL and PostGIS version-dependent code
-math(EXPR POSTGIS_PGSQL_VERSION "(${POSTGRESQL_VERSION_MAJOR} * 10) +
-  ${POSTGRESQL_VERSION_MINOR}")
-message(STATUS "POSTGIS_PGSQL_VERSION: ${POSTGIS_PGSQL_VERSION}")
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
@@ -167,55 +173,32 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 #--------------------------------
 
 if(NOT MEOS)
-  # liblwgeom library for PostGIS 2.5.5
+  # Link liblwgeom library for PostGIS 2.5.5
   if(POSTGIS_VERSION_NUMBER LESS 30000)
     find_package(LWGEOM REQUIRED)
     include_directories(SYSTEM ${LWGEOM_INCLUDE_DIRS})
   endif()
-  # GSL (GNU Scientific Library) required for MobilityDB not for MEOS
+
   find_package(GSL REQUIRED)
   include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 endif()
 
-# Proj reprojection library
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
 
-# GEOS geometry library
 find_package(GEOS REQUIRED)
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
 math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
-# JSON-C library (used for MF-JSON input/output)
 find_package(JSON-C REQUIRED)
 include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
 #--------------------------------
-# MobilityDB directories
-#--------------------------------
-
-if(MEOS)
-  # PostgreSQL base data types embedded in MEOS
-  message(STATUS "Building MEOS: Including embedded PostgreSQL base data types")
-  include_directories("postgres")
-  add_subdirectory("postgres")
-else()
-  # Build MobilityDB with PostgreSQL library
-  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
-  if(WIN32)
-    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
-    if(MSVC)
-      include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
-    endif()
-    # Add directories in which the linker will look for libraries
-    link_directories(${POSTGRESQL_LIBRARIES})
-    # Link libraries to all targets added later
-    link_libraries(postgres)
-  endif()
-endif()
+# Belongs to MobilityDB
+# Must go before target_link_libraries
 
 # Embed liblwgeom library for PostGIS 3
 if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
@@ -228,33 +211,18 @@ if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   add_subdirectory("postgis")
 endif()
 
-# MobilityDB directories
 include_directories("include")
 add_subdirectory("src")
-if(MEOS)
-  message(STATUS "Building MEOS: SQL definitions and tests not included")
-else()
-  message(STATUS "Building MobilityDB: Including SQL definitions and tests")
-  add_subdirectory(sql)
-  add_subdirectory(test)
-endif()
 
-#--------------------------------
 # Build the library
-#--------------------------------
-
-# PostgreSQL 14 base data types embedded in MEOS
-if(MEOS)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
-endif()
-
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
 if(MEOS)
   message(STATUS "Building MEOS: Network points not included")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
 else()
   message(STATUS "Building MobilityDB: Including network points")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
@@ -293,13 +261,17 @@ else()
 endif()
 
 #--------------------------------
-# Install the library
+# Belongs to MobilityDB
 #--------------------------------
 
 if(MEOS)
+  message(STATUS "Building MEOS: SQL definitions and tests not included")
   install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
   message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
 else()
+  message(STATUS "Building MobilityDB: Including SQL definitions and tests")
+  add_subdirectory(sql)
+  add_subdirectory(test)
   add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
   add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
   install(
