@@ -88,9 +88,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE intersects(t
 -------------------------------------------------------------------------------
 
 -- The implementation of the boundary function changed in PostGIS 3.2
--- The following two tests are in file 066_tpoint_spatialrels_tbl_pgis3.test.sql
--- SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE touches(g, temp);
--- SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE touches(temp, g);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE touches(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE touches(temp, g);
 -- 3D
 SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE touches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE touches(temp, g);

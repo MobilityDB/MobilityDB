@@ -7,8 +7,7 @@ endif()
 SET(LOCAL_FILES
   050_stbox
   051_tpoint
-  052_tpoint_in
-  053_tpoint_out
+  052_tpoint_inout
   054_tpoint_compops
   055_geography_functions
   056_tpoint_spatialfuncs

@@ -28,9 +28,71 @@
  *****************************************************************************/
 
 /*
- * tpoint_out.sql
- * Output of temporal points in WKT, EWKT, and MF-JSON format
+ * tpoint_inout.sql
+ * Input/output of temporal points in WKT, EWKT, and MF-JSON format
  */
+
+/*****************************************************************************
+ * Input
+ *****************************************************************************/
+
+CREATE FUNCTION tgeompointFromText(text)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromText(text)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompointFromEWKT(text)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromEWKT(text)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompointFromMFJSON(text)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromMFJSON(text)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompointFromBinary(bytea)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromBinary(bytea)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompointFromEWKB(bytea)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromEWKB(bytea)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompointFromHexEWKB(text)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromHexEWKB(text)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Output
+ *****************************************************************************/
 
 CREATE FUNCTION asText(tgeompoint)
   RETURNS text

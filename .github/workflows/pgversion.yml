@@ -1,8 +1,7 @@
 name: Main Build
 
-# 4 * 1 * 2 + 1 (coverage) = 9 jobs are triggered
-# Test for supported postgres version
-# - except: MobilityDB does not support 9.6
+# Test for supported PosgreSQL/PostGIS versions
+# 3 (PosgreSQL) * 1 (PostGIS) * 2 (Linux) + 1 (coverage) = 7 jobs are triggered
 # Allow manual trigger
 
 on:
@@ -20,19 +19,11 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [12,13]
-          postgis: [2.5]
+          psql: [12,13,14]
+          postgis: [3]
           os: [ubuntu-latest, ubuntu-18.04]
           coverage: [0]
           include:
-            - psql: 12
-              postgis: 3
-              os: ubuntu-latest
-              coverage: 0
-            - psql: 13
-              postgis: 3
-              os: ubuntu-latest
-              coverage: 0
             - psql: 14
               postgis: 3
               os: ubuntu-latest
