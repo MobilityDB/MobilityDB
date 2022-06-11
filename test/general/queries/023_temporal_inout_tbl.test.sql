@@ -29,28 +29,22 @@
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
+-------------------------------------------------------------------------------
 
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromMFJSON(asMFJSON(temp)) <> temp;
 -- We need to add asewkt to avoid problems due to floating point precision
--- SELECT DISTINCT asText(tintFromText(asText(temp))) = asText(temp) FROM tbl_tint;
--- SELECT DISTINCT asText(tfloatFromText(asText(temp))) = asText(temp) FROM tbl_tfloat;
+-- SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND asText(tfloatFromMFJSON(asMFJSON(temp))) <> asText(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJSON(temp)) <> temp;
 
--- We need to add asewkt to avoid problems due to floating point precision
--- SELECT DISTINCT asEWKT(tintFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tint;
--- SELECT DISTINCT asEWKT(tfloatFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tfloat;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp)) <> temp;
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp)) <> temp;
 
--- We need to add asewkt to avoid problems due to floating point precision
--- SELECT DISTINCT asEWKT(tintFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tint;
--- SELECT DISTINCT asEWKT(tfloatFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tfloat;
-
-SELECT DISTINCT tboolFromBinary(asBinary(temp)) = temp FROM tbl_tbool;
-SELECT DISTINCT tintFromBinary(asBinary(temp)) = temp FROM tbl_tint;
-SELECT DISTINCT tfloatFromBinary(asBinary(temp)) = temp FROM tbl_tfloat;
-SELECT DISTINCT ttextFromBinary(asBinary(temp)) = temp FROM tbl_ttext;
-
-SELECT DISTINCT tboolFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tbool;
-SELECT DISTINCT tintFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tint;
-SELECT DISTINCT tfloatFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tfloat;
-SELECT DISTINCT ttextFromHexWKB(asHexWKB(temp)) = temp FROM tbl_ttext;
-
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp)) <> temp;
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp)) <> temp;
 
 ------------------------------------------------------------------------------

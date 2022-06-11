@@ -36,6 +36,23 @@
  * Input
  *****************************************************************************/
 
+CREATE FUNCTION tboolFromMFJSON(text)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tintFromMFJSON(text)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tfloatFromMFJSON(text)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ttextFromMFJSON(text)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION tboolFromBinary(bytea)
@@ -76,6 +93,15 @@ CREATE FUNCTION ttextFromHexWKB(text)
  * Output
  *****************************************************************************/
 
+CREATE FUNCTION asText(tbool)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tbool[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asText(tint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
@@ -90,6 +116,15 @@ CREATE FUNCTION asText(tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tfloat[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(ttext)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(ttext[])
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

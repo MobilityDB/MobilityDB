@@ -48,7 +48,7 @@
 #include "general/temporal_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
-#define MOBDB_WKT_BOOL_SIZE sizeof("t")
+#define MOBDB_WKT_BOOL_SIZE sizeof("false")
 #define MOBDB_WKT_INT4_SIZE sizeof("+2147483647")
 #define MOBDB_WKT_INT8_SIZE sizeof("+9223372036854775807")
 #define MOBDB_WKT_TIMESTAMPTZ_SIZE sizeof("\"2019-08-06T18:35:48.021455+02:30\"")
@@ -58,6 +58,10 @@
 #define OUT_SHOW_DIGS_DOUBLE 20
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
+#if POSTGIS_VERSION_NUMBER < 30000
+  #define OUT_DOUBLE_BUFFER_SIZE \
+    OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
+#endif
 
 /*****************************************************************************
  * Output in MFJSON format
@@ -94,7 +98,7 @@ bool_mfjson_buf(char *output, Datum value)
 {
   char *ptr = output;
   const bool c = DatumGetInt32(value);
-  ptr += sprintf(ptr, "%c", c ? 't' : 'f');
+  ptr += sprintf(ptr, "%s", c ? "true" : "false");
   return (ptr - output);
 }
 
@@ -236,10 +240,10 @@ temptype_mfjson_size(CachedType temptype)
   switch (temptype)
   {
     case T_TBOOL:
-      size = sizeof("{'type':'MovingBool',");
+      size = sizeof("{'type':'MovingBoolean',");
       break;
     case T_TINT:
-      size = sizeof("{'type':'MovingInt',");
+      size = sizeof("{'type':'MovingInteger',");
       break;
     case T_TFLOAT:
       size = sizeof("{'type':'MovingFloat',");
@@ -265,10 +269,10 @@ temptype_mfjson_buf(char *output, CachedType temptype)
   switch (temptype)
   {
     case T_TBOOL:
-      ptr += sprintf(ptr, "{\"type\":\"MovingBool\",");
+      ptr += sprintf(ptr, "{\"type\":\"MovingBoolean\",");
       break;
     case T_TINT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingInt\",");
+      ptr += sprintf(ptr, "{\"type\":\"MovingInteger\",");
       break;
     case T_TFLOAT:
       ptr += sprintf(ptr, "{\"type\":\"MovingFloat\",");
@@ -354,7 +358,7 @@ tinstantset_as_mfjson_size(const TInstantSet *is, int precision,
       sizeof(",");
   }
   size += datetimes_mfjson_size(is->count);
-  size += sizeof("{'type':'MovingFloat',");
+  size += temptype_mfjson_size(is->temptype);
   size += sizeof("'values':[],'datetimes':[],'interpolations':['Discrete']}");
   if (bbox) size += bbox_mfjson_size(precision);
   return size;
@@ -368,7 +372,7 @@ tinstantset_as_mfjson_buf(const TInstantSet *is, int precision,
   const TBOX *bbox, char *output)
 {
   char *ptr = output;
-  ptr += sprintf(ptr, "{\"type\":\"MovingFloat\",");
+  ptr += temptype_mfjson_buf(ptr, is->temptype);
   if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, precision);
   ptr += sprintf(ptr, "\"values\":[");
   for (int i = 0; i < is->count; i++)
@@ -420,7 +424,7 @@ tsequence_as_mfjson_size(const TSequence *seq, int precision,
       sizeof(",");
   }
   size += datetimes_mfjson_size(seq->count);
-  size += sizeof("{'type':'MovingFloat',");
+  size += temptype_mfjson_size(seq->temptype);
   /* We reserve space for the largest strings, i.e., 'false' and "Stepwise" */
   size += sizeof("'values':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Stepwise']}");
   if (bbox) size += bbox_mfjson_size(precision);
@@ -435,7 +439,7 @@ tsequence_as_mfjson_buf(const TSequence *seq, int precision, const TBOX *bbox,
   char *output)
 {
   char *ptr = output;
-  ptr += sprintf(ptr, "{\"type\":\"MovingFloat\",");
+  ptr += temptype_mfjson_buf(ptr, seq->temptype);
   if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, precision);
   ptr += sprintf(ptr, "\"values\":[");
   for (int i = 0; i < seq->count; i++)
@@ -481,8 +485,8 @@ static size_t
 tsequenceset_as_mfjson_size(const TSequenceSet *ss, int precision,
   const TBOX *bbox)
 {
-  size_t size = sizeof("{'type':'MovingFloat','sequences':[],");
-  size += sizeof("{'values':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ss->count;
+  size_t size = temptype_mfjson_size(ss->temptype);
+  size += sizeof("'sequences':[],{'values':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ss->count;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
@@ -508,7 +512,7 @@ tsequenceset_as_mfjson_buf(const TSequenceSet *ss, int precision,
   const TBOX *bbox, char *output)
 {
   char *ptr = output;
-  ptr += sprintf(ptr, "{\"type\":\"MovingFloat\",");
+  ptr += temptype_mfjson_buf(ptr, ss->temptype);
   if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, precision);
   ptr += sprintf(ptr, "\"sequences\":[");
   for (int i = 0; i < ss->count; i++)

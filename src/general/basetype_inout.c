@@ -415,15 +415,16 @@ char *
 float8_out(double num)
 {
   char     *ascii = palloc(32);
-  int      ndig = DBL_DIG + extra_float_digits;
+  // int      ndig = DBL_DIG + extra_float_digits;
 
-  if (extra_float_digits > 0)
-  {
-    double_to_shortest_decimal_buf(num, ascii);
-    return ascii;
-  }
+  // if (extra_float_digits > 0)
+  // {
+    // double_to_shortest_decimal_buf(num, ascii);
+    // return ascii;
+  // }
 
-  (void) pg_strfromd(ascii, 32, ndig, num);
+  // (void) pg_strfromd(ascii, 32, ndig, num);
+  (void) pg_strfromd(ascii, 32, DBL_DIG, num);
   return ascii;
 }
 

@@ -1,56 +1,66 @@
-SELECT DISTINCT tboolFromBinary(asBinary(temp)) = temp FROM tbl_tbool;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT tintFromBinary(asBinary(temp)) = temp FROM tbl_tint;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromMFJSON(asMFJSON(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT tfloatFromBinary(asBinary(temp)) = temp FROM tbl_tfloat;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJSON(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT ttextFromBinary(asBinary(temp)) = temp FROM tbl_ttext;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT tboolFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tbool;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT tintFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tint;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT tfloatFromHexWKB(asHexWKB(temp)) = temp FROM tbl_tfloat;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
-SELECT DISTINCT ttextFromHexWKB(asHexWKB(temp)) = temp FROM tbl_ttext;
- ?column? 
-----------
- 
- t
-(2 rows)
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
 
