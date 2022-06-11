@@ -43,13 +43,6 @@
 #include "general/temporal.h"
 #include "point/tpoint.h"
 
-/* Get the flags byte of a GSERIALIZED depending on the version */
-#if POSTGIS_VERSION_NUMBER < 30000
-#define GS_FLAGS(gs) (gs->flags)
-#else
-#define GS_FLAGS(gs) (gs->gflags)
-#endif
-
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
 #define GEOM_TO_GEOG        true
 #define GEOG_TO_GEOM        false

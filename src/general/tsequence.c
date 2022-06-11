@@ -184,8 +184,8 @@ datum_collinear(CachedType basetype, Datum value1, Datum value2, Datum value3,
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
-    bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-    bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
+    bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+    bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
     return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
   }
   if (basetype == T_DOUBLE3)

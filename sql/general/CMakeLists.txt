@@ -24,7 +24,6 @@ SET(LOCAL_FILES
   021_tbox
   022_temporal
   023_temporal_inout
-  024_temporal_out
   025_temporal_tile
   026_tnumber_mathfuncs
   028_tbool_boolops

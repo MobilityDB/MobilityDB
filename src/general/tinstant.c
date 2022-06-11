@@ -266,8 +266,8 @@ tinstant_make(Datum value, CachedType temptype, TimestampTz t)
   if (tgeo_type(temptype))
   {
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-    MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
+    MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
+    MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;

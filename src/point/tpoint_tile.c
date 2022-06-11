@@ -633,7 +633,7 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
+    if (FLAGS_GET_Z(sorigin->gflags))
       pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -731,7 +731,7 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(point));
+  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
@@ -974,7 +974,7 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
+    ensure_same_geodetic(temp->flags, sorigin->gflags);
     STBOX bounds;
     temporal_set_bbox(temp, &bounds);
     int32 srid = bounds.srid;
@@ -984,7 +984,7 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
-    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
+    if (FLAGS_GET_Z(sorigin->gflags))
       pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -1112,7 +1112,7 @@ Tpoint_space_time_split(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
-    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
+    ensure_same_geodetic(temp->flags, sorigin->gflags);
     STBOX bounds;
     temporal_set_bbox(temp, &bounds);
     int32 srid = bounds.srid;
@@ -1120,7 +1120,7 @@ Tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
+    if (FLAGS_GET_Z(sorigin->gflags))
       pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {

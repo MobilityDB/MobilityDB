@@ -159,6 +159,7 @@ invalid_syntax:
  * NB: Accumulate input as a negative number, to deal with two's complement
  * representation of the most negative number, which can't be represented as a
  * positive number.
+ * N.B. This function comes from PG 15 and replaces the function scanint8
  */
 int64
 pg_strtoint64(const char *s)

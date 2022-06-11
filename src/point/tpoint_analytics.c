@@ -82,7 +82,7 @@ point_to_trajpoint(Datum point, TimestampTz t)
   int32 srid = gserialized_get_srid(gs);
   double epoch = ((double) t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   LWPOINT *result;
-  if (FLAGS_GET_Z(GS_FLAGS(gs)))
+  if (FLAGS_GET_Z(gs->gflags))
   {
     const POINT3DZ *point = gserialized_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, epoch);
@@ -92,7 +92,7 @@ point_to_trajpoint(Datum point, TimestampTz t)
     const POINT2D *point = gserialized_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, epoch);
   }
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   return result;
 }
 
@@ -437,7 +437,7 @@ geo_to_tpointinstset(const GSERIALIZED *geo)
 {
   /* Geometry is a MULTIPOINT */
   LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(geo));
+  bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
   /* Verify that is a valid set of trajectory points */
   LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
   double m1 = -1 * DBL_MAX, m2;
@@ -478,7 +478,7 @@ static TSequence *
 geo_to_tpointseq(const GSERIALIZED *geo)
 {
   /* Geometry is a LINESTRING */
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(geo));
+  bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
   LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom);
   int npoints = lwline->points->npoints;
@@ -603,7 +603,7 @@ point_measure_to_geo_measure(Datum point, Datum measure)
   int32 srid = gserialized_get_srid(gs);
   double d = DatumGetFloat8(measure);
   LWPOINT *result;
-  if (FLAGS_GET_Z(GS_FLAGS(gs)))
+  if (FLAGS_GET_Z(gs->gflags))
   {
     const POINT3DZ *point = gserialized_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
@@ -613,7 +613,7 @@ point_measure_to_geo_measure(Datum point, Datum measure)
     const POINT2D *point = gserialized_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, d);
   }
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   return result;
 }
 
@@ -1411,11 +1411,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       inst1 = inst2;
     }
     *dist = hasz ? dist3d_pt_seg(&p3k, &p3a, &p3b) :
-#if POSTGIS_VERSION_NUMBER < 30000
-      distance2d_pt_seg(&p2k, &p2a, &p2b);
-#else
-      sqrt(distance2d_sqr_pt_seg(&p2k, &p2a, &p2b));
-#endif
+    sqrt(distance2d_sqr_pt_seg(&p2k, &p2a, &p2b));
   }
   else
     *dist = -1;

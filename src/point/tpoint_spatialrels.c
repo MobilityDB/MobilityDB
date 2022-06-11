@@ -263,39 +263,6 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum geo = PointerGetDatum(gs);
   Datum traj = tpoint_trajectory(temp);
   Datum result;
-#if POSTGIS_VERSION_NUMBER < 30000
-  /* PostGIS 2.5 does not allow GEOMETRYCOLLECTION for ST_Relate */
-  if (geomcoll)
-  {
-    GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
-    if (gserialized_get_type(gstraj) == COLLECTIONTYPE)
-    {
-      bool found = false;
-      LWGEOM *lwtraj = lwgeom_from_gserialized(gstraj);
-      LWCOLLECTION *coll = lwgeom_as_lwcollection(lwtraj);
-      int ngeoms = coll->ngeoms;
-      for (int i = 0; i < ngeoms; i++)
-      {
-        /* Find the i-th element which, due to the way trajectories of temporal
-         * points are constructed, cannot be of type COLLECTIONTYPE */
-        LWGEOM *lwelem = coll->geoms[i];
-        Datum elem = PointerGetDatum(geo_serialize(lwelem));
-        /* This function is currently only called to compute contains */
-        assert(numparam == 2);
-        result = invert ? func(geo, elem) : func(elem, geo);
-        pfree(DatumGetPointer(elem));
-        if (DatumGetBool(result))
-        {
-          found = true;
-          break;
-        }
-      }
-      PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
-      pfree(DatumGetPointer(traj));
-      return found;
-    }
-  }
-#endif /* POSTGIS_VERSION_NUMBER < 30000 */
   if (numparam == 2)
     result = invert ? func(geo, traj) : func(traj, geo);
   else /* numparam == 3 */
@@ -475,7 +442,7 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return -1;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, GS_FLAGS(gs));
+  varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -508,7 +475,7 @@ intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return -1;
-  datum_func2 func = get_intersects_fn_gs(temp->flags, GS_FLAGS(gs));
+  datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
     INVERT_NO);
   return result ? 1 : 0;
@@ -540,7 +507,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! gserialized_is_empty(gsbound))
   {
     varfunc func =
-      (MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs))) ?
+      (MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
     result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
       INVERT_NO);
@@ -566,7 +533,7 @@ dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
   if (gserialized_is_empty(gs))
     return -1;
-  datum_func3 func = get_dwithin_fn_gs(temp->flags, GS_FLAGS(gs));
+  datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
   bool result = spatialrel_tpoint_geo(temp, gs, dist, (varfunc) func, 3,
     INVERT);
   return result ? 1 : 0;

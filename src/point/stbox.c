@@ -422,8 +422,8 @@ geo_set_stbox(const GSERIALIZED *gs, STBOX *box)
 
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   box->srid = gserialized_get_srid(gs);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_Z(box->flags, hasz);

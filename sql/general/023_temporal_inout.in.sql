@@ -29,8 +29,14 @@
 
 /*
  * temporal_inout.sql
- * Input/output of temporal types in WKB format
+ * Input/output of temporal types in WKT, MF-JSON, and WKB format
  */
+
+/*****************************************************************************
+ * Input
+ *****************************************************************************/
+
+/*****************************************************************************/
 
 CREATE FUNCTION tboolFromBinary(bytea)
   RETURNS tbool
@@ -64,6 +70,46 @@ CREATE FUNCTION tfloatFromHexWKB(text)
 CREATE FUNCTION ttextFromHexWKB(text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Output
+ *****************************************************************************/
+
+CREATE FUNCTION asText(tint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tint[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(tfloat)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tfloat[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asMFJSON(temp tbool, options int4 DEFAULT 0)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asMFJSON(temp tint, options int4 DEFAULT 0)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asMFJSON(temp tfloat, options int4 DEFAULT 0,
+    maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asMFJSON(temp ttext, options int4 DEFAULT 0)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

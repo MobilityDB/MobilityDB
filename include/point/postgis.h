@@ -71,20 +71,12 @@ extern Datum touches(PG_FUNCTION_ARGS);
 extern Datum within(PG_FUNCTION_ARGS);
 
 extern Datum ST_Equals(PG_FUNCTION_ARGS);
-#if POSTGIS_VERSION_NUMBER < 30000
-extern Datum distance(PG_FUNCTION_ARGS); /* For 2D */
-extern Datum distance3d(PG_FUNCTION_ARGS); /* For 3D */
-extern Datum intersection(PG_FUNCTION_ARGS);
-extern Datum intersects(PG_FUNCTION_ARGS); /* For 2D */
-extern Datum intersects3d(PG_FUNCTION_ARGS); /* For 3D */
-#else
 extern Datum ST_Distance(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum ST_3DDistance(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum ST_Intersection(PG_FUNCTION_ARGS);
 extern Datum ST_Intersects(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum ST_3DIntersects(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum geography_intersects(PG_FUNCTION_ARGS); /* For geography */
-#endif
 
 extern Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS);
 extern Datum BOX3D_to_LWGEOM(PG_FUNCTION_ARGS);

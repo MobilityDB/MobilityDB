@@ -578,18 +578,6 @@ geography_interpolate_points(const LWLINE *line,
   return opa;
 }
 
-#if POSTGIS_VERSION_NUMBER < 30000
-void
-spheroid_init(SPHEROID *s, double a, double b)
-{
-  s->a = a;
-  s->b = b;
-  s->f = (a - b) / a;
-  s->e_sq = (a*a - b*b)/(a*a);
-  s->radius = (2.0 * a + b ) / 3.0;
-}
-#endif
-
 PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
 Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 {

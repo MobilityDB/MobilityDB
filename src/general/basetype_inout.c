@@ -47,7 +47,7 @@
 // #include "general/temporal_util.h"
 // #include "general/temporal_parser.h"
 
-#if POSTGRESQL_VERSION_NUMBER >= 150000
+#if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   extern int64 pg_strtoint64(const char *s);
 #else
   extern bool scanint8(const char *str, bool errorOK, int64 *result);
@@ -234,7 +234,7 @@ int4_out(int32 val)
 int64
 int8_in(char *str)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 150000
+#if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   int64 result = pg_strtoint64(str);
 #else
   int64 result;

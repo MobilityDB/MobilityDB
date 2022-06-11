@@ -56,17 +56,7 @@ extern GSERIALIZED *geography_shortestline_internal(const GSERIALIZED *g1,
 #if ! MEOS
 
 #include <fmgr.h>
-#if POSTGIS_VERSION_NUMBER < 30000
-#include "postgis.h"
-#else
 #include <lwgeodetic_tree.h>
-#endif
-
-#if POSTGIS_VERSION_NUMBER < 30000
-extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
-  const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist,
-  GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
-#endif
 
 extern Datum geography_closestpoint(PG_FUNCTION_ARGS);
 extern Datum geography_shortestline(PG_FUNCTION_ARGS);

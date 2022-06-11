@@ -62,6 +62,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DDEBUG_BUILD)
 endif()
 
+# Specify search path for CMake modules to be loaded
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 
@@ -118,7 +119,7 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 #-------------------------------------
-# Verify PostgreSQL Version
+# Get PostgreSQL Version
 #-------------------------------------
 
 if(NOT MEOS)
@@ -128,7 +129,6 @@ if(NOT MEOS)
   if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
     message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
   endif()
-  math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
 else()
   # PostgreSQL version default values for MEOS
   set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
@@ -156,7 +156,7 @@ else()
 endif()
 
 #-------------------------------------
-# Verify PostGIS Version
+# Get PostGIS Version
 #-------------------------------------
 
 if(NOT MEOS)
@@ -165,6 +165,9 @@ else()
   set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
   set(POSTGIS_VERSION_NUMBER "30201")
 endif()
+
+# PostGIS definitions for PostgreSQL and PostGIS version-dependent code
+math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 

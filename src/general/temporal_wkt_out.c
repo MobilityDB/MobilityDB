@@ -58,10 +58,6 @@
 #define OUT_SHOW_DIGS_DOUBLE 20
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
-#if POSTGIS_VERSION_NUMBER < 30000
-  #define OUT_DOUBLE_BUFFER_SIZE \
-    OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
-#endif
 
 /*****************************************************************************
  * Output in MFJSON format
