@@ -44,11 +44,9 @@
   #include <utils/float.h>
 #endif
 /* PostGIS */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  #include <lwgeodetic_tree.h>
-  #include <measures.h>
-  #include <measures3d.h>
-#endif
+#include <lwgeodetic_tree.h>
+#include <measures.h>
+#include <measures3d.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/lifting.h"

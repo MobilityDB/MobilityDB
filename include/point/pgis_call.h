@@ -37,80 +37,10 @@
 #ifndef __PGIS_CALL_H__
 #define __PGIS_CALL_H__
 
-#if POSTGIS_VERSION_NUMBER < 30000
-
-#define PGIS_LWGEOM_in(X) \
-  (call_function2(LWGEOM_in, PointerGetDatum(X), Int32GetDatum(Y)))
-#define PGIS_LWGEOM_out(X) \
-  (call_function1(LWGEOM_out, PointerGetDatum(X)))
-#define PGIS_geography_in(X, Y) \
-  (call_function2(geography_in, PointerGetDatum(X), Int32GetDatum(Y)))
-#define PGIS_geography_out(X) \
-  (call_function1(geography_out, PointerGetDatum(X)))
-
-#define PGIS_relate_pattern(X, Y, Z) \
-  (call_function3(relate_pattern, PointerGetDatum(X), PointerGetDatum(Y), \
-    PointerGetDatum(cstring2text(Z))))
-#define PGIS_inter_contains(X, Y, Z) Z ? \
-  (call_function2(intersects, PointerGetDatum(X), PointerGetDatum(Y))) : \
-  (call_function2(contains, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_ST_3DIntersects(X, Y) \
-  (call_function2(intersects3d, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_touches(X, Y) \
-  (call_function2(touches, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_LWGEOM_dwithin(X, Y, Z) \
-  (call_function3(LWGEOM_dwithin, PointerGetDatum(X), \
-    PointerGetDatum(Y), Float8GetDatum(Z)))
-#define PGIS_LWGEOM_dwithin3d(X, Y, Z) \
-  (call_function3(LWGEOM_dwithin3d, PointerGetDatum(X), \
-    PointerGetDatum(Y), Float8GetDatum(Z)))
-#define PGIS_geography_dwithin(X, Y, Z, W) \
-  (CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo, \
-    InvalidOid, PointerGetDatum(X), PointerGetDatum(Y), Float8GetDatum(Z), \
-    BoolGetDatum(W)))
-#define PGIS_ST_Distance(X, Y) \
-  (DatumGetFloat8(call_function2(distance, PointerGetDatum(X), PointerGetDatum(Y))))
-#define PGIS_ST_3DDistance(X, Y) \
-  (DatumGetFloat8(call_function2(distance3d, PointerGetDatum(X), PointerGetDatum(Y))))
-#define PGIS_geography_distance(X, Y) \
-  (DatumGetFloat8(CallerFInfoFunctionCall2(geography_distance, \
-    (fetch_fcinfo())->flinfo, InvalidOid, PointerGetDatum(X), PointerGetDatum(Y))))
-#define PGIS_LWGEOM_shortestline2d(X, Y) \
-  (call_function2(LWGEOM_shortestline2d, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_LWGEOM_shortestline3d(X, Y) \
-  (call_function2(LWGEOM_shortestline3d, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_geography_shortestline(X, Y) \
-  (call_function2(geography_shortestline, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_ST_Intersection(X, Y) \
-  (call_function2(intersection, PointerGetDatum(X), PointerGetDatum(Y)))
-#define PGIS_boundary(X) \
-  (call_function1(boundary, PointerGetDatum(X)))
-#define PGIS_BOX3D_to_LWGEOM(X) \
-  (DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(X)))
-#define PGIS_BOX2D_to_LWGEOM(X, Y) \
-  do {                    \
-      Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(X)); \
-      GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom); \
-      gserialized_set_srid(g, Y); \
-      result = PointerGetDatum(g); \
-  } while (0)
-#define PGIS_geometry_from_geography(X) \
-  (DatumGetGserializedP(call_function1(geometry_from_geography, \
-    PointerGetDatum(X))))
-#define PGIS_geography_from_geometry(X) \
-  (DatumGetGserializedP(call_function1(geography_from_geometry, \
-    PointerGetDatum(X))))
-#define PGIS_geography_length(X, Y) \
-  (DatumGetFloat8(call_function2(geography_length, PointerGetDatum(X), \
-    BoolGetDatum(Y))))
-
-#else /* POSTGIS_VERSION_NUMBER >= 30000 */
-
 /*****************************************************************************/
 
 /* PostgreSQL */
 #include <postgres.h>
-// #include <lib/stringinfo.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -180,8 +110,6 @@ extern char *PGIS_geography_out(GSERIALIZED *g);
 
 extern GSERIALIZED *PGIS_geography_from_geometry(GSERIALIZED *geom);
 extern GSERIALIZED *PGIS_geometry_from_geography(GSERIALIZED *g_ser);
-
-#endif /* POSTGIS_VERSION_NUMBER < 30000 */
 
 /*****************************************************************************/
 

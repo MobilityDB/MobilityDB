@@ -38,9 +38,7 @@
 #include <assert.h>
 #include <float.h>
 /* PostGIS */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  #include <liblwgeom_internal.h>
-#endif
+#include <liblwgeom_internal.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/tinstant.h"
@@ -127,11 +125,7 @@ double_mfjson_buf(char *output, Datum value, int precision)
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   const double d = DatumGetFloat8(value);
-#if POSTGIS_VERSION_NUMBER >= 30000
   lwprint_double(d, precision, dstr);
-#else
-  lwprint_double(d, precision, dstr, OUT_DOUBLE_BUFFER_SIZE);
-#endif
   ptr += sprintf(ptr, "%s", dstr);
   return (ptr - output);
 }

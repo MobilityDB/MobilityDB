@@ -48,10 +48,8 @@
 #endif
 #include <utils/timestamp.h>
 /* PostGIS */
-#if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
-#endif
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/lifting.h"

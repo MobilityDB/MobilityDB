@@ -39,9 +39,7 @@
 #include "point/projection_gk.h"
 
 /* C */
-#if POSTGIS_VERSION_NUMBER >= 30000
 #include <math.h>
-#endif
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */

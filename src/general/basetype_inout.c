@@ -47,6 +47,12 @@
 // #include "general/temporal_util.h"
 // #include "general/temporal_parser.h"
 
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  extern int64 pg_strtoint64(const char *s);
+#else
+  extern bool scanint8(const char *str, bool errorOK, int64 *result);
+#endif
+
 /* Definition in numutils.c */
  extern int64 pg_strtoint64(const char *s);
 extern int32 pg_strtoint32(const char *s);
@@ -228,7 +234,12 @@ int4_out(int32 val)
 int64
 int8_in(char *str)
 {
+#if POSTGRESQL_VERSION_NUMBER >= 150000
   int64 result = pg_strtoint64(str);
+#else
+  int64 result;
+  (void) scanint8(str, false, &result);
+#endif
   return result;
 }
 

@@ -253,17 +253,10 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
- * @param[in] geomcoll True if for PostGIS 2.5 we cannot call the function
- * with a trajectory of type GEOMETRYCOLLECTION
  */
 bool
 spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
-  Datum (*func)(Datum, ...), int numparam, bool invert,
-#if POSTGIS_VERSION_NUMBER >= 30000
-  bool geomcoll __attribute__((unused)))
-#else
-  bool geomcoll)
-#endif
+  Datum (*func)(Datum, ...), int numparam, bool invert)
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);
@@ -381,7 +374,7 @@ contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)
   ensure_has_not_Z_gs(geo);
   ensure_has_not_Z(temp->flags);
   bool result = spatialrel_tpoint_geo(temp, geo, (Datum) NULL,
-    (varfunc) &geom_ever_contains, 2, INVERT_NO, true);
+    (varfunc) &geom_ever_contains, 2, INVERT_NO);
   return result ? 1 : 0;
 }
 
@@ -517,7 +510,7 @@ intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     return -1;
   datum_func2 func = get_intersects_fn_gs(temp->flags, GS_FLAGS(gs));
   bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
-    INVERT_NO, false);
+    INVERT_NO);
   return result ? 1 : 0;
 }
 
@@ -550,7 +543,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
       (MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs))) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
     result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
-      INVERT_NO, false);
+      INVERT_NO);
   }
   PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
   pfree(DatumGetPointer(bound));
@@ -575,7 +568,7 @@ dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum dist)
     return -1;
   datum_func3 func = get_dwithin_fn_gs(temp->flags, GS_FLAGS(gs));
   bool result = spatialrel_tpoint_geo(temp, gs, dist, (varfunc) func, 3,
-    INVERT, false);
+    INVERT);
   return result ? 1 : 0;
 }
 

@@ -398,11 +398,7 @@ stbox_to_geometry(const STBOX *box)
   {
     GBOX box2d;
     stbox_set_gbox(box, &box2d);
-#if POSTGIS_VERSION_NUMBER >= 30000
     result = PointerGetDatum(PGIS_BOX2D_to_LWGEOM(&box2d, box->srid));
-#else
-    PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
-#endif /* POSTGIS_VERSION_NUMBER >= 30000 */
   }
   return result;
 }

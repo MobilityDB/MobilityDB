@@ -38,9 +38,7 @@
 #include <assert.h>
 #include <float.h>
 /* PostGIS */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  #include <liblwgeom_internal.h>
-#endif
+#include <liblwgeom_internal.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/tinstant.h"
@@ -55,10 +53,6 @@
 #define OUT_SHOW_DIGS_DOUBLE 20
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
-#if POSTGIS_VERSION_NUMBER < 30000
-  #define OUT_DOUBLE_BUFFER_SIZE \
-    OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
-#endif
 
 /*****************************************************************************
  * Output in MFJSON format
@@ -97,27 +91,16 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   {
     char z[OUT_DOUBLE_BUFFER_SIZE];
     const POINT3DZ *pt = datum_point3dz_p(tinstant_value(inst));
-#if POSTGIS_VERSION_NUMBER >= 30000
     lwprint_double(pt->x, precision, x);
     lwprint_double(pt->y, precision, y);
     lwprint_double(pt->z, precision, z);
-#else
-    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
-#endif
     ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
   }
   else
   {
     const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
-#if POSTGIS_VERSION_NUMBER >= 30000
     lwprint_double(pt->x, precision, x);
     lwprint_double(pt->y, precision, y);
-#else
-    lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-    lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-#endif
     ptr += sprintf(ptr, "[%s,%s]", x, y);
   }
   return (ptr - output);

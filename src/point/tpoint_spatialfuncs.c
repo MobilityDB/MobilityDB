@@ -44,11 +44,9 @@
   #include <utils/float.h>
 #endif
 /* PostGIS */
-#if POSTGIS_VERSION_NUMBER >= 30000
-  #include <liblwgeom.h>
-  #include <liblwgeom_internal.h>
-  #include <lwgeodetic.h>
-#endif
+#include <liblwgeom.h>
+#include <liblwgeom_internal.h>
+#include <lwgeodetic.h>
 /* MobilityDB */
 #include <libmeos.h>
 #include "general/pg_call.h"
