@@ -12,6 +12,10 @@ if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
   You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
 endif()
 
+# Specify search path for CMake modules to be loaded
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(CheckSymbolExists)
+
 #-------------------------------------
 # MobilityDB definitions
 #-------------------------------------
@@ -42,6 +46,9 @@ if(MEOS)
 else()
   message(STATUS "Building MobilityDB")
   project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
+  # Enable testing, must follow project() call above
+  include(CTest)
+  enable_testing()
 endif()
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
 set(MOBILITYDB_VERSION_STR "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
@@ -61,13 +68,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
   add_definitions(-DDEBUG_BUILD)
 endif()
-
-# Specify search path for CMake modules to be loaded
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(CheckSymbolExists)
-
-include(CTest)
-enable_testing()
 
 # Check machine architecture: big endian vs. little endian
 # Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)
@@ -123,6 +123,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 #-------------------------------------
 
 if(NOT MEOS)
+  # Find PostgreSQL
   set(PG_MIN_MAJOR_VERSION "12")
   set(PG_MAX_MAJOR_VERSION "14")
   find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
@@ -136,6 +137,8 @@ else()
   set(POSTGRESQL_VERSION_MAJOR "14")
   set(POSTGRESQL_VERSION_MINOR "2")
 endif()
+
+# MobilityDB definitions for PostgreSQL version-dependent code
 add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
@@ -160,14 +163,17 @@ endif()
 #-------------------------------------
 
 if(NOT MEOS)
+  # Find PostGIS
   find_package(POSTGIS REQUIRED)
 else()
+  # PostGIS version default values for MEOS
   set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
   set(POSTGIS_VERSION_NUMBER "30201")
 endif()
 
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
-math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
+math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
+  ${POSTGRESQL_VERSION_MINOR}")
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
@@ -175,44 +181,40 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 # Other dependencies
 #--------------------------------
 
+# GSL (GNU Scientific Library) (used for skiplists)
 if(NOT MEOS)
-  # Link liblwgeom library for PostGIS 2.5.5
-  if(POSTGIS_VERSION_NUMBER LESS 30000)
-    find_package(LWGEOM REQUIRED)
-    include_directories(SYSTEM ${LWGEOM_INCLUDE_DIRS})
-  endif()
-
   find_package(GSL REQUIRED)
   include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 endif()
 
+# Proj reprojection library
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
 
+# GEOS geometry library
 find_package(GEOS REQUIRED)
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
 math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
+# JSON-C library (used for MF-JSON input/output)
 find_package(JSON-C REQUIRED)
 include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
 #--------------------------------
-# Belongs to MobilityDB
-# Must go before target_link_libraries
+# MobilityDB directories
+#--------------------------------
 
 # Embed liblwgeom library for PostGIS 3
-if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
-  configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
-  include_directories("postgis/liblwgeom")
-  if(NOT MEOS)
-    include_directories("postgis/libpgcommon")
-  endif()
-  include_directories("postgis")
-  add_subdirectory("postgis")
+configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
+include_directories("postgis/liblwgeom")
+if(NOT MEOS)
+  include_directories("postgis/libpgcommon")
 endif()
+include_directories("postgis")
+add_subdirectory("postgis")
 
 include_directories("include")
 add_subdirectory("src")
@@ -230,16 +232,16 @@ else()
   message(STATUS "Building MobilityDB: Including network points")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
-if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-  if(MEOS)
-    message(STATUS "Building MEOS: postgis/libpgcommon not included")
-  else()
-    message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
-    set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
-  endif()
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
+
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
+if(MEOS)
+  message(STATUS "Building MEOS: postgis/libpgcommon not included")
+else()
+  message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
 endif()
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
+
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
 
 if(APPLE)
@@ -256,9 +258,7 @@ if(MEOS)
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 else()
-  if(POSTGIS_VERSION_NUMBER LESS 30000)
-    target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
-  endif()
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 endif()
