@@ -262,13 +262,15 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant point from its MF-JSON representation.
- * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
+ * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
+ * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TInstant *
-tinstant_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
+tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+  CachedType temptype)
 {
-  bool isgeo = (temptype == T_TGEOGPOINT || temptype == T_TGEOGPOINT);
   bool geodetic = (temptype == T_TGEOGPOINT);
+  bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   Datum value;
   if (! isgeo)
   {
@@ -329,7 +331,7 @@ tinstant_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
   str[10] = ' ';
   TimestampTz t = basetype_input(T_TIMESTAMPTZ, str, false);
   TInstant *result = tinstant_make(value, temptype, t);
-  if (isgeo)
+  if (! byvalue)
     pfree(DatumGetPointer(value));
   return result;
 }
@@ -338,11 +340,11 @@ tinstant_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
  * Return array of temporal instant points from its MF-JSON representation
  */
 static TInstant **
-tinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
-  int *count)
+tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+  CachedType temptype, int *count)
 {
-  bool isgeo = (temptype == T_TGEOGPOINT || temptype == T_TGEOGPOINT);
   bool geodetic = (temptype == T_TGEOGPOINT);
+  bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   /* Get coordinates and datetimes */
   int numvalues, numdates;
   Datum *values;
@@ -360,7 +362,7 @@ tinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   for (int i = 0; i < numvalues; i++)
     result[i] = tinstant_make(values[i], temptype, times[i]);
 
-  if (isgeo)
+  if (! byvalue)
   {
     for (int i = 0; i < numvalues; i++)
       pfree(DatumGetPointer(values[i]));
@@ -373,13 +375,15 @@ tinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal instant set point from its MF-JSON representation.
- * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
+ * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
+ * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TInstantSet *
-tinstantset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
+tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+  CachedType temptype)
 {
   int count;
-  TInstant **instants = tinstarr_from_mfjson(mfjson, srid, temptype,
+  TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
     &count);
   return tinstantset_make_free(instants, count, MERGE_NO);
 }
@@ -387,15 +391,16 @@ tinstantset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence point from its MF-JSON representation.
- * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
+ * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
+ * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TSequence *
-tsequence_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
-  bool linear)
+tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+  CachedType temptype, bool linear)
 {
   /* Get the array of temporal instant points */
   int count;
-  TInstant **instants = tinstarr_from_mfjson(mfjson, srid, temptype,
+  TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
     &count);
 
   /* Get lower bound flag */
@@ -420,11 +425,12 @@ tsequence_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 /**
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal sequence set point from its MF-JSON representation.
- * @sqlfunc tgeompointFromMFJSON(), tgeogpointFromMFJSON()
+ * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
+ * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TSequenceSet *
-tsequenceset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
-  bool linear)
+tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+  CachedType temptype, bool linear)
 {
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
@@ -443,7 +449,7 @@ tsequenceset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   {
     json_object* seqvalue = NULL;
     seqvalue = json_object_array_get_idx(seqs, i);
-    sequences[i] = tsequence_from_mfjson(seqvalue, srid, temptype, linear);
+    sequences[i] = tsequence_from_mfjson(seqvalue, isgeo, srid, temptype, linear);
   }
   return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
@@ -455,6 +461,15 @@ tsequenceset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 /*****************************************************************************/
 
 #if ! MEOS
+
+static void
+ensure_temptype_mfjson(const char *typestr)
+{
+  if (strcmp(typestr, "MovingBoolean") != 0 && strcmp(typestr, "MovingInteger") != 0 &&
+      strcmp(typestr, "MovingFloat") != 0 && strcmp(typestr, "MovingText") != 0 &&
+      strcmp(typestr, "MovingPoint") != 0)
+    elog(ERROR, "Invalid 'type' value in MFJSON string");
+}
 
 /**
  * @brief Return a temporal point from its MF-JSON representation
@@ -498,9 +513,7 @@ temporal_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
     elog(ERROR, "Unable to find 'type' in MFJSON string");
 
   const char *pszType = json_object_get_string(poObjType);
-  if (strcmp(pszType, "MovingBoolean") != 0 && strcmp(pszType, "MovingInteger") != 0 &&
-      strcmp(pszType, "MovingFloat") != 0 && strcmp(pszType, "MovingText") != 0)
-    elog(ERROR, "Invalid 'type' value in MFJSON string");
+  ensure_temptype_mfjson(pszType);
 
   /*
    * Determine type of temporal type and call the corresponding parse function
@@ -516,7 +529,8 @@ temporal_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
   if (nSize != 1)
     elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
 
-  if (temptype == T_TGEOGPOINT || temptype == T_TGEOGPOINT)
+  bool isgeo = tgeo_type(temptype);
+  if (isgeo)
   {
     /* Parse crs and set SRID of temporal point */
     poObjSrs = findMemberByName(poObj, "crs");
@@ -558,9 +572,11 @@ temporal_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
       poObjDates = findMemberByName(poObj, "datetimes");
       if (poObjDates != NULL &&
         json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *) tinstantset_from_mfjson(poObj, srid, temptype);
+        result = (Temporal *) tinstantset_from_mfjson(poObj, isgeo, srid,
+          temptype);
       else
-        result = (Temporal *) tinstant_from_mfjson(poObj, srid, temptype);
+        result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid,
+          temptype);
     }
     else if (strcmp(pszInterp, "Stepwise") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
@@ -568,9 +584,11 @@ temporal_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
       bool linear = strcmp(pszInterp, "Linear") == 0;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
-        result = (Temporal *) tsequenceset_from_mfjson(poObj, srid, temptype, linear);
+        result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
+          temptype, linear);
       else
-        result = (Temporal *) tsequence_from_mfjson(poObj, srid, temptype, linear);
+        result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
+          temptype, linear);
     }
     else
       elog(ERROR, "Invalid 'interpolations' value in MFJSON string");

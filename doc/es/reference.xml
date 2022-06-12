@@ -1184,7 +1184,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación JSON de características móviles (Moving Features)</para>
+						<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
 					</listitem>
 
 					<listitem>

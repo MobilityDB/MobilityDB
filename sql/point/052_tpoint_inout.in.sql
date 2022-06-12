@@ -56,11 +56,11 @@ CREATE FUNCTION tgeogpointFromEWKT(text)
 
 CREATE FUNCTION tgeompointFromMFJSON(text)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_from_mfjson'
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointFromMFJSON(text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tpoint_from_mfjson'
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointFromBinary(bytea)
@@ -148,15 +148,15 @@ CREATE FUNCTION asEWKT(geography[])
   AS 'MODULE_PATHNAME', 'Geoarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(point tgeompoint, maxdecimaldigits int4 DEFAULT 15,
-    options int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(point tgeompoint, options int4 DEFAULT 0,
+    maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tpoint_as_mfjson'
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15,
-    options int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(point tgeogpoint, options int4 DEFAULT 0,
+    maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tpoint_as_mfjson'
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tgeompoint)
