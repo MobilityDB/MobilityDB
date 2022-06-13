@@ -41,6 +41,8 @@
 #include <common/shortest_dec.h>
 #include <port/pg_bitutils.h>
 #include <utils/float.h>
+/* PostgreSQL */
+#include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
 
 /* MobilityDB */
 // #include <libmeos.h>
@@ -414,14 +416,18 @@ float8_in(char *num, const char *type_name, const char *orig_string)
 char *
 float8_out(double num)
 {
-  char     *ascii = palloc(32);
-  // int      ndig = DBL_DIG + extra_float_digits;
+  // MobilityDB
+  // char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
+  // lwprint_double(num, DBL_DIG, ascii);
 
-  // if (extra_float_digits > 0)
-  // {
-    // double_to_shortest_decimal_buf(num, ascii);
-    // return ascii;
-  // }
+  char *ascii = palloc(32);
+  // int ndig = DBL_DIG + extra_float_digits;
+
+  if (extra_float_digits > 0)
+  {
+    double_to_shortest_decimal_buf(num, ascii);
+    return ascii;
+  }
 
   // (void) pg_strfromd(ascii, 32, ndig, num);
   (void) pg_strfromd(ascii, 32, DBL_DIG, num);
