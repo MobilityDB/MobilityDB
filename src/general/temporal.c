@@ -1377,6 +1377,7 @@ temporal_values(const Temporal *temp, int *count)
  * @see tfloatseq_spans
  * @see tfloatseqset_spans
  * @sqlfunc getValues()
+ * @pymeosfunc TFloat.getValues()
  */
 Span **
 tfloat_spans(const Temporal *temp, int *count)

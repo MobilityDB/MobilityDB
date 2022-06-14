@@ -174,6 +174,7 @@ timestampset_out(const TimestampSet *ts)
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
  * @sqlfunc timestampset()
+ * @pymeosfunc TimestampSet()
  */
 TimestampSet *
 timestampset_make(const TimestampTz *times, int count)
@@ -210,6 +211,7 @@ timestampset_make(const TimestampTz *times, int count)
  * @param[in] count Number of elements in the array
  * @see timestampset_make
  * @sqlfunc timestampset()
+ * @pymeosfunc TimestampSet()
  */
 TimestampSet *
 timestampset_make_free(TimestampTz *times, int count)
@@ -225,7 +227,7 @@ timestampset_make_free(TimestampTz *times, int count)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeosint_spantime_constructor
  * @brief Return a copy of a timestamp set.
  */
 TimestampSet *

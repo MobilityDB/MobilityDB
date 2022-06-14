@@ -735,7 +735,7 @@ MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
  * @brief Return true if the geometries intersect or the first contains
  * the other
  *
- * @param[in] geom1,geom2, Geometries
+ * @param[in] geom1,geom2 Geometries
  * @param[in] inter: True when performing intersection, fals for contains
  * @note PostGIS functions: Datum ST_Intersects(PG_FUNCTION_ARGS) and
  * Datum contains(PG_FUNCTION_ARGS)
@@ -1226,7 +1226,7 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
  * @brief Output function for geometries
  *
  * LWGEOM_out(lwgeom) --> cstring
- * output is 'SRID=#;<wkb in hex form>'
+ * output is 'SRID=#;{wkb in hex form}'
  * ie. 'SRID=-99;0101000000000000000000F03F0000000000000040'
  * WKB is machine endian
  * if SRID=-1, the 'SRID=-1;' will probably not be present.

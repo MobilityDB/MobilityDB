@@ -560,10 +560,14 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
 
 extern Temporal *temporal_in(char *str, CachedType temptype);
 extern char *temporal_out(const Temporal *temp);
-Temporal *temporal_from_wkb(uint8_t *wkb, int size);
-Temporal *temporal_from_hexwkb(const char *hexwkb);
-uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-char *temporal_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size);
+extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid, CachedType temptype);
+extern TInstantSet *tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid, CachedType temptype);
+extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, CachedType temptype, bool linear);
+extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, CachedType temptype, bool linear);
+extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
+extern Temporal *temporal_from_hexwkb(const char *hexwkb);
+extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
+extern char *temporal_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size);
 extern TInstant *tinstant_in(char *str, CachedType temptype);
 extern char *tinstant_out(const TInstant *inst);
 extern TInstantSet *tinstantset_in(char *str, CachedType temptype);

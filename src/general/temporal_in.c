@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file temporal_wkb_in.c
- * @brief Input of temporal types in WKB, EWKB, and HexWKB format.
+ * @file temporal_in.c
+ * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 
 /* C */
@@ -37,7 +37,6 @@
 #include <float.h>
 /* MobilityDB */
 #include <libmeos.h>
-#include "general/doublen.h"
 #include "general/tbox.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -1110,7 +1109,7 @@ temporal_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_TNPOINT:
       result = PointerGetDatum(npoint_from_wkb_state(s));
       break;
-#endif
+#endif /* ! MEOS */
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d",
         s->temptype);
@@ -1861,6 +1860,6 @@ Temporal_from_hexwkb(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(temp);
 }
 
-#endif /* #if ! MEOS */
+#endif /* ! MEOS */
 
 /*****************************************************************************/

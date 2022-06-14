@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file temporal_wkb_out.c
- * @brief Output of temporal types in WKB, EWKB, and HexWKB format.
+ * @file temporal_out.c
+ * @brief Output of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 
 /* C */
@@ -87,7 +87,7 @@ int32_mfjson_buf(char *output, int i)
 }
 
 /**
- * Write into the buffer the double array represented in MF-JSON format
+ * Write into the buffer the double value represented in MF-JSON format
  */
 static size_t
 double_mfjson_buf(char *output, double d, int precision)
@@ -348,7 +348,7 @@ stbox_mfjson_size(bool hasz, int precision)
 }
 
 /**
- * Write into the buffer the spatiotemporal bounding box represented in
+ * @brief Write into the buffer the spatiotemporal bounding box represented in
  * MF-JSON format
  */
 static size_t
@@ -356,7 +356,7 @@ stbox_mfjson_buf(char *output, const STBOX *bbox, bool hasz, int precision)
 {
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
-  ptr += sprintf(ptr, "\"stBoundedBy\":{\"bbox\":[[");
+  // ptr += sprintf(ptr, "\"stBoundedBy\":{\"bbox\":[[");
   ptr += lwprint_double(bbox->xmin, precision, ptr);
   ptr += sprintf(ptr, ",");
   ptr += lwprint_double(bbox->ymin, precision, ptr);
@@ -365,7 +365,7 @@ stbox_mfjson_buf(char *output, const STBOX *bbox, bool hasz, int precision)
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(bbox->zmin, precision, ptr);
   }
-    ptr += sprintf(ptr, "],[");
+  ptr += sprintf(ptr, "],[");
   ptr += lwprint_double(bbox->xmax, precision, ptr);
   ptr += sprintf(ptr, ",");
   ptr += lwprint_double(bbox->ymax, precision, ptr);
@@ -383,31 +383,36 @@ stbox_mfjson_buf(char *output, const STBOX *bbox, bool hasz, int precision)
 }
 
 /**
- * Return the maximum size in bytes of the bounding box corresponding to the
- * temporal type represented in MF-JSON format
+ * @brief Return the maximum size in bytes of the bounding box corresponding 
+ * to the temporal type represented in MF-JSON format
  */
 static size_t
 bbox_mfjson_size(CachedType temptype, bool hasz, int precision)
 {
+  size_t size;
   switch (temptype)
   {
     case T_TBOOL:
     case T_TTEXT:
-      return period_mfjson_size();
+      size = period_mfjson_size();
+      break;
     case T_TINT:
     case T_TFLOAT:
-      return tbox_mfjson_size(precision);
+      size = tbox_mfjson_size(precision);
+      break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-      return stbox_mfjson_size(hasz, precision);
+      size = stbox_mfjson_size(hasz, precision);
+      break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
   }
+  return size;
 }
 
 /**
- * Write into the buffer the box corresponding to the temporal type represented
- * in MF-JSON format
+ * @brief Write into the buffer the bounding box corresponding to the temporal type
+ * represented in MF-JSON format
  */
 static size_t
 bbox_mfjson_buf(CachedType temptype, char *output, const bboxunion *bbox,
@@ -586,7 +591,7 @@ tinstantset_mfjson_size(const TInstantSet *is, bool isgeo, bool hasz,
 }
 
 /**
- * Write into the buffer the temporal instant set point represented in MF-JSON format
+ * Write into the buffer the temporal instant set represented in MF-JSON format
  */
 static size_t
 tinstantset_mfjson_buf(const TInstantSet *is, bool isgeo, bool hasz,
@@ -618,7 +623,7 @@ tinstantset_mfjson_buf(const TInstantSet *is, bool isgeo, bool hasz,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the MF-JSON representation of a temporal instant set point.
+ * @brief Return the MF-JSON representation of a temporal instant set.
  * @sqlfunc asMFJSON()
  */
 char *
@@ -698,7 +703,7 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the MF-JSON representation of a temporal sequence point.
+ * @brief Return the MF-JSON representation of a temporal sequence.
  * @sqlfunc asMFJSON()
  */
 char *
@@ -714,8 +719,8 @@ tsequence_as_mfjson(const TSequence *seq, bool isgeo, bool hasz, int precision,
 /*****************************************************************************/
 
 /**
- * Return the maximum size in bytes of a temporal sequence set
- * represented in MF-JSON format
+ * Return the maximum size in bytes of a temporal sequence set represented
+ * in MF-JSON format
  */
 static size_t
 tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
@@ -791,7 +796,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the MF-JSON representation of a temporal sequence set point.
+ * @brief Return the MF-JSON representation of a temporal sequence set.
  * @sqlfunc asMFJSON()
  */
 char *
@@ -809,7 +814,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool isgeo, bool hasz,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the MF-JSON representation of a temporal point.
+ * @brief Return the MF-JSON representation of a temporal value.
  * @see tinstant_as_mfjson()
  * @see tinstantset_as_mfjson()
  * @see tsequence_as_mfjson()
@@ -852,7 +857,12 @@ temporal_as_mfjson(const Temporal *temp, int precision, int has_bbox,
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the Well-Known Text (WKT) representation of a temporal point.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal value.
+ * @see tinstant_as_text()
+ * @see tinstantset_as_text()
+ * @see tsequence_as_text()
+ * @see tsequenceset_as_text()
+ * @sqlfunc asText()
  */
 char *
 temporal_as_text(const Temporal *temp)
@@ -874,8 +884,8 @@ temporal_as_text(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a temporal point array
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * temporal values
  */
 char **
 temporalarr_as_text(const Temporal **temparr, int count)
@@ -1059,17 +1069,17 @@ temporal_basevalue_to_wkb_size(Datum value, CachedType basetype, int16 flags)
       int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
       return dims * MOBDB_WKB_DOUBLE_SIZE;
     }
-  #if ! MEOS
+#if ! MEOS
     case T_NPOINT:
       return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
-  #endif
+#endif /* ! MEOS */
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
   }
 }
 
 /**
- * Return the maximum size in bytes of an array of temporal instant points
+ * Return the maximum size in bytes of an array of temporal instants
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1103,7 +1113,7 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 }
 
 /**
- * Return the maximum size in bytes of the temporal instant point
+ * Return the maximum size in bytes of the temporal instant
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1121,7 +1131,7 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 }
 
 /**
- * Return the maximum size in bytes of the temporal instant set point
+ * Return the maximum size in bytes of the temporal instant set
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1144,7 +1154,7 @@ tinstantset_to_wkb_size(const TInstantSet *is, uint8_t variant)
 }
 
 /**
- * Return the maximum size in bytes of the temporal sequence point
+ * Return the maximum size in bytes of the temporal sequence
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1167,7 +1177,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
 }
 
 /**
- * Return the maximum size in bytes of the temporal sequence set point
+ * Return the maximum size in bytes of the temporal sequence set
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1192,7 +1202,7 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 }
 
 /**
- * Return the maximum size in bytes of the temporal point
+ * Return the maximum size in bytes of the temporal value
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1337,8 +1347,7 @@ endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer a boolean represented in
- * Well-Known Binary (WKB) format
+ * Write into the buffer a boolean represented in Well-Known Binary (WKB) format
  */
 static uint8_t *
 bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
@@ -1418,8 +1427,7 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer a text value represented in
- * Well-Known Binary (WKB) format
+ * Write into the buffer a text value represented in Well-Known Binary (WKB) format
  */
 static uint8_t *
 text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
@@ -1429,20 +1437,6 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
   buf = int64_to_wkb_buf(size, buf, variant);
   buf = bytes_to_wkb_buf(str, size, buf, variant);
   pfree(str);
-  return buf;
-}
-
-/**
- * Write into the buffer a network point represented in
- * Well-Known Binary (WKB) format
- */
-uint8_t *
-double4_to_wkb_buf(const double4 *d, uint8_t *buf, uint8_t variant)
-{
-  buf = double_to_wkb_buf(d->a, buf, variant);
-  buf = double_to_wkb_buf(d->b, buf, variant);
-  buf = double_to_wkb_buf(d->c, buf, variant);
-  buf = double_to_wkb_buf(d->d, buf, variant);
   return buf;
 }
 
@@ -1566,8 +1560,8 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer a span represented in Well-Known Binary (WKB)
- * format as follows
+ * Write into the buffer a span represented in Well-Known Binary (WKB) format
+ * as follows
  * - Endian byte
  * - Basetype int16
  * - Bounds byte stating whether the bounds are inclusive
@@ -1902,11 +1896,11 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
     case T_GEOGRAPHY:
       buf = coords_to_wkb_buf(inst, buf, variant);
       break;
-  #if ! MEOS
+#if ! MEOS
     case T_NPOINT:
       buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);
       break;
-  #endif
+#endif /* ! MEOS */
     default: /* Error! */
       elog(ERROR, "unknown type_input function for base type: %d", basetype);
   }
@@ -1941,7 +1935,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer the temporal instant set point represented in
+ * Write into the buffer the temporal instant set represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -1974,7 +1968,7 @@ tinstantset_to_wkb_buf(const TInstantSet *is, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer the temporal sequence point represented in
+ * Write into the buffer the temporal sequence represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -2012,7 +2006,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Write into the buffer the temporal sequence set value represented in
+ * Write into the buffer a temporal sequence set represented in
  * Well-Known Binary (WKB) format as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
@@ -2451,7 +2445,7 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
 /**
- * Return the temporal point represented in MF-JSON format
+ * Return the temporal value represented in MF-JSON format
  */
 PGDLLEXPORT Datum
 Temporal_as_mfjson(PG_FUNCTION_ARGS)
@@ -2693,7 +2687,7 @@ Tbox_as_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
 /**
- * Output the temporal box in HexWKB format.
+ * Output a temporal box in HexWKB format.
  */
 PGDLLEXPORT Datum
 Tbox_as_hexwkb(PG_FUNCTION_ARGS)
@@ -2707,7 +2701,7 @@ Tbox_as_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_as_wkb);
 /**
- * Output a temporal box in WKB format.
+ * Output a spatiotemporal box in WKB format.
  */
 PGDLLEXPORT Datum
 Stbox_as_wkb(PG_FUNCTION_ARGS)
@@ -2719,7 +2713,7 @@ Stbox_as_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_as_hexwkb);
 /**
- * Output the temporal box in HexWKB format.
+ * Output a spatiotemporal box in HexWKB format.
  */
 PGDLLEXPORT Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
@@ -2765,7 +2759,7 @@ Tpoint_as_ewkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_as_hexwkb);
 /**
- * @brief Output the temporal point in HexEWKB format.
+ * @brief Output a temporal value in HexEWKB format.
  * @note This will have 'SRID=#;' for temporal points
  */
 PGDLLEXPORT Datum
