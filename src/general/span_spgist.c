@@ -44,7 +44,7 @@
 #include <postgres.h>
 #include <access/spgist.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_gist.h"
@@ -74,7 +74,7 @@ typedef struct
  * initialize the struct to cover the whole 2D space.
  */
 static void
-spannode_init(SpanNode *nodebox, CachedType spantype, CachedType basetype)
+spannode_init(SpanNode *nodebox, MDB_Type spantype, MDB_Type basetype)
 {
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
@@ -291,7 +291,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
 static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
-  CachedType type = oid_type(scankey->sk_subtype);
+  MDB_Type type = oid_type(scankey->sk_subtype);
   if (type == T_INT4 || type == T_FLOAT8)
   {
     Datum d = scankey->sk_argument;

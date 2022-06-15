@@ -38,7 +38,7 @@
 #include <assert.h>
 #include <float.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_boxops.h"

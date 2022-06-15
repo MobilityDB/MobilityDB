@@ -44,7 +44,7 @@
   #include <access/hash.h>
 #endif
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
@@ -330,7 +330,7 @@ span_bounds(const Span *s, double *xmin, double *xmax)
  * @brief Return a span from its string representation.
  */
 Span *
-span_in(char *str, CachedType spantype)
+span_in(char *str, MDB_Type spantype)
 {
   return span_parse(&str, spantype, true, true);
 }
@@ -384,7 +384,7 @@ span_out(const Span *s)
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType basetype)
+  MDB_Type basetype)
 {
   /* Note: zero-fill is done in the span_set function */
   Span *s = palloc(sizeof(Span));
@@ -399,9 +399,9 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  CachedType basetype, Span *s)
+  MDB_Type basetype, Span *s)
 {
-  CachedType spantype = basetype_spantype(basetype);
+  MDB_Type spantype = basetype_spantype(basetype);
   int cmp = datum_cmp2(lower, upper, basetype, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
@@ -446,7 +446,7 @@ span_copy(const Span *s)
  * @sqlop @p ::
  */
 Span *
-elem_to_span(Datum d, CachedType basetype)
+elem_to_span(Datum d, MDB_Type basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);
@@ -890,8 +890,8 @@ Span_constructor2(PG_FUNCTION_ARGS)
 {
   Datum lower = PG_GETARG_DATUM(0);
   Datum upper = PG_GETARG_DATUM(1);
-  CachedType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  CachedType basetype = spantype_basetype(spantype);
+  MDB_Type spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type basetype = spantype_basetype(spantype);
   Span *span;
   span = span_make(lower, upper, true, false, basetype);
   PG_RETURN_SPAN_P(span);
@@ -909,8 +909,8 @@ Span_constructor4(PG_FUNCTION_ARGS)
   Datum upper = PG_GETARG_DATUM(1);
   bool lower_inc = PG_GETARG_BOOL(2);
   bool upper_inc = PG_GETARG_BOOL(3);
-  CachedType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  CachedType basetype = spantype_basetype(spantype);
+  MDB_Type spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type basetype = spantype_basetype(spantype);
   Span *span;
   span = span_make(lower, upper, lower_inc, upper_inc, basetype);
   PG_RETURN_SPAN_P(span);
@@ -928,7 +928,7 @@ PGDLLEXPORT Datum
 Elem_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Span *result = elem_to_span(d, basetype);
   PG_RETURN_POINTER(result);
 }
@@ -972,7 +972,7 @@ Range_to_span(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Range bounds cannot be infinite")));
 
-  CachedType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
+  MDB_Type basetype = (typcache->rngelemtype->type_id == INT4OID) ?
     T_INT4 : T_TIMESTAMPTZ;
   range_deserialize(typcache, range, &lower, &upper, &empty);
   span = span_make(lower.val, upper.val, lower.inclusive, upper.inclusive,

@@ -49,7 +49,7 @@
 /* PostgreSQL */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/lifting.h"
 #include "general/temporal_util.h"
 #include "point/pgis_call.h"

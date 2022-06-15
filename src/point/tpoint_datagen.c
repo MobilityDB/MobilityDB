@@ -55,7 +55,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"

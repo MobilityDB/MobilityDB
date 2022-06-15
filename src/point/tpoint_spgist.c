@@ -107,7 +107,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/tnumber_spgist.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_gist.h"
@@ -518,7 +518,7 @@ distance_stbox_nodebox(const STBOX *query, const STboxNode *nodebox)
 static bool
 tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
 {
-  CachedType type = oid_type(scankey->sk_subtype);
+  MDB_Type type = oid_type(scankey->sk_subtype);
   if (tgeo_basetype(type))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);

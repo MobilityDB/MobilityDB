@@ -36,7 +36,7 @@
 #include <assert.h>
 #include <float.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/tbox.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -162,7 +162,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
  * "values":[1.5,2.5]
  */
 static Datum *
-parse_mfjson_values(json_object *mfjson, CachedType temptype, int *count)
+parse_mfjson_values(json_object *mfjson, MDB_Type temptype, int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *jvalues = NULL;
@@ -288,7 +288,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  */
 TInstant *
 tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  CachedType temptype)
+  MDB_Type temptype)
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
@@ -362,7 +362,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 static TInstant **
 tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  CachedType temptype, int *count)
+  MDB_Type temptype, int *count)
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
@@ -401,7 +401,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TInstantSet *
 tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  CachedType temptype)
+  MDB_Type temptype)
 {
   int count;
   TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
@@ -417,7 +417,7 @@ tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  CachedType temptype, bool linear)
+  MDB_Type temptype, bool linear)
 {
   /* Get the array of temporal instant points */
   int count;
@@ -451,7 +451,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  CachedType temptype, bool linear)
+  MDB_Type temptype, bool linear)
 {
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
@@ -1264,7 +1264,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
  * @brief Return a value from its Well-Known Binary (WKB) representation.
  */
 Datum
-datum_from_wkb(uint8_t *wkb, int size, CachedType type)
+datum_from_wkb(uint8_t *wkb, int size, MDB_Type type)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
@@ -1329,7 +1329,7 @@ datum_from_wkb(uint8_t *wkb, int size, CachedType type)
  * @brief Return a temporal type from its HexEWKB representation
  */
 Datum
-datum_from_hexwkb(const char *hexwkb, int size, CachedType type)
+datum_from_hexwkb(const char *hexwkb, int size, MDB_Type type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
   Datum result = datum_from_wkb(wkb, size / 2, type);
@@ -1437,7 +1437,7 @@ tbox_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_box_input_output
  * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
@@ -1463,7 +1463,7 @@ stbox_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_box_input_output
  * @brief Return a spatiotemporal box from its WKB representation in
  * hex-encoded ASCII
  * @sqlfunc stboxFromWKB()
@@ -1537,7 +1537,7 @@ ensure_temptype_mfjson(const char *typestr)
  */
 Temporal *
 temporal_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
-  CachedType temptype)
+  MDB_Type temptype)
 {
   char *mfjson = text2cstring(mfjson_input);
   char *srs = NULL;

@@ -39,7 +39,7 @@
 #include <assert.h>
 #include <math.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/tnumber_mathfuncs.h"
 #include "general/temporal_util.h"
 
@@ -53,7 +53,7 @@
  * @sqlop @p +
  */
 Temporal *
-add_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
+add_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
 {
   return arithop_tnumber_number(tnumber, number, basetype, ADD, &datum_add,
     INVERT);
@@ -65,7 +65,7 @@ add_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
  * @sqlop @p +
  */
 Temporal *
-add_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
+add_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
 {
   return arithop_tnumber_number(tnumber, number, basetype, ADD, &datum_add,
     INVERT_NO);
@@ -92,7 +92,7 @@ add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p -
  */
 Temporal *
-sub_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
+sub_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
 {
   return arithop_tnumber_number(tnumber, number, basetype, SUB, &datum_sub,
     INVERT);
@@ -104,7 +104,7 @@ sub_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
  * @sqlop @p -
  */
 Temporal *
-sub_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
+sub_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
 {
   return arithop_tnumber_number(tnumber, number, basetype, SUB, &datum_sub,
     INVERT_NO);
@@ -131,7 +131,7 @@ sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p *
  */
 Temporal *
-mult_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
+mult_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
 {
   return arithop_tnumber_number(tnumber, number, basetype, MULT, &datum_mult,
     INVERT);
@@ -143,7 +143,7 @@ mult_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
  * @sqlop @p *
  */
 Temporal *
-mult_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
+mult_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
 {
   return arithop_tnumber_number(tnumber, number, basetype, MULT, &datum_mult,
     INVERT_NO);
@@ -171,7 +171,7 @@ mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p /
  */
 Temporal *
-div_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
+div_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
 {
   return arithop_tnumber_number(tnumber, number, basetype, DIV, &datum_div,
     INVERT);
@@ -183,7 +183,7 @@ div_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
  * @sqlop @p /
  */
 Temporal *
-div_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
+div_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
 {
   return arithop_tnumber_number(tnumber, number, basetype, DIV, &datum_div,
     INVERT_NO);

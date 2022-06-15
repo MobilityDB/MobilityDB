@@ -83,7 +83,7 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/span_analyze.h"
 #include "general/temporal_util.h"
 #include "general/temporal_analyze.h"
@@ -130,7 +130,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   SpanBound *value_lowers, *value_uppers;
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
-  CachedType spantype; /* make compiler quiet */
+  MDB_Type spantype; /* make compiler quiet */
 
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
@@ -281,7 +281,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Information about the value type */
-  CachedType basetype = temptype_basetype(oid_type(stats->attrtypid));
+  MDB_Type basetype = temptype_basetype(oid_type(stats->attrtypid));
   typentry = lookup_type_cache(type_oid(basetype),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);

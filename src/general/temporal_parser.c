@@ -40,7 +40,7 @@
 #include "general/temporal_parser.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
@@ -197,7 +197,7 @@ double_parse(char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(char **str, CachedType basetype)
+basetype_parse(char **str, MDB_Type basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -402,7 +402,7 @@ periodset_parse(char **str)
  * Parse a timestamp value from the buffer.
  */
 Datum
-elem_parse(char **str, CachedType basetype)
+elem_parse(char **str, MDB_Type basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -421,7 +421,7 @@ elem_parse(char **str, CachedType basetype)
  * @brief Parse a span value from the buffer.
  */
 Span *
-span_parse(char **str, CachedType spantype, bool end, bool make)
+span_parse(char **str, MDB_Type spantype, bool end, bool make)
 {
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
@@ -431,7 +431,7 @@ span_parse(char **str, CachedType spantype, bool end, bool make)
   else
     elog(ERROR, "Could not parse span: Missing opening bracket/parenthesis");
 
-  CachedType basetype = spantype_basetype(spantype);
+  MDB_Type basetype = spantype_basetype(spantype);
   /* The next two instructions will throw an exception if they fail */
   Datum lower = elem_parse(str, basetype);
   p_comma(str);
@@ -465,10 +465,10 @@ span_parse(char **str, CachedType spantype, bool end, bool make)
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 TInstant *
-tinstant_parse(char **str, CachedType temptype, bool end, bool make)
+tinstant_parse(char **str, MDB_Type temptype, bool end, bool make)
 {
   p_whitespace(str);
-  CachedType basetype = temptype_basetype(temptype);
+  MDB_Type basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem = basetype_parse(str, basetype);
   TimestampTz t = timestamp_parse(str);
@@ -486,7 +486,7 @@ tinstant_parse(char **str, CachedType temptype, bool end, bool make)
  * @param[in] temptype Oid of the base type
  */
 TInstantSet *
-tinstantset_parse(char **str, CachedType temptype)
+tinstantset_parse(char **str, MDB_Type temptype)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -530,7 +530,7 @@ tinstantset_parse(char **str, CachedType temptype)
  * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
-tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
+tsequence_parse(char **str, MDB_Type temptype, bool linear, bool end,
   bool make)
 {
   p_whitespace(str);
@@ -584,7 +584,7 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
  * @param[in] linear True when the interpolation is linear
  */
 TSequenceSet *
-tsequenceset_parse(char **str, CachedType temptype, bool linear)
+tsequenceset_parse(char **str, MDB_Type temptype, bool linear)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -624,7 +624,7 @@ tsequenceset_parse(char **str, CachedType temptype, bool linear)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_parse(char **str, CachedType temptype)
+temporal_parse(char **str, MDB_Type temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */

@@ -37,7 +37,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -214,7 +214,7 @@ tbox_copy(const TBOX *box)
  * @sqlop @p ::
  */
 void
-number_set_tbox(Datum value, CachedType basetype, TBOX *box)
+number_set_tbox(Datum value, MDB_Type basetype, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));

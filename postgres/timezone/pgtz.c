@@ -27,10 +27,23 @@ pg_tz	   *session_timezone = NULL;
 /* Current log timezone (controlled by log_timezone GUC) */
 pg_tz	   *log_timezone = NULL;
 
-// TODO: Replace this function
-extern bool
-scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
-				  char *canonname, int canonnamelen);
+/* Empty stub for generating a temporary version of the MEOS library */
+bool
+scan_directory_ci(const char *dirname __attribute__((unused)),
+  const char *fname __attribute__((unused)),
+  int fnamelen __attribute__((unused)),
+  char *canonname __attribute__((unused)),
+  int canonnamelen __attribute__((unused)))
+{
+  elog(ERROR, "Function not yet implemented");
+}
+
+/* Empty stub for generating a temporary version of the MEOS library */
+pg_tz *
+pg_tzset(const char *name __attribute__((unused)))
+{
+  elog(ERROR, "Function not yet implemented");
+}
 
 #if 0 /* MobilityDB not used */
 

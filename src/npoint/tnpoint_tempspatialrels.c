@@ -39,7 +39,7 @@
 #include "npoint/tnpoint_tempspatialrels.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 #include "npoint/tnpoint_spatialfuncs.h"

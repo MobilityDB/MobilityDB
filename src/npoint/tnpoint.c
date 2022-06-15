@@ -37,7 +37,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"

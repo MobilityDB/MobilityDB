@@ -43,7 +43,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "point/tpoint_tile.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_tile.h"

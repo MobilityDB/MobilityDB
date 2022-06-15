@@ -40,7 +40,7 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
@@ -49,7 +49,7 @@
  * Return the minimum value of the two span base values
  */
 Datum
-span_elem_min(Datum l, Datum r, CachedType type)
+span_elem_min(Datum l, Datum r, MDB_Type type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -66,7 +66,7 @@ span_elem_min(Datum l, Datum r, CachedType type)
  * Return the minimum value of the two span base values
  */
 Datum
-span_elem_max(Datum l, Datum r, CachedType type)
+span_elem_max(Datum l, Datum r, MDB_Type type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -88,7 +88,7 @@ span_elem_max(Datum l, Datum r, CachedType type)
  * @sqlop @p \@>
  */
 bool
-contains_span_elem(const Span *s, Datum d, CachedType basetype)
+contains_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
@@ -129,7 +129,7 @@ contains_span_span(const Span *s1, const Span *s2)
  * @sqlop @p <@
  */
 bool
-contained_elem_span(Datum d, CachedType basetype, const Span *s)
+contained_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   return contains_span_elem(s, d, basetype);
 }
@@ -176,7 +176,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
  * @sqlop @p -|-
  */
 bool
-adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
+adjacent_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   /*
    * A timestamp A and a span C..D are adjacent if and only if
@@ -192,7 +192,7 @@ adjacent_elem_span(Datum d, CachedType basetype, const Span *s)
  * @sqlop @p -|-
  */
 bool
-adjacent_span_elem(const Span *s, Datum d, CachedType basetype)
+adjacent_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
   return adjacent_elem_span(d, basetype, s);
 }
@@ -226,7 +226,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
  * @sqlop @p <<
  */
 bool
-left_elem_span(Datum d, CachedType basetype, const Span *s)
+left_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
@@ -238,7 +238,7 @@ left_elem_span(Datum d, CachedType basetype, const Span *s)
  * @sqlop @p <<
  */
 bool
-left_span_elem(const Span *s, Datum d, CachedType basetype)
+left_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
 
   int cmp = datum_cmp2(s->upper, d, s->basetype, basetype);
@@ -267,7 +267,7 @@ left_span_span(const Span *s1, const Span *s2)
  * @sqlop @p >>
  */
 bool
-right_elem_span(Datum d, CachedType basetype, const Span *s)
+right_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp > 0 || (cmp == 0 && ! s->upper_inc));
@@ -279,7 +279,7 @@ right_elem_span(Datum d, CachedType basetype, const Span *s)
  * @sqlop @p >>
  */
 bool
-right_span_elem(const Span *s, Datum d, CachedType basetype)
+right_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
@@ -307,7 +307,7 @@ right_span_span(const Span *s1, const Span *s2)
  * @sqlop @p &<
  */
 bool
-overleft_elem_span(Datum d, CachedType basetype, const Span *s)
+overleft_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && s->upper_inc));
@@ -319,7 +319,7 @@ overleft_elem_span(Datum d, CachedType basetype, const Span *s)
  * @sqlop @p &<
  */
 bool
-overleft_span_elem(const Span *s, Datum d, CachedType basetype)
+overleft_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
   return datum_le2(s->upper, d, s->basetype, basetype);
 }
@@ -346,7 +346,7 @@ overleft_span_span(const Span *s1, const Span *s2)
  * @sqlop @p &>
  */
 bool
-overright_elem_span(Datum d, CachedType basetype, const Span *s)
+overright_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   return (cmp < 0 || (cmp == 0 && s->lower_inc));
@@ -358,7 +358,7 @@ overright_elem_span(Datum d, CachedType basetype, const Span *s)
  * @sqlop @p &>
  */
 bool
-overright_span_elem(const Span *s, Datum d, CachedType basetype)
+overright_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
   return datum_le2(d, s->lower, basetype, s->basetype);
 }
@@ -520,7 +520,7 @@ minus_span_span(const Span *s1, const Span *s2)
  * @sqlop @p <->
  */
 double
-distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
+distance_elem_elem(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   ensure_span_basetype(typel);
   if (typel != typer)
@@ -547,7 +547,7 @@ distance_elem_elem(Datum l, Datum r, CachedType typel, CachedType typer)
  * @sqlop @p <->
  */
 double
-distance_elem_span(Datum d, CachedType basetype, const Span *s)
+distance_elem_span(Datum d, MDB_Type basetype, const Span *s)
 {
   return distance_span_elem(s, d, basetype);
 }
@@ -558,7 +558,7 @@ distance_elem_span(Datum d, CachedType basetype, const Span *s)
  * @sqlop @p <->
  */
 double
-distance_span_elem(const Span *s, Datum d, CachedType basetype)
+distance_span_elem(const Span *s, Datum d, MDB_Type basetype)
 {
   /* If the span contains the element return 0 */
   if (contains_span_elem(s, d, basetype))
@@ -622,7 +622,7 @@ Contains_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(contains_span_elem(s, d, basetype));
 }
 
@@ -651,7 +651,7 @@ Contained_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(contained_elem_span(d, basetype, s));
 }
 
@@ -694,7 +694,7 @@ Adjacent_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(adjacent_elem_span(d, basetype, s));
 }
 
@@ -707,7 +707,7 @@ Adjacent_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(adjacent_span_elem(s, d, basetype));
 }
 
@@ -735,7 +735,7 @@ Left_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(left_elem_span(d, basetype, s));
 }
 
@@ -748,7 +748,7 @@ Left_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(left_span_elem(s, d, basetype));
 }
 
@@ -776,7 +776,7 @@ Right_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(right_elem_span(d, basetype, s));
 }
 
@@ -789,7 +789,7 @@ Right_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(right_span_elem(s, d, basetype));
 }
 
@@ -817,7 +817,7 @@ Overleft_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(overleft_elem_span(d, basetype, s));
 }
 
@@ -830,7 +830,7 @@ Overleft_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(overleft_span_elem(s, d, basetype));
 }
 
@@ -858,7 +858,7 @@ Overright_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(overright_elem_span(d, basetype, s));
 }
 
@@ -871,7 +871,7 @@ Overright_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(overright_span_elem(s, d, basetype));
 }
 
@@ -956,8 +956,8 @@ Distance_elem_elem(PG_FUNCTION_ARGS)
 {
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
-  CachedType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  CachedType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_elem_elem(d1, d2, basetype1, basetype2);
   PG_RETURN_FLOAT8(result);
 }
@@ -971,7 +971,7 @@ Distance_elem_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   double result = distance_span_elem(s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }
@@ -985,7 +985,7 @@ Distance_span_elem(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_span_elem(s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }

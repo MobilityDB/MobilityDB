@@ -106,7 +106,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/tnumber_gist.h"
 
 /*****************************************************************************
@@ -378,7 +378,7 @@ distance_tbox_nodebox(const TBOX *query, const TboxNode *nodebox)
 static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
 {
-  CachedType type = oid_type(scankey->sk_subtype);
+  MDB_Type type = oid_type(scankey->sk_subtype);
   if (tnumber_basetype(type))
   {
     Datum value = scankey->sk_argument;

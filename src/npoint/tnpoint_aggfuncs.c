@@ -39,7 +39,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"

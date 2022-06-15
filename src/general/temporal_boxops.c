@@ -46,7 +46,7 @@
 #include "general/temporal_boxops.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
 #if ! MEOS
@@ -64,7 +64,7 @@
  * @param[in] temptype Temporal type
  */
 bool
-temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype)
+temporal_bbox_eq(const void *box1, const void *box2, MDB_Type temptype)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
@@ -91,7 +91,7 @@ temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype)
  * @param[in] temptype Temporal type
  */
 int
-temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
+temporal_bbox_cmp(const void *box1, const void *box2, MDB_Type temptype)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
@@ -114,7 +114,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
  */
 void
 temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
-  CachedType temptype, void *box)
+  MDB_Type temptype, void *box)
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
@@ -139,7 +139,7 @@ temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
  * Return true if a temporal type does not have bounding box
  */
 static bool
-temptype_without_bbox(CachedType temptype)
+temptype_without_bbox(MDB_Type temptype)
 {
   if (temptype == T_TDOUBLE2 || temptype == T_TDOUBLE3 ||
       temptype == T_TDOUBLE4)
@@ -151,7 +151,7 @@ temptype_without_bbox(CachedType temptype)
  * Return the size of a bounding box
  */
 size_t
-temporal_bbox_size(CachedType temptype)
+temporal_bbox_size(MDB_Type temptype)
 {
   if (talpha_type(temptype))
     return sizeof(Period);
@@ -459,7 +459,7 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * function
  */
 bool
-boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
+boxop_tnumber_number(const Temporal *temp, Datum number, MDB_Type basetype,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1, box2;
@@ -1226,7 +1226,7 @@ boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = boxop_tnumber_number(temp, value, basetype, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -1244,7 +1244,7 @@ boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = boxop_tnumber_number(temp, value, basetype, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);

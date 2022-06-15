@@ -45,7 +45,7 @@
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
 
 /* MobilityDB */
-// #include <libmeos.h>
+// #include <meos.h>
 // #include "general/temporal_util.h"
 // #include "general/temporal_parser.h"
 

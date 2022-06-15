@@ -49,7 +49,7 @@
 #endif
 #include <utils/datetime.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
@@ -143,7 +143,7 @@ float_bucket(double value, double size, double offset)
  */
 static Datum
 number_bucket(Datum value, Datum size, Datum offset,
-  CachedType basetype)
+  MDB_Type basetype)
 {
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
@@ -164,7 +164,7 @@ Number_bucket(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   ensure_positive_datum(size, basetype);
   Datum result = number_bucket(value, size, origin, basetype);
   PG_RETURN_DATUM(result);
@@ -257,7 +257,7 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
  * @param[in] basetype Type of the arguments
  */
 static Span *
-span_bucket_get(Datum value, Datum size, CachedType basetype)
+span_bucket_get(Datum value, Datum size, MDB_Type basetype)
 {
   Datum lower = value;
   Datum upper = datum_add(value, size, basetype, basetype);
@@ -342,7 +342,7 @@ Span_bucket_list(PG_FUNCTION_ARGS)
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    CachedType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+    MDB_Type type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
     ensure_positive_datum(size, type);
 
     /* Initialize the FuncCallContext */
@@ -398,7 +398,7 @@ Span_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
-  CachedType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   ensure_positive_datum(size, type);
   Datum origin = PG_GETARG_DATUM(2);
   Datum value_bucket = number_bucket(value, size, origin, type);
@@ -1263,7 +1263,7 @@ value_split_state_next(ValueSplitState *state)
  * @param[in] type Type of the arguments
  */
 static int
-bucket_position(Datum value, Datum size, Datum origin, CachedType type)
+bucket_position(Datum value, Datum size, Datum origin, MDB_Type type)
 {
   ensure_tnumber_basetype(type);
   if (type == T_INT4)
@@ -1290,7 +1290,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Datum **buckets, int *newcount)
 {
   Datum value = tinstant_value(inst);
-  CachedType basetype = temptype_basetype(inst->temptype);
+  MDB_Type basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = tinstant_copy(inst);
@@ -1316,7 +1316,7 @@ static TInstantSet **
 tnumberinstset_value_split(const TInstantSet *is, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount)
 {
-  CachedType basetype = temptype_basetype(is->temptype);
+  MDB_Type basetype = temptype_basetype(is->temptype);
   TInstantSet **result;
   Datum *values, value, bucket_value;
 
@@ -1386,7 +1386,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  CachedType basetype = temptype_basetype(seq->temptype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
 
@@ -1462,7 +1462,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  CachedType basetype = temptype_basetype(seq->temptype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
 
@@ -1620,7 +1620,7 @@ static TSequenceSet **
 tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  CachedType basetype = temptype_basetype(seq->temptype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1687,7 +1687,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
       size, count, buckets, newcount);
 
   /* General case */
-  CachedType basetype = temptype_basetype(ss->temptype);
+  MDB_Type basetype = temptype_basetype(ss->temptype);
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
@@ -1771,7 +1771,7 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    CachedType basetype = temptype_basetype(temp->temptype);
+    MDB_Type basetype = temptype_basetype(temp->temptype);
     ensure_positive_datum(size, basetype);
 
     /* Initialize the FuncCallContext */
@@ -1908,7 +1908,7 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
     /* Ensure parameter validity */
-    CachedType basetype = temptype_basetype(temp->temptype);
+    MDB_Type basetype = temptype_basetype(temp->temptype);
     ensure_positive_datum(size, basetype);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);

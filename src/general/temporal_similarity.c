@@ -41,7 +41,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint_spatialfuncs.h"
 

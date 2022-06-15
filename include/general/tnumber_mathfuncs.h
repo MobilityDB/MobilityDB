@@ -64,8 +64,8 @@ extern bool tnumber_div_tp_at_timestamp(const TInstant *start1,
   Datum *value, TimestampTz *t);
 
 extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
-  CachedType basetype, TArithmetic oper,
-  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert);
+  MDB_Type basetype, TArithmetic oper,
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert);
 extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
   Datum (*func)(Datum, Datum, Oid, Oid),

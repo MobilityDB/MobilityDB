@@ -39,7 +39,7 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/periodset.h"
 #include "general/timestampset.h"
 #include "general/temporal_util.h"

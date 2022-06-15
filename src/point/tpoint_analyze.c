@@ -63,7 +63,7 @@
 #include <executor/spi.h>
 #include <utils/lsyscache.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/span_analyze.h"
 #include "general/temporal_analyze.h"
 #include "point/tpoint.h"

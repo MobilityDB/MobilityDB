@@ -48,7 +48,7 @@
 #include <measures.h>
 #include <measures3d.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -164,7 +164,7 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, CachedType basetype __attribute__((unused)), Datum *value,
+  Datum point, MDB_Type basetype __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);

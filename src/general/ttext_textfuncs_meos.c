@@ -35,7 +35,7 @@
 #include "general/ttext_textfuncs.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 
 /*****************************************************************************
  * Text concatenation

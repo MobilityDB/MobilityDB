@@ -48,7 +48,7 @@
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
@@ -2043,7 +2043,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper)
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  CachedType restype = (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT;
+  MDB_Type restype = (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < is->count; i++)
   {
     inst = tinstantset_inst_n(is, i);
@@ -2090,7 +2090,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  CachedType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
+  MDB_Type restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);

@@ -37,7 +37,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"

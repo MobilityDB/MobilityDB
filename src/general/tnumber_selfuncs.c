@@ -46,7 +46,7 @@
 #endif
 #include <utils/selfuncs.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_selfuncs.h"
@@ -118,10 +118,10 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
  */
 bool
 tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
-  CachedType basetype)
+  MDB_Type basetype)
 {
   Oid consttypid = ((Const *) other)->consttype;
-  CachedType type = oid_type(consttypid);
+  MDB_Type type = oid_type(consttypid);
   if (tnumber_basetype(type))
   {
     Datum value = ((Const *) other)->constvalue;
@@ -339,11 +339,11 @@ tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
  * join selectivity
  */
 bool
-tnumber_joinsel_components(CachedOp cachedOp, CachedType oprleft,
-  CachedType oprright, bool *value, bool *time)
+tnumber_joinsel_components(CachedOp cachedOp, MDB_Type oprleft,
+  MDB_Type oprright, bool *value, bool *time)
 {
   /* Get the argument which may not a temporal number */
-  CachedType arg = tnumber_type(oprleft) ? oprright : oprleft;
+  MDB_Type arg = tnumber_type(oprleft) ? oprright : oprleft;
 
   /* Determine the components */
   if (tnumber_basetype(arg) || tnumber_spantype(arg) ||

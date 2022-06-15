@@ -46,14 +46,14 @@
 
 extern bool tnumber_cachedop(Oid operid, CachedOp *cachedOp);
 extern bool tnumber_const_to_span_period(const Node *other, Span **s,
-  Period **p, CachedType basetype);
+  Period **p, MDB_Type basetype);
 extern float8 tnumber_sel_default(CachedOp cachedOp);
 extern Selectivity tnumber_sel_span_period(VariableStatData *vardata,
   Span *span, Period *period, CachedOp cachedOp, Oid basetypid);
 
 extern float8 tnumber_joinsel_default(CachedOp cachedOp);
-extern bool tnumber_joinsel_components(CachedOp cachedOp, CachedType oprleft,
-  CachedType oprright, bool *value, bool *time);
+extern bool tnumber_joinsel_components(CachedOp cachedOp, MDB_Type oprleft,
+  MDB_Type oprright, bool *value, bool *time);
 
 /*****************************************************************************/
 

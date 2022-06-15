@@ -196,7 +196,7 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 static int16
-temporal_get_strategy_by_type(CachedType temptype, uint16_t index)
+temporal_get_strategy_by_type(MDB_Type temptype, uint16_t index)
 {
   if (talpha_type(temptype))
     return TemporalStrategies[index];
@@ -278,7 +278,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname;
-  CachedType argtype = oid_type(argoid);
+  MDB_Type argtype = oid_type(argoid);
   if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY ||
       argtype == T_STBOX || argtype == T_TGEOMPOINT ||
       argtype == T_TGEOGPOINT || argtype == T_TNPOINT)
@@ -325,8 +325,8 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
     leftoid = exprType(linitial(req->args));
     rightoid = exprType(lsecond(req->args));
-    CachedType ltype = oid_type(leftoid);
-    CachedType rtype = oid_type(rightoid);
+    MDB_Type ltype = oid_type(leftoid);
+    MDB_Type rtype = oid_type(rightoid);
     operid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
     {
@@ -451,8 +451,8 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        */
       leftoid = exprType(leftarg);
       rightoid = exprType(rightarg);
-      CachedType lefttype = oid_type(leftoid);
-      CachedType righttype = oid_type(rightoid);
+      MDB_Type lefttype = oid_type(leftoid);
+      MDB_Type righttype = oid_type(rightoid);
 
       /*
        * Given the index operator family and the arguments and the desired

@@ -70,7 +70,7 @@
 #include "point/tpoint_tempspatialrels.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 
 /*****************************************************************************
  * Temporal disjoint

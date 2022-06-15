@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/doublen.h"
 #include "general/time_aggfuncs.h"
@@ -111,7 +111,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
   Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool lower_inc = seq->period.lower_inc;
-  CachedType basetype = temptype_basetype(seq->temptype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     TInstant *inst2 = (TInstant *) tsequence_inst_n(seq, i + 1);

@@ -45,7 +45,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/time_gist.h"
 #include "general/tnumber_gist.h"
 
@@ -272,7 +272,7 @@ tpoint_index_recheck(StrategyNumber strategy)
  */
 static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
-  CachedType type)
+  MDB_Type type)
 {
   if (tgeo_basetype(type))
   {

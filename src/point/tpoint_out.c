@@ -40,7 +40,7 @@
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/tinstant.h"
 #include "general/tinstantset.h"
 #include "general/tsequence.h"

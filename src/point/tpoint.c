@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"
@@ -199,14 +199,14 @@ tpoint_expand_spatial(const Temporal *temp, double d)
  */
 Temporal *
 tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert)
 {
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  CachedType basetype = temptype_basetype(temp->temptype);
+  MDB_Type basetype = temptype_basetype(temp->temptype);
   Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), basetype,
     func, invert);
   return result;
@@ -570,7 +570,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), temptype,
     t);
   PG_FREE_IF_COPY(gs, 0);
@@ -639,7 +639,7 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  */
 static Datum
 tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, CachedType, CachedType))
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -656,7 +656,7 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
  */
 static Datum
 tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, CachedType, CachedType))
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);

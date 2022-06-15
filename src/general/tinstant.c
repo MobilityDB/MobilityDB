@@ -44,7 +44,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -147,7 +147,7 @@ tnumberinst_double(const TInstant *inst)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_in(char *str, CachedType temptype)
+tinstant_in(char *str, MDB_Type temptype)
 {
   return tinstant_parse(&str, temptype, true, true);
 }
@@ -161,10 +161,10 @@ tinstant_in(char *str, CachedType temptype)
  *    depending on its Oid
  */
 char *
-tinstant_to_string(const TInstant *inst, char *(*value_out)(CachedType, Datum))
+tinstant_to_string(const TInstant *inst, char *(*value_out)(MDB_Type, Datum))
 {
   char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
-  CachedType basetype = temptype_basetype(inst->temptype);
+  MDB_Type basetype = temptype_basetype(inst->temptype);
   char *value = value_out(basetype, tinstant_value(inst));
   char *result;
   if (inst->temptype == T_TTEXT)
@@ -223,7 +223,7 @@ tinstant_out(const TInstant *inst)
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
-tinstant_make(Datum value, CachedType temptype, TimestampTz t)
+tinstant_make(Datum value, MDB_Type temptype, TimestampTz t)
 {
   size_t value_offset = double_pad(sizeof(TInstant));
   size_t size = value_offset;
@@ -231,7 +231,7 @@ tinstant_make(Datum value, CachedType temptype, TimestampTz t)
   TInstant *result;
   size_t value_size;
   void *value_from;
-  CachedType basetype = temptype_basetype(temptype);
+  MDB_Type basetype = temptype_basetype(temptype);
   /* Copy value */
   bool typbyval = basetype_byvalue(basetype);
   if (typbyval)
@@ -652,7 +652,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
   bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  CachedType basetype = temptype_basetype(inst->temptype);
+  MDB_Type basetype = temptype_basetype(inst->temptype);
   bool contains = contains_span_elem(span, d, basetype);
   return atfunc ? contains : ! contains;
 }
@@ -689,7 +689,7 @@ tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
   int count, bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  CachedType basetype = temptype_basetype(inst->temptype);
+  MDB_Type basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < count; i++)
   {
     if (contains_span_elem(normspans[i], d, basetype))
@@ -1052,7 +1052,7 @@ tinstant_hash(const TInstant *inst)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_recv(StringInfo buf, CachedType temptype)
+tinstant_recv(StringInfo buf, MDB_Type temptype)
 {
   TimestampTz t = call_recv(T_TIMESTAMPTZ, buf);
   int size = pq_getmsgint(buf, 4);
@@ -1063,7 +1063,7 @@ tinstant_recv(StringInfo buf, CachedType temptype)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  CachedType basetype = temptype_basetype(temptype);
+  MDB_Type basetype = temptype_basetype(temptype);
   Datum value = call_recv(basetype, &buf2);
   buf->cursor += size;
   return tinstant_make(value, temptype, t);
@@ -1079,7 +1079,7 @@ tinstant_recv(StringInfo buf, CachedType temptype)
 void
 tinstant_write(const TInstant *inst, StringInfo buf)
 {
-  CachedType basetype = temptype_basetype(inst->temptype);
+  MDB_Type basetype = temptype_basetype(inst->temptype);
   bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   bytea *bv = call_send(basetype, tinstant_value(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);

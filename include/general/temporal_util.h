@@ -47,15 +47,15 @@
 
 extern size_t double_pad(size_t size);
 extern Datum datum_copy(Datum value, Oid typid);
-extern double datum_double(Datum d, CachedType basetype);
+extern double datum_double(Datum d, MDB_Type basetype);
 extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
 extern text *cstring2text(const char *cstring);
 extern char *text2cstring(const text *textptr);
 
 /* Input/output functions */
 
-extern Datum basetype_input(CachedType type, char *str, bool end);
-extern char *basetype_output(CachedType type, Datum value);
+extern Datum basetype_input(MDB_Type type, char *str, bool end);
+extern char *basetype_output(MDB_Type type, Datum value);
 
 /* Array functions */
 
@@ -66,7 +66,7 @@ extern char *stringarr_to_string(char **strings, int count, int outlen,
 
 /* Sort functions */
 
-extern void datumarr_sort(Datum *values, int count, CachedType basetype);
+extern void datumarr_sort(Datum *values, int count, MDB_Type basetype);
 extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
@@ -77,7 +77,7 @@ extern void tseqarr_sort(TSequence **sequences, int count);
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
-  CachedType basetype);
+  MDB_Type basetype);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
 
@@ -87,35 +87,35 @@ extern int text_cmp(text *arg1, text *arg2, Oid collid);
 
 /* Arithmetic functions */
 
-extern Datum datum_add(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum_sub(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum_mult(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum_div(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum_add(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum_sub(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum_mult(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum_div(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
 
 /* Comparison functions on datums */
 
-extern int datum_cmp(Datum l, Datum r, CachedType type);
-extern bool datum_eq(Datum l, Datum r, CachedType type);
-extern bool datum_ne(Datum l, Datum r, CachedType type);
-extern bool datum_lt(Datum l, Datum r, CachedType type);
-extern bool datum_le(Datum l, Datum r, CachedType type);
-extern bool datum_gt(Datum l, Datum r, CachedType type);
-extern bool datum_ge(Datum l, Datum r, CachedType type);
+extern int datum_cmp(Datum l, Datum r, MDB_Type type);
+extern bool datum_eq(Datum l, Datum r, MDB_Type type);
+extern bool datum_ne(Datum l, Datum r, MDB_Type type);
+extern bool datum_lt(Datum l, Datum r, MDB_Type type);
+extern bool datum_le(Datum l, Datum r, MDB_Type type);
+extern bool datum_gt(Datum l, Datum r, MDB_Type type);
+extern bool datum_ge(Datum l, Datum r, MDB_Type type);
 
-extern int datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern bool datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern bool datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern bool datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern bool datum_le2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern bool datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern bool datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern int datum_cmp2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern bool datum_eq2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern bool datum_ne2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern bool datum_lt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern bool datum_le2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern bool datum_gt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern bool datum_ge2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
 
-extern Datum datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer);
-extern Datum datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum2_eq2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum2_ne2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum2_lt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum2_le2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum2_gt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
+extern Datum datum2_ge2(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
 
 /* Hypothenuse functions */
 
@@ -137,8 +137,8 @@ extern double hypot4d(double x, double y, double z, double m);
 
 extern Datum call_input(Oid typid, char *str, bool end);
 extern char *call_output(Oid typid, Datum value);
-extern Datum call_recv(CachedType type, StringInfo buf);
-extern bytea *call_send(CachedType type, Datum value);
+extern Datum call_recv(MDB_Type type, StringInfo buf);
+extern bytea *call_send(MDB_Type type, Datum value);
 
 extern Datum call_function1(PGFunction func, Datum arg1);
 extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
@@ -156,7 +156,7 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 /* Range functions */
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, CachedType basetype);
+  bool upper_inc, MDB_Type basetype);
 
 /* Array functions */
 
@@ -166,7 +166,7 @@ extern Period **periodarr_extract(ArrayType *array, int *count);
 extern Span **spanarr_extract(ArrayType *array, int *count);
 extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
-extern ArrayType *datumarr_to_array(Datum *values, int count, CachedType type);
+extern ArrayType *datumarr_to_array(Datum *values, int count, MDB_Type type);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
 extern ArrayType *spanarr_to_array(Span **spans, int count);

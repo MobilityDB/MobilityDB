@@ -44,7 +44,7 @@
  */
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************/

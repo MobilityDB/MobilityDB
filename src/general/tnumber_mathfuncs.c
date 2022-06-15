@@ -44,7 +44,7 @@
   #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/pg_call.h"
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
@@ -172,9 +172,9 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * of the function
  */
 Temporal *
-arithop_tnumber_number(const Temporal *temp, Datum value, CachedType basetype,
+arithop_tnumber_number(const Temporal *temp, Datum value, MDB_Type basetype,
   TArithmetic oper,
-  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert)
 {
   ensure_tnumber_basetype(basetype);
   /* If division test whether the denominator is zero */
@@ -308,7 +308,7 @@ tnumberseq_derivative(const TSequence *seq)
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double derivative;
-  CachedType basetype = temptype_basetype(seq->temptype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
@@ -392,11 +392,11 @@ tnumber_derivative(const Temporal *temp)
  */
 static Datum
 arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, CachedType, CachedType))
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
     func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -412,11 +412,11 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, CachedType, CachedType))
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
     func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);

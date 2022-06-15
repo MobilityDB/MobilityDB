@@ -102,8 +102,8 @@ spantype_cache_struct _spantype_cache[] =
  * Return the base type from the temporal type
  * @note this function is defined again for MobilityDB below
  */
-CachedType
-temptype_basetype(CachedType temptype)
+MDB_Type
+temptype_basetype(MDB_Type temptype)
 {
   int n = sizeof(_temptype_cache) / sizeof(temptype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -118,8 +118,8 @@ temptype_basetype(CachedType temptype)
 /**
  * Return the base type from the span type
  */
-CachedType
-spantype_basetype(CachedType spantype)
+MDB_Type
+spantype_basetype(MDB_Type spantype)
 {
   int n = sizeof(_spantype_cache) / sizeof(spantype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -134,8 +134,8 @@ spantype_basetype(CachedType spantype)
 /**
  * Return the base type from the span type
  */
-CachedType
-basetype_spantype(CachedType basetype)
+MDB_Type
+basetype_spantype(MDB_Type basetype)
 {
   int n = sizeof(_spantype_cache) / sizeof(spantype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -155,7 +155,7 @@ basetype_spantype(CachedType basetype)
  * Return true if the type is a time type
  */
 bool
-time_type(CachedType timetype)
+time_type(MDB_Type timetype)
 {
   if (timetype == T_TIMESTAMPTZ || timetype == T_TIMESTAMPSET ||
     timetype == T_PERIOD || timetype == T_PERIODSET)
@@ -167,7 +167,7 @@ time_type(CachedType timetype)
  * Ensure that the type corresponds to a time type
  */
 void
-ensure_time_type(CachedType timetype)
+ensure_time_type(MDB_Type timetype)
 {
   if (! time_type(timetype))
     elog(ERROR, "unknown time type: %d", timetype);
@@ -180,7 +180,7 @@ ensure_time_type(CachedType timetype)
  * Return true if the type is a time type
  */
 bool
-span_type(CachedType spantype)
+span_type(MDB_Type spantype)
 {
   if (spantype == T_PERIOD || spantype == T_INTSPAN || spantype == T_FLOATSPAN)
     return true;
@@ -191,7 +191,7 @@ span_type(CachedType spantype)
  * Ensure that the type corresponds to a span type
  */
 void
-ensure_span_type(CachedType spantype)
+ensure_span_type(MDB_Type spantype)
 {
   if (! span_type(spantype))
     elog(ERROR, "unknown span type: %d", spantype);
@@ -202,7 +202,7 @@ ensure_span_type(CachedType spantype)
  * Ensure that the span base type is supported by MobilityDB
  */
 void
-ensure_span_basetype(CachedType basetype)
+ensure_span_basetype(MDB_Type basetype)
 {
   if (basetype != T_TIMESTAMPTZ && basetype != T_INT4 && basetype != T_FLOAT8)
     elog(ERROR, "unknown span base type: %d", basetype);
@@ -217,7 +217,7 @@ ensure_span_basetype(CachedType basetype)
  * @note Function used in particular in the indexes
  */
 bool
-temporal_type(CachedType temptype)
+temporal_type(MDB_Type temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
     temptype == T_TTEXT || temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
@@ -233,7 +233,7 @@ temporal_type(CachedType temptype)
  * Ensure that the base type is supported by MobilityDB
  */
 void
-ensure_temporal_type(CachedType temptype)
+ensure_temporal_type(MDB_Type temptype)
 {
   if (! temporal_type(temptype))
     elog(ERROR, "unknown temporal type: %d", temptype);
@@ -246,7 +246,7 @@ ensure_temporal_type(CachedType temptype)
  * Also, the int8 type is added to cope with the rid in network points.
  */
 void
-ensure_temporal_basetype(CachedType basetype)
+ensure_temporal_basetype(MDB_Type basetype)
 {
   if (basetype != T_TIMESTAMPTZ &&
     basetype != T_BOOL && basetype != T_INT4 && basetype != T_INT8 &&
@@ -265,7 +265,7 @@ ensure_temporal_basetype(CachedType basetype)
  * Return true if the temporal type is continuous
  */
 bool
-temptype_continuous(CachedType temptype)
+temptype_continuous(MDB_Type temptype)
 {
   if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
     temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
@@ -282,7 +282,7 @@ temptype_continuous(CachedType temptype)
  * Ensure that the temporal type is continuous
  */
 void
-ensure_temptype_continuous(CachedType temptype)
+ensure_temptype_continuous(MDB_Type temptype)
 {
   if (! temptype_continuous(temptype))
     elog(ERROR, "unknown continuous temporal type: %d", temptype);
@@ -297,7 +297,7 @@ ensure_temptype_continuous(CachedType temptype)
  * call), the known base types are explicitly enumerated.
  */
 bool
-basetype_byvalue(CachedType basetype)
+basetype_byvalue(MDB_Type basetype)
 {
   ensure_temporal_basetype(basetype);
   if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_FLOAT8)
@@ -313,7 +313,7 @@ basetype_byvalue(CachedType basetype)
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 int16
-basetype_length(CachedType basetype)
+basetype_length(MDB_Type basetype)
 {
   ensure_temporal_basetype(basetype);
   if (basetype == T_DOUBLE2)
@@ -338,7 +338,7 @@ basetype_length(CachedType basetype)
  * bounding box is a period) supported by MobilityDB
  */
 bool
-talpha_type(CachedType temptype)
+talpha_type(MDB_Type temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TTEXT)
     return true;
@@ -349,7 +349,7 @@ talpha_type(CachedType temptype)
  * Return true if the type is a temporal number type
  */
 bool
-tnumber_type(CachedType temptype)
+tnumber_type(MDB_Type temptype)
 {
   if (temptype == T_TINT || temptype == T_TFLOAT)
     return true;
@@ -360,7 +360,7 @@ tnumber_type(CachedType temptype)
  * Return true if the type is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_type(CachedType temptype)
+ensure_tnumber_type(MDB_Type temptype)
 {
   if (! tnumber_type(temptype))
     elog(ERROR, "unknown temporal number type: %d", temptype);
@@ -371,7 +371,7 @@ ensure_tnumber_type(CachedType temptype)
  * Test whether the type is a number base type supported by MobilityDB
  */
 bool
-tnumber_basetype(CachedType basetype)
+tnumber_basetype(MDB_Type basetype)
 {
   if (basetype == T_INT4 || basetype == T_FLOAT8)
     return true;
@@ -382,7 +382,7 @@ tnumber_basetype(CachedType basetype)
  * Return true if the type is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_basetype(CachedType basetype)
+ensure_tnumber_basetype(MDB_Type basetype)
 {
   if (! tnumber_basetype(basetype))
     elog(ERROR, "unknown number base type: %d", basetype);
@@ -395,7 +395,7 @@ ensure_tnumber_basetype(CachedType basetype)
  * @note Function used in particular in the indexes
  */
 bool
-tnumber_spantype(CachedType spantype)
+tnumber_spantype(MDB_Type spantype)
 {
   if (spantype == T_INTSPAN || spantype == T_FLOATSPAN)
     return true;
@@ -406,7 +406,7 @@ tnumber_spantype(CachedType spantype)
  * Ensure that the type is a span type
  */
 void
-ensure_tnumber_spantype(CachedType spantype)
+ensure_tnumber_spantype(MDB_Type spantype)
 {
   if (! tnumber_spantype(spantype))
     elog(ERROR, "unknown number span type: %d", spantype);
@@ -421,7 +421,7 @@ ensure_tnumber_spantype(CachedType spantype)
  * used for the indexes and selectivity functions
  */
 bool
-tspatial_type(CachedType temptype)
+tspatial_type(MDB_Type temptype)
 {
   if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
 #if ! MEOS
@@ -439,7 +439,7 @@ tspatial_type(CachedType temptype)
  * in particular, all of them use the same bounding box STBOX
  */
 bool
-tspatial_basetype(CachedType basetype)
+tspatial_basetype(MDB_Type basetype)
 {
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY
 #if ! MEOS
@@ -454,7 +454,7 @@ tspatial_basetype(CachedType basetype)
  * Return true if the type is a point base type supported by MobilityDB
  */
 bool
-tgeo_basetype(CachedType basetype)
+tgeo_basetype(MDB_Type basetype)
 {
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return true;
@@ -465,7 +465,7 @@ tgeo_basetype(CachedType basetype)
  * Return true if the type is a temporal point type supported by MobilityDB
  */
 bool
-tgeo_type(CachedType temptype)
+tgeo_type(MDB_Type temptype)
 {
   if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT)
     return true;
@@ -476,7 +476,7 @@ tgeo_type(CachedType temptype)
  * Ensure that the type is a point base type supported by MobilityDB
  */
 void
-ensure_tgeo_type(CachedType temptype)
+ensure_tgeo_type(MDB_Type temptype)
 {
   if (! tgeo_type(temptype))
     elog(ERROR, "unknown geospatial temporal type: %d", temptype);
@@ -751,7 +751,7 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
  * @arg[in] type Enum value for the type
  */
 Oid
-type_oid(CachedType type)
+type_oid(MDB_Type type)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();
@@ -766,7 +766,7 @@ type_oid(CachedType type)
  * @arg[in] rt Enum value for the right type
  */
 Oid
-oper_oid(CachedOp oper, CachedType lt, CachedType rt)
+oper_oid(CachedOp oper, MDB_Type lt, MDB_Type rt)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();
@@ -778,7 +778,7 @@ oper_oid(CachedOp oper, CachedType lt, CachedType rt)
  *
  * @arg[in] type Enum value for the type
  */
-CachedType
+MDB_Type
 oid_type(Oid typid)
 {
   if (!_oid_cache_ready)

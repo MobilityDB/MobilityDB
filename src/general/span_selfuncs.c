@@ -49,7 +49,7 @@
 #include <utils/timestamp.h>
 #include <math.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_analyze.h"
@@ -798,7 +798,7 @@ void
 time_const_to_period(Node *other, Period *period)
 {
   Oid timetypid = ((Const *) other)->consttype;
-  CachedType timetype = oid_type(timetypid);
+  MDB_Type timetype = oid_type(timetypid);
   const Period *p;
   ensure_time_type(timetype);
   if (timetype == T_TIMESTAMPTZ)
@@ -1540,7 +1540,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
     elog(ERROR, "attribute name is null");
 
   /* Get the attribute type */
-  CachedType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
+  MDB_Type atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
   if (table2_name == NULL)
@@ -1560,7 +1560,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
     elog(ERROR, "attribute name is null");
 
   /* Get the attribute type */
-  CachedType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+  MDB_Type atttype2 = oid_type(get_atttype(table1_oid, att1_num));
 
   /* Determine whether we target the value or the time dimension */
   bool value = (atttype1 != T_PERIOD && atttype2 != T_PERIOD);

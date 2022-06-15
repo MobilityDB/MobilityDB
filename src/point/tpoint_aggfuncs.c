@@ -39,7 +39,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "general/doublen.h"
 #include "general/skiplist.h"

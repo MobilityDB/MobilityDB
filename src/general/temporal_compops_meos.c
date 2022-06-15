@@ -48,7 +48,7 @@
  * @sqlop @p #=
  */
 Temporal *
-teq_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
+teq_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_eq2, INVERT);
 }
@@ -59,7 +59,7 @@ teq_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
  * @sqlop @p #=
  */
 Temporal *
-teq_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
+teq_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_eq2, INVERT_NO);
 }
@@ -85,7 +85,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p #<>
  */
 Temporal *
-tne_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
+tne_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_ne2, INVERT);
 }
@@ -96,7 +96,7 @@ tne_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
  * @sqlop @p #<>
  */
 Temporal *
-tne_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
+tne_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_ne2, INVERT_NO);
 }
@@ -122,7 +122,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p #<
  */
 Temporal *
-tlt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
+tlt_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_lt2, INVERT);
 }
@@ -133,7 +133,7 @@ tlt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
  * @sqlop @p #<
  */
 Temporal *
-tlt_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
+tlt_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_lt2, INVERT_NO);
 }
@@ -160,7 +160,7 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p #<=
  */
 Temporal *
-tle_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
+tle_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_le2, INVERT);
 }
@@ -172,7 +172,7 @@ tle_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
  * @sqlop @p #<=
  */
 Temporal *
-tle_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
+tle_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_le2, INVERT_NO);
 }
@@ -198,7 +198,7 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p #>
  */
 Temporal *
-tgt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
+tgt_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_gt2, INVERT);
 }
@@ -209,7 +209,7 @@ tgt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
  * @sqlop @p #>
  */
 Temporal *
-tgt_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
+tgt_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_gt2, INVERT_NO);
 }
@@ -236,7 +236,7 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p #>=
  */
 Temporal *
-tge_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
+tge_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_ge2, INVERT);
 }
@@ -248,7 +248,7 @@ tge_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
  * @sqlop @p #>=
  */
 Temporal *
-tge_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
+tge_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype)
 {
   return tcomp_temporal_base(temp, base, basetype, &datum2_ge2, INVERT_NO);
 }

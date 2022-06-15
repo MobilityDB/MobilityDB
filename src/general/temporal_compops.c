@@ -35,7 +35,7 @@
 #include "general/temporal_compops.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -48,8 +48,8 @@
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
-tcomp_temporal_base(const Temporal *temp, Datum value, CachedType basetype,
-  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
+tcomp_temporal_base(const Temporal *temp, Datum value, MDB_Type basetype,
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -115,11 +115,11 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  */
 static Datum
 tcomp_base_temporal_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, CachedType, CachedType))
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -148,11 +148,11 @@ tcomp_base_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, CachedType, CachedType))
+  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)

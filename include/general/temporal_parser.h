@@ -61,17 +61,17 @@ extern TBOX *tbox_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
-extern Datum elem_parse(char **str, CachedType basetype);
-extern Span *span_parse(char **str, CachedType spantype, bool end, bool make);
+extern Datum elem_parse(char **str, MDB_Type basetype);
+extern Span *span_parse(char **str, MDB_Type spantype, bool end, bool make);
 
-extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end,
+extern TInstant *tinstant_parse(char **str, MDB_Type temptype, bool end,
   bool make);
-extern TInstantSet *tinstantset_parse(char **str, CachedType temptype);
-extern TSequence *tsequence_parse(char **str, CachedType temptype, bool linear,
+extern TInstantSet *tinstantset_parse(char **str, MDB_Type temptype);
+extern TSequence *tsequence_parse(char **str, MDB_Type temptype, bool linear,
   bool end, bool make);
-extern TSequenceSet *tsequenceset_parse(char **str, CachedType temptype,
+extern TSequenceSet *tsequenceset_parse(char **str, MDB_Type temptype,
   bool linear);
-extern Temporal *temporal_parse(char **str, CachedType temptype);
+extern Temporal *temporal_parse(char **str, MDB_Type temptype);
 
 /*****************************************************************************/
 

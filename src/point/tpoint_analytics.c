@@ -51,7 +51,7 @@
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/lifting.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
@@ -408,7 +408,7 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)lwpoint1);
-  CachedType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  MDB_Type temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   TInstant *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);
   return result;

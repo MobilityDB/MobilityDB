@@ -44,7 +44,7 @@
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 
@@ -56,7 +56,7 @@
  * Return the distance between two numbers
  */
 Datum
-number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
+number_distance(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -90,7 +90,7 @@ number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
  */
 Temporal *
 distance_tnumber_number(const Temporal *temp, Datum value,
-  CachedType valuetype, CachedType restype)
+  MDB_Type valuetype, MDB_Type restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -141,7 +141,7 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  CachedType restype)
+  MDB_Type restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -171,7 +171,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
  * @sqlop @p |=|
  */
 double
-nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
+nad_tnumber_number(const Temporal *temp, Datum value, MDB_Type basetype)
 {
   ensure_tnumber_basetype(basetype);
   TBOX box1, box2;
@@ -413,7 +413,7 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
   ensure_tnumber_type(temp1->temptype);
   ensure_tnumber_type(temp2->temptype);
   /* Result of the distance function is a tint iff both arguments are tint */
-  CachedType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
+  MDB_Type restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
     T_TINT : T_TFLOAT;
   Temporal *dist = distance_tnumber_tnumber(temp1, temp2, restype);
   if (dist == NULL)

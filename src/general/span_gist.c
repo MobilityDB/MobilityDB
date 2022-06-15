@@ -41,7 +41,7 @@
 /* PostgreSQL */
 #include <access/gist.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 
@@ -161,7 +161,7 @@ span_index_recheck(StrategyNumber strategy)
 static bool
 span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
 {
-  CachedType type = oid_type(typid);
+  MDB_Type type = oid_type(typid);
   if (type == T_INT4 || type == T_FLOAT8)
   {
     /* Since function span_gist_consistent is strict, i is not NULL */

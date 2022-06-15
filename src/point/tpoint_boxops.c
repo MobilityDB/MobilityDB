@@ -51,7 +51,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"

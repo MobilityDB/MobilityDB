@@ -37,7 +37,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/doxygen_libmeos_api.h"
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
@@ -254,7 +254,7 @@ int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   int16 subtype, double maxdist, Interval *maxt, int *countsplits)
 {
-  CachedType basetype = temptype_basetype(instants[0]->temptype);
+  MDB_Type basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
 #if ! MEOS
@@ -348,7 +348,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
  * Ensure that the number is positive
  */
 void
-ensure_positive_datum(Datum size, CachedType basetype)
+ensure_positive_datum(Datum size, MDB_Type basetype)
 {
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
@@ -561,7 +561,7 @@ mobilitydb_full_version(void)
  * @see tsequenceset_in
  */
 Temporal *
-temporal_in(char *str, CachedType temptype)
+temporal_in(char *str, MDB_Type temptype)
 {
   return temporal_parse(&str, temptype);
 }
@@ -619,7 +619,7 @@ temporal_copy(const Temporal *temp)
  * @see tsequenceset_from_base
  */
 Temporal *
-temporal_from_base(Datum value, CachedType temptype, const Temporal *temp,
+temporal_from_base(Datum value, MDB_Type temptype, const Temporal *temp,
   bool linear)
 {
   Temporal *result;
@@ -1429,7 +1429,7 @@ Span *
 tnumber_span(const Temporal *temp)
 {
   Span *result = NULL;
-  CachedType basetype = temptype_basetype(temp->temptype);
+  MDB_Type basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
@@ -1516,7 +1516,7 @@ Datum
 temporal_min_value(const Temporal *temp)
 {
   Datum result;
-  CachedType basetype = temptype_basetype(temp->temptype);
+  MDB_Type basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
@@ -1538,7 +1538,7 @@ Datum
 temporal_max_value(const Temporal *temp)
 {
   Datum result;
-  CachedType basetype = temptype_basetype(temp->temptype);
+  MDB_Type basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
@@ -2316,7 +2316,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 {
   Datum *newvalues = palloc(sizeof(Datum) * count);
   int k = 0;
-  CachedType basetype = temptype_basetype(temp->temptype);
+  MDB_Type basetype = temptype_basetype(temp->temptype);
 
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
@@ -3709,7 +3709,7 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   Temporal *result = (Temporal *) tinstant_make(value, temptype, t);
   PG_RETURN_POINTER(result);
 }
@@ -3863,7 +3863,7 @@ Tinstantset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TInstantSet *result = tinstantset_from_base(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -3883,7 +3883,7 @@ Tsequence_from_base(PG_FUNCTION_ARGS)
     linear = false;
   else
     linear = PG_GETARG_BOOL(2);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tsequence_from_base(value, temptype, p, linear);
   PG_RETURN_POINTER(result);
 }
@@ -3903,7 +3903,7 @@ Tsequenceset_from_base(PG_FUNCTION_ARGS)
     linear = false;
   else
     linear = PG_GETARG_BOOL(2);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  MDB_Type temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequenceSet *result = tsequenceset_from_base(value, temptype,
     ps, linear);
   PG_FREE_IF_COPY(ps, 1);
@@ -4803,7 +4803,7 @@ temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MDB_Type basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = temporal_restrict_value(temp, value, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);

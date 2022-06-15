@@ -43,7 +43,7 @@
   extern double get_float8_nan(void);
 #endif
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal.h"
 #include "general/pg_call.h"
 #include "general/doublen.h"
@@ -68,7 +68,7 @@ extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oi
  * Return true if the first value is less than the second one
  */
 int
-datum_cmp(Datum l, Datum r, CachedType type)
+datum_cmp(Datum l, Datum r, MDB_Type type)
 {
   return datum_cmp2(l, r, type, type);
 }
@@ -77,7 +77,7 @@ datum_cmp(Datum l, Datum r, CachedType type)
  * Return true if the values are equal
  */
 bool
-datum_eq(Datum l, Datum r, CachedType type)
+datum_eq(Datum l, Datum r, MDB_Type type)
 {
   return datum_eq2(l, r, type, type);
 }
@@ -86,7 +86,7 @@ datum_eq(Datum l, Datum r, CachedType type)
  * Return true if the values are different
  */
 bool
-datum_ne(Datum l, Datum r, CachedType type)
+datum_ne(Datum l, Datum r, MDB_Type type)
 {
   return ! datum_eq2(l, r, type, type);
 }
@@ -95,7 +95,7 @@ datum_ne(Datum l, Datum r, CachedType type)
  * Return true if the first value is less than the second one
  */
 bool
-datum_lt(Datum l, Datum r, CachedType type)
+datum_lt(Datum l, Datum r, MDB_Type type)
 {
   return datum_lt2(l, r, type, type);
 }
@@ -104,7 +104,7 @@ datum_lt(Datum l, Datum r, CachedType type)
  * Return true if the first value is less than or equal to the second one
  */
 bool
-datum_le(Datum l, Datum r, CachedType type)
+datum_le(Datum l, Datum r, MDB_Type type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(l, r, type, type);
 }
@@ -113,7 +113,7 @@ datum_le(Datum l, Datum r, CachedType type)
  * Return true if the first value is greater than the second one
  */
 bool
-datum_gt(Datum l, Datum r, CachedType type)
+datum_gt(Datum l, Datum r, MDB_Type type)
 {
   return datum_lt2(r, l, type, type);
 }
@@ -123,7 +123,7 @@ datum_gt(Datum l, Datum r, CachedType type)
  * Return true if the first value is greater than or equal to the second one
  */
 bool
-datum_ge(Datum l, Datum r, CachedType type)
+datum_ge(Datum l, Datum r, MDB_Type type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
 }
@@ -140,7 +140,7 @@ datum_ge(Datum l, Datum r, CachedType type)
  * Return true if the first value is less than the second one
  */
 int
-datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_cmp2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   ensure_span_basetype(typel);
   if (typel != typer)
@@ -164,7 +164,7 @@ datum_cmp2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return true if the values are equal even if their type is not the same
  */
 bool
-datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_eq2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   ensure_temporal_basetype(typel);
   if (typel != typer)
@@ -202,7 +202,7 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return true if the values are different
  */
 bool
-datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_ne2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return ! datum_eq2(l, r, typel, typer);
 }
@@ -211,7 +211,7 @@ datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return true if the first value is less than the second one
  */
 bool
-datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_lt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   ensure_temporal_basetype(typel);
   if (typel != typer)
@@ -249,7 +249,7 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return true if the first value is less than or equal to the second one
  */
 bool
-datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_le2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
 }
@@ -258,7 +258,7 @@ datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return true if the first value is greater than the second one
  */
 bool
-datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_gt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return datum_lt2(r, l, typer, typel);
 }
@@ -267,7 +267,7 @@ datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return true if the first value is greater than or equal to the second one
  */
 bool
-datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_ge2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return datum_eq2(l, r, typel, typer) || datum_gt2(l, r, typel, typer);
 }
@@ -278,7 +278,7 @@ datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return a Datum true if the values are equal
  */
 Datum
-datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum2_eq2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return BoolGetDatum(datum_eq2(l, r, typel, typer));
 }
@@ -287,7 +287,7 @@ datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return a Datum true if the values are different
  */
 Datum
-datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum2_ne2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return BoolGetDatum(datum_ne2(l, r, typel, typer));
 }
@@ -296,7 +296,7 @@ datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return a Datum true if the first value is less than the second one
  */
 Datum
-datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum2_lt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return BoolGetDatum(datum_lt2(l, r, typel, typer));
 }
@@ -305,7 +305,7 @@ datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
-datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum2_le2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return BoolGetDatum(datum_le2(l, r, typel, typer));
 }
@@ -314,7 +314,7 @@ datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return a Datum true if the first value is greater than the second one
  */
 Datum
-datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum2_gt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return BoolGetDatum(datum_gt2(l, r, typel, typer));
 }
@@ -323,7 +323,7 @@ datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
-datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
+datum2_ge2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   return BoolGetDatum(datum_ge2(l, r, typel, typer));
 }
@@ -337,7 +337,7 @@ datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return the addition of the two numbers
  */
 Datum
-datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_add(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -361,7 +361,7 @@ datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return the subtraction of the two numbers
  */
 Datum
-datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_sub(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -385,7 +385,7 @@ datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return the multiplication of the two numbers
  */
 Datum
-datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_mult(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -409,7 +409,7 @@ datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
  * Return the division of the two numbers
  */
 Datum
-datum_div(Datum l, Datum r, CachedType typel, CachedType typer)
+datum_div(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 {
   Datum result;
   if (typel == T_INT4)
@@ -448,7 +448,7 @@ double_pad(size_t size)
  * Copy a Datum if it is passed by reference
  */
 Datum
-datum_copy(Datum value, CachedType basetype)
+datum_copy(Datum value, MDB_Type basetype)
 {
   /* For types passed by value */
   if (basetype_byvalue(basetype))
@@ -465,7 +465,7 @@ datum_copy(Datum value, CachedType basetype)
  * Convert a number to a double
  */
 double
-datum_double(Datum d, CachedType basetype)
+datum_double(Datum d, MDB_Type basetype)
 {
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
@@ -482,11 +482,11 @@ datum_double(Datum d, CachedType basetype)
  * Comparator function for datums
  */
 static int
-datum_sort_cmp(const Datum *l, const Datum *r, const CachedType *type)
+datum_sort_cmp(const Datum *l, const Datum *r, const MDB_Type *type)
 {
   Datum x = *l;
   Datum y = *r;
-  CachedType t = *type;
+  MDB_Type t = *type;
   if (datum_eq(x, y, t))
     return 0;
   else if (datum_lt(x, y, t))
@@ -541,7 +541,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
  * Sort function for datums
  */
 void
-datumarr_sort(Datum *values, int count, CachedType type)
+datumarr_sort(Datum *values, int count, MDB_Type type)
 {
   qsort_arg(values, (size_t) count, sizeof(Datum),
     (qsort_arg_comparator) &datum_sort_cmp, &type);
@@ -616,7 +616,7 @@ tseqarr_sort(TSequence **sequences, int count)
  * Remove duplicates from an array of datums
  */
 int
-datumarr_remove_duplicates(Datum *values, int count, CachedType type)
+datumarr_remove_duplicates(Datum *values, int count, MDB_Type type)
 {
   assert (count > 0);
   int newcount = 0;
@@ -925,9 +925,9 @@ hypot4d(double x, double y, double z, double m)
  */
 Datum
 #if ! MEOS
-basetype_input(CachedType basetype, char *str, bool end)
+basetype_input(MDB_Type basetype, char *str, bool end)
 #else
-basetype_input(CachedType basetype, char *str, bool end __attribute__((unused)))
+basetype_input(MDB_Type basetype, char *str, bool end __attribute__((unused)))
 #endif
 {
   ensure_temporal_basetype(basetype);
@@ -967,7 +967,7 @@ basetype_input(CachedType basetype, char *str, bool end __attribute__((unused)))
  * Call output function of the base type
  */
 char *
-basetype_output(CachedType basetype, Datum value)
+basetype_output(MDB_Type basetype, Datum value)
 {
   ensure_temporal_basetype(basetype);
   switch (basetype)
@@ -1036,7 +1036,7 @@ call_input(Oid typid, char *str, bool end)
  * Call receive function of the base type
  */
 Datum
-call_recv(CachedType type, StringInfo buf)
+call_recv(MDB_Type type, StringInfo buf)
 {
   if (type == T_DOUBLE2)
     return PointerGetDatum(double2_recv(buf));
@@ -1060,7 +1060,7 @@ call_recv(CachedType type, StringInfo buf)
  * Call send function of the base type
  */
 bytea *
-call_send(CachedType type, Datum value)
+call_send(MDB_Type type, Datum value)
 {
   if (type == T_DOUBLE2)
     return double2_send(DatumGetDouble2P(value));
@@ -1283,7 +1283,7 @@ temporalarr_extract(ArrayType *array, int *count)
  * Note that the values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
-datumarr_to_array(Datum *values, int count, CachedType type)
+datumarr_to_array(Datum *values, int count, MDB_Type type)
 {
   int16 elmlen;
   bool elmbyval;
@@ -1386,7 +1386,7 @@ stboxarr_to_array(STBOX *boxarr, int count)
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
-  CachedType basetype)
+  MDB_Type basetype)
 {
   Oid rangetypid = 0;
   assert (basetype == T_INT4 || basetype == T_TIMESTAMPTZ);

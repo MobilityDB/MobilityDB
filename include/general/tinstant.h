@@ -53,7 +53,7 @@ extern double tnumberinst_double(const TInstant *inst);
 /* Input/output functions */
 
 extern char *tinstant_to_string(const TInstant *inst,
-  char *(*value_out)(CachedType, Datum));
+  char *(*value_out)(MDB_Type, Datum));
 
 /* Restriction Functions */
 
@@ -79,7 +79,7 @@ extern bool intersection_tinstant_tinstant(const TInstant *inst1,
 
 /* Send/receive functions */
 
-extern TInstant *tinstant_recv(StringInfo buf, CachedType temptype);
+extern TInstant *tinstant_recv(StringInfo buf, MDB_Type temptype);
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 
 #endif /* ! MEOS */

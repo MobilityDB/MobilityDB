@@ -38,7 +38,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 
 /*****************************************************************************/
 

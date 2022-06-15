@@ -35,7 +35,7 @@
 #include "point/tpoint_parser.h"
 
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -216,11 +216,11 @@ stbox_parse(char **str)
  * @param[in] tpoint_srid SRID of the temporal point
  */
 TInstant *
-tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
+tpointinst_parse(char **str, MDB_Type temptype, bool end, bool make,
   int *tpoint_srid)
 {
   p_whitespace(str);
-  CachedType basetype = temptype_basetype(temptype);
+  MDB_Type basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
   Datum geo = basetype_parse(str, basetype);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geo);
@@ -256,7 +256,7 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
  * @param[in] tpoint_srid SRID of the temporal point
  */
 TInstantSet *
-tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
+tpointinstset_parse(char **str, MDB_Type temptype, int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -300,7 +300,7 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
  * @param[in] tpoint_srid SRID of the temporal point
 */
 TSequence *
-tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
+tpointseq_parse(char **str, MDB_Type temptype, bool linear, bool end,
   bool make, int *tpoint_srid)
 {
   p_whitespace(str);
@@ -354,7 +354,7 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
  * @param[in] tpoint_srid SRID of the temporal point
  */
 TSequenceSet *
-tpointseqset_parse(char **str, CachedType temptype, bool linear,
+tpointseqset_parse(char **str, MDB_Type temptype, bool linear,
   int *tpoint_srid)
 {
   p_whitespace(str);

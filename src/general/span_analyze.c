@@ -50,7 +50,7 @@
 #include <postgres.h>
 #include <catalog/pg_operator.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 
@@ -85,7 +85,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
  */
 void
 span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-  SpanBound *lowers, SpanBound *uppers, float8 *lengths, CachedType spantype)
+  SpanBound *lowers, SpanBound *uppers, float8 *lengths, MDB_Type spantype)
 {
   int num_hist, num_bins = stats->attr->attstattarget;
   Datum *bound_hist_values, *length_hist_values;
@@ -237,7 +237,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  */
 static void
 span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, CachedType type)
+  int samplerows, MDB_Type type)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *lengths;

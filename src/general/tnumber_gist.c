@@ -46,7 +46,7 @@
 #include <utils/float.h>
 #endif
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/time_gist.h"
 
 /*****************************************************************************
@@ -198,7 +198,7 @@ tnumber_gist_consistent(const TBOX *key, const TBOX *query,
 static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
 {
-  CachedType type = oid_type(typid);
+  MDB_Type type = oid_type(typid);
   if (tnumber_basetype(type))
   {
     Datum value = PG_GETARG_DATUM(1);

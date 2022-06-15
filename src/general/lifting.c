@@ -153,7 +153,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
@@ -398,7 +398,7 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and two instants */
@@ -467,8 +467,8 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
    * segment of the result is computed */
   instants[0] = tinstant_make(startresult, lfinfo->restype, start->t);
   instants[1] = tinstant_make(startresult, lfinfo->restype, start->t);
-  CachedType basetype = temptype_basetype(seq->temptype);
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and three sequences */
@@ -679,7 +679,7 @@ static void
 lfinfo_invert(LiftedFunctionInfo *lfinfo)
 {
   lfinfo->invert = ! lfinfo->invert;
-  CachedType temp = lfinfo->argtype[0];
+  MDB_Type temp = lfinfo->argtype[0];
   lfinfo->argtype[0] = lfinfo->argtype[1];
   lfinfo->argtype[1] = temp;
 }
@@ -839,7 +839,7 @@ tfunc_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
   int i = 0, j = 0, k = 0;
   const TInstant *inst1 = tinstantset_inst_n(is1, i);
   const TInstant *inst2 = tinstantset_inst_n(is2, j);
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   while (i < is1->count && j < is2->count)
   {
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
@@ -874,8 +874,8 @@ tfunc_tsequence_to_tinstantset(const TSequence *seq, const TInstantSet *is,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * is->count);
   int k = 0;
-  CachedType basetype = temptype_basetype(seq->temptype);
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type basetype = temptype_basetype(seq->temptype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 0; i < is->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(is, i);
@@ -922,8 +922,8 @@ tfunc_tsequenceset_to_tinstantset(const TSequenceSet *ss, const TInstantSet *is,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * is->count);
   int i = 0, j = 0, k = 0;
-  CachedType basetype = temptype_basetype(ss->temptype);
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type basetype = temptype_basetype(ss->temptype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   while (i < ss->count && j < is->count)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
@@ -1007,7 +1007,7 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
   Datum value;
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= (TimestampTz) inter->upper ||
      inst2->t <= (TimestampTz) inter->upper))
@@ -1110,7 +1110,7 @@ tfunc_tsequence_tsequence_linearstep(const TSequence *seq1,
   TInstant *instants[2];
   Datum startvalue1, startvalue2, startresult;
   /* Each iteration of the loop adds one sequence */
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */
@@ -1206,9 +1206,9 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   Datum startvalue1, startvalue2, startresult;
   TInstant *instants[2];
-  CachedType basetype1 = temptype_basetype(seq1->temptype);
-  CachedType basetype2 = temptype_basetype(seq2->temptype);
-  CachedType resbasetype = temptype_basetype(lfinfo->restype);
+  MDB_Type basetype1 = temptype_basetype(seq1->temptype);
+  MDB_Type basetype2 = temptype_basetype(seq2->temptype);
+  MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   /* Each iteration of the loop adds between one and three sequences */
   while (i < seq1->count && j < seq2->count)
   {
@@ -1920,8 +1920,8 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   Datum startvalue1, startvalue2;
-  CachedType basetype1 = temptype_basetype(seq1->temptype);
-  CachedType basetype2 = temptype_basetype(seq2->temptype);
+  MDB_Type basetype1 = temptype_basetype(seq1->temptype);
+  MDB_Type basetype2 = temptype_basetype(seq2->temptype);
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */

@@ -41,7 +41,7 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/temporal_boxops.h"
 
 /*****************************************************************************/

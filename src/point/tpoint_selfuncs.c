@@ -41,7 +41,7 @@
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 #include "general/span_selfuncs.h"
 #include "general/temporal_selfuncs.h"
 #include "point/tpoint_analyze.h"
@@ -455,7 +455,7 @@ static bool
 tpoint_const_stbox(Node *other, STBOX *box)
 {
   Oid consttypid = ((Const *) other)->consttype;
-  CachedType type = oid_type(consttypid);
+  MDB_Type type = oid_type(consttypid);
   if (tgeo_basetype(type))
     geo_set_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
@@ -1226,11 +1226,11 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
  * join selectivity
  */
 static bool
-tpoint_joinsel_components(CachedOp cachedOp, CachedType oprleft,
-  CachedType oprright, bool *space, bool *time)
+tpoint_joinsel_components(CachedOp cachedOp, MDB_Type oprleft,
+  MDB_Type oprright, bool *space, bool *time)
 {
   /* Get the argument which may not be a temporal point */
-  CachedType arg = tspatial_type(oprleft) ? oprright : oprleft;
+  MDB_Type arg = tspatial_type(oprleft) ? oprright : oprleft;
 
   /* Determine the components */
   if (tspatial_basetype(arg) ||
@@ -1296,8 +1296,8 @@ tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
    * Determine whether the space and/or the time components are
    * taken into account for the selectivity estimation
    */
-  CachedType oprleft = oid_type(var1->vartype);
-  CachedType oprright = oid_type(var2->vartype);
+  MDB_Type oprleft = oid_type(var1->vartype);
+  MDB_Type oprright = oid_type(var2->vartype);
   bool space, time;
   if (! tpoint_joinsel_components(cachedOp, oprleft, oprright,
     &space, &time))

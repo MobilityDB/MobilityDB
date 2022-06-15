@@ -38,7 +38,7 @@
 #include <assert.h>
 #include <float.h>
 /* MobilityDB */
-#include <libmeos.h>
+#include <meos.h>
 // #include "general/temporal_in.h"
 #include "general/temporal_util.h"
 #include "point/tpoint_parser.h"
@@ -55,7 +55,7 @@
  * @sqlfunc tgeompointFromText(), tgeogpointFromText()
  */
 Temporal *
-tpoint_from_text(const char *wkt, CachedType temptype)
+tpoint_from_text(const char *wkt, MDB_Type temptype)
 {
   Temporal *result = tpoint_parse((char **) &wkt, temptype);
   return result;
@@ -68,7 +68,7 @@ tpoint_from_text(const char *wkt, CachedType temptype)
  * @sqlfunc tgeompointFromEWKT(), tgeogpointFromEWKT()
  */
 Temporal *
-tpoint_from_ewkt(const char *ewkt, CachedType temptype)
+tpoint_from_ewkt(const char *ewkt, MDB_Type temptype)
 {
   Temporal *result = tpoint_parse((char **) &ewkt, temptype);
   return result;
