@@ -215,7 +215,7 @@ tbox_copy(const TBOX *box)
  * @sqlop @p ::
  */
 void
-number_set_tbox(Datum value, MDB_Type basetype, TBOX *box)
+number_set_tbox(Datum value, mobdbType basetype, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));

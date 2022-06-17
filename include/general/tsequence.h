@@ -70,7 +70,7 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 /* Intersection functions */
 
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, MDB_Type basetype, Datum *inter,
+  const TInstant *inst2, Datum value, mobdbType basetype, Datum *inter,
   TimestampTz *t);
 extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
@@ -89,7 +89,7 @@ extern bool intersection_tinstantset_tsequence(const TInstantSet *is,
 /* Input/output functions */
 
 extern char *tsequence_to_string(const TSequence *seq, bool component,
-  char *(*value_out)(MDB_Type, Datum));
+  char *(*value_out)(mobdbType, Datum));
 
 /* Transformation functions */
 
@@ -133,7 +133,7 @@ extern int tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps,
 
 /* Send/receive functions */
 
-extern TSequence *tsequence_recv(StringInfo buf, MDB_Type temptype);
+extern TSequence *tsequence_recv(StringInfo buf, mobdbType temptype);
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
 
 #endif /* ! MEOS */

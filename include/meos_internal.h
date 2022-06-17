@@ -40,7 +40,7 @@
 /* PostgreSQL */
 // #include "postgres.h"
 /* MobilityDB */
-#include "general/temporal_catalog.h" /* For MOBD_Type */
+#include "general/temporal_catalog.h" /* For mobdbType */
 
 /*****************************************************************************
  * Miscellaneous functions
@@ -57,20 +57,20 @@ extern int timestamptz_cmp_internal(TimestampTz dt1, TimestampTz dt2);
 
 /* Input/output functions for span and time types */
 
-extern Span *span_in(char *str, MDB_Type spantype);
+extern Span *span_in(char *str, mobdbType spantype);
 
 /*****************************************************************************/
 
 /* Constructor functions for span and time types */
 
-extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, MDB_Type basetype);
-extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, MDB_Type basetype, Span *s);
+extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype);
+extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype, Span *s);
 
 /*****************************************************************************/
 
 /* Cast functions for span and time types */
 
-extern Span *elem_to_span(Datum d, MDB_Type basetype);
+extern Span *elem_to_span(Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -89,23 +89,22 @@ extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index); // TO
 
 /* Topological functions for span and time types */
 
-extern bool contains_span_elem(const Span *s, Datum d, MDB_Type basetype);
-extern bool contained_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern bool adjacent_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern bool adjacent_span_elem(const Span *s, Datum d, MDB_Type basetype);
+extern bool contains_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern bool contained_elem_span(Datum d, mobdbType basetype, const Span *s);
+extern bool adjacent_span_elem(const Span *s, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
 /* Position functions for span and time types */
 
-extern bool left_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern bool left_span_elem(const Span *s, Datum d, MDB_Type basetype);
-extern bool right_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern bool right_span_elem(const Span *s, Datum d, MDB_Type basetype);
-extern bool overleft_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern bool overleft_span_elem(const Span *s, Datum d, MDB_Type basetype);
-extern bool overright_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern bool overright_span_elem(const Span *s, Datum d, MDB_Type basetype);
+extern bool left_elem_span(Datum d, mobdbType basetype, const Span *s);
+extern bool left_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern bool right_elem_span(Datum d, mobdbType basetype, const Span *s);
+extern bool right_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern bool overleft_elem_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overleft_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern bool overright_elem_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overright_span_elem(const Span *s, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -116,9 +115,8 @@ extern bool overright_span_elem(const Span *s, Datum d, MDB_Type basetype);
 
 /* Distance functions for span and time types */
 
-extern double distance_elem_elem(Datum l, Datum r, MDB_Type typel, MDB_Type typer);
-extern double distance_elem_span(Datum d, MDB_Type basetype, const Span *s);
-extern double distance_span_elem(const Span *s, Datum d, MDB_Type basetype);
+extern double distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer);
+extern double distance_span_elem(const Span *s, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -141,7 +139,7 @@ extern double distance_span_elem(const Span *s, Datum d, MDB_Type basetype);
 
 /* Cast functions for box types */
 
-extern void number_set_tbox(Datum value, MDB_Type basetype, TBOX *box);
+extern void number_set_tbox(Datum value, mobdbType basetype, TBOX *box);
 extern void stbox_set_gbox(const STBOX *box, GBOX *gbox);
 extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
 
@@ -184,33 +182,33 @@ extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
 
 /* Input/output functions for temporal types */
 
-extern Temporal *temporal_in(char *str, MDB_Type temptype);
-extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid, MDB_Type temptype);
-extern TInstantSet *tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid, MDB_Type temptype);
-extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, MDB_Type temptype, bool linear);
-extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, MDB_Type temptype, bool linear);
-extern TInstant *tinstant_in(char *str, MDB_Type temptype);
-extern TInstantSet *tinstantset_in(char *str, MDB_Type temptype);
-extern TSequence *tsequence_in(char *str, MDB_Type temptype, bool linear);
-extern TSequenceSet *tsequenceset_in(char *str, MDB_Type temptype, bool linear);
-extern Temporal *tpoint_from_text(const char *wkt, MDB_Type temptype);
-extern Temporal *tpoint_from_ewkt(const char *ewkt, MDB_Type temptype);
+extern Temporal *temporal_in(char *str, mobdbType temptype);
+extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
+extern TInstantSet *tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
+extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, bool linear);
+extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, bool linear);
+extern TInstant *tinstant_in(char *str, mobdbType temptype);
+extern TInstantSet *tinstantset_in(char *str, mobdbType temptype);
+extern TSequence *tsequence_in(char *str, mobdbType temptype, bool linear);
+extern TSequenceSet *tsequenceset_in(char *str, mobdbType temptype, bool linear);
+extern Temporal *tpoint_from_text(const char *wkt, mobdbType temptype);
+extern Temporal *tpoint_from_ewkt(const char *ewkt, mobdbType temptype);
 
 /*****************************************************************************/
 
 /* Constructor functions for temporal types */
 
-extern Temporal *temporal_from_base(Datum value, MDB_Type temptype, const Temporal *temp, bool linear);
-extern TInstant *tinstant_make(Datum value, MDB_Type temptype, TimestampTz t);
+extern Temporal *temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp, bool linear);
+extern TInstant *tinstant_make(Datum value, mobdbType temptype, TimestampTz t);
 extern TInstantSet *tinstantset_make(const TInstant **instants, int count, bool merge);
 extern TInstantSet *tinstantset_make_free(TInstant **instants, int count, bool merge);
-extern TInstantSet *tinstantset_from_base(Datum value, MDB_Type temptype, const TimestampSet *ss);
+extern TInstantSet *tinstantset_from_base(Datum value, mobdbType temptype, const TimestampSet *ss);
 extern TSequence *tsequence_make(const TInstant **instants, int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
-extern TSequence *tsequence_from_base(Datum value, MDB_Type temptype, const Period *p, bool linear);
+extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const Period *p, bool linear);
 extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count, bool normalize);
 extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bool normalize);
-extern TSequenceSet *tsequenceset_from_base(Datum value, MDB_Type temptype, const PeriodSet *ps, bool linear);
+extern TSequenceSet *tsequenceset_from_base(Datum value, mobdbType temptype, const PeriodSet *ps, bool linear);
 
 /*****************************************************************************/
 
@@ -254,14 +252,14 @@ extern void tsequenceset_set_bbox(const TSequenceSet *ss, void *box);
 
 /* Mathematical functions for temporal types */
 
-extern Temporal *add_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern Temporal *add_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern Temporal *sub_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern Temporal *sub_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern Temporal *mult_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern Temporal *mult_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern Temporal *div_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern Temporal *div_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
+extern Temporal *add_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern Temporal *add_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern Temporal *sub_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern Temporal *sub_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern Temporal *mult_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern Temporal *mult_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern Temporal *div_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern Temporal *div_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -274,37 +272,37 @@ extern Temporal *div_tnumber_number(const Temporal *tnumber, Datum number, MDB_T
 
 /* Topological functions for temporal types */
 
-extern bool contains_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool contains_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool contained_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool contained_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool overlaps_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool overlaps_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool same_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool same_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool adjacent_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool adjacent_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
+extern bool contains_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool contains_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool contained_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool contained_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool overlaps_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool overlaps_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool same_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool same_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool adjacent_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool adjacent_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
 
 /*****************************************************************************/
 
 /* Position functions for temporal types */
 
-extern bool left_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool overleft_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool right_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool overright_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber);
-extern bool left_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool overleft_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool right_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
-extern bool overright_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype);
+extern bool left_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool overleft_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool right_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool overright_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber);
+extern bool left_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool overleft_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool right_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
+extern bool overright_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype);
 
 /*****************************************************************************/
 
 /* Distance functions for temporal types */
 
-extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value, MDB_Type valuetype, MDB_Type restype);
-extern Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2, MDB_Type restype);
-extern double nad_tnumber_number(const Temporal *temp, Datum value, MDB_Type basetype);
+extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value, mobdbType valuetype, mobdbType restype);
+extern Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2, mobdbType restype);
+extern double nad_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype);
 
 
 /*****************************************************************************/
@@ -316,18 +314,18 @@ extern double nad_tnumber_number(const Temporal *temp, Datum value, MDB_Type bas
 
 /* Comparison functions for temporal types */
 
-extern Temporal *teq_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp);
-extern Temporal *teq_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype);
-extern Temporal *tne_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp);
-extern Temporal *tne_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype);
-extern Temporal *tlt_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp);
-extern Temporal *tlt_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype);
-extern Temporal *tle_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp);
-extern Temporal *tle_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype);
-extern Temporal *tgt_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp);
-extern Temporal *tgt_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype);
-extern Temporal *tge_base_temporal(Datum base, MDB_Type basetype, const Temporal *temp);
-extern Temporal *tge_temporal_base(const Temporal *temp, Datum base, MDB_Type basetype);
+extern Temporal *teq_base_temporal(Datum base, mobdbType basetype, const Temporal *temp);
+extern Temporal *teq_temporal_base(const Temporal *temp, Datum base, mobdbType basetype);
+extern Temporal *tne_base_temporal(Datum base, mobdbType basetype, const Temporal *temp);
+extern Temporal *tne_temporal_base(const Temporal *temp, Datum base, mobdbType basetype);
+extern Temporal *tlt_base_temporal(Datum base, mobdbType basetype, const Temporal *temp);
+extern Temporal *tlt_temporal_base(const Temporal *temp, Datum base, mobdbType basetype);
+extern Temporal *tle_base_temporal(Datum base, mobdbType basetype, const Temporal *temp);
+extern Temporal *tle_temporal_base(const Temporal *temp, Datum base, mobdbType basetype);
+extern Temporal *tgt_base_temporal(Datum base, mobdbType basetype, const Temporal *temp);
+extern Temporal *tgt_temporal_base(const Temporal *temp, Datum base, mobdbType basetype);
+extern Temporal *tge_base_temporal(Datum base, mobdbType basetype, const Temporal *temp);
+extern Temporal *tge_temporal_base(const Temporal *temp, Datum base, mobdbType basetype);
 
 /*****************************************************************************
   Spatial functions for temporal point types

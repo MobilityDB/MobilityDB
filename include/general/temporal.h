@@ -507,7 +507,7 @@ extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
   bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
-extern void ensure_positive_datum(Datum size, MDB_Type basetype);
+extern void ensure_positive_datum(Datum size, mobdbType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 
 /* General functions */

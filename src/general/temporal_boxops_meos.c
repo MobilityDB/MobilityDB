@@ -614,7 +614,7 @@ adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p \@>
  */
 bool
-contains_number_tnumber(Datum number, MDB_Type basetype,
+contains_number_tnumber(Datum number, mobdbType basetype,
   const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox,
@@ -629,7 +629,7 @@ contains_number_tnumber(Datum number, MDB_Type basetype,
  */
 bool
 contains_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox,
     INVERT_NO);
@@ -704,7 +704,7 @@ contains_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p <@
  */
 bool
-contained_number_tnumber(Datum number, MDB_Type basetype,
+contained_number_tnumber(Datum number, mobdbType basetype,
   const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &contained_tbox_tbox,
@@ -719,7 +719,7 @@ contained_number_tnumber(Datum number, MDB_Type basetype,
  */
 bool
 contained_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &contained_tbox_tbox,
     INVERT_NO);
@@ -794,7 +794,7 @@ contained_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p &&
  */
 bool
-overlaps_number_tnumber(Datum number, MDB_Type basetype,
+overlaps_number_tnumber(Datum number, mobdbType basetype,
   const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox,
@@ -809,7 +809,7 @@ overlaps_number_tnumber(Datum number, MDB_Type basetype,
  */
 bool
 overlaps_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox,
     INVERT_NO);
@@ -883,7 +883,7 @@ overlaps_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p ~=
  */
 bool
-same_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
+same_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &same_tbox_tbox,
     INVERT);
@@ -896,7 +896,7 @@ same_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
  * @sqlop @p ~=
  */
 bool
-same_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
+same_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &same_tbox_tbox,
     INVERT_NO);
@@ -971,7 +971,7 @@ same_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  * @sqlop @p -|-
  */
 bool
-adjacent_number_tnumber(Datum number, MDB_Type basetype,
+adjacent_number_tnumber(Datum number, mobdbType basetype,
   const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &adjacent_tbox_tbox,
@@ -986,7 +986,7 @@ adjacent_number_tnumber(Datum number, MDB_Type basetype,
  */
 bool
 adjacent_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &adjacent_tbox_tbox,
     INVERT_NO);

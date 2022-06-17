@@ -65,7 +65,7 @@
  * @param[in] temptype Temporal type
  */
 bool
-temporal_bbox_eq(const void *box1, const void *box2, MDB_Type temptype)
+temporal_bbox_eq(const void *box1, const void *box2, mobdbType temptype)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
@@ -92,7 +92,7 @@ temporal_bbox_eq(const void *box1, const void *box2, MDB_Type temptype)
  * @param[in] temptype Temporal type
  */
 int
-temporal_bbox_cmp(const void *box1, const void *box2, MDB_Type temptype)
+temporal_bbox_cmp(const void *box1, const void *box2, mobdbType temptype)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
@@ -115,7 +115,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, MDB_Type temptype)
  */
 void
 temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
-  MDB_Type temptype, void *box)
+  mobdbType temptype, void *box)
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
@@ -140,7 +140,7 @@ temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
  * Return true if a temporal type does not have bounding box
  */
 static bool
-temptype_without_bbox(MDB_Type temptype)
+temptype_without_bbox(mobdbType temptype)
 {
   if (temptype == T_TDOUBLE2 || temptype == T_TDOUBLE3 ||
       temptype == T_TDOUBLE4)
@@ -152,7 +152,7 @@ temptype_without_bbox(MDB_Type temptype)
  * Return the size of a bounding box
  */
 size_t
-temporal_bbox_size(MDB_Type temptype)
+temporal_bbox_size(mobdbType temptype)
 {
   if (talpha_type(temptype))
     return sizeof(Period);
@@ -460,7 +460,7 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * function
  */
 bool
-boxop_tnumber_number(const Temporal *temp, Datum number, MDB_Type basetype,
+boxop_tnumber_number(const Temporal *temp, Datum number, mobdbType basetype,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   TBOX box1, box2;

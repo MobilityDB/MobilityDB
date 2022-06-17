@@ -403,7 +403,7 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)lwpoint1);
-  MDB_Type temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  mobdbType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   TInstant *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);
   return result;

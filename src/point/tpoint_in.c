@@ -55,7 +55,7 @@
  * @sqlfunc tgeompointFromText(), tgeogpointFromText()
  */
 Temporal *
-tpoint_from_text(const char *wkt, MDB_Type temptype)
+tpoint_from_text(const char *wkt, mobdbType temptype)
 {
   Temporal *result = tpoint_parse((char **) &wkt, temptype);
   return result;
@@ -68,7 +68,7 @@ tpoint_from_text(const char *wkt, MDB_Type temptype)
  * @sqlfunc tgeompointFromEWKT(), tgeogpointFromEWKT()
  */
 Temporal *
-tpoint_from_ewkt(const char *ewkt, MDB_Type temptype)
+tpoint_from_ewkt(const char *ewkt, mobdbType temptype)
 {
   Temporal *result = tpoint_parse((char **) &ewkt, temptype);
   return result;

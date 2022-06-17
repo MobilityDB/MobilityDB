@@ -44,8 +44,8 @@
 /* Miscellaneous */
 
 extern uint32_t time_max_header_size(void);
-extern bool time_type(MDB_Type timetype);
-extern void ensure_time_type(MDB_Type timetype);
+extern bool time_type(mobdbType timetype);
+extern void ensure_time_type(mobdbType timetype);
 
 /*****************************************************************************/
 

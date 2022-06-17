@@ -90,7 +90,7 @@ typedef enum
   T_NSEGMENT,      /**< network segment type */
   T_TNPOINT,       /**< temporal network point type */
 #endif
-} MDB_Type;
+} mobdbType;
 
 /**
  * Enumeration that defines the classes of Boolean operators used in MobilityDB.
@@ -137,8 +137,8 @@ typedef enum
  */
 typedef struct
 {
-  MDB_Type temptype;    /**< Enum value of the temporal type */
-  MDB_Type basetype;    /**< Enum value of the base type */
+  mobdbType temptype;    /**< Enum value of the temporal type */
+  mobdbType basetype;    /**< Enum value of the base type */
 } temptype_cache_struct;
 
 /**
@@ -146,50 +146,50 @@ typedef struct
  */
 typedef struct
 {
-  MDB_Type spantype;    /**< Enum value of the span type */
-  MDB_Type basetype;    /**< Enum value of the base type */
+  mobdbType spantype;    /**< Enum value of the span type */
+  mobdbType basetype;    /**< Enum value of the base type */
 } spantype_cache_struct;
 
 /*****************************************************************************/
 
 /* Cache functions */
 
-extern MDB_Type temptype_basetype(MDB_Type temptype);
-extern MDB_Type spantype_basetype(MDB_Type spantype);
-extern MDB_Type basetype_spantype(MDB_Type basetype);
+extern mobdbType temptype_basetype(mobdbType temptype);
+extern mobdbType spantype_basetype(mobdbType spantype);
+extern mobdbType basetype_spantype(mobdbType basetype);
 
 /* Catalog functions */
 
-extern bool time_type(MDB_Type timetype);
-extern void ensure_time_type(MDB_Type timetype);
-extern bool span_type(MDB_Type spantype);
-extern void ensure_span_type(MDB_Type spantype);
-extern void ensure_span_basetype(MDB_Type basetype);
-extern bool temporal_type(MDB_Type temptype);
-extern void ensure_temporal_type(MDB_Type temptype);
-extern void ensure_temporal_basetype(MDB_Type basetype);
-extern bool temptype_continuous(MDB_Type temptype);
-extern void ensure_temptype_continuous(MDB_Type temptype);
-extern bool basetype_byvalue(MDB_Type basetype);
-extern int16 basetype_length(MDB_Type basetype);
-extern bool talpha_type(MDB_Type temptype);
-extern bool tnumber_type(MDB_Type temptype);
-extern void ensure_tnumber_type(MDB_Type temptype);
-extern bool tnumber_basetype(MDB_Type basetype);
-extern void ensure_tnumber_basetype(MDB_Type basetype);
-extern bool tnumber_spantype(MDB_Type spantype);
-extern void ensure_tnumber_spantype(MDB_Type spantype);
-extern bool tspatial_type(MDB_Type temptype);
-extern bool tspatial_basetype(MDB_Type basetype);
-extern bool tgeo_basetype(MDB_Type basetype);
-extern bool tgeo_type(MDB_Type basetype);
-extern void ensure_tgeo_type(MDB_Type basetype);
+extern bool time_type(mobdbType timetype);
+extern void ensure_time_type(mobdbType timetype);
+extern bool span_type(mobdbType spantype);
+extern void ensure_span_type(mobdbType spantype);
+extern void ensure_span_basetype(mobdbType basetype);
+extern bool temporal_type(mobdbType temptype);
+extern void ensure_temporal_type(mobdbType temptype);
+extern void ensure_temporal_basetype(mobdbType basetype);
+extern bool temptype_continuous(mobdbType temptype);
+extern void ensure_temptype_continuous(mobdbType temptype);
+extern bool basetype_byvalue(mobdbType basetype);
+extern int16 basetype_length(mobdbType basetype);
+extern bool talpha_type(mobdbType temptype);
+extern bool tnumber_type(mobdbType temptype);
+extern void ensure_tnumber_type(mobdbType temptype);
+extern bool tnumber_basetype(mobdbType basetype);
+extern void ensure_tnumber_basetype(mobdbType basetype);
+extern bool tnumber_spantype(mobdbType spantype);
+extern void ensure_tnumber_spantype(mobdbType spantype);
+extern bool tspatial_type(mobdbType temptype);
+extern bool tspatial_basetype(mobdbType basetype);
+extern bool tgeo_basetype(mobdbType basetype);
+extern bool tgeo_type(mobdbType basetype);
+extern void ensure_tgeo_type(mobdbType basetype);
 
 /* MobilityDB functions */
 
-extern Oid type_oid(MDB_Type t);
-extern Oid oper_oid(CachedOp op, MDB_Type lt, MDB_Type rt);
-extern MDB_Type oid_type(Oid typid);
+extern Oid type_oid(mobdbType t);
+extern Oid oper_oid(CachedOp op, mobdbType lt, mobdbType rt);
+extern mobdbType oid_type(Oid typid);
 
 #endif /* TEMPCACHE_H */
 

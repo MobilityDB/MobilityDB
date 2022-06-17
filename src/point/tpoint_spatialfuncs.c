@@ -37,12 +37,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-// #if POSTGRESQL_VERSION_NUMBER < 120000
-  // #define M_PI 3.14159265358979323846
-  // #define RADIANS_PER_DEGREE 0.0174532925199432957692
-// #else
-  #include <utils/float.h>
-// #endif
+#include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -2044,7 +2039,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper)
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  MDB_Type restype = (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT;
+  mobdbType restype = (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < is->count; i++)
   {
     inst = tinstantset_inst_n(is, i);
@@ -2091,7 +2086,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  MDB_Type restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
+  mobdbType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
@@ -2955,15 +2950,9 @@ geog_bearing(Datum point1, Datum point2)
   if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
       (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;
-#if POSTGRESQL_VERSION_NUMBER < 120000
-  double lat1 = p1->y * RADIANS_PER_DEGREE;
-  double lat2 = p2->y * RADIANS_PER_DEGREE;
-  double diffLong = (p2->x - p1->x) * RADIANS_PER_DEGREE;
-#else
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
   double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);
-#endif
   double lat = pg_dsin(diffLong) * pg_dcos(lat2);
   double lgt = ( pg_dcos(lat1) * pg_dsin(lat2) ) -
     ( pg_dsin(lat1) * pg_dcos(lat2) * pg_dcos(diffLong) );

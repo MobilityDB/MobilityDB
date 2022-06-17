@@ -41,11 +41,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <common/int128.h>
-// #if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-// #else
-  // #include <access/hash.h>
-// #endif
+#include <common/hashfn.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
 /* MobilityDB */

@@ -40,9 +40,7 @@
 #include <math.h>
 /* PostgreSQL */
 // #include <utils/timestamp.h>
-// #if POSTGRESQL_VERSION_NUMBER >= 120000
-  // #include <utils/float.h>
-// #endif
+// #include <utils/float.h>
 /* PostGIS */
 #include <lwgeodetic_tree.h>
 #include <measures.h>
@@ -165,7 +163,7 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, MDB_Type basetype __attribute__((unused)), Datum *value,
+  Datum point, mobdbType basetype __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);

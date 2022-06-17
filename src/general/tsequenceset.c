@@ -481,7 +481,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
  * @param[in] linear True when the temporal type has linear interpolation
  */
 TSequenceSet *
-tsequenceset_in(char *str, MDB_Type temptype, bool linear)
+tsequenceset_in(char *str, mobdbType temptype, bool linear)
 {
   return tsequenceset_parse(&str, temptype, linear);
 }
@@ -496,7 +496,7 @@ tsequenceset_in(char *str, MDB_Type temptype, bool linear)
  */
 char *
 tsequenceset_to_string(const TSequenceSet *ss,
-  char *(*value_out)(MDB_Type, Datum))
+  char *(*value_out)(mobdbType, Datum))
 {
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
@@ -808,7 +808,7 @@ tsequenceset_copy(const TSequenceSet *ss)
  * tgeompoint_seqset(), tgeogpoint_seqset()
 */
 TSequenceSet *
-tsequenceset_from_base(Datum value, MDB_Type temptype, const PeriodSet *ps,
+tsequenceset_from_base(Datum value, mobdbType temptype, const PeriodSet *ps,
   bool linear)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
@@ -847,7 +847,7 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
   }
   if (k > 1)
   {
-    MDB_Type basetype = temptype_basetype(ss->temptype);
+    mobdbType basetype = temptype_basetype(ss->temptype);
     datumarr_sort(result, k, basetype);
     k = datumarr_remove_duplicates(result, k, basetype);
   }
@@ -894,7 +894,7 @@ tsequenceset_min_instant(const TSequenceSet *ss)
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   const TInstant *result = tsequence_inst_n(seq, 0);
   Datum min = tinstant_value(result);
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     seq = tsequenceset_seq_n(ss, i);
@@ -927,7 +927,7 @@ tsequenceset_max_instant(const TSequenceSet *ss)
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   const TInstant *result = tsequence_inst_n(seq, 0);
   Datum max = tinstant_value(result);
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     seq = tsequenceset_seq_n(ss, i);
@@ -953,7 +953,7 @@ tsequenceset_max_instant(const TSequenceSet *ss)
 Datum
 tsequenceset_min_value(const TSequenceSet *ss)
 {
-  MDB_Type basetype = temptype_basetype(ss->temptype);
+  mobdbType basetype = temptype_basetype(ss->temptype);
   if (basetype == T_INT4)
   {
     TBOX *box = tsequenceset_bbox_ptr(ss);
@@ -982,7 +982,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
 Datum
 tsequenceset_max_value(const TSequenceSet *ss)
 {
-  MDB_Type basetype = temptype_basetype(ss->temptype);
+  mobdbType basetype = temptype_basetype(ss->temptype);
   if (basetype == T_INT4)
   {
     TBOX *box = tsequenceset_bbox_ptr(ss);

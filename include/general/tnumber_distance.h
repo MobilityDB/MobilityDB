@@ -44,17 +44,17 @@
 /* Distance functions */
 
 extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value,
-  MDB_Type valuetype, MDB_Type restype);
+  mobdbType valuetype, mobdbType restype);
 extern Temporal *distance_tnumber_tnumber(const Temporal *temp1,
-  const Temporal *temp2, MDB_Type restype);
+  const Temporal *temp2, mobdbType restype);
 
-extern Datum number_distance(Datum l, Datum r, MDB_Type typel,
-  MDB_Type typer);
+extern Datum number_distance(Datum l, Datum r, mobdbType typel,
+  mobdbType typer);
 
 /* Nearest approach distance */
 
 extern double nad_tnumber_number(const Temporal *temp, Datum value,
-  MDB_Type basetype);
+  mobdbType basetype);
 extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
 extern double nad_tnumber_to_tbox(const Temporal *temp, const TBOX *box);
 

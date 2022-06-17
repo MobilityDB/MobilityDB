@@ -75,7 +75,7 @@ extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
 /* Input/output functions */
 
 extern char *tsequenceset_to_string(const TSequenceSet *ss,
-  char *(*value_out)(MDB_Type, Datum));
+  char *(*value_out)(mobdbType, Datum));
 
 
 /*****************************************************************************/
@@ -84,7 +84,7 @@ extern char *tsequenceset_to_string(const TSequenceSet *ss,
 
 /* Send/receive functions */
 
-extern TSequenceSet *tsequenceset_recv(StringInfo buf, MDB_Type temptype);
+extern TSequenceSet *tsequenceset_recv(StringInfo buf, mobdbType temptype);
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
 
 #endif /* ! MEOS */

@@ -38,11 +38,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-// #if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-// #else
-  // #include <access/hash.h>
-// #endif
+#include <common/hashfn.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
@@ -331,7 +327,7 @@ span_bounds(const Span *s, double *xmin, double *xmax)
  * @brief Return a span from its Well-Known Text (WKT) representation.
  */
 Span *
-span_in(char *str, MDB_Type spantype)
+span_in(char *str, mobdbType spantype)
 {
   return span_parse(&str, spantype, true, true);
 }
@@ -416,7 +412,7 @@ span_out(const Span *s)
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   /* Note: zero-fill is done in the span_set function */
   Span *s = palloc(sizeof(Span));
@@ -479,9 +475,9 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  MDB_Type basetype, Span *s)
+  mobdbType basetype, Span *s)
 {
-  MDB_Type spantype = basetype_spantype(basetype);
+  mobdbType spantype = basetype_spantype(basetype);
   int cmp = datum_cmp2(lower, upper, basetype, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
@@ -525,7 +521,7 @@ span_copy(const Span *s)
  * @brief Cast an element as a span
  */
 Span *
-elem_to_span(Datum d, MDB_Type basetype)
+elem_to_span(Datum d, mobdbType basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);

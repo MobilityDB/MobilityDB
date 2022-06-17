@@ -199,14 +199,14 @@ tpoint_expand_spatial(const Temporal *temp, double d)
  */
 Temporal *
 tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert)
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType), bool invert)
 {
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  MDB_Type basetype = temptype_basetype(temp->temptype);
+  mobdbType basetype = temptype_basetype(temp->temptype);
   Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), basetype,
     func, invert);
   return result;

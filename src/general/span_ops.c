@@ -50,7 +50,7 @@
  * Return the minimum value of the two span base values
  */
 Datum
-span_elem_min(Datum l, Datum r, MDB_Type type)
+span_elem_min(Datum l, Datum r, mobdbType type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -67,7 +67,7 @@ span_elem_min(Datum l, Datum r, MDB_Type type)
  * Return the minimum value of the two span base values
  */
 Datum
-span_elem_max(Datum l, Datum r, MDB_Type type)
+span_elem_max(Datum l, Datum r, mobdbType type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -88,7 +88,7 @@ span_elem_max(Datum l, Datum r, MDB_Type type)
  * @brief Return true if a span contains an element.
  */
 bool
-contains_span_elem(const Span *s, Datum d, MDB_Type basetype)
+contains_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
@@ -104,7 +104,7 @@ contains_span_elem(const Span *s, Datum d, MDB_Type basetype)
 #if MEOS
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if a span contains an element.
+ * @brief Return true if an integer span contains an integer.
  * @sqlop @p \@>
  */
 bool
@@ -115,7 +115,7 @@ contains_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if a span contains an element.
+ * @brief Return true if a float span contains a float.
  * @sqlop @p \@>
  */
 bool
@@ -148,15 +148,38 @@ contains_span_span(const Span *s1, const Span *s2)
 /* contained? */
 
 /**
- * @ingroup libmeos_spantime_topo
+ * @ingroup libmeos_int_spantime_topo
  * @brief Return true if an element is contained by a span
- * @sqlop @p <@
  */
 bool
-contained_elem_span(Datum d, MDB_Type basetype, const Span *s)
+contained_elem_span(Datum d, mobdbType basetype, const Span *s)
 {
   return contains_span_elem(s, d, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if an integer is contained by an integer span
+ * @sqlop @p <@
+ */
+bool
+contained_int_intspan(int i, const Span *s)
+{
+  return contains_span_elem(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if a float is contained by a float span
+ * @sqlop @p <@
+ */
+bool
+contained_float_floatspan(double d, const Span *s)
+{
+  return contains_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -195,12 +218,11 @@ overlaps_span_span(const Span *s1, const Span *s2)
 /* adjacent to (but not overlapping)? */
 
 /**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if an element and a span are adjacent.
- * @sqlop @p -|-
+ * @ingroup libmeos_int_spantime_topo
+ * @brief Return true if a span and an element are adjacent
  */
 bool
-adjacent_elem_span(Datum d, MDB_Type basetype, const Span *s)
+adjacent_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
   /*
    * A timestamp A and a span C..D are adjacent if and only if
@@ -210,16 +232,29 @@ adjacent_elem_span(Datum d, MDB_Type basetype, const Span *s)
     (datum_eq2(s->upper, d, s->basetype, basetype) && ! s->upper_inc);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if a span and an element are adjacent
+ * @brief Return true if an integer span and an integer are adjacent
  * @sqlop @p -|-
  */
 bool
-adjacent_span_elem(const Span *s, Datum d, MDB_Type basetype)
+adjacent_intspan_int(const Span *s, int i)
 {
-  return adjacent_elem_span(d, basetype, s);
+  return adjacent_span_elem(s, Int32GetDatum(i), T_INT4);
 }
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if a float span and a float are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_floatspan_float(const Span *s, double d)
+{
+  return adjacent_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -245,29 +280,76 @@ adjacent_span_span(const Span *s1, const Span *s2)
 /* strictly left of? */
 
 /**
- * @ingroup libmeos_spantime_pos
+ * @ingroup libmeos_int_spantime_pos
  * @brief Return true if an element is strictly to the left of a span.
- * @sqlop @p <<
  */
 bool
-left_elem_span(Datum d, MDB_Type basetype, const Span *s)
+left_elem_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a span is strictly to the left of an element.
+ * @brief Return true if an integer is strictly to the left of an integer span.
  * @sqlop @p <<
  */
 bool
-left_span_elem(const Span *s, Datum d, MDB_Type basetype)
+left_int_intspan(int i, const Span *s)
+{
+  return left_elem_span(Int32GetDatum(i), T_INT4, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float is strictly to the left of a float span.
+ * @sqlop @p <<
+ */
+bool
+left_float_floatspan(double d, const Span *s)
+{
+  return left_elem_span(Float8GetDatum(d), T_FLOAT8, s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_spantime_pos
+ * @brief Return true if a span is strictly to the left of an element.
+ */
+bool
+left_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
 
   int cmp = datum_cmp2(s->upper, d, s->basetype, basetype);
   return (cmp < 0 || (cmp == 0 && ! s->upper_inc));
 }
+
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an integer span is strictly to the left of an integer.
+ * @sqlop @p <<
+ */
+bool
+left_intspan_int(const Span *s, int i)
+{
+  return left_span_elem(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float span is strictly to the left of a float.
+ * @sqlop @p <<
+ */
+bool
+left_floatspan_float(const Span *s, double d)
+{
+  return left_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -286,28 +368,74 @@ left_span_span(const Span *s1, const Span *s2)
 /* strictly right of? */
 
 /**
- * @ingroup libmeos_spantime_pos
+ * @ingroup libmeos_int_spantime_pos
  * @brief Return true if an element is strictly to the right of a span.
- * @sqlop @p >>
  */
 bool
-right_elem_span(Datum d, MDB_Type basetype, const Span *s)
+right_elem_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp > 0 || (cmp == 0 && ! s->upper_inc));
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a span is strictly to the right of an element
+ * @brief Return true if an integer is strictly to the right of an integer span.
  * @sqlop @p >>
  */
 bool
-right_span_elem(const Span *s, Datum d, MDB_Type basetype)
+right_int_intspan(int i, const Span *s)
+{
+  return right_elem_span(Int32GetDatum(i), T_INT4, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float is strictly to the right of a float span.
+ * @sqlop @p >>
+ */
+bool
+right_float_floatspan(double d, const Span *s)
+{
+  return right_elem_span(Float8GetDatum(d), T_FLOAT8, s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_spantime_pos
+ * @brief Return true if a span is strictly to the right of an element
+ */
+bool
+right_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an integer span is strictly to the right of an integer
+ * @sqlop @p >>
+ */
+bool
+right_intspan_int(const Span *s, int i)
+{
+  return right_span_elem(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float span is strictly to the right of a float
+ * @sqlop @p >>
+ */
+bool
+right_floatspan_float(const Span *s, double d)
+{
+  return right_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -326,27 +454,73 @@ right_span_span(const Span *s1, const Span *s2)
 /* does not extend to right of? */
 
 /**
- * @ingroup libmeos_spantime_pos
+ * @ingroup libmeos_int_spantime_pos
  * @brief Return true if an element is not to the right of a span.
- * @sqlop @p &<
  */
 bool
-overleft_elem_span(Datum d, MDB_Type basetype, const Span *s)
+overleft_elem_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && s->upper_inc));
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a span is not to the right of an element.
+ * @brief Return true if an integer is not to the right of an integer span.
  * @sqlop @p &<
  */
 bool
-overleft_span_elem(const Span *s, Datum d, MDB_Type basetype)
+overleft_int_intspan(int i, const Span *s)
+{
+  return overleft_elem_span(Int32GetDatum(i), T_INT4, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float is not to the right of a float span.
+ * @sqlop @p &<
+ */
+bool
+overleft_float_floatspan(double d, const Span *s)
+{
+  return overleft_elem_span(Float8GetDatum(d), T_INT4, s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_spantime_pos
+ * @brief Return true if a span is not to the right of an element.
+ */
+bool
+overleft_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
   return datum_le2(s->upper, d, s->basetype, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an integer span is not to the right of an integer.
+ * @sqlop @p &<
+ */
+bool
+overleft_intspan_int(const Span *s, int i)
+{
+  return overleft_span_elem(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float span is not to the right of a float.
+ * @sqlop @p &<
+ */
+bool
+overleft_floatspan_float(const Span *s, double d)
+{
+  return overleft_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -365,27 +539,73 @@ overleft_span_span(const Span *s1, const Span *s2)
 /* does not extend to left of? */
 
 /**
- * @ingroup libmeos_spantime_pos
+ * @ingroup libmeos_int_spantime_pos
  * @brief Return true if an element is not the left of a span.
- * @sqlop @p &>
  */
 bool
-overright_elem_span(Datum d, MDB_Type basetype, const Span *s)
+overright_elem_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   return (cmp < 0 || (cmp == 0 && s->lower_inc));
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a span is not to the left of an element.
+ * @brief Return true if an integer is not the left of an integer span.
  * @sqlop @p &>
  */
 bool
-overright_span_elem(const Span *s, Datum d, MDB_Type basetype)
+overright_int_intspan(int i, const Span *s)
+{
+  return overright_elem_span(Int32GetDatum(i), T_INT4, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float is not the left of a float span.
+ * @sqlop @p &>
+ */
+bool
+overright_float_floatspan(double d, const Span *s)
+{
+  return overright_elem_span(Float8GetDatum(d), T_FLOAT8, s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_spantime_pos
+ * @brief Return true if a span is not to the left of an element.
+ */
+bool
+overright_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
   return datum_le2(d, s->lower, basetype, s->basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an integer span is not to the left of an integer.
+ * @sqlop @p &>
+ */
+bool
+overright_intspan_int(const Span *s, int i)
+{
+  return overright_span_elem(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a float span is not to the left of a float.
+ * @sqlop @p &>
+ */
+bool
+overright_floatspan_float(const Span *s, double d)
+{
+  return overright_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -544,7 +764,7 @@ minus_span_span(const Span *s1, const Span *s2)
  * @sqlop @p <->
  */
 double
-distance_elem_elem(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
+distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer)
 {
   ensure_span_basetype(typel);
   if (typel != typer)
@@ -567,22 +787,11 @@ distance_elem_elem(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
 
 /**
  * @ingroup libmeos_spantime_dist
- * @brief Return the distance between an element and a span.
- * @sqlop @p <->
- */
-double
-distance_elem_span(Datum d, MDB_Type basetype, const Span *s)
-{
-  return distance_span_elem(s, d, basetype);
-}
-
-/**
- * @ingroup libmeos_spantime_dist
  * @brief Return the distance between a span and a element.
  * @sqlop @p <->
  */
 double
-distance_span_elem(const Span *s, Datum d, MDB_Type basetype)
+distance_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
   /* If the span contains the element return 0 */
   if (contains_span_elem(s, d, basetype))

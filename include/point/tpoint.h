@@ -81,7 +81,7 @@ extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
 /* Temporal comparisons */
 
 extern Temporal *tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert);
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType), bool invert);
 
 /*****************************************************************************/
 

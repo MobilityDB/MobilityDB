@@ -48,8 +48,8 @@
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
-tcomp_temporal_base(const Temporal *temp, Datum value, MDB_Type basetype,
-  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert)
+tcomp_temporal_base(const Temporal *temp, Datum value, mobdbType basetype,
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType), bool invert)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

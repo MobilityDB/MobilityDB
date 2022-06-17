@@ -39,11 +39,7 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-// #if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-// #else
-  // #include <access/hash.h>
-// #endif
+#include <common/hashfn.h>
 // #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
@@ -170,7 +166,7 @@ npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
  * @param[in] t1,t2,t3 Input timestamps
  */
 static bool
-datum_collinear(MDB_Type basetype, Datum value1, Datum value2, Datum value3,
+datum_collinear(mobdbType basetype, Datum value1, Datum value2, Datum value3,
   TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   double duration1 = (double) (t2 - t1);
@@ -268,7 +264,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   ensure_tinstarr(instants, count);
   if (count == 1 && (!lower_inc || !upper_inc))
     elog(ERROR, "Instant sequence must have inclusive bounds");
-  MDB_Type basetype = temptype_basetype(instants[0]->temptype);
+  mobdbType basetype = temptype_basetype(instants[0]->temptype);
   if (! linear && count > 1 && !upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
       tinstant_value(instants[count - 2]), basetype))
@@ -305,7 +301,7 @@ tinstarr_normalize(const TInstant **instants, bool linear, int count,
   int *newcount)
 {
   assert(count > 1);
-  MDB_Type basetype = temptype_basetype(instants[0]->temptype);
+  mobdbType basetype = temptype_basetype(instants[0]->temptype);
   TInstant **result = palloc(sizeof(TInstant *) * count);
   /* Remove redundant instants */
   TInstant *inst1 = (TInstant *) instants[0];
@@ -564,7 +560,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->temptype == inst->temptype);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
 #if NPOINT
   if (inst1->temptype == T_TNPOINT)
     ensure_same_rid_tnpointinst(inst, inst1);
@@ -679,7 +675,7 @@ tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* seq1 is the sequence to which we try to join subsequent seq2 */
   TSequence *seq1 = (TSequence *) sequences[0];
-  MDB_Type basetype = temptype_basetype(seq1->temptype);
+  mobdbType basetype = temptype_basetype(seq1->temptype);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool isnew = false;
   int k = 0;
@@ -787,7 +783,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     tseqarr_sort((TSequence **) sequences, count);
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
-  MDB_Type basetype = temptype_basetype(seq1->temptype);
+  mobdbType basetype = temptype_basetype(seq1->temptype);
   for (int i = 1; i < count; i++)
   {
     const TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
@@ -910,8 +906,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
-  MDB_Type basetype1 = temptype_basetype(seq1->temptype);
-  MDB_Type basetype2 = temptype_basetype(seq2->temptype);
+  mobdbType basetype1 = temptype_basetype(seq1->temptype);
+  mobdbType basetype2 = temptype_basetype(seq2->temptype);
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= (TimestampTz) inter.upper ||
      inst2->t <= (TimestampTz) inter.upper))
@@ -1011,7 +1007,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
  */
 static bool
 tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, MDB_Type basetype, TimestampTz *t)
+  Datum value, mobdbType basetype, TimestampTz *t)
 {
   assert(inst1->temptype == T_TFLOAT);
   double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
@@ -1053,7 +1049,7 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  */
 bool
 tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, MDB_Type basetype, Datum *inter, TimestampTz *t)
+  Datum value, mobdbType basetype, Datum *inter, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
@@ -1164,8 +1160,8 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
 {
   bool result = false; /* Make compiler quiet */
   Datum value;
-  MDB_Type basetype1 = temptype_basetype(start1->temptype);
-  MDB_Type basetype2 = temptype_basetype(start2->temptype);
+  mobdbType basetype1 = temptype_basetype(start1->temptype);
+  mobdbType basetype2 = temptype_basetype(start2->temptype);
   if (! linear1)
   {
     value = tinstant_value(start1);
@@ -1306,7 +1302,7 @@ intersection_tinstantset_tsequence(const TInstantSet *is, const TSequence *seq,
  * @param[in] linear True when the temporal type has linear interpolation
  */
 TSequence *
-tsequence_in(char *str, MDB_Type temptype, bool linear)
+tsequence_in(char *str, mobdbType temptype, bool linear)
 {
   return tsequence_parse(&str, temptype, linear, true, true);
 }
@@ -1324,7 +1320,7 @@ tsequence_in(char *str, MDB_Type temptype, bool linear)
  */
 char *
 tsequence_to_string(const TSequence *seq, bool component,
-  char *(*value_out)(MDB_Type, Datum))
+  char *(*value_out)(mobdbType, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
@@ -1430,7 +1426,7 @@ tsequence_copy(const TSequence *seq)
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
 TSequence *
-tsequence_from_base(Datum value, MDB_Type temptype, const Period *p,
+tsequence_from_base(Datum value, mobdbType temptype, const Period *p,
   bool linear)
 {
   int count;
@@ -1569,7 +1565,7 @@ tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
   Datum value2;
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     inst2 = tsequence_inst_n(seq, i);
@@ -1690,7 +1686,7 @@ tsequence_values(const TSequence *seq, int *count)
     result[i] = tinstant_value(tsequence_inst_n(seq, i));
   if (seq->count > 1)
   {
-    MDB_Type basetype = temptype_basetype(seq->temptype);
+    mobdbType basetype = temptype_basetype(seq->temptype);
     datumarr_sort(result, seq->count, basetype);
     *count = datumarr_remove_duplicates(result, seq->count, basetype);
   }
@@ -1821,7 +1817,7 @@ tsequence_min_instant(const TSequence *seq)
 {
   Datum min = tinstant_value(tsequence_inst_n(seq, 0));
   int k = 0;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -1848,7 +1844,7 @@ tsequence_max_instant(const TSequence *seq)
 {
   Datum max = tinstant_value(tsequence_inst_n(seq, 0));
   int k = 0;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -1880,7 +1876,7 @@ tsequence_min_value(const TSequence *seq)
     return Float8GetDatum(box->xmin);
   }
   Datum result = tinstant_value(tsequence_inst_n(seq, 0));
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -1909,7 +1905,7 @@ tsequence_max_value(const TSequence *seq)
     return Float8GetDatum(box->xmax);
   }
   Datum result = tinstant_value(tsequence_inst_n(seq, 0));
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -1976,7 +1972,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
   bool lower_inc = seq->period.lower_inc;
   TInstant *inst1, *inst2;
   int k = 0;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     inst1 = (TInstant *) tsequence_inst_n(seq, i - 1);
@@ -2243,7 +2239,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
 {
   int i;
   Datum value1;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
 
   /* Bounding box test */
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
@@ -2314,7 +2310,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
   /* The following test assumes that the sequence is in normal form */
   if (seq->count > 2)
     return false;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
@@ -2336,7 +2332,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
  * @param[in] value Base value
  */
 static bool
-tlinearseq_ever_le1(Datum value1, Datum value2, MDB_Type basetype,
+tlinearseq_ever_le1(Datum value1, Datum value2, mobdbType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -2361,7 +2357,7 @@ tlinearseq_ever_le1(Datum value1, Datum value2, MDB_Type basetype,
  * @param[in] value Base value
  */
 static bool
-tlinearseq_always_lt1(Datum value1, Datum value2, MDB_Type basetype,
+tlinearseq_always_lt1(Datum value1, Datum value2, mobdbType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -2390,7 +2386,7 @@ tsequence_ever_lt(const TSequence *seq, Datum value)
   if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
     return false;
 
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
@@ -2415,7 +2411,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
 
   Datum value1;
   int i;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
@@ -2459,7 +2455,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
 
   Datum value1;
   int i;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
@@ -2511,7 +2507,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
    * there are currenty no other continuous base type besides tfloat
    * to which the always <= comparison applies */
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
@@ -2545,7 +2541,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  MDB_Type basetype = temptype_basetype(inst1->temptype);
+  mobdbType basetype = temptype_basetype(inst1->temptype);
   TInstant *instants[2];
   /* Is the segment constant? */
   bool isconst = datum_eq(value1, value2, basetype);
@@ -2872,7 +2868,7 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  MDB_Type basetype = temptype_basetype(inst1->temptype);
+  mobdbType basetype = temptype_basetype(inst1->temptype);
   TInstant *instants[2];
   bool contains;
 

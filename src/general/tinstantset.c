@@ -253,7 +253,7 @@ tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t, int *loc)
  * @param[in] temptype Temporal type
  */
 TInstantSet *
-tinstantset_in(char *str, MDB_Type temptype)
+tinstantset_in(char *str, mobdbType temptype)
 {
   return tinstantset_parse(&str, temptype);
 }
@@ -268,7 +268,7 @@ tinstantset_in(char *str, MDB_Type temptype)
  */
 char *
 tinstantset_to_string(const TInstantSet *is,
-  char *(*value_out)(MDB_Type, Datum))
+  char *(*value_out)(mobdbType, Datum))
 {
   char **strings = palloc(sizeof(char *) * is->count);
   size_t outlen = 0;
@@ -358,7 +358,7 @@ tinstantset_copy(const TInstantSet *is)
  * etc.
  */
 TInstantSet *
-tinstantset_from_base(Datum value, MDB_Type temptype, const TimestampSet *ts)
+tinstantset_from_base(Datum value, mobdbType temptype, const TimestampSet *ts)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -384,7 +384,7 @@ tinstantset_values1(const TInstantSet *is, Datum *result)
     result[i] = tinstant_value(tinstantset_inst_n(is, i));
   if (is->count == 1)
     return 1;
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   datumarr_sort(result, is->count, basetype);
   return datumarr_remove_duplicates(result, is->count, basetype);
 }
@@ -458,7 +458,7 @@ tinstantset_min_value(const TInstantSet *is)
   }
   else
   {
-    MDB_Type basetype = temptype_basetype(is->temptype);
+    mobdbType basetype = temptype_basetype(is->temptype);
     Datum min = tinstant_value(tinstantset_inst_n(is, 0));
     int idx = 0;
     for (int i = 1; i < is->count; i++)
@@ -494,7 +494,7 @@ tinstantset_max_value(const TInstantSet *is)
   }
   else
   {
-    MDB_Type basetype = temptype_basetype(is->temptype);
+    mobdbType basetype = temptype_basetype(is->temptype);
     Datum max = tinstant_value(tinstantset_inst_n(is, 0));
     int idx = 0;
     for (int i = 1; i < is->count; i++)
@@ -793,7 +793,7 @@ tinstantset_ever_eq(const TInstantSet *is, Datum value)
   if (! temporal_bbox_ev_al_eq((Temporal *) is, value, EVER))
     return false;
 
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 0; i < is->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
@@ -820,7 +820,7 @@ tinstantset_always_eq(const TInstantSet *is, Datum value)
   if (tnumber_type(is->temptype))
     return true;
 
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 0; i < is->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
@@ -844,7 +844,7 @@ tinstantset_ever_lt(const TInstantSet *is, Datum value)
   if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, EVER))
     return false;
 
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 0; i < is->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
@@ -867,7 +867,7 @@ tinstantset_ever_le(const TInstantSet *is, Datum value)
   if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, EVER))
     return false;
 
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 0; i < is->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
@@ -889,7 +889,7 @@ tinstantset_always_lt(const TInstantSet *is, Datum value)
   if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, ALWAYS))
     return false;
 
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 0; i < is->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
@@ -917,7 +917,7 @@ tinstantset_always_le(const TInstantSet *is, Datum value)
   if (tnumber_type(is->temptype))
     return true;
 
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 0; i < is->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
@@ -945,7 +945,7 @@ tinstantset_always_le(const TInstantSet *is, Datum value)
 TInstantSet *
 tinstantset_restrict_value(const TInstantSet *is, Datum value, bool atfunc)
 {
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
 
   /* Singleton instant set */
   if (is->count == 1)
@@ -1108,7 +1108,7 @@ tinstantset_min_instant(const TInstantSet *is)
 {
   Datum min = tinstant_value(tinstantset_inst_n(is, 0));
   int k = 0;
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 1; i < is->count; i++)
   {
     Datum value = tinstant_value(tinstantset_inst_n(is, i));
@@ -1132,7 +1132,7 @@ tinstantset_max_instant(const TInstantSet *is)
 {
   Datum max = tinstant_value(tinstantset_inst_n(is, 0));
   int k = 0;
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   for (int i = 1; i < is->count; i++)
   {
     Datum value = tinstant_value(tinstantset_inst_n(is, i));
@@ -1631,7 +1631,7 @@ tinstantset_intersects_periodset(const TInstantSet *is, const PeriodSet *ps)
 double
 tnumberinstset_twavg(const TInstantSet *is)
 {
-  MDB_Type basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(is->temptype);
   double result = 0.0;
   for (int i = 0; i < is->count; i++)
   {

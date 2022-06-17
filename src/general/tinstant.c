@@ -37,11 +37,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-// #if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-// #else
-  // #include <access/hash.h>
-// #endif
+#include <common/hashfn.h>
 // #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
@@ -148,7 +144,7 @@ tnumberinst_double(const TInstant *inst)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_in(char *str, MDB_Type temptype)
+tinstant_in(char *str, mobdbType temptype)
 {
   return tinstant_parse(&str, temptype, true, true);
 }
@@ -162,10 +158,10 @@ tinstant_in(char *str, MDB_Type temptype)
  *    depending on its Oid
  */
 char *
-tinstant_to_string(const TInstant *inst, char *(*value_out)(MDB_Type, Datum))
+tinstant_to_string(const TInstant *inst, char *(*value_out)(mobdbType, Datum))
 {
   char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
-  MDB_Type basetype = temptype_basetype(inst->temptype);
+  mobdbType basetype = temptype_basetype(inst->temptype);
   char *value = value_out(basetype, tinstant_value(inst));
   char *result;
   if (inst->temptype == T_TTEXT)
@@ -224,7 +220,7 @@ tinstant_out(const TInstant *inst)
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
-tinstant_make(Datum value, MDB_Type temptype, TimestampTz t)
+tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
 {
   size_t value_offset = double_pad(sizeof(TInstant));
   size_t size = value_offset;
@@ -232,7 +228,7 @@ tinstant_make(Datum value, MDB_Type temptype, TimestampTz t)
   TInstant *result;
   size_t value_size;
   void *value_from;
-  MDB_Type basetype = temptype_basetype(temptype);
+  mobdbType basetype = temptype_basetype(temptype);
   /* Copy value */
   bool typbyval = basetype_byvalue(basetype);
   if (typbyval)
@@ -653,7 +649,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
   bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  MDB_Type basetype = temptype_basetype(inst->temptype);
+  mobdbType basetype = temptype_basetype(inst->temptype);
   bool contains = contains_span_elem(span, d, basetype);
   return atfunc ? contains : ! contains;
 }
@@ -690,7 +686,7 @@ tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
   int count, bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  MDB_Type basetype = temptype_basetype(inst->temptype);
+  mobdbType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < count; i++)
   {
     if (contains_span_elem(normspans[i], d, basetype))

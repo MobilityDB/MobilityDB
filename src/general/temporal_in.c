@@ -163,7 +163,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
  * "values":[1.5,2.5]
  */
 static Datum *
-parse_mfjson_values(json_object *mfjson, MDB_Type temptype, int *count)
+parse_mfjson_values(json_object *mfjson, mobdbType temptype, int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *jvalues = NULL;
@@ -289,7 +289,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  */
 TInstant *
 tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  MDB_Type temptype)
+  mobdbType temptype)
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
@@ -363,7 +363,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 static TInstant **
 tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  MDB_Type temptype, int *count)
+  mobdbType temptype, int *count)
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
@@ -402,7 +402,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TInstantSet *
 tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  MDB_Type temptype)
+  mobdbType temptype)
 {
   int count;
   TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
@@ -418,7 +418,7 @@ tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  MDB_Type temptype, bool linear)
+  mobdbType temptype, bool linear)
 {
   /* Get the array of temporal instant points */
   int count;
@@ -452,7 +452,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  MDB_Type temptype, bool linear)
+  mobdbType temptype, bool linear)
 {
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
@@ -1265,7 +1265,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
  * @brief Return a value from its Well-Known Binary (WKB) representation.
  */
 Datum
-datum_from_wkb(uint8_t *wkb, int size, MDB_Type type)
+datum_from_wkb(uint8_t *wkb, int size, mobdbType type)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
@@ -1330,7 +1330,7 @@ datum_from_wkb(uint8_t *wkb, int size, MDB_Type type)
  * @brief Return a temporal type from its HexEWKB representation
  */
 Datum
-datum_from_hexwkb(const char *hexwkb, int size, MDB_Type type)
+datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
   Datum result = datum_from_wkb(wkb, size / 2, type);

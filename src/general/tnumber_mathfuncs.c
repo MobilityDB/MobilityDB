@@ -40,9 +40,7 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
-// #if POSTGRESQL_VERSION_NUMBER >= 120000
-  #include <utils/float.h>
-// #endif
+#include <utils/float.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
@@ -61,11 +59,7 @@
 static Datum
 datum_degrees(Datum value)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   return Float8GetDatum(float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE));
-#else
-  return call_function1(degrees, value);
-#endif
 }
 
 /**
@@ -173,9 +167,9 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * of the function
  */
 Temporal *
-arithop_tnumber_number(const Temporal *temp, Datum value, MDB_Type basetype,
+arithop_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype,
   TArithmetic oper,
-  Datum (*func)(Datum, Datum, MDB_Type, MDB_Type), bool invert)
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType), bool invert)
 {
   ensure_tnumber_basetype(basetype);
   /* If division test whether the denominator is zero */
@@ -309,7 +303,7 @@ tnumberseq_derivative(const TSequence *seq)
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double derivative;
-  MDB_Type basetype = temptype_basetype(seq->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);

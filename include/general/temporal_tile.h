@@ -43,7 +43,7 @@ typedef struct SpanBucketState
 {
   bool done;
   int i;
-  MDB_Type basetype;
+  mobdbType basetype;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
   Datum size;
   Datum origin;

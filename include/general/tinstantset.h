@@ -53,7 +53,7 @@ extern bool tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t,
 /* Input/output functions */
 
 extern char *tinstantset_to_string(const TInstantSet *is,
-  char *(*value_out)(MDB_Type, Datum));
+  char *(*value_out)(mobdbType, Datum));
 
 /* Intersection functions */
 
@@ -70,7 +70,7 @@ extern bool intersection_tinstantset_tinstantset(const TInstantSet *is1,
 
 /* Send/receive functions */
 
-extern TInstantSet *tinstantset_recv(StringInfo buf, MDB_Type temptype);
+extern TInstantSet *tinstantset_recv(StringInfo buf, mobdbType temptype);
 extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
 
 #endif /* ! MEOS */

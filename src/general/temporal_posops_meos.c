@@ -475,7 +475,7 @@ overafter_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p <<
  */
 bool
-left_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
+left_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &left_tbox_tbox,
     INVERT);
@@ -487,7 +487,7 @@ left_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
  * @sqlop @p &<
  */
 bool
-overleft_number_tnumber(Datum number, MDB_Type basetype,
+overleft_number_tnumber(Datum number, mobdbType basetype,
   const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &overleft_tbox_tbox,
@@ -500,7 +500,7 @@ overleft_number_tnumber(Datum number, MDB_Type basetype,
  * @sqlop @p >>
  */
 bool
-right_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
+right_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &right_tbox_tbox,
     INVERT);
@@ -512,7 +512,7 @@ right_number_tnumber(Datum number, MDB_Type basetype, const Temporal *tnumber)
  * @sqlop @p &>
  */
 bool
-overright_number_tnumber(Datum number, MDB_Type basetype,
+overright_number_tnumber(Datum number, mobdbType basetype,
   const Temporal *tnumber)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &overright_tbox_tbox,
@@ -579,7 +579,7 @@ overright_span_tnumber(const Span *span, const Temporal *tnumber)
  * @sqlop @p <<
  */
 bool
-left_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
+left_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &left_tbox_tbox,
     INVERT_NO);
@@ -592,7 +592,7 @@ left_tnumber_number(const Temporal *tnumber, Datum number, MDB_Type basetype)
  */
 bool
 overleft_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &overleft_tbox_tbox,
     INVERT_NO);
@@ -605,7 +605,7 @@ overleft_tnumber_number(const Temporal *tnumber, Datum number,
  */
 bool
 right_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &right_tbox_tbox,
     INVERT_NO);
@@ -618,7 +618,7 @@ right_tnumber_number(const Temporal *tnumber, Datum number,
  */
 bool
 overright_tnumber_number(const Temporal *tnumber, Datum number,
-  MDB_Type basetype)
+  mobdbType basetype)
 {
   return boxop_tnumber_number(tnumber, number, basetype, &overright_tbox_tbox,
     INVERT_NO);

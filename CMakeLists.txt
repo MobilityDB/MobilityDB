@@ -20,9 +20,11 @@ include(CheckSymbolExists)
 # MobilityDB definitions
 #-------------------------------------
 
-# Option for building the MEOS library instead of the MobilityDB PostgreSQL extension
-option(MEOS
-  "Set ON|OFF (default=OFF) to build the (Mobility Engine Open Source) MEOS library
+set(MEOS ON)
+
+# Option for adding network point
+option(NPOINT
+  "Set ON|OFF (default=OFF) to include network points
   "
   OFF
 )
@@ -38,18 +40,10 @@ set(MOBILITYDB_MICRO_VERSION ${CMAKE_MATCH_1})
 string(REGEX MATCH "MOBILITYDB_MICRO_VERSION=[0-9]+(beta?[0-9]+)" _ ${ver})
 set(PROJECT_VERSION_DEV ${CMAKE_MATCH_1})
 
-# Set the project name (either MEOS or MobilityDB) and project version
-if(MEOS)
-  message(STATUS "Building the MEOS library")
-  project(MEOS VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
-  add_definitions(-DMEOS=1)
-else()
-  message(STATUS "Building MobilityDB")
-  project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
-  # Enable testing, must follow project() call above
-  include(CTest)
-  enable_testing()
-endif()
+# Set the project name (MEOS) and project version
+message(STATUS "Building the MEOS library")
+project(MEOS VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
+add_definitions(-DMEOS=1)
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
 set(MOBILITYDB_VERSION_STR "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
@@ -122,54 +116,27 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # Get PostgreSQL Version
 #-------------------------------------
 
-if(NOT MEOS)
-  # Find PostgreSQL
-  set(PG_MIN_MAJOR_VERSION "12")
-  set(PG_MAX_MAJOR_VERSION "14")
-  find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
-  if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
-    message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
-  endif()
-else()
-  # PostgreSQL version default values for MEOS
-  set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
-  set(POSTGRESQL_VERSION_NUMBER "140200")
-  set(POSTGRESQL_VERSION_MAJOR "14")
-  set(POSTGRESQL_VERSION_MINOR "2")
-endif()
+# PostgreSQL version default values for MEOS
+set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
+set(POSTGRESQL_VERSION_NUMBER "140200")
+set(POSTGRESQL_VERSION_MAJOR "14")
+set(POSTGRESQL_VERSION_MINOR "2")
 
 # MobilityDB definitions for PostgreSQL version-dependent code
 add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
-if(MEOS)
-  message(STATUS "Building MEOS: Including embedded PostgreSQL files")
-  include_directories("postgres")
-  add_subdirectory("postgres")
-else()
-  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
-  if(WIN32)
-    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
-    if(MSVC)
-        include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
-    endif()
-    link_directories(${POSTGRESQL_LIBRARIES})
-    link_libraries(postgres)
-  endif()
-endif()
+message(STATUS "Building MEOS: Including embedded PostgreSQL files")
+include_directories("postgres")
+add_subdirectory("postgres")
 
 #-------------------------------------
 # Get PostGIS Version
 #-------------------------------------
 
-if(NOT MEOS)
-  # Find PostGIS
-  find_package(POSTGIS REQUIRED)
-else()
-  # PostGIS version default values for MEOS
-  set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
-  set(POSTGIS_VERSION_NUMBER "30201")
-endif()
+# PostGIS version default values for MEOS
+set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
+set(POSTGIS_VERSION_NUMBER "30201")
 
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
 math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
@@ -180,12 +147,6 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 #--------------------------------
 # Other dependencies
 #--------------------------------
-
-# GSL (GNU Scientific Library) (used for skiplists)
-if(NOT MEOS)
-  find_package(GSL REQUIRED)
-  include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
-endif()
 
 # Proj reprojection library
 find_package(PROJ REQUIRED)
@@ -210,40 +171,32 @@ include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 # Embed liblwgeom library for PostGIS 3
 configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
 include_directories("postgis/liblwgeom")
-if(NOT MEOS)
-  include_directories("postgis/libpgcommon")
-endif()
 include_directories("postgis")
 add_subdirectory("postgis")
 
 include_directories("include")
 add_subdirectory("src")
 
-# Build the library
+# Build the library: MEOS
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
-if(MEOS)
-  message(STATUS "Building MEOS: Network points not included")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
-else()
-  message(STATUS "Building MobilityDB: Including network points")
+if(NPOINT)
+  message(STATUS "Including network points")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
 
+# Build the library: PostgreSQL
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
+
+# Build the library: PostGIS
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-if(MEOS)
-  message(STATUS "Building MEOS: postgis/libpgcommon not included")
-else()
-  message(STATUS "Building MobilityDB: Including postgis/libpgcommon")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
-endif()
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 
+# Build the library: All
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
-
 if(APPLE)
   set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
     LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
@@ -254,34 +207,16 @@ endif()
 #--------------------------------
 
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-if(MEOS)
-  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
-  target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
-else()
-  target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
-  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
-  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
-endif()
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 
 #--------------------------------
 # Belongs to MobilityDB
 #--------------------------------
 
-if(MEOS)
-  message(STATUS "Building MEOS: SQL definitions and tests not included")
-  install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
-  message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
-else()
-  message(STATUS "Building MobilityDB: Including SQL definitions and tests")
-  add_subdirectory(sql)
-  add_subdirectory(test)
-  add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
-  add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
-  install(
-    FILES "${CMAKE_BINARY_DIR}/mobilitydb.control"  "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
-    DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
-  install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
-endif()
+message(STATUS "Building MEOS: SQL definitions and tests not included")
+install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
+message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
 
 #-----------------------------------------------------------------------------
 # Documentation
