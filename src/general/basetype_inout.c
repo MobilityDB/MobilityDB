@@ -37,17 +37,14 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <common/int.h>
+// #include <common/int.h>
 #include <common/shortest_dec.h>
-#include <port/pg_bitutils.h>
+// #include <port/pg_bitutils.h>
 #include <utils/float.h>
 /* PostgreSQL */
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
-
 /* MobilityDB */
 // #include <meos.h>
-// #include "general/temporal_util.h"
-// #include "general/temporal_parser.h"
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   extern int64 pg_strtoint64(const char *s);
@@ -433,12 +430,5 @@ float8_out(double num)
   (void) pg_strfromd(ascii, 32, DBL_DIG, num);
   return ascii;
 }
-
-/*****************************************************************************
- * Functions adapted from bool.c
- *****************************************************************************/
-
-
-
 
 /*****************************************************************************/

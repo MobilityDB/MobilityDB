@@ -37,14 +37,15 @@
 #include <float.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/tbox.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
-#if ! MEOS
+#if NPOINT
   #include "npoint/tnpoint_static.h"
-#endif /* ! MEOS */
+#endif /* NPOINT */
 
 /*****************************************************************************/
 
@@ -78,8 +79,8 @@ typedef struct
  *
  * @note Function taken from PostGIS file lwin_geojson.c
  */
-static json_object *
-findMemberByName(json_object *poObj, const char *pszName )
+json_object *
+findMemberByName(json_object *poObj, const char *pszName)
 {
   json_object *poTmp = poObj;
   json_object_iter it;
@@ -281,7 +282,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal instant point from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
  * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
@@ -394,7 +395,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal instant set point from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
  * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
@@ -410,7 +411,7 @@ tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal sequence point from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
  * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
@@ -444,7 +445,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal sequence set point from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
  * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
@@ -672,7 +673,7 @@ point_from_wkb_state(wkb_parse_state *s)
   return result;
 }
 
-#if ! MEOS
+#if NPOINT
 /**
  * Read an npoint and advance the parse state forward
  */
@@ -1015,11 +1016,11 @@ temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
     case MOBDB_WKB_T_TGEOGPOINT:
       s->temptype = T_TGEOGPOINT;
       break;
-#if ! MEOS
+#if NPOINT
     case MOBDB_WKB_T_TNPOINT:
       s->temptype = T_TNPOINT;
       break;
-#endif /* ! MEOS */
+#endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown WKB temporal type: %d", wkb_temptype);
       break;
@@ -1105,11 +1106,11 @@ temporal_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_TGEOGPOINT:
       result = point_from_wkb_state(s);
       break;
-#if ! MEOS
+#if NPOINT
     case T_TNPOINT:
       result = PointerGetDatum(npoint_from_wkb_state(s));
       break;
-#endif /* ! MEOS */
+#endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d",
         s->temptype);
@@ -1312,9 +1313,9 @@ datum_from_wkb(uint8_t *wkb, int size, MDB_Type type)
     case T_TTEXT:
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-#if ! MEOS
+#if NPOINT
     case T_TNPOINT:
-#endif /* ! MEOS */
+#endif /* NPOINT */
       result = PointerGetDatum(temporal_from_wkb_state(&s));
       break;
     default: /* Error! */
@@ -1342,7 +1343,7 @@ datum_from_hexwkb(const char *hexwkb, int size, MDB_Type type)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a span from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
@@ -1356,7 +1357,7 @@ span_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a span from its WKB representation in hex-encoded ASCII.
  * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB(),
  */
@@ -1372,7 +1373,7 @@ span_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a timestamp set from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc timestampsetFromBinary()
@@ -1384,7 +1385,7 @@ timestampset_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a timestamp set from its WKB representation in hex-encoded
  * ASCII.
  * @sqlfunc timestampsetFromHexWKB()
@@ -1399,7 +1400,7 @@ timestampset_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a period set from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc periodsetFromBinary()
@@ -1411,7 +1412,7 @@ periodset_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_spantime_input_output
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a period set from its WKB representation in hex-encoded ASCII
  * @sqlfunc periodsetFromHexWKB()
  */
@@ -1425,7 +1426,7 @@ periodset_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_input_output
+ * @ingroup libmeos_box_in_out
  * @brief Return a temporal box from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tboxFromBinary()
@@ -1437,7 +1438,7 @@ tbox_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_box_input_output
+ * @ingroup libmeos_box_in_out
  * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
@@ -1451,7 +1452,7 @@ tbox_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_input_output
+ * @ingroup libmeos_box_in_out
  * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc stboxFromBinary()
@@ -1463,7 +1464,7 @@ stbox_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_box_input_output
+ * @ingroup libmeos_box_in_out
  * @brief Return a spatiotemporal box from its WKB representation in
  * hex-encoded ASCII
  * @sqlfunc stboxFromWKB()
@@ -1478,7 +1479,7 @@ stbox_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal value from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tboolFromBinary(), tintFromBinary(), tfloatFromBinary(),
@@ -1493,7 +1494,7 @@ temporal_from_wkb(uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal value from its HexEWKB representation
  * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
  * ttextFromHexWKB(), etc.
@@ -1506,360 +1507,5 @@ temporal_from_hexwkb(const char *hexwkb)
    * type will be read from the byte string */
   return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-/*****************************************************************************
- * Input in WKT and in MF-JSON format
- *****************************************************************************/
-
-/*****************************************************************************
- * Input in MFJSON format
- *****************************************************************************/
-
-static void
-ensure_temptype_mfjson(const char *typestr)
-{
-  if (strcmp(typestr, "MovingBoolean") != 0 && strcmp(typestr, "MovingInteger") != 0 &&
-      strcmp(typestr, "MovingFloat") != 0 && strcmp(typestr, "MovingText") != 0 &&
-      strcmp(typestr, "MovingPoint") != 0)
-    elog(ERROR, "Invalid 'type' value in MFJSON string");
-}
-
-/**
- * @brief Return a temporal point from its MF-JSON representation
- */
-Temporal *
-temporal_from_mfjson_ext(FunctionCallInfo fcinfo, text *mfjson_input,
-  MDB_Type temptype)
-{
-  char *mfjson = text2cstring(mfjson_input);
-  char *srs = NULL;
-  int srid = 0;
-  Temporal *result = NULL;
-
-  json_tokener *jstok = NULL;
-  json_object *poObj = NULL;
-  json_object *poObjType = NULL;
-  json_object *poObjInterp = NULL;
-  json_object *poObjInterp1 = NULL;
-  json_object *poObjDates = NULL;
-  json_object *poObjSrs = NULL;
-
-  /* Begin to parse json */
-  jstok = json_tokener_new();
-  poObj = json_tokener_parse_ex(jstok, mfjson, -1);
-  if (jstok->err != json_tokener_success)
-  {
-    char err[256];
-    snprintf(err, 256, "%s (at offset %d)",
-      json_tokener_error_desc(jstok->err), jstok->char_offset);
-    json_tokener_free(jstok);
-    json_object_put(poObj);
-    elog(ERROR, "Error while processing MFJSON string");
-  }
-  json_tokener_free(jstok);
-
-  /*
-   * Ensure that it is a moving point
-   */
-  poObjType = findMemberByName(poObj, "type");
-  if (poObjType == NULL)
-    elog(ERROR, "Unable to find 'type' in MFJSON string");
-
-  const char *pszType = json_object_get_string(poObjType);
-  ensure_temptype_mfjson(pszType);
-
-  /*
-   * Determine type of temporal type and call the corresponding parse function
-   */
-  poObjInterp = findMemberByName(poObj, "interpolations");
-  if (poObjInterp == NULL)
-    elog(ERROR, "Unable to find 'interpolations' in MFJSON string");
-
-  if (json_object_get_type(poObjInterp) != json_type_array)
-    elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
-
-  const int nSize = json_object_array_length(poObjInterp);
-  if (nSize != 1)
-    elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
-
-  bool isgeo = tgeo_type(temptype);
-  if (isgeo)
-  {
-    /* Parse crs and set SRID of temporal point */
-    poObjSrs = findMemberByName(poObj, "crs");
-    if (poObjSrs != NULL)
-    {
-      json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
-      if (poObjSrsType != NULL)
-      {
-        json_object *poObjSrsProps = findMemberByName(poObjSrs, "properties");
-        if (poObjSrsProps)
-        {
-          json_object *poNameURL = findMemberByName(poObjSrsProps, "name");
-          if (poNameURL)
-          {
-            const char *pszName = json_object_get_string(poNameURL);
-            if (pszName)
-            {
-              srs = palloc(strlen(pszName) + 1);
-              strcpy(srs, pszName);
-            }
-          }
-        }
-      }
-    }
-    if (srs)
-    {
-      srid = getSRIDbySRS(fcinfo, srs);
-      pfree(srs);
-    }
-  }
-
-  /* Read interpolation value */
-  poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
-  const char *pszInterp = json_object_get_string(poObjInterp1);
-  if (pszInterp)
-  {
-    if (strcmp(pszInterp, "Discrete") == 0)
-    {
-      poObjDates = findMemberByName(poObj, "datetimes");
-      if (poObjDates != NULL &&
-        json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *) tinstantset_from_mfjson(poObj, isgeo, srid,
-          temptype);
-      else
-        result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid,
-          temptype);
-    }
-    else if (strcmp(pszInterp, "Stepwise") == 0 ||
-      strcmp(pszInterp, "Linear") == 0)
-    {
-      bool linear = strcmp(pszInterp, "Linear") == 0;
-      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
-      if (poObjSeqs != NULL)
-        result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
-          temptype, linear);
-      else
-        result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
-          temptype, linear);
-    }
-    else
-      elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
-  }
-
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(Temporal_from_mfjson);
-/**
- * Return a temporal point from its MF-JSON representation
- */
-PGDLLEXPORT Datum
-Temporal_from_mfjson(PG_FUNCTION_ARGS)
-{
-  text *mfjson_input = PG_GETARG_TEXT_P(0);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Temporal *result = temporal_from_mfjson_ext(fcinfo, mfjson_input,
-    oid_type(temptypid));
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Input in WKB and in HEXWKB format
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Span_from_wkb);
-/**
- * Return a span from its WKB representation
- */
-PGDLLEXPORT Datum
-Span_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  Span *span = span_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(span);
-}
-
-PG_FUNCTION_INFO_V1(Span_from_hexwkb);
-/**
- * Return a span from its HEXWKB representation
- */
-PGDLLEXPORT Datum
-Span_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  Span *span = span_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(span);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
-/**
- * Return a timestamp set from its WKB representation
- */
-PGDLLEXPORT Datum
-Timestampset_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TimestampSet *ts = timestampset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ts);
-}
-
-PG_FUNCTION_INFO_V1(Timestampset_from_hexwkb);
-/**
- * Return a temporal point from its HexWKB representation
- */
-PGDLLEXPORT Datum
-Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  TimestampSet *ts = timestampset_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ts);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Periodset_from_wkb);
-/**
- * Return a timestamp set from its WKB representation
- */
-PGDLLEXPORT Datum
-Periodset_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  PeriodSet *ps = periodset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ps);
-}
-
-PG_FUNCTION_INFO_V1(Periodset_from_hexwkb);
-/**
- * Return a temporal point from its HexWKB representation
- */
-PGDLLEXPORT Datum
-Periodset_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  PeriodSet *ps = periodset_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ps);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tbox_from_wkb);
-/**
- * Return a temporal box from its WKB representation
- */
-PGDLLEXPORT Datum
-Tbox_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TBOX *box = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(box);
-}
-
-PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
-/**
- * Return a temporal point from its HexWKB representation
- */
-PGDLLEXPORT Datum
-Tbox_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  TBOX *box = tbox_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(box);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Stbox_from_wkb);
-/**
- * Return a temporal box from its WKB representation
- */
-PGDLLEXPORT Datum
-Stbox_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  STBOX *box = stbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(box);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
-/**
- * Return a temporal point from its HexWKB representation
- */
-PGDLLEXPORT Datum
-Stbox_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  STBOX *box = stbox_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(box);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Temporal_from_wkb);
-/**
- * Return a temporal type from its WKB representation
- */
-PGDLLEXPORT Datum
-Temporal_from_wkb(PG_FUNCTION_ARGS)
-{
-  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  Temporal *temp = temporal_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
-  PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(temp);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
-/**
- * Return a temporal type from its HEXWKB representation
- */
-PGDLLEXPORT Datum
-Temporal_from_hexwkb(PG_FUNCTION_ARGS)
-{
-  text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
-  Temporal *temp = temporal_from_hexwkb(hexwkb);
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(temp);
-}
-
-#endif /* ! MEOS */
 
 /*****************************************************************************/

@@ -36,13 +36,14 @@
 
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 
 /**
- * @brief Parse a spatiotemporal box from its string representation.
+ * @brief Parse a spatiotemporal box from the buffer.
  */
 STBOX *
 stbox_parse(char **str)
@@ -206,7 +207,7 @@ stbox_parse(char **str)
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal point of instant type from the buffer.
+ * @brief Parse a temporal instant point from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -249,7 +250,7 @@ tpointinst_parse(char **str, MDB_Type temptype, bool end, bool make,
 }
 
 /**
- * @brief Parse a temporal point of instant set type from the buffer.
+ * @brief Parse a temporal instant set point from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -289,7 +290,7 @@ tpointinstset_parse(char **str, MDB_Type temptype, int *tpoint_srid)
 }
 
 /**
- * @brief Parse a temporal point value of sequence type from the buffer.
+ * @brief Parse a temporal sequence point from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -346,7 +347,7 @@ tpointseq_parse(char **str, MDB_Type temptype, bool linear, bool end,
 }
 
 /**
- * @brief Parse a temporal point value of sequence set type from the buffer.
+ * @brief Parse a temporal sequence set point from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type

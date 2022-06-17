@@ -46,12 +46,7 @@
 /* C */
 #include <float.h>
 /* PostgreSQL */
-#if ! MEOS
-  #include <libpq/pqformat.h>
-#endif
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  #include <utils/float.h>
-#endif
+#include <utils/float.h>
 /* MobilityDB */
 #include "general/temporal_util.h"
 
@@ -85,30 +80,6 @@ double2_out(double2 *d)
   pfree(astr);
   pfree(bstr);
   return result;
-}
-#else
-/**
- * @brief Receive function for double2 values
- */
-double2 *
-double2_recv(StringInfo buf)
-{
-  double2 *result = palloc(sizeof(double2));
-  const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
-  memcpy(result, bytes, sizeof(double2));
-  return result;
-}
-
-/**
- * @brief Send function for double2 values
- */
-bytea *
-double2_send(double2 *d)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (void *) d, sizeof(double2));
-  return (bytea *) pq_endtypsend(&buf);
 }
 #endif /* MEOS */
 
@@ -192,30 +163,6 @@ double3_out(double3 *d)
   pfree(bstr);
   pfree(cstr);
   return result;
-}
-#else
-/**
- * @brief Receive function for double3 values
- */
-double3 *
-double3_recv(StringInfo buf)
-{
-  double3 *result = palloc(sizeof(double3));
-  const char *bytes = pq_getmsgbytes(buf, sizeof(double3));
-  memcpy(result, bytes, sizeof(double3));
-  return result;
-}
-
-/**
- * @brief Send function for double3 values
- */
-bytea *
-double3_send(double3 *d)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (void *) d, sizeof(double3));
-  return (bytea *) pq_endtypsend(&buf);
 }
 #endif /* MEOS */
 
@@ -308,30 +255,6 @@ double4_out(double4 *d)
   pfree(cstr);
   pfree(dstr);
   return result;
-}
-#else
-/**
- * @brief Receive function for double4 values
- */
-double4 *
-double4_recv(StringInfo buf)
-{
-  double4 *result = palloc(sizeof(double4));
-  const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
-  memcpy(result, bytes, sizeof(double4));
-  return result;
-}
-
-/**
- * @brief Send function for double3 values
- */
-bytea *
-double4_send(double4 *d)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendbytes(&buf, (void *) d, sizeof(double4));
-  return (bytea *) pq_endtypsend(&buf);
 }
 #endif /* MEOS */
 

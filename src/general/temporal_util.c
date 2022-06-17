@@ -37,20 +37,21 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#if POSTGRESQL_VERSION_NUMBER >= 120000
+// #if POSTGRESQL_VERSION_NUMBER >= 120000
   #include <utils/float.h>
-#else
-  extern double get_float8_nan(void);
-#endif
+// #else
+  // extern double get_float8_nan(void);
+// #endif
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/pg_call.h"
 #include "general/doublen.h"
 #include "general/temporal_parser.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#if ! MEOS
+#if NPOINT
   #include "npoint/tnpoint_static.h"
   #include "npoint/tnpoint_parser.h"
 #endif
@@ -146,7 +147,7 @@ datum_cmp2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
   if (typel != typer)
     ensure_span_basetype(typer);
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
-    return timestamp_cmp_internal(DatumGetTimestampTz(l),
+    return timestamptz_cmp_internal(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r));
   if (typel == T_INT4 && typer == T_INT4)
     return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
@@ -191,7 +192,7 @@ datum_eq2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
     return datum_point_eq(l, r);
   if (typel == T_GEOGRAPHY && typel == typer)
     return datum_point_eq(l, r);
-#if ! MEOS
+#if NPOINT
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
@@ -237,7 +238,7 @@ datum_lt2(Datum l, Datum r, MDB_Type typel, MDB_Type typer)
   if (typel == T_GEOGRAPHY && typel == typer)
     return gserialized_cmp(DatumGetGserializedP(l),
       DatumGetGserializedP(r)) < 0;
-#if ! MEOS
+#if NPOINT
   if (typel == T_NPOINT && typel == typer)
     return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
@@ -503,7 +504,7 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 {
   TimestampTz x = *l;
   TimestampTz y = *r;
-  return timestamp_cmp_internal(x, y);
+  return timestamptz_cmp_internal(x, y);
 }
 
 /**
@@ -521,7 +522,7 @@ span_sort_cmp(const Span **l, const Span **r)
 static int
 tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
 {
-  return timestamp_cmp_internal((*l)->t, (*r)->t);
+  return timestamptz_cmp_internal((*l)->t, (*r)->t);
 }
 
 /**
@@ -920,11 +921,33 @@ hypot4d(double x, double y, double z, double m)
  * Input/output PostgreSQL functions
  *****************************************************************************/
 
+// #if ! MEOS
+// extern Oid type_oid(MDB_Type type);
+// /**
+ // * @brief Call input function of the base type
+ // * @note Function needed for the geography type to call the function
+ // * srid_is_latlong(fcinfo, srid)
+ // */
+// Datum
+// call_input(MDB_Type type, char *str, bool end)
+// {
+  // Oid typid = type_oid(type);
+  // Oid infunc;
+  // Oid basetypid;
+  // FmgrInfo infuncinfo;
+  // getTypeInputInfo(typid, &infunc, &basetypid);
+  // fmgr_info(infunc, &infuncinfo);
+  // Datum result = InputFunctionCall(&infuncinfo, str, basetypid, -1);
+  // ensure_end_input(&str, end, "base type");
+  // return result;
+// }
+// #endif /* ! MEOS */
+
 /**
  * Call input function of the base type
  */
 Datum
-#if ! MEOS
+#if NPOINT
 basetype_input(MDB_Type basetype, char *str, bool end)
 #else
 basetype_input(MDB_Type basetype, char *str, bool end __attribute__((unused)))
@@ -948,12 +971,12 @@ basetype_input(MDB_Type basetype, char *str, bool end __attribute__((unused)))
     case T_GEOMETRY:
       return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
     case T_GEOGRAPHY:
-#if ! MEOS
-      return call_input(type_oid(T_GEOGRAPHY), str, end);
-#else
+// #if ! MEOS
+      // return call_input(T_GEOGRAPHY, str, end);
+// #else
       return PointerGetDatum(PGIS_geography_in(str, -1));
-#endif
-#if ! MEOS
+// #endif
+#if NPOINT
     case T_NPOINT:
       return PointerGetDatum(npoint_parse(&str, end));
 #endif
@@ -988,7 +1011,7 @@ basetype_output(MDB_Type basetype, Datum value)
     return PGIS_LWGEOM_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
       return PGIS_geography_out(DatumGetGserializedP(value));
-#if ! MEOS
+#if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value));
 #endif
@@ -997,418 +1020,5 @@ basetype_output(MDB_Type basetype, Datum value)
       break;
   }
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <utils/lsyscache.h>
-#include <catalog/pg_collation_d.h>
-#include <utils/varlena.h>
-
-/*****************************************************************************
- * Call PostgreSQL functions
- * The call_input and call_output functions are needed for the geography
- * type to call the function srid_is_latlong(fcinfo, srid)
- *****************************************************************************/
-
-/**
- * Call input function of the base type
- */
-Datum
-call_input(Oid typid, char *str, bool end)
-{
-  Oid infunc;
-  Oid basetypid;
-  FmgrInfo infuncinfo;
-  getTypeInputInfo(typid, &infunc, &basetypid);
-  fmgr_info(infunc, &infuncinfo);
-  Datum result = InputFunctionCall(&infuncinfo, str, basetypid, -1);
-  ensure_end_input(&str, end, "base type");
-  return result;
-}
-
-/**
- * Call receive function of the base type
- */
-Datum
-call_recv(MDB_Type type, StringInfo buf)
-{
-  if (type == T_DOUBLE2)
-    return PointerGetDatum(double2_recv(buf));
-  if (type == T_DOUBLE3)
-    return PointerGetDatum(double3_recv(buf));
-  if (type == T_DOUBLE4)
-    return PointerGetDatum(double4_recv(buf));
-
-  Oid typid = type_oid(type);
-  if (typid == 0)
-    elog(ERROR, "Unknown type when calling receive function: %d", type);
-  Oid recvfunc;
-  Oid basetypid;
-  FmgrInfo recvfuncinfo;
-  getTypeBinaryInputInfo(typid, &recvfunc, &basetypid);
-  fmgr_info(recvfunc, &recvfuncinfo);
-  return ReceiveFunctionCall(&recvfuncinfo, buf, basetypid, -1);
-}
-
-/**
- * Call send function of the base type
- */
-bytea *
-call_send(MDB_Type type, Datum value)
-{
-  if (type == T_DOUBLE2)
-    return double2_send(DatumGetDouble2P(value));
-  if (type == T_DOUBLE3)
-    return double3_send(DatumGetDouble3P(value));
-  if (type == T_DOUBLE4)
-    return double4_send(DatumGetDouble4P(value));
-
-  Oid typid = type_oid(type);
-  if (typid == 0)
-    elog(ERROR, "Unknown type when calling send function: %d", type);
-  Oid sendfunc;
-  bool isvarlena;
-  FmgrInfo sendfuncinfo;
-  getTypeBinaryOutputInfo(typid, &sendfunc, &isvarlena);
-  fmgr_info(sendfunc, &sendfuncinfo);
-  return SendFunctionCall(&sendfuncinfo, value);
-}
-
-/**
- * Call PostgreSQL function with 1 argument
- */
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-Datum
-call_function1(PGFunction func, Datum arg1)
-{
-  LOCAL_FCINFO(fcinfo, 1);
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo->args[0].value = arg1;
-  fcinfo->args[0].isnull = false;
-  result = (*func) (fcinfo);
-  if (fcinfo->isnull)
-    elog(ERROR, "Function %p returned NULL", (void *) func);
-  return result;
-}
-
-/**
- * Call PostgreSQL function with 2 arguments
- */
-Datum
-call_function2(PGFunction func, Datum arg1, Datum arg2)
-{
-  LOCAL_FCINFO(fcinfo, 2);
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_nargs = 2;
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo->args[0].value = arg1;
-  fcinfo->args[0].isnull = false;
-  fcinfo->args[1].value = arg2;
-  fcinfo->args[1].isnull = false;
-  result = (*func) (fcinfo);
-  if (fcinfo->isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-
-/**
- * Call PostgreSQL function with 3 arguments
- */
-Datum
-call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
-{
-  LOCAL_FCINFO(fcinfo, 3);
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo->args[0].value = arg1;
-  fcinfo->args[0].isnull = false;
-  fcinfo->args[1].value = arg2;
-  fcinfo->args[1].isnull = false;
-  fcinfo->args[2].value = arg3;
-  fcinfo->args[2].isnull = false;
-  result = (*func) (fcinfo);
-  if (fcinfo->isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-#else /* POSTGRESQL_VERSION_NUMBER < 120000 */
-/**
- * Call PostgreSQL function with 1 argument
- */
-Datum
-call_function1(PGFunction func, Datum arg1)
-{
-  FunctionCallInfoData fcinfo;
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-  result = (*func) (&fcinfo);
-  if (fcinfo.isnull)
-    elog(ERROR, "Function %p returned NULL", (void *) func);
-  return result;
-}
-
-/**
- * Call PostgreSQL function with 2 arguments
- */
-Datum
-call_function2(PGFunction func, Datum arg1, Datum arg2)
-{
-  FunctionCallInfoData fcinfo;
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-  fcinfo.arg[1] = arg2;
-  fcinfo.argnull[1] = false;
-  result = (*func) (&fcinfo);
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-
-/**
- * Call PostgreSQL function with 3 arguments
- */
-Datum
-call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
-{
-  FunctionCallInfoData fcinfo;
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-  fcinfo.arg[1] = arg2;
-  fcinfo.argnull[1] = false;
-  fcinfo.arg[2] = arg3;
-  fcinfo.argnull[2] = false;
-  result = (*func) (&fcinfo);
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-#endif
-
-/*****************************************************************************
- * Array functions
- *****************************************************************************/
-
-/**
- * Extract a C array from a PostgreSQL array containing datums
- * If array elements are pass-by-ref data type, the returned Datums will
- * be pointers into the array object.
- */
-Datum *
-datumarr_extract(ArrayType *array, int *count)
-{
-  bool byval;
-  int16 typlen;
-  char align;
-  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
-  Datum *result;
-  deconstruct_array(array, array->elemtype, typlen, byval, align,
-    &result, NULL, count);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing timestamps
- */
-TimestampTz *
-timestamparr_extract(ArrayType *array, int *count)
-{
-  return (TimestampTz *) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing periods
- */
-Period **
-periodarr_extract(ArrayType *array, int *count)
-{
-  return (Period **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing spans
- */
-Span **
-spanarr_extract(ArrayType *array, int *count)
-{
-  return (Span **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing temporal values
- */
-Temporal **
-temporalarr_extract(ArrayType *array, int *count)
-{
-  Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd',
-    (Datum **) &result, NULL, count);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Convert a C array of datums into a PostgreSQL array.
- * Note that the values will be copied into the object even if pass-by-ref type
- */
-ArrayType *
-datumarr_to_array(Datum *values, int count, MDB_Type type)
-{
-  int16 elmlen;
-  bool elmbyval;
-  char elmalign;
-  assert(count > 0);
-  Oid typid = type_oid(type);
-  get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
-    elmalign);
-  return result;
-}
-
-/**
- * Convert a C array of timestamps into a PostgreSQL array
- */
-ArrayType *
-timestamparr_to_array(const TimestampTz *times, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
-    8, true, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of periods into a PostgreSQL array
- */
-ArrayType *
-periodarr_to_array(const Period **periods, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) periods, count,
-    type_oid(T_PERIOD), sizeof(Period), false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of spans into a PostgreSQL array
- */
-ArrayType *
-spanarr_to_array(Span **spans, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) spans, count,
-    type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of text values into a PostgreSQL array
- */
-ArrayType *
-strarr_to_textarray(char **strarr, int count)
-{
-  assert(count > 0);
-  text **textarr = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-    textarr[i] = cstring_to_text(strarr[i]);
-  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
-    false, 'i');
-  pfree_array((void **)textarr, count);
-  return result;
-}
-
-/**
- * Convert a C array of temporal values into a PostgreSQL array
- */
-ArrayType *
-temporalarr_to_array(const Temporal **temporalarr, int count)
-{
-  assert(count > 0);
-  Oid temptypid = type_oid(temporalarr[0]->temptype);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
-    -1, false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of spatiotemporal boxes into a PostgreSQL array
- */
-ArrayType *
-stboxarr_to_array(STBOX *boxarr, int count)
-{
-  assert(count > 0);
-  STBOX **boxes = palloc(sizeof(STBOX *) * count);
-  for (int i = 0; i < count; i++)
-    boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
-  pfree(boxes);
-  return result;
-}
-
-/*****************************************************************************
- * Range functions
- *****************************************************************************/
-
-/**
- * Construct a range value from given arguments
- */
-RangeType *
-range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
-  MDB_Type basetype)
-{
-  Oid rangetypid = 0;
-  assert (basetype == T_INT4 || basetype == T_TIMESTAMPTZ);
-  if (basetype == T_INT4)
-    rangetypid = type_oid(T_INT4RANGE);
-  else /* basetype == T_TIMESTAMPTZ */
-    rangetypid = type_oid(T_TSTZRANGE);
-
-  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
-  RangeBound lower;
-  RangeBound upper;
-  lower.val = from;
-  lower.infinite = false;
-  lower.inclusive = lower_inc;
-  lower.lower = true;
-  upper.val = to;
-  upper.infinite = false;
-  upper.inclusive = upper_inc;
-  upper.lower = false;
-  return make_range(typcache, &lower, &upper, false);
-}
-
-#endif /* #if ! MEOS */
 
 /*****************************************************************************/

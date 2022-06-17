@@ -154,6 +154,7 @@
 #include <assert.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
@@ -842,7 +843,7 @@ tfunc_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
   MDB_Type resbasetype = temptype_basetype(lfinfo->restype);
   while (i < is1->count && j < is2->count)
   {
-    int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       Datum value1 = tinstant_value(inst1);
@@ -937,7 +938,7 @@ tfunc_tsequenceset_to_tinstantset(const TSequenceSet *ss, const TInstantSet *is,
       instants[k++] = tinstant_make(resvalue, lfinfo->restype, inst->t);
       DATUM_FREE(value1, basetype); DATUM_FREE(resvalue, resbasetype);
     }
-    int cmp = timestamp_cmp_internal(seq->period.upper, inst->t);
+    int cmp = timestamptz_cmp_internal(seq->period.upper, inst->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -1013,7 +1014,7 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
      inst2->t <= (TimestampTz) inter->upper))
   {
     /* Synchronize the start instant */
-    int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -1120,7 +1121,7 @@ tfunc_tsequence_tsequence_linearstep(const TSequence *seq1,
     /* Synchronize the end instant */
     TInstant *end1 = (TInstant *) tsequence_inst_n(seq1, i);
     TInstant *end2 = (TInstant *) tsequence_inst_n(seq2, j);
-    int cmp = timestamp_cmp_internal(end1->t, end2->t);
+    int cmp = timestamptz_cmp_internal(end1->t, end2->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -1219,7 +1220,7 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
     /* Synchronize the end instants */
     TInstant *end1 = (TInstant *) tsequence_inst_n(seq1, i);
     TInstant *end2 = (TInstant *) tsequence_inst_n(seq2, j);
-    int cmp = timestamp_cmp_internal(end1->t, end2->t);
+    int cmp = timestamptz_cmp_internal(end1->t, end2->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -1465,7 +1466,7 @@ tfunc_tsequenceset_to_tsequence(const TSequenceSet *ss, const TSequence *seq,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ss, i);
     k += tfunc_tsequence_tsequence_dispatch(seq1, seq, lfinfo, &sequences[k]);
-    int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
+    int cmp = timestamptz_cmp_internal(seq->period.upper, seq1->period.upper);
     if (cmp < 0 ||
       (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
       break;
@@ -1513,7 +1514,7 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ss2, j);
     k += tfunc_tsequence_tsequence_dispatch(seq1, seq2, lfinfo, &sequences[k]);
-    int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+    int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0)
     {
       if (! seq1->period.upper_inc && seq2->period.upper_inc)
@@ -1771,7 +1772,7 @@ efunc_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
   const TInstant *inst2 = tinstantset_inst_n(is2, j);
   while (i < is1->count && j < is2->count)
   {
-    int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       Datum value1 = tinstant_value(inst1);
@@ -1855,7 +1856,7 @@ efunc_tsequenceset_to_tinstantset(const TSequenceSet *ss, const TInstantSet *is,
       if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
         return 1;
     }
-    int cmp = timestamp_cmp_internal(seq->period.upper, inst->t);
+    int cmp = timestamptz_cmp_internal(seq->period.upper, inst->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -1935,7 +1936,7 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
     /* Synchronize the end instants */
     TInstant *end1 = (TInstant *) tsequence_inst_n(seq1, i);
     TInstant *end2 = (TInstant *) tsequence_inst_n(seq2, j);
-    int cmp = timestamp_cmp_internal(end1->t, end2->t);
+    int cmp = timestamptz_cmp_internal(end1->t, end2->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -2061,7 +2062,7 @@ efunc_tsequenceset_to_tsequence(const TSequenceSet *ss, const TSequence *seq,
     const TSequence *seq1 = tsequenceset_seq_n(ss, i);
     if (efunc_tsequence_tsequence(seq1, seq, lfinfo) == 1)
       return 1;
-    int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
+    int cmp = timestamptz_cmp_internal(seq->period.upper, seq1->period.upper);
     if (cmp < 0 ||
       (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
       break;
@@ -2100,7 +2101,7 @@ efunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     const TSequence *seq2 = tsequenceset_seq_n(ss2, j);
     if (efunc_tsequence_tsequence(seq1, seq2, lfinfo) == 1)
       return 1;
-    int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+    int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0)
     {
       if (! seq1->period.upper_inc && seq2->period.upper_inc)

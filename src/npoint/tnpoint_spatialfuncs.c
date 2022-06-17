@@ -59,8 +59,7 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tnpoint_srid(temp) != box->srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network point and the box must be in the same SRID")));
+    elog(ERROR, "The temporal network point and the box must be in the same SRID");
 }
 
 /**
@@ -70,8 +69,7 @@ void
 ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 {
   if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("All network points composing a temporal sequence must have same route identifier")));
+    elog(ERROR, "All network points composing a temporal sequence must have same route identifier");
 }
 
 /*****************************************************************************
@@ -912,191 +910,5 @@ tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *geo, bool atfunc)
   pfree(tempgeom);
   return result;
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-/*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnpoint_get_srid);
-/**
- * Return the SRID of a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_get_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = tnpoint_srid(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_INT32(result);
-}
-
-/*****************************************************************************
- * Geometric positions (Trajectotry) functions
- * Return the geometric positions covered by a temporal network point
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnpoint_get_trajectory);
-/**
- * Return the geometry covered by a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_get_trajectory(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tnpoint_geom(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
- * Geographical equality for network points
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Npoint_same);
-/**
- * Determines the spatial equality for network points
- */
-PGDLLEXPORT Datum
-Npoint_same(PG_FUNCTION_ARGS)
-{
-  Npoint *np1 = PG_GETARG_NPOINT_P(0);
-  Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  PG_RETURN_BOOL(npoint_same(np1, np2));
-}
-
-/*****************************************************************************
- * Length functions
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnpoint_length);
-/**
- * Length traversed by a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_length(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double result = tnpoint_length(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Tnpoint_cumulative_length);
-/**
- * Cumulative length traversed by a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_cumulative_length(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_cumulative_length(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Speed functions
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnpoint_speed);
-/**
- * Speed of a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_speed(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_speed(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Time-weighed centroid for temporal network points
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnpoint_twcentroid);
-/**
- * Return the time-weighed centroid of a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_twcentroid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tnpoint_twcentroid(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
- * Temporal azimuth
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnpoint_azimuth);
-/**
- * Temporal azimuth of a temporal network point
- */
-PGDLLEXPORT Datum
-Tnpoint_azimuth(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_azimuth(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Restriction functions
- *****************************************************************************/
-
-/**
- * Restrict a temporal network point to (the complement of) a geometry
- */
-static Datum
-tnpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tnpoint_restrict_geometry(temp, gs, atfunc);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tnpoint_at_geometry);
-/**
- * Restricts a temporal point to a geometry
- */
-PGDLLEXPORT Datum
-Tnpoint_at_geometry(PG_FUNCTION_ARGS)
-{
-  return tnpoint_restrict_geometry_ext(fcinfo, REST_AT);
-}
-
-PG_FUNCTION_INFO_V1(Tnpoint_minus_geometry);
-/**
- * Restrict a temporal point to the complement of a geometry
- */
-PGDLLEXPORT Datum
-Tnpoint_minus_geometry(PG_FUNCTION_ARGS)
-{
-  return tnpoint_restrict_geometry_ext(fcinfo, REST_MINUS);
-}
-
-#endif /* #if ! MEOS */
 
 /*****************************************************************************/

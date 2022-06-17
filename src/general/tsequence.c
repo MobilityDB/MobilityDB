@@ -39,14 +39,15 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-#if POSTGRESQL_VERSION_NUMBER >= 130000
+// #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
-#include <utils/timestamp.h>
+// #else
+  // #include <access/hash.h>
+// #endif
+// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/doublen.h"
@@ -55,7 +56,7 @@
 #include "general/temporal_parser.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
-#if ! MEOS
+#if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
@@ -145,7 +146,7 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
   return result;
 }
 
-#if ! MEOS
+#if NPOINT
 /**
  * Return true if the three values are collinear
  *
@@ -194,7 +195,7 @@ datum_collinear(MDB_Type basetype, Datum value1, Datum value2, Datum value3,
   if (basetype == T_DOUBLE4)
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
-#if ! MEOS
+#if NPOINT
   if (basetype == T_NPOINT)
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value3), ratio);
@@ -564,7 +565,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
   MDB_Type basetype = temptype_basetype(seq->temptype);
-#if ! MEOS
+#if NPOINT
   if (inst1->temptype == T_TNPOINT)
     ensure_same_rid_tnpointinst(inst, inst1);
 #endif
@@ -915,7 +916,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
     (inst1->t <= (TimestampTz) inter.upper ||
      inst2->t <= (TimestampTz) inter.upper))
   {
-    int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -1066,7 +1067,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
   else if (tgeo_type(inst1->temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
-#if ! MEOS
+#if NPOINT
   else if (inst1->temptype == T_TNPOINT)
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);
 #endif
@@ -1297,8 +1298,8 @@ intersection_tinstantset_tsequence(const TInstantSet *is, const TSequence *seq,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal sequence from its string representation.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
@@ -1312,7 +1313,7 @@ tsequence_in(char *str, MDB_Type temptype, bool linear)
 #endif
 
 /**
- * @brief Return the string representation of a temporal sequence.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  *
  * @param[in] seq Temporal sequence
  * @param[in] component True when the output string is a component of a
@@ -1346,8 +1347,8 @@ tsequence_to_string(const TSequence *seq, bool component,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the string representation of a temporal sequence.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  */
 char *
 tsequence_out(const TSequence *seq)
@@ -2162,7 +2163,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
-#if ! MEOS
+#if NPOINT
   if (inst1->temptype == T_TNPOINT)
   {
     Npoint *np1 = DatumGetNpointP(value1);
@@ -3917,7 +3918,7 @@ tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps, int from,
   {
     const Period *p1 = periodset_per_n(ps, i);
     /* If the remaining periods are to the left of the current period */
-    int cmp = timestamp_cmp_internal(curr->period.upper, p1->lower);
+    int cmp = timestamptz_cmp_internal(curr->period.upper, p1->lower);
     if (cmp < 0 || (cmp == 0 && curr->period.upper_inc && ! p1->lower_inc))
     {
       result[k++] = curr;
@@ -4198,61 +4199,5 @@ tsequence_hash(const TSequence *seq)
   }
   return result;
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <libpq/pqformat.h>
-
-/* The send and receive functions are needed for temporal aggregation */
-
-/**
- * @brief Return a temporal sequence from its binary representation read from
- * a buffer.
- *
- * @param[in] buf Buffer
- * @param[in] temptype Temporal type
- */
-TSequence *
-tsequence_recv(StringInfo buf, MDB_Type temptype)
-{
-  int count = (int) pq_getmsgint(buf, 4);
-  bool lower_inc = (char) pq_getmsgbyte(buf);
-  bool upper_inc = (char) pq_getmsgbyte(buf);
-  bool linear = (char) pq_getmsgbyte(buf);
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-    instants[i] = tinstant_recv(buf, temptype);
-  return tsequence_make_free(instants, count, lower_inc,
-    upper_inc, linear, NORMALIZE);
-}
-
-/**
- * @brief Write the binary representation of a temporal sequence into a buffer.
- *
- * @param[in] seq Temporal sequence
- * @param[in] buf Buffer
- */
-void
-tsequence_write(const TSequence *seq, StringInfo buf)
-{
-  pq_sendint32(buf, seq->count);
-  pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    tinstant_write(inst, buf);
-  }
-  return;
-}
-
-#endif /* ! MEOS */
 
 /*****************************************************************************/

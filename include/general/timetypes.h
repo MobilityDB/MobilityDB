@@ -51,24 +51,24 @@
 /**
  * Structure to represent timestamp sets
  */
-typedef struct
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of TimestampTz elements */
-  Period period;        /**< Bounding period */
-  TimestampTz elems[1]; /**< Beginning of variable-length data */
-} TimestampSet;
+// typedef struct
+// {
+  // int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  // int32 count;          /**< Number of TimestampTz elements */
+  // Period period;        /**< Bounding period */
+  // TimestampTz elems[1]; /**< Beginning of variable-length data */
+// } TimestampSet;
 
 /**
  * Structure to represent period sets
  */
-typedef struct
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of Period elements */
-  Period period;        /**< Bounding period */
-  Period elems[1];      /**< Beginning of variable-length data */
-} PeriodSet;
+// typedef struct
+// {
+  // int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  // int32 count;          /**< Number of Period elements */
+  // Period period;        /**< Bounding period */
+  // Period elems[1];      /**< Beginning of variable-length data */
+// } PeriodSet;
 
 /*
  * fmgr macros for time types

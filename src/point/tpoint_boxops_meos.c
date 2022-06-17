@@ -35,7 +35,7 @@
 #include "point/tpoint_boxops.h"
 
 /* PostgreSQL */
-#include <postgres.h>
+// #include <postgres.h>
 /* MobilityDB */
 #include <meos.h>
 

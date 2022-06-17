@@ -92,7 +92,7 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return the Well-Known Text (WKT) representation of a temporal point.
  * @sqlfunc asText()
  */
@@ -113,7 +113,7 @@ tpoint_as_text(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
  * point.
  * @sqlfunc asEWKT()
@@ -139,7 +139,7 @@ tpoint_as_ewkt(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a geometry/geography array.
  *
@@ -160,7 +160,7 @@ geoarr_as_text(const Datum *geoarr, int count, bool extended)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a temporal point array
  * @sqlfunc asText(), asEWKT()
@@ -174,144 +174,5 @@ tpointarr_as_text(const Temporal **temparr, int count, bool extended)
       tpoint_as_text(temparr[i]);
   return result;
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-/*****************************************************************************
- * Output in WKT and EWKT format
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tpoint_as_text);
-/**
- * Output a temporal point in Well-Known Text (WKT) format
- */
-PGDLLEXPORT Datum
-Tpoint_as_text(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = tpoint_as_text(temp);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
-/**
- * Output a temporal point in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-Tpoint_as_ewkt(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = tpoint_as_ewkt(temp);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-/*****************************************************************************/
-
-/**
- * Output a geometry/geography array in Well-Known Text (WKT) format
- */
-static Datum
-geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-
-  Datum *geoarr = datumarr_extract(array, &count);
-  char **strarr = geoarr_as_text(geoarr, count, extended);
-  ArrayType *result = strarr_to_textarray(strarr, count);
-  pfree_array((void **) strarr, count);
-  pfree(geoarr);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Geoarr_as_text);
-/**
- * Output a geometry/geography array in Well-Known Text (WKT) format
- */
-PGDLLEXPORT Datum
-Geoarr_as_text(PG_FUNCTION_ARGS)
-{
-  return geoarr_as_text_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
-/**
- * Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-Geoarr_as_ewkt(PG_FUNCTION_ARGS)
-{
-  return geoarr_as_text_ext(fcinfo, true);
-}
-
-/**
- * Output a temporal point array in Well-Known Text (WKT) or
- * Extended Well-Known Text (EWKT) format
- */
-static Datum
-tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-
-  Temporal **temparr = temporalarr_extract(array, &count);
-  char **strarr = tpointarr_as_text((const Temporal **) temparr, count,
-    extended);
-  ArrayType *result = strarr_to_textarray(strarr, count);
-  pfree_array((void **) strarr, count);
-  pfree(temparr);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpointarr_as_text);
-/**
- * Output a temporal point array in Well-Known Text (WKT) format
- */
-PGDLLEXPORT Datum
-Tpointarr_as_text(PG_FUNCTION_ARGS)
-{
-  return tpointarr_as_text_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
-/**
- * Output a temporal point array in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
-{
-  return tpointarr_as_text_ext(fcinfo, true);
-}
-
-#endif /* #if ! MEOS */
 
 /*****************************************************************************/

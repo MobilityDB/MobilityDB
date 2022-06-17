@@ -41,14 +41,16 @@
 #include <math.h>
 /* PostgreSQL */
 #include <common/int128.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
+// #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+// #else
+  // #include <access/hash.h>
+// #endif
 #include <utils/datetime.h>
 #include <utils/float.h>
 /* MobilityDB */
+#include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************

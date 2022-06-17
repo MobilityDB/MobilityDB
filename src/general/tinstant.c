@@ -37,20 +37,21 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#if POSTGRESQL_VERSION_NUMBER >= 130000
+// #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
-#include <utils/timestamp.h>
+// #else
+  // #include <access/hash.h>
+// #endif
+// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "point/tpoint_spatialfuncs.h"
-#if ! MEOS
+#if NPOINT
   #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_static.h"
 #endif
@@ -140,8 +141,8 @@ tnumberinst_double(const TInstant *inst)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal instant from its string representation.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
@@ -154,7 +155,7 @@ tinstant_in(char *str, MDB_Type temptype)
 #endif
 
 /**
- * @brief Return the string representation of a temporal instant.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  *
  * @param[in] inst Temporal instant
  * @param[in] value_out Function called to output the base value
@@ -183,8 +184,8 @@ tinstant_to_string(const TInstant *inst, char *(*value_out)(MDB_Type, Datum))
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the string representation of a temporal instant.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  */
 char *
 tinstant_out(const TInstant *inst)
@@ -970,7 +971,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1->temptype == inst2->temptype);
   /* Compare timestamps */
-  int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+  int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
   if (cmp < 0)
     return -1;
   if (cmp > 0)
@@ -1017,7 +1018,7 @@ tinstant_hash(const TInstant *inst)
     value_hash = pg_hashtext(DatumGetTextP(value));
   else if (tgeo_type(inst->temptype))
     value_hash = gserialized_hash(DatumGetGserializedP(value));
-#if ! MEOS
+#if NPOINT
   else if (inst->temptype == T_TNPOINT)
     value_hash = npoint_hash(DatumGetNpointP(value));
 #endif
@@ -1033,60 +1034,5 @@ tinstant_hash(const TInstant *inst)
 
   return result;
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <libpq/pqformat.h>
-
-/**
- * @brief Return a temporal instant from its binary representation read from
- * a buffer.
- *
- * @param[in] buf Buffer
- * @param[in] temptype Temporal type
- */
-TInstant *
-tinstant_recv(StringInfo buf, MDB_Type temptype)
-{
-  TimestampTz t = call_recv(T_TIMESTAMPTZ, buf);
-  int size = pq_getmsgint(buf, 4);
-  StringInfoData buf2 =
-  {
-    .cursor = 0,
-    .len = size,
-    .maxlen = size,
-    .data = buf->data + buf->cursor
-  };
-  MDB_Type basetype = temptype_basetype(temptype);
-  Datum value = call_recv(basetype, &buf2);
-  buf->cursor += size;
-  return tinstant_make(value, temptype, t);
-}
-
-/**
- * @brief Write the binary representation of a temporal instant into
- * a buffer.
- *
- * @param[in] inst Temporal instant
- * @param[in] buf Buffer
- */
-void
-tinstant_write(const TInstant *inst, StringInfo buf)
-{
-  MDB_Type basetype = temptype_basetype(inst->temptype);
-  bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
-  bytea *bv = call_send(basetype, tinstant_value(inst));
-  pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
-  pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ);
-  pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
-}
-
-#endif /* ! MEOS */
 
 /*****************************************************************************/

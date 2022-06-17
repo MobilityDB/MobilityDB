@@ -37,9 +37,10 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <utils/timestamp.h>
+// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/pg_call.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -222,7 +223,7 @@ tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t, int *loc)
   {
     middle = (first + last)/2;
     inst = tinstantset_inst_n(is, middle);
-    int cmp = timestamp_cmp_internal(inst->t, t);
+    int cmp = timestamptz_cmp_internal(inst->t, t);
     if (cmp == 0)
     {
       *loc = middle;
@@ -245,8 +246,8 @@ tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t, int *loc)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal instant set from its string representation.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
@@ -259,7 +260,7 @@ tinstantset_in(char *str, MDB_Type temptype)
 #endif
 
 /**
- * @brief Return the string representation of a temporal instant set.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal instant set.
  *
  * @param[in] is Temporal instant set
  * @param[in] value_out Function called to output the base value depending on
@@ -282,8 +283,8 @@ tinstantset_to_string(const TInstantSet *is,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the string representation of a temporal instant set.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a temporal instant set.
  */
 char *
 tinstantset_out(const TInstantSet *is)
@@ -1281,7 +1282,7 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
   {
     inst = tinstantset_inst_n(is, i);
     TimestampTz t = timestampset_time_n(ts, j);
-    int cmp = timestamp_cmp_internal(inst->t, t);
+    int cmp = timestamptz_cmp_internal(inst->t, t);
     if (cmp == 0)
     {
       if (atfunc)
@@ -1531,7 +1532,7 @@ intersection_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *
   const TInstant *inst2 = tinstantset_inst_n(is2, j);
   while (i < is1->count && j < is2->count)
   {
-    int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       instants1[k] = inst1;

@@ -50,7 +50,7 @@
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal point from its WKT representation
  * @sqlfunc tgeompointFromText(), tgeogpointFromText()
  */
@@ -63,7 +63,7 @@ tpoint_from_text(const char *wkt, MDB_Type temptype)
 #endif
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_temporal_in_out
  * @brief Return a temporal point from its EWKT representation
  * @sqlfunc tgeompointFromEWKT(), tgeogpointFromEWKT()
  */
@@ -73,35 +73,5 @@ tpoint_from_ewkt(const char *ewkt, MDB_Type temptype)
   Temporal *result = tpoint_parse((char **) &ewkt, temptype);
   return result;
 }
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-/*****************************************************************************
- * Input in EWKT format
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
-/**
- * This just does the same thing as the _in function, except it has to handle
- * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
-*/
-PGDLLEXPORT Datum
-Tpoint_from_ewkt(PG_FUNCTION_ARGS)
-{
-  text *wkt_text = PG_GETARG_TEXT_P(0);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  char *wkt = text2cstring(wkt_text);
-  Temporal *result = tpoint_from_ewkt(wkt, oid_type(temptypid));
-  PG_FREE_IF_COPY(wkt_text, 0);
-  PG_RETURN_POINTER(result);
-}
-
-#endif /* #if ! MEOS */
 
 /*****************************************************************************/

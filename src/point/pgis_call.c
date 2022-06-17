@@ -43,7 +43,7 @@
 /* GEOS */
 #include <geos_c.h>
 /* PostgreSQL */
-#include <postgres.h>
+// #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>
@@ -1413,6 +1413,43 @@ PGIS_geometry_from_geography(GSERIALIZED *geom)
 
   GSERIALIZED *result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
+  return result;
+}
+
+/*****************************************************************************
+ * Functions adapted from lwgeom_functions_analytic.c
+ *****************************************************************************/
+
+GSERIALIZED *
+PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser, double distance_fraction,
+  int repeat)
+{
+  GSERIALIZED *result;
+  int32_t srid = gserialized_get_srid(gser);
+  LWLINE* lwline;
+  LWGEOM* lwresult;
+  POINTARRAY* opa;
+
+  if (distance_fraction < 0 || distance_fraction > 1)
+    elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
+
+  if ( gserialized_get_type(gser) != LINETYPE )
+    elog(ERROR,"line_interpolate_point: 1st arg isn't a line");
+
+  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+  opa = lwline_interpolate_points(lwline, distance_fraction, repeat);
+
+  lwgeom_free(lwline_as_lwgeom(lwline));
+
+  if (opa->npoints <= 1)
+    lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
+  else
+    lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
+
+  // result = geometry_serialize(lwresult);
+  result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
+
   return result;
 }
 

@@ -37,9 +37,10 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <utils/timestamp.h>
+// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/pg_call.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
@@ -270,7 +271,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
       sequences1[k] = interseq1;
       sequences2[k++] = interseq2;
     }
-    int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
+    int cmp = timestamptz_cmp_internal(seq->period.upper, seq1->period.upper);
     if (cmp < 0 ||
       (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
       break;
@@ -324,7 +325,7 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
       sequences1[k] = interseq1;
       sequences2[k++] = interseq2;
     }
-    int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+    int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
     {
       i++; j++;
@@ -415,7 +416,7 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
       instants1[k] = tsequence_at_timestamp(seq, inst->t);
       instants2[k++] = inst;
     }
-    int cmp = timestamp_cmp_internal(seq->period.upper, inst->t);
+    int cmp = timestamptz_cmp_internal(seq->period.upper, inst->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -472,8 +473,8 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return a temporal sequence set from its string representation.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
@@ -487,7 +488,7 @@ tsequenceset_in(char *str, MDB_Type temptype, bool linear)
 #endif
 
 /**
- * @brief Return the string representation of a temporal sequence set.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  *
  * @param[in] ss Temporal sequence set
  * @param[in] value_out Function called to output the base value
@@ -515,8 +516,8 @@ tsequenceset_to_string(const TSequenceSet *ss,
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
- * @brief Return the string representation of a temporal sequence set.
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  */
 char *
 tsequenceset_out(const TSequenceSet *ss)
@@ -2138,7 +2139,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
         TSequence *newseq = tsequence_at_period(seq, p);
         sequences[k++] = tofree[l++] = newseq;
       }
-      int cmp = timestamp_cmp_internal(p->upper, seq->period.upper);
+      int cmp = timestamptz_cmp_internal(p->upper, seq->period.upper);
       if (cmp < 0 || (cmp == 0 && seq->period.upper_inc))
         break;
     }
@@ -2227,7 +2228,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
         TSequence *seq1 = tsequence_at_period(seq, p2);
         if (seq1 != NULL)
           sequences[k++] = seq1;
-        int cmp = timestamp_cmp_internal(seq->period.upper, p2->upper);
+        int cmp = timestamptz_cmp_internal(seq->period.upper, p2->upper);
         if (cmp == 0 && seq->period.upper_inc == p2->upper_inc)
         {
           i++; j++;

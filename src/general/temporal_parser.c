@@ -41,6 +41,7 @@
 
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal_util.h"
 
 /*****************************************************************************/

@@ -45,14 +45,14 @@
 /**
  * Structure to represent temporal boxes
  */
-typedef struct
-{
-  double      xmin;   /**< minimum number value */
-  double      xmax;   /**< maximum number value */
-  TimestampTz tmin;   /**< minimum timestamp */
-  TimestampTz tmax;   /**< maximum timestamp */
-  int16       flags;  /**< flags */
-} TBOX;
+// typedef struct
+// {
+  // double      xmin;   /**< minimum number value */
+  // double      xmax;   /**< maximum number value */
+  // TimestampTz tmin;   /**< minimum timestamp */
+  // TimestampTz tmax;   /**< maximum timestamp */
+  // int16       flags;  /**< flags */
+// } TBOX;
 
 // typedef struct
 // {

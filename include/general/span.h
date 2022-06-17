@@ -40,6 +40,7 @@
 #include <postgres.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include <meos.h>
 #include "general/temporal_catalog.h"
 
 /*****************************************************************************/
@@ -47,21 +48,21 @@
 /**
  * Structure to represent spans (a.k.a. ranges)
  */
-typedef struct
-{
-  Datum lower;          /**< lower bound value */
-  Datum upper;          /**< upper bound value */
-  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
-  uint8 spantype;       /**< span type */
-  uint8 basetype;       /**< span basetype */
-} Span;
+// typedef struct
+// {
+  // Datum lower;          /**< lower bound value */
+  // Datum upper;          /**< upper bound value */
+  // bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
+  // bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
+  // uint8 spantype;       /**< span type */
+  // uint8 basetype;       /**< span basetype */
+// } Span;
 
 /**
  * Make the Period type as a specialized Span type for faster manipulation
  * of the time dimension
  */
-typedef Span Period;
+// typedef Span Period;
 
 /**
  * Internal representation of either bound of a span (not what's on disk)
