@@ -282,10 +282,8 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_in_out
- * @brief Return a temporal instant point from its MF-JSON representation.
- * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
- * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
+ * @ingroup libmeos_int_temporal_in_out
+ * @brief Return a temporal instant from its MF-JSON representation.
  */
 TInstant *
 tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -358,6 +356,76 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant boolean from its MF-JSON representation.
+ * @sqlfunc tboolFromMFJSON()
+ */
+TInstant *
+tboolinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TBOOL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant integer from its MF-JSON representation.
+ * @sqlfunc tintFromMFJSON()
+ */
+TInstant *
+tintinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TINT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant float from its MF-JSON representation.
+ * @sqlfunc tfloatFromMFJSON()
+ */
+TInstant *
+tfloatinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TFLOAT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant text from its MF-JSON representation.
+ * @sqlfunc ttextFromMFJSON()
+ */
+TInstant *
+ttextinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TTEXT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant geometric point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeompointFromMFJSON()
+ */
+TInstant *
+tgeompointinst_from_mfjson(json_object *mfjson, int srid)
+{
+  return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant geographic point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeogpointFromMFJSON()
+ */
+TInstant *
+tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
+{
+  return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
+}
+#endif /* MEOS */
+
 /**
  * Return array of temporal instant points from its MF-JSON representation
  */
@@ -395,10 +463,8 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
- * @brief Return a temporal instant set point from its MF-JSON representation.
- * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
- * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
+ * @ingroup libmeos_int_temporal_in_out
+ * @brief Return a temporal instant set from its MF-JSON representation.
  */
 TInstantSet *
 tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -410,11 +476,79 @@ tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set boolean from its MF-JSON representation.
+ * @sqlfunc tboolFromMFJSON()
+ */
+TInstantSet *
+tboolinstset_from_mfjson(json_object *mfjson)
+{
+  return tinstantset_from_mfjson(mfjson, false, 0, T_TBOOL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set integer from its MF-JSON representation.
+ * @sqlfunc tintFromMFJSON()
+ */
+TInstantSet *
+tintinstset_from_mfjson(json_object *mfjson)
+{
+  return tinstantset_from_mfjson(mfjson, false, 0, T_TINT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set float from its MF-JSON representation.
+ * @sqlfunc tfloattFromMFJSON()
+ */
+TInstantSet *
+tfloatinstset_from_mfjson(json_object *mfjson)
+{
+  return tinstantset_from_mfjson(mfjson, false, 0, T_TFLOAT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set text from its MF-JSON representation.
+ * @sqlfunc ttextFromMFJSON()
+ */
+TInstantSet *
+ttextinstset_from_mfjson(json_object *mfjson)
+{
+  return tinstantset_from_mfjson(mfjson, false, 0, T_TTEXT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set geometric point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeompointFromMFJSON()
+ */
+TInstantSet *
+tgeompointinstset_from_mfjson(json_object *mfjson, int srid)
+{
+  return tinstantset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set geographic point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeogpointFromMFJSON()
+ */
+TInstantSet *
+tgeogpointinstset_from_mfjson(json_object *mfjson, int srid)
+{
+  return tinstantset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal sequence point from its MF-JSON representation.
- * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
- * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -444,11 +578,79 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     linear, NORMALIZE);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence boolean from its MF-JSON representation.
+ * @sqlfunc tboolFromMFJSON()
+ */
+TSequence *
+tboolseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence integer from its MF-JSON representation.
+ * @sqlfunc  tintFromMFJSON()
+ */
+TSequence *
+tintseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence float from its MF-JSON representation.
+ * @sqlfunc tfloattFromMFJSON()
+ */
+TSequence *
+tfloatseq_from_mfjson(json_object *mfjson, bool linear)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence text from its MF-JSON representation.
+ * @sqlfunc ttextFromMFJSON()
+ */
+TSequence *
+ttextseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence geometric point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeompointFromMFJSON()
+ */
+TSequence *
+tgeompointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
+{
+  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence geographic point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeogpointFromMFJSON()
+ */
+TSequence *
+tgeogpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
+{
+  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, linear);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal sequence set point from its MF-JSON representation.
- * @sqlfunc tboolFromMFJSON(), tintFromMFJSON() tfloattFromMFJSON(),
- * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -475,6 +677,77 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   }
   return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set boolean from its MF-JSON
+ * representation.
+ * @sqlfunc tboolFromMFJSON()
+ */
+TSequenceSet *
+tboolseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set integer from its MF-JSON representation.
+ * @sqlfunc tintFromMFJSON()
+ */
+TSequenceSet *
+tintseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set float from its MF-JSON representation.
+ * @sqlfunc tfloatFromMFJSON()
+ */
+TSequenceSet *
+tfloatseqset_from_mfjson(json_object *mfjson, bool linear)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set text from its MF-JSON representation.
+ * @sqlfunc ttextFromMFJSON()
+ */
+TSequenceSet *
+ttextseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set geometric point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeompointFromMFJSON()
+ */
+TSequenceSet *
+tgeompointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
+{
+  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set geographic point from its MF-JSON
+ * representation.
+ * @sqlfunc tgeogpointFromMFJSON()
+ */
+TSequenceSet *
+tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
+{
+  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, linear);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Input in WKB format

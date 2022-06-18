@@ -551,7 +551,7 @@ mobilitydb_full_version(void)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal value from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -566,6 +566,71 @@ temporal_in(char *str, mobdbType temptype)
 {
   return temporal_parse(&str, temptype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tbool_in(char *str)
+{
+  return temporal_parse(&str, T_BOOL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal integer from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tint_in(char *str)
+{
+  return temporal_parse(&str, T_INT4);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation.
+ */
+Temporal *
+tfloat_in(char *str)
+{
+  return temporal_parse(&str, T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation.
+ */
+Temporal *
+ttext_in(char *str)
+{
+  return temporal_parse(&str, T_TTEXT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal geometric point from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tgeompoint_in(char *str)
+{
+  return temporal_parse(&str, T_TGEOMPOINT);
+}
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal geographic point from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tgeogpoint_in(char *str)
+{
+  return temporal_parse(&str, T_TGEOGPOINT);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_in_out

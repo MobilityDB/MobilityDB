@@ -786,9 +786,8 @@ distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer)
 }
 
 /**
- * @ingroup libmeos_spantime_dist
+ * @ingroup libmeos_int_spantime_dist
  * @brief Return the distance between a span and a element.
- * @sqlop @p <->
  */
 double
 distance_span_elem(const Span *s, Datum d, mobdbType basetype)
@@ -808,6 +807,30 @@ distance_span_elem(const Span *s, Datum d, mobdbType basetype)
    *     [---- s ----]   d */
   return distance_elem_elem(s->upper, d, s->basetype, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_dist
+ * @brief Return the distance between an integer span and an integer.
+ * @sqlop @p <->
+ */
+double
+distance_intspan_int(const Span *s, int i)
+{
+  return distance_span_elem(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_spantime_dist
+ * @brief Return the distance between a float span and a float.
+ * @sqlop @p <->
+ */
+double
+distance_floatspan_float(const Span *s, double d)
+{
+  return distance_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_dist

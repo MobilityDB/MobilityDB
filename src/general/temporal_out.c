@@ -546,9 +546,8 @@ tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant.
- * @sqlfunc asMFJSON()
  */
 char *
 tinstant_as_mfjson(const TInstant *inst, bool isgeo, bool hasz, int precision,
@@ -559,6 +558,125 @@ tinstant_as_mfjson(const TInstant *inst, bool isgeo, bool hasz, int precision,
   tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
   return output;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant boolean.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstant_as_mfjson(inst, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant integer.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstant_as_mfjson(inst, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant float.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstant_as_mfjson(inst, false, false, precision, (bboxunion *) bbox,
+    NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant text.
+ * @sqlfunc asMFJSON()
+ */
+char *
+ttextinst_as_mfjson(const TInstant *inst, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstant_as_mfjson(inst, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant geometric
+ * point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeompointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
+  char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  return tinstant_as_mfjson(inst, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant geographic
+ * point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeogpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
+  char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  return tinstant_as_mfjson(inst, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -623,9 +741,8 @@ tinstantset_mfjson_buf(const TInstantSet *is, bool isgeo, bool hasz,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set.
- * @sqlfunc asMFJSON()
  */
 char *
 tinstantset_as_mfjson(const TInstantSet *is, bool isgeo, bool hasz,
@@ -636,6 +753,125 @@ tinstantset_as_mfjson(const TInstantSet *is, bool isgeo, bool hasz,
   tinstantset_mfjson_buf(is, isgeo, hasz, precision, bbox, srs, output);
   return output;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant set boolean.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tboolinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstantset_as_mfjson(is, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant set integer.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tintinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstantset_as_mfjson(is, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant set float.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tfloatinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstantset_as_mfjson(is, false, false, precision, (bboxunion *) bbox,
+    NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant set text.
+ * @sqlfunc asMFJSON()
+ */
+char *
+ttextinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  }  
+  return tinstantset_as_mfjson(is, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant set geometric
+ * point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeompointinstset_as_mfjson(const TInstantSet *is, bool with_bbox,
+  int precision, char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
+  return tinstantset_as_mfjson(is, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal instant set
+ * geographic point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeogpointinstset_as_mfjson(const TInstantSet *is, bool with_bbox,
+  int precision, char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
+  return tinstantset_as_mfjson(is, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -703,9 +939,8 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence.
- * @sqlfunc asMFJSON()
  */
 char *
 tsequence_as_mfjson(const TSequence *seq, bool isgeo, bool hasz, int precision,
@@ -716,6 +951,125 @@ tsequence_as_mfjson(const TSequence *seq, bool isgeo, bool hasz, int precision,
   tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
   return output;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence boolean.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequence_as_mfjson(seq, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence integer.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequence_as_mfjson(seq, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence float.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequence_as_mfjson(seq, false, false, precision, (bboxunion *) bbox,
+    NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence text.
+ * @sqlfunc asMFJSON()
+ */
+char *
+ttextseq_as_mfjson(const TSequence *seq, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequence_as_mfjson(seq, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence geometric
+ * point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeompointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
+  char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  return tsequence_as_mfjson(seq, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence geographic
+ * point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeogpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
+  char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  return tsequence_as_mfjson(seq, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -796,7 +1150,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set.
  * @sqlfunc asMFJSON()
  */
@@ -811,6 +1165,125 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool isgeo, bool hasz,
   return output;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence set boolean.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequenceset_as_mfjson(ss, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence set integer.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequenceset_as_mfjson(ss, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence set float.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
+{
+  /* Get bounding box if needed */
+  TBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequenceset_as_mfjson(ss, false, false, precision, (bboxunion *) bbox,
+    NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence set text.
+ * @sqlfunc asMFJSON()
+ */
+char *
+ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
+{
+  /* Get bounding box if needed */
+  Period *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  }  
+  return tsequenceset_as_mfjson(ss, false, false, 0, (bboxunion *) bbox, NULL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence set
+ * geometric point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeompointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
+  int precision, char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
+  return tsequenceset_as_mfjson(ss, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return the MF-JSON representation of a temporal sequence set
+ * geographic point.
+ * @sqlfunc asMFJSON()
+ */
+char *
+tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
+  int precision, char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  }  
+  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
+  return tsequenceset_as_mfjson(ss, true, hasz, precision, (bboxunion *) bbox,
+    srs);
+}
+#endif /* MEOS */
+
 /*****************************************************************************/
 
 /**
@@ -823,12 +1296,12 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool isgeo, bool hasz,
  * @sqlfunc asMFJSON()
  */
 char *
-temporal_as_mfjson(const Temporal *temp, int precision, int has_bbox,
+temporal_as_mfjson(const Temporal *temp, int precision, int with_bbox,
   bool isgeo, char *srs)
 {
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
-  if (has_bbox)
+  if (with_bbox)
   {
     temporal_set_bbox(temp, &tmp);
     bbox = &tmp;
