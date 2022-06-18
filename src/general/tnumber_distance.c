@@ -78,18 +78,17 @@ number_distance(Datum l, Datum r, mobdbType typel, mobdbType typer)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libmeos_int_temporal_dist
  * @brief Return the temporal distance between a temporal number and a number.
  *
  * @param[in] temp Temporal number
  * @param[in] value Value
  * @param[in] valuetype Type of the value
  * @param[in] restype Type of the result
- * @sqlop @p <->
  */
 Temporal *
-distance_tnumber_number(const Temporal *temp, Datum value,
-  mobdbType valuetype, mobdbType restype)
+distance_tnumber_number(const Temporal *temp, Datum value, mobdbType valuetype,
+  mobdbType restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -107,6 +106,31 @@ distance_tnumber_number(const Temporal *temp, Datum value,
   Temporal *result = tfunc_temporal_base(temp, value, &lfinfo);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the temporal distance between a temporal integer and an
+ * integer.
+ * @sqlop @p <->
+ */
+Temporal *
+distance_tint_int(const Temporal *temp, int i)
+{
+  return distance_tnumber_number(temp, Int32GetDatum(i), T_INT4, T_TINT);
+}
+
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the temporal distance between a temporal float and a float.
+ * @sqlop @p <->
+ */
+Temporal *
+distance_tfloat_float(const Temporal *temp, double d)
+{
+  return distance_tnumber_number(temp, Int32GetDatum(d), T_FLOAT8, T_TFLOAT);
+}
+#endif /* MEOS */
 
 /**
  * Return true if two segments of the temporal numbers intersect at a
@@ -131,15 +155,13 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
  *
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] restype Type of the result
- * @sqlop @p <->
  */
 Temporal *
-distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
+distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
   mobdbType restype)
 {
   LiftedFunctionInfo lfinfo;
@@ -159,15 +181,30 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the temporal distance between two temporal numbers
+ * @sqlop @p <->
+ */
+Temporal *
+distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+{
+  mobdbType restype;
+  if (temp1->subtype == T_TINT && temp1->subtype == T_TINT)
+    restype = T_TINT;
+  else 
+    restype = T_TFLOAT;
+  return distance_tnumber_tnumber1(temp1, temp2, restype);
+}
+
 /*****************************************************************************
  * Nearest approach distance
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libmeos_int_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
- * @sqlop @p |=|
  */
 double
 nad_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype)
@@ -181,6 +218,33 @@ nad_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype)
     float_set_tbox(DatumGetFloat8(value), &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between a temporal number
+ * and a number.
+ * @sqlop @p |=|
+ */
+int
+nad_tint_int(const Temporal *temp, int i)
+{
+  double result = nad_tnumber_number(temp, Int32GetDatum(i), T_INT4);
+  return (int) result;
+}
+
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between a temporal number
+ * and a number.
+ * @sqlop @p |=|
+ */
+double
+nad_tfloat_float(const Temporal *temp, double d)
+{
+  return nad_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_dist
@@ -249,5 +313,47 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
 
   return result;
 }
+
+#if MEOS
+/**
+ * @brief Return the nearest approach distance between two temporal numbers.
+ */
+Datum
+nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+{
+  TBOX box1, box2;
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
+  double result = nad_tbox_tbox(&box1, &box2);
+  if (temp1->subtype == T_TINT && temp2->subtype == T_TINT)
+    return Int32GetDatum(result);
+  else 
+    return Float8GetDatum(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between two temporal integers.
+ * @sqlop @p |=|
+ */
+int
+nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  Datum result = nad_tnumber_tnumber(temp1, temp2);
+  return Int32GetDatum(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between two temporal floats.
+ * @sqlop @p |=|
+ */
+double
+nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  Datum result = nad_tnumber_tnumber(temp1, temp2);
+  return Float8GetDatum(result);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

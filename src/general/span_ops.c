@@ -648,7 +648,7 @@ union_span_span(const Span *s1, const Span *s2, bool strict)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_set
+ * @ingroup libmeos_int_spantime_set
  * @brief Set a span with the result of the intersection of the first two spans
  * @note This function is equivalent to @ref intersection_span_span without
  * memory allocation
@@ -759,9 +759,8 @@ minus_span_span(const Span *s1, const Span *s2)
  ******************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_dist
+ * @ingroup libmeos_int_spantime_dist
  * @brief Return the distance between the elements
- * @sqlop @p <->
  */
 double
 distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer)

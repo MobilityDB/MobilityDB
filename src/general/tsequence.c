@@ -1491,14 +1491,13 @@ tsequence_copy(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period.
  *
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] p Period
- * @param[in] linear True when the resulting value has linear interpolation
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ * @param[in] linear True when the sequence has linear interpolation
  */
 TSequence *
 tsequence_from_base(Datum value, mobdbType temptype, const Period *p,
@@ -1521,6 +1520,70 @@ tsequence_from_base(Datum value, mobdbType temptype, const Period *p,
     pfree(instants[1]);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal boolean sequence from a boolean and a period.
+ */
+TSequence *
+tboolseq_from_base(bool b, const Period *p)
+{
+  return tsequence_from_base(BoolGetDatum(b), T_TBOOL, p, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal integer sequence from an integer and a period.
+ */
+TSequence *
+tintseq_from_base(int i, const Period *p)
+{
+  return tsequence_from_base(Int32GetDatum(i), T_TINT, p, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal float sequence from a float and a period.
+ */
+TSequence *
+tfloatseq_from_base(bool b, const Period *p, bool linear)
+{
+  return tsequence_from_base(BoolGetDatum(b), T_TFLOAT, p, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal text sequence from a text and a period.
+ */
+TSequence *
+ttextseq_from_base(text *txt, const Period *p)
+{
+  return tsequence_from_base(PointerGetDatum(txt), T_TTEXT, p, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geometric point sequence from a point and a
+ * period.
+ */
+TSequence *
+tgeompointseq_from_base(GSERIALIZED *gs, const Period *p, bool linear)
+{
+  return tsequence_from_base(PointerGetDatum(gs), T_TGEOMPOINT, p, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geographic point sequence from a point and a
+ * period.
+ */
+TSequence *
+tgeogpointseq_from_base(GSERIALIZED *gs, const Period *p, bool linear)
+{
+  return tsequence_from_base(PointerGetDatum(gs), T_TGEOGPOINT, p, linear);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Cast functions

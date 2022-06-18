@@ -677,7 +677,7 @@ temporal_copy(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal value from a base value and the time frame of
  * another temporal value.
  * @see tinstantset_from_base
@@ -727,6 +727,74 @@ temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
   }
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal boolean from a boolean and the time frame of
+ * another temporal value.
+ */
+Temporal *
+tbool_from_base(bool b, const Temporal *temp)
+{
+  return temporal_from_base(BoolGetDatum(b), T_TBOOL, temp, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal integer from an integer and the time frame of
+ * another temporal value.
+ */
+Temporal *
+tint_from_base(int i, const Temporal *temp)
+{
+  return temporal_from_base(Int32GetDatum(i), T_TINT, temp, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal float from a float and the time frame of
+ * another temporal value.
+ */
+Temporal *
+tfloat_from_base(bool b, const Temporal *temp, bool linear)
+{
+  return temporal_from_base(BoolGetDatum(b), T_TFLOAT, temp, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal text from a text and the time frame of
+ * another temporal value.
+ */
+Temporal *
+ttext_from_base(text *txt, const Temporal *temp)
+{
+  return temporal_from_base(PointerGetDatum(txt), T_TTEXT, temp, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geometric point from a point and the time frame
+ * of another temporal value.
+ */
+Temporal *
+tgeompoint_from_base(GSERIALIZED *gs, const Temporal *temp, bool linear)
+{
+  return temporal_from_base(PointerGetDatum(gs), T_TGEOMPOINT, temp, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geographic point from a point and the time frame
+ * of another temporal value.
+ */
+Temporal *
+tgeogpoint_from_base(GSERIALIZED *gs, const Temporal *temp, bool linear)
+{
+  return temporal_from_base(PointerGetDatum(gs), T_TGEOGPOINT, temp, linear);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Append and merge functions

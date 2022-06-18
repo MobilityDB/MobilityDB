@@ -139,7 +139,7 @@ tpoint_as_ewkt(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a geometry/geography array.
  *

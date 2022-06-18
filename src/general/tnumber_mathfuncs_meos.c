@@ -49,26 +49,50 @@
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal addition of a number and a temporal number
+ * @brief Return the temporal addition of an integer and a temporal integer
  * @sqlop @p +
  */
 Temporal *
-add_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+add_int_tint(int i, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, ADD, &datum_add,
-    INVERT);
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, ADD,
+    &datum_add, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal addition of a temporal number and a number
+ * @brief Return the temporal addition of a float and a temporal float
  * @sqlop @p +
  */
 Temporal *
-add_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
+add_float_tfloat(double d, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, ADD, &datum_add,
-    INVERT_NO);
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, ADD,
+    &datum_add, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal addition of a temporal integer and an integer
+ * @sqlop @p +
+ */
+Temporal *
+add_tint_int(const Temporal *tnumber, int i)
+{
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, ADD,
+    &datum_add, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal addition of a temporal float and a float
+ * @sqlop @p +
+ */
+Temporal *
+add_tfloat_float(const Temporal *tnumber, double d)
+{
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, ADD,
+    &datum_add, INVERT_NO);
 }
 
 /**
@@ -88,26 +112,50 @@ add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal subtraction of a number and a temporal number
+ * @brief Return the temporal subtraction of an integer and a temporal integer
  * @sqlop @p -
  */
 Temporal *
-sub_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+sub_int_tint(int i, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, SUB, &datum_sub,
-    INVERT);
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, SUB,
+    &datum_sub, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal subtraction of a temporal number and a number
+ * @brief Return the temporal subtraction of a float and a temporal float
  * @sqlop @p -
  */
 Temporal *
-sub_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
+sub_float_tfloat(double d, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, SUB, &datum_sub,
-    INVERT_NO);
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, SUB,
+    &datum_sub, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal subtraction of a temporal integer and an integer
+ * @sqlop @p -
+ */
+Temporal *
+sub_tint_int(const Temporal *tnumber, int i)
+{
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, SUB,
+    &datum_sub, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal subtraction of a temporal float and a float
+ * @sqlop @p -
+ */
+Temporal *
+sub_tfloat_float(const Temporal *tnumber, double d)
+{
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, SUB,
+    &datum_sub, INVERT_NO);
 }
 
 /**
@@ -127,26 +175,50 @@ sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal multiplication of a number and a temporal number
+ * @brief Return the temporal multiplication of an integer and a temporal integer
  * @sqlop @p *
  */
 Temporal *
-mult_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+mult_int_tint(int i, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, MULT, &datum_mult,
-    INVERT);
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, MULT,
+    &datum_mult, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal multiplication of a temporal number and a number
+ * @brief Return the temporal multiplication of a float and a temporal float
  * @sqlop @p *
  */
 Temporal *
-mult_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
+mult_float_tfloat(double d, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, MULT, &datum_mult,
-    INVERT_NO);
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, MULT,
+    &datum_mult, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal multiplication of a temporal integer and an integer
+ * @sqlop @p *
+ */
+Temporal *
+mult_tint_int(const Temporal *tnumber, int i)
+{
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, MULT,
+    &datum_mult, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal multiplication of a temporal float and a float
+ * @sqlop @p *
+ */
+Temporal *
+mult_tfloat_float(const Temporal *tnumber, double d)
+{
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, MULT,
+    &datum_mult, INVERT_NO);
 }
 
 /**
@@ -167,26 +239,50 @@ mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal division of a number and a temporal number
+ * @brief Return the temporal division of an integer and a temporal integer
  * @sqlop @p /
  */
 Temporal *
-div_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+div_int_tint(int i, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, DIV, &datum_div,
-    INVERT);
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, DIV,
+    &datum_div, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the temporal division of a temporal number and a number
+ * @brief Return the temporal division of a float and a temporal float
  * @sqlop @p /
  */
 Temporal *
-div_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
+div_float_tfloat(double d, const Temporal *tnumber)
 {
-  return arithop_tnumber_number(tnumber, number, basetype, DIV, &datum_div,
-    INVERT_NO);
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, DIV,
+    &datum_div, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal division of a temporal integer and an integer
+ * @sqlop @p /
+ */
+Temporal *
+div_tint_int(const Temporal *tnumber, int i)
+{
+  return arithop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4, DIV,
+    &datum_div, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Return the temporal division of a temporal float and a float
+ * @sqlop @p /
+ */
+Temporal *
+div_tfloat_float(const Temporal *tnumber, double d)
+{
+  return arithop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8, DIV,
+    &datum_div, INVERT_NO);
 }
 
 /**

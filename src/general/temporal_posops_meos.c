@@ -470,53 +470,107 @@ overafter_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /* Number op Tnumber */
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a number is strictly to the left of a temporal number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if an integer is to the left of the bounding box of a
+ * temporal integer
  * @sqlop @p <<
  */
 bool
-left_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+left_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &left_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &left_tbox_tbox, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a number is not to the right of a temporal number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a float is to the left of the bounding box of a
+ * temporal float
+ * @sqlop @p <<
+ */
+bool
+left_float_tfloat(double d, const Temporal *tnumber)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &left_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if an integer is to is not to the right of the bounding
+ * box of a temporal integer
  * @sqlop @p &<
  */
 bool
-overleft_number_tnumber(Datum number, mobdbType basetype,
-  const Temporal *tnumber)
+overleft_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overleft_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &overleft_tbox_tbox, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a number is strictly to the right of a temporal number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a float is is not to the right of the bounding box of a
+ * temporal float
+ * @sqlop @p &<
+ */
+bool
+overleft_float_tfloat(double d, const Temporal *tnumber)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &overleft_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if an integer is to the right of the bounding box of a
+ * temporal integer
  * @sqlop @p >>
  */
 bool
-right_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+right_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &right_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &right_tbox_tbox, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a number is not to the left of a temporal number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a float is to the right of the bounding box of a
+ * temporal float
+ * @sqlop @p >>
+ */
+bool
+right_float_tfloat(double d, const Temporal *tnumber)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &right_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if an integer is not to the left of the bounding box of a
+ * temporal integer
  * @sqlop @p &>
  */
 bool
-overright_number_tnumber(Datum number, mobdbType basetype,
-  const Temporal *tnumber)
+overright_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overright_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &overright_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a float is not to the left of the bounding box of a
+ * temporal float
+ * @sqlop @p &>
+ */
+bool
+overright_float_tfloat(double d, const Temporal *tnumber)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &overright_tbox_tbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -574,54 +628,107 @@ overright_span_tnumber(const Span *span, const Temporal *tnumber)
 /* Tnumber op Number */
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a temporal number is strictly to the left of a number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is to the left
+ * of an integer
  * @sqlop @p <<
  */
 bool
-left_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
+left_tint_int(const Temporal *tnumber, int i)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &left_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &left_tbox_tbox, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a temporal number is not to the right of a number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is to the left of
+ * a float
+ * @sqlop @p <<
+ */
+bool
+left_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &left_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is not to the
+ * right of an integer
  * @sqlop @p &<
  */
 bool
-overleft_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+overleft_tint_int(const Temporal *tnumber, int i)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overleft_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &overleft_tbox_tbox, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a temporal number is strictly to the right of a number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is not to the
+ * right of a float
+ * @sqlop @p &<
+ */
+bool
+overleft_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &overleft_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is to the
+ * right of an integer
  * @sqlop @p >>
  */
 bool
-right_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+right_tint_int(const Temporal *tnumber, int i)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &right_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &right_tbox_tbox, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_pos
- * @brief Return true if a temporal number is not to the left of a number
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is to the
+ * right of a float
+ * @sqlop @p >>
+ */
+bool
+right_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &right_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is not to the
+ * left of an integer
  * @sqlop @p &>
  */
 bool
-overright_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+overright_tint_int(const Temporal *tnumber, int i)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overright_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &overright_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is not to the
+ * left of a float
+ * @sqlop @p &>
+ */
+bool
+overright_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &overright_tbox_tbox, INVERT_NO);
 }
 
 /*****************************************************************************/

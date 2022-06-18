@@ -284,7 +284,7 @@ tinstant_out(const TInstant *inst)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal instant from the arguments.
  *
  * @param value Base value
@@ -342,6 +342,73 @@ tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
   }
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant boolean from the arguments.
+ * @sqlfunc tbool_inst()
+ */
+TInstant *
+tboolinst_make(bool b, TimestampTz t)
+{
+  return tinstant_make(BoolGetDatum(b), T_TBOOL, t);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant boolean from the arguments.
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
+ */
+TInstant *
+tintinst_make(int i, TimestampTz t)
+{
+  return tinstant_make(Int32GetDatum(i), T_TINT, t);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant boolean from the arguments.
+ * @sqlfunc tfloat_inst()
+ */
+TInstant *
+tfloatinst_make(double d, TimestampTz t)
+{
+  return tinstant_make(Float8GetDatum(d), T_TFLOAT, t);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant boolean from the arguments.
+ * @sqlfunc tint_inst()
+ */
+TInstant *
+ttextinst_make(text *txt, TimestampTz t)
+{
+  return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant boolean from the arguments.
+ * @sqlfunc tgeompoint_inst()
+ */
+TInstant *
+tgeogpointinst_make(GSERIALIZED *gs, TimestampTz t)
+{
+  return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
+}
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal instant boolean from the arguments.
+ * @sqlfunc tgeogpoint_inst().
+ */
+TInstant *
+tgeompointinst_make(GSERIALIZED *gs, TimestampTz t)
+{
+  return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_constructor

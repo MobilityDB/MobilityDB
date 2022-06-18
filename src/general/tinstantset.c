@@ -428,7 +428,7 @@ tinstantset_copy(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal instant set from a base value and a timestamp set.
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
@@ -441,6 +441,74 @@ tinstantset_from_base(Datum value, mobdbType temptype, const TimestampSet *ts)
     instants[i] = tinstant_make(value, temptype, timestampset_time_n(ts, i));
   return tinstantset_make_free(instants, ts->count, MERGE_NO);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal boolean instant set from a boolean and a
+ * timestamp set.
+ */
+TInstantSet *
+tboolinstset_from_base(bool b, const TimestampSet *ts)
+{
+  return tinstantset_from_base(BoolGetDatum(b), T_TBOOL, ts);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal integer instant set from an integer and a
+ * timestamp set.
+ */
+TInstantSet *
+tintinstset_from_base(int i, const TimestampSet *ts)
+{
+  return tinstantset_from_base(Int32GetDatum(i), T_TINT, ts);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal float instant set from a float and a
+ * timestamp set.
+ */
+TInstantSet *
+tfloatinstset_from_base(bool b, const TimestampSet *ts)
+{
+  return tinstantset_from_base(BoolGetDatum(b), T_TFLOAT, ts);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal text instant set from a text and a timestamp set.
+ */
+TInstantSet *
+ttextinstset_from_base(text *txt, const TimestampSet *ts)
+{
+  return tinstantset_from_base(PointerGetDatum(txt), T_TTEXT, ts);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geometric point instant set from a point and a
+ * timestamp set.
+ */
+TInstantSet *
+tgeompointinstset_from_base(GSERIALIZED *gs, const TimestampSet *ts)
+{
+  return tinstantset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, ts);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geographic point instant set from a point and a
+ * timestamp set.
+ */
+TInstantSet *
+tgeogpointinstset_from_base(GSERIALIZED *gs, const TimestampSet *ts)
+{
+  return tinstantset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, ts);
+}
+#endif /* MEOS */
+
 
 /*****************************************************************************
  * Accessor functions

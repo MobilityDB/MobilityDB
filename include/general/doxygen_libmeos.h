@@ -370,25 +370,9 @@
  * @ingroup libmeos_int_temporal
  * @brief Boolean functions for temporal types.
  *
- * @defgroup libmeos_int_temporal_math Mathematical functions
- * @ingroup libmeos_int_temporal
- * @brief Mathematical functions for temporal types.
- *
  * @defgroup libmeos_int_temporal_text Text functions
  * @ingroup libmeos_int_temporal
  * @brief Text functions for temporal types.
- *
- * @defgroup libmeos_int_temporal_bbox Bounding box functions
- * @ingroup libmeos_int_temporal
- * @brief Bounding box functions for temporal types.
- *
- * @defgroup libmeos_int_temporal_topo Topological functions
- * @ingroup libmeos_int_temporal_bbox
- * @brief Topological functions for temporal types.
- *
- * @defgroup libmeos_int_temporal_pos Position functions
- * @ingroup libmeos_int_temporal_bbox
- * @brief Position functions for temporal types.
  *
  * @defgroup libmeos_int_temporal_dist Distance functions
  * @ingroup libmeos_int_temporal

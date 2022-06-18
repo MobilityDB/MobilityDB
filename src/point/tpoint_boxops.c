@@ -294,7 +294,6 @@ tpoint_stboxes(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_topo
  * @brief Generic bounding box function for a temporal point and a geometry.
  *
  * @param[in] temp Temporal point

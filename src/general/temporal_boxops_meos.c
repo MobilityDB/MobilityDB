@@ -609,30 +609,54 @@ adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if a number contains the bounding box of a temporal
- * number
+ * @brief Return true if an integer contains the bounding box of a temporal
+ * integer
  * @sqlop @p \@>
  */
 bool
-contains_number_tnumber(Datum number, mobdbType basetype,
-  const Temporal *tnumber)
+contains_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &contains_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number contains a
- * number
+ * @brief Return true if a float contains the bounding box of a temporal
+ * float
  * @sqlop @p \@>
  */
 bool
-contains_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+contains_float_tfloat(double d, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &contains_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &contains_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer contains an
+ * integer
+ * @sqlop @p \@>
+ */
+bool
+contains_tint_int(const Temporal *tnumber, int i)
+{
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &contains_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float contains a
+ * float
+ * @sqlop @p \@>
+ */
+bool
+contains_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &contains_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -699,30 +723,54 @@ contains_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if a number is contained in the bounding box of a
- * temporal number
+ * @brief Return true if an integer is contained in the bounding box of a
+ * temporal integer
  * @sqlop @p <@
  */
 bool
-contained_number_tnumber(Datum number, mobdbType basetype,
-  const Temporal *tnumber)
+contained_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &contained_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &contained_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number is contained
- * in a number
+ * @brief Return true if a float is contained in the bounding box of a temporal
+ * float
  * @sqlop @p <@
  */
 bool
-contained_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+contained_float_tfloat(double d, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &contained_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &contained_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is contained in
+ * an integer
+ * @sqlop @p <@
+ */
+bool
+contained_tint_int(const Temporal *tnumber, int i)
+{
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &contained_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is contained in a
+ * float
+ * @sqlop @p <@
+ */
+bool
+contained_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &contained_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -789,30 +837,53 @@ contained_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if a span and the bounding box of a temporal number
- * overlap
+ * @brief Return true if an integer overlaps the bounding box of a
+ * temporal integer
  * @sqlop @p &&
  */
 bool
-overlaps_number_tnumber(Datum number, mobdbType basetype,
-  const Temporal *tnumber)
+overlaps_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &overlaps_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number and a span
- * overlap
+ * @brief Return true if a float overlaps the bounding box of a temporal
+ * float
  * @sqlop @p &&
  */
 bool
-overlaps_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+overlaps_float_tfloat(double d, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &overlaps_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &overlaps_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer overlaps
+ * an integer
+ * @sqlop @p &&
+ */
+bool
+overlaps_tint_int(const Temporal *tnumber, int i)
+{
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &overlaps_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float overlaps a float
+ * @sqlop @p &&
+ */
+bool
+overlaps_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &overlaps_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -878,28 +949,54 @@ overlaps_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if a span and the bounding box of a temporal number
- * are equal on the common dimensions
+ * @brief Return true if an integer is the same as the bounding box of a
+ * temporal integer
  * @sqlop @p ~=
  */
 bool
-same_number_tnumber(Datum number, mobdbType basetype, const Temporal *tnumber)
+same_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &same_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &same_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number and a span
- * are equal on the common dimensions
+ * @brief Return true if a float is the same as the bounding box of a temporal
+ * float
  * @sqlop @p ~=
  */
 bool
-same_tnumber_number(const Temporal *tnumber, Datum number, mobdbType basetype)
+same_float_tfloat(double d, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &same_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &same_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is the same as
+ * an integer
+ * @sqlop @p ~=
+ */
+bool
+same_tint_int(const Temporal *tnumber, int i)
+{
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &same_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is the same as a
+ * float
+ * @sqlop @p ~=
+ */
+bool
+same_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &same_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -966,30 +1063,54 @@ same_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if a span and the bounding box of a temporal number
- * are adjacent
+ * @brief Return true if an integer is adjacent to the bounding box of a
+ * temporal integer
  * @sqlop @p -|-
  */
 bool
-adjacent_number_tnumber(Datum number, mobdbType basetype,
-  const Temporal *tnumber)
+adjacent_int_tint(int i, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &adjacent_tbox_tbox,
-    INVERT);
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &adjacent_tbox_tbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number and a span
- * are adjacent
+ * @brief Return true if a float is adjacent to the bounding box of a temporal
+ * float
  * @sqlop @p -|-
  */
 bool
-adjacent_tnumber_number(const Temporal *tnumber, Datum number,
-  mobdbType basetype)
+adjacent_float_tfloat(double d, const Temporal *tnumber)
 {
-  return boxop_tnumber_number(tnumber, number, basetype, &adjacent_tbox_tbox,
-    INVERT_NO);
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &adjacent_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal integer is adjacent to
+ * an integer
+ * @sqlop @p -|-
+ */
+bool
+adjacent_tint_int(const Temporal *tnumber, int i)
+{
+  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
+    &adjacent_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal float is adjacent to a
+ * float
+ * @sqlop @p -|-
+ */
+bool
+adjacent_tfloat_float(const Temporal *tnumber, double d)
+{
+  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
+    &adjacent_tbox_tbox, INVERT_NO);
 }
 
 /**
