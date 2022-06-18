@@ -445,16 +445,16 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = disjoint_tpointinst_geo((TInstant *) temp,
       PointerGetDatum(gs), func);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = disjoint_tpointinstset_geo((TInstantSet *) temp,
       PointerGetDatum(gs), func);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = disjoint_tpointseq_geo((TSequence *) temp,
       PointerGetDatum(gs), func);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = disjoint_tpointseqset_geo((TSequenceSet *) temp,
       PointerGetDatum(gs), func);
   return result ? 1 : 0;
@@ -687,16 +687,16 @@ dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2, Datum dist)
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   bool result;
   ensure_valid_tempsubtype(sync1->subtype);
-  if (sync1->subtype == INSTANT)
+  if (sync1->subtype == TINSTANT)
     result = dwithin_tpointinst_tpointinst(
       (TInstant *) sync1, (TInstant *) sync2, dist, func);
-  else if (sync1->subtype == INSTANTSET)
+  else if (sync1->subtype == TINSTANTSET)
     result = dwithin_tpointinstset_tpointinstset(
       (TInstantSet *) sync1, (TInstantSet *) sync2, dist, func);
-  else if (sync1->subtype == SEQUENCE)
+  else if (sync1->subtype == TSEQUENCE)
     result = dwithin_tpointseq_tpointseq(
       (TSequence *) sync1, (TSequence *) sync2, dist, func);
-  else /* sync1->subtype == SEQUENCESET */
+  else /* sync1->subtype == TSEQUENCESET */
     result = dwithin_tpointseqset_tpointseqset(
       (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
   return result;

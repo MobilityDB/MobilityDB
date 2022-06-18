@@ -101,13 +101,13 @@ tpoint_as_text(const Temporal *temp)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = tinstant_to_string((TInstant *) temp, &wkt_out);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
   return result;
 }

@@ -358,15 +358,15 @@ tpoint_to_geo(const Temporal *temp, bool segmentize)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = tpointinst_to_geo((TInstant *)temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = tpointinstset_to_geo((TInstantSet *)temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = segmentize ?
          tpointseq_to_geo_segmentize((TSequence *) temp) :
          tpointseq_to_geo((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = segmentize ?
          tpointseqset_to_geo_segmentize((TSequenceSet *) temp) :
          tpointseqset_to_geo((TSequenceSet *) temp);
@@ -924,19 +924,19 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
     return false;
 
   ensure_valid_tempsubtype(sync1->subtype);
-  if (sync1->subtype == INSTANT)
+  if (sync1->subtype == TINSTANT)
     *result = tpointinst_to_geo_measure(
       (TInstant *) sync1, (TInstant *) sync2);
-  else if (sync1->subtype == INSTANTSET)
+  else if (sync1->subtype == TINSTANTSET)
     *result = tpointinstset_to_geo_measure(
       (TInstantSet *) sync1, (TInstantSet *) sync2);
-  else if (sync1->subtype == SEQUENCE)
+  else if (sync1->subtype == TSEQUENCE)
     *result = segmentize ?
       tpointseq_to_geo_measure_segmentize(
         (TSequence *) sync1, (TSequence *) sync2) :
       tpointseq_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
-  else /* sync1->subtype == SEQUENCESET */
+  else /* sync1->subtype == TSEQUENCESET */
     *result = segmentize ?
       tpointseqset_to_geo_measure_segmentize(
         (TSequenceSet *) sync1, (TSequenceSet *) sync2) :
@@ -1127,13 +1127,13 @@ tfloat_simplify(Temporal *temp, double eps_dist)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
       eps_dist, 2);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
       eps_dist, 2);
   return result;
@@ -1544,13 +1544,13 @@ tpoint_simplify(Temporal *temp, double eps_dist, double eps_speed)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_simplify((TSequence *)temp, eps_dist,
       eps_speed, 2);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp, eps_dist,
       eps_speed, 2);
   return result;
@@ -1744,15 +1744,15 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tpointinstset_remove_repeated_points((TInstantSet *) temp,
       tolerance, min_points);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_remove_repeated_points((TSequence *) temp,
       tolerance, min_points);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_remove_repeated_points((TSequenceSet *) temp,
       tolerance, min_points);
   return result;
@@ -1882,13 +1882,13 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_affine((TInstant *) temp, a);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tpointinstset_affine((TInstantSet *) temp, a);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_affine((TSequence *) temp, a);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_affine((TSequenceSet *) temp, a);
   return result;
 }
@@ -2075,13 +2075,13 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_grid((TInstant *) temp, grid);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tpointinstset_grid((TInstantSet *) temp, grid);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid,
       filter_pts);
   return result;
@@ -2318,13 +2318,13 @@ tpoint_decouple(const Temporal *temp, TimestampTz **timesarr, int *count)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = tpointinstset_decouple((TInstantSet *) temp, timesarr, count);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = tpointseq_decouple((TSequence *) temp, timesarr, count);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_decouple((TSequenceSet *) temp, timesarr, count);
   return result;
 }

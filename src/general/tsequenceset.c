@@ -48,6 +48,7 @@
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_boxops.h"
+#include "point/tpoint_parser.h"
 
 /*****************************************************************************
  * General functions
@@ -171,10 +172,10 @@ tsequenceset_append_tinstant(const TSequenceSet *ss, const TInstant *inst)
   int k = 0;
   for (int i = 0; i < ss->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ss, i);
-  assert(temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET);
-  if (temp->subtype == SEQUENCE)
+  assert(temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET);
+  if (temp->subtype == TSEQUENCE)
     sequences[k++] = (const TSequence *) temp;
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
   {
     TSequenceSet *ss1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ss1, 0);
@@ -473,7 +474,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal sequence set from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -484,6 +485,80 @@ TSequenceSet *
 tsequenceset_in(char *str, mobdbType temptype, bool linear)
 {
   return tsequenceset_parse(&str, temptype, linear);
+}
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequenceSet *
+tboolseqset_in(char *str)
+{
+  return tsequenceset_parse(&str, T_TBOOL, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set integer from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequenceSet *
+tintseqset_in(char *str)
+{
+  return tsequenceset_parse(&str, T_TINT, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set float from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequenceSet *
+tfloatseqset_in(char *str)
+{
+  /* Call the superclass function to read the interpolation at the beginning (if any) */
+  Temporal *temp = temporal_parse(&str, T_TFLOAT);
+  assert (temp->subtype == TSEQUENCE);
+  return (TSequenceSet *) temp;
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set text from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequenceSet *
+ttextseqset_in(char *str)
+{
+  return tsequenceset_parse(&str, T_TTEXT, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set geometric point from its Well-Known Text
+ * (WKT) representation.
+ */
+TSequenceSet *
+tgeompointseqset_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
+  assert (temp->subtype == TSEQUENCESET);
+  return (TSequenceSet *) temp;
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence set geographic point from its Well-Known Text
+ * (WKT) representation.
+ */
+TSequenceSet *
+tgeogpointseqset_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
+  assert (temp->subtype == TSEQUENCESET);
+  return (TSequenceSet *) temp;
 }
 #endif
 
@@ -539,7 +614,7 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
   /* Ensure that all values are of sequence subtype and of the same interpolation */
   for (int i = 0; i < count; i++)
   {
-    if (sequences[i]->subtype != SEQUENCE)
+    if (sequences[i]->subtype != TSEQUENCE)
     {
       elog(ERROR, "Input values must be temporal sequences");
     }
@@ -606,7 +681,7 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
   result->count = newcount;
   result->totalcount = totalcount;
   result->temptype = sequences[0]->temptype;
-  result->subtype = SEQUENCESET;
+  result->subtype = TSEQUENCESET;
   result->bboxsize = bboxsize;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
@@ -701,7 +776,7 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_in
 {
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
   return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
-    SEQUENCE, maxdist, maxt, countsplits);
+    TSEQUENCE, maxdist, maxt, countsplits);
 }
 
 /**

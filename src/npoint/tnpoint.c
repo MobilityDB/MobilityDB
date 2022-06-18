@@ -139,13 +139,13 @@ tnpoint_tgeompoint(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *)tnpointinst_tgeompointinst((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *)tnpointinstset_tgeompointinstset((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *)tnpointseq_tgeompointseq((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *)tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   return result;
 }
@@ -250,13 +250,13 @@ tgeompoint_tnpoint(const Temporal *temp)
   ensure_same_srid(srid_tpoint, srid_ways);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tgeompointinstset_tnpointinstset((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tgeompointseq_tnpointseq((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   return result;
 }
@@ -416,16 +416,16 @@ tnpoint_positions(const Temporal *temp, int *count)
 {
   Nsegment **result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
   {
     result = tnpointinst_positions((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = tnpointinstset_positions((TInstantSet *) temp, count);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_positions((TSequence *) temp, count);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = tnpointseqset_positions((TSequenceSet *) temp, count);
   return result;
 }
@@ -448,10 +448,10 @@ tnpointinst_route(const TInstant *inst)
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if (temp->subtype != INSTANT && temp->subtype != SEQUENCE)
+  if (temp->subtype != TINSTANT && temp->subtype != TSEQUENCE)
     elog(ERROR, "Input must be a temporal instant or a temporal sequence");
 
-  const TInstant *inst = (temp->subtype == INSTANT) ?
+  const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : tsequence_inst_n((const TSequence *) temp, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   return np->rid;
@@ -523,22 +523,22 @@ tnpoint_routes(const Temporal *temp, int *count)
 {
   int64 *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
   {
     result = tnpointinst_routes((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
   {
     result = tnpointinstset_routes((TInstantSet *) temp);
     *count = ((TInstantSet *) temp)->count;
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
   {
     result = tnpointseq_routes((TSequence *) temp);
     *count = 1;
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
   {
     result = tnpointseqset_routes((TSequenceSet *) temp);
     *count = ((TSequenceSet *) temp)->count;

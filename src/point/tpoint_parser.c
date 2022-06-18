@@ -214,7 +214,7 @@ stbox_parse(char **str)
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
- * @param[in] tpoint_srid SRID of the temporal point
+ * @param[inout] tpoint_srid SRID of the temporal point
  */
 TInstant *
 tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
@@ -254,7 +254,7 @@ tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in] tpoint_srid SRID of the temporal point
+ * @param[inout] tpoint_srid SRID of the temporal point
  */
 TInstantSet *
 tpointinstset_parse(char **str, mobdbType temptype, int *tpoint_srid)
@@ -298,7 +298,7 @@ tpointinstset_parse(char **str, mobdbType temptype, int *tpoint_srid)
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
- * @param[in] tpoint_srid SRID of the temporal point
+ * @param[inout] tpoint_srid SRID of the temporal point
 */
 TSequence *
 tpointseq_parse(char **str, mobdbType temptype, bool linear, bool end,
@@ -352,7 +352,7 @@ tpointseq_parse(char **str, mobdbType temptype, bool linear, bool end,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] linear True when the interpolation is linear
- * @param[in] tpoint_srid SRID of the temporal point
+ * @param[inout] tpoint_srid SRID of the temporal point
  */
 TSequenceSet *
 tpointseqset_parse(char **str, mobdbType temptype, bool linear,

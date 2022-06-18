@@ -46,6 +46,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
+#include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint.h"
@@ -137,7 +138,7 @@ tnumberinst_double(const TInstant *inst)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -147,6 +148,78 @@ TInstant *
 tinstant_in(char *str, mobdbType temptype)
 {
   return tinstant_parse(&str, temptype, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstant *
+tboolinst_in(char *str)
+{
+  return tinstant_parse(&str, T_TBOOL, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant integer from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstant *
+tintinst_in(char *str)
+{
+  return tinstant_parse(&str, T_TINT, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant float from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstant *
+tfloatinst_in(char *str)
+{
+  return tinstant_parse(&str, T_TFLOAT, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant text from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstant *
+ttextinst_in(char *str)
+{
+  return tinstant_parse(&str, T_TTEXT, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant geometric point from its Well-Known Text
+ * (WKT) representation.
+ */
+TInstant *
+tgeompointinst_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
+  assert (temp->subtype == TINSTANT);
+  return (TInstant *) temp;
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant geographic point from its Well-Known Text
+ * (WKT) representation.
+ */
+TInstant *
+tgeogpointinst_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
+  assert (temp->subtype == TINSTANT);
+  return (TInstant *) temp;
 }
 #endif
 
@@ -251,7 +324,7 @@ tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
   memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
   result->temptype = temptype;
-  result->subtype = INSTANT;
+  result->subtype = TINSTANT;
   result->t = t;
   SET_VARSIZE(result, size);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
@@ -833,7 +906,7 @@ tinstant_merge_array(const TInstant **instants, int count)
   assert(count > 1);
   tinstarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments */
-  ensure_valid_tinstarr(instants, count, MERGE, INSTANT);
+  ensure_valid_tinstarr(instants, count, MERGE, TINSTANT);
 
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);

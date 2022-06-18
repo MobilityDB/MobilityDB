@@ -357,11 +357,11 @@ tnumber_derivative(const Temporal *temp)
   Temporal *result = NULL;
   ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
     ;
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
   return result;
 }

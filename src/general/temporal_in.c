@@ -1330,16 +1330,16 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   switch (wkb_flags)
   {
     case MOBDB_WKB_INSTANT:
-      s->subtype = INSTANT;
+      s->subtype = TINSTANT;
       break;
     case MOBDB_WKB_INSTANTSET:
-      s->subtype = INSTANTSET;
+      s->subtype = TINSTANTSET;
       break;
     case MOBDB_WKB_SEQUENCE:
-      s->subtype = SEQUENCE;
+      s->subtype = TSEQUENCE;
       break;
     case MOBDB_WKB_SEQUENCESET:
-      s->subtype = SEQUENCESET;
+      s->subtype = TSEQUENCESET;
       break;
     default: /* Error! */
       elog(ERROR, "Unknown WKB flags: %d", wkb_flags);
@@ -1522,13 +1522,13 @@ temporal_from_wkb_state(wkb_parse_state *s)
 
   /* Read the temporal value */
   ensure_valid_tempsubtype(s->subtype);
-  if (s->subtype == INSTANT)
+  if (s->subtype == TINSTANT)
     return (Temporal *) tinstant_from_wkb_state(s);
-  else if (s->subtype == INSTANTSET)
+  else if (s->subtype == TINSTANTSET)
     return (Temporal *) tinstantset_from_wkb_state(s);
-  else if (s->subtype == SEQUENCE)
+  else if (s->subtype == TSEQUENCE)
     return (Temporal *) tsequence_from_wkb_state(s);
-  else /* s->subtype == SEQUENCESET */
+  else /* s->subtype == TSEQUENCESET */
     return (Temporal *) tsequenceset_from_wkb_state(s);
 }
 

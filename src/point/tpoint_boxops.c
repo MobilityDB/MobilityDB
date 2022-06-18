@@ -280,11 +280,11 @@ tpoint_stboxes(const Temporal *temp, int *count)
 {
   STBOX *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
     ;
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = tpointseq_stboxes((TSequence *)temp, count);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_stboxes((TSequenceSet *)temp, count);
   return result;
 }

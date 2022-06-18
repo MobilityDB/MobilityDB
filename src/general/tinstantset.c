@@ -48,6 +48,7 @@
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
+#include "point/tpoint_parser.h"
 
 /*****************************************************************************
  * General functions
@@ -111,7 +112,7 @@ tinstantset_make_valid(const TInstant **instants, int count, bool merge)
   /* Test the validity of the instants */
   assert(count > 0);
   ensure_tinstarr(instants, count);
-  ensure_valid_tinstarr(instants, count, merge, INSTANTSET);
+  ensure_valid_tinstarr(instants, count, merge, TINSTANTSET);
   return;
 }
 
@@ -151,7 +152,7 @@ tinstantset_make1(const TInstant **instants, int count)
   SET_VARSIZE(result, memsize);
   result->count = count;
   result->temptype = instants[0]->temptype;
-  result->subtype = INSTANTSET;
+  result->subtype = TINSTANTSET;
   result->bboxsize = bboxsize;
   bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
@@ -246,8 +247,9 @@ tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t, int *loc)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
- * @brief Return a temporal instant set from its Well-Known Text (WKT) representation.
+ * @ingroup libmeos_int_temporal_in_out
+ * @brief Return a temporal instant set from its Well-Known Text (WKT)
+ * representation.
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
@@ -257,14 +259,87 @@ tinstantset_in(char *str, mobdbType temptype)
 {
   return tinstantset_parse(&str, temptype);
 }
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstantSet *
+tboolinstset_in(char *str)
+{
+  return tinstantset_parse(&str, T_TBOOL);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set integer from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstantSet *
+tintinstset_in(char *str)
+{
+  return tinstantset_parse(&str, T_TINT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set float from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstantSet *
+tfloatinstset_in(char *str)
+{
+  return tinstantset_parse(&str, T_TFLOAT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set text from its Well-Known Text (WKT)
+ * representation.
+ */
+TInstantSet *
+ttextinstset_in(char *str)
+{
+  return tinstantset_parse(&str, T_TTEXT);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set geometric point from its Well-Known Text
+ * (WKT) representation.
+ */
+TInstantSet *
+tgeompointinstset_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
+  assert (temp->subtype == TINSTANT);
+  return (TInstantSet *) temp;
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal instant set geographic point from its Well-Known
+ * Text (WKT) representation.
+ */
+TInstantSet *
+tgeogpointinstset_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
+  assert (temp->subtype == TINSTANTSET);
+  return (TInstantSet *) temp;
+}
 #endif
 
 /**
- * @brief Return the Well-Known Text (WKT) representation of a temporal instant set.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal instant
+ * set.
  *
  * @param[in] is Temporal instant set
  * @param[in] value_out Function called to output the base value depending on
- * its Oid
+ * its type
  */
 char *
 tinstantset_to_string(const TInstantSet *is,
@@ -284,7 +359,8 @@ tinstantset_to_string(const TInstantSet *is,
 
 /**
  * @ingroup libmeos_temporal_in_out
- * @brief Return the Well-Known Text (WKT) representation of a temporal instant set.
+ * @brief Return the Well-Known Text (WKT) representation of a temporal instant
+ * set.
  */
 char *
 tinstantset_out(const TInstantSet *is)
@@ -1250,7 +1326,7 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
   {
     Temporal *temp = tinstantset_restrict_timestamp(is,
       timestampset_time_n(ts, 0), atfunc);
-    if (temp == NULL || temp->subtype == INSTANTSET)
+    if (temp == NULL || temp->subtype == TINSTANTSET)
       return (TInstantSet *) temp;
     TInstant *inst1 = (TInstant *) temp;
     result = tinstantset_make((const TInstant **) &inst1, 1, MERGE_NO);

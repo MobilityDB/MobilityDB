@@ -149,10 +149,10 @@ typedef enum
  * Enumeration for the concrete subtype of temporal types
  */
 #define ANYTEMPSUBTYPE  0
-#define INSTANT         1
-#define INSTANTSET      2
-#define SEQUENCE        3
-#define SEQUENCESET     4
+#define TINSTANT        1
+#define TINSTANTSET     2
+#define TSEQUENCE       3
+#define TSEQUENCESET    4
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant

@@ -265,13 +265,13 @@ tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant((TInstant *) temp, lfinfo);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tfunc_tinstantset((TInstantSet *) temp, lfinfo);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tfunc_tsequence((TSequence *) temp, lfinfo);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfunc_tsequenceset((TSequenceSet *) temp, lfinfo);
   return result;
 }
@@ -654,15 +654,15 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp, value,
       lfinfo);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tfunc_tsequence_base((TSequence *) temp, value,
       lfinfo);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
       lfinfo);
   return result;
@@ -1557,63 +1557,63 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp1->subtype);
   ensure_valid_tempsubtype(temp2->subtype);
-  if (temp1->subtype == INSTANT)
+  if (temp1->subtype == TINSTANT)
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = (Temporal *) tfunc_tinstant_tinstant(
         (TInstant *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = (Temporal *) tfunc_tinstant_to_tinstantset(
         (TInstant *) temp1, (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = (Temporal *) tfunc_tinstant_to_tsequence(
         (TInstant *) temp1, (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = (Temporal *) tfunc_tinstant_to_tsequenceset(
         (TInstant *) temp1, (TSequenceSet *) temp2, lfinfo);
   }
-  else if (temp1->subtype == INSTANTSET)
+  else if (temp1->subtype == TINSTANTSET)
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = (Temporal *) tfunc_tinstantset_to_tinstant(
         (TInstantSet *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = (Temporal *) tfunc_tinstantset_tinstantset(
         (TInstantSet *) temp1, (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = (Temporal *) tfunc_tinstantset_to_tsequence(
         (TInstantSet *) temp1, (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = (Temporal *) tfunc_tinstantset_to_tsequenceset(
         (TInstantSet *) temp1, (TSequenceSet *) temp2, lfinfo);
   }
-  else if (temp1->subtype == SEQUENCE)
+  else if (temp1->subtype == TSEQUENCE)
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = (Temporal *) tfunc_tsequence_to_tinstant(
         (TSequence *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = (Temporal *) tfunc_tsequence_to_tinstantset(
         (TSequence *) temp1, (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = (Temporal *) tfunc_tsequence_tsequence(
           (TSequence *) temp1, (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = (Temporal *) tfunc_tsequence_to_tsequenceset(
           (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo);
   }
-  else /* temp1->subtype == SEQUENCESET */
+  else /* temp1->subtype == TSEQUENCESET */
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = (Temporal *) tfunc_tsequenceset_to_tinstant(
         (TSequenceSet *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = (Temporal *) tfunc_tsequenceset_to_tinstantset(
         (TSequenceSet *) temp1, (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = (Temporal *) tfunc_tsequenceset_to_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = (Temporal *) tfunc_tsequenceset_tsequenceset(
           (TSequenceSet *) temp1, (TSequenceSet *) temp2, lfinfo);
   }
@@ -2143,63 +2143,63 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   int result;
   ensure_valid_tempsubtype(temp1->subtype);
   ensure_valid_tempsubtype(temp2->subtype);
-  if (temp1->subtype == INSTANT)
+  if (temp1->subtype == TINSTANT)
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = efunc_tinstant_tinstant((TInstant *) temp1,
         (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = efunc_tinstant_to_tinstantset((TInstant *) temp1,
         (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = efunc_tinstant_to_tsequence((TInstant *) temp1,
         (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = efunc_tinstant_to_tsequenceset((TInstant *) temp1,
         (TSequenceSet *) temp2, lfinfo);
   }
-  else if (temp1->subtype == INSTANTSET)
+  else if (temp1->subtype == TINSTANTSET)
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = efunc_tinstantset_to_tinstant((TInstantSet *) temp1,
         (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = efunc_tinstantset_tinstantset((TInstantSet *) temp1,
         (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = efunc_tinstantset_to_tsequence((TInstantSet *) temp1,
         (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = efunc_tinstantset_to_tsequenceset((TInstantSet *) temp1,
         (TSequenceSet *) temp2, lfinfo);
   }
-  else if (temp1->subtype == SEQUENCE)
+  else if (temp1->subtype == TSEQUENCE)
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = efunc_tsequence_to_tinstant((TSequence *) temp1,
         (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = efunc_tsequence_to_tinstantset((TSequence *) temp1,
         (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = efunc_tsequence_tsequence((TSequence *) temp1,
         (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = efunc_tsequence_to_tsequenceset((TSequence *) temp1,
         (TSequenceSet *) temp2, lfinfo);
   }
-  else /* temp1->subtype == SEQUENCESET */
+  else /* temp1->subtype == TSEQUENCESET */
   {
-    if (temp2->subtype == INSTANT)
+    if (temp2->subtype == TINSTANT)
       result = efunc_tsequenceset_to_tinstant((TSequenceSet *) temp1,
         (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == INSTANTSET)
+    else if (temp2->subtype == TINSTANTSET)
       result = efunc_tsequenceset_to_tinstantset((TSequenceSet *) temp1,
         (TInstantSet *) temp2, lfinfo);
-    else if (temp2->subtype == SEQUENCE)
+    else if (temp2->subtype == TSEQUENCE)
       result = efunc_tsequenceset_to_tsequence((TSequenceSet *) temp1,
         (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* temp2->subtype == TSEQUENCESET */
       result = efunc_tsequenceset_tsequenceset((TSequenceSet *) temp1,
         (TSequenceSet *) temp2, lfinfo);
   }

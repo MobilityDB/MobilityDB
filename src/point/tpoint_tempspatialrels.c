@@ -483,16 +483,16 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
       PointerGetDatum(gs), tinter, func);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tinterrel_tpointinstset_geom((TInstantSet *) temp,
       PointerGetDatum(gs), tinter, func);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tinterrel_tpointseq_geom((TSequence *) temp,
       PointerGetDatum(gs), &box2, tinter, func);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tinterrel_tpointseqset_geom((TSequenceSet *) temp,
       PointerGetDatum(gs), &box2, tinter, func);
   /* Restrict the result to the Boolean value in the third argument if any */
@@ -1364,16 +1364,16 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
   lfinfo.invert = INVERT_NO;
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       PointerGetDatum(gs), &lfinfo);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
       PointerGetDatum(gs), &lfinfo);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
       PointerGetDatum(gs), dist, func);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_point((TSequenceSet *) temp,
       PointerGetDatum(gs), dist, func);
   /* Restrict the result to the Boolean value in the fourth argument if any */
@@ -1400,7 +1400,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
   ensure_valid_tempsubtype(sync1->subtype);
-  if (sync1->subtype == INSTANT || sync1->subtype == INSTANTSET)
+  if (sync1->subtype == TINSTANT || sync1->subtype == TINSTANTSET)
   {
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1408,17 +1408,17 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     lfinfo.numparam = 1;
     lfinfo.param[0] = dist;
     lfinfo.restype = T_TBOOL;
-    if (sync1->subtype == INSTANT)
+    if (sync1->subtype == TINSTANT)
       result = (Temporal *) tfunc_tinstant_tinstant(
         (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
-    else /* sync1->subtype == INSTANTSET */
+    else /* sync1->subtype == TINSTANTSET */
       result = (Temporal *) tfunc_tinstantset_tinstantset(
         (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
   }
-  else if (sync1->subtype == SEQUENCE)
+  else if (sync1->subtype == TSEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_tpointseq(
       (TSequence *) sync1, (TSequence *) sync2, dist, func);
-  else /* sync1->subtype == SEQUENCESET */
+  else /* sync1->subtype == TSEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
       (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
   /* Restrict the result to the Boolean value in the fourth argument if any */

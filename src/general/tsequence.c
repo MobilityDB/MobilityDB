@@ -51,6 +51,7 @@
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
 #include "point/tpoint_boxops.h"
+#include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -280,7 +281,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear)
 {
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
-  ensure_valid_tinstarr(instants, count, MERGE_NO, SEQUENCE);
+  ensure_valid_tinstarr(instants, count, MERGE_NO, TSEQUENCE);
   return;
 }
 
@@ -391,7 +392,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->temptype = instants[0]->temptype;
-  result->subtype = SEQUENCE;
+  result->subtype = TSEQUENCE;
   result->bboxsize = bboxsize;
   span_set(TimestampTzGetDatum(norminsts[0]->t),
     TimestampTzGetDatum(norminsts[newcount - 1]->t), lower_inc, upper_inc,
@@ -1294,7 +1295,7 @@ intersection_tinstantset_tsequence(const TInstantSet *is, const TSequence *seq,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal sequence from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -1305,6 +1306,80 @@ TSequence *
 tsequence_in(char *str, mobdbType temptype, bool linear)
 {
   return tsequence_parse(&str, temptype, linear, true, true);
+}
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequence *
+tboolseq_in(char *str)
+{
+  return tsequence_parse(&str, T_TBOOL, true, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence integer from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequence *
+tintseq_in(char *str)
+{
+  return tsequence_parse(&str, T_TINT, true, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence float from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequence *
+tfloatseq_in(char *str)
+{
+  /* Call the superclass function to read the interpolation at the beginning (if any) */
+  Temporal *temp = temporal_parse(&str, T_TFLOAT);
+  assert (temp->subtype == TSEQUENCE);
+  return (TSequence *) temp;
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence text from its Well-Known Text (WKT)
+ * representation.
+ */
+TSequence *
+ttextseq_in(char *str)
+{
+  return tsequence_parse(&str, T_TTEXT, true, true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence geometric point from its Well-Known Text
+ * (WKT) representation.
+ */
+TSequence *
+tgeompointseq_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
+  assert (temp->subtype == TSEQUENCE);
+  return (TSequence *) temp;
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal sequence geographic point from its Well-Known Text
+ * (WKT) representation.
+ */
+TSequence *
+tgeogpointseq_in(char *str)
+{
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
+  assert (temp->subtype == TSEQUENCE);
+  return (TSequence *) temp;
 }
 #endif
 

@@ -1310,16 +1310,16 @@ temporal_as_mfjson(const Temporal *temp, int precision, int with_bbox,
   bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = tinstant_as_mfjson((TInstant *) temp, isgeo, hasz, precision,
       bbox, srs);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = tinstantset_as_mfjson((TInstantSet *) temp, isgeo, hasz,
       precision, bbox, srs);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = tsequence_as_mfjson((TSequence *) temp, isgeo, hasz, precision,
       bbox, srs);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_as_mfjson((TSequenceSet *) temp, isgeo, hasz,
       precision, bbox, srs);
   return result;
@@ -1343,13 +1343,13 @@ temporal_as_text(const Temporal *temp)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     result = tinstant_to_string((TInstant *) temp, &basetype_output);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     result = tinstantset_to_string((TInstantSet *) temp, &basetype_output);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = tsequence_to_string((TSequence *) temp, false, &basetype_output);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_to_string((TSequenceSet *) temp, &basetype_output);
   return result;
 }
@@ -1684,13 +1684,13 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
   size_t size = 0;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     size = tinstant_to_wkb_size((TInstant *) temp, variant);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     size = tinstantset_to_wkb_size((TInstantSet *) temp, variant);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     size = tsequence_to_wkb_size((TSequence *) temp, variant);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     size = tsequenceset_to_wkb_size((TSequenceSet *) temp, variant);
   return size;
 }
@@ -2534,13 +2534,13 @@ static uint8_t *
 temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  if (temp->subtype == TINSTANT)
     buf = tinstant_to_wkb_buf((TInstant *) temp, buf, variant);
-  else if (temp->subtype == INSTANTSET)
+  else if (temp->subtype == TINSTANTSET)
     buf = tinstantset_to_wkb_buf((TInstantSet *) temp, buf, variant);
-  else if (temp->subtype == SEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     buf = tsequence_to_wkb_buf((TSequence *) temp, buf, variant);
-  else /* temp->subtype == SEQUENCESET */
+  else /* temp->subtype == TSEQUENCESET */
     buf = tsequenceset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
   return buf;
 }
