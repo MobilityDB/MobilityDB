@@ -570,7 +570,7 @@ tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant boolean.
  * @sqlfunc asMFJSON()
  */
@@ -581,7 +581,7 @@ tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant integer.
  * @sqlfunc asMFJSON()
  */
@@ -592,7 +592,7 @@ tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant float.
  * @sqlfunc asMFJSON()
  */
@@ -603,7 +603,7 @@ tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant text.
  * @sqlfunc asMFJSON()
  */
@@ -614,7 +614,7 @@ ttextinst_as_mfjson(const TInstant *inst, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant geometric
  * point.
  * @sqlfunc asMFJSON()
@@ -627,7 +627,7 @@ tgeompointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant geographic
  * point.
  * @sqlfunc asMFJSON()
@@ -727,7 +727,7 @@ tinstantset_as_mfjson(const TInstantSet *is, int precision, bool with_bbox,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set boolean.
  * @sqlfunc asMFJSON()
  */
@@ -738,7 +738,7 @@ tboolinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set integer.
  * @sqlfunc asMFJSON()
  */
@@ -749,7 +749,7 @@ tintinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set float.
  * @sqlfunc asMFJSON()
  */
@@ -760,7 +760,7 @@ tfloatinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set text.
  * @sqlfunc asMFJSON()
  */
@@ -771,7 +771,7 @@ ttextinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set geometric
  * point.
  * @sqlfunc asMFJSON()
@@ -784,7 +784,7 @@ tgeompointinstset_as_mfjson(const TInstantSet *is, bool with_bbox,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal instant set
  * geographic point.
  * @sqlfunc asMFJSON()
@@ -887,7 +887,7 @@ tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence boolean.
  * @sqlfunc asMFJSON()
  */
@@ -898,7 +898,7 @@ tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence integer.
  * @sqlfunc asMFJSON()
  */
@@ -909,7 +909,7 @@ tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence float.
  * @sqlfunc asMFJSON()
  */
@@ -920,7 +920,7 @@ tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence text.
  * @sqlfunc asMFJSON()
  */
@@ -931,7 +931,7 @@ ttextseq_as_mfjson(const TSequence *seq, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence geometric
  * point.
  * @sqlfunc asMFJSON()
@@ -944,7 +944,7 @@ tgeompointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence geographic
  * point.
  * @sqlfunc asMFJSON()
@@ -1062,7 +1062,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set boolean.
  * @sqlfunc asMFJSON()
  */
@@ -1073,7 +1073,7 @@ tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set integer.
  * @sqlfunc asMFJSON()
  */
@@ -1084,7 +1084,7 @@ tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set float.
  * @sqlfunc asMFJSON()
  */
@@ -1095,7 +1095,7 @@ tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set text.
  * @sqlfunc asMFJSON()
  */
@@ -1106,7 +1106,7 @@ ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set
  * geometric point.
  * @sqlfunc asMFJSON()
@@ -1119,7 +1119,7 @@ tgeompointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the MF-JSON representation of a temporal sequence set
  * geographic point.
  * @sqlfunc asMFJSON()
@@ -1195,7 +1195,7 @@ temporal_as_text(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the Well-Known Text (WKT) representation of an array of
  * temporal values
  */

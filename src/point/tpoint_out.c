@@ -160,7 +160,7 @@ geoarr_as_text(const Datum *geoarr, int count, bool extended)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a temporal point array
  * @sqlfunc asText(), asEWKT()

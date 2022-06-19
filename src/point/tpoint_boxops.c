@@ -229,7 +229,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_int_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point.
  *
@@ -248,7 +248,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_int_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
  *

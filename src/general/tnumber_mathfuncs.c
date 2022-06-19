@@ -285,7 +285,7 @@ tnumber_degrees(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libmeos_int_temporal_math
  * @brief Return the derivative of a temporal sequence number.
  * @sqlfunc derivative()
  */
@@ -325,7 +325,7 @@ tnumberseq_derivative(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libmeos_int_temporal_math
  * @brief Return the derivative of a temporal sequence set number
  * @sqlfunc derivative()
  */

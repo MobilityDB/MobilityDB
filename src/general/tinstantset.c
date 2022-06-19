@@ -64,7 +64,7 @@ tinstantset_bbox_ptr(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal instant set
  * @sqlfunc period(), tbox(), stbox()
  * @sqlop @p ::
@@ -261,7 +261,7 @@ tinstantset_in(char *str, mobdbType temptype)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -272,7 +272,7 @@ tboolinstset_in(char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -283,7 +283,7 @@ tintinstset_in(char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set float from its Well-Known Text (WKT)
  * representation.
  */
@@ -294,7 +294,7 @@ tfloatinstset_in(char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set text from its Well-Known Text (WKT)
  * representation.
  */
@@ -305,7 +305,7 @@ ttextinstset_in(char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set geometric point from its Well-Known Text
  * (WKT) representation.
  */
@@ -319,7 +319,7 @@ tgeompointinstset_in(char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set geographic point from its Well-Known
  * Text (WKT) representation.
  */
@@ -358,7 +358,7 @@ tinstantset_to_string(const TInstantSet *is,
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant
  * set.
  */
@@ -416,7 +416,7 @@ tinstantset_make_free(TInstant **instants, int count, bool merge)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Return a copy of a temporal instant set.
  */
 TInstantSet *
@@ -534,7 +534,7 @@ tinstantset_values1(const TInstantSet *is, Datum *result)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of base values of a temporal instant set.
  * @sqlfunc getValues()
  */
@@ -547,7 +547,7 @@ tinstantset_values(const TInstantSet *is, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of spans of a temporal instant set float.
  * @sqlfunc getValues()
  */
@@ -565,7 +565,7 @@ tfloatinstset_spans(const TInstantSet *is, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the time frame of a temporal instant set as a period set.
  * @sqlfunc getTime()
  */
@@ -583,7 +583,7 @@ tinstantset_time(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the minimum base value of a temporal instant set.
  * @sqlfunc minValue()
  */
@@ -619,7 +619,7 @@ tinstantset_min_value(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the maximum base value of a temporal instant set.
  * @sqlfunc maxValue()
  */
@@ -655,7 +655,7 @@ tinstantset_max_value(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_int_temporal_cast
  * @brief Return the bounding period of a temporal instant set
  * @sqlfunc period()
  * @sqlop @p ::
@@ -669,7 +669,7 @@ tinstantset_set_period(const TInstantSet *is, Period *p)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the timespan of a temporal instant set.
  * @sqlfunc timespan()
  */
@@ -683,7 +683,7 @@ tinstantset_timespan(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of sequences of a temporal instant set.
  * @post The output parameter @p count is equal to the number of instants of
  * the input temporal instant set
@@ -704,7 +704,7 @@ tinstantset_sequences(const TInstantSet *is, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of instants of a temporal instant set.
  * @post The output parameter @p count is equal to the number of instants of
  * the input temporal instant set
@@ -721,7 +721,7 @@ tinstantset_instants(const TInstantSet *is, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the start timestamp of a temporal instant set.
  * @sqlfunc startTimestamp()
  */
@@ -732,7 +732,7 @@ tinstantset_start_timestamp(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the end timestamp of a temporal instant set.
  * @sqlfunc endTimestamp()
  */
@@ -743,7 +743,7 @@ tinstantset_end_timestamp(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the distinct timestamps of a temporal instant set.
  * @post The output parameter @p count is equal to the number of instants of
  * the input temporal instant set
@@ -764,7 +764,7 @@ tinstantset_timestamps(const TInstantSet *is, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_int_temporal_cast
  * @brief Cast a temporal instant set integer to a temporal instant set float.
  * @sqlop @p ::
  */
@@ -784,7 +784,7 @@ tintinstset_to_tfloatinstset(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_int_temporal_cast
  * @brief Cast a temporal instant set float to a temporal instant set integer.
  * @sqlop @p ::
  */
@@ -808,7 +808,7 @@ tfloatinstset_to_tintinstset(const TInstantSet *is)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal instant transformed into a temporal instant set.
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
@@ -820,7 +820,7 @@ tinstant_to_tinstantset(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal instant.
  * @return Return an error if a temporal sequence has more than one instant
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
@@ -837,7 +837,7 @@ tsequence_to_tinstantset(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal sequence set transformed into a temporal instant set.
  * @return Return an error if any of the composing temporal sequences has
  * more than one instant
@@ -867,7 +867,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal instant set shifted and/or scaled by the intervals
  * @pre The duration is greater than 0 if it is not NULL
  * @sqlfunc shift(), tscale(), shiftTscale().
@@ -926,7 +926,7 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal instant set is ever equal to a base value.
  * @sqlop @p ?=
  */
@@ -948,7 +948,7 @@ tinstantset_ever_eq(const TInstantSet *is, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal instant set is always equal to a base value.
  * @sqlop @p %=
  */
@@ -977,7 +977,7 @@ tinstantset_always_eq(const TInstantSet *is, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal instant set is ever less than a base value.
  * @sqlop @p ?<
  */
@@ -999,7 +999,7 @@ tinstantset_ever_lt(const TInstantSet *is, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal instant set is ever less than or equal to a
  * base value
  * @sqlop @p ?<=
@@ -1022,7 +1022,7 @@ tinstantset_ever_le(const TInstantSet *is, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal instant set is always less than a base value.
  * @sqlop @p %<
  */
@@ -1044,7 +1044,7 @@ tinstantset_always_lt(const TInstantSet *is, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal instant set is always less than or equal to
  * a base value
  * @sqlop @p %<=
@@ -1076,7 +1076,7 @@ tinstantset_always_le(const TInstantSet *is, Datum value)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) a base value.
  *
  * @param[in] is Temporal instant set
@@ -1118,7 +1118,7 @@ tinstantset_restrict_value(const TInstantSet *is, Datum value, bool atfunc)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) an array of
  * base values.
  *
@@ -1160,7 +1160,7 @@ tinstantset_restrict_values(const TInstantSet *is, const Datum *values,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set number to (the complement of) a
  * span of base values.
  *
@@ -1195,7 +1195,7 @@ tnumberinstset_restrict_span(const TInstantSet *is, const Span *span,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set number to (the complement of) an
  * array of spans of base values.
  *
@@ -1239,7 +1239,7 @@ tnumberinstset_restrict_spans(const TInstantSet *is, Span **normspans,
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal instant set
  *
@@ -1266,7 +1266,7 @@ tinstantset_min_instant(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal instant set
  * @sqlfunc maxInstant()
@@ -1290,7 +1290,7 @@ tinstantset_max_instant(const TInstantSet *is)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) its
  * minimum/maximum base value
  *
@@ -1308,7 +1308,7 @@ tinstantset_restrict_minmax(const TInstantSet *is, bool min, bool atfunc)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the base value of a temporal instant set at a timestamp
  *
  * @note In order to be compatible with the corresponding functions for temporal
@@ -1329,7 +1329,7 @@ tinstantset_value_at_timestamp(const TInstantSet *is, TimestampTz t, Datum *resu
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) a timestamp.
  *
  * @note In order to be compatible with the corresponding functions for temporal
@@ -1378,7 +1378,7 @@ tinstantset_restrict_timestamp(const TInstantSet *is, TimestampTz t, bool atfunc
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) a timestamp set.
  * @sqlfunc atTimestampSet(), minusTimestampSet()
  */
@@ -1455,7 +1455,7 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) a period.
  * @sqlfunc atPeriod(), minusPeriod()
  */
@@ -1490,7 +1490,7 @@ tinstantset_restrict_period(const TInstantSet *is, const Period *period,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) a period set.
  * @sqlfunc atPeriodSet(), minusPeriodSet()
  */
@@ -1541,7 +1541,7 @@ tinstantset_restrict_periodset(const TInstantSet *is, const PeriodSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Append an instant to a temporal instant set.
  * @sqlfunc appendInstant()
  */
@@ -1566,7 +1566,7 @@ tinstantset_append_tinstant(const TInstantSet *is, const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Merge two temporal instant sets.
  * @sqlfunc merge()
  */
@@ -1578,7 +1578,7 @@ tinstantset_merge(const TInstantSet *is1, const TInstantSet *is2)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_int_temporal_transf
  * @brief Merge an array of temporal instants.
  *
  * @note The function does not assume that the values in the array are strictly
@@ -1704,7 +1704,7 @@ intersection_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_time
+ * @ingroup libmeos_int_temporal_time
  * @brief Return true if a temporal instant set intersects a timestamp.
  * @sqlfunc intersectsTimestamp()
  */
@@ -1716,7 +1716,7 @@ tinstantset_intersects_timestamp(const TInstantSet *is, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_time
+ * @ingroup libmeos_int_temporal_time
  * @brief Return true if a temporal instant set intersects a timestamp set.
  * @sqlfunc intersectsTimestampSet()
  */
@@ -1731,7 +1731,7 @@ tinstantset_intersects_timestampset(const TInstantSet *is,
 }
 
 /**
- * @ingroup libmeos_temporal_time
+ * @ingroup libmeos_int_temporal_time
  * @brief Return true if a temporal instant set intersects a period.
  * @sqlfunc intersectsPeriod()
  */
@@ -1748,7 +1748,7 @@ tinstantset_intersects_period(const TInstantSet *is, const Period *period)
 }
 
 /**
- * @ingroup libmeos_temporal_time
+ * @ingroup libmeos_int_temporal_time
  * @brief Return true if a temporal instant set intersects a period set.
  * @sqlfunc intersectsPeriodSet()
  */
@@ -1766,7 +1766,7 @@ tinstantset_intersects_periodset(const TInstantSet *is, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libmeos_int_temporal_agg
  * @brief Return the time-weighted average of a temporal instant set number
  * @note Since an instant set does not have duration, the function returns the
  * traditional average of the values
@@ -1790,7 +1790,7 @@ tnumberinstset_twavg(const TInstantSet *is)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_int_temporal_comp
  * @brief Return true if two temporal instant sets are equal.
  *
  * @pre The arguments are of the same base type
@@ -1823,7 +1823,7 @@ tinstantset_eq(const TInstantSet *is1, const TInstantSet *is2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_int_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal instant
  * set is less than, equal, or greater than the second one.
  *
@@ -1865,7 +1865,7 @@ tinstantset_cmp(const TInstantSet *is1, const TInstantSet *is2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal instant set
  * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
  */
