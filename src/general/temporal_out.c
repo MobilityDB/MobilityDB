@@ -550,9 +550,18 @@ tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
  * @brief Return the MF-JSON representation of a temporal instant.
  */
 char *
-tinstant_as_mfjson(const TInstant *inst, bool isgeo, bool hasz, int precision,
-  const bboxunion *bbox, char *srs)
+tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
+  char *srs)
 {
+  /* Get bounding box if needed */
+  bboxunion *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstant_set_bbox(inst, &tmp);
+    bbox = &tmp;
+  } 
+  bool isgeo = tgeo_type(inst->temptype);
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
   size_t size = tinstant_mfjson_size(inst, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
   tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
@@ -567,15 +576,8 @@ tinstant_as_mfjson(const TInstant *inst, bool isgeo, bool hasz, int precision,
  */
 char *
 tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
-{
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstant_set_bbox(inst, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstant_as_mfjson(inst, false, false, 0, (bboxunion *) bbox, NULL);
+{ 
+  return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
 /**
@@ -586,14 +588,7 @@ tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
 char *
 tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstant_set_bbox(inst, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstant_as_mfjson(inst, false, false, 0, (bboxunion *) bbox, NULL);
+  return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
 /**
@@ -603,16 +598,8 @@ tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
  */
 char *
 tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
-{
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstant_set_bbox(inst, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstant_as_mfjson(inst, false, false, precision, (bboxunion *) bbox,
-    NULL);
+{ 
+  return tinstant_as_mfjson(inst, precision, with_bbox, NULL);
 }
 
 /**
@@ -623,14 +610,7 @@ tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
 char *
 ttextinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstant_set_bbox(inst, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstant_as_mfjson(inst, false, false, 0, (bboxunion *) bbox, NULL);
+  return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
 /**
@@ -643,16 +623,7 @@ char *
 tgeompointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstant_set_bbox(inst, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
-  return tinstant_as_mfjson(inst, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tinstant_as_mfjson(inst, precision, with_bbox, srs);
 }
 
 /**
@@ -665,16 +636,7 @@ char *
 tgeogpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstant_set_bbox(inst, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
-  return tinstant_as_mfjson(inst, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tinstant_as_mfjson(inst, precision, with_bbox, srs);
 }
 #endif /* MEOS */
 
@@ -745,9 +707,18 @@ tinstantset_mfjson_buf(const TInstantSet *is, bool isgeo, bool hasz,
  * @brief Return the MF-JSON representation of a temporal instant set.
  */
 char *
-tinstantset_as_mfjson(const TInstantSet *is, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs)
+tinstantset_as_mfjson(const TInstantSet *is, int precision, bool with_bbox,
+  char *srs)
 {
+  /* Get bounding box if needed */
+  bboxunion *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tinstantset_set_bbox(is, &tmp);
+    bbox = &tmp;
+  } 
+  bool isgeo = tgeo_type(is->temptype);
+  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
   size_t size = tinstantset_mfjson_size(is, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
   tinstantset_mfjson_buf(is, isgeo, hasz, precision, bbox, srs, output);
@@ -763,14 +734,7 @@ tinstantset_as_mfjson(const TInstantSet *is, bool isgeo, bool hasz,
 char *
 tboolinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstantset_set_bbox(is, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstantset_as_mfjson(is, false, false, 0, (bboxunion *) bbox, NULL);
+  return tinstantset_as_mfjson(is, 0, with_bbox, NULL);
 }
 
 /**
@@ -781,14 +745,7 @@ tboolinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 char *
 tintinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstantset_set_bbox(is, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstantset_as_mfjson(is, false, false, 0, (bboxunion *) bbox, NULL);
+  return tinstantset_as_mfjson(is, 0, with_bbox, NULL);
 }
 
 /**
@@ -799,15 +756,7 @@ tintinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 char *
 tfloatinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstantset_set_bbox(is, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstantset_as_mfjson(is, false, false, precision, (bboxunion *) bbox,
-    NULL);
+  return tinstantset_as_mfjson(is, precision, with_bbox, NULL);
 }
 
 /**
@@ -818,14 +767,7 @@ tfloatinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision)
 char *
 ttextinstset_as_mfjson(const TInstantSet *is, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstantset_set_bbox(is, &tmp);
-    bbox = &tmp;
-  }  
-  return tinstantset_as_mfjson(is, false, false, 0, (bboxunion *) bbox, NULL);
+  return tinstantset_as_mfjson(is, 0, with_bbox, NULL);
 }
 
 /**
@@ -838,16 +780,7 @@ char *
 tgeompointinstset_as_mfjson(const TInstantSet *is, bool with_bbox,
   int precision, char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstantset_set_bbox(is, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
-  return tinstantset_as_mfjson(is, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tinstantset_as_mfjson(is, precision, with_bbox, srs);
 }
 
 /**
@@ -860,16 +793,7 @@ char *
 tgeogpointinstset_as_mfjson(const TInstantSet *is, bool with_bbox,
   int precision, char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tinstantset_set_bbox(is, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
-  return tinstantset_as_mfjson(is, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tinstantset_as_mfjson(is, precision, with_bbox, srs);
 }
 #endif /* MEOS */
 
@@ -943,9 +867,18 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
  * @brief Return the MF-JSON representation of a temporal sequence.
  */
 char *
-tsequence_as_mfjson(const TSequence *seq, bool isgeo, bool hasz, int precision,
-  const bboxunion *bbox, char *srs)
+tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
+  char *srs)
 {
+  /* Get bounding box if needed */
+  bboxunion *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequence_set_bbox(seq, &tmp);
+    bbox = &tmp;
+  } 
+  bool isgeo = tgeo_type(seq->temptype);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   size_t size = tsequence_mfjson_size(seq, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
   tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
@@ -960,15 +893,8 @@ tsequence_as_mfjson(const TSequence *seq, bool isgeo, bool hasz, int precision,
  */
 char *
 tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
-{
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequence_set_bbox(seq, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequence_as_mfjson(seq, false, false, 0, (bboxunion *) bbox, NULL);
+{ 
+  return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
 /**
@@ -979,14 +905,7 @@ tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
 char *
 tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequence_set_bbox(seq, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequence_as_mfjson(seq, false, false, 0, (bboxunion *) bbox, NULL);
+  return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
 /**
@@ -997,15 +916,7 @@ tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 char *
 tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequence_set_bbox(seq, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequence_as_mfjson(seq, false, false, precision, (bboxunion *) bbox,
-    NULL);
+  return tsequence_as_mfjson(seq, precision, with_bbox, NULL);
 }
 
 /**
@@ -1016,14 +927,7 @@ tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 char *
 ttextseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequence_set_bbox(seq, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequence_as_mfjson(seq, false, false, 0, (bboxunion *) bbox, NULL);
+  return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
 /**
@@ -1036,16 +940,7 @@ char *
 tgeompointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequence_set_bbox(seq, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  return tsequence_as_mfjson(seq, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tsequence_as_mfjson(seq, precision, with_bbox, srs);
 }
 
 /**
@@ -1058,16 +953,7 @@ char *
 tgeogpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequence_set_bbox(seq, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  return tsequence_as_mfjson(seq, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tsequence_as_mfjson(seq, precision, with_bbox, srs);
 }
 #endif /* MEOS */
 
@@ -1155,9 +1041,18 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
  * @sqlfunc asMFJSON()
  */
 char *
-tsequenceset_as_mfjson(const TSequenceSet *ss, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs)
+tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
+  char *srs)
 {
+  /* Get bounding box if needed */
+  bboxunion *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    tsequenceset_set_bbox(ss, &tmp);
+    bbox = &tmp;
+  } 
+  bool isgeo = tgeo_type(ss->temptype);
+  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
   size_t size = tsequenceset_mfjson_size(ss, isgeo, hasz, precision, bbox,
     srs);
   char *output = palloc(size);
@@ -1173,15 +1068,8 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool isgeo, bool hasz,
  */
 char *
 tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
-{
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequenceset_set_bbox(ss, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequenceset_as_mfjson(ss, false, false, 0, (bboxunion *) bbox, NULL);
+{ 
+  return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
 /**
@@ -1192,14 +1080,7 @@ tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 char *
 tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequenceset_set_bbox(ss, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequenceset_as_mfjson(ss, false, false, 0, (bboxunion *) bbox, NULL);
+  return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
 /**
@@ -1210,15 +1091,7 @@ tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 char *
 tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 {
-  /* Get bounding box if needed */
-  TBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequenceset_set_bbox(ss, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequenceset_as_mfjson(ss, false, false, precision, (bboxunion *) bbox,
-    NULL);
+  return tsequenceset_as_mfjson(ss, precision, with_bbox, NULL);
 }
 
 /**
@@ -1229,14 +1102,7 @@ tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 char *
 ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
-  /* Get bounding box if needed */
-  Period *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequenceset_set_bbox(ss, &tmp);
-    bbox = &tmp;
-  }  
-  return tsequenceset_as_mfjson(ss, false, false, 0, (bboxunion *) bbox, NULL);
+  return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
 /**
@@ -1249,16 +1115,7 @@ char *
 tgeompointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
   int precision, char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequenceset_set_bbox(ss, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
-  return tsequenceset_as_mfjson(ss, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tsequenceset_as_mfjson(ss, precision, with_bbox, srs);
 }
 
 /**
@@ -1271,16 +1128,7 @@ char *
 tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
   int precision, char *srs)
 {
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    tsequenceset_set_bbox(ss, &tmp);
-    bbox = &tmp;
-  }  
-  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
-  return tsequenceset_as_mfjson(ss, true, hasz, precision, (bboxunion *) bbox,
-    srs);
+  return tsequenceset_as_mfjson(ss, precision, with_bbox, srs);
 }
 #endif /* MEOS */
 
@@ -1296,32 +1144,22 @@ tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
  * @sqlfunc asMFJSON()
  */
 char *
-temporal_as_mfjson(const Temporal *temp, int precision, int with_bbox,
-  bool isgeo, char *srs)
+temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision, 
+  char *srs)
 {
-  /* Get bounding box if needed */
-  bboxunion *bbox = NULL, tmp;
-  if (with_bbox)
-  {
-    temporal_set_bbox(temp, &tmp);
-    bbox = &tmp;
-  }
-
-  bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_as_mfjson((TInstant *) temp, isgeo, hasz, precision,
-      bbox, srs);
+    result = tinstant_as_mfjson((TInstant *) temp, precision, with_bbox, srs);
   else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_as_mfjson((TInstantSet *) temp, isgeo, hasz,
-      precision, bbox, srs);
+    result = tinstantset_as_mfjson((TInstantSet *) temp, precision, with_bbox,
+       srs);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_as_mfjson((TSequence *) temp, isgeo, hasz, precision,
-      bbox, srs);
+    result = tsequence_as_mfjson((TSequence *) temp, precision, with_bbox,
+      srs);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_as_mfjson((TSequenceSet *) temp, isgeo, hasz,
-      precision, bbox, srs);
+    result = tsequenceset_as_mfjson((TSequenceSet *) temp, precision, 
+      with_bbox, srs);
   return result;
 }
 

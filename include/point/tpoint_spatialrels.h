@@ -62,7 +62,7 @@ extern int spatialrel_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2, Datum (*func)(Datum, Datum));
 
 extern int dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
-  Datum dist);
+  double dist);
 
 /*****************************************************************************/
 

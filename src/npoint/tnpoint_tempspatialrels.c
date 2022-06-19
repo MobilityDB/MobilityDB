@@ -54,14 +54,14 @@
  */
 Temporal *
 tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
-  bool restr, Datum atvalue)
+  bool restr, bool atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *geo = DatumGetGserializedP(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, geo, tinter,
-    restr, atvalue);
+  Temporal *result = tinterrel_tpoint_geo(tempgeom, geo, tinter, restr,
+     atvalue);
   pfree(tempgeom);
   pfree(geo);
   return result;
@@ -73,7 +73,7 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
  */
 Temporal *
 tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool tinter,
-  bool restr, Datum atvalue)
+  bool restr, bool atvalue)
 {
   if (gserialized_is_empty(geo))
     return NULL;
@@ -94,7 +94,7 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool tinter,
  */
 Temporal *
 tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, bool restr,
-  Datum atvalue)
+  bool atvalue)
 {
   if (gserialized_is_empty(geo))
     return NULL;
@@ -110,7 +110,7 @@ tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, bool restr,
  */
 Temporal *
 ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr,
-  Datum atvalue)
+  bool atvalue)
 {
   if (gserialized_is_empty(geo))
     return NULL;
@@ -128,7 +128,7 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr,
  */
 Temporal *
 ttouches_geo_tnpoint(const GSERIALIZED *geo, const Temporal *temp, bool restr,
-  Datum atvalue)
+  bool atvalue)
 {
   return ttouches_tnpoint_geo(temp, geo, restr, atvalue);
 }
@@ -139,7 +139,7 @@ ttouches_geo_tnpoint(const GSERIALIZED *geo, const Temporal *temp, bool restr,
  */
 Temporal *
 ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
-  Datum atvalue)
+  bool atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
@@ -157,7 +157,7 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
  */
 Temporal *
 ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
-  Datum atvalue)
+  bool atvalue)
 {
   return ttouches_tnpoint_npoint(temp, np, restr, atvalue);
 }
@@ -167,8 +167,8 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
  * temporal network point are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, Datum dist, bool restr,
-  Datum atvalue)
+tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, double dist, bool restr,
+  bool atvalue)
 {
   if (gserialized_is_empty(geo))
     return NULL;
@@ -183,8 +183,8 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, Datum dist, bool restr,
  * temporal network point are within the given distance
  */
 Temporal *
-tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, Datum dist, bool restr,
-  Datum atvalue)
+tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, double dist, bool restr,
+  bool atvalue)
 {
   return tdwithin_tnpoint_geo(temp, geo, dist, restr, atvalue);
 }
@@ -194,8 +194,8 @@ tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, Datum dist, bool restr,
  * the temporal network point are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, Datum dist, bool restr,
-  Datum atvalue)
+tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
+  bool atvalue)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *geo = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
@@ -210,8 +210,8 @@ tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, Datum dist, bool restr,
  * the temporal network point are within the given distance
  */
 Temporal *
-tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, Datum dist, bool restr,
-  Datum atvalue)
+tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
+  bool atvalue)
 {
   return tdwithin_tnpoint_npoint(temp, np, dist, restr, atvalue);
 }
@@ -221,8 +221,8 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, Datum dist, bool restr,
  * points are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, Datum dist,
-  bool restr, Datum atvalue)
+tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
+  bool restr, bool atvalue)
 {
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time

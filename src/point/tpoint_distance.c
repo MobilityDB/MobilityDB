@@ -770,7 +770,7 @@ nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   datum_func2 func = distance_fn(temp->flags);
-  Datum traj = tpoint_trajectory(temp);
+  Datum traj = PointerGetDatum(tpoint_trajectory(temp));
   double result = DatumGetFloat8(func(traj, PointerGetDatum(gs)));
   pfree(DatumGetPointer(traj));
   return result;
@@ -790,7 +790,7 @@ nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
   ensure_same_srid_stbox_gs(box, gs);
   ensure_same_spatial_dimensionality_stbox_gs(box, gs);
   datum_func2 func = distance_fn(box->flags);
-  Datum geo = stbox_to_geometry(box);
+  Datum geo = PointerGetDatum(stbox_to_geometry(box));
   double result = DatumGetFloat8(func(geo, PointerGetDatum(gs)));
   pfree(DatumGetPointer(geo));
   return result;
@@ -823,8 +823,8 @@ nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
   /* Select the distance function to be applied */
   datum_func2 func = distance_fn(box1->flags);
   /* Convert the boxes to geometries */
-  Datum geo1 = stbox_to_geometry(box1);
-  Datum geo2 = stbox_to_geometry(box2);
+  Datum geo1 = PointerGetDatum(stbox_to_geometry(box1));
+  Datum geo2 = PointerGetDatum(stbox_to_geometry(box2));
   /* Compute the result */
   double result = DatumGetFloat8(func(geo1, geo2));
   pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
@@ -859,12 +859,12 @@ nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
   /* Select the distance function to be applied */
   datum_func2 func = distance_fn(box->flags);
   /* Convert the stbox to a geometry */
-  Datum geo = stbox_to_geometry(box);
+  Datum geo = PointerGetDatum(stbox_to_geometry(box));
   Temporal *temp1 = hast ?
     temporal_restrict_period(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
-  Datum traj = tpoint_trajectory(temp1);
+  Datum traj = PointerGetDatum(tpoint_trajectory(temp1));
   double result = DatumGetFloat8(func(traj, geo));
 
   pfree(DatumGetPointer(traj));
@@ -905,7 +905,7 @@ nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  */
 bool
 shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum *result)
+  GSERIALIZED **result)
 {
   if (gserialized_is_empty(gs))
     return false;
@@ -914,18 +914,16 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (geodetic)
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Datum traj = tpoint_trajectory(temp);
-  GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
+  GSERIALIZED *traj = tpoint_trajectory(temp);
   if (geodetic)
     /* Notice that geography_shortestline_internal is a MobilityDB function */
-    *result = PointerGetDatum(geography_shortestline_internal(gstraj, gs, true));
+    *result = geography_shortestline_internal(traj, gs, true);
   else
   {
     *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      PointerGetDatum(PGIS_LWGEOM_shortestline3d(gstraj, gs)) :
-      PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, gs));
+      PGIS_LWGEOM_shortestline3d(traj, gs) :
+      PGIS_LWGEOM_shortestline2d(traj, gs);
   }
-  PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return true;
 }
@@ -938,7 +936,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  */
 bool
 shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum *line)
+  GSERIALIZED **result)
 {
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
@@ -951,7 +949,10 @@ shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool found1 = temporal_value_at_timestamp(temp1, inst->t, false, &value1);
   bool found2 = temporal_value_at_timestamp(temp2, inst->t, false, &value2);
   assert (found1 && found2);
-  *line = line_make(value1, value2);
+  
+  LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
+  *result = geo_serialize(line);
+  lwgeom_free(line);
   return true;
 }
 

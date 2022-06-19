@@ -180,7 +180,7 @@ spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np, Datum param,
  */
 int
 dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum dist)
+  double dist)
 {
   ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
   Temporal *sync1, *sync2;

@@ -71,6 +71,7 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 /* Cast functions for span and time types */
 
 extern Span *elem_to_span(Datum d, mobdbType basetype);
+extern void timestampset_set_period(const TimestampSet *ss, Period *p);
 
 /*****************************************************************************/
 
@@ -110,6 +111,7 @@ extern bool overright_span_elem(const Span *s, Datum d, mobdbType basetype);
 
 /* Set functions for span and time types */
 
+extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
 
 /*****************************************************************************/
 

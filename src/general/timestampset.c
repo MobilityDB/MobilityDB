@@ -229,7 +229,7 @@ timestampset_make_free(TimestampTz *times, int count)
 }
 
 /**
- * @ingroup libmeosint_spantime_constructor
+ * @ingroup libmeos_spantime_constructor
  * @brief Return a copy of a timestamp set.
  */
 TimestampSet *

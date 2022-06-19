@@ -129,7 +129,7 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 /* Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint */
 
-extern Datum point_make(double x, double y, double z, bool hasz,
+extern GSERIALIZED *gspoint_make(double x, double y, double z, bool hasz,
   bool geodetic, int32 srid);
 extern Datum geosegm_interpolate_point(Datum start, Datum end,
   long double ratio);
@@ -155,7 +155,6 @@ extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   bool linear);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
-extern Datum line_make(Datum value1, Datum value2);
 
 /* Functions for spatial reference systems */
 
@@ -176,8 +175,8 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /* Restriction functions */
 
-extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
-  int *count);
+extern TSequence **tpointseq_at_geometry(const TSequence *seq,
+  const GSERIALIZED *gs, int *count);
 extern Temporal *tpoint_at_stbox(const Temporal *temp, const STBOX *box,
   bool upper_inc);
 extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBOX *box);

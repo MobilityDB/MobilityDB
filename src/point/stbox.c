@@ -400,22 +400,22 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
  * @brief Cast a spatiotemporal box as a PostGIS geometry
  * @sqlop @p ::
  */
-Datum
+GSERIALIZED *
 stbox_to_geometry(const STBOX *box)
 {
   ensure_has_X_stbox(box);
-  Datum result;
+  GSERIALIZED *result;
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     BOX3D box3d;
     stbox_set_box3d(box, &box3d);
-    result = PointerGetDatum(PGIS_BOX3D_to_LWGEOM(&box3d));
+    result = PGIS_BOX3D_to_LWGEOM(&box3d);
   }
   else
   {
     GBOX box2d;
     stbox_set_gbox(box, &box2d);
-    result = PointerGetDatum(PGIS_BOX2D_to_LWGEOM(&box2d, box->srid));
+    result = PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
   }
   return result;
 }

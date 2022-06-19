@@ -84,7 +84,7 @@
  */
 Temporal *
 tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
-  bool restr, Datum atvalue)
+  bool restr, bool atvalue)
 {
   return tinterrel_tpoint_geo(temp, geo, TDISJOINT, restr, atvalue);
 }
@@ -102,7 +102,7 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
  */
 Temporal *
 tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
-  bool restr, Datum atvalue)
+  bool restr, bool atvalue)
 {
   return tinterrel_tpoint_geo(temp, geo, TINTERSECTS, restr, atvalue);
 }

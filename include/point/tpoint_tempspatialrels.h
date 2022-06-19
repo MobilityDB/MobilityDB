@@ -47,9 +47,9 @@
 /*****************************************************************************/
 
 extern Temporal *tinterrel_tpoint_geo(const Temporal *temp,
-  const GSERIALIZED *gs, bool tinter, bool atvalue, Datum value);
+  const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
 extern Temporal *tdwithin_tpoint_tpoint1(const Temporal *sync1,
-  const Temporal *sync2, Datum dist, bool atvalue, Datum value);
+  const Temporal *sync2, double dist, bool restr, bool atvalue);
 extern int tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2,
   Datum ev2, TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2);

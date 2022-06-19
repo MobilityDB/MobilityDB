@@ -260,7 +260,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     return result;
   }
 
-  Datum traj = tpointseq_trajectory(seq);
+  Datum traj = PointerGetDatum(tpointseq_trajectory(seq));
   Datum inter = geom_intersection2d(traj, geom);
   GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
   if (gserialized_is_empty(gsinter))
@@ -452,7 +452,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
  * @param[in] gs Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] restr True when the atValue function is applied to the result
- * @param[in] atvalue Value to be use for the atValue function
+ * @param[in] atvalue Value to be used for the atValue function
  * @pre The geometry is NOT empty. This should be ensured by the calling
  * function
  * @note 3D is not supported because there is no 3D intersection function
@@ -460,7 +460,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
  */
 Temporal *
 tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
-  bool restr, Datum atvalue)
+  bool restr, bool atvalue)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -498,9 +498,10 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
+    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
+      REST_AT);
     pfree(result);
-    result = at_result;
+    result = atresult;
   }
   return result;
 }
@@ -896,10 +897,11 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
  */
 static TSequenceSet *
 tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
-  Datum dist, datum_func3 func)
+  double dist, datum_func3 func)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
-  int count = tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func, sequences);
+  int count = tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist),
+    func, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -914,7 +916,7 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
  */
 static TSequenceSet *
 tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
-  const TSequenceSet *ss2, Datum dist, datum_func3 func)
+  const TSequenceSet *ss2, double dist, datum_func3 func)
 {
   /* Singleton sequence set */
   if (ss1->count == 1)
@@ -927,7 +929,8 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ss2, i);
-    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func, &sequences[k]);
+    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist), func,
+      &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1258,7 +1261,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  */
 Temporal *
 tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
-  Datum atvalue)
+  bool atvalue)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1284,9 +1287,10 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
+    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
+      REST_AT);
     pfree(result);
-    result = at_result;
+    result = atresult;
   }
   return result;
 }
@@ -1302,8 +1306,8 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @sqlfunc ttouches()
  */
 Temporal *
-ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool restr, Datum atvalue)
+ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
+  bool atvalue)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1323,9 +1327,10 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
+    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
+      REST_AT);
     pfree(result);
-    result = at_result;
+    result = atresult;
   }
   return result;
 }
@@ -1342,8 +1347,8 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @sqlfunc tdwithin()
  */
 Temporal *
-tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
-  bool restr, Datum atvalue)
+tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool restr, bool atvalue)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1357,7 +1362,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = dist;
+  lfinfo.param[0] = Float8GetDatum(dist);
   lfinfo.args = true;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TBOOL;
@@ -1379,9 +1384,10 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
+    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
+      REST_AT);
     pfree(result);
-    result = at_result;
+    result = atresult;
   }
   return result;
 }
@@ -1395,7 +1401,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
  */
 Temporal *
 tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
-  Datum dist, bool restr, Datum atvalue)
+  double dist, bool restr, bool atvalue)
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
@@ -1406,27 +1412,28 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
     lfinfo.func = (varfunc) func;
     lfinfo.numparam = 1;
-    lfinfo.param[0] = dist;
+    lfinfo.param[0] = Float8GetDatum(dist);
     lfinfo.restype = T_TBOOL;
     if (sync1->subtype == TINSTANT)
-      result = (Temporal *) tfunc_tinstant_tinstant(
-        (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
+      result = (Temporal *) tfunc_tinstant_tinstant((TInstant *) sync1,
+        (TInstant *) sync2, &lfinfo);
     else /* sync1->subtype == TINSTANTSET */
       result = (Temporal *) tfunc_tinstantset_tinstantset(
         (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
   }
   else if (sync1->subtype == TSEQUENCE)
-    result = (Temporal *) tdwithin_tpointseq_tpointseq(
-      (TSequence *) sync1, (TSequence *) sync2, dist, func);
+    result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
+      (TSequence *) sync2, dist, func);
   else /* sync1->subtype == TSEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
       (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
+    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
+      REST_AT);
     pfree(result);
-    result = at_result;
+    result = atresult;
   }
   return result;
 }
@@ -1440,7 +1447,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
  */
 Temporal *
 tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum dist, bool restr, Datum atvalue)
+  double dist, bool restr, bool atvalue)
 {
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   Temporal *sync1, *sync2;
