@@ -38,6 +38,7 @@
 // #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"

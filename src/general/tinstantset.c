@@ -88,6 +88,7 @@ tinstantset_offsets_ptr(const TInstantSet *is)
 }
 
 /**
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the n-th instant of a temporal instant set.
  * @pre The argument @p index is less than the number of instants in the
  * instant set

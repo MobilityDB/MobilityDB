@@ -88,6 +88,7 @@ tsequenceset_offsets_ptr(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence set.
  * @pre The argument @p index is less than the number of sequences in the
  * sequence set

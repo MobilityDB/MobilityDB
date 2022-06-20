@@ -238,6 +238,7 @@ tsequence_offsets_ptr(const TSequence *seq)
 }
 
 /**
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the n-th instant of a temporal sequence.
  * @pre The argument @p index is less than the number of instants in the
  * sequence

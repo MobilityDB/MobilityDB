@@ -50,6 +50,7 @@
 #include <assert.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/temporal_util.h"
 #include "point/pgis_call.h"

@@ -4432,7 +4432,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  *
  *
@@ -4479,6 +4479,32 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
 
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal point to (the complement of) a geometry.
+ * @sqlfunc atGeometry(), minusGeometry()
+ */
+Temporal *
+tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
+{
+  Temporal *result = tpoint_restrict_geometry(temp, gs, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal point to (the complement of) a geometry.
+ * @sqlfunc atGeometry(), minusGeometry()
+ */
+Temporal *
+tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
+{
+  Temporal *result = tpoint_restrict_geometry(temp, gs, REST_MINUS);
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -4566,7 +4592,7 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
  * @pre The arguments are of the same dimensionality and have the same SRID
  */
 Temporal *
-tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
+tpoint_at_stbox1(const Temporal *temp, const STBOX *box, bool upper_inc)
 {
   /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
@@ -4653,8 +4679,8 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
  *
  * @pre The arguments are of the same dimensionality and have the same SRID
  */
-Temporal *
-tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
+static Temporal *
+tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
 {
   /* Bounding box test */
   STBOX box1;
@@ -4663,7 +4689,7 @@ tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
     return temporal_copy(temp);
 
   Temporal *result = NULL;
-  Temporal *temp1 = tpoint_at_stbox(temp, box, UPPER_INC);
+  Temporal *temp1 = tpoint_at_stbox1(temp, box, UPPER_INC);
   if (temp1 != NULL)
   {
     PeriodSet *ps1 = temporal_time(temp);
@@ -4680,7 +4706,7 @@ tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a spatiotemporal
  * box.
  *
@@ -4700,9 +4726,35 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
     ensure_same_srid_tpoint_stbox(temp, box);
     ensure_same_spatial_dimensionality(temp->flags, box->flags);
   }
-  Temporal *result = atfunc ? tpoint_at_stbox(temp, box, UPPER_INC) :
-    tpoint_minus_stbox(temp, box);
+  Temporal *result = atfunc ? tpoint_at_stbox1(temp, box, UPPER_INC) :
+    tpoint_minus_stbox1(temp, box);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal point to a spatiotemporal box.
+ * @sqlfunc atStbox(), minusGeometry()
+ */
+Temporal *
+tpoint_at_stbox(const Temporal *temp, const STBOX *box)
+{
+  Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal point to the complement of a spatiotemporal box.
+ * @sqlfunc minusStbox()
+ */
+Temporal *
+tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
+{
+  Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

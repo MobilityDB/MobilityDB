@@ -36,10 +36,61 @@
 
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 
 /*****************************************************************************
  * Restriction Functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to a base value.
+ * @sqlfunc atValue()
+ */
+Temporal *
+temporal_at_value(const Temporal *temp, Datum value)
+{
+  Temporal *result = temporal_restrict_value(temp, value, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a base value.
+ * @sqlfunc minusValue()
+ */
+Temporal *
+temporal_minus_value(const Temporal *temp, Datum value)
+{
+  Temporal *result = temporal_restrict_value(temp, value, REST_MINUS);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to an array of base values.
+ * @sqlfunc atValues()
+ */
+Temporal *
+temporal_at_values(const Temporal *temp, Datum *values, int count)
+{
+  Temporal *result = temporal_restrict_values(temp, values, count, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of an array of base values.
+ * @sqlfunc minusValues()
+ */
+Temporal *
+temporal_minus_values(const Temporal *temp, Datum *values, int count)
+{
+  Temporal *result = temporal_restrict_values(temp, values, count, REST_MINUS);
+  return result;
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_temporal_restrict
@@ -86,6 +137,57 @@ Temporal *
 temporal_minus_max(const Temporal *temp)
 {
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to a span of base values.
+ * @sqlfunc atSpan()
+ */
+Temporal *
+tnumber_at_span(const Temporal *temp, Span *span)
+{
+  Temporal *result = tnumber_restrict_span(temp, span, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a span of base values.
+ * @sqlfunc minusSpan()
+ */
+Temporal *
+tnumber_minus_span(const Temporal *temp, Span *span)
+{
+  Temporal *result = tnumber_restrict_span(temp, span, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to an array of spans of base values.
+ * @sqlfunc minusSpans()
+ */
+Temporal *
+tnumber_at_spans(const Temporal *temp, Span **spans, int count)
+{
+  Temporal *result = tnumber_restrict_spans(temp, spans, count, REST_AT);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of an array of spans
+ * of base values.
+ * @sqlfunc minusSpans()
+ */
+Temporal *
+tnumber_minus_spans(const Temporal *temp, Span **spans, int count)
+{
+  Temporal *result = tnumber_restrict_spans(temp, spans, count, REST_AT);
   return result;
 }
 

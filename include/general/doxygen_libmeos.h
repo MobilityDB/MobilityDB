@@ -232,10 +232,6 @@
  * @ingroup libmeos_temporal
  * @brief Local aggregate functions for temporal types.
  *
- * @defgroup libmeos_temporal_tiling Multidimensional tiling functions
- * @ingroup libmeos_temporal
- * @brief Multidimensional tiling functions for temporal types.
- *
  * @defgroup libmeos_temporal_similarity Similarity functions
  * @ingroup libmeos_temporal
  * @brief Similarity functions for temporal types.
@@ -366,13 +362,9 @@
  * @ingroup libmeos_int_temporal
  * @brief Restriction functions for temporal types.
  *
- * @defgroup libmeos_int_temporal_bool Boolean functions
+ * @defgroup libmeos_int_temporal_math Mathematical functions
  * @ingroup libmeos_int_temporal
- * @brief Boolean functions for temporal types.
- *
- * @defgroup libmeos_int_temporal_text Text functions
- * @ingroup libmeos_int_temporal
- * @brief Text functions for temporal types.
+ * @brief Mathematical functions for temporal types.
  *
  * @defgroup libmeos_int_temporal_dist Distance functions
  * @ingroup libmeos_int_temporal
@@ -398,10 +390,6 @@
  * @ingroup libmeos_int_temporal_spatial
  * @brief Spatial transformation functions for temporal point types.
  *
- * @defgroup libmeos_int_temporal_spatial_rel Spatial relationship functions
- * @ingroup libmeos_int_temporal_spatial
- * @brief Spatial relationship functions for temporal point types.
- *
  * @defgroup libmeos_int_temporal_time Time functions
  * @ingroup libmeos_int_temporal
  * @brief Time functions for temporal types.
@@ -409,14 +397,6 @@
  * @defgroup libmeos_int_temporal_agg Local aggregate functions
  * @ingroup libmeos_int_temporal
  * @brief Local aggregate functions for temporal types.
- *
- * @defgroup libmeos_int_temporal_tiling Multidimensional tiling functions
- * @ingroup libmeos_int_temporal
- * @brief Multidimensional tiling functions for temporal types.
- *
- * @defgroup libmeos_int_temporal_similarity Similarity functions
- * @ingroup libmeos_int_temporal
- * @brief Similarity functions for temporal types.
  */
 
 /*****************************************************************************/
