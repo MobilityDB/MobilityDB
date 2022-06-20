@@ -749,6 +749,160 @@ tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
 }
 #endif /* MEOS */
 
+/*****************************************************************************/
+
+static void
+ensure_temptype_mfjson(const char *typestr)
+{
+  if (strcmp(typestr, "MovingBoolean") != 0 && strcmp(typestr, "MovingInteger") != 0 &&
+      strcmp(typestr, "MovingFloat") != 0 && strcmp(typestr, "MovingText") != 0 &&
+      strcmp(typestr, "MovingGeomPoint") != 0 && strcmp(typestr, "MovingGeogPoint") != 0 )
+    elog(ERROR, "Invalid 'type' value in MFJSON string");
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal point from its MF-JSON representation
+ */
+Temporal *
+temporal_from_mfjson(char *mfjson)
+{
+  char *srs = NULL;
+  int srid = 0;
+  Temporal *result = NULL;
+
+  json_tokener *jstok = NULL;
+  json_object *poObj = NULL;
+  json_object *poObjType = NULL;
+  json_object *poObjInterp = NULL;
+  json_object *poObjInterp1 = NULL;
+  json_object *poObjDates = NULL;
+  json_object *poObjSrs = NULL;
+
+  /* Begin to parse json */
+  jstok = json_tokener_new();
+  poObj = json_tokener_parse_ex(jstok, mfjson, -1);
+  if (jstok->err != json_tokener_success)
+  {
+    char err[256];
+    snprintf(err, 256, "%s (at offset %d)",
+      json_tokener_error_desc(jstok->err), jstok->char_offset);
+    json_tokener_free(jstok);
+    json_object_put(poObj);
+    elog(ERROR, "Error while processing MFJSON string");
+  }
+  json_tokener_free(jstok);
+
+  /*
+   * Ensure that it is a moving type
+   */
+  poObjType = findMemberByName(poObj, "type");
+  if (poObjType == NULL)
+    elog(ERROR, "Unable to find 'type' in MFJSON string");
+
+  /*
+   * Determine type of temporal type
+   */
+  const char *typestr = json_object_get_string(poObjType);
+  mobdbType temptype;
+  ensure_temptype_mfjson(typestr);
+  if (strcmp(typestr, "MovingBoolean") == 0)
+    temptype = T_TBOOL;
+  else if (strcmp(typestr, "MovingInteger") == 0)
+    temptype = T_TINT;
+  else if (strcmp(typestr, "MovingFloat") == 0)
+    temptype = T_TFLOAT;
+  else if (strcmp(typestr, "MovingText") == 0)
+    temptype = T_TTEXT;
+  else if (strcmp(typestr, "MovingGeomPoint") == 0)
+    temptype = T_TGEOMPOINT;
+  else /* typestr == "MovingGeogPoint" */
+    temptype = T_TGEOGPOINT;
+
+  /*
+   * Determine interpolation type
+   */
+  poObjInterp = findMemberByName(poObj, "interpolations");
+  if (poObjInterp == NULL)
+    elog(ERROR, "Unable to find 'interpolations' in MFJSON string");
+
+  if (json_object_get_type(poObjInterp) != json_type_array)
+    elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
+
+  const int nSize = json_object_array_length(poObjInterp);
+  if (nSize != 1)
+    elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
+
+  bool isgeo = tgeo_type(temptype);
+  if (isgeo)
+  {
+    /* Parse crs and set SRID of temporal point */
+    poObjSrs = findMemberByName(poObj, "crs");
+    if (poObjSrs != NULL)
+    {
+      json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
+      if (poObjSrsType != NULL)
+      {
+        json_object *poObjSrsProps = findMemberByName(poObjSrs, "properties");
+        if (poObjSrsProps)
+        {
+          json_object *poNameURL = findMemberByName(poObjSrsProps, "name");
+          if (poNameURL)
+          {
+            const char *pszName = json_object_get_string(poNameURL);
+            if (pszName)
+            {
+              srs = palloc(strlen(pszName) + 1);
+              strcpy(srs, pszName);
+            }
+          }
+        }
+      }
+    }
+    if (srs)
+    {
+      // The following call requires a valid spatial_ref_sys table entry
+      // srid = getSRIDbySRS(fcinfo, srs);
+      sscanf(srs, "EPSG:%d", &srid);
+      pfree(srs);
+    }
+  }
+
+  /* Read interpolation value */
+  poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
+  const char *pszInterp = json_object_get_string(poObjInterp1);
+  if (pszInterp)
+  {
+    if (strcmp(pszInterp, "Discrete") == 0)
+    {
+      poObjDates = findMemberByName(poObj, "datetimes");
+      if (poObjDates != NULL &&
+        json_object_get_type(poObjDates) == json_type_array)
+        result = (Temporal *) tinstantset_from_mfjson(poObj, isgeo, srid,
+          temptype);
+      else
+        result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid,
+          temptype);
+    }
+    else if (strcmp(pszInterp, "Stepwise") == 0 ||
+      strcmp(pszInterp, "Linear") == 0)
+    {
+      bool linear = strcmp(pszInterp, "Linear") == 0;
+      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
+      if (poObjSeqs != NULL)
+        result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
+          temptype, linear);
+      else
+        result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
+          temptype, linear);
+    }
+    else
+      elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
+  }
+
+  return result;
+}
+
 /*****************************************************************************
  * Input in WKB format
  * Please refer to the file temporal_wkb_out.c where the binary format is

@@ -559,7 +559,7 @@ tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
   {
     tinstant_set_bbox(inst, &tmp);
     bbox = &tmp;
-  } 
+  }
   bool isgeo = tgeo_type(inst->temptype);
   bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
   size_t size = tinstant_mfjson_size(inst, isgeo, hasz, precision, bbox, srs);
@@ -576,7 +576,7 @@ tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
  */
 char *
 tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
-{ 
+{
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
@@ -598,7 +598,7 @@ tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
  */
 char *
 tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
-{ 
+{
   return tinstant_as_mfjson(inst, precision, with_bbox, NULL);
 }
 
@@ -716,7 +716,7 @@ tinstantset_as_mfjson(const TInstantSet *is, int precision, bool with_bbox,
   {
     tinstantset_set_bbox(is, &tmp);
     bbox = &tmp;
-  } 
+  }
   bool isgeo = tgeo_type(is->temptype);
   bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
   size_t size = tinstantset_mfjson_size(is, isgeo, hasz, precision, bbox, srs);
@@ -876,7 +876,7 @@ tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
   {
     tsequence_set_bbox(seq, &tmp);
     bbox = &tmp;
-  } 
+  }
   bool isgeo = tgeo_type(seq->temptype);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   size_t size = tsequence_mfjson_size(seq, isgeo, hasz, precision, bbox, srs);
@@ -893,7 +893,7 @@ tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
  */
 char *
 tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
-{ 
+{
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
@@ -1050,7 +1050,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
   {
     tsequenceset_set_bbox(ss, &tmp);
     bbox = &tmp;
-  } 
+  }
   bool isgeo = tgeo_type(ss->temptype);
   bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
   size_t size = tsequenceset_mfjson_size(ss, isgeo, hasz, precision, bbox,
@@ -1068,7 +1068,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
  */
 char *
 tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
-{ 
+{
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
@@ -1144,7 +1144,7 @@ tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
  * @sqlfunc asMFJSON()
  */
 char *
-temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision, 
+temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision,
   char *srs)
 {
   char *result;
@@ -1158,7 +1158,7 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision,
     result = tsequence_as_mfjson((TSequence *) temp, precision, with_bbox,
       srs);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_as_mfjson((TSequenceSet *) temp, precision, 
+    result = tsequenceset_as_mfjson((TSequenceSet *) temp, precision,
       with_bbox, srs);
   return result;
 }
@@ -1166,33 +1166,6 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision,
 /*****************************************************************************
  * Output in WKT format
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_in_out
- * @brief Return the Well-Known Text (WKT) representation of a temporal value.
- * @see tinstant_as_text()
- * @see tinstantset_as_text()
- * @see tsequence_as_text()
- * @see tsequenceset_as_text()
- * @sqlfunc asText()
- */
-char *
-temporal_as_text(const Temporal *temp)
-{
-  char *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = tinstant_to_string((TInstant *) temp, &basetype_output);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, &basetype_output);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, false, &basetype_output);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, &basetype_output);
-  return result;
-}
-
-/*****************************************************************************/
 
 /**
  * @ingroup libmeos_int_temporal_in_out

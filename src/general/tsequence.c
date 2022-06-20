@@ -1479,7 +1479,7 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Return a copy of a temporal sequence.
  */
 TSequence *
@@ -2142,7 +2142,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of segments of a temporal sequence.
  * @sqlfunc segments()
  */

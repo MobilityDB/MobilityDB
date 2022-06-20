@@ -860,7 +860,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Return a copy of a temporal sequence set.
  */
 TSequenceSet *

@@ -67,7 +67,7 @@ tinstant_value_ptr(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the base value of a temporal instant
  * @sqlfunc getValue()
  */
@@ -83,7 +83,7 @@ tinstant_value(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return a copy of the base value of a temporal instant
  */
 Datum
@@ -411,7 +411,7 @@ tgeompointinst_make(GSERIALIZED *gs, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_int_temporal_constructor
  * @brief Return a copy of a temporal instant.
  */
 TInstant *

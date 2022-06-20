@@ -1188,7 +1188,7 @@ tfloat_to_tint(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_int_temporal_cast
  * @brief Set a period to the bounding period of a temporal value.
  * @see tinstant_set_period
  * @see tinstantset_set_period
@@ -1452,7 +1452,7 @@ temporal_interpolation(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal value
  * @see tinstant_set_bbox
  * @see tinstantset_set_bbox
