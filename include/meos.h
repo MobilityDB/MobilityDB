@@ -37,8 +37,6 @@
 
 /* C */
 #include <stdbool.h>
-/* JSON-C */
-#include <json-c/json.h>
 /* PostgreSQL */
 #include "../postgres/postgres.h"
 #include "../postgres/utils/timestamp_def.h"
@@ -63,8 +61,8 @@ typedef struct
 } Span;
 
 /**
- * Make the Period type as a specialized Span type for faster manipulation
- * of the time dimension
+ * Make the Period type as a Span type for facilitating the manipulation of
+ * the time dimension
  */
 typedef Span Period;
 
@@ -795,19 +793,19 @@ extern Temporal *tint_to_tfloat(const Temporal *temp);
 
 /* Accessor functions for temporal types */
 
+extern bool tbool_end_value(Temporal *temp);
+extern bool tbool_start_value(Temporal *temp);
+extern bool *tbool_values(Temporal *temp);
 extern Interval *temporal_duration(const Temporal *temp);
 extern const TInstant *temporal_end_instant(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
 extern TimestampTz temporal_end_timestamp(Temporal *temp);
-extern Datum temporal_end_value(Temporal *temp);
 extern uint32 temporal_hash(const Temporal *temp);
 extern const TInstant *temporal_instant_n(Temporal *temp, int n);
 extern const TInstant **temporal_instants(const Temporal *temp, int *count);
 extern char *temporal_interpolation(const Temporal *temp);
 extern const TInstant *temporal_max_instant(const Temporal *temp);
-extern Datum temporal_max_value(const Temporal *temp);
 extern const TInstant *temporal_min_instant(const Temporal *temp);
-extern Datum temporal_min_value(const Temporal *temp);
 extern int temporal_num_instants(const Temporal *temp);
 extern int temporal_num_sequences(const Temporal *temp);
 extern int temporal_num_timestamps(const Temporal *temp);
@@ -817,15 +815,31 @@ extern TSequence **temporal_sequences(const Temporal *temp, int *count);
 extern const TInstant *temporal_start_instant(const Temporal *temp);
 extern TSequence *temporal_start_sequence(const Temporal *temp);
 extern TimestampTz temporal_start_timestamp(const Temporal *temp);
-extern Datum temporal_start_value(Temporal *temp);
 extern char *temporal_subtype(const Temporal *temp);
 extern PeriodSet *temporal_time(const Temporal *temp);
 extern Interval *temporal_timespan(const Temporal *temp);
 extern bool temporal_timestamp_n(Temporal *temp, int n, TimestampTz *result);
 extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
-extern Datum *temporal_values(const Temporal *temp, int *count);
+extern double tfloat_end_value(Temporal *temp);
+extern double tfloat_max_value(Temporal *temp);
+extern double tfloat_min_value(Temporal *temp);
 extern Span **tfloat_spans(const Temporal *temp, int *count);
+extern double tfloat_start_value(Temporal *temp);
+extern double *tfloat_values(Temporal *temp);
+extern int tint_end_value(Temporal *temp);
+extern int tint_max_value(Temporal *temp);
+extern int tint_min_value(Temporal *temp);
+extern int tint_start_value(Temporal *temp);
+extern int *tint_values(Temporal *temp);
 extern Span *tnumber_span(const Temporal *temp);
+extern GSERIALIZED *tpoint_end_value(Temporal *temp);
+extern GSERIALIZED *tpoint_start_value(Temporal *temp);
+extern GSERIALIZED **tpoint_values(Temporal *temp);
+extern text *ttext_end_value(Temporal *temp);
+extern text *ttext_max_value(Temporal *temp);
+extern text *ttext_min_value(Temporal *temp);
+extern text *ttext_start_value(Temporal *temp);
+extern text **ttext_values(Temporal *temp);
 
 /*****************************************************************************/
 
@@ -887,11 +901,11 @@ extern Temporal *tnumber_at_spans(const Temporal *temp, Span **spans, int count)
 extern Temporal *tnumber_at_tbox(const Temporal *temp, const TBOX *box);
 extern Temporal *tnumber_minus_span(const Temporal *temp, Span *span);
 extern Temporal *tnumber_minus_spans(const Temporal *temp, Span **spans, int count);
-extern Temporal *tnumber_minus_tbox (const Temporal *temp, const TBOX *box); 
-extern Temporal *tpoint_at_geometry (const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *tpoint_at_stbox (const Temporal *temp, const STBOX *box);
-extern Temporal *tpoint_minus_geometry (const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *tpoint_minus_stbox (const Temporal *temp, const STBOX *box);
+extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBOX *box);
+extern Temporal *tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tpoint_at_stbox(const Temporal *temp, const STBOX *box);
+extern Temporal *tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBOX *box);
 extern Temporal *ttext_at_value(const Temporal *temp, text *txt);
 extern Temporal *ttext_at_values(const Temporal *temp, text **values, int count);
 extern Temporal *ttext_minus_value(const Temporal *temp, text *txt);

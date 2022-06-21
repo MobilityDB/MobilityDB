@@ -300,7 +300,6 @@ extern void temporal_set_period(const Temporal *temp, Period *p);
 extern TInstant *tfloatinst_to_tintinst(const TInstant *inst);
 extern TInstantSet *tfloatinstset_to_tintinstset(const TInstantSet *is);
 extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
-extern Span *tfloatseqset_to_span(const TSequenceSet *ss);
 extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ss);
 extern void tinstant_set_period(const TInstant *inst, Period *p);
 extern void tinstantset_set_period(const TInstantSet *is, Period *p);
@@ -310,16 +309,22 @@ extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
 extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ss);
 extern void tsequence_set_period(const TSequence *seq, Period *p);
 extern void tsequenceset_set_period(const TSequenceSet *ss, Period *p);
-  
+
 /*****************************************************************************/
 
 /* Accessor functions for temporal types */
 
+extern Datum temporal_end_value(Temporal *temp);
+extern Datum temporal_max_value(const Temporal *temp);
+extern Datum temporal_min_value(const Temporal *temp);
 extern void  temporal_set_bbox(const Temporal *temp, void  *box);
+extern Datum temporal_start_value(Temporal *temp);
+extern Datum *temporal_values(const Temporal *temp, int *count);
 extern Span **tfloatinst_spans(const TInstant *inst, int *count);
 extern Span **tfloatinstset_spans(const TInstantSet *is, int *count);
 extern Span *tfloatseq_span(const TSequence *seq);
 extern Span **tfloatseq_spans(const TSequence *seq, int *count);
+extern Span *tfloatseqset_span(const TSequenceSet *ss);
 extern Span **tfloatseqset_spans(const TSequenceSet *ss, int *count);
 extern uint32 tinstant_hash(const TInstant *inst);
 extern const TInstant **tinstant_instants(const TInstant *inst, int *count);

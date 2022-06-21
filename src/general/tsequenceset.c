@@ -1534,12 +1534,12 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_cast
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Cast a temporal sequence set float to a float span.
  * @sqlop @p ::
  */
 Span *
-tfloatseqset_to_span(const TSequenceSet *ss)
+tfloatseqset_span(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)

@@ -1081,64 +1081,6 @@ temporal_merge_array(Temporal **temparr, int count)
 
 /**
  * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer to an integer span.
- * @note The temporal subtype TINSTANT does not have bounding box.
- * @sqlop @p ::
- */
-Span *
-tint_to_span(const Temporal *temp)
-{
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-  {
-    Datum value = tinstant_value((TInstant *) temp);
-    return span_make(value, value, true, true, T_INT4);
-  }
-
-  TBOX *box;
-  if (temp->subtype == TINSTANTSET)
-    box = tinstantset_bbox_ptr((TInstantSet *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    box = tsequence_bbox_ptr((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    box = tsequenceset_bbox_ptr((TSequenceSet *) temp);
-  Datum min = Int32GetDatum(((int) box->xmin));
-  Datum max = Int32GetDatum(((int) box->xmax));
-  return span_make(min, max, true, true, T_INT4);
-}
-
-/**
- * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float to a float span.
- * @note Note that the temporal subtype TINSTANT does not have bounding box.
- * @sqlop @p ::
- */
-Span *
-tfloat_to_span(const Temporal *temp)
-{
-  ensure_valid_tempsubtype(temp->subtype);
-  Span *result;
-  if (temp->subtype == TINSTANT)
-  {
-    Datum value = tinstant_value((TInstant *) temp);
-    result = span_make(value, value, true, true, T_FLOAT8);
-  }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    TBOX *box = tinstantset_bbox_ptr((TInstantSet *) temp);
-    Datum min = Float8GetDatum(box->xmin);
-    Datum max = Float8GetDatum(box->xmax);
-    result = span_make(min, max, true, true, T_FLOAT8);
-  }
-  else if (temp->subtype == TSEQUENCE)
-    result = tfloatseq_span((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tfloatseqset_to_span((TSequenceSet *) temp);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal integer to a temporal float.
  * @see tintinst_to_tfloatinst
  * @see tintinstset_to_tfloatinstset
@@ -1479,7 +1421,7 @@ temporal_set_bbox(const Temporal *temp, void *box)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of base values of a temporal value.
  * @see tinstant_values
  * @see tinstantset_values
@@ -1502,6 +1444,93 @@ temporal_values(const Temporal *temp, int *count)
     result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal boolean
+ * @sqlfunc minValue()
+ */
+bool *
+tbool_values(Temporal *temp)
+{
+  int count;
+  Datum *datumarr = temporal_values(temp, &count);
+  bool *result = palloc(sizeof(bool) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetBool(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal integer
+ * @sqlfunc minValue()
+ */
+int *
+tint_values(Temporal *temp)
+{
+  int count;
+  Datum *datumarr = temporal_values(temp, &count);
+  int *result = palloc(sizeof(int) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetInt32(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal float
+ * @sqlfunc minValue()
+ */
+double *
+tfloat_values(Temporal *temp)
+{
+  int count;
+  Datum *datumarr = temporal_values(temp, &count);
+  double *result = palloc(sizeof(double) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetFloat8(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal text
+ * @sqlfunc minValue()
+ */
+text **
+ttext_values(Temporal *temp)
+{
+  int count;
+  Datum *datumarr = temporal_values(temp, &count);
+  text **result = palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetTextP(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal geometric point
+ * @sqlfunc minValue()
+ */
+GSERIALIZED **
+tpoint_values(Temporal *temp)
+{
+  int count;
+  Datum *datumarr = temporal_values(temp, &count);
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetGserializedP(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_accessor
@@ -1591,7 +1620,7 @@ tnumber_span(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the start base value of a temporal value
  * @sqlfunc startValue()
  */
@@ -1614,10 +1643,66 @@ temporal_start_value(Temporal *temp)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_accessor
+ * @brief Return the start value of a temporal boolean
+ * @sqlfunc startValue()
+ */
+bool
+tbool_start_value(Temporal *temp)
+{
+  return DatumGetBool(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the start value of a temporal integer
+ * @sqlfunc startValue()
+ */
+int
+tint_start_value(Temporal *temp)
+{
+  return DatumGetInt32(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the start value of a temporal float
+ * @sqlfunc startValue()
+ */
+double
+tfloat_start_value(Temporal *temp)
+{
+  return DatumGetFloat8(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the start value of a temporal text
+ * @sqlfunc startValue()
+ */
+text *
+ttext_start_value(Temporal *temp)
+{
+  return DatumGetTextP(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the start value of a temporal geometric point
+ * @sqlfunc startValue()
+ */
+GSERIALIZED *
+tpoint_start_value(Temporal *temp)
+{
+  return DatumGetGserializedP(temporal_start_value(temp));
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return the end base value of a temporal value
- * @sqlfunc endValue()
  */
 Datum
 temporal_end_value(Temporal *temp)
@@ -1641,8 +1726,65 @@ temporal_end_value(Temporal *temp)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_accessor
+ * @brief Return the end value of a temporal boolean
+ * @sqlfunc endValue()
+ */
+bool
+tbool_end_value(Temporal *temp)
+{
+  return DatumGetBool(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end value of a temporal integer
+ * @sqlfunc endValue()
+ */
+int
+tint_end_value(Temporal *temp)
+{
+  return DatumGetInt32(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end value of a temporal float
+ * @sqlfunc endValue()
+ */
+double
+tfloat_end_value(Temporal *temp)
+{
+  return DatumGetFloat8(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end value of a temporal text
+ * @sqlfunc endValue()
+ */
+text *
+ttext_end_value(Temporal *temp)
+{
+  return DatumGetTextP(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end value of a temporal point
+ * @sqlfunc endValue()
+ */
+GSERIALIZED *
+tpoint_end_value(Temporal *temp)
+{
+  return DatumGetGserializedP(temporal_end_value(temp));
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return a copy of the minimum base value of a temporal value
  * @sqlfunc minValue()
  */
@@ -1663,8 +1805,43 @@ temporal_min_value(const Temporal *temp)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal integer
+ * @sqlfunc minValue()
+ */
+int
+tint_min_value(Temporal *temp)
+{
+  return DatumGetInt32(temporal_min_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal float
+ * @sqlfunc minValue()
+ */
+double
+tfloat_min_value(Temporal *temp)
+{
+  return DatumGetFloat8(temporal_min_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum value of a temporal text
+ * @sqlfunc minValue()
+ */
+text *
+ttext_min_value(Temporal *temp)
+{
+  return DatumGetTextP(temporal_min_value(temp));
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_temporal_accessor
  * @brief Return a copy of the maximum base value of a temporal value.
  * @sqlfunc maxValue()
  */
@@ -1684,6 +1861,41 @@ temporal_max_value(const Temporal *temp)
     result = datum_copy(tsequenceset_max_value((TSequenceSet *) temp), basetype);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the maximum value of a temporal integer
+ * @sqlfunc maxValue()
+ */
+int
+tint_max_value(Temporal *temp)
+{
+  return DatumGetInt32(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the maximum value of a temporal float
+ * @sqlfunc maxValue()
+ */
+double
+tfloat_max_value(Temporal *temp)
+{
+  return DatumGetFloat8(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the maximum value of a temporal text
+ * @sqlfunc maxValue()
+ */
+text *
+ttext_max_value(Temporal *temp)
+{
+  return DatumGetTextP(temporal_max_value(temp));
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_accessor
@@ -2273,37 +2485,37 @@ temporal_ever_eq(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean.
  * @sqlop @p ?=
- */ 
+ */
 bool tbool_ever_eq(const Temporal *temp, bool b)
 {
   return temporal_ever_eq(temp, BoolGetDatum(b));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is ever equal to an integer.
  * @sqlop @p ?=
- */ 
+ */
 bool tint_ever_eq(const Temporal *temp, int i)
 {
   return temporal_ever_eq(temp, Int32GetDatum(i));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is ever equal to a float.
  * @sqlop @p ?=
- */ 
+ */
 bool tfloat_ever_eq(const Temporal *temp, double d)
 {
   return temporal_ever_eq(temp, Float8GetDatum(d));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is ever equal to a text.
  * @sqlop @p ?=
- */ 
+ */
 bool ttext_ever_eq(const Temporal *temp, text *txt)
 {
   return temporal_ever_eq(temp, PointerGetDatum(txt));
@@ -2339,37 +2551,37 @@ temporal_always_eq(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal boolean is always equal to a boolean.
  * @sqlop @p %=
- */ 
+ */
 bool tbool_always_eq(const Temporal *temp, bool b)
 {
   return temporal_always_eq(temp, BoolGetDatum(b));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is always equal to an integer.
  * @sqlop @p %=
- */ 
+ */
 bool tint_always_eq(const Temporal *temp, int i)
 {
   return temporal_always_eq(temp, Int32GetDatum(i));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is always equal to a float.
  * @sqlop @p %=
- */ 
+ */
 bool tfloat_always_eq(const Temporal *temp, double d)
 {
   return temporal_always_eq(temp, Float8GetDatum(d));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is always equal to a text.
  * @sqlop @p %=
- */ 
+ */
 bool ttext_always_eq(const Temporal *temp, text *txt)
 {
   return temporal_always_eq(temp, PointerGetDatum(txt));
@@ -2405,27 +2617,27 @@ temporal_ever_lt(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is ever less than an integer.
  * @sqlop @p ?<
- */ 
+ */
 bool tint_ever_lt(const Temporal *temp, int i)
 {
   return temporal_ever_lt(temp, Int32GetDatum(i));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is ever less than a float.
  * @sqlop @p ?<
- */ 
+ */
 bool tfloat_ever_lt(const Temporal *temp, double d)
 {
   return temporal_ever_lt(temp, Float8GetDatum(d));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is ever less than a text.
  * @sqlop @p ?<
- */ 
+ */
 bool ttext_ever_lt(const Temporal *temp, text *txt)
 {
   return temporal_ever_lt(temp, PointerGetDatum(txt));
@@ -2461,27 +2673,27 @@ temporal_always_lt(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is always less than an integer.
  * @sqlop @p %<
- */ 
+ */
 bool tint_always_lt(const Temporal *temp, int i)
 {
   return temporal_always_lt(temp, Int32GetDatum(i));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is always less than  a float.
  * @sqlop @p %<
- */ 
+ */
 bool tfloat_always_lt(const Temporal *temp, double d)
 {
   return temporal_always_lt(temp, Float8GetDatum(d));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is always less than  a text.
  * @sqlop @p %<
- */ 
+ */
 bool ttext_always_lt(const Temporal *temp, text *txt)
 {
   return temporal_always_lt(temp, PointerGetDatum(txt));
@@ -2518,28 +2730,28 @@ temporal_ever_le(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is ever less than or equal to an integer.
  * @sqlop @p ?<=
- */ 
+ */
 bool tint_ever_le(const Temporal *temp, int i)
 {
   return temporal_ever_le(temp, Int32GetDatum(i));
 
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is ever less than or equal to a float.
  * @sqlop @p ?<=
- */ 
+ */
 bool tfloat_ever_le(const Temporal *temp, double d)
 {
   return temporal_ever_le(temp, Float8GetDatum(d));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is ever less than or equal to a text.
  * @sqlop @p ?<=
- */ 
+ */
 bool ttext_ever_le(const Temporal *temp, text *txt)
 {
   return temporal_ever_le(temp, PointerGetDatum(txt));
@@ -2576,27 +2788,27 @@ temporal_always_le(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is always less than or equal to an integer.
  * @sqlop @p %<=
- */ 
+ */
 bool tint_always_le(const Temporal *temp, int i)
 {
   return temporal_always_le(temp, Int32GetDatum(i));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is always less than or equal to a float.
  * @sqlop @p %<=
- */ 
+ */
 bool tfloat_always_le(const Temporal *temp, double d)
 {
   return temporal_always_le(temp, Float8GetDatum(d));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is always less than or equal to a text.
  * @sqlop @p %<=
- */ 
+ */
 bool ttext_always_le(const Temporal *temp, text *txt)
 {
   return temporal_always_le(temp, PointerGetDatum(txt));
