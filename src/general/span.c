@@ -574,24 +574,68 @@ timestamp_to_period(TimestampTz t)
 #if MEOS
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the lower bound of a span
+ * @brief Return the lower bound of an integer span
  * @sqlfunc lower()
  */
-Datum
-span_lower(Span *s)
+int
+intspan_lower(Span *s)
 {
-  return s->lower;
+  return DatumGetInt32(s->lower);
 }
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the upper bound of a span
+ * @brief Return the lower bound of a float span
+ * @sqlfunc lower()
+ */
+double
+floatspan_lower(Span *s)
+{
+  return Float8GetDatum(s->lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of a period
+ * @sqlfunc lower()
+ */
+TimestampTz
+period_lower(Period *p)
+{
+  return TimestampTzGetDatum(p->lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of an integer span
  * @sqlfunc upper()
  */
-Datum
-span_upper(Span *s)
+int
+intspan_upper(Span *s)
 {
-  return s->upper;
+  return Int32GetDatum(s->upper);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of a float span
+ * @sqlfunc upper()
+ */
+double
+floatspan_upper(Span *s)
+{
+  return Float8GetDatum(s->upper);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of a period
+ * @sqlfunc upper()
+ */
+TimestampTz
+period_upper(Period *p)
+{
+  return TimestampTzGetDatum(p->upper);
 }
 
 /**
@@ -602,7 +646,7 @@ span_upper(Span *s)
 bool
 span_lower_inc(Span *s)
 {
-  return s->lower_inc != 0;
+  return s->lower_inc;
 }
 
 /**
@@ -613,9 +657,9 @@ span_lower_inc(Span *s)
 bool
 span_upper_inc(Span *s)
 {
-  return s->upper_inc != 0;
+  return s->upper_inc;
 }
-#endif
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_accessor

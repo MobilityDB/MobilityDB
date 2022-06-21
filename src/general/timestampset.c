@@ -286,7 +286,7 @@ timestampset_timespan(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_int_spantime_accessor
  * @brief Set a period to the bounding period of a timestamp set
  * @sqlfunc period()
  * @sqlop @p ::

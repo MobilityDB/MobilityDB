@@ -822,13 +822,12 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
  * @see tpointinstset_ever_eq
  * @see tpointseq_ever_eq
  * @see tpointseqset_ever_eq
- * @sqlop @p ?=
  */
 bool
 tpoint_ever_eq(const Temporal *temp, Datum value)
@@ -852,6 +851,29 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
     result = tpointseqset_ever_eq((TSequenceSet *) temp, value);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if a temporal geometric point is ever equal to a point.
+ * @sqlop @p ?=
+ */ 
+bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
+{
+  return tpoint_ever_eq(temp, PointerGetDatum(gs));
+
+}
+ 
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if a temporal geographic point is ever equal to a point.
+ * @sqlop @p ?=
+ */ 
+bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
+{
+  return tpoint_ever_eq(temp, PointerGetDatum(gs));
+}
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -952,6 +974,28 @@ tpoint_always_eq(const Temporal *temp, Datum value)
     result = tpointseqset_always_eq((TSequenceSet *) temp, value);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if a temporal geometric point is always equal to a point.
+ * @sqlop @p %=
+ */ 
+bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
+{
+  return tpoint_always_eq(temp, PointerGetDatum(gs));
+}
+ 
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if a temporal geographic point is always equal to a point.
+ * @sqlop @p %=
+ */ 
+bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
+{
+  return tpoint_always_eq(temp, PointerGetDatum(gs));
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision

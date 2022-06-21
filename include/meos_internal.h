@@ -78,6 +78,7 @@ extern void timestampset_set_period(const TimestampSet *ss, Period *p);
 /* Accessor functions for span and time types */
 
 extern const Period *periodset_per_n(const PeriodSet *ps, int index);
+extern void timestampset_set_period(const TimestampSet *ts, Period *p);
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index); // TO ADD
 
 /*****************************************************************************/
@@ -438,6 +439,7 @@ extern Temporal *temporal_restrict_timestamp(const Temporal *temp, TimestampTz t
 extern Temporal *temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ss, bool atfunc);
 extern Temporal *temporal_restrict_period(const Temporal *temp, const Period *ps, bool atfunc);
 extern Temporal *temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps, bool atfunc);
+extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, Datum *result);
 extern TInstant *tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc);
 extern TInstant *tinstant_restrict_values(const TInstant *inst, const Datum *values, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_span(const TInstant *inst, const Span *span, bool atfunc);
@@ -541,6 +543,12 @@ extern double nad_tnumber_number(const Temporal *temp, Datum value, mobdbType ba
 
 /* Ever/always functions for temporal types */
 
+extern bool temporal_always_eq(const Temporal *temp, Datum value);
+extern bool temporal_always_le(const Temporal *temp, Datum value);
+extern bool temporal_always_lt(const Temporal *temp, Datum value);
+extern bool temporal_ever_eq(const Temporal *temp, Datum value);
+extern bool temporal_ever_le(const Temporal *temp, Datum value);
+extern bool temporal_ever_lt(const Temporal *temp, Datum value);
 extern bool tinstant_always_eq(const TInstant *inst, Datum value);
 extern bool tinstant_always_le(const TInstant *inst, Datum value);
 extern bool tinstant_always_lt(const TInstant *inst, Datum value);
@@ -553,6 +561,8 @@ extern bool tinstantset_always_lt(const TInstantSet *is, Datum value);
 extern bool tinstantset_ever_eq(const TInstantSet *is, Datum value);
 extern bool tinstantset_ever_le(const TInstantSet *is, Datum value);
 extern bool tinstantset_ever_lt(const TInstantSet *is, Datum value);
+extern bool tpoint_always_eq(const Temporal *temp, Datum value);
+extern bool tpoint_ever_eq(const Temporal *temp, Datum value);
 extern bool tpointinst_always_eq(const TInstant *inst, Datum value);
 extern bool tpointinst_ever_eq(const TInstant *inst, Datum value);
 extern bool tpointinstset_always_eq(const TInstantSet *is, Datum value);
