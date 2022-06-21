@@ -36,9 +36,10 @@
  */
 
 typedef int64 Timestamp;
+typedef int32 fsec_t;			/* fractional seconds (in microseconds) */
+
 typedef int64 TimestampTz;
 typedef int64 TimeOffset;
-typedef int32 fsec_t;			/* fractional seconds (in microseconds) */
 
 typedef struct
 {
@@ -47,7 +48,6 @@ typedef struct
 	int32		day;			/* days, after time for alignment */
 	int32		month;			/* months and years, after time for alignment */
 } Interval;
-
 
 /* Limits on the "precision" option (typmod) for these data types */
 #define MAX_TIMESTAMP_PRECISION 6

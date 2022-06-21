@@ -381,6 +381,8 @@ typedef void (*pg_funcptr_t) (void);
  * See also the version of this code in src/interfaces/ecpg/include/ecpglib.h.
  */
 
+// #ifndef __MEOS_H__
+
 #ifndef __cplusplus
 
 #ifdef PG_USE_STDBOOL
@@ -401,6 +403,8 @@ typedef unsigned char bool;
 
 #endif							/* not PG_USE_STDBOOL */
 #endif							/* not C++ */
+
+// #endif							/*__MEOS_H__ */
 
 
 /* ----------------------------------------------------------------
