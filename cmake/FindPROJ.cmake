@@ -82,5 +82,6 @@ find_package_handle_standard_args(PROJ
   FAIL_MESSAGE "Could NOT find proj")
 
 if (PROJ_FOUND)
+  MESSAGE(STATUS "Found PROJ: ${PROJ_LIBRARIES} (${PROJ_VERSION_MAJOR}.${PROJ_VERSION_MINOR}.${PROJ_VERSION_PATCH})")
   mark_as_advanced(PROJ_INCLUDE_DIRS PROJ_LIBRARIES)
 endif()

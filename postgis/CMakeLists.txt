@@ -1,9 +1,3 @@
-include_directories("liblwgeom")
-if(NOT MEOS)
-  include_directories("libpgcommon")
-endif()
-include_directories("ryu")
-
 add_subdirectory("liblwgeom")
 if(NOT MEOS)
   add_subdirectory("libpgcommon")

@@ -6,28 +6,33 @@
 cmake_minimum_required(VERSION 3.7)
 
 # Disallow in-source builds
-if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed.
   Please make a new directory (called a build directory) and run CMake from there.
   You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
 endif()
 
 # Specify search path for CMake modules to be loaded
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 
 #-------------------------------------
 # MobilityDB definitions
 #-------------------------------------
 
-set(MEOS ON)
-
-# Option for adding network point
+# Option for including network points
 option(NPOINT
   "Set ON|OFF (default=OFF) to include network points
   "
   OFF
 )
+
+# TODO Include network points for MobilityDB
+if(NPOINT)
+  add_definitions(-DNPOINT=1)
+else()
+  add_definitions(-DNPOINT=0)
+endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file
 file(READ mobdb_version.txt ver)
@@ -40,41 +45,21 @@ set(MOBILITYDB_MICRO_VERSION ${CMAKE_MATCH_1})
 string(REGEX MATCH "MOBILITYDB_MICRO_VERSION=[0-9]+(beta?[0-9]+)" _ ${ver})
 set(PROJECT_VERSION_DEV ${CMAKE_MATCH_1})
 
-# Set the project name (MEOS) and project version
-message(STATUS "Building the MEOS library")
-project(MEOS VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
-add_definitions(-DMEOS=1)
+# Set the project name and project version
+project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
+message(STATUS "Building MobilityDB version ${PROJECT_VERSION}")
+# Enable testing, must follow project() call above
+include(CTest)
+enable_testing()
+
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
 set(MOBILITYDB_VERSION_STR "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
-
-# Set the version and name of the library
-set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
-set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
-
-# Set the name of the PostgreSQL extension and of the internal extension used for testing
-string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
-set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${PROJECT_VERSION}.sql")
-set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
   add_definitions(-DDEBUG_BUILD)
-endif()
-
-# Check machine architecture: big endian vs. little endian
-# Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)
-include(TestBigEndian)
-TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
-if(IS_BIG_ENDIAN)
-  message(STATUS "BIG_ENDIAN")
-  add_definitions(-DMOBDB_IS_BIG_ENDIAN=1)
-  set(DEF_WORDS_BIGENDIAN "undef")
-else()
-  message(STATUS "LITTLE_ENDIAN")
-  add_definitions(-DMOBDB_IS_BIG_ENDIAN=0)
-  set(DEF_WORDS_BIGENDIAN "#undef")
 endif()
 
 #-------------------------------------
@@ -86,6 +71,7 @@ include(CheckCCompilerFlag)
 if(NOT WIN32)
   CHECK_C_COMPILER_FLAG("-fPIC" C_COMPILER_SUPPORTS_FPIC)
   if(C_COMPILER_SUPPORTS_FPIC)
+    message(STATUS "Compiling into position-independent code (PIC)")
     add_definitions(-fPIC)
   endif()
 endif()
@@ -112,111 +98,26 @@ endif()
 # Disable compiler optimizations for debugging
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
-#-------------------------------------
-# Get PostgreSQL Version
-#-------------------------------------
-
-# PostgreSQL version default values for MEOS
-set(POSTGRESQL_VERSION_STRING "PostgreSQL 14.2")
-set(POSTGRESQL_VERSION_NUMBER "140200")
-set(POSTGRESQL_VERSION_MAJOR "14")
-set(POSTGRESQL_VERSION_MINOR "2")
-
-# MobilityDB definitions for PostgreSQL version-dependent code
-add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
-add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
-
-message(STATUS "Building MEOS: Including embedded PostgreSQL files")
-include_directories("postgres")
-add_subdirectory("postgres")
-
-#-------------------------------------
-# Get PostGIS Version
-#-------------------------------------
-
-# PostGIS version default values for MEOS
-set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
-set(POSTGIS_VERSION_NUMBER "30201")
-
-# PostGIS definitions for PostgreSQL and PostGIS version-dependent code
-math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
-  ${POSTGRESQL_VERSION_MINOR}")
-add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
-add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
-
-#--------------------------------
-# Other dependencies
-#--------------------------------
-
-# Proj reprojection library
-find_package(PROJ REQUIRED)
-include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
-math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
-message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
-
-# GEOS geometry library
-find_package(GEOS REQUIRED)
-include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
-message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
-
-# JSON-C library (used for MF-JSON input/output)
-find_package(JSON-C REQUIRED)
-include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
-
-#--------------------------------
-# MobilityDB directories
-#--------------------------------
-
-# Embed liblwgeom library for PostGIS 3
-configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
-include_directories("postgis/liblwgeom")
-include_directories("postgis")
-add_subdirectory("postgis")
-
-include_directories("include")
-add_subdirectory("src")
-
-# Build the library: MEOS
-set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
-if(NPOINT)
-  message(STATUS "Including network points")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+# Check machine architecture: big endian vs. little endian
+# Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)
+include(TestBigEndian)
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+if(IS_BIG_ENDIAN)
+  message(STATUS "BIG_ENDIAN")
+  add_definitions(-DMOBDB_IS_BIG_ENDIAN=1)
+  set(DEF_WORDS_BIGENDIAN "undef")
+else()
+  message(STATUS "LITTLE_ENDIAN")
+  add_definitions(-DMOBDB_IS_BIG_ENDIAN=0)
+  set(DEF_WORDS_BIGENDIAN "#undef")
 endif()
 
-# Build the library: PostgreSQL
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
+#-------------------------------------
+# Build both MobilityDB and MEOS
+#-------------------------------------
 
-# Build the library: PostGIS
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
-
-# Build the library: All
-add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
-if(APPLE)
-  set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
-    LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
-endif()
-
-#--------------------------------
-# Specify libraries to link
-#--------------------------------
-
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
-
-#--------------------------------
-# Belongs to MobilityDB
-#--------------------------------
-
-message(STATUS "Building MEOS: SQL definitions and tests not included")
-install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "/usr/local/lib")
-message(STATUS "Building MEOS: Destination library is '/usr/local/lib'")
+# add_subdirectory(meos)
+add_subdirectory(mobilitydb)
 
 #-----------------------------------------------------------------------------
 # Documentation
