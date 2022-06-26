@@ -1,0 +1,172 @@
+/*****************************************************************************
+ * Box
+ *****************************************************************************/
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b = t2.b;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <> t2.b;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b < t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <= t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b > t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b >= t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
+ count 
+-------
+   236
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b @> t2.b;
+ count 
+-------
+   104
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <@ t2.b;
+ count 
+-------
+   104
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_int WHERE i::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_float WHERE f::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_intrange WHERE i::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_floatrange WHERE f::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_timestamptz WHERE t::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tint WHERE temp::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat WHERE temp::tbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_int, tbl_timestamptz WHERE box(i, t) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_intrange, tbl_timestamptz WHERE box(i, t) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_float, tbl_timestamptz WHERE box(f, t) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_floatrange, tbl_timestamptz WHERE box(f, t) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_int, tbl_period WHERE box(i, p) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_intrange, tbl_period WHERE box(i, p) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_float, tbl_period WHERE box(f, p) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT count(*) FROM tbl_floatrange, tbl_period WHERE box(f, p) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+/*****************************************************************************/

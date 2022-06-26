@@ -1,0 +1,481 @@
+SELECT npoint 'npoint(1,0.5)';
+    npoint     
+---------------
+ NPoint(1,0.5)
+(1 row)
+
+SELECT npoint ' npoint   (   1   ,	0.5   )   ';
+    npoint     
+---------------
+ NPoint(1,0.5)
+(1 row)
+
+/* Errors */
+SELECT npoint 'point(1,0.5)';
+ERROR:  Could not parse network point
+LINE 2: SELECT npoint 'point(1,0.5)';
+                      ^
+SELECT npoint 'npoint 1,0.5)';
+ERROR:  Could not parse network point: Missing opening parenthesis
+LINE 1: SELECT npoint 'npoint 1,0.5)';
+                      ^
+SELECT npoint 'npoint(1,0.5';
+ERROR:  Could not parse network point: Missing closing parenthesis
+LINE 1: SELECT npoint 'npoint(1,0.5';
+                      ^
+SELECT npoint 'npoint(1 0.5)';
+ERROR:  invalid input syntax for type bigint: "1 0.5"
+LINE 1: SELECT npoint 'npoint(1 0.5)';
+                      ^
+SELECT npoint 'npoint(1000,0.5)';
+ERROR:  there is no route with gid value 1000 in table ways
+LINE 1: SELECT npoint 'npoint(1000,0.5)';
+                      ^
+SELECT npoint 'npoint(1,1.5)';
+ERROR:  The relative position must be a real number between 0 and 1
+LINE 1: SELECT npoint 'npoint(1,1.5)';
+                      ^
+SELECT npoint 'npoint(1,0.5)xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT npoint 'npoint(1,0.5)xxx';
+                      ^
+SELECT nsegment 'nsegment(1,0.5,0.7)';
+      nsegment       
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
+      nsegment       
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+/* Errors */
+SELECT nsegment 'segment(1,0.5,0.7)';
+ERROR:  Could not parse network segment
+LINE 2: SELECT nsegment 'segment(1,0.5,0.7)';
+                        ^
+SELECT nsegment 'nsegment(1,0.5,0.7';
+ERROR:  Could not parse network segment
+LINE 1: SELECT nsegment 'nsegment(1,0.5,0.7';
+                        ^
+SELECT nsegment 'nsegment(1 0.5 0.7)';
+ERROR:  Could not parse network segment
+LINE 1: SELECT nsegment 'nsegment(1 0.5 0.7)';
+                        ^
+SELECT nsegment 'nsegment(1000,0.5,0.7)';
+ERROR:  there is no route with gid value 1000 in table ways
+LINE 1: SELECT nsegment 'nsegment(1000,0.5,0.7)';
+                        ^
+SELECT nsegment 'nsegment(1,1.5,0.7)';
+ERROR:  the relative position must be a real number between 0 and 1
+LINE 1: SELECT nsegment 'nsegment(1,1.5,0.7)';
+                        ^
+SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
+                        ^
+SELECT npoint(1, 0.5);
+    npoint     
+---------------
+ NPoint(1,0.5)
+(1 row)
+
+/* Errors */
+SELECT npoint(1000,0.5);
+ERROR:  there is no route with gid value 1000 in table ways
+SELECT npoint(1,1.5);
+ERROR:  the relative position must be a real number between 0 and 1
+SELECT nsegment(1, 0.2, 0.6);
+      nsegment       
+---------------------
+ NSegment(1,0.2,0.6)
+(1 row)
+
+SELECT nsegment(1);
+    nsegment     
+-----------------
+ NSegment(1,0,1)
+(1 row)
+
+SELECT nsegment(1, 0.2);
+     nsegment      
+-------------------
+ NSegment(1,0.2,1)
+(1 row)
+
+SELECT nsegment(npoint(1, 0.5));
+      nsegment       
+---------------------
+ NSegment(1,0.5,0.5)
+(1 row)
+
+/* Errors */
+SELECT nsegment(1000,0.5,0.7);
+ERROR:  there is no route with gid value 1000 in table ways
+SELECT nsegment(1,1.5,0.7);
+ERROR:  The relative position of a network segment must be a real number between 0 and 1
+SELECT route(npoint 'npoint(1,0.5)');
+ route 
+-------
+     1
+(1 row)
+
+SELECT getPosition(npoint 'npoint(1,0.5)');
+ getposition 
+-------------
+         0.5
+(1 row)
+
+SELECT srid(npoint 'npoint(1,0.5)');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT route(nsegment 'nsegment(1,0.5,0.7)');
+ route 
+-------
+     1
+(1 row)
+
+SELECT startPosition(nsegment 'nsegment(1,0.5,0.7)');
+ startposition 
+---------------
+           0.5
+(1 row)
+
+SELECT endPosition(nsegment 'nsegment(1,0.5,0.7)');
+ endposition 
+-------------
+         0.7
+(1 row)
+
+SELECT srid(nsegment 'nsegment(1,0.5,0.7)');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT round(npoint 'NPoint(1, 0.123456789)', 6);
+       round        
+--------------------
+ NPoint(1,0.123457)
+(1 row)
+
+SELECT round(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
+             round             
+-------------------------------
+ NSegment(1,0.123457,0.223457)
+(1 row)
+
+SELECT ST_AsText(round(npoint 'npoint(1,0.2)'::geometry, 6));
+         st_astext          
+----------------------------
+ POINT(69.790369 81.452098)
+(1 row)
+
+SELECT ST_AsText(round(nsegment 'nsegment(1,0.5,0.7)'::geometry, 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,34.650693 75.384585)
+(1 row)
+
+SELECT round((npoint 'npoint(1,0.2)'::geometry)::npoint, 6);
+     round     
+---------------
+ NPoint(1,0.2)
+(1 row)
+
+SELECT round((nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment, 6);
+        round        
+---------------------
+ NSegment(1,0.5,0.7)
+(1 row)
+
+SELECT round((nsegment 'nsegment(1,0.5,0.5)'::geometry)::nsegment, 6);
+        round        
+---------------------
+ NSegment(1,0.5,0.5)
+(1 row)
+
+SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::npoint;
+ npoint 
+--------
+ 
+(1 row)
+
+SELECT geometry 'SRID=5676;LINESTRING(83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.625699095428 97.5346013903618)'::nsegment;
+ nsegment 
+----------
+ 
+(1 row)
+
+SELECT geometry 'SRID=5676;LINESTRING(416.346567736997 528.335344322874,610.455019399524 528.508247341961,476.989195102204 642.550969672973)'::nsegment;
+ nsegment 
+----------
+ 
+(1 row)
+
+/* Errors */
+SELECT geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))'::nsegment;
+ERROR:  Only point or line geometries accepted
+SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(2,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' != npoint 'npoint(1,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' != npoint 'npoint(1,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' != npoint 'npoint(2,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' < npoint 'npoint(1,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' < npoint 'npoint(1,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' < npoint 'npoint(2,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' <= npoint 'npoint(1,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' <= npoint 'npoint(1,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' <= npoint 'npoint(2,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' > npoint 'npoint(1,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' > npoint 'npoint(1,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' > npoint 'npoint(2,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' >= npoint 'npoint(1,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' >= npoint 'npoint(1,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' >= npoint 'npoint(2,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment_cmp(nsegment 'nsegment(1,0.3,0.5)', nsegment 'nsegment(1,0.3,0.4)');
+ nsegment_cmp 
+--------------
+            1
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.5,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(2,0.3,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' != nsegment 'nsegment(1,0.3,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' != nsegment 'nsegment(1,0.3,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' != nsegment 'nsegment(1,0.5,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' != nsegment 'nsegment(2,0.3,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' < nsegment 'nsegment(1,0.3,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' < nsegment 'nsegment(1,0.3,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' < nsegment 'nsegment(1,0.5,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' < nsegment 'nsegment(2,0.3,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' <= nsegment 'nsegment(1,0.3,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' <= nsegment 'nsegment(1,0.3,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' <= nsegment 'nsegment(1,0.5,0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' <= nsegment 'nsegment(2,0.3,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' > nsegment 'nsegment(1,0.3,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' > nsegment 'nsegment(1,0.3,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' > nsegment 'nsegment(1,0.5,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' > nsegment 'nsegment(2,0.3,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(1,0.3,0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(1,0.3,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(1,0.5,0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(2,0.3,0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+

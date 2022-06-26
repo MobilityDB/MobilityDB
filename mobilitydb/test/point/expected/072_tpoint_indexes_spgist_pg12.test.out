@@ -1,0 +1,68 @@
+ANALYZE tbl_tgeompoint;
+ANALYZE
+ANALYZE tbl_tgeompoint3D;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint_quadtree_idx;
+NOTICE:  index "tbl_tgeompoint_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint3D_quadtree_idx;
+NOTICE:  index "tbl_tgeompoint3d_quadtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
+CREATE INDEX
+SELECT temp |=| geometry 'Point empty' FROM tbl_tgeompoint ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+         
+         
+         
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+   round   
+-----------
+ 14.759498
+ 32.168364
+ 32.372980
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeompoint3D ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+   round   
+-----------
+ 47.637594
+ 56.154029
+ 67.013694
+(3 rows)
+
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeompoint3D_quadtree_idx;
+DROP INDEX
+CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint_seq(geometry 'Point(5 5 5)', p) AS temp FROM tbl_period_big;
+SELECT 12500
+CREATE INDEX tbl_tgeompoint3D_big_allthesame_spgist_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tgeompoint3D_big_allthesame;
+ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big_allthesame WHERE temp && geometry 'Point(5 5 5)';
+ count 
+-------
+ 12380
+(1 row)
+
+SELECT temp |=| geometry 'Point(5 5 5)' FROM tbl_tgeompoint3D_big_allthesame ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+DROP TABLE tbl_tgeompoint3D_big_allthesame;
+DROP TABLE

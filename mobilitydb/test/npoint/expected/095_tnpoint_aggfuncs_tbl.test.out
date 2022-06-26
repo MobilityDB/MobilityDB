@@ -1,0 +1,275 @@
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
+  (NULL::tnpoint),
+  ('Npoint(1, 0.5)@2000-01-01'),
+  ('{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')) t(temp);
+                                                                          astext                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(55.752648 78.953813)@2000-01-01 00:00:00+00, POINT(48.718663 77.764071)@2000-01-02 00:00:00+00, POINT(48.718663 77.764071)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
+  (tnpoint 'Npoint(1, 0.5)@2000-01-01'),
+  ('{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'),
+  (NULL)) t(temp);
+                                                                          astext                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(55.752648 78.953813)@2000-01-01 00:00:00+00, POINT(48.718663 77.764071)@2000-01-02 00:00:00+00, POINT(48.718663 77.764071)@2000-01-03 00:00:00+00}
+(1 row)
+
+/* Errors */
+SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
+  (tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'),
+  ('[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')) t(temp);
+ERROR:  Cannot aggregate temporal values of different type
+SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
+ numinstants 
+-------------
+         201
+(1 row)
+
+SELECT numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          20
+        1 |          20
+        2 |          20
+        3 |          20
+        4 |          20
+        5 |          20
+        6 |          20
+        7 |          20
+        8 |          20
+        9 |          20
+(10 rows)
+
+SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(ti)) FROM tbl_tnpoint_instset;
+ numinstants 
+-------------
+         476
+(1 row)
+
+SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpoint_instset;
+ numinstants 
+-------------
+        1328
+(1 row)
+
+SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset;
+ numinstants 
+-------------
+         476
+(1 row)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          34
+        1 |          64
+        2 |          51
+        3 |          36
+        4 |          44
+        5 |          44
+        6 |          45
+        7 |          68
+        8 |          48
+        9 |          42
+(10 rows)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          34
+        1 |          64
+        2 |          51
+        3 |          36
+        4 |          44
+        5 |          44
+        6 |          45
+        7 |          68
+        8 |          48
+        9 |          42
+(10 rows)
+
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          34
+        1 |          64
+        2 |          51
+        3 |          36
+        4 |          44
+        5 |          44
+        6 |          45
+        7 |          68
+        8 |          48
+        9 |          42
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT k%10, numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ts)) FROM tbl_tnpoint_seqset;
+ numsequences 
+--------------
+          483
+(1 row)
+
+SELECT numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset;
+ numsequences 
+--------------
+          502
+(1 row)
+
+SELECT numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset;
+ numsequences 
+--------------
+          494
+(1 row)
+
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           65
+        1 |           37
+        2 |           51
+        3 |           43
+        4 |           51
+        5 |           34
+        6 |           48
+        7 |           58
+        8 |           57
+        9 |           41
+(10 rows)
+
+SELECT k%10, numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           59
+        1 |           33
+        2 |           55
+        3 |           45
+        4 |           58
+        5 |           35
+        6 |           46
+        7 |           58
+        8 |           67
+        9 |           47
+(10 rows)
+
+SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           65
+        1 |           37
+        2 |           51
+        3 |           43
+        4 |           51
+        5 |           35
+        6 |           48
+        7 |           58
+        8 |           57
+        9 |           41
+(10 rows)
+

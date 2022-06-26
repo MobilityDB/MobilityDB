@@ -1,0 +1,42 @@
+SELECT COUNT(*) FROM tbl_tbool WHERE TRUE & temp IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp & TRUE IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp & t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE TRUE | temp IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp | TRUE IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp | t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+

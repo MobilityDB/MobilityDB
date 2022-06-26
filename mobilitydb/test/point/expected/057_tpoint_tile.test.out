@@ -1,0 +1,490 @@
+SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
+       multidimgrid       
+--------------------------
+ (1,"STBOX((2,2),(4,4))")
+ (2,"STBOX((4,2),(6,4))")
+ (3,"STBOX((6,2),(8,4))")
+(3 rows)
+
+SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
+            multidimgrid            
+------------------------------------
+ (1,"SRID=3812;STBOX((3,3),(5,5))")
+ (2,"SRID=3812;STBOX((5,3),(7,5))")
+ (3,"SRID=3812;STBOX((7,3),(9,5))")
+(3 rows)
+
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
+          multidimgrid          
+--------------------------------
+ (1,"STBOX Z((3,3,3),(5,5,5))")
+ (2,"STBOX Z((5,3,3),(7,5,5))")
+ (3,"STBOX Z((7,3,3),(9,5,5))")
+(3 rows)
+
+SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3)', '2000-01-15') LIMIT 3;
+                               multidimgrid                               
+--------------------------------------------------------------------------
+ (1,"STBOX T((3,3,2000-01-15 00:00:00+00),(5,5,2000-01-17 00:00:00+00))")
+ (2,"STBOX T((5,3,2000-01-15 00:00:00+00),(7,5,2000-01-17 00:00:00+00))")
+ (3,"STBOX T((7,3,2000-01-15 00:00:00+00),(9,5,2000-01-17 00:00:00+00))")
+(3 rows)
+
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15') LIMIT 3;
+                                 multidimgrid                                  
+-------------------------------------------------------------------------------
+ (1,"STBOX ZT((3,3,3,2000-01-15 00:00:00+00),(5,5,5,2000-01-17 00:00:00+00))")
+ (2,"STBOX ZT((5,3,3,2000-01-15 00:00:00+00),(7,5,5,2000-01-17 00:00:00+00))")
+ (3,"STBOX ZT((7,3,3,2000-01-15 00:00:00+00),(9,5,5,2000-01-17 00:00:00+00))")
+(3 rows)
+
+/* Errors */
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+ERROR:  The spatiotemporal box and the geometry must be of the same dimensionality
+SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0);
+ERROR:  Only planar coordinates supported
+SELECT multidimTile(geometry 'Point(3 3)', 2.0);
+    multidimtile    
+--------------------
+ STBOX((0,0),(2,2))
+(1 row)
+
+SELECT multidimTile(geometry 'Point(3 3 3)', 2.0);
+       multidimtile       
+--------------------------
+ STBOX Z((2,2,2),(4,4,4))
+(1 row)
+
+SELECT multidimTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
+                            multidimtile                            
+--------------------------------------------------------------------
+ STBOX T((0,0,2000-01-15 00:00:00+00),(2,2,2000-01-17 00:00:00+00))
+(1 row)
+
+SELECT multidimTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
+                            multidimtile                            
+--------------------------------------------------------------------
+ STBOX T((0,0,2000-01-15 00:00:00+00),(2,2,2000-01-17 00:00:00+00))
+(1 row)
+
+SELECT multidimTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');
+                              multidimtile                               
+-------------------------------------------------------------------------
+ STBOX ZT((3,3,3,2000-01-14 00:00:00+00),(5,5,5,2000-01-16 00:00:00+00))
+(1 row)
+
+SELECT multidimTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=3812;Point(1 1 1)', '2020-06-15');
+                                   multidimtile                                    
+-----------------------------------------------------------------------------------
+ SRID=3812;STBOX ZT((3,3,3,2000-01-14 00:00:00+00),(5,5,5,2000-01-16 00:00:00+00))
+(1 row)
+
+/* Errors */
+SELECT multidimTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
+ERROR:  The geometry must have Z dimension
+SELECT multidimTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
+ERROR:  Operation on mixed SRID
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0) AS sp) t;
+   point    |              tpoint               
+------------+-----------------------------------
+ POINT(0 0) | POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2.0) AS sp) t;
+   point    |                                 tpoint                                 
+------------+------------------------------------------------------------------------
+ POINT(0 0) | {POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}
+ POINT(2 2) | {POINT(2 2)@2000-01-02 00:00:00+00}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0) AS sp) t;
+   point    |                                                                      tpoint                                                                      
+------------+--------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT(0 0) | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00), (POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2 2) | {[POINT(2 2)@2000-01-02 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0) AS sp) t;
+   point    |                                                                      tpoint                                                                      
+------------+--------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT(0 0) | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00), (POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2 2) | {[POINT(2 2)@2000-01-02 00:00:00+00], [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0) AS sp) t;
+   point    |                                                            tpoint                                                             
+------------+-------------------------------------------------------------------------------------------------------------------------------
+ POINT(0 0) | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00), [POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2 2) | Interp=Stepwise;{[POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0) AS sp) t;
+   point    |                                                                              tpoint                                                                              
+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT(0 0) | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00), [POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2 2) | Interp=Stepwise;{[POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00), [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, 'Point(0.5 0.5)') AS sp) t;
+     point      |              tpoint               
+----------------+-----------------------------------
+ POINT(0.5 0.5) | POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2.0, 'Point(0.5 0.5)') AS sp) t;
+     point      |                                                  tpoint                                                   
+----------------+-----------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | {POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0, 'Point(0.5 0.5)') AS sp) t;
+     point      |                                                   tpoint                                                    
+----------------+-------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0, 'Point(0.5 0.5)') AS sp) t;
+     point      |                                                   tpoint                                                    
+----------------+-------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2.5 2.5) | {[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0, 'Point(0.5 0.5)') AS sp) t;
+     point      |                                                           tpoint                                                            
+----------------+-----------------------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0, 'Point(0.5 0.5)') AS sp) t;
+     point      |                                                           tpoint                                                            
+----------------+-----------------------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2.5 2.5) | Interp=Stepwise;{[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1 1)@2000-01-01', 2.0) AS sp) t;
+      point      |                 tpoint                 
+-----------------+----------------------------------------
+ POINT Z (0 0 0) | POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2.0) AS sp) t;
+      point      |                                      tpoint                                      
+-----------------+----------------------------------------------------------------------------------
+ POINT Z (0 0 0) | {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00}
+ POINT Z (2 2 2) | {POINT Z (2 2 2)@2000-01-02 00:00:00+00}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0) AS sp) t;
+      point      |                                                                                tpoint                                                                                
+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00), (POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2 2 2) | {[POINT Z (2 2 2)@2000-01-02 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0) AS sp) t;
+      point      |                                                                                tpoint                                                                                
+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00), (POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2 2 2) | {[POINT Z (2 2 2)@2000-01-02 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0) AS sp) t;
+      point      |                                                                    tpoint                                                                    
+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00), [POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2 2 2) | Interp=Stepwise;{[POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (2 2 2)@2000-01-03 00:00:00+00)}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0) AS sp) t;
+      point      |                                                                                        tpoint                                                                                        
+-----------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00), [POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2 2 2) | Interp=Stepwise;{[POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (2 2 2)@2000-01-03 00:00:00+00), [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Point(1 1 1)@2000-01-01', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
+         point         |                 tpoint                 
+-----------------------+----------------------------------------
+ POINT Z (0.5 0.5 0.5) | POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
+         point         |                                                          tpoint                                                          
+-----------------------+--------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
+         point         |                                                           tpoint                                                           
+-----------------------+----------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
+         point         |                                                           tpoint                                                           
+-----------------------+----------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2.5 2.5 2.5) | {[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
+         point         |                                                                   tpoint                                                                   
+-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
+         point         |                                                                   tpoint                                                                   
+-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2.5 2.5 2.5) | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(2 rows)
+
+/* Errors */
+SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, 'SRID=3812;Point(0.5 0.5 0.5)');
+ERROR:  Operation on mixed SRID
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, '2 days') AS sp) t;
+   point    |          time          |              tpoint               
+------------+------------------------+-----------------------------------
+ POINT(0 0) | 2000-01-01 00:00:00+00 | POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2.0, '2 days') AS sp) t;
+   point    |          time          |               tpoint                
+------------+------------------------+-------------------------------------
+ POINT(0 0) | 2000-01-01 00:00:00+00 | {POINT(1 1)@2000-01-01 00:00:00+00}
+ POINT(2 2) | 2000-01-01 00:00:00+00 | {POINT(2 2)@2000-01-02 00:00:00+00}
+ POINT(0 0) | 2000-01-03 00:00:00+00 | {POINT(1 1)@2000-01-03 00:00:00+00}
+(3 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0, '2 days') AS sp) t;
+   point    |          time          |                                                                      tpoint                                                                      
+------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT(0 0) | 2000-01-01 00:00:00+00 | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00), (POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
+ POINT(2 2) | 2000-01-01 00:00:00+00 | {[POINT(2 2)@2000-01-02 00:00:00+00]}
+ POINT(0 0) | 2000-01-03 00:00:00+00 | {[POINT(1 1)@2000-01-03 00:00:00+00]}
+(3 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0, '2 days') AS sp) t;
+   point    |          time          |                                                                      tpoint                                                                      
+------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT(0 0) | 2000-01-01 00:00:00+00 | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00), (POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
+ POINT(2 2) | 2000-01-01 00:00:00+00 | {[POINT(2 2)@2000-01-02 00:00:00+00]}
+ POINT(0 0) | 2000-01-03 00:00:00+00 | {[POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2 2) | 2000-01-03 00:00:00+00 | {[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00)}
+ POINT(2 2) | 2000-01-05 00:00:00+00 | {[POINT(3 3)@2000-01-05 00:00:00+00]}
+(5 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0, '2 days') AS sp) t;
+   point    |          time          |                                          tpoint                                          
+------------+------------------------+------------------------------------------------------------------------------------------
+ POINT(0 0) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)}
+ POINT(2 2) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+ POINT(0 0) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-03 00:00:00+00]}
+(3 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0, '2 days') AS sp) t;
+   point    |          time          |                                          tpoint                                          
+------------+------------------------+------------------------------------------------------------------------------------------
+ POINT(0 0) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)}
+ POINT(2 2) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+ POINT(0 0) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2 2) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00)}
+ POINT(2 2) | 2000-01-05 00:00:00+00 | Interp=Stepwise;{[POINT(3 3)@2000-01-05 00:00:00+00]}
+(5 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, '2 days', 'Point(0.5 0.5)', '2000-01-15') AS sp) t;
+     point      |          time          |              tpoint               
+----------------+------------------------+-----------------------------------
+ POINT(0.5 0.5) | 2000-01-01 00:00:00+00 | POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2.0, '2 days', 'Point(0.5 0.5)', '2000-01-15') AS sp) t;
+     point      |          time          |                                 tpoint                                 
+----------------+------------------------+------------------------------------------------------------------------
+ POINT(0.5 0.5) | 2000-01-01 00:00:00+00 | {POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00}
+ POINT(0.5 0.5) | 2000-01-03 00:00:00+00 | {POINT(1 1)@2000-01-03 00:00:00+00}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0, '2 days', 'Point(0.5 0.5)', '2000-01-15') AS sp) t;
+     point      |          time          |                                                   tpoint                                                    
+----------------+------------------------+-------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | 2000-01-01 00:00:00+00 | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
+ POINT(0.5 0.5) | 2000-01-03 00:00:00+00 | {[POINT(1 1)@2000-01-03 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0, '2 days', 'Point(0.5 0.5)', '2000-01-15') AS sp) t;
+     point      |          time          |                                                   tpoint                                                    
+----------------+------------------------+-------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | 2000-01-01 00:00:00+00 | {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
+ POINT(0.5 0.5) | 2000-01-03 00:00:00+00 | {[POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2.5 2.5) | 2000-01-03 00:00:00+00 | {[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00)}
+ POINT(2.5 2.5) | 2000-01-05 00:00:00+00 | {[POINT(3 3)@2000-01-05 00:00:00+00]}
+(4 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2.0, '2 days', 'Point(0.5 0.5)', '2000-01-15') AS sp) t;
+     point      |          time          |                                                           tpoint                                                            
+----------------+------------------------+-----------------------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+ POINT(0.5 0.5) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-03 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2.0, '2 days', 'Point(0.5 0.5)', '2000-01-15') AS sp) t;
+     point      |          time          |                                                           tpoint                                                            
+----------------+------------------------+-----------------------------------------------------------------------------------------------------------------------------
+ POINT(0.5 0.5) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+ POINT(0.5 0.5) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT(1 1)@2000-01-03 00:00:00+00]}
+ POINT(2.5 2.5) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00)}
+ POINT(2.5 2.5) | 2000-01-05 00:00:00+00 | Interp=Stepwise;{[POINT(3 3)@2000-01-05 00:00:00+00]}
+(4 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1 1)@2000-01-01', 2.0, '2 days') AS sp) t;
+      point      |          time          |                 tpoint                 
+-----------------+------------------------+----------------------------------------
+ POINT Z (0 0 0) | 2000-01-01 00:00:00+00 | POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2.0, '2 days') AS sp) t;
+      point      |          time          |                  tpoint                  
+-----------------+------------------------+------------------------------------------
+ POINT Z (0 0 0) | 2000-01-01 00:00:00+00 | {POINT Z (1 1 1)@2000-01-01 00:00:00+00}
+ POINT Z (2 2 2) | 2000-01-01 00:00:00+00 | {POINT Z (2 2 2)@2000-01-02 00:00:00+00}
+ POINT Z (0 0 0) | 2000-01-03 00:00:00+00 | {POINT Z (1 1 1)@2000-01-03 00:00:00+00}
+(3 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, '2 days') AS sp) t;
+      point      |          time          |                                                                                tpoint                                                                                
+-----------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | 2000-01-01 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00), (POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00)}
+ POINT Z (2 2 2) | 2000-01-01 00:00:00+00 | {[POINT Z (2 2 2)@2000-01-02 00:00:00+00]}
+ POINT Z (0 0 0) | 2000-01-03 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(3 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, '2 days') AS sp) t;
+      point      |          time          |                                                                                tpoint                                                                                
+-----------------+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | 2000-01-01 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00), (POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00)}
+ POINT Z (2 2 2) | 2000-01-01 00:00:00+00 | {[POINT Z (2 2 2)@2000-01-02 00:00:00+00]}
+ POINT Z (0 0 0) | 2000-01-03 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2 2 2) | 2000-01-03 00:00:00+00 | {[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00)}
+ POINT Z (2 2 2) | 2000-01-05 00:00:00+00 | {[POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(5 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, '2 days') AS sp) t;
+      point      |          time          |                                               tpoint                                               
+-----------------+------------------------+----------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00)}
+ POINT Z (2 2 2) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (2 2 2)@2000-01-03 00:00:00+00)}
+ POINT Z (0 0 0) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(3 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, '2 days') AS sp) t;
+      point      |          time          |                                               tpoint                                               
+-----------------+------------------------+----------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00)}
+ POINT Z (2 2 2) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (2 2 2)@2000-01-03 00:00:00+00)}
+ POINT Z (0 0 0) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2 2 2) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00)}
+ POINT Z (2 2 2) | 2000-01-05 00:00:00+00 | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(5 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1 1)@2000-01-01', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+         point         |          time          |                 tpoint                 
+-----------------------+------------------------+----------------------------------------
+ POINT Z (0.5 0.5 0.5) | 2000-01-01 00:00:00+00 | POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+         point         |          time          |                                      tpoint                                      
+-----------------------+------------------------+----------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | 2000-01-01 00:00:00+00 | {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00}
+ POINT Z (0.5 0.5 0.5) | 2000-01-03 00:00:00+00 | {POINT Z (1 1 1)@2000-01-03 00:00:00+00}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+         point         |          time          |                                                           tpoint                                                           
+-----------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | 2000-01-01 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00)}
+ POINT Z (0.5 0.5 0.5) | 2000-01-03 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+         point         |          time          |                                                           tpoint                                                           
+-----------------------+------------------------+----------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | 2000-01-01 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00)}
+ POINT Z (0.5 0.5 0.5) | 2000-01-03 00:00:00+00 | {[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2.5 2.5 2.5) | 2000-01-03 00:00:00+00 | {[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00)}
+ POINT Z (2.5 2.5 2.5) | 2000-01-05 00:00:00+00 | {[POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(4 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+         point         |          time          |                                                                   tpoint                                                                   
+-----------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (2 2 2)@2000-01-03 00:00:00+00)}
+ POINT Z (0.5 0.5 0.5) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(2 rows)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+         point         |          time          |                                                                   tpoint                                                                   
+-----------------------+------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0.5 0.5 0.5) | 2000-01-01 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (2 2 2)@2000-01-03 00:00:00+00)}
+ POINT Z (0.5 0.5 0.5) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+ POINT Z (2.5 2.5 2.5) | 2000-01-03 00:00:00+00 | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00)}
+ POINT Z (2.5 2.5 2.5) | 2000-01-05 00:00:00+00 | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(4 rows)
+
+/* Errors */
+SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
+ERROR:  Operation on mixed SRID

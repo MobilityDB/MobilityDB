@@ -1,0 +1,2203 @@
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ *
+ *****************************************************************************/
+
+/**
+ * @file temporal.c
+ * @brief Basic functions for temporal types of any subtype.
+ */
+
+#include "general/temporal.h"
+
+/* C */
+#include <assert.h>
+/* PostgreSQL */
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <access/heaptoast.h>
+  #include <access/detoast.h>
+#else
+  #include <access/tuptoaster.h>
+#endif
+#include <libpq/pqformat.h>
+/* MobilityDB */
+#include <meos.h>
+#include <meos_internal.h>
+#include "general/pg_call.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/temporal_boxops.h"
+#include "point/tpoint_spatialfuncs.h"
+
+
+/* To avoid including fmgrprotos.h */
+extern Datum timestamp_mi(PG_FUNCTION_ARGS);
+extern Datum interval_cmp(PG_FUNCTION_ARGS);
+
+/*
+ * This is required in a SINGLE file for builds against PostgreSQL
+ */
+PG_MODULE_MAGIC;
+
+/*****************************************************************************
+ * Initialization function
+ *****************************************************************************/
+
+/**
+ * @brief Initialize the MobilityDB extension
+ */
+void
+_PG_init(void)
+{
+  /* elog(WARNING, "This is MobilityDB."); */
+  temporalgeom_init();
+}
+
+/*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+/**
+ * @brief Ensure that the array is not empty
+ *
+ * @note Used for the constructor functions
+ */
+void
+ensure_non_empty_array(ArrayType *array)
+{
+  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("The input array cannot be empty")));
+  return;
+}
+
+/*****************************************************************************
+ * Typmod functions
+ *****************************************************************************/
+
+/**
+ * @brief Array storing the string representation of the concrete subtypes of
+ * temporal types
+ */
+static char *tempsubtypeName[] =
+{
+  "AnyDuration",
+  "TInstant",
+  "TInstantSet",
+  "TSequence",
+  "TSequenceSet"
+};
+
+/**
+ * @brief Array storing the mapping between the string representation of the
+ * subtypes of temporal types and the corresponding enum value
+ */
+struct tempsubtype_struct tempsubtype_struct_array[] =
+{
+  {"ANYTEMPSUBTYPE", ANYTEMPSUBTYPE},
+  {"TINSTANT", TINSTANT},
+  {"TINSTANTSET", TINSTANTSET},
+  {"TSEQUENCE", TSEQUENCE},
+  {"TSEQUENCESET", TSEQUENCESET},
+};
+
+/**
+ * @brief Return the string representation of the subtype of the
+ * temporal type corresponding to the enum value
+ */
+const char *
+tempsubtype_name(int16 subtype)
+{
+  return tempsubtypeName[subtype];
+}
+
+/**
+ * @brief Return the enum value corresponding to the string representation
+ * of the concrete subtype of a temporal type.
+ */
+bool
+tempsubtype_from_string(const char *str, int16 *subtype)
+{
+  char *tmpstr;
+  size_t tmpstartpos, tmpendpos;
+  size_t i;
+
+  /* Initialize */
+  *subtype = 0;
+  /* Locate any leading/trailing spaces */
+  tmpstartpos = 0;
+  for (i = 0; i < strlen(str); i++)
+  {
+    if (str[i] != ' ')
+    {
+      tmpstartpos = i;
+      break;
+    }
+  }
+  tmpendpos = strlen(str) - 1;
+  for (i = strlen(str) - 1; i != 0; i--)
+  {
+    if (str[i] != ' ')
+    {
+      tmpendpos = i;
+      break;
+    }
+  }
+  tmpstr = palloc(tmpendpos - tmpstartpos + 2);
+  for (i = tmpstartpos; i <= tmpendpos; i++)
+    tmpstr[i - tmpstartpos] = str[i];
+  /* Add NULL to terminate */
+  tmpstr[i - tmpstartpos] = '\0';
+  size_t len = strlen(tmpstr);
+  /* Now check for the type */
+  for (i = 0; i < TEMPSUBTYPE_STRUCT_ARRAY_LEN; i++)
+  {
+    if (len == strnlen(tempsubtype_struct_array[i].subtypeName,
+        TEMPSUBTYPE_MAX_LEN) &&
+      ! strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName,
+        TEMPSUBTYPE_MAX_LEN))
+    {
+      *subtype = tempsubtype_struct_array[i].subtype;
+      pfree(tmpstr);
+      return true;
+    }
+  }
+  pfree(tmpstr);
+  return false;
+}
+
+/**
+ * @brief Ensure that the temporal type of a temporal value corresponds to the
+ * typmod
+ */
+static Temporal *
+temporal_valid_typmod(Temporal *temp, int32_t typmod)
+{
+  /* No typmod (-1) */
+  if (typmod < 0)
+    return temp;
+  uint8 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
+  uint8 subtype = temp->subtype;
+  /* Typmod has a preference */
+  if (typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != subtype)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Temporal type (%s) does not match column type (%s)",
+      tempsubtype_name(subtype), tempsubtype_name(typmod_subtype))));
+  return temp;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_typmod_in);
+/**
+ * @brief Input typmod information for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_typmod_in(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  Datum *elem_values;
+  int n = 0;
+
+  if (ARR_ELEMTYPE(array) != CSTRINGOID)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("typmod array must be type cstring[]")));
+  if (ARR_NDIM(array) != 1)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
+      errmsg("typmod array must be one-dimensional")));
+  if (ARR_HASNULL(array))
+    ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+      errmsg("typmod array must not contain nulls")));
+
+  deconstruct_array(array, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
+  if (n != 1)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Invalid temporal type modifier")));
+
+  /* Temporal Type */
+  char *s = DatumGetCString(elem_values[0]);
+  if (strlen(s) == 0)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Empty temporal type modifier")));
+
+  int16 subtype = ANYTEMPSUBTYPE;
+  if (! tempsubtype_from_string(s, &subtype))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Invalid temporal type modifier: %s", s)));
+
+  pfree(elem_values);
+  PG_RETURN_INT32((int32) subtype);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_typmod_out);
+/**
+ * @brief Output typmod information for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_typmod_out(PG_FUNCTION_ARGS)
+{
+  char *s = palloc(64);
+  char *str = s;
+  int32 typmod = PG_GETARG_INT32(0);
+  int16 subtype = TYPMOD_GET_SUBTYPE(typmod);
+  /* No type? Then no typmod at all. Return empty string.  */
+  if (typmod < 0 || !subtype)
+  {
+    *str = '\0';
+    PG_RETURN_CSTRING(str);
+  }
+  sprintf(str, "(%s)", tempsubtype_name(subtype));
+  PG_RETURN_CSTRING(s);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_enforce_typmod);
+/**
+ * @brief Enforce typmod information for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_enforce_typmod(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 typmod = PG_GETARG_INT32(1);
+  /* Check if temporal typmod is consistent with the supplied one */
+  temp = temporal_valid_typmod(temp, typmod);
+  PG_RETURN_POINTER(temp);
+}
+
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+/**
+ * @brief Peak into a temporal datum to find the bounding box. If the datum needs
+ * needs to be detoasted, extract only the header and not the full object.
+ */
+void
+temporal_bbox_slice(Datum tempdatum, void *box)
+{
+  Temporal *temp = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum))
+    temp = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
+      temporal_max_header_size());
+  else
+    temp = (Temporal *) tempdatum;
+  temporal_set_bbox(temp, box);
+  PG_FREE_IF_COPY_P(temp, DatumGetPointer(tempdatum));
+  return;
+}
+
+/*****************************************************************************
+ * Version functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Mobilitydb_version);
+/**
+ * @brief Version of the MobilityDB extension
+ */
+PGDLLEXPORT Datum
+Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  char *version = mobilitydb_version();
+  text *result = cstring_to_text(version);
+  PG_RETURN_TEXT_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
+/**
+ * @brief Versions of the MobilityDB extension and its dependencies
+ */
+PGDLLEXPORT Datum
+Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  char *version = mobilitydb_full_version();
+  text *result = cstring_to_text(version);
+  pfree(version);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_in);
+/**
+ * @brief Generic input function for temporal types
+ *
+ * @note Examples of input for temporal instants:
+ * @code
+ * false @ 2012-01-01 08:00:00
+ * 1.5 @ 2012-01-01 08:00:00
+ * @endcode
+ */
+PGDLLEXPORT Datum
+Temporal_in(PG_FUNCTION_ARGS)
+{
+  char *input = PG_GETARG_CSTRING(0);
+  Oid temptypid = PG_GETARG_OID(1);
+  Temporal *result = temporal_in(input, oid_type(temptypid));
+  int32 temp_typmod = -1;
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    temp_typmod = PG_GETARG_INT32(2);
+  if (temp_typmod >= 0)
+    result = temporal_valid_typmod(result, temp_typmod);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_out);
+/**
+ * @brief Generic output function for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_out(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  char *result = temporal_out(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_CSTRING(result);
+}
+
+/**
+ * @brief @brief Return a temporal value from its binary representation read from
+ * a buffer.
+ * @note Function needed for temporal aggregation and thus only instant and
+ * sequence subtypes must be considered
+ */
+Temporal *
+temporal_recv(StringInfo buf)
+{
+  uint8 temptype = pq_getmsgbyte(buf);
+  uint8 subtype = pq_getmsgbyte(buf);
+  Temporal *result;
+  assert(subtype == TINSTANT || subtype == TSEQUENCE);
+  if (subtype == TINSTANT)
+    result = (Temporal *) tinstant_recv(buf, temptype);
+  else /* subtype == TSEQUENCE */
+    result = (Temporal *) tsequence_recv(buf, temptype);
+  return result;
+}
+
+/**
+ * @brief @brief Write the binary representation of a temporal value into a buffer.
+ * @note Function needed for temporal aggregation and thus only instant and
+ * sequence subtypes must be considered
+ */
+void
+temporal_write(const Temporal *temp, StringInfo buf)
+{
+  pq_sendbyte(buf, temp->temptype);
+  pq_sendbyte(buf, temp->subtype);
+  assert(temp->subtype == TINSTANT || temp->subtype == TSEQUENCE);
+  if (temp->subtype == TINSTANT)
+    tinstant_write((TInstant *) temp, buf);
+  else /* temp->subtype == TSEQUENCE */
+    tsequence_write((TSequence *) temp, buf);
+  return;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_recv);
+/**
+ * @brief Generic receive function for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  Temporal *result = temporal_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_send);
+/*
+ * Generic send function for temporal types
+ */
+PGDLLEXPORT Datum
+Temporal_send(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  uint8_t variant = 0;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
+  uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Constructor functions
+ ****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tinstant_constructor);
+/**
+ * @brief Construct a temporal instant from the arguments
+ */
+PGDLLEXPORT Datum
+Tinstant_constructor(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  Temporal *result = (Temporal *) tinstant_make(value, temptype, t);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tinstantset_constructor);
+/**
+ * @brief Construct a temporal instant set from the array of temporal instants
+ */
+PGDLLEXPORT Datum
+Tinstantset_constructor(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(array);
+  int count;
+  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+  Temporal *result = (Temporal *) tinstantset_make((const TInstant **) instants,
+    count, MERGE_NO);
+  pfree(instants);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Construct a temporal sequence from the array of temporal instants
+ */
+static Datum
+tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_interp)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  bool lower_inc = PG_GETARG_BOOL(1);
+  bool upper_inc = PG_GETARG_BOOL(2);
+  bool linear = get_interp ? PG_GETARG_BOOL(3) : STEP;
+  ensure_non_empty_array(array);
+  int count;
+  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+  Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
+    count, lower_inc, upper_inc, linear, NORMALIZE);
+  pfree(instants);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tstepseq_constructor);
+/**
+ * @brief Construct a temporal sequence with stepwise interpolation from the array of
+ * temporal instants
+ */
+PGDLLEXPORT Datum
+Tstepseq_constructor(PG_FUNCTION_ARGS)
+{
+  return tsequence_constructor_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
+/**
+ * @brief Construct a temporal sequence with linear or stepwise interpolation from
+ * the array of temporal instants
+ */
+PGDLLEXPORT Datum
+Tlinearseq_constructor(PG_FUNCTION_ARGS)
+{
+  return tsequence_constructor_ext(fcinfo, true);
+}
+
+PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
+/**
+ * @brief Construct a temporal sequence set from the array of temporal sequences
+ */
+PGDLLEXPORT Datum
+Tsequenceset_constructor(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(array);
+  int count;
+  TSequence **sequences = (TSequence **) temporalarr_extract(array, &count);
+  Temporal *result = (Temporal *) tsequenceset_make(
+    (const TSequence **) sequences, count, NORMALIZE);
+  pfree(sequences);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Construct a temporal sequence set from the array of temporal instants that
+ * are split in various sequences if two consecutive instants have a spatial
+ * or temporal gap defined by the arguments
+ */
+Datum
+tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_interp)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(array);
+  bool linear;
+  float maxdist;
+  Interval *maxt;
+  if (get_interp)
+  {
+    linear = PG_GETARG_BOOL(1);
+    maxdist = PG_GETARG_FLOAT8(2);
+    maxt = PG_GETARG_INTERVAL_P(3);
+  }
+  else
+  {
+    linear = STEP;
+    maxdist = PG_GETARG_FLOAT8(1);
+    maxt = PG_GETARG_INTERVAL_P(2);
+  }
+  /* Store fcinfo into a global variable */
+  /* Needed for the distance function for temporal geographic points */
+  store_fcinfo(fcinfo);
+  /* Extract the array of instants */
+  int count;
+  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+  TSequenceSet *result = tsequenceset_make_gaps((const TInstant **) instants,
+    count, linear, maxdist, maxt);
+  pfree(instants);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tstepseqset_constructor_gaps);
+/**
+ * @brief Construct a temporal sequence set with stepwise interpolation from the
+ * array of temporal instants
+ */
+PGDLLEXPORT Datum
+Tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
+{
+  return tsequenceset_constructor_gaps_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Tlinearseqset_constructor_gaps);
+/**
+ * @brief Construct a temporal sequence set with linear or stepwise interpolation
+ * from the array of temporal instants
+ */
+PGDLLEXPORT Datum
+Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
+{
+  return tsequenceset_constructor_gaps_ext(fcinfo, true);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tinstantset_from_base);
+/**
+ * @brief Construct a temporal instant set from a base value and a timestamp set
+ */
+PGDLLEXPORT Datum
+Tinstantset_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  TInstantSet *result = tinstantset_from_base(value, temptype, ts);
+  PG_FREE_IF_COPY(ts, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tsequence_from_base);
+/**
+ * @brief Construct a temporal sequence from a base value and a period
+ */
+PGDLLEXPORT Datum
+Tsequence_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  Period *p = PG_GETARG_SPAN_P(1);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
+  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  TSequence *result = tsequence_from_base(value, temptype, p, linear);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
+/**
+ * @brief Construct a temporal sequence set from from a base value and a
+ * timestamp set
+ */
+PGDLLEXPORT Datum
+Tsequenceset_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
+  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  TSequenceSet *result = tsequenceset_from_base(value, temptype,
+    ps, linear);
+  PG_FREE_IF_COPY(ps, 1);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Append and merge functions
+ ****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_append_tinstant);
+/**
+ * @brief Append an instant to the end of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_append_tinstant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *inst = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = temporal_append_tinstant(temp, (TInstant *) inst);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(inst, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_merge);
+/**
+ * @brief Merge the two temporal values
+ */
+PGDLLEXPORT Datum
+Temporal_merge(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = temporal_merge(temp1, temp2);
+  if (temp1)
+    PG_FREE_IF_COPY(temp1, 0);
+  if (temp2)
+    PG_FREE_IF_COPY(temp2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_merge_array);
+/**
+ * @brief Merge the array of temporal values
+ */
+PGDLLEXPORT Datum
+Temporal_merge_array(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(array);
+  int count;
+  Temporal **temparr = temporalarr_extract(array, &count);
+  Temporal *result = temporal_merge_array(temparr, count);
+  pfree(temparr);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tint_to_tfloat);
+/**
+ * @brief Cast a temporal integer as a temporal float
+ */
+PGDLLEXPORT Datum
+Tint_to_tfloat(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tint_to_tfloat(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tfloat_to_tint);
+/**
+ * @brief Cast a temporal float as a temporal integer
+ */
+PGDLLEXPORT Datum
+Tfloat_to_tint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_to_tint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_to_period);
+/**
+ * @brief Return the bounding period on which a temporal value is defined
+ *
+ * @note We cannot detoast only the header since we don't know whether the
+ * lower and upper bounds of the period are inclusive or not
+ */
+PGDLLEXPORT Datum
+Temporal_to_period(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Period *result = palloc(sizeof(Period));
+  temporal_set_period(temp, result);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_SPAN_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
+/**
+ * @brief Return the bounding box of a temporal number
+ */
+PGDLLEXPORT Datum
+Tnumber_to_tbox(PG_FUNCTION_ARGS)
+{
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  temporal_bbox_slice(tempdatum, result);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
+/**
+ * @brief Transform a temporal value into a temporal instant
+ */
+PGDLLEXPORT Datum
+Temporal_to_tinstant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_to_tinstant(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_to_tinstantset);
+/**
+ * @brief Transform a temporal value into a temporal instant set
+ */
+PGDLLEXPORT Datum
+Temporal_to_tinstantset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_to_tinstantset(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
+/**
+ * @brief Transform a temporal value into a temporal sequence
+ */
+PGDLLEXPORT Datum
+Temporal_to_tsequence(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_to_tsequence(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
+/**
+ * @brief Transform a temporal value into a temporal sequence set
+ */
+PGDLLEXPORT Datum
+Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_to_tsequenceset(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tempstep_to_templinear);
+/**
+ * @brief Transform a temporal value with continuous base type from stepwise
+ * to linear interpolation
+ */
+PGDLLEXPORT Datum
+Tempstep_to_templinear(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ensure_seq_subtypes(temp->subtype);
+  Temporal *result = temporal_step_to_linear(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_shift);
+/**
+ * @brief Return a temporal value a shifted by an interval
+ */
+PGDLLEXPORT Datum
+Temporal_shift(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Temporal *result = temporal_shift_tscale(temp, true, false, start, NULL);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_tscale);
+/**
+ * @brief Return a temporal value scaled by an interval
+ */
+PGDLLEXPORT Datum
+Temporal_tscale(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  ensure_valid_duration(duration);
+  Temporal *result = temporal_shift_tscale(temp, false, true, NULL, duration);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_shift_tscale);
+/**
+ * @brief Return a temporal value shifted and scaled by the intervals
+ */
+PGDLLEXPORT Datum
+Temporal_shift_tscale(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  ensure_valid_duration(duration);
+  Temporal *result = temporal_shift_tscale(temp, true, true, start, duration);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_subtype);
+/**
+ * @brief Return the string representation of the subtype of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_subtype(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  char *str = temporal_subtype(temp);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_interpolation);
+/**
+ * @brief Return the string representation of the interpolation of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_interpolation(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  char *str = temporal_interpolation(temp);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_memory_size);
+/**
+ * @brief Return the size in bytes of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_memory_size(PG_FUNCTION_ARGS)
+{
+  Datum result = toast_datum_size(PG_GETARG_DATUM(0));
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_values);
+/**
+ * @brief Return the base values of a temporal value as an array
+ */
+PGDLLEXPORT Datum
+Temporal_values(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  Datum *values = temporal_values(temp, &count);
+  ArrayType *result = datumarr_to_array(values, count,
+    temptype_basetype(temp->temptype));
+  pfree(values);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_span);
+/**
+ * @brief Return the value span of a temporal integer
+ */
+PGDLLEXPORT Datum
+Tnumber_span(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *result = tnumber_span(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_SPAN_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Tfloat_spans);
+/**
+ * @brief Return the base values of a temporal float as an array of spans
+ */
+PGDLLEXPORT Datum
+Tfloat_spans(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  Span **spans = tfloat_spans(temp, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree_array((void **) spans, count);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tinstant_get_value);
+/**
+ * @brief Return the base value of a temporal instant
+ */
+PGDLLEXPORT Datum
+Tinstant_get_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  if (temp->subtype != TINSTANT)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal value must be of subtype instant")));
+
+  TInstant *inst = (TInstant *) temp;
+  Datum result = tinstant_value_copy(inst);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_time);
+/**
+ * @brief Return the time on which a temporal value is defined as a period set
+ */
+PGDLLEXPORT Datum
+Temporal_time(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PeriodSet *result = temporal_time(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tinstant_timestamp);
+/**
+ * @brief Return the timestamp of a temporal instant
+ */
+PGDLLEXPORT Datum
+Tinstant_timestamp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  if (temp->subtype != TINSTANT)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal value must be of subtype instant")));
+
+  TimestampTz result = ((TInstant *) temp)->t;
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_start_value);
+/**
+ * @brief Return the start base value of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_start_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = temporal_start_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_end_value);
+/**
+ * @brief Return the end base value of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_end_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = temporal_end_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_min_value);
+/**
+ * @brief Return the minimum base value of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_min_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = temporal_min_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_max_value);
+/**
+ * @brief Return the maximum base value of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_max_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = temporal_max_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_min_instant);
+/**
+ * @brief Return a pointer to the instant with the minimum base value of the
+ * temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_min_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = tinstant_copy(temporal_min_instant(temp));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_max_instant);
+/**
+ * @brief Return a pointer to the instant with maximum base value of the
+ * temporal value.
+ */
+PGDLLEXPORT Datum
+Temporal_max_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = tinstant_copy(temporal_max_instant(temp));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_timespan);
+/**
+ * @brief Return the timespan of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_timespan(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *result = temporal_timespan(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_duration);
+/**
+ * @brief Return the duration of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_duration(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *result = temporal_duration(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_num_sequences);
+/**
+ * @brief Return the number of sequences of a temporal sequence (set)
+ */
+PGDLLEXPORT Datum
+Temporal_num_sequences(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ensure_seq_subtypes(temp->subtype);
+  int result = temporal_num_sequences(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT32(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_start_sequence);
+/**
+ * @brief Return the start sequence of a temporal sequence (set)
+ */
+PGDLLEXPORT Datum
+Temporal_start_sequence(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TSequence *result = temporal_start_sequence(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_end_sequence);
+/**
+ * @brief Return the end sequence of a temporal sequence (set)
+ */
+PGDLLEXPORT Datum
+Temporal_end_sequence(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TSequence *result = temporal_end_sequence(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_sequence_n);
+/**
+ * @brief Return the n-th sequence of a temporal sequence (set)
+ */
+PGDLLEXPORT Datum
+Temporal_sequence_n(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int n = PG_GETARG_INT32(1); /* Assume 1-based */
+  TSequence *result = temporal_sequence_n(temp, n);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_sequences);
+/**
+ * @brief Return the sequences of a temporal sequence (set) as an array
+ */
+PGDLLEXPORT Datum
+Temporal_sequences(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  TSequence **sequences = temporal_sequences(temp, &count);
+  ArrayType *result = temporalarr_to_array((const Temporal **) sequences,
+    count);
+  pfree_array((void **) sequences, count);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_segments);
+/**
+ * @brief Return the segments of a temporal sequence (set) as an array
+ */
+PGDLLEXPORT Datum
+Temporal_segments(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  TSequence **segments = temporal_segments(temp, &count);
+  ArrayType *result = temporalarr_to_array((const Temporal **) segments,
+    count);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_num_instants);
+/**
+ * @brief Return the number of distinct instants of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_num_instants(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int result = temporal_num_instants(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT32(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_start_instant);
+/**
+ * @brief Return the start instant of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_start_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = tinstant_copy(temporal_start_instant(temp));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_end_instant);
+/**
+ * @brief Return the end instant of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_end_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = tinstant_copy(temporal_end_instant(temp));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_instant_n);
+/**
+ * @brief Return the n-th instant of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_instant_n(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int n = PG_GETARG_INT32(1); /* Assume 1-based */
+  const TInstant *inst = temporal_instant_n(temp, n);
+  TInstant *result = (inst == NULL) ? NULL : tinstant_copy(inst);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_instants);
+/**
+ * @brief Return the distinct instants of a temporal value as an array
+ */
+PGDLLEXPORT Datum
+Temporal_instants(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  const TInstant **instants = temporal_instants(temp, &count);
+  ArrayType *result = temporalarr_to_array((const Temporal **) instants,
+    count);
+  pfree(instants);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_num_timestamps);
+/**
+ * @brief Return the number of distinct timestamps of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_num_timestamps(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int result = temporal_num_timestamps(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_start_timestamp);
+/**
+ * @brief Return the start timestamp of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_start_timestamp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz result = temporal_start_timestamp(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_end_timestamp);
+/**
+ * @brief Return the end timestamp of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_end_timestamp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz result = temporal_end_timestamp(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_timestamp_n);
+/**
+ * @brief Return the n-th distinct timestamp of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_timestamp_n(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int n = PG_GETARG_INT32(1); /* Assume 1-based */
+  TimestampTz result;
+  bool found = temporal_timestamp_n(temp, n, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_timestamps);
+/**
+ * @brief Return the distinct timestamps of a temporal value as an array
+ */
+PGDLLEXPORT Datum
+Temporal_timestamps(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  TimestampTz *times = temporal_timestamps(temp, &count);
+  ArrayType *result = timestamparr_to_array(times, count);
+  pfree(times);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+/*****************************************************************************
+ * Ever/always functions
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for the temporal ever/always comparison operators
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always comparison
+ */
+static Datum
+temporal_ev_al_comp_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const Temporal *, Datum))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  bool result = func(temp, value);
+  PG_FREE_IF_COPY(temp, 0);
+  DATUM_FREE_IF_COPY(value, temptype_basetype(temp->temptype), 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ever_eq);
+/**
+ * @brief Return true if a temporal value is ever equal to a base value
+ */
+PGDLLEXPORT Datum
+Temporal_ever_eq(PG_FUNCTION_ARGS)
+{
+  return temporal_ev_al_comp_ext(fcinfo, &temporal_ever_eq);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_always_eq);
+/**
+ * @brief Return true if a temporal value is always equal to the base value
+ */
+PGDLLEXPORT Datum
+Temporal_always_eq(PG_FUNCTION_ARGS)
+{
+  return temporal_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ever_ne);
+/**
+ * @brief Return true if a temporal value is ever different from a base value
+ */
+PGDLLEXPORT Datum
+Temporal_ever_ne(PG_FUNCTION_ARGS)
+{
+  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_always_ne);
+/**
+ * @brief Return true if a temporal value is always different from a base value
+ */
+PGDLLEXPORT Datum
+Temporal_always_ne(PG_FUNCTION_ARGS)
+{
+  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_ever_eq);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_ever_lt);
+/**
+ * @brief Return true if a temporal value is ever less than a base value
+ */
+PGDLLEXPORT Datum
+Temporal_ever_lt(PG_FUNCTION_ARGS)
+{
+  return temporal_ev_al_comp_ext(fcinfo, &temporal_ever_lt);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_always_lt);
+/**
+ * @brief Return true if a temporal value is always less than a base value
+ */
+PGDLLEXPORT Datum
+Temporal_always_lt(PG_FUNCTION_ARGS)
+{
+  return temporal_ev_al_comp_ext(fcinfo, &temporal_always_lt);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ever_le);
+/**
+ * @brief Return true if a temporal value is ever less than or equal to a base value
+ */
+PGDLLEXPORT Datum
+Temporal_ever_le(PG_FUNCTION_ARGS)
+{
+  return temporal_ev_al_comp_ext(fcinfo, &temporal_ever_le);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_always_le);
+/**
+ * @brief Return true if a temporal value is always less than or equal to a base value
+ */
+PGDLLEXPORT Datum
+Temporal_always_le(PG_FUNCTION_ARGS)
+{
+  return temporal_ev_al_comp_ext(fcinfo, &temporal_always_le);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ever_gt);
+/**
+ * @brief Return true if a temporal value is ever greater than a base value
+ */
+PGDLLEXPORT Datum
+Temporal_ever_gt(PG_FUNCTION_ARGS)
+{
+  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_always_le);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_always_gt);
+/**
+ * @brief Return true if a temporal value is always greater than a base value
+ */
+PGDLLEXPORT Datum
+Temporal_always_gt(PG_FUNCTION_ARGS)
+{
+  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_ever_le);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ever_ge);
+/**
+ * @brief Return true if a temporal value is ever greater than or equal
+ * to a base value
+ */
+PGDLLEXPORT Datum
+Temporal_ever_ge(PG_FUNCTION_ARGS)
+{
+  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_always_lt);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_always_ge);
+/**
+ * @brief Return true if a temporal value is always greater than or equal
+ * to a base value
+ */
+PGDLLEXPORT Datum
+Temporal_always_ge(PG_FUNCTION_ARGS)
+{
+  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_ever_lt);
+}
+
+/*****************************************************************************
+ * Restriction Functions
+ *****************************************************************************/
+
+/**
+ * @brief Restrict a temporal value to (the complement of) an array of base values
+ */
+static Datum
+temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  Temporal *result = temporal_restrict_value(temp, value, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  DATUM_FREE_IF_COPY(value, basetype, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_at_value);
+/**
+ * @brief Restrict a temporal value to a base value
+ */
+PGDLLEXPORT Datum
+Temporal_at_value(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_value_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_value);
+/**
+ * @brief Restrict a temporal value to the complement of a base value
+ */
+PGDLLEXPORT Datum
+Temporal_minus_value(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_value_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Restrict a temporal value to (the complement of) an array of base values
+ */
+static Datum
+temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  /* Return NULL or a copy of a temporal value on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 1);
+    if (atfunc)
+    {
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_NULL();
+    }
+    else
+    {
+      Temporal *result = temporal_copy(temp);
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_POINTER(result);
+    }
+  }
+
+  Datum *values = datumarr_extract(array, &count);
+  /* For temporal points the validity of values in the array is done in
+   * bounding box function */
+  Temporal *result = (count > 1) ?
+    temporal_restrict_values(temp, values, count, atfunc) :
+    temporal_restrict_value(temp, values[0], atfunc);
+
+  pfree(values);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(array, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_at_values);
+/**
+ * @brief Restrict a temporal value to an array of base values
+ */
+PGDLLEXPORT Datum
+Temporal_at_values(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_values_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_values);
+/**
+ * @brief Restrict a temporal value to the complement of an array of base values
+ */
+PGDLLEXPORT Datum
+Temporal_minus_values(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_values_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+static Datum
+tnumber_restrict_span_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *span = PG_GETARG_SPAN_P(1);
+  Temporal *result = tnumber_restrict_span(temp, span, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_at_span);
+/**
+ * @brief Restrict a temporal value to a span of base values
+ */
+PGDLLEXPORT Datum
+Tnumber_at_span(PG_FUNCTION_ARGS)
+{
+  return tnumber_restrict_span_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_minus_span);
+/**
+ * @brief Restrict a temporal value to the complement of a span of base values
+ */
+PGDLLEXPORT Datum
+Tnumber_minus_span(PG_FUNCTION_ARGS)
+{
+  return tnumber_restrict_span_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Restrict a temporal value to (the complement of) an array of spans
+ * of base values
+ */
+static Datum
+tnumber_restrict_spans_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  /* Return NULL or a copy of a temporal value on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 1);
+    if (atfunc)
+    {
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_NULL();
+    }
+    else
+    {
+      Temporal *result = temporal_copy(temp);
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_POINTER(result);
+    }
+  }
+  Span **spans = spanarr_extract(array, &count);
+  Temporal *result = (count > 1) ?
+    tnumber_restrict_spans(temp, spans, count, atfunc) :
+    tnumber_restrict_span(temp, spans[0], atfunc);
+  pfree(spans);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(array, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_at_spans);
+/**
+ * @brief Restrict a temporal value to an array of spans of base values
+ */
+PGDLLEXPORT Datum
+Tnumber_at_spans(PG_FUNCTION_ARGS)
+{
+  return tnumber_restrict_spans_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_minus_spans);
+/**
+ * @brief Restrict a temporal value to the complement of an array of spans
+ * of base values
+ */
+PGDLLEXPORT Datum
+Tnumber_minus_spans(PG_FUNCTION_ARGS)
+{
+  return tnumber_restrict_spans_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_at_min);
+/**
+ * @brief Restrict a temporal value to its minimum base value
+ */
+PGDLLEXPORT Datum
+Temporal_at_min(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_min);
+/**
+ * @brief Restrict a temporal value to the complement of its minimum base value
+ */
+PGDLLEXPORT Datum
+Temporal_minus_min(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_at_max);
+/**
+ * @brief Restrict a temporal value to its maximum base value
+ */
+PGDLLEXPORT Datum
+Temporal_at_max(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_AT);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_max);
+/**
+ * @brief Restrict a temporal value to the complement of its maximum base value
+ */
+PGDLLEXPORT Datum
+Temporal_minus_max(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Restrict a temporal value to (the complement of) a timestamp
+ */
+static Datum
+temporal_restrict_timestamp_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Temporal *result = temporal_restrict_timestamp(temp, t, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_at_timestamp);
+/**
+ * @brief Restrict a temporal value to a timestamp
+ */
+PGDLLEXPORT Datum
+Temporal_at_timestamp(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_timestamp_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_timestamp);
+/**
+ * @brief Restrict a temporal value to the complement of a timestamp
+ */
+PGDLLEXPORT Datum
+Temporal_minus_timestamp(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_timestamp_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_value_at_timestamp);
+/**
+ * @brief Return the base value of a temporal value at the timestamp
+ */
+PGDLLEXPORT Datum
+Temporal_value_at_timestamp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Datum result;
+  bool found = temporal_value_at_timestamp(temp, t, true, &result);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_at_timestampset);
+/**
+ * @brief Restrict a temporal value to a timestamp set
+ */
+PGDLLEXPORT Datum
+Temporal_at_timestampset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ts, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
+/**
+ * @brief Restrict a temporal value to the complement of a timestamp set
+ */
+PGDLLEXPORT Datum
+Temporal_minus_timestampset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ts, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+static Datum
+temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Period *p = PG_GETARG_SPAN_P(1);
+  Temporal *result = temporal_restrict_period(temp, p, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_at_period);
+/**
+ * @brief Restrict a temporal value to a period
+ */
+PGDLLEXPORT Datum
+Temporal_at_period(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_period_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_period);
+/**
+ * @brief Restrict a temporal value to the complement of a period
+ */
+PGDLLEXPORT Datum
+Temporal_minus_period(PG_FUNCTION_ARGS)
+{
+  return temporal_restrict_period_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_at_periodset);
+/**
+ * @brief Restrict a temporal value to a period set
+ */
+PGDLLEXPORT Datum
+Temporal_at_periodset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  Temporal *result = temporal_restrict_periodset(temp, ps, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ps, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_minus_periodset);
+/**
+ * @brief Restrict a temporal value to the complement of a period set
+ */
+PGDLLEXPORT Datum
+Temporal_minus_periodset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ps, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Restrict a temporal value to (the complement of) a temporal box
+  */
+static Datum
+tnumber_restrict_tbox_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TBOX *box = PG_GETARG_TBOX_P(1);
+  Temporal *result = atfunc ? tnumber_at_tbox(temp, box) :
+    tnumber_minus_tbox(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_at_tbox);
+/**
+ * @brief Restrict a temporal value to a temporal box
+ */
+PGDLLEXPORT Datum
+Tnumber_at_tbox(PG_FUNCTION_ARGS)
+{
+  return tnumber_restrict_tbox_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
+/**
+ * @brief Restrict a temporal value to the complement of a temporal box
+ */
+PGDLLEXPORT Datum
+Tnumber_minus_tbox(PG_FUNCTION_ARGS)
+{
+  return tnumber_restrict_tbox_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************
+ * Intersects functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_intersects_timestamp);
+/**
+ * @brief Return true if a temporal value intersects a timestamp
+ */
+PGDLLEXPORT Datum
+Temporal_intersects_timestamp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  bool result = temporal_intersects_timestamp(temp, t);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_intersects_timestampset);
+/**
+ * @brief Return true if a temporal value intersects a timestamp set
+ */
+PGDLLEXPORT Datum
+Temporal_intersects_timestampset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  bool result = temporal_intersects_timestampset(temp, ts);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ts, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_intersects_period);
+/**
+ * @brief Return true if a temporal value intersects a period
+ */
+PGDLLEXPORT Datum
+Temporal_intersects_period(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Period *p = PG_GETARG_SPAN_P(1);
+  bool result = temporal_intersects_period(temp, p);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_intersects_periodset);
+/**
+ * @brief Return true if a temporal value intersects a period set
+ */
+PGDLLEXPORT Datum
+Temporal_intersects_periodset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  bool result = temporal_intersects_periodset(temp, ps);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ps, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Local aggregate functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnumber_integral);
+/**
+ * @brief Return the integral (area under the curve) of a temporal number
+ */
+PGDLLEXPORT Datum
+Tnumber_integral(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tnumber_integral(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_twavg);
+/**
+ * @brief Return the time-weighted average of a temporal number
+ */
+PGDLLEXPORT Datum
+Tnumber_twavg(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tnumber_twavg(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
+ * Functions for defining B-tree index
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_eq);
+/**
+ * @brief Return true if the temporal values are equal
+ */
+PGDLLEXPORT Datum
+Temporal_eq(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = temporal_eq(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ne);
+/**
+ * @brief Return true if the temporal values are different
+ */
+PGDLLEXPORT Datum
+Temporal_ne(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = temporal_ne(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_cmp);
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first temporal value
+ * is less than, equal, or greater than the second temporal value
+ *
+ * @note Function used for B-tree comparison
+ */
+PGDLLEXPORT Datum
+Temporal_cmp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  int result = temporal_cmp(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_INT32(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_lt);
+/**
+ * @brief Return true if the first temporal value is less than the second one
+ */
+PGDLLEXPORT Datum
+Temporal_lt(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = temporal_lt(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_le);
+/**
+ * @brief Return true if the first temporal value is less than or equal to
+ * the second one
+ */
+PGDLLEXPORT Datum
+Temporal_le(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = temporal_le(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_ge);
+/**
+ * @brief Return true if the first temporal value is greater than or equal to
+ * the second one
+ */
+PGDLLEXPORT Datum
+Temporal_ge(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = temporal_ge(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_gt);
+/**
+ * @brief Return true if the first temporal value is greater than the second one
+ */
+PGDLLEXPORT Datum
+Temporal_gt(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = temporal_gt(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Functions for defining hash index
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_hash);
+/**
+ * @brief Return the hash value of a temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_hash(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  uint32 result = temporal_hash(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_UINT32(result);
+}
+
+/*****************************************************************************/
