@@ -106,10 +106,10 @@ ensure_non_empty_array(ArrayType *array)
 static char *tempsubtypeName[] =
 {
   "AnyDuration",
-  "TInstant",
-  "TInstantSet",
-  "TSequence",
-  "TSequenceSet"
+  "Instant",
+  "InstantSet",
+  "Sequence",
+  "SequenceSet"
 };
 
 /**
@@ -119,10 +119,10 @@ static char *tempsubtypeName[] =
 struct tempsubtype_struct tempsubtype_struct_array[] =
 {
   {"ANYTEMPSUBTYPE", ANYTEMPSUBTYPE},
-  {"TINSTANT", TINSTANT},
-  {"TINSTANTSET", TINSTANTSET},
-  {"TSEQUENCE", TSEQUENCE},
-  {"TSEQUENCESET", TSEQUENCESET},
+  {"INSTANT", TINSTANT},
+  {"INSTANTSET", TINSTANTSET},
+  {"SEQUENCE", TSEQUENCE},
+  {"SEQUENCESET", TSEQUENCESET},
 };
 
 /**

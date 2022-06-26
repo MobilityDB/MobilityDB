@@ -113,7 +113,7 @@ else()
 endif()
 
 #-------------------------------------
-# Build both MobilityDB and MEOS
+# Build either MobilityDB or MEOS
 #-------------------------------------
 
 # add_subdirectory(meos)

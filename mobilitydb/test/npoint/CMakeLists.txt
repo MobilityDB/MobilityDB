@@ -1,6 +1,6 @@
 add_test(
   NAME load_npoint_tables
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts
   COMMAND test.sh run_passfail load_npoint_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load_npoint.sql.xz"
 )
 
@@ -24,7 +24,7 @@ foreach(file ${testfiles})
   if(DOTEST)
     add_test(
       NAME ${TESTNAME}
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts
       COMMAND test.sh run_compare ${TESTNAME} ${file}
       )
     set_tests_properties(${TESTNAME} PROPERTIES

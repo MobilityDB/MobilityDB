@@ -9,6 +9,7 @@ message(STATUS "-------------------")
 # Set the version and name of the library
 set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Set the name of the PostgreSQL extension and of the internal extension used for testing
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
@@ -32,6 +33,7 @@ find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
 if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
+
 include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
 if(WIN32)
   include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
