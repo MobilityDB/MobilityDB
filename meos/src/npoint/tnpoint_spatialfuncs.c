@@ -39,6 +39,7 @@
 #include <float.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_boxops.h"
@@ -692,7 +693,7 @@ Datum
 tnpoint_twcentroid(Temporal *temp)
 {
   Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Datum result = tpoint_twcentroid(tgeom);
+  Datum result = PointerGetDatum(tpoint_twcentroid(tgeom));
   pfree(tgeom);
   return result;
 }

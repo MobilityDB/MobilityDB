@@ -332,13 +332,13 @@ Shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum result;
+  GSERIALIZED *result;
   bool found = shortestline_tnpoint_geo(temp, geo, &result);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_geo);
@@ -351,13 +351,13 @@ Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Datum result;
+  GSERIALIZED *result;
   bool found = shortestline_tnpoint_geo(temp, geo, &result);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Shortestline_npoint_tnpoint);
@@ -370,7 +370,7 @@ Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum result = shortestline_tnpoint_npoint(temp, np);
+  GSERIALIZED *result = shortestline_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -385,9 +385,9 @@ Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
-  Datum result = shortestline_tnpoint_npoint(temp, np);
+  GSERIALIZED *result = shortestline_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
@@ -402,13 +402,13 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Datum result;
+  GSERIALIZED *result;
   bool found = shortestline_tnpoint_tnpoint(temp1, temp2, &result);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

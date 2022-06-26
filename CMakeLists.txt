@@ -22,9 +22,9 @@ include(CheckSymbolExists)
 
 # Option for including network points
 option(NPOINT
-  "Set ON|OFF (default=OFF) to include network points
+  "Set ON|OFF (default=ON) to include network points
   "
-  OFF
+  ON
 )
 
 # TODO Include network points for MobilityDB

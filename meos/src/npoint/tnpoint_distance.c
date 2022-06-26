@@ -38,6 +38,7 @@
 #include <assert.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/temporal_util.h"
 #include "point/pgis_call.h"
@@ -241,13 +242,13 @@ nad_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2)
  */
 bool
 shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
-  Datum *result)
+  GSERIALIZED **result)
 {
   if (gserialized_is_empty(geo))
     return false;
   Datum traj = tnpoint_geom(temp);
   GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-  *result = PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, geo));
+  *result = PGIS_LWGEOM_shortestline2d(gstraj, geo);
   PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return true;
@@ -257,14 +258,14 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
  * @brief Return the line connecting the nearest approach point between the
  * network point and the temporal network point
  */
-Datum
+GSERIALIZED *
 shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
   GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-  Datum result = PointerGetDatum(PGIS_LWGEOM_shortestline2d(gstraj, gs));
+  GSERIALIZED *result = PGIS_LWGEOM_shortestline2d(gstraj, gs);
   PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(traj));
@@ -278,7 +279,7 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  */
 bool
 shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum *result)
+  GSERIALIZED **result)
 {
   Temporal *sync1, *sync2;
   /* Return false if the temporal points do not intersect in time */

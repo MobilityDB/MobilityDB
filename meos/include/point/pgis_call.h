@@ -111,6 +111,11 @@ extern char *PGIS_geography_out(GSERIALIZED *g);
 extern GSERIALIZED *PGIS_geography_from_geometry(GSERIALIZED *geom);
 extern GSERIALIZED *PGIS_geometry_from_geography(GSERIALIZED *g_ser);
 
+/* Functions adapted from lwgeom_functions_analytic.c */
+
+extern GSERIALIZED *PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser,
+  double distance_fraction, int repeat);
+
 /*****************************************************************************/
 
 #endif /* __PGIS_CALL_H__ */

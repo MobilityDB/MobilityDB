@@ -62,7 +62,7 @@ extern double nad_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2);
 
 extern bool shortestline_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *geo, Datum *result);
-extern Datum shortestline_tnpoint_npoint(const Temporal *temp,
+extern GSERIALIZED *shortestline_tnpoint_npoint(const Temporal *temp,
   const Npoint *np);
 extern bool shortestline_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2, Datum *result);
