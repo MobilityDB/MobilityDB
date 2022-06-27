@@ -84,48 +84,48 @@ ERROR:  Unable to find 'type' in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"XXX","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
 ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolationss":["Discrete"]}');
-ERROR:  Unable to find 'interpolations' in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["XXX"]}');
-ERROR:  Invalid 'interpolations' value in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete","Linear"]}');
-ERROR:  Multiple 'interpolations' values in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":"[1,1]","datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
-ERROR:  Invalid value of the 'coordinates' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":"Discrete"}');
-ERROR:  Invalid 'interpolations' value in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
-ERROR:  Too few elements in 'coordinates' values in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,2,3,4],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
-ERROR:  Too many elements in 'coordinates' values in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinatess":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
-ERROR:  Unable to find 'coordinates' in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimess":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
-ERROR:  Invalid 'datetimes' value in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinatess":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"interpolations":["Discrete"]}');
-ERROR:  Unable to find 'coordinates' in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":"[[1,1]]","datetimes":["2000-01-01T00:00:00+01"],"interpolations":["Discrete"]}');
-ERROR:  Invalid 'coordinates' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[],"datetimes":["2000-01-01T00:00:00+01"],"interpolations":["Discrete"]}');
-ERROR:  Invalid value of 'coordinates' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimess":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"interpolations":["Linear"]}');
-ERROR:  Unable to find 'datetimes' in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":[],"interpolations":["Linear"]}');
-ERROR:  Invalid value of 'datetimes' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
-ERROR:  Distinct number of elements in 'coordinates' and 'datetimes' arrays
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"lower_incl":true,"upper_inc":true,"interpolations":["Linear"]}');
-ERROR:  Unable to find 'lower_inc' in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"lower_inc":true,"upper_incl":true,"interpolations":["Linear"]}');
-ERROR:  Unable to find 'upper_inc' in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true},"interpolations":["Linear"]}'
 );
-ERROR:  Invalid 'sequences' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolations":["Linear"]}');
-ERROR:  Invalid value of 'sequences' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":"2000-01-01T00:00:00+01","lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
-ERROR:  Invalid 'datetimes' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":[],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
-ERROR:  Invalid value of 'datetimes' array in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string
 SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Point(1 2)@2000-01-01')));
                    asewkt                    
 ---------------------------------------------
@@ -460,129 +460,129 @@ SELECT asEWKT(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01');
-                                                   asmfjson                                                    
----------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+                                                     asmfjson                                                      
+-------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-                                                                                    asmfjson                                                                                     
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[[1,1],[2,2],[1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
+                                                                                      asmfjson                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1],[2,2],[1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-                                                                                                    asmfjson                                                                                                     
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[[1,1],[2,2],[1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
+                                                                                                      asmfjson                                                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1],[2,2],[1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-                                                                                                                                                                            asmfjson                                                                                                                                                                             
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","sequences":[{"coordinates":[[1,1],[2,2],[1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3,3],[3,3]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
+                                                                                                                                                                              asmfjson                                                                                                                                                                               
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","sequences":[{"coordinates":[[1,1],[2,2],[1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3,3],[3,3]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-                                                                                 asmfjson                                                                                  
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[1.5,1.5],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+                                                                                   asmfjson                                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[1.5,1.5],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-                                                                                                                      asmfjson                                                                                                                       
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
+                                                                                                                        asmfjson                                                                                                                         
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-                                                                                                                                      asmfjson                                                                                                                                       
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
+                                                                                                                                        asmfjson                                                                                                                                         
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-                                                                                                                                                                                                                  asmfjson                                                                                                                                                                                                                   
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"sequences":[{"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5],[3.5,3.5]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
+                                                                                                                                                                                                                    asmfjson                                                                                                                                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"sequences":[{"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5],[3.5,3.5]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'Point(1 1 1)@2000-01-01');
-                                                    asmfjson                                                     
------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[1,1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+                                                      asmfjson                                                       
+---------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[1,1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                                                                       asmfjson                                                                                        
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
+                                                                                         asmfjson                                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                                                                                       asmfjson                                                                                                        
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
+                                                                                                         asmfjson                                                                                                          
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                                                                                                                                 asmfjson                                                                                                                                                                                  
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","sequences":[{"coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3,3,3],[3,3,3]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
+                                                                                                                                                                                   asmfjson                                                                                                                                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","sequences":[{"coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3,3,3],[3,3,3]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-                                                                                   asmfjson                                                                                    
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[1.5,1.5,1.5],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+                                                                                     asmfjson                                                                                      
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[1.5,1.5,1.5],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
-                                                                                                                            asmfjson                                                                                                                             
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
+                                                                                                                              asmfjson                                                                                                                               
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
-                                                                                                                                            asmfjson                                                                                                                                             
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
+                                                                                                                                              asmfjson                                                                                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
-                                                                                                                                                                                                                            asmfjson                                                                                                                                                                                                                             
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"sequences":[{"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5,3.5],[3.5,3.5,3.5]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
+                                                                                                                                                                                                                              asmfjson                                                                                                                                                                                                                               
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"sequences":[{"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5,3.5],[3.5,3.5,3.5]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, 20);
-                                                   asmfjson                                                    
----------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+                                                     asmfjson                                                      
+-------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, -1);
-                                                   asmfjson                                                    
----------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+                                                     asmfjson                                                      
+-------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 2);
-                                                                                                                                                      asmfjson                                                                                                                                                       
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"stBoundedBy":{"bbox":[[50.81,4.38],[50.81,4.38]],"period":{"begin":"2019-01-01T16:00:00.15+00","end":"2019-01-01T16:00:00.15+00"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T16:00:00.15+00","interpolations":["Discrete"]}
+                                                                                                                                                        asmfjson                                                                                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"stBoundedBy":{"bbox":[[50.81,4.38],[50.81,4.38]],"period":{"begin":"2019-01-01T16:00:00.15+00","end":"2019-01-01T16:00:00.15+00"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T16:00:00.15+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
-                                                                                             asmfjson                                                                                             
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T16:00:00.15+00","interpolations":["Discrete"]}
+                                                                                               asmfjson                                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T16:00:00.15+00","interpolations":["Discrete"]}
 (1 row)
 
 SELECT asMFJSON(tgeompoint '[Point(1 2 3)@2019-01-01, Point(4 5 6)@2019-01-02]', 1, 2);
-                                                                                                                                                 asmfjson                                                                                                                                                 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"MovingPoint","stBoundedBy":{"bbox":[[1,2,3],[4,5,6]],"period":{"begin":"2019-01-01T00:00:00+00","end":"2019-01-02T00:00:00+00"}},"coordinates":[[1,2,3],[4,5,6]],"datetimes":["2019-01-01T00:00:00+00","2019-01-02T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
+                                                                                                                                                   asmfjson                                                                                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","stBoundedBy":{"bbox":[[1,2,3],[4,5,6]],"period":{"begin":"2019-01-01T00:00:00+00","end":"2019-01-02T00:00:00+00"}},"coordinates":[[1,2,3],[4,5,6]],"datetimes":["2019-01-01T00:00:00+00","2019-01-02T00:00:00+00"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
 (1 row)
 
 /* Errors */

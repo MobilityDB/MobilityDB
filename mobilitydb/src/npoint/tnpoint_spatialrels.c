@@ -277,7 +277,7 @@ Dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   Datum result = spatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d,
     INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -294,7 +294,7 @@ Dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   Datum result = spatialrel3_tnpoint_npoint(temp, np, dist, &geom_dwithin2d,
     INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -311,7 +311,7 @@ Dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   Datum result = spatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d,
     INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -328,7 +328,7 @@ Dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   Datum result = spatialrel3_tnpoint_npoint(temp, np, dist, &geom_dwithin2d,
     INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -345,7 +345,7 @@ Dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   int result = dwithin_tnpoint_tnpoint(temp1, temp2, dist);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

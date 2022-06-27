@@ -459,8 +459,10 @@ temptype_mfjson_size(mobdbType temptype)
       size = sizeof("{'type':'MovingText',");
       break;
     case T_TGEOMPOINT:
+      size = sizeof("{'type':'MovingGeomPoint',");
+      break;
     case T_TGEOGPOINT:
-      size = sizeof("{'type':'MovingPoint',");
+      size = sizeof("{'type':'MovingGeogPoint',");
       break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
@@ -492,8 +494,10 @@ temptype_mfjson_buf(char *output, mobdbType temptype)
       ptr += sprintf(ptr, "{\"type\":\"MovingText\",");
       break;
     case T_TGEOMPOINT:
+      ptr += sprintf(ptr, "{\"type\":\"MovingGeomPoint\",");
+      break;
     case T_TGEOGPOINT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
+      ptr += sprintf(ptr, "{\"type\":\"MovingGeogPoint\",");
       break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);

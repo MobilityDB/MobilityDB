@@ -1377,10 +1377,10 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
-      PointerGetDatum(gs), dist, func);
+      PointerGetDatum(gs), Float8GetDatum(dist), func);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_point((TSequenceSet *) temp,
-      PointerGetDatum(gs), dist, func);
+      PointerGetDatum(gs), Float8GetDatum(dist), func);
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {

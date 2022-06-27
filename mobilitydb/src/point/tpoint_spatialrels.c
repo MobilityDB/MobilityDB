@@ -267,7 +267,7 @@ Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   int result = dwithin_tpoint_geo(temp, gs, dist);
@@ -288,7 +288,7 @@ Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   int result = dwithin_tpoint_geo(temp, gs, dist);
@@ -311,7 +311,7 @@ Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   int result = dwithin_tpoint_tpoint(temp1, temp2, dist);

@@ -58,10 +58,10 @@ tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr, atvalue);
@@ -81,10 +81,10 @@ tinterrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Npoint *np = PG_GETARG_NPOINT_P(0);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr, atvalue);
@@ -104,10 +104,10 @@ tinterrel_geo_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = tinterrel_tnpoint_geo(temp, geo, tinter, restr, atvalue);
@@ -128,10 +128,10 @@ tinterrel_tnpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = tinterrel_tnpoint_geo(temp, geo, tinter, restr, atvalue);
@@ -157,10 +157,10 @@ Tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = tcontains_geo_tnpoint(geo, temp, restr, atvalue);
@@ -282,10 +282,10 @@ Ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = ttouches_geo_tnpoint(geo, temp, restr, atvalue);
@@ -307,10 +307,10 @@ Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = ttouches_npoint_tnpoint(np, temp, restr, atvalue);
@@ -331,10 +331,10 @@ Ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = ttouches_tnpoint_geo(temp, geo, restr, atvalue);
@@ -356,10 +356,10 @@ Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = ttouches_tnpoint_npoint(temp, np, restr, atvalue);
@@ -383,12 +383,12 @@ Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   Temporal *result = tdwithin_geo_tnpoint(geo, temp, dist, restr, atvalue);
@@ -409,12 +409,12 @@ Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   Temporal *result = tdwithin_tnpoint_geo(temp, geo, dist, restr, atvalue);
@@ -435,12 +435,12 @@ Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np  = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   Temporal *result = tdwithin_npoint_tnpoint(np, temp, dist, restr, atvalue);
@@ -460,12 +460,12 @@ Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np  = PG_GETARG_NPOINT_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   Temporal *result = tdwithin_tnpoint_npoint(temp, np, dist, restr, atvalue);
@@ -485,12 +485,12 @@ Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   Temporal *result = tdwithin_tnpoint_tnpoint(temp1, temp2, dist, restr,

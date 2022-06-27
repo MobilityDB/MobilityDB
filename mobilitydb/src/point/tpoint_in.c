@@ -33,8 +33,8 @@
  */
 
 /* MobilityDB */
-#include "general/temporal_parser.h"
 #include "general/temporal_util.h"
+#include "point/tpoint_parser.h"
 
 /*****************************************************************************
  * Input in EWKT format
@@ -51,7 +51,7 @@ Tpoint_from_ewkt(PG_FUNCTION_ARGS)
   text *wkt_text = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   char *wkt = text2cstring(wkt_text);
-  Temporal *result = temporal_parse(&wkt, oid_type(temptypid));
+  Temporal *result = tpoint_parse(&wkt, oid_type(temptypid));
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);
 }

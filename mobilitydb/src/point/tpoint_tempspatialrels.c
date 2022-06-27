@@ -101,15 +101,14 @@ tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(temp, gs, tinter, restr,
-    atvalue);
+  Temporal *result = tinterrel_tpoint_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result == NULL)
@@ -127,10 +126,10 @@ tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   /* Result depends on whether we are computing tintersects or tdisjoint */
@@ -157,10 +156,10 @@ Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = tcontains_geo_tpoint(gs, temp, restr, atvalue);
@@ -239,10 +238,10 @@ Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = ttouches_tpoint_geo(temp, gs, restr, atvalue);
@@ -264,10 +263,10 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 3)
   {
-    atvalue = PG_GETARG_DATUM(2);
+    atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
   Temporal *result = ttouches_tpoint_geo(temp, gs, restr, atvalue);
@@ -293,12 +292,12 @@ Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   /* Store fcinfo into a global variable */
@@ -321,12 +320,12 @@ Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   /* Store fcinfo into a global variable */
@@ -351,18 +350,18 @@ Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
-  Datum atvalue = (Datum) NULL;
+  bool atvalue = false;
   if (PG_NARGS() == 4)
   {
-    atvalue = PG_GETARG_DATUM(3);
+    atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = tdwithin_tpoint_tpoint(temp1, temp2, dist,
-    restr, atvalue);
+  Temporal *result = tdwithin_tpoint_tpoint(temp1, temp2, dist, restr,
+    atvalue);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

@@ -53,8 +53,8 @@
 /* Definition in numutils.c */
  extern int64 pg_strtoint64(const char *s);
 extern int32 pg_strtoint32(const char *s);
-extern int pg_lltoa(int64 value, char *a);
-extern int pg_ltoa(int32 value, char *a);
+extern int pg_ulltoa_n(uint64 l, char *a);
+extern int pg_ultoa_n(uint32 value, char *a);
 
 /*****************************************************************************
  * Functions adapted from bool.c
@@ -205,6 +205,33 @@ int4_in(char *str)
   return pg_strtoint32(str);
 }
 
+/*
+ * pg_ltoa: converts a signed 32-bit integer to its string representation and
+ * returns strlen(a).
+ *
+ * It is the caller's responsibility to ensure that a is at least 12 bytes long,
+ * which is enough room to hold a minus sign, a maximally long int32, and the
+ * above terminating NUL.
+ *
+ * @note This function is copied here since it returned void in PostgreSQL
+ * version < 14
+ */
+static int
+mobdb_ltoa(int32 value, char *a)
+{
+	uint32		uvalue = (uint32) value;
+	int			len = 0;
+
+	if (value < 0)
+	{
+		uvalue = (uint32) 0 - uvalue;
+		a[len++] = '-';
+	}
+	len += pg_ultoa_n(uvalue, a + len);
+	a[len] = '\0';
+	return len;
+}
+
 /**
  * @brief Return a string from an int4
  * @note PostgreSQL function: Datum int4out(PG_FUNCTION_ARGS)
@@ -213,7 +240,7 @@ char *
 int4_out(int32 val)
 {
   char *result = palloc(12);  /* sign, 10 digits, '\0' */
-  pg_ltoa(val, result);
+  mobdb_ltoa(val, result);
   return result;
 }
 
@@ -240,6 +267,33 @@ int8_in(char *str)
   return result;
 }
 
+/*
+ * pg_lltoa: converts a signed 64-bit integer to its string representation and
+ * returns strlen(a).
+ *
+ * Caller must ensure that 'a' points to enough memory to hold the result
+ * (at least MAXINT8LEN + 1 bytes, counting a leading sign and trailing NUL).
+ *
+ * @note This function is copied here since it returned void in PostgreSQL
+ * version < 14
+ */
+int
+mobdb_lltoa(int64 value, char *a)
+{
+  uint64    uvalue = value;
+  int      len = 0;
+
+  if (value < 0)
+  {
+    uvalue = (uint64) 0 - uvalue;
+    a[len++] = '-';
+  }
+
+  len += pg_ulltoa_n(uvalue, a + len);
+  a[len] = '\0';
+  return len;
+}
+
 /**
  * @brief Return a string from an int8
  * @note PostgreSQL function: Datum int8out(PG_FUNCTION_ARGS)
@@ -251,7 +305,7 @@ int8_out(int64 val)
   char *result;
   int len;
 
-  len = pg_lltoa(val, buf) + 1;
+  len = mobdb_lltoa(val, buf) + 1;
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()
    * to avoid the strlen() call that would otherwise be done in pstrdup().

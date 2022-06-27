@@ -56,6 +56,9 @@
 extern int point_in_polygon(LWPOLY *polygon, LWPOINT *point);
 extern int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point);
 
+/* To avoid including lwgeom_transform.h */
+void srid_check_latlong(int32_t srid);
+
 /* Modified version of PG_PARSER_ERROR */
 
 #if MEOS
@@ -1331,8 +1334,10 @@ PGIS_geography_in(char *str, int32 geog_typmod)
     lwgeom = lwg_parser_result.geom;
   }
 
+#if ! MEOS
   /* Error on any SRID != default */
-  // srid_check_latlong(lwgeom->srid);
+  srid_check_latlong(lwgeom->srid);
+#endif /* ! MEOS */
 
   /* Convert to gserialized */
   g_ser = gserialized_geography_from_lwgeom(lwgeom, geog_typmod);
