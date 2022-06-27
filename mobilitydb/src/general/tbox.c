@@ -36,11 +36,13 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/time_ops.h"
 #include "general/temporal_util.h"
+#include "general/time_ops.h"
 #include "general/tnumber_mathfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************
  * Input/output functions

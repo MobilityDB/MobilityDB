@@ -122,6 +122,7 @@ pg_atoi(const char *s, int size, int c)
   /* To avoid including <utils/builtins.h> */
   extern int32 pg_atoi(const char *s, int size, int c);
 #endif
+
 /*****************************************************************************
  * General functions
  *****************************************************************************/

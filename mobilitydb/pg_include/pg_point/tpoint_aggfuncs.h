@@ -28,29 +28,37 @@
  *****************************************************************************/
 
 /**
- * @file geography_funcs.h
- * Spatial functions for PostGIS geography.
+ * @file tpoint_aggfuncs.h
+ * Aggregate functions for temporal points.
  */
 
-#ifndef __GEOGRAPHY_FUNCTIONS_H__
-#define __GEOGRAPHY_FUNCTIONS_H__
+#ifndef __TPOINT_AGGFUNCS_H__
+#define __TPOINT_AGGFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-/* PostGIS */
-#include <liblwgeom.h>
-
+/* MobilityDB */
+#include "general/temporal.h"
+#include "pg_general/skiplist.h"
 
 /*****************************************************************************/
 
-#include <fmgr.h>
-#include <lwgeodetic_tree.h>
+/**
+ * Structure storing the SRID and the dimensionality of the temporal point
+ * values for aggregation. Notice that for the moment we do not aggregate
+ * temporal geographic points.
+ */
+struct GeoAggregateState
+{
+  int32_t srid;
+  bool hasz;
+};
 
-extern Datum geography_closestpoint(PG_FUNCTION_ARGS);
-extern Datum geography_shortestline(PG_FUNCTION_ARGS);
-extern Datum geography_line_substring(PG_FUNCTION_ARGS);
-extern Datum geography_line_interpolate_point(PG_FUNCTION_ARGS);
-extern Datum geography_line_locate_point(PG_FUNCTION_ARGS);
+extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
+
+/*****************************************************************************/
+
+extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
 
 /*****************************************************************************/
 

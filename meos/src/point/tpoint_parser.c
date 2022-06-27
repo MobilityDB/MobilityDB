@@ -224,7 +224,7 @@ tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
   mobdbType basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
   Datum geo = basetype_parse(str, basetype);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geo);
+  GSERIALIZED *gs = DatumGetGserializedP(geo);
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);

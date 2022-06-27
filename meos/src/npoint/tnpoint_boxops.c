@@ -43,9 +43,10 @@
 
 /* PostgreSQL */
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+/* MobilityDB */
 #include "general/temporal_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
@@ -132,11 +133,9 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
     posmax = Max(posmax, np->pos);
   }
 
-  Datum line = route_geom(rid);
-  Datum geom = (posmin == 0 && posmax == 1) ? line :
-    call_function3(LWGEOM_line_substring, line, Float8GetDatum(posmin),
-      Float8GetDatum(posmax));
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+  GSERIALIZED *line = DatumGetGserializedP(route_geom(rid));
+  GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
+    PGIS_LWGEOM_line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
   box->tmin = tmin;
   box->tmax = tmax;

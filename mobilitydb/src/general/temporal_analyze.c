@@ -62,7 +62,7 @@
  * the statistics for the temporal part are stored in slots 1 and 2.
  */
 
-#include "general/temporal_analyze.h"
+#include "pg_general/temporal_analyze.h"
 
 /* C */
 #include <assert.h>
@@ -71,9 +71,9 @@
 #include <postgres.h>
 #include <fmgr.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000
-#include <access/tuptoaster.h>
+  #include <access/tuptoaster.h>
 #else
-#include <access/heaptoast.h>
+  #include <access/heaptoast.h>
 #endif
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_operator_d.h>
@@ -82,12 +82,13 @@
 #include <utils/datum.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
+#include <utils/typcache.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/span_analyze.h"
+#include "pg_general/span_analyze.h"
 #include "general/temporal_util.h"
-#include "general/temporal_analyze.h"
+#include "pg_general/temporal_analyze.h"
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or

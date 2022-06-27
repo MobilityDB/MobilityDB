@@ -33,10 +33,10 @@
  * points.
  */
 
-#include "npoint/tnpoint_selfuncs.h"
+#include "pg_npoint/tnpoint_selfuncs.h"
 
 /* MobilityDB */
-#include "general/temporal_selfuncs.h"
+#include "pg_general/temporal_selfuncs.h"
 
 /*****************************************************************************/
 

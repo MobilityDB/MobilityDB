@@ -39,6 +39,7 @@
 #include <float.h>
 /* MobilityDB */
 #include <meos.h>
+#include "pg_general/temporal_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_boxops.h"

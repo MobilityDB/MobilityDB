@@ -93,7 +93,7 @@
  * that we don't yet have as infinity.
  */
 
-#include "point/tpoint_spgist.h"
+#include "pg_point/tpoint_spgist.h"
 
 /* C */
 #include <assert.h>
@@ -106,9 +106,10 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
-#include "general/tnumber_spgist.h"
 #include "point/tpoint_boxops.h"
-#include "point/tpoint_gist.h"
+/* MobilityDB */
+#include "pg_general/tnumber_spgist.h"
+#include "pg_point/tpoint_gist.h"
 
 /*****************************************************************************
  * Data structures

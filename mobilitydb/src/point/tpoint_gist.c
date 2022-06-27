@@ -32,7 +32,7 @@
  * @brief R-tree GiST index for temporal points.
  */
 
-#include "point/tpoint_gist.h"
+#include "pg_point/tpoint_gist.h"
 
 /* C */
 #include <assert.h>
@@ -42,10 +42,11 @@
 #include <access/gist.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/time_gist.h"
-#include "general/tnumber_gist.h"
+/* MobilityDB */
+#include "pg_general/time_gist.h"
+#include "pg_general/tnumber_gist.h"
 
 /*****************************************************************************
  * GiST consistent methods

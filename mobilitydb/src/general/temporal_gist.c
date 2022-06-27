@@ -33,16 +33,17 @@
  * is taken into account for indexing, currently, `tbool` and `ttext`.
  */
 
-#include "general/temporal_gist.h"
+#include "pg_general/temporal_gist.h"
 
 /* PostgreSQL */
 #include <access/stratnum.h>
 #include <access/gist.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/timetypes.h"
 #include "general/temporal.h"
 #include "general/temporal_catalog.h"
-#include "general/time_gist.h"
+/* MobilityDB */
+#include "pg_general/time_gist.h"
 
 /*****************************************************************************
  * GiST compress method for temporal values

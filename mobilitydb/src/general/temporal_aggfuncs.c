@@ -32,7 +32,7 @@
  * @brief General aggregate functions for temporal types.
  */
 
-#include "general/temporal_aggfuncs.h"
+#include "pg_general/temporal_aggfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -46,7 +46,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/skiplist.h"
+#include "pg_general/skiplist.h"
 #include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
 #include "general/doublen.h"

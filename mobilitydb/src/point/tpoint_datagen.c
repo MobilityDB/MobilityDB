@@ -35,7 +35,7 @@
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  */
 
-#include "point/tpoint_datagen.h"
+#include "pg_point/tpoint_datagen.h"
 
 /* PostgreSQL */
 #include <postgres.h>

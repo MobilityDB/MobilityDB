@@ -32,7 +32,7 @@
  * @brief Functions manipulating skiplists.
  */
 
-#include "general/skiplist.h"
+#include "pg_general/skiplist.h"
 
 /* C */
 #include <assert.h>
@@ -48,8 +48,10 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/time_ops.h"
-#include "general/time_aggfuncs.h"
-#include "general/temporal_aggfuncs.h"
+/* MobilityDB */
+#include "pg_general/time_aggfuncs.h"
+#include "pg_general/temporal_util.h"
+#include "pg_general/temporal_aggfuncs.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists

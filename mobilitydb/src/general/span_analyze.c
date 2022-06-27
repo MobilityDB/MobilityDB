@@ -42,7 +42,7 @@
  * come from different tuples. In theory, the standard scalar selectivity
  * functions could be used with the combined histogram.
  */
-#include "general/span_analyze.h"
+#include "pg_general/span_analyze.h"
 
 /* C */
 #include <assert.h>

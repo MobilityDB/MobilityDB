@@ -49,7 +49,7 @@
 #include <meos.h>
 // #include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
-#if ! MEOS
+#if NPOINT
   // #include "npoint/tnpoint_boxops.h"
 #endif
 

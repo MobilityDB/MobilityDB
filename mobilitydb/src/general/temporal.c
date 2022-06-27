@@ -44,12 +44,14 @@
   #include <access/tuptoaster.h>
 #endif
 #include <libpq/pqformat.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_util.h"
+/* MobilityDB */
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "pg_general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 

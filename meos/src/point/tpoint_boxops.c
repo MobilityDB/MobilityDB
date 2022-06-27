@@ -70,8 +70,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
 void
 tpointinst_set_stbox(const TInstant *inst, STBOX *box)
 {
-  Datum value = tinstant_value(inst);
-  GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
   /* Non-empty geometries have a bounding box
    * The argument box is set to 0 on the next call */
   geo_set_stbox(gs, box);

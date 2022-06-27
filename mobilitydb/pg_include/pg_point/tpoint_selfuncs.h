@@ -42,7 +42,7 @@
 /* MobilityDB */
 #include "general/temporal_catalog.h"
 #include "point/tpoint.h"
-#include "point/tpoint_analyze.h"
+#include "pg_point/tpoint_analyze.h"
 
 /**
 * The maximum number of dimensions our code can handle.

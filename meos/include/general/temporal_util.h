@@ -123,59 +123,5 @@ extern double hypot3d(double x, double y, double z);
 extern double hypot4d(double x, double y, double z, double m);
 
 /*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <utils/array.h>
-#include <utils/rangetypes.h>
-
-/* PostgreSQL call helpers */
-
-extern Datum call_input(Oid typid, char *str, bool end);
-extern char *call_output(Oid typid, Datum value);
-extern Datum call_recv(mobdbType type, StringInfo buf);
-extern bytea *call_send(mobdbType type, Datum value);
-
-extern Datum call_function1(PGFunction func, Datum arg1);
-extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
-extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2,
-  Datum arg3);
-extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2,
-  Datum arg3, Datum arg4);
-
-extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
-  Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
-
-extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
-    Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
-
-/* Range functions */
-
-extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, mobdbType basetype);
-
-/* Array functions */
-
-extern Datum *datumarr_extract(ArrayType *array, int *count);
-extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
-extern Period **periodarr_extract(ArrayType *array, int *count);
-extern Span **spanarr_extract(ArrayType *array, int *count);
-extern Temporal **temporalarr_extract(ArrayType *array, int *count);
-
-extern ArrayType *datumarr_to_array(Datum *values, int count, mobdbType type);
-extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
-extern ArrayType *periodarr_to_array(const Period **periods, int count);
-extern ArrayType *spanarr_to_array(Span **spans, int count);
-extern ArrayType *strarr_to_textarray(char **strarr, int count);
-extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
-extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
-
-#endif /* #if ! MEOS */
-
-/*****************************************************************************/
 
 #endif

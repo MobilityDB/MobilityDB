@@ -35,7 +35,7 @@
  * Estimates are based on histograms of lower and upper bounds.
  */
 
-#include "general/span_selfuncs.h"
+#include "pg_general/span_selfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -53,7 +53,7 @@
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_analyze.h"
+#include "pg_general/span_analyze.h"
 
 /*****************************************************************************/
 

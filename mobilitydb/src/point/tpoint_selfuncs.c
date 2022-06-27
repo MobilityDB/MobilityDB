@@ -32,7 +32,7 @@
  * @brief Functions for selectivity estimation of operators on temporal points.
  */
 
-#include "point/tpoint_selfuncs.h"
+#include "pg_point/tpoint_selfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -43,10 +43,10 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/span_selfuncs.h"
-#include "general/temporal_selfuncs.h"
-#include "point/tpoint_analyze.h"
-#include "npoint/tnpoint_selfuncs.h"
+#include "pg_general/span_selfuncs.h"
+#include "pg_general/temporal_selfuncs.h"
+#include "pg_point/tpoint_analyze.h"
+#include "pg_npoint/tnpoint_selfuncs.h"
 
 /*****************************************************************************
  * Boolean functions for the operators

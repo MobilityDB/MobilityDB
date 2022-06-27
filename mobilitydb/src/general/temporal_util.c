@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <utils/lsyscache.h>
 #include <catalog/pg_collation_d.h>
+#include <utils/rangetypes.h>
 #include <utils/varlena.h>
 /* MobilityDB */
 #include <meos.h>

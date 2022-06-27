@@ -550,7 +550,7 @@ PGIS_ST_3DDistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return true if the 3D geometries intersect
- * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
+ * @note PostGIS function: Datum ST_3DIntersects(PG_FUNCTION_ARGS)
  */
 bool
 PGIS_ST_3DIntersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -608,6 +608,19 @@ PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   /*empty geometries cases should be right handled since return from underlying
    functions should be FLT_MAX which causes false as answer*/
   return (tolerance >= mindist);
+}
+
+/**
+ * @brief  Reverse vertex order of geometry
+ * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_LWGEOM_reverse(const GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  lwgeom_reverse_in_place(lwgeom);
+  GSERIALIZED *result = geometry_serialize(lwgeom);
+  return result;
 }
 
 /*****************************************************************************
@@ -688,17 +701,17 @@ MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 GEOSGeometry *
 POSTGIS2GEOS(const GSERIALIZED *pglwgeom)
 {
-	GEOSGeometry *ret;
-	LWGEOM *lwgeom = lwgeom_from_gserialized(pglwgeom);
-	if ( ! lwgeom )
-	{
-		elog(ERROR, "POSTGIS2GEOS: unable to deserialize input");
-		return NULL;
-	}
-	ret = LWGEOM2GEOS(lwgeom, 0);
-	lwgeom_free(lwgeom);
+  GEOSGeometry *ret;
+  LWGEOM *lwgeom = lwgeom_from_gserialized(pglwgeom);
+  if ( ! lwgeom )
+  {
+    elog(ERROR, "POSTGIS2GEOS: unable to deserialize input");
+    return NULL;
+  }
+  ret = LWGEOM2GEOS(lwgeom, 0);
+  lwgeom_free(lwgeom);
 
-	return ret;
+  return ret;
 }
 
 /**
@@ -862,7 +875,7 @@ PGIS_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
 /**
  * @brief Return true if the 3D geometries intersect
- * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
+ * @note PostGIS function: Datum ST_Intersection(PG_FUNCTION_ARGS)
  * @note With respect to the original function we do not use the prec
  * argument
  */
@@ -1457,5 +1470,142 @@ PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser, double distance_fraction,
 
   return result;
 }
+
+GSERIALIZED *
+PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
+{
+  LWGEOM *olwgeom;
+  POINTARRAY *ipa, *opa;
+  GSERIALIZED *ret;
+  int type = gserialized_get_type(geom);
+
+  if ( from < 0 || from > 1 )
+  {
+    elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
+    return NULL;
+  }
+
+  if ( to < 0 || to > 1 )
+  {
+    elog(ERROR,"line_interpolate_point: 3rd arg isn't within [0,1]");
+    return NULL;
+  }
+
+  if ( from > to )
+  {
+    elog(ERROR, "2nd arg must be smaller then 3rd arg");
+    return NULL;
+  }
+
+  if ( type == LINETYPE )
+  {
+    LWLINE *iline = lwgeom_as_lwline(lwgeom_from_gserialized(geom));
+
+    if ( lwgeom_is_empty((LWGEOM*)iline) )
+    {
+      /* TODO return empty line */
+      lwline_release(iline);
+      return NULL;
+    }
+
+    ipa = iline->points;
+
+    opa = ptarray_substring(ipa, from, to, 0);
+
+    if ( opa->npoints == 1 ) /* Point returned */
+      olwgeom = (LWGEOM *)lwpoint_construct(iline->srid, NULL, opa);
+    else
+      olwgeom = (LWGEOM *)lwline_construct(iline->srid, NULL, opa);
+
+  }
+  else if ( type == MULTILINETYPE )
+  {
+    LWMLINE *iline;
+    uint32_t i = 0, g = 0;
+    int homogeneous = LW_TRUE;
+    LWGEOM **geoms = NULL;
+    double length = 0.0, sublength = 0.0, minprop = 0.0, maxprop = 0.0;
+
+    iline = lwgeom_as_lwmline(lwgeom_from_gserialized(geom));
+
+    if ( lwgeom_is_empty((LWGEOM*)iline) )
+    {
+      /* TODO return empty collection */
+      lwmline_release(iline);
+      return NULL;
+    }
+
+    /* Calculate the total length of the mline */
+    for ( i = 0; i < iline->ngeoms; i++ )
+    {
+      LWLINE *subline = (LWLINE*)iline->geoms[i];
+      if ( subline->points && subline->points->npoints > 1 )
+        length += ptarray_length_2d(subline->points);
+    }
+
+    geoms = lwalloc(sizeof(LWGEOM*) * iline->ngeoms);
+
+    /* Slice each sub-geometry of the multiline */
+    for ( i = 0; i < iline->ngeoms; i++ )
+    {
+      LWLINE *subline = (LWLINE*)iline->geoms[i];
+      double subfrom = 0.0, subto = 0.0;
+
+      if ( subline->points && subline->points->npoints > 1 )
+        sublength += ptarray_length_2d(subline->points);
+
+      /* Calculate proportions for this subline */
+      minprop = maxprop;
+      maxprop = sublength / length;
+
+      /* This subline doesn't reach the lowest proportion requested
+         or is beyond the highest proporton */
+      if ( from > maxprop || to < minprop )
+        continue;
+
+      if ( from <= minprop )
+        subfrom = 0.0;
+      if ( to >= maxprop )
+        subto = 1.0;
+
+      if ( from > minprop && from <= maxprop )
+        subfrom = (from - minprop) / (maxprop - minprop);
+
+      if ( to < maxprop && to >= minprop )
+        subto = (to - minprop) / (maxprop - minprop);
+      
+      opa = ptarray_substring(subline->points, subfrom, subto, 0);
+      if ( opa && opa->npoints > 0 )
+      {
+        if ( opa->npoints == 1 ) /* Point returned */
+        {
+          geoms[g] = (LWGEOM *)lwpoint_construct(SRID_UNKNOWN, NULL, opa);
+          homogeneous = LW_FALSE;
+        }
+        else
+        {
+          geoms[g] = (LWGEOM *)lwline_construct(SRID_UNKNOWN, NULL, opa);
+        }
+        g++;
+      }
+
+    }
+    /* If we got any points, we need to return a GEOMETRYCOLLECTION */
+    if ( ! homogeneous )
+      type = COLLECTIONTYPE;
+
+    olwgeom = (LWGEOM*)lwcollection_construct(type, iline->srid, NULL, g, geoms);
+  }
+  else
+  {
+    elog(ERROR, "line_substring: 1st arg isn't a line");
+    return NULL;
+  }
+
+  ret = geometry_serialize(olwgeom);
+  lwgeom_free(olwgeom);
+  return ret;
+}
+
 
 /*****************************************************************************/

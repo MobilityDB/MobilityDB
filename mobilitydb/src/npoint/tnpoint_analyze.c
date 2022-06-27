@@ -33,13 +33,13 @@
  * columns.
  */
 
-#include "npoint/tnpoint_analyze.h"
+#include "pg_npoint/tnpoint_analyze.h"
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include "general/temporal_analyze.h"
-#include "point/tpoint_analyze.h"
+#include "pg_general/temporal_analyze.h"
+#include "pg_point/tpoint_analyze.h"
 
 /*****************************************************************************/
 

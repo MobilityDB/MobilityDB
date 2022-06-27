@@ -28,48 +28,28 @@
  *****************************************************************************/
 
 /**
- * @file temporal_aggfuncs.h
- * Temporal aggregate functions
+ * @file geography_funcs.h
+ * Spatial functions for PostGIS geography.
  */
 
-#ifndef __TEMPORAL_AGGFUNCS_H__
-#define __TEMPORAL_AGGFUNCS_H__
+#ifndef __GEOGRAPHY_FUNCTIONS_H__
+#define __GEOGRAPHY_FUNCTIONS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/skiplist.h"
-#include "general/temporal.h"
-#include "general/temporal_util.h"
+/* PostGIS */
+#include <liblwgeom.h>
 
 /*****************************************************************************/
 
-extern Datum datum_min_int32(Datum l, Datum r);
-extern Datum datum_max_int32(Datum l, Datum r);
-extern Datum datum_min_float8(Datum l, Datum r);
-extern Datum datum_max_float8(Datum l, Datum r);
-extern Datum datum_sum_float8(Datum l, Datum r);
-extern Datum datum_min_text(Datum l, Datum r);
-extern Datum datum_max_text(Datum l, Datum r);
-extern Datum datum_sum_double2(Datum l, Datum r);
-extern Datum datum_sum_double3(Datum l, Datum r);
-extern Datum datum_sum_double4(Datum l, Datum r);
+#include <fmgr.h>
+#include <lwgeodetic_tree.h>
 
-/* Generic aggregation functions */
-
-extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
-  TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
-extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
-  TSequence **sequences2, int count2, Datum (*func)(Datum, Datum),
-  bool crossings, int *newcount);
-extern void ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp);
-extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo,
-  SkipList *state, TSequence *seq, datum_func2 func, bool interpoint);
-extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo,
-  SkipList *state1, SkipList *state2, datum_func2 func, bool crossings);
-
-/*****************************************************************************/
-
+extern Datum geography_closestpoint(PG_FUNCTION_ARGS);
+extern Datum geography_shortestline(PG_FUNCTION_ARGS);
+extern Datum geography_line_substring(PG_FUNCTION_ARGS);
+extern Datum geography_line_interpolate_point(PG_FUNCTION_ARGS);
+extern Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

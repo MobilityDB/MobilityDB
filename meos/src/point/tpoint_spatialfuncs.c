@@ -1362,7 +1362,7 @@ bool
 tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs = DatumGetGserializedP(value);
   if (gserialized_is_empty(gs))
   {
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
@@ -3951,7 +3951,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   {
     Datum traj = PointerGetDatum(tpointseq_trajectory(simpleseqs[i]));
     Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-    GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
+    GSERIALIZED *gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
@@ -4241,7 +4241,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     pfree_array((void **) simpleseqs, countsimple);
     Datum traj = PointerGetDatum(tpointseq_trajectory(seq));
     Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-    GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
+    GSERIALIZED *gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
@@ -4262,7 +4262,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     {
       Datum traj = PointerGetDatum(tpointseq_trajectory(simpleseqs[i]));
       Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-      GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
+      GSERIALIZED *gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
       {
         periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,

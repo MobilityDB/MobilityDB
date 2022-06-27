@@ -45,7 +45,7 @@
 /* PostGIS */
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/lifting.h"
 #include "point/geography_funcs.h"
@@ -53,6 +53,8 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialrels.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include <pg_general/temporal_util.h>
 
 /*****************************************************************************/
 

@@ -100,7 +100,7 @@ include_directories("${CMAKE_SOURCE_DIR}/meos/include")
 add_subdirectory("${CMAKE_SOURCE_DIR}/meos/src" "meos_src")
 
 # MobilityDB
-include_directories("include")
+include_directories("pg_include")
 add_subdirectory("src")
 
 #--------------------------------

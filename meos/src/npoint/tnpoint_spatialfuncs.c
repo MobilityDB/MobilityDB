@@ -360,19 +360,19 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
   if ((np1->pos == 0 && np2->pos == 1) || (np2->pos == 0 && np1->pos == 1))
     return line;
 
-  Datum traj;
+  GSERIALIZED *traj;
   if (np1->pos < np2->pos)
-    traj = call_function3(LWGEOM_line_substring, line,
-      Float8GetDatum(np1->pos), Float8GetDatum(np2->pos));
-  else /* np1->pos < np2->pos */
+    traj = PGIS_LWGEOM_line_substring(DatumGetGserializedP(line),
+      np1->pos, np2->pos);
+  else /* np1->pos >= np2->pos */
   {
-    Datum traj2 = call_function3(LWGEOM_line_substring, line,
-      Float8GetDatum(np2->pos), Float8GetDatum(np1->pos));
-    traj = call_function1(LWGEOM_reverse, traj2);
-    pfree(DatumGetPointer(traj2));
+    GSERIALIZED *traj2 = PGIS_LWGEOM_line_substring(DatumGetGserializedP(line),
+      np2->pos, np1->pos);
+    traj = PGIS_LWGEOM_reverse(traj2);
+    pfree(traj2);
   }
   pfree(DatumGetPointer(line));
-  return traj;
+  return PointerGetDatum(traj);
 }
 
 /*****************************************************************************

@@ -32,17 +32,18 @@
  * @brief Window aggregate functions for temporal types.
  */
 
-#include "general/temporal_waggfuncs.h"
+#include "pg_general/temporal_waggfuncs.h"
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_call.h"
 #include "general/doublen.h"
-#include "general/time_aggfuncs.h"
-#include "general/temporal_aggfuncs.h"
+/* MobilityDB */
+#include "pg_general/time_aggfuncs.h"
+#include "pg_general/temporal_aggfuncs.h"
 
 /*****************************************************************************
  * Generic functions

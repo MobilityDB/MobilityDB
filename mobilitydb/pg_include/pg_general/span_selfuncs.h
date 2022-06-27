@@ -28,37 +28,45 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_aggfuncs.h
- * Aggregate functions for temporal points.
+ * @file span_selfuncs.h
+ * Functions for selectivity estimation of time types operators
  */
 
-#ifndef __TPOINT_AGGFUNCS_H__
-#define __TPOINT_AGGFUNCS_H__
+#ifndef __SPAN_SELFUNCS_H__
+#define __SPAN_SELFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include "general/temporal.h"
-#include "general/skiplist.h"
+#include "pg_general/temporal_selfuncs.h"
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 
 /**
- * Structure storing the SRID and the dimensionality of the temporal point
- * values for aggregation. Notice that for the moment we do not aggregate
- * temporal geographic points.
+ * Enumeration for using the same functions for computing selectivity of spans
+ * and periods
  */
-struct GeoAggregateState
+typedef enum
 {
-  int32_t srid;
-  bool hasz;
-};
-
-extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
+  SPANSEL,
+  PERIODSEL
+} SpanPeriodSel;
 
 /*****************************************************************************/
 
-extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
+extern float8 span_sel_default(CachedOp cachedOp);
+extern float8 span_joinsel_default(CachedOp cachedOp);
+
+extern void time_const_to_period(Node *other, Period *period);
+
+extern double span_sel_hist(VariableStatData *vardata, const Span *constval,
+  CachedOp cachedOp, SpanPeriodSel spansel);
+extern float8 span_sel(PlannerInfo *root, Oid operid, List *args,
+  int varRelid, SpanPeriodSel spansel);
+
+extern float8 span_joinsel(PlannerInfo *root, CachedOp cachedOp,
+  List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
 
 /*****************************************************************************/
 

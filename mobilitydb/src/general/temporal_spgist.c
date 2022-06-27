@@ -34,21 +34,22 @@
  * These functions are based on those in the file `rangetypes_spgist.c`.
  */
 
-#include "general/temporal_spgist.h"
+#include "pg_general/temporal_spgist.h"
 
 /* C */
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/spgist.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/timetypes.h"
 #include "general/temporal.h"
 #include "general/temporal_catalog.h"
 #include "general/span.h"
-#include "general/time_gist.h"
-#include "general/time_spgist.h"
 #include "general/temporaltypes.h"
+/* MobilityDB */
+#include "pg_general/time_gist.h"
+#include "pg_general/time_spgist.h"
 
 /*****************************************************************************
  * SP-GiST compress functions

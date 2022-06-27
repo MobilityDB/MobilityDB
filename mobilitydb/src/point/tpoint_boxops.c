@@ -50,11 +50,13 @@
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************
  * Boxes function

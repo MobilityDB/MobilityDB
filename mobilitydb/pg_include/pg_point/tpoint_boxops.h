@@ -32,11 +32,13 @@
  * Bounding box operators for temporal points.
  */
 
-#ifndef __TPOINT_BOXOPS_H__
-#define __TPOINT_BOXOPS_H__
+#ifndef __PG_TPOINT_BOXOPS_H__
+#define __PG_TPOINT_BOXOPS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
+#include <catalog/pg_type.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -59,4 +61,4 @@ extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
 
 /*****************************************************************************/
 
-#endif /* __TPOINT_BOXOPS_H__ */
+#endif /* __PG_TPOINT_BOXOPS_H__ */

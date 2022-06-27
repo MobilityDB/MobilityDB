@@ -52,7 +52,7 @@
  * the subtype. Please refer to file temporal_analyze.c for more information.
  */
 
-#include "point/tpoint_analyze.h"
+#include "pg_point/tpoint_analyze.h"
 
 /* C */
 #include <assert.h>
@@ -65,8 +65,8 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/span_analyze.h"
-#include "general/temporal_analyze.h"
+#include "pg_general/span_analyze.h"
+#include "pg_general/temporal_analyze.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"

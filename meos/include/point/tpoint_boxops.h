@@ -72,26 +72,5 @@ extern bool boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBOX *, const STBOX *));
 
 /*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
-
-extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
 
 #endif /* __TPOINT_BOXOPS_H__ */

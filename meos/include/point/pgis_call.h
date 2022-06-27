@@ -76,6 +76,7 @@ extern bool PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, double tolerance);
 extern bool PGIS_relate_pattern(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, char *patt);
+extern GSERIALIZED *PGIS_LWGEOM_reverse(const GSERIALIZED *geom);
 
 /* Functions adapted from lwgeom_btree.c */
 
@@ -115,6 +116,8 @@ extern GSERIALIZED *PGIS_geometry_from_geography(GSERIALIZED *g_ser);
 
 extern GSERIALIZED *PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser,
   double distance_fraction, int repeat);
+extern GSERIALIZED *PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from,
+  double to);
 
 /*****************************************************************************/
 

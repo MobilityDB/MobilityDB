@@ -34,7 +34,7 @@
  * These functions are based on those in the file `gistproc.c`.
  */
 
-#include "general/tnumber_gist.h"
+#include "pg_general/tnumber_gist.h"
 
 /* C */
 #include <assert.h>
@@ -43,10 +43,11 @@
 /* PostgreSQL */
 #include <access/gist.h>
 #include <utils/float.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/time_gist.h"
+/* MobilityDB */
+#include "pg_general/time_gist.h"
 
 /*****************************************************************************
  * GiST consistent methods

@@ -39,7 +39,8 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************
  * Send and receive functions

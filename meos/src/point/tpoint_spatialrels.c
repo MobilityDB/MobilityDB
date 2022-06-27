@@ -502,8 +502,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  Datum bound = PointerGetDatum(PGIS_boundary(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
+  GSERIALIZED *gsbound = PGIS_boundary(gs);
   bool result = false;
   if (! gserialized_is_empty(gsbound))
   {
@@ -513,8 +512,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
       INVERT_NO);
   }
-  PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
-  pfree(DatumGetPointer(bound));
+  pfree(gsbound);
   return result ? 1 : 0;
 }
 

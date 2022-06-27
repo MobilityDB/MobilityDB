@@ -39,15 +39,17 @@
 #include <float.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_util.h"
 #include "general/tinstant.h"
 #include "general/tinstantset.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/temporal_util.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT format

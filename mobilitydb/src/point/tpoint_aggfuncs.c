@@ -34,7 +34,7 @@
  * The only functions currently provided are extent and temporal centroid.
  */
 
-#include "point/tpoint_aggfuncs.h"
+#include "pg_point/tpoint_aggfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -43,8 +43,8 @@
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/doublen.h"
-#include "general/skiplist.h"
-#include "general/temporal_aggfuncs.h"
+#include "pg_general/skiplist.h"
+#include "pg_general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 

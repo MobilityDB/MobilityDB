@@ -44,11 +44,12 @@
  * `STBOX`.
  */
 
-#include "point/tpoint_posops.h"
+#include "pg_point/tpoint_posops.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "point/tpoint_boxops.h"
+/* MobilityDB */
+#include "pg_point/tpoint_boxops.h"
 
 /*****************************************************************************/
 /* geom op Temporal */

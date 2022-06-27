@@ -36,7 +36,7 @@
  * of MobilityDB and Secondo.
  */
 
-#include "point/projection_gk.h"
+#include "pg_point/projection_gk.h"
 
 /* C */
 #include <math.h>

@@ -34,11 +34,13 @@
 
 /* PostGIS */
 #include <liblwgeom_internal.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_out.h"
 #include "general/temporal_util.h"
+#include "general/temporal_out.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT format

@@ -35,7 +35,7 @@
  * `rangetypes_spgist.c`.
  */
 
-#include "general/span_spgist.h"
+#include "pg_general/span_spgist.h"
 
 /* C */
 #include <assert.h>

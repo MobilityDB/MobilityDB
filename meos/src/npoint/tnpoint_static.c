@@ -40,6 +40,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
@@ -131,16 +132,16 @@ nsegmentarr_geom(Nsegment **segments, int count)
   Datum *geoms = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
-    Datum line = route_geom(segments[i]->rid);
+    GSERIALIZED *line = DatumGetGserializedP(route_geom(segments[i]->rid));
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
-      geoms[i] = PointerGetDatum(gserialized_copy((GSERIALIZED *) PG_DETOAST_DATUM(line)));
+      geoms[i] = PointerGetDatum(gserialized_copy(line));
     else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = call_function2(LWGEOM_line_interpolate_point, line,
-        Float8GetDatum(segments[i]->pos1));
+      geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(line,
+        segments[i]->pos1, 0));
     else
-      geoms[i] = call_function3(LWGEOM_line_substring, line,
-        Float8GetDatum(segments[i]->pos1), Float8GetDatum(segments[i]->pos2));
-    pfree(DatumGetPointer(line));
+      geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_substring(line,
+        segments[i]->pos1, segments[i]->pos2));
+    pfree(line);
   }
   Datum result;
   if (count == 1)
@@ -646,8 +647,8 @@ npoint_geom(const Npoint *np)
 {
   Datum line = route_geom(np->rid);
   GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-  Datum result = call_function2(LWGEOM_line_interpolate_point, line,
-    Float8GetDatum(np->pos));
+  Datum result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(
+    DatumGetGserializedP(line), np->pos, 0));
   PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
   pfree(DatumGetPointer(line));
   return result;
@@ -708,11 +709,11 @@ nsegment_geom(const Nsegment *ns)
   Datum line = route_geom(ns->rid);
   Datum result;
   if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
-    result = call_function2(LWGEOM_line_interpolate_point, line,
-      Float8GetDatum(ns->pos1));
+    result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(
+      DatumGetGserializedP(line), ns->pos1, 0));
   else
-    result = call_function3(LWGEOM_line_substring, line,
-      Float8GetDatum(ns->pos1), Float8GetDatum(ns->pos2));
+    result = PointerGetDatum(PGIS_LWGEOM_line_substring(
+      DatumGetGserializedP(line), ns->pos1, ns->pos2));
   pfree(DatumGetPointer(line));
   return result;
 }

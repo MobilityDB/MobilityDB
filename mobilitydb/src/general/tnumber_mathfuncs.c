@@ -41,11 +41,13 @@
 #include <math.h>
 /* PostgreSQL */
 #include <utils/float.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************
  * Generic functions

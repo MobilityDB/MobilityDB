@@ -33,7 +33,7 @@
  * points.
  */
 
-#include "npoint/tnpoint_indexes.h"
+#include "pg_npoint/tnpoint_indexes.h"
 
 /* PostgreSQL */
 #include <access/gist.h>

@@ -262,12 +262,11 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
 
   Datum traj = PointerGetDatum(tpointseq_trajectory(seq));
   Datum inter = geom_intersection2d(traj, geom);
-  GSERIALIZED *gsinter = (GSERIALIZED *) DatumGetPointer(inter);
+  GSERIALIZED *gsinter = DatumGetGserializedP(inter);
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base(datum_no, T_TBOOL,
-      &seq->period, STEP);
+    result[0] = tsequence_from_base(datum_no, T_TBOOL, &seq->period, STEP);
     pfree(DatumGetPointer(inter));
     *count = 1;
     return result;
@@ -1267,8 +1266,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
-  Datum bound = PointerGetDatum(PGIS_boundary(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
+  GSERIALIZED *gsbound = PGIS_boundary(gs);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {
@@ -1277,8 +1275,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
     Temporal *not_inter_bound = tnot_tbool(inter_bound);
     result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
     pfree(inter);
-    PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
-    pfree(DatumGetPointer(bound));
+    pfree(gsbound);
     pfree(inter_bound);
     pfree(not_inter_bound);
   }
@@ -1313,14 +1310,12 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
-  Datum bound = PointerGetDatum(PGIS_boundary(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) DatumGetPointer(bound);
+  GSERIALIZED *gsbound = PGIS_boundary(gs);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {
     result = tinterrel_tpoint_geo(temp, gsbound, TINTERSECTS, restr, atvalue);
-    PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
-    pfree(DatumGetPointer(bound));
+    pfree(gsbound);
   }
   else
     result = temporal_from_base(BoolGetDatum(false), T_TBOOL, temp, STEP);

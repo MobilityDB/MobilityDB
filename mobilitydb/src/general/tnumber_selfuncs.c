@@ -33,7 +33,7 @@
  * types.
  */
 
-#include "general/tnumber_selfuncs.h"
+#include "pg_general/tnumber_selfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -43,14 +43,15 @@
 #include <catalog/pg_collation_d.h>
 #include <utils/float.h>
 #include <utils/selfuncs.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
-#include "general/span_selfuncs.h"
-#include "general/temporal_analyze.h"
-#include "general/temporal_selfuncs.h"
+/* MobilityDB */
+#include "pg_general/span_selfuncs.h"
+#include "pg_general/temporal_analyze.h"
+#include "pg_general/temporal_selfuncs.h"
 
 /*****************************************************************************
  * Internal functions computing selectivity

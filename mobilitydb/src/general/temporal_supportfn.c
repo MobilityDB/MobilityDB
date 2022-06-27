@@ -32,7 +32,7 @@
  * @brief Index support functions for temporal types.
  */
 
-#include "general/temporal_supportfn.h"
+#include "pg_general/temporal_supportfn.h"
 
 /* C */
 #include <assert.h>
@@ -55,12 +55,13 @@
 #include <utils/lsyscache.h>
 #include <utils/numeric.h>
 #include <utils/syscache.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal_catalog.h"
-#include "general/temporal_selfuncs.h"
-#include "general/tnumber_selfuncs.h"
-#include "point/tpoint_selfuncs.h"
-#include "npoint/tnpoint_selfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal_selfuncs.h"
+#include "pg_general/tnumber_selfuncs.h"
+#include "pg_point/tpoint_selfuncs.h"
+#include "pg_npoint/tnpoint_selfuncs.h"
 
 enum TEMPORAL_FUNCTION_IDX
 {
