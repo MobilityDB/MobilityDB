@@ -40,9 +40,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  #include <utils/float.h>
-#endif
+#include <utils/float.h>
 /* PostGIS */
 #include <lwgeodetic_tree.h>
 #include <measures.h>

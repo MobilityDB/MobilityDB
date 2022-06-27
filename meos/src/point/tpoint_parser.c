@@ -423,11 +423,11 @@ tpoint_parse(char **str, Oid temptype)
     /* Set str to the start of the temporal point */
     *str += delim + 1;
   }
+
   /* We cannot ensure that the SRID is geodetic for geography since
-   * the srid_is_latlong function is not exported by PostGIS
-  if (temptype == T_TGEOGPOINT))
-    srid_is_latlong(fcinfo, tpoint_srid);
-   */
+   * the srid_is_latlong function is not exported by PostGIS */
+  // if (temptype == T_TGEOGPOINT)
+    // srid_is_latlong(fcinfo, tpoint_srid);
 
   bool linear = temptype_continuous(temptype);
   /* Starts with "Interp=Stepwise" */

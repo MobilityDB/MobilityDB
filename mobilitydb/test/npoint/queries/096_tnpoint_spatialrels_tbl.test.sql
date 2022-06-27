@@ -73,3 +73,52 @@ set parallel_tuple_cost=100;
 set parallel_setup_cost=100;
 set force_parallel_mode=off;
 -------------------------------------------------------------------------------
+-- Test index support function for ever spatial relationships
+
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE contains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE disjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE disjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE disjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE touches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE touches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+
+DROP INDEX tbl_tnpoint_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever spatial relationships
+
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE contains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE disjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE disjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE disjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE touches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE touches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+
+DROP INDEX tbl_tnpoint_quadtree_idx;
+
+-------------------------------------------------------------------------------

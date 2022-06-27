@@ -38,9 +38,6 @@
  * @note These constructors should be submitted as a PR to PostgreSQL.
  */
 
-
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-
 /* PostgreSQL */
 #include "postgres.h"
 #include "utils/array.h"
@@ -273,4 +270,4 @@ poly_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POLYGON_P(poly);
 }
 
-#endif
+/*****************************************************************************/

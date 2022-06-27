@@ -1358,10 +1358,10 @@ temporal_basevalue_to_wkb_size(Datum value, mobdbType basetype, int16 flags)
       int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
       return dims * MOBDB_WKB_DOUBLE_SIZE;
     }
-#if ! MEOS
+#if NPOINT
     case T_NPOINT:
       return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
-#endif /* ! MEOS */
+#endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
   }
@@ -1544,9 +1544,9 @@ datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
     case T_TTEXT:
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-#if ! MEOS
+#if NPOINT
     case T_TNPOINT:
-#endif /* ! MEOS */
+#endif /* NPOINT */
       result = temporal_to_wkb_size((Temporal *) DatumGetPointer(value),
         variant);
       break;
@@ -2098,11 +2098,11 @@ temporal_temptype_to_wkb_buf(const Temporal *temp, uint8_t *buf,
     case T_TGEOGPOINT:
       wkb_temptype = MOBDB_WKB_T_TGEOGPOINT;
       break;
-#if ! MEOS
+#if NPOINT
     case T_TNPOINT:
       wkb_temptype = MOBDB_WKB_T_TNPOINT;
       break;
-#endif /* ! MEOS */
+#endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown temporal type (%d)!", temp->temptype);
       break;
@@ -2396,9 +2396,9 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
     case T_TTEXT:
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-#if ! MEOS
+#if NPOINT
     case T_TNPOINT:
-#endif /* ! MEOS */
+#endif /* NPOINT */
       buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
         variant);
       break;

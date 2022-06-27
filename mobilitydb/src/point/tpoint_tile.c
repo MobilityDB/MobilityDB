@@ -37,9 +37,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#if POSTGRESQL_VERSION_NUMBER < 120000
-#include <access/htup_details.h>
-#endif
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */

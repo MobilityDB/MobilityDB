@@ -32,8 +32,6 @@
  * @brief Index support functions for temporal types.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-
 #include "general/temporal_supportfn.h"
 
 /* C */
@@ -590,4 +588,4 @@ Tnpoint_supportfn(PG_FUNCTION_ARGS)
   return temporal_supportfn_ext(fcinfo, TNPOINTTYPE);
 }
 
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
+/*****************************************************************************/

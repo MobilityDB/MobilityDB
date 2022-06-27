@@ -101,10 +101,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/spgist.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/spgist_private.h>
 #include <utils/float.h>
-#endif
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
@@ -460,7 +458,6 @@ overAfter8D(const STboxNode *nodebox, const STBOX *query)
   return (nodebox->left.tmin >= query->tmin);
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
  * Lower bound for the distance between query and nodebox.
  * @note The temporal dimension is only taken into account for returning
@@ -510,7 +507,6 @@ distance_stbox_nodebox(const STBOX *query, const STboxNode *nodebox)
 
   return hasz ? hypot3d(dx, dy, dz) : hypot(dx, dy);
 }
-#endif
 
 /**
  * Transform a query argument into an STBOX.
@@ -731,11 +727,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   STboxNode *nodebox, infbox, next_nodebox;
   uint16 quadrant;
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   STBOX *centroid, *queries, *orderbys;
-#else
-  STBOX *centroid, *queries;
-#endif
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);
@@ -753,7 +745,6 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     nodebox = &infbox;
   }
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   /*
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
@@ -767,7 +758,6 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
       /* If the argument is an empty geometry the following call will do nothing */
       tpoint_spgist_get_stbox(&in->orderbys[i], &orderbys[i]);
   }
-#endif
 
   if (in->allTheSame)
   {
@@ -777,8 +767,6 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->nNodes; i++)
     {
       out->nodeNumbers[i] = i;
-
-#if POSTGRESQL_VERSION_NUMBER >= 120000
       if (in->norderbys > 0)
       {
         /* Use parent quadrant box as traversalValue */
@@ -794,7 +782,6 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
         pfree(orderbys);
       }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
     }
 
     PG_RETURN_VOID();
@@ -818,10 +805,8 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
   out->traversalValues = palloc(sizeof(void *) * in->nNodes);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     out->distances = palloc(sizeof(double *) * in->nNodes);
-#endif
 
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)
   {
@@ -905,7 +890,6 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
       out->traversalValues[out->nNodes] = cubestbox_copy(&next_nodebox);
       MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = quadrant;
-#if POSTGRESQL_VERSION_NUMBER >= 120000
       /* Pass distances */
       if (in->norderbys > 0)
       {
@@ -914,17 +898,14 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
         for (int j = 0; j < in->norderbys; j++)
           distances[j] = distance_stbox_nodebox(&orderbys[j], &next_nodebox);
       }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
   }
 
   if (in->nkeys > 0)
     pfree(queries);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     pfree(orderbys);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
 }
@@ -970,7 +951,6 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       break;
   }
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (result && in->norderbys > 0)
   {
     /* Recheck is necessary when computing distance with bounding boxes */
@@ -987,7 +967,6 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
         distances[i] = DBL_MAX;
     }
   }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_BOOL(result);
 }

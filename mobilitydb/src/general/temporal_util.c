@@ -99,7 +99,6 @@ call_send(mobdbType type, Datum value)
 /**
  * Call PostgreSQL function with 1 argument
  */
-#if POSTGRESQL_VERSION_NUMBER >= 120000
 Datum
 call_function1(PGFunction func, Datum arg1)
 {
@@ -163,73 +162,6 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
     elog(ERROR, "function %p returned NULL", (void *) func);
   return result;
 }
-#else /* POSTGRESQL_VERSION_NUMBER < 120000 */
-/**
- * Call PostgreSQL function with 1 argument
- */
-Datum
-call_function1(PGFunction func, Datum arg1)
-{
-  FunctionCallInfoData fcinfo;
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-  result = (*func) (&fcinfo);
-  if (fcinfo.isnull)
-    elog(ERROR, "Function %p returned NULL", (void *) func);
-  return result;
-}
-
-/**
- * Call PostgreSQL function with 2 arguments
- */
-Datum
-call_function2(PGFunction func, Datum arg1, Datum arg2)
-{
-  FunctionCallInfoData fcinfo;
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-  fcinfo.arg[1] = arg2;
-  fcinfo.argnull[1] = false;
-  result = (*func) (&fcinfo);
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-
-/**
- * Call PostgreSQL function with 3 arguments
- */
-Datum
-call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
-{
-  FunctionCallInfoData fcinfo;
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-  fcinfo.arg[1] = arg2;
-  fcinfo.argnull[1] = false;
-  fcinfo.arg[2] = arg3;
-  fcinfo.argnull[2] = false;
-  result = (*func) (&fcinfo);
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-#endif
 
 /*****************************************************************************
  * Array functions

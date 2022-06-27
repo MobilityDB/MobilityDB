@@ -43,12 +43,7 @@
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */
 #include <utils/typcache.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
-#else
-/* Radians per degree, a.k.a. PI / 180 */
-#define RADIANS_PER_DEGREE 0.0174532925199432957692
-#endif
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 /* GSL */

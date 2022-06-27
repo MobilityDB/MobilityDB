@@ -44,9 +44,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#if POSTGRESQL_VERSION_NUMBER < 120000
-  #include <access/htup_details.h>
-#endif
 #include <utils/datetime.h>
 /* MobilityDB */
 #include <meos.h>

@@ -1598,7 +1598,7 @@ tnumber_span(const Temporal *temp)
   {
     Datum value = tinstant_value((TInstant *) temp);
     result = span_make(value, value, true, true, basetype);
-  }
+  } 
   else
   {
     TBOX *box = (TBOX *) temporal_bbox_ptr(temp);

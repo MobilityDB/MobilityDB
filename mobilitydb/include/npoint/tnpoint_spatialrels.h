@@ -58,7 +58,7 @@ extern Datum spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
 
 extern int dwithin_tnpoint_tnpoint(const Temporal *temp1,
-  const Temporal *temp2, Datum dist);
+  const Temporal *temp2, double dist);
 
 /*****************************************************************************/
 

@@ -41,9 +41,7 @@
 /* PostgreSQL */
 #include <access/htup_details.h>
 #include <catalog/pg_collation_d.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
-#endif
 #include <utils/selfuncs.h>
 /* MobilityDB */
 #include <meos.h>

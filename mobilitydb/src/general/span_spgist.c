@@ -270,7 +270,6 @@ overAfter2D(const SpanNode *nodebox, const Period *query)
   return overright_span_span(&nodebox->left, query);
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
  * Distance between a query span and a box of spans
  */
@@ -285,7 +284,6 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
   /* Compute the distance between the query span and the nodebox span */
   return distance_span_span(query, &s);
 }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
 /**
  * Transform a query argument into a span.
@@ -491,11 +489,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   uint8 node;
   MemoryContext old_ctx;
   SpanNode *nodebox, infbox, next_nodespan;
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   Span *centroid, *queries, *orderbys;
-#else
-  Span *centroid, *queries;
-#endif
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);
@@ -513,7 +507,6 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     nodebox = &infbox;
   }
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   /*
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
@@ -526,7 +519,6 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->norderbys; i++)
       span_spgist_get_span(&in->orderbys[i], &orderbys[i]);
   }
-#endif
 
   if (in->allTheSame)
   {
@@ -537,7 +529,6 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     {
       out->nodeNumbers[i] = i;
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
       if (in->norderbys > 0)
       {
         /* Use parent quadrant nodebox as traversalValue */
@@ -553,7 +544,6 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
         pfree(orderbys);
       }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
     }
 
     PG_RETURN_VOID();
@@ -571,10 +561,8 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
   out->traversalValues = palloc(sizeof(void *) * in->nNodes);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     out->distances = palloc(sizeof(double *) * in->nNodes);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   /* Loop for each child */
   for (node = 0; node < in->nNodes; node++)
@@ -635,7 +623,6 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
       out->traversalValues[out->nNodes] = spannode_copy(&next_nodespan);
       MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = node;
-#if POSTGRESQL_VERSION_NUMBER >= 120000
       /* Pass distances */
       if (in->norderbys > 0)
       {
@@ -644,17 +631,14 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
         for (i = 0; i < in->norderbys; i++)
           distances[i] = distance_span_nodespan(&orderbys[i], &next_nodespan);
       }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
   } /* Loop for every child */
 
   if (in->nkeys > 0)
     pfree(queries);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     pfree(orderbys);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
 }
@@ -705,7 +689,6 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       break;
   }
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (result && in->norderbys > 0)
   {
     /* Recheck is necessary when computing distance with bounding boxes */
@@ -721,7 +704,6 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
   }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_BOOL(result);
 }

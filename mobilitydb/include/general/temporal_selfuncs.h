@@ -69,13 +69,6 @@ extern Selectivity temporal_sel_period(VariableStatData *vardata,
  * Some other helper functions.
  *****************************************************************************/
 
-#if POSTGRESQL_VERSION_NUMBER < 120000
-extern double var_eq_const(VariableStatData *vardata, Oid operid,
-  Datum constval, bool constisnull, bool varonleft, bool negate);
-#endif
-
-/*****************************************************************************/
-
 extern float8 temporal_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid, TemporalFamily tempfamily);
 extern double temporal_sel_ext(FunctionCallInfo fcinfo,

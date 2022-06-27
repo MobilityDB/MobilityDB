@@ -480,4 +480,62 @@ WHERE t1.temp > t2.temp;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp >= t2.temp;
 
-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
+CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX tbl_tgeogpoint_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
+CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX tbl_tgeogpoint_quadtree_idx;
+
+-------------------------------------------------------------------------------

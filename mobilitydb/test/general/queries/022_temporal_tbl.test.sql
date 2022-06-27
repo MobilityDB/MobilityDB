@@ -594,4 +594,89 @@ WHERE t1.temp > t2.temp;
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp >= t2.temp;
 
-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-- RESTRICTION SELECTIVITY
+-- Test index support function
+
+CREATE INDEX tbl_tbool_big_rtree_idx ON tbl_tbool_big USING gist(temp);
+CREATE INDEX tbl_tint_big_rtree_idx ON tbl_tint_big USING gist(temp);
+CREATE INDEX tbl_tfloat_big_rtree_idx ON tbl_tfloat_big USING gist(temp);
+CREATE INDEX tbl_ttext_rtree_idx ON tbl_ttext_big USING gist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
+SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ?= 'AAA';
+
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
+SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= 'AAA';
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestamp(temp, '2001-06-01');
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+
+DROP INDEX tbl_tbool_big_rtree_idx;
+DROP INDEX tbl_tint_big_rtree_idx;
+DROP INDEX tbl_tfloat_big_rtree_idx;
+DROP INDEX tbl_ttext_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+-- RESTRICTION SELECTIVITY
+-- Test index support function
+
+CREATE INDEX tbl_tbool_big_quadtree_idx ON tbl_tbool_big USING spgist(temp);
+CREATE INDEX tbl_tint_big_quadtree_idx ON tbl_tint_big USING spgist(temp);
+CREATE INDEX tbl_tfloat_big_quadtree_idx ON tbl_tfloat_big USING spgist(temp);
+CREATE INDEX tbl_ttext_quadtree_idx ON tbl_ttext_big USING spgist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestamp(temp, '2001-06-01');
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+
+DROP INDEX tbl_tbool_big_quadtree_idx;
+DROP INDEX tbl_tint_big_quadtree_idx;
+DROP INDEX tbl_tfloat_big_quadtree_idx;
+DROP INDEX tbl_ttext_quadtree_idx;
+
+-------------------------------------------------------------------------------

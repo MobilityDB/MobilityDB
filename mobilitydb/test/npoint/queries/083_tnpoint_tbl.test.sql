@@ -263,4 +263,44 @@ WHERE t1.temp >= t2.temp;
 -- This test currently shows different result on github
 -- SELECT MAX(tnpoint_hash(temp)) FROM tbl_tnpoint;
 
-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
+
+-- EXPLAIN ANALYZE
+-- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?= 'NPoint(1, 0.1)';
+
+-- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+
+DROP INDEX tbl_tnpoint_rtree_idx;
+
+-------------------------------------------------------------------------------
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
+
+-- EXPLAIN ANALYZE
+-- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?= 'NPoint(1, 0.1)';
+
+-- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+
+DROP INDEX tbl_tnpoint_quadtree_idx;
+
+-------------------------------------------------------------------------------

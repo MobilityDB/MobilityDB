@@ -53,9 +53,7 @@
 #include <postgres.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  #include <access/tableam.h>
-#endif
+#include <access/tableam.h>
 #include <catalog/namespace.h>
 #include <utils/rel.h>
 /* MobilityDB */
@@ -232,11 +230,7 @@ populate_operoid_cache()
 #endif
     TupleDesc tupDesc = rel->rd_att;
     ScanKeyData scandata;
-#if POSTGRESQL_VERSION_NUMBER >= 120000
     TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
-#else
-    HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
-#endif
     HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
     while (HeapTupleIsValid(tuple))
     {
