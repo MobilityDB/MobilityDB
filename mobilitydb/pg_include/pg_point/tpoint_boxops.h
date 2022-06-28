@@ -37,6 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/palloc.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 /* PostGIS */

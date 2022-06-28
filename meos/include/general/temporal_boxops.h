@@ -92,49 +92,5 @@ extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *));
 
 /*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
 
-#if ! MEOS
-
-extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_period_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_period_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
-
-extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBOX *, const TBOX *));
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
-
-#endif /* __TEMPORAL_BOXOPS_H__ */ 
+#endif /* __TEMPORAL_BOXOPS_H__ */

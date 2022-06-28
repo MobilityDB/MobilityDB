@@ -68,11 +68,9 @@
 bool
 npoint_set_stbox(const Npoint *np, STBOX *box)
 {
-  Datum geom = npoint_geom(DatumGetNpointP(np));
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  bool result = geo_set_stbox(gs, box);
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
-  pfree(DatumGetPointer(geom));
+  GSERIALIZED *geom = npoint_geom(np);
+  bool result = geo_set_stbox(geom, box);
+  pfree(geom);
   return result;
 }
 
@@ -133,7 +131,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
     posmax = Max(posmax, np->pos);
   }
 
-  GSERIALIZED *line = DatumGetGserializedP(route_geom(rid));
+  GSERIALIZED *line = route_geom(rid);
   GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
     PGIS_LWGEOM_line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);

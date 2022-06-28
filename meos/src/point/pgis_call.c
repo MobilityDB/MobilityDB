@@ -623,6 +623,68 @@ PGIS_LWGEOM_reverse(const GSERIALIZED *geom)
   return result;
 }
 
+/**
+ * Compute the azimuth of segment defined by the two
+ * given Point geometries.
+ * @return NULL on exception (same point).
+ *     Return radians otherwise.
+ */
+bool
+PGIS_LWGEOM_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2, double *result)
+{
+  LWPOINT *lwpoint;
+  POINT2D p1, p2;
+  int32_t srid;
+
+  /* Extract first point */
+  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom1));
+  if (!lwpoint)
+  {
+    elog(ERROR, "Argument must be POINT geometries");
+    return false;
+  }
+  srid = lwpoint->srid;
+  if (!getPoint2d_p(lwpoint->point, 0, &p1))
+  {
+    elog(ERROR, "Error extracting point");
+    return false;
+  }
+  lwpoint_free(lwpoint);
+
+  /* Extract second point */
+  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom2));
+  if (!lwpoint)
+  {
+    elog(ERROR, "Argument must be POINT geometries");
+    return false;
+  }
+  if (lwpoint->srid != srid)
+  {
+    elog(ERROR, "Operation on mixed SRID geometries");
+    return false;
+  }
+  if (!getPoint2d_p(lwpoint->point, 0, &p2))
+  {
+    elog(ERROR, "Error extracting point");
+    return false;
+  }
+  lwpoint_free(lwpoint);
+
+  /* Standard return value for equality case */
+  if ((p1.x == p2.x) && (p1.y == p2.y))
+  {
+    return false;
+  }
+
+  /* Compute azimuth */
+  if (!azimuth_pt_pt(&p1, &p2, result))
+  {
+    return false;
+  }
+
+  return true;
+}
+
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
  *****************************************************************************/
@@ -992,7 +1054,7 @@ PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
  * @note PostGIS function: Datum geography_distance_uncached(PG_FUNCTION_ARGS)
  * @note We set by defaultboth tolerance and use_spheroid and initialize the
  * spheroid to WGS84
- * @note Errors return -1 to replace PG_RETURN_NULL()
+ * @note Errors return -1 to replace return NULL
  */
 double
 PGIS_geography_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
@@ -1573,7 +1635,7 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
 
       if ( to < maxprop && to >= minprop )
         subto = (to - minprop) / (maxprop - minprop);
-      
+
       opa = ptarray_substring(subline->points, subfrom, subto, 0);
       if ( opa && opa->npoints > 0 )
       {
@@ -1607,5 +1669,112 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
   return ret;
 }
 
+/*****************************************************************************
+ * Functions adapted from lwgeom_lrs.c
+ *****************************************************************************/
+
+double
+PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1, GSERIALIZED *geom2)
+{
+  LWLINE *lwline;
+  LWPOINT *lwpoint;
+  POINTARRAY *pa;
+  POINT4D p, p_proj;
+  double ret;
+
+  if ( gserialized_get_type(geom1) != LINETYPE )
+  {
+    elog(ERROR,"line_locate_point: 1st arg isn't a line");
+  }
+  if ( gserialized_get_type(geom2) != POINTTYPE )
+  {
+    elog(ERROR,"line_locate_point: 2st arg isn't a point");
+  }
+
+  gserialized_error_if_srid_mismatch(geom1, geom2, __func__);
+
+  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(geom1));
+  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom2));
+
+  pa = lwline->points;
+  lwpoint_getPoint4d_p(lwpoint, &p);
+
+  ret = ptarray_locate_point(pa, &p, NULL, &p_proj);
+
+  return ret;
+}
+
+/*****************************************************************************
+ * Functions adapted from lwgeom_ogc.c
+ *****************************************************************************/
+
+/**
+ * PointN(GEOMETRY,INTEGER) -- find the first linestring in GEOMETRY,
+ * @return the point at index INTEGER (1 is 1st point).  Return NULL if
+ *     there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
+ */
+GSERIALIZED *
+PGIS_LWGEOM_pointn_linestring(GSERIALIZED *geom, int where)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  LWPOINT *lwpoint = NULL;
+  int type = lwgeom->type;
+
+  /* If index is negative, count backward */
+  if( where < 1 )
+  {
+    int count = -1;
+    if ( type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE )
+      count = lwgeom_count_vertices(lwgeom);
+    if(count >0)
+    {
+      /* only work if we found the total point number */
+      /* converting where to positive backward indexing, +1 because 1 indexing */
+      where = where + count + 1;
+    }
+    if (where < 1)
+      return NULL;
+  }
+
+  if ( type == LINETYPE || type == CIRCSTRINGTYPE )
+  {
+    /* OGC index starts at one, so we substract first. */
+    lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, where - 1);
+  }
+  else if ( type == COMPOUNDTYPE )
+  {
+    lwpoint = lwcompound_get_lwpoint((LWCOMPOUND*)lwgeom, where - 1);
+  }
+
+  lwgeom_free(lwgeom);
+
+  if ( ! lwpoint )
+    return NULL;
+
+  return geo_serialize(lwpoint_as_lwgeom(lwpoint));
+}
+
+/**
+* numpoints(LINESTRING) -- return the number of points in the
+* linestring, or NULL if it is not a linestring
+*/
+int
+PGIS_LWGEOM_numpoints_linestring(GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  int count = -1;
+  int type = lwgeom->type;
+
+  if ( type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE )
+    count = lwgeom_count_vertices(lwgeom);
+
+  lwgeom_free(lwgeom);
+
+  /* OGC says this functions is only valid on LINESTRING */
+  if ( count < 0 )
+    elog(ERROR, "Error in computing number of points of a linestring");
+
+  return count;
+}
 
 /*****************************************************************************/

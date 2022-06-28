@@ -48,8 +48,8 @@
 extern ArrayType *int64arr_to_array(const int64 *int64arr, int count);
 extern ArrayType *nsegmentarr_to_array(Nsegment **nsegmentarr, int count);
 extern int32_t get_srid_ways();
-extern Datum npointarr_geom(Npoint **points, int count);
-extern Datum nsegmentarr_geom(Nsegment **segments, int count);
+extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
+extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
 /* Input/Output functions */
@@ -85,18 +85,12 @@ extern int64 nsegment_route(const Nsegment *ns);
 extern double nsegment_start_position(const Nsegment *ns);
 extern double nsegment_end_position(const Nsegment *ns);
 
-/* Transformation functions */
-
-extern Datum datum_npoint_round(Datum npoint, Datum size);
-extern Npoint *npoint_round(const Npoint *np, Datum size);
-extern Nsegment *nsegment_round(const Nsegment *ns, Datum size);
-
 /* Conversions between network and Euclidean space */
 
 extern bool route_exists(int64 rid);
 extern double route_length(int64 rid);
-extern Datum route_geom(int64 rid);
-extern Datum npoint_geom(const Npoint *np);
+extern GSERIALIZED *route_geom(int64 rid);
+extern GSERIALIZED *npoint_geom(const Npoint *np);
 extern Npoint *geom_npoint(Datum geom);
 extern Datum nsegment_geom(const Nsegment *ns);
 extern Nsegment *geom_nsegment(Datum line);

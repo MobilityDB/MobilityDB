@@ -49,12 +49,6 @@
 
 /*****************************************************************************/
 
-/* Fetch from and store in the cache the fcinfo of the external function */
-#if ! MEOS
-  extern FunctionCallInfo fetch_fcinfo();
-  extern void store_fcinfo(FunctionCallInfo fcinfo);
-#endif
-
 /* Utility functions */
 
 extern POINT2D datum_point2d(Datum value);

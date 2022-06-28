@@ -42,8 +42,57 @@
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
+/* MobilityDB */
+#include "pg_general/temporal.h"
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @brief Set the precision of the position of a network point to the number of
+ * decimal places
+ * @note Funcion used by the lifting infrastructure
+ */
+Datum
+datum_npoint_round(Datum npoint, Datum size)
+{
+  /* Set precision of position */
+  Npoint *np = (Npoint *) DatumGetPointer(npoint);
+  Npoint *result = npoint_round(np, size);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the position of a network point to the number of
+ * decimal places
+ */
+Npoint *
+npoint_round(const Npoint *np, Datum size)
+{
+  /* Set precision of position */
+  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
+  Npoint *result = npoint_make(np->rid, pos);
+  return result;
+}
+
+/**
+ * @brief Set the precision of the position of a network point to the number of
+ * decimal places
+ */
+Nsegment *
+nsegment_round(const Nsegment *ns, Datum size)
+{
+  /* Set precision of positions */
+  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
+    size));
+  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
+    size));
+  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
+  return result;
+}
 
 /*****************************************************************************
  * Input/Output functions for network point

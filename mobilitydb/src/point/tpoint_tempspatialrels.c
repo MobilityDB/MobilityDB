@@ -85,6 +85,8 @@
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
+/* MobilityDB */
+#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships

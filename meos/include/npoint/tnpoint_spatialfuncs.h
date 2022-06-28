@@ -60,11 +60,11 @@ extern bool tnpointsegm_intersection_value(const TInstant *inst1,
 
 extern int tnpointinst_srid(const TInstant *inst);
 extern int tnpoint_srid(const Temporal *temp);
-extern Datum tnpointinst_geom(const TInstant *inst);
-extern Datum tnpointinstset_geom(const TInstantSet *ti);
-extern Datum tnpointseq_geom(const TSequence *seq);
-extern Datum tnpointseqset_geom(const TSequenceSet *ts);
-extern Datum tnpoint_geom(const Temporal *temp);
+extern GSERIALIZED *tnpointinst_geom(const TInstant *inst);
+extern GSERIALIZED *tnpointinstset_geom(const TInstantSet *ti);
+extern GSERIALIZED *tnpointseq_geom(const TSequence *seq);
+extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ts);
+extern GSERIALIZED *tnpoint_geom(const Temporal *temp);
 
 extern bool npoint_same(const Npoint *np1, const Npoint *np2);
 

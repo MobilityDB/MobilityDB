@@ -45,12 +45,11 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include "point/pgis_call.h"
-#include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_point/tpoint_boxops.h"
 

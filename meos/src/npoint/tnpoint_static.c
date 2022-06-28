@@ -39,13 +39,14 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/pg_call.h"
 #include "general/temporal_util.h"
@@ -95,26 +96,25 @@ get_srid_ways()
 /**
  * Convert a network point array into a geometry
  */
-Datum
+GSERIALIZED *
 npointarr_geom(Npoint **points, int count)
 {
   Datum *geoms = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
-    Datum line = route_geom(points[i]->rid);
-    GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-    geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(gsline,
+    GSERIALIZED *line = route_geom(points[i]->rid);
+    geoms[i] = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(line,
       points[i]->pos, 0));
-    PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
-    pfree(DatumGetPointer(line));
+    pfree(line);
   }
-  Datum result;
+  GSERIALIZED *result;
   if (count == 1)
     result = geoms[0];
   else
   {
     ArrayType *array = datumarr_to_array(geoms, count, T_GEOMETRY);
-    result = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
+    result = DatumGetGserializedP(call_function1(pgis_union_geometry_array,
+      PointerGetDatum(array)));
     pfree(array);
     for (int i = 0; i < count; i++)
       pfree(DatumGetPointer(geoms[i]));
@@ -126,13 +126,13 @@ npointarr_geom(Npoint **points, int count)
 /**
  * Convert a network segment array into a geometry
  */
-Datum
+GSERIALIZED *
 nsegmentarr_geom(Nsegment **segments, int count)
 {
   Datum *geoms = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *line = DatumGetGserializedP(route_geom(segments[i]->rid));
+    GSERIALIZED *line = route_geom(segments[i]->rid);
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
       geoms[i] = PointerGetDatum(gserialized_copy(line));
     else if (segments[i]->pos1 == segments[i]->pos2)
@@ -143,13 +143,14 @@ nsegmentarr_geom(Nsegment **segments, int count)
         segments[i]->pos1, segments[i]->pos2));
     pfree(line);
   }
-  Datum result;
+  GSERIALIZED *result;
   if (count == 1)
     result = geoms[0];
   else
   {
     ArrayType *array = datumarr_to_array(geoms, count, T_GEOMETRY);
-    result = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
+    result = DatumGetGserializedP(call_function1(pgis_union_geometry_array,
+      PointerGetDatum(array));
     pfree(array);
     for (int i = 0; i < count; i++)
       pfree(DatumGetPointer(geoms[i]));
@@ -472,53 +473,6 @@ nsegment_end_position(const Nsegment *ns)
 }
 
 /*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
- * @note Funcion used by the lifting infrastructure
- */
-Datum
-datum_npoint_round(Datum npoint, Datum size)
-{
-  /* Set precision of position */
-  Npoint *np = (Npoint *) DatumGetPointer(npoint);
-  Npoint *result = npoint_round(np, size);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
- */
-Npoint *
-npoint_round(const Npoint *np, Datum size)
-{
-  /* Set precision of position */
-  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
-  Npoint *result = npoint_make(np->rid, pos);
-  return result;
-}
-
-/**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
- */
-Nsegment *
-nsegment_round(const Nsegment *ns, Datum size)
-{
-  /* Set precision of positions */
-  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
-    size));
-  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
-    size));
-  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
-  return result;
-}
-
-/*****************************************************************************
  * Conversions between network and Euclidean space
  *****************************************************************************/
 
@@ -577,7 +531,7 @@ route_length(int64 rid)
  * Access the edge table to get the route geometry from corresponding route
  * identifier
  */
-Datum
+GSERIALIZED *
 route_geom(int64 rid)
 {
   char sql[64];
@@ -595,7 +549,7 @@ route_geom(int64 rid)
     {
       /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
       GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-      result = (GSERIALIZED *)SPI_palloc(gs->size);
+      result = (GSERIALIZED *) SPI_palloc(gs->size);
       memcpy(result, gs, gs->size);
     }
   }
@@ -606,7 +560,7 @@ route_geom(int64 rid)
 
   ensure_non_empty(result);
 
-  return PointerGetDatum(result);
+  return result;
 }
 
 #if 0 /* not used */
@@ -642,15 +596,12 @@ rid_from_geom(Datum geom)
 /**
  * @brief Transforms the network point into a geometry
  */
-Datum
+GSERIALIZED *
 npoint_geom(const Npoint *np)
 {
-  Datum line = route_geom(np->rid);
-  GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-  Datum result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(
-    DatumGetGserializedP(line), np->pos, 0));
-  PG_FREE_IF_COPY_P(gsline, DatumGetPointer(line));
-  pfree(DatumGetPointer(line));
+  GSERIALIZED *line = route_geom(np->rid);
+  GSERIALIZED *result = PGIS_LWGEOM_line_interpolate_point(line, np->pos, 0));
+  pfree(line);
   return result;
 }
 
@@ -706,15 +657,15 @@ geom_npoint(Datum geom)
 Datum
 nsegment_geom(const Nsegment *ns)
 {
-  Datum line = route_geom(ns->rid);
+  GSERIALIZED *line = route_geom(ns->rid);
   Datum result;
   if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
-    result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(
-      DatumGetGserializedP(line), ns->pos1, 0));
+    result = PointerGetDatum(PGIS_LWGEOM_line_interpolate_point(line,
+      ns->pos1, 0));
   else
-    result = PointerGetDatum(PGIS_LWGEOM_line_substring(
-      DatumGetGserializedP(line), ns->pos1, ns->pos2));
-  pfree(DatumGetPointer(line));
+    result = PointerGetDatum(PGIS_LWGEOM_line_substring(line, ns->pos1,
+      ns->pos2));
+  pfree(line);
   return result;
 }
 
@@ -743,14 +694,13 @@ geom_nsegment(Datum geom)
   }
   else /* geomtype == LINETYPE */
   {
-    int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring,
-      geom));
+    int numpoints = PGIS_LWGEOM_numpoints_linestring(gs);
     points = palloc0(sizeof(Npoint *) * numpoints);
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      Datum point = call_function2(LWGEOM_pointn_linestring, geom,
-        Int32GetDatum(i + 1));
+      Datum point = PointerGetDatum(PGIS_LWGEOM_pointn_linestring(
+        DatumGetGserializedP(geom), i + 1));
       np = geom_npoint(point);
       if (np != NULL)
         points[k++] = np;
@@ -790,10 +740,9 @@ geom_nsegment(Datum geom)
 int
 npoint_srid(const Npoint *np)
 {
-  Datum line = route_geom(np->rid);
-  GSERIALIZED *gs = DatumGetGserializedP(line);
-  int result = gserialized_get_srid(gs);
-  pfree(DatumGetPointer(line));
+  GSERIALIZED *line = route_geom(np->rid);
+  int result = gserialized_get_srid(line);
+  pfree(line);
   return result;
 }
 
@@ -803,10 +752,9 @@ npoint_srid(const Npoint *np)
 int
 nsegment_srid(const Nsegment *ns)
 {
-  Datum line = route_geom(ns->rid);
-  GSERIALIZED *gs = DatumGetGserializedP(line);
-  int result = gserialized_get_srid(gs);
-  pfree(DatumGetPointer(line));
+  GSERIALIZED *line = route_geom(ns->rid);
+  int result = gserialized_get_srid(line);
+  pfree(line);
   return result;
 }
 

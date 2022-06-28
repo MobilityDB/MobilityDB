@@ -37,6 +37,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
@@ -131,10 +132,9 @@ int
 tnpointinst_srid(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
-  Datum line = route_geom(np->rid);
-  GSERIALIZED *gs = DatumGetGserializedP(line);
-  int result = gserialized_get_srid(gs);
-  pfree(DatumGetPointer(line));
+  GSERIALIZED *line = route_geom(np->rid);
+  int result = gserialized_get_srid(line);
+  pfree(line);
   return result;
 }
 
@@ -239,7 +239,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
  *
  * @param[in] inst Temporal network point
  */
-Datum
+GSERIALIZED *
 tnpointinst_geom(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
@@ -251,7 +251,7 @@ tnpointinst_geom(const TInstant *inst)
  *
  * @param[in] is Temporal network point
  */
-Datum
+GSERIALIZED *
 tnpointinstset_geom(const TInstantSet *is)
 {
   /* Instantaneous sequence */
@@ -261,7 +261,7 @@ tnpointinstset_geom(const TInstantSet *is)
   int count;
   /* The following function does not remove duplicate values */
   Npoint **points = tnpointinstset_npoints(is, &count);
-  Datum result = npointarr_geom(points, count);
+  GSERIALIZED *result = npointarr_geom(points, count);
   pfree(points);
   return result;
 }
@@ -271,14 +271,14 @@ tnpointinstset_geom(const TInstantSet *is)
  *
  * @param[in] seq Temporal network point
  */
-Datum
+GSERIALIZED *
 tnpointseq_geom(const TSequence *seq)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tnpointinst_geom(tsequence_inst_n(seq, 0));
 
-  Datum result;
+  GSERIALIZED *result;
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
     Nsegment *segment = tnpointseq_linear_positions(seq);
@@ -301,7 +301,7 @@ tnpointseq_geom(const TSequence *seq)
  *
  * @param[in] ss Temporal network point
  */
-Datum
+GSERIALIZED *
 tnpointseqset_geom(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
@@ -309,7 +309,7 @@ tnpointseqset_geom(const TSequenceSet *ss)
     return tnpointseq_geom(tsequenceset_seq_n(ss, 0));
 
   int count;
-  Datum result;
+  GSERIALIZED *result;
   if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
   {
     Nsegment **segments = tnpointseqset_positions(ss, &count);
@@ -330,10 +330,10 @@ tnpointseqset_geom(const TSequenceSet *ss)
  *
  * @param[in] temp Temporal network point
  */
-Datum
+GSERIALIZED *
 tnpoint_geom(const Temporal *temp)
 {
-  Datum result;
+  GSERIALIZED *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tnpointinst_geom((TInstant *) temp);
@@ -355,23 +355,20 @@ static Datum
 tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 {
   assert(np1->rid == np2->rid && np1->pos != np2->pos);
-
-  Datum line = route_geom(np1->rid);
+  GSERIALIZED *line = route_geom(np1->rid);
   if ((np1->pos == 0 && np2->pos == 1) || (np2->pos == 0 && np1->pos == 1))
-    return line;
+    return PointerGetDatum(line);
 
   GSERIALIZED *traj;
   if (np1->pos < np2->pos)
-    traj = PGIS_LWGEOM_line_substring(DatumGetGserializedP(line),
-      np1->pos, np2->pos);
+    traj = PGIS_LWGEOM_line_substring(line, np1->pos, np2->pos);
   else /* np1->pos >= np2->pos */
   {
-    GSERIALIZED *traj2 = PGIS_LWGEOM_line_substring(DatumGetGserializedP(line),
-      np2->pos, np1->pos);
+    GSERIALIZED *traj2 = PGIS_LWGEOM_line_substring(line, np2->pos, np1->pos);
     traj = PGIS_LWGEOM_reverse(traj2);
     pfree(traj2);
   }
-  pfree(DatumGetPointer(line));
+  pfree(line);
   return PointerGetDatum(traj);
 }
 
@@ -720,21 +717,22 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2, int *count)
 
 /* Find all vertices in the segment */
   Datum traj = tnpointseqsegm_trajectory(np1, np2);
-  int countVertices = DatumGetInt32(call_function1(
-    LWGEOM_numpoints_linestring, traj));
+  int countVertices = PGIS_LWGEOM_numpoints_linestring(
+    DatumGetGserializedP(traj));
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
-  Datum vertex1 = call_function2(LWGEOM_pointn_linestring, traj,
-    Int32GetDatum(1)); /* 1-based */
-  Datum azimuth;
+  GSERIALIZED *vertex1 = PGIS_LWGEOM_pointn_linestring(
+    DatumGetGserializedP(traj), 1); /* 1-based */
+  double azimuth;
   TimestampTz time = inst1->t;
   for (int i = 0; i < countVertices - 1; i++)
   {
-    Datum vertex2 = call_function2(LWGEOM_pointn_linestring, traj,
-      Int32GetDatum(i + 2)); /* 1-based */
-    double fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-      traj, vertex2));
-    azimuth = call_function2(LWGEOM_azimuth, vertex1, vertex2);
-    result[i] = tinstant_make(azimuth, T_TFLOAT, time);
+    GSERIALIZED *vertex2 = PGIS_LWGEOM_pointn_linestring(
+      DatumGetGserializedP(traj), i + 2); /* 1-based */
+    double fraction = PGIS_LWGEOM_line_locate_point(DatumGetGserializedP(traj),
+      vertex2);
+    bool found = PGIS_LWGEOM_azimuth(vertex1, vertex2, &azimuth);
+    assert(found);
+    result[i] = tinstant_make(Float8GetDatum(azimuth), T_TFLOAT, time);
     pfree(DatumGetPointer(vertex1));
     vertex1 = vertex2;
     time =  inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);

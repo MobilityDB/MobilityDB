@@ -40,9 +40,10 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/temporal_boxops.h"
+/* MobilityDB */
+#include "pg_general/temporal_boxops.h"
 
 /*****************************************************************************/
 /* <Time> op Temporal */

@@ -32,8 +32,8 @@
  * Bounding box operators for temporal types.
  */
 
-#ifndef __TEMPORAL_BOXOPS_H__
-#define __TEMPORAL_BOXOPS_H__
+#ifndef __PG_TEMPORAL_BOXOPS_H__
+#define __PG_TEMPORAL_BOXOPS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -45,59 +45,6 @@
 #include "point/stbox.h"
 
 /*****************************************************************************/
-
-/* Functions on generic bounding boxes of temporal types */
-
-extern size_t temporal_max_bbox_size();
-extern uint32_t temporal_max_header_size(void);
-extern bool temporal_bbox_eq(const void *box1, const void *box2,
-  mobdbType temptype);
-extern int temporal_bbox_cmp(const void *box1, const void *box2,
-  mobdbType temptype);
-extern void temporal_bbox_shift_tscale(const Interval *start,
-  const Interval *duration, mobdbType temptype, void *box);
-
-/* Compute the bounding box at the creation of temporal values */
-
-extern size_t temporal_bbox_size(mobdbType tempype);
-extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
-extern void tinstantset_compute_bbox(const TInstant **inst, int count,
-  void *bbox);
-extern void tsequence_compute_bbox(const TInstant** inst, int count,
-  bool lower_inc, bool upper_inc, bool linear, void *bbox);
-extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
-  void *bbox);
-
-/* Bounding box operators for temporal types */
-
-extern Datum boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
-  bool (*func)(const Period *, const Period *), bool invert);
-extern Datum boxop_temporal_timestampset(const Temporal *temp,
-  const TimestampSet *ts, bool (*func)(const Period *, const Period *),
-  bool invert);
-extern Datum boxop_temporal_period(const Temporal *temp, const Period *p,
-  bool (*func)(const Period *, const Period *), bool invert);
-extern bool boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
-  bool (*func)(const Period *, const Period *), bool invert);
-extern bool boxop_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, bool (*func)(const Period *, const Period *));
-
-extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
-  mobdbType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
-  bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
-  bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const TBOX *, const TBOX *));
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*                        MobilityDB - PostgreSQL                            */
-/*****************************************************************************/
-/*****************************************************************************/
-
-#if ! MEOS
 
 extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
@@ -133,8 +80,6 @@ extern Datum boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 
-#endif /* ! MEOS */
-
 /*****************************************************************************/
 
-#endif /* __TEMPORAL_BOXOPS_H__ */ 
+#endif /* __PG_TEMPORAL_BOXOPS_H__ */

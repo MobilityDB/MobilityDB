@@ -41,6 +41,8 @@
 #include "general/lifting.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"
+/* MobilityDB */
+#include "pg_npoint/tnpoint_static.h"
 
 /*****************************************************************************
  * General functions
