@@ -34,10 +34,12 @@
 
 #include "general/temporal_compops.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Generic functions

@@ -49,12 +49,15 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
+#include "pg_general/temporal_util.h"
 
 /*****************************************************************************/
 

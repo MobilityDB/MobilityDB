@@ -45,7 +45,7 @@
 #include <lwgeodetic_tree.h>
 #include <measures.h>
 #include <measures3d.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
@@ -55,6 +55,9 @@
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_point/postgis.h"
+#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Temporal distance

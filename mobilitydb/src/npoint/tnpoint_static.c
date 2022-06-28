@@ -44,8 +44,43 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/tnumber_mathfuncs.h"
+#include "pg_npoint/tnpoint_static.h"
+
+/*****************************************************************************
+ * Send/receive functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a network point from its binary representation read
+ * from a buffer.
+ */
+Npoint *
+npoint_recv(StringInfo buf)
+{
+  Npoint *result = palloc0(sizeof(Npoint));
+  result->rid = pq_getmsgint64(buf);
+  result->pos = pq_getmsgfloat8(buf);
+  return result;
+}
+
+/**
+ * @brief Return the binary representation of a network point
+ *
+ * @param[in] np Network point
+ */
+bytea *
+npoint_send(const Npoint *np)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, (uint64) np->rid);
+  pq_sendfloat8(&buf, np->pos);
+  return pq_endtypsend(&buf);
+}
 
 /*****************************************************************************
  * Transformation functions
@@ -331,8 +366,8 @@ PGDLLEXPORT Datum
 Npoint_to_geom(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  Datum result = npoint_geom(np);
-  PG_RETURN_DATUM(result);
+  GSERIALIZED *result = npoint_geom(np);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Geom_to_npoint);
@@ -357,8 +392,8 @@ PGDLLEXPORT Datum
 Nsegment_to_geom(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  Datum result = nsegment_geom(ns);
-  PG_RETURN_DATUM(result);
+  GSERIALIZED *result = nsegment_geom(ns);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Geom_to_nsegment);

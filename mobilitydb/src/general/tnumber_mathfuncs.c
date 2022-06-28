@@ -34,7 +34,7 @@
  * for temporal number.
  */
 
-#include "general/tnumber_mathfuncs.h"
+#include "pg_general/tnumber_mathfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -46,7 +46,9 @@
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
+#include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 
 /*****************************************************************************

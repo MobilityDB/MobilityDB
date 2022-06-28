@@ -78,7 +78,7 @@ Datum
 spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   Datum (*func)(Datum, Datum), bool invert)
 {
-  Datum geom1 = tnpoint_geom(temp);
+  Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
   Datum geom2 = PointerGetDatum(npoint_geom(np));
   Datum result = invert ? func(geom2, geom1) : func(geom1, geom2);
   pfree(DatumGetPointer(geom1));
@@ -143,7 +143,7 @@ Datum
 spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
   Datum (*func)(Datum, Datum, Datum), bool invert)
 {
-  Datum geom1 = tnpoint_geom(temp);
+  Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
   Datum result = invert ? func(geom, geom1, param) : func(geom1, geom, param);
   pfree(DatumGetPointer(geom1));
   return result;
@@ -163,7 +163,7 @@ Datum
 spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np, Datum param,
   Datum (*func)(Datum, Datum, Datum), bool invert)
 {
-  Datum geom1 = tnpoint_geom(temp);
+  Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
   Datum geom2 = PointerGetDatum(npoint_geom(np));
   Datum result = invert ? func(geom2, geom1, param) :
     func(geom1, geom2, param);

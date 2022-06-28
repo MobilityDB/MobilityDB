@@ -41,6 +41,7 @@
 #include "general/temporal_out.h"
 /* MobilityDB */
 #include "pg_general/temporal_util.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT format

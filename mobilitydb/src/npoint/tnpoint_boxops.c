@@ -78,8 +78,8 @@ PGDLLEXPORT Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  STBOX *result = palloc0(sizeof(STBOX));
-  nsegment_set_stbox(result, ns);
+  STBOX *result = palloc(sizeof(STBOX));
+  nsegment_set_stbox(ns, result);
   PG_RETURN_POINTER(result);
 }
 

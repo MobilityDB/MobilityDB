@@ -167,13 +167,11 @@ tnpointseq_set_stbox(const TInstant **instants, int count, bool linear,
  * @brief Return the bounding box of the network segment value
  */
 bool
-nsegment_set_stbox(STBOX *box, const Nsegment *ns)
+nsegment_set_stbox(const Nsegment *ns, STBOX *box)
 {
-  Datum geom = nsegment_geom(DatumGetNsegmentP(ns));
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  bool result = geo_set_stbox(gs, box);
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
-  pfree(DatumGetPointer(geom));
+  GSERIALIZED *geom = nsegment_geom(ns);
+  bool result = geo_set_stbox(geom, box);
+  pfree(geom);
   return result;
 }
 

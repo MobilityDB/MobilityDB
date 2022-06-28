@@ -47,6 +47,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/time_gist.h"
 
 /*****************************************************************************

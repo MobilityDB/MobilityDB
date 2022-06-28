@@ -62,9 +62,10 @@ TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
-  Datum geom = npoint_geom(np);
-  TInstant *result = tinstant_make(geom, T_TGEOMPOINT, inst->t);
-  pfree(DatumGetPointer(geom));
+  GSERIALIZED *geom = npoint_geom(np);
+  TInstant *result = tinstant_make(PointerGetDatum(geom), T_TGEOMPOINT,
+    inst->t);
+  pfree(geom);
   return result;
 }
 

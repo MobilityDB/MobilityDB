@@ -86,6 +86,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 /* MobilityDB */
+#include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

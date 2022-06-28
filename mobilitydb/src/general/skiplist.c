@@ -50,6 +50,7 @@
 #include "general/time_ops.h"
 /* MobilityDB */
 #include "pg_general/time_aggfuncs.h"
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/temporal_aggfuncs.h"
 

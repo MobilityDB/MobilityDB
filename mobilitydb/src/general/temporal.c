@@ -32,7 +32,7 @@
  * @brief Basic functions for temporal types of any subtype.
  */
 
-#include "general/temporal.h"
+#include "pg_general/temporal.h"
 
 /* C */
 #include <assert.h>
@@ -48,12 +48,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"
-/* MobilityDB */
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
-#include "pg_general/temporal_util.h"
 #include "general/temporal_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal_util.h"
+#include "pg_point/tpoint_spatialfuncs.h"
 
 
 /* To avoid including fmgrprotos.h */

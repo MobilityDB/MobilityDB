@@ -49,6 +49,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
+  #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
 /*****************************************************************************
@@ -266,7 +267,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     point_distance = pt_distance_fn(instants[0]->flags);
 #if NPOINT
   else if (basetype == T_NPOINT)
-    geom1 = npoint_geom(DatumGetNpointP(value1));
+    geom1 = PointerGetDatum(npoint_geom(DatumGetNpointP(value1)));
 #endif
   int k = 0;
   for (int i = 1; i < count; i++)
@@ -289,7 +290,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
 #if NPOINT
       else if (basetype == T_NPOINT)
       {
-        geom2 = npoint_geom(DatumGetNpointP(value2));
+        geom2 = PointerGetDatum(npoint_geom(DatumGetNpointP(value2)));
         dist = DatumGetFloat8(pt_distance2d(geom1, geom2));
       }
 #endif
@@ -2422,9 +2423,9 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 #if NPOINT
     else if (temp->temptype == T_TNPOINT)
     {
-      Datum geom = npoint_geom(DatumGetNpointP(value));
-      geo_set_stbox(DatumGetGserializedP(geom), &box2);
-      pfree(DatumGetPointer(geom));
+      GSERIALIZED *geom = npoint_geom(DatumGetNpointP(value));
+      geo_set_stbox(geom, &box2);
+      pfree(geom);
     }
 #endif
     return (ever && contains_stbox_stbox(&box1, &box2)) ||

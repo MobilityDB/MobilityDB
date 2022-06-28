@@ -45,7 +45,7 @@
 /*****************************************************************************/
 
 extern bool npoint_set_stbox(const Npoint *np, STBOX *box);
-extern bool nsegment_set_stbox(STBOX *box, const Nsegment *ns);
+extern bool nsegment_set_stbox(const Nsegment *ns, STBOX *box);
 extern bool npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t,
   STBOX *box);
 extern bool npoint_period_set_stbox(const Npoint *np, const Period *p,

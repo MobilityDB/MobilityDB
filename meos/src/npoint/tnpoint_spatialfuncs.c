@@ -387,8 +387,8 @@ npoint_same(const Npoint *np1, const Npoint *np2)
   /* Same route identifier */
   if (np1->rid == np2->rid)
     return fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
-  Datum point1 = npoint_geom(np1);
-  Datum point2 = npoint_geom(np2);
+  Datum point1 = PointerGetDatum(npoint_geom(np1));
+  Datum point2 = PointerGetDatum(npoint_geom(np2));
   bool result = datum_eq(point1, point2, T_GEOMETRY);
   pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
   return result;

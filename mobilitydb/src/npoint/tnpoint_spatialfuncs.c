@@ -72,9 +72,9 @@ PGDLLEXPORT Datum
 Tnpoint_get_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tnpoint_geom(temp);
+  GSERIALIZED *result = tnpoint_geom(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

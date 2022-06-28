@@ -72,9 +72,6 @@ extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *));
 
-extern Datum datum_round_float(Datum value, Datum prec);
-
-extern Temporal *tnumber_round(const Temporal *temp, Datum digits);
 extern Temporal *tnumber_degrees(const Temporal *temp);
 
 extern TSequence *tnumberseq_derivative(const TSequence *seq);

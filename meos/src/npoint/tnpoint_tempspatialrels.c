@@ -197,11 +197,10 @@ Temporal *
 tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
   bool atvalue)
 {
-  Datum geom = npoint_geom(np);
-  GSERIALIZED *geo = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+  GSERIALIZED *geom = npoint_geom(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, geo, dist, restr, atvalue);
-  pfree(geo);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, geom, dist, restr, atvalue);
+  pfree(geom);
   return result;
 }
 

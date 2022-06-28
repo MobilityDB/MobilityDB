@@ -40,12 +40,14 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <access/gist.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/temporal.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * GiST consistent methods

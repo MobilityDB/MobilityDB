@@ -46,7 +46,7 @@
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal_util.h"
-#include "general/tnumber_mathfuncs.h"
+#include "pg_general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Input/output functions

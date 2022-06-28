@@ -76,7 +76,7 @@ void srid_check_latlong(int32_t srid);
 
 /**
  * @brief Create a geometry from a BOX2D
- * @note PostGIS function: Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS)
+ * @note PostGIS function: BOX2D_to_LWGEOM(PG_FUNCTION_ARGS)
  * @note With respect to the original PostGIS function we also set the SRID
  * which is passed as an additional argument
  */
@@ -156,7 +156,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
 
 /**
  * @brief Create a geometry from a BOX3D
- * @note PostGIS function: Datum BOX3D_to_LWGEOM(PG_FUNCTION_ARGS)
+ * @note PostGIS function: BOX3D_to_LWGEOM(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_BOX3D_to_LWGEOM(BOX3D *box)
@@ -440,7 +440,7 @@ PGIS_lwgeom_boundary(LWGEOM *lwgeom)
 
 /**
  * @brief Return the boundary of a geometry
- * @note PostGIS function: Datum boundary(PG_FUNCTION_ARGS)
+ * @note PostGIS function: boundary(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_boundary(const GSERIALIZED *geom1)
@@ -468,7 +468,7 @@ PGIS_boundary(const GSERIALIZED *geom1)
 
 /**
  * @brief Return the shortest 2d line between two geometries
- * @note PostGIS function: Datum LWGEOM_shortestline2d(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_shortestline2d(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -489,7 +489,7 @@ PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return the shortest line between two geometries in 3D
- * @note PostGIS function: Datum LWGEOM_shortestline3d(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_shortestline3d(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -510,7 +510,7 @@ PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return the distance between two geometries
- * @note PostGIS function: Datum ST_Distance(PG_FUNCTION_ARGS)
+ * @note PostGIS function: ST_Distance(PG_FUNCTION_ARGS)
  */
 double
 PGIS_ST_Distance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -530,7 +530,7 @@ PGIS_ST_Distance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return the distance between two geometries
- * @note PostGIS function: Datum ST_3DDistance(PG_FUNCTION_ARGS)
+ * @note PostGIS function: ST_3DDistance(PG_FUNCTION_ARGS)
  */
 double
 PGIS_ST_3DDistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -550,7 +550,7 @@ PGIS_ST_3DDistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return true if the 3D geometries intersect
- * @note PostGIS function: Datum ST_3DIntersects(PG_FUNCTION_ARGS)
+ * @note PostGIS function: ST_3DIntersects(PG_FUNCTION_ARGS)
  */
 bool
 PGIS_ST_3DIntersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -567,7 +567,7 @@ PGIS_ST_3DIntersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return true if the geometries are within the given distance
- * @note PostGIS function: Datum LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_dwithin(PG_FUNCTION_ARGS)
  */
 bool
 PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
@@ -590,7 +590,7 @@ PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
 /**
  * @brief Return true if the geometries are within the given distance
- * @note PostGIS function: Datum LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
  */
 bool
 PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
@@ -612,7 +612,7 @@ PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
 /**
  * @brief  Reverse vertex order of geometry
- * @note PostGIS function: Datum LWGEOM_reverse(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_reverse(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_LWGEOM_reverse(const GSERIALIZED *geom)
@@ -776,6 +776,27 @@ POSTGIS2GEOS(const GSERIALIZED *pglwgeom)
   return ret;
 }
 
+GSERIALIZED *
+GEOS2POSTGIS(GEOSGeom geom, char want3d)
+{
+  LWGEOM *lwgeom;
+  GSERIALIZED *result;
+
+  lwgeom = GEOS2LWGEOM(geom, want3d);
+  if ( ! lwgeom )
+  {
+    elog(ERROR, "GEOS2LWGEOM returned NULL");
+    return NULL;
+  }
+
+  if (lwgeom_needs_bbox(lwgeom)) lwgeom_add_bbox(lwgeom);
+
+  result = geometry_serialize(lwgeom);
+  lwgeom_free(lwgeom);
+
+  return result;
+}
+
 /**
  * @brief Transform the GSERIALIZED geometries into GEOSGeometry and
  * call the GEOS function passed as argument
@@ -861,7 +882,7 @@ PGIS_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
 /**
  * @brief Return true if the geometries touch
- * @note PostGIS function: Datum touches(PG_FUNCTION_ARGS)
+ * @note PostGIS function: touches(PG_FUNCTION_ARGS)
   */
 bool
 PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
@@ -894,7 +915,7 @@ PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /**
  * @brief Return true if the 3D geometries intersect
- * @note PostGIS function: Datum relate_pattern(PG_FUNCTION_ARGS)
+ * @note PostGIS function: relate_pattern(PG_FUNCTION_ARGS)
  */
 bool
 PGIS_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
@@ -937,9 +958,8 @@ PGIS_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
 /**
  * @brief Return true if the 3D geometries intersect
- * @note PostGIS function: Datum ST_Intersection(PG_FUNCTION_ARGS)
- * @note With respect to the original function we do not use the prec
- * argument
+ * @note PostGIS function: ST_Intersection(PG_FUNCTION_ARGS)
+ * @note With respect to the original function we do not use the prec argument
  */
 GSERIALIZED *
 PGIS_ST_Intersection(GSERIALIZED *geom1, GSERIALIZED *geom2)
@@ -957,13 +977,117 @@ PGIS_ST_Intersection(GSERIALIZED *geom1, GSERIALIZED *geom2)
   return result;
 }
 
+/**
+ * @brief This is the final function for GeomUnion
+ *       aggregate. Will have as input an array of Geometries.
+ *       Will iteratively call GEOSUnion on the GEOS-converted
+ *       versions of them and return PGIS-converted version back.
+ *       Changing combination order *might* speed up performance.
+ * @note PostGIS function: pgis_union_geometry_array(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_union_geometry_array(GSERIALIZED **gsarr, int nelems)
+{
+  assert(nelems > 0);
+
+  /* One geom geom? Return it */
+  if (nelems == 1)
+    return gsarr[0];
+  
+  bool is3d = false, gotsrid = false;
+  int curgeom = 0;
+  int empty_type = 0;
+  int32_t srid = SRID_UNKNOWN;
+  GSERIALIZED *gser_out = NULL;
+  GEOSGeometry *g = NULL;
+  GEOSGeometry *g_union = NULL;
+
+  initGEOS(lwpgnotice, lwgeom_geos_error);
+
+  /* Collect the non-empty inputs and stuff them into a GEOS collection */
+  GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * nelems);
+
+  /*
+  ** We need to convert the array of GSERIALIZED into a GEOS collection.
+  ** First make an array of GEOS geometries.
+  */
+  for (int i = 0; i < nelems; i++)
+  {
+    /* Check for SRID mismatch in array elements */
+    if (gotsrid)
+      ensure_same_srid(gserialized_get_srid(gsarr[i]), srid);
+    else
+    {
+      /* Initialize SRID/dimensions info */
+      srid = gserialized_get_srid(gsarr[i]);
+      is3d = (bool) gserialized_has_z(gsarr[i]);
+      gotsrid = true;
+    }
+
+    /* Don't include empties in the union */
+    if (gserialized_is_empty(gsarr[i]))
+    {
+      int gser_type = gserialized_get_type(gsarr[i]);
+      if (gser_type > empty_type)
+        empty_type = gser_type;
+    }
+    else
+    {
+      g = POSTGIS2GEOS(gsarr[i]);
+
+      /* Uh oh! Exception thrown at construction... */
+      if (! g)
+        elog(ERROR, "One of the geometries in the set could not be converted to GEOS");
+
+      geoms[curgeom++] = g;
+    }
+  }
+
+  /*
+  ** Take our GEOS geometries and turn them into a GEOS collection,
+  ** then pass that into cascaded union.
+  */
+  if (curgeom > 0)
+  {
+    g = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION, geoms, curgeom);
+    if (! g)
+      elog(ERROR, "Could not create GEOS COLLECTION from geometry array");
+
+    g_union = GEOSUnaryUnion(g);
+    GEOSGeom_destroy(g);
+    if (! g_union)
+      elog(ERROR, "GEOSUnaryUnion");
+
+    GEOSSetSRID(g_union, srid);
+    gser_out = GEOS2POSTGIS(g_union, is3d);
+    GEOSGeom_destroy(g_union);
+  }
+  /* No real geometries in our array, any empties? */
+  else
+  {
+    /* If it was only empties, we'll return the largest type number */
+    if (empty_type > 0)
+      return geometry_serialize(lwgeom_construct_empty(empty_type, srid, is3d,
+        0));
+    /* Nothing but NULL, returns NULL */
+    else
+      return NULL;
+  }
+
+  if (! gser_out)
+    /* Union returned a NULL geometry */
+    return NULL;
+
+  return gser_out;
+}
+
 /*****************************************************************************
  * Functions adapted from geography_measurement.c
  *****************************************************************************/
 
 /**
  * @brief Return double length in meters
- * @note PostGIS function: Datum geography_length(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geography_length(PG_FUNCTION_ARGS)
  */
 double
 PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
@@ -1005,7 +1129,7 @@ PGIS_geography_length(GSERIALIZED *g, bool use_spheroid)
 
 /**
  * @brief Return true if the geographies are within the given distance
- * @note PostGIS function: Datum geography_dwithin_uncached(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geography_dwithin_uncached(PG_FUNCTION_ARGS)
  * where we use the WGS84 spheroid
  */
 bool
@@ -1051,7 +1175,7 @@ PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
 
 /**
  * @brief Return the distance between two geographies
- * @note PostGIS function: Datum geography_distance_uncached(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geography_distance_uncached(PG_FUNCTION_ARGS)
  * @note We set by defaultboth tolerance and use_spheroid and initialize the
  * spheroid to WGS84
  * @note Errors return -1 to replace return NULL
@@ -1207,7 +1331,7 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
  *  LWGEOM_in( '{"type":"Point","coordinates":[1,1]}')
  *  returns a GSERIALIZED object
 
- * @note PostGIS function: Datum LWGEOM_in(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_LWGEOM_in(char *input, int32 geom_typmod)
@@ -1308,7 +1432,7 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
  * ie. 'SRID=-99;0101000000000000000000F03F0000000000000040'
  * WKB is machine endian
  * if SRID=-1, the 'SRID=-1;' will probably not be present.
- * @note PostGIS function: Datum LWGEOM_out(PG_FUNCTION_ARGS)
+ * @note PostGIS function: LWGEOM_out(PG_FUNCTION_ARGS)
  */
 char *
 PGIS_LWGEOM_out(GSERIALIZED *geom)
@@ -1375,7 +1499,7 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
 
 /**
  * @brief Get a geography from in string
- * @note PostGIS function: Datum geography_in(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geography_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_geography_in(char *str, int32 geog_typmod)
@@ -1425,7 +1549,7 @@ PGIS_geography_in(char *str, int32 geog_typmod)
 
 /**
  * @brief Output a geography in string format
- * @note PostGIS function: Datum geography_out(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geography_out(PG_FUNCTION_ARGS)
  */
 char *
 PGIS_geography_out(GSERIALIZED *g)
@@ -1438,7 +1562,7 @@ PGIS_geography_out(GSERIALIZED *g)
 
 /**
  * @brief Get a geography from a geometry
- * @note PostGIS function: Datum geography_from_geometry(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geography_from_geometry(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_geography_from_geometry(GSERIALIZED *geom)
@@ -1477,7 +1601,7 @@ PGIS_geography_from_geometry(GSERIALIZED *geom)
 
 /**
  * @brief Get a geometry from a geography
- * @note PostGIS function: Datum geometry_from_geography(PG_FUNCTION_ARGS)
+ * @note PostGIS function: geometry_from_geography(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
 PGIS_geometry_from_geography(GSERIALIZED *geom)
@@ -1500,6 +1624,31 @@ PGIS_geometry_from_geography(GSERIALIZED *geom)
  * Functions adapted from lwgeom_functions_analytic.c
  *****************************************************************************/
 
+/**
+ * @brief Get a geometry from a geography
+ * @note PostGIS function: LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
+ * @pre fraction >= 0 && fraction <= 1 && lwgeom->type == LINETYPE
+ */
+LWGEOM *
+lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
+  int repeat)
+{
+  assert(fraction >= 0 && fraction <= 1);
+  assert(lwgeom->type == LINETYPE);
+  LWLINE *lwline = lwgeom_as_lwline(lwgeom);
+  POINTARRAY *opa = lwline_interpolate_points(lwline, fraction, repeat);
+  LWGEOM *result;
+  if (opa->npoints <= 1)
+    result = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
+  else
+    result = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
+  return result;
+}
+
+/**
+ * @brief Get a geometry from a geography
+ * @note PostGIS function: LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
+ */
 GSERIALIZED *
 PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser, double distance_fraction,
   int repeat)
@@ -1526,7 +1675,6 @@ PGIS_LWGEOM_line_interpolate_point(GSERIALIZED *gser, double distance_fraction,
   else
     lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
 
-  // result = geometry_serialize(lwresult);
   result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
 

@@ -36,7 +36,7 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_call.h"
@@ -44,10 +44,11 @@
 #include "general/periodset.h"
 #include "general/time_ops.h"
 #include "general/temporal_util.h"
-#include "general/tnumber_mathfuncs.h"
-#include "point/pgis_call.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/tnumber_mathfuncs.h"
+#include "pg_point/postgis.h"
+#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Input/Ouput functions

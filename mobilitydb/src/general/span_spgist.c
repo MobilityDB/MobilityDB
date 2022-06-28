@@ -43,13 +43,15 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/spgist.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/span_gist.h"
 #include "general/temporal.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Data structures

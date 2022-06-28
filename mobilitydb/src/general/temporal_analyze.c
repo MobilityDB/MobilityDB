@@ -83,11 +83,12 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 #include <utils/typcache.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+/* MobilityDB */
 #include "pg_general/span_analyze.h"
-#include "general/temporal_util.h"
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_analyze.h"
 
 /*

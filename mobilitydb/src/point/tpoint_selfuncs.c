@@ -37,6 +37,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 /* PostgreSQL */
 #include <parser/parsetree.h>
 #include <utils/syscache.h>

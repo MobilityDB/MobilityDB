@@ -42,12 +42,15 @@
 #include <math.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporaltypes.h"
 #include "general/temporal_catalog.h"
 #include "general/lifting.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_point/postgis.h"
+
 
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
 double awgs = 6378137.0;

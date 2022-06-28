@@ -42,10 +42,10 @@
 #include <postgres.h>
 #include <funcapi.h>
 #include <access/htup_details.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/temporaltypes.h"
-#include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Linear space computation of the similarity distance

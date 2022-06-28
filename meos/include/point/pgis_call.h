@@ -89,9 +89,9 @@ extern bool PGIS_lwgeom_lt(GSERIALIZED *g1, GSERIALIZED *g2);
 extern bool PGIS_inter_contains(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, bool inter);
 extern bool PGIS_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
-
 extern GSERIALIZED *PGIS_ST_Intersection(GSERIALIZED *geom1,
   GSERIALIZED *geom2);
+extern GSERIALIZED *PGIS_union_geometry_array(GSERIALIZED **gsarr, int nelems);
 
 /* Functions adapted from geography_measurement.c */
 
@@ -123,6 +123,8 @@ extern GSERIALIZED *PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from,
 
 /* Functions adapted from lwgeom_lrs.c */
 
+extern LWGEOM *lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction,
+  int32_t srid, int repeat);
 extern double PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1,
   GSERIALIZED *geom2);
 

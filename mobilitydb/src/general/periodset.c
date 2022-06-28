@@ -44,6 +44,7 @@
 #include "general/temporal_util.h"
 #include "general/time_ops.h"
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 
 /*****************************************************************************
