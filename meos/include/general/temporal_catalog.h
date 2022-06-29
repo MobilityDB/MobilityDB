@@ -32,8 +32,8 @@
  * Functions for building a cache of type and operator Oids.
  */
 
-#ifndef TEMP_CATALOG_H
-#define TEMP_CATALOG_H
+#ifndef __TEMPORAL_CATALOG_H__
+#define __TEMPORAL_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -85,7 +85,7 @@ typedef enum
   T_GEOGRAPHY,     /**< geography type */
   T_TGEOMPOINT,    /**< temporal geometry point type */
   T_TGEOGPOINT,    /**< temporal geography point type */
-#if ! MEOS
+#if NPOINT
   T_NPOINT,        /**< network point type */
   T_NSEGMENT,      /**< network segment type */
   T_TNPOINT,       /**< temporal network point type */
@@ -185,12 +185,7 @@ extern bool tgeo_basetype(mobdbType basetype);
 extern bool tgeo_type(mobdbType basetype);
 extern void ensure_tgeo_type(mobdbType basetype);
 
-/* MobilityDB functions */
-
-extern Oid type_oid(mobdbType t);
-extern Oid oper_oid(CachedOp op, mobdbType lt, mobdbType rt);
-extern mobdbType oid_type(Oid typid);
-
-#endif /* TEMPCACHE_H */
-
 /*****************************************************************************/
+
+#endif /* __TEMPORAL_CATALOG_H__ */
+

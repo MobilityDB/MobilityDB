@@ -66,15 +66,4 @@ extern bool intersection_tinstantset_tinstantset(const TInstantSet *is1,
 
 /*****************************************************************************/
 
-#if ! MEOS
-
-/* Send/receive functions */
-
-extern TInstantSet *tinstantset_recv(StringInfo buf, mobdbType temptype);
-extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
-
 #endif

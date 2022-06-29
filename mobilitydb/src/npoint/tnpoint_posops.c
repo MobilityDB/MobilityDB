@@ -43,9 +43,10 @@
  * arguments is a stbox.
  */
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "npoint/tnpoint_boxops.h"
+/* MobilityDB */
+#include "pg_npoint/tnpoint_boxops.h"
 
 /*****************************************************************************/
 /* geo op Temporal */

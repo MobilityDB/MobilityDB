@@ -38,13 +38,17 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
+#include <catalog/pg_type_d.h>
 #include <libpq/pqformat.h>
 #include <utils/rangetypes.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
 
@@ -372,7 +376,7 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
 /**
  * @brief Set the precision of the float span to the number of decimal places.
  */
-Span *
+static Span *
 floatspan_round(Span *span, Datum size)
 {
   /* Set precision of bounds */

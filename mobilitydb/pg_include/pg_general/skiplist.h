@@ -35,6 +35,10 @@
 #ifndef __SKIPLIST_H__
 #define __SKIPLIST_H__
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/palloc.h>
+#include <fmgr.h>
 /* MobilityDB */
 #include "general/temporal.h"
 

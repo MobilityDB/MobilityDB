@@ -46,6 +46,7 @@
 #include <meos.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/time_gist.h"
 #include "pg_general/tnumber_gist.h"
 

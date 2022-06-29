@@ -32,17 +32,18 @@
  * @brief Operators for time types.
  */
 
-#include "general/span_ops.h"
-
 /* C */
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************/
 /* contains? */

@@ -58,6 +58,7 @@
 /* MEOS */
 #include "general/temporal_catalog.h"
 /* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_general/tnumber_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
@@ -120,6 +121,7 @@ static const int16 TPointStrategies[] =
   [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
+#if NPOINT
 static const int16 TNPointStrategies[] =
 {
   /* intersects<Time> functions */
@@ -134,6 +136,7 @@ static const int16 TNPointStrategies[] =
   [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
+#endif /* NPOINT */
 
 /*
 * Metadata currently scanned from start to back,
@@ -180,6 +183,7 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 
+#if NPOINT
 static const IndexableFunction TNPointIndexableFunctions[] = {
   /* intersects<Time> functions */
   {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
@@ -194,6 +198,8 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
   {"dwithin", DWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
+#endif /* NPOINT */
+
 static int16
 temporal_get_strategy_by_type(mobdbType temptype, uint16_t index)
 {
@@ -203,8 +209,10 @@ temporal_get_strategy_by_type(mobdbType temptype, uint16_t index)
     return TNumberStrategies[index];
   if (tgeo_type(temptype))
     return TPointStrategies[index];
+#if NPOINT
   if (temptype == T_TNPOINT)
     return TNPointStrategies[index];
+#endif /* NPOINT */
   return InvalidStrategy;
 }
 
@@ -278,9 +286,12 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname;
   mobdbType argtype = oid_type(argoid);
-  if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY ||
-      argtype == T_STBOX || argtype == T_TGEOMPOINT ||
-      argtype == T_TGEOGPOINT || argtype == T_TNPOINT)
+  if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
+      argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
+#if NPOINT
+      || argtype == T_TNPOINT
+#endif /* NPOINT */
+      )
     funcname = "expandspatial";
   else
     elog(ERROR, "Unknown expand function for type %d", argoid);
@@ -318,7 +329,11 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 
   /* Return estimated selectivity */
   assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
-    tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+    tempfamily == TPOINTTYPE
+#if NPOINT
+    || tempfamily == TNPOINTTYPE
+#endif /* NPOINT */
+    );
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
@@ -393,8 +408,10 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
         funcarr = TNumberIndexableFunctions;
       else if (tempfamily == TPOINTTYPE)
         funcarr = TPointIndexableFunctions;
+#if NPOINT
       else /* tempfamily == TNPOINTTYPE */
         funcarr = TNPointIndexableFunctions;
+#endif /* NPOINT */
       if (! func_needs_index(funcoid, funcarr, &idxfn))
       {
         if (isfunc)
@@ -468,7 +485,11 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       if (idxfn.expand_arg &&
           (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
            righttype == T_STBOX || righttype == T_TGEOMPOINT ||
-           righttype == T_TGEOGPOINT || righttype == T_TNPOINT))
+           righttype == T_TGEOGPOINT
+#if NPOINT
+           || righttype == T_TNPOINT
+#endif /* NPOINT */
+           ))
         exproid = type_oid(T_STBOX);
       else
         PG_RETURN_POINTER((Node *) NULL);
@@ -579,6 +600,7 @@ Tpoint_supportfn(PG_FUNCTION_ARGS)
   return temporal_supportfn_ext(fcinfo, TPOINTTYPE);
 }
 
+#if NPOINT
 PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 /**
  * Support function for temporal number types
@@ -588,5 +610,6 @@ Tnpoint_supportfn(PG_FUNCTION_ARGS)
 {
   return temporal_supportfn_ext(fcinfo, TNPOINTTYPE);
 }
+#endif /* NPOINT */
 
 /*****************************************************************************/

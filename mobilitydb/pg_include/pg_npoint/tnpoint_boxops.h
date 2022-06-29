@@ -32,30 +32,16 @@
  * Bounding box operators for temporal network points.
  */
 
-#ifndef __TNPOINT_BOXOPS_H__
-#define __TNPOINT_BOXOPS_H__
+#ifndef __PG_TNPOINT_BOXOPS_H__
+#define __PG_TNPOINT_BOXOPS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+#include <utils/palloc.h>
+#include <fmgr.h>
 /* MobilityDB */
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
-
-/*****************************************************************************/
-
-extern bool npoint_set_stbox(const Npoint *np, STBOX *box);
-extern bool nsegment_set_stbox(const Nsegment *ns, STBOX *box);
-extern bool npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t,
-  STBOX *box);
-extern bool npoint_period_set_stbox(const Npoint *np, const Period *p,
-  STBOX *box);
-
-extern void tnpointinst_set_stbox(const TInstant *inst, STBOX *box);
-extern void tnpointinstarr_set_stbox(const TInstant **inst, int count,
-  STBOX *box);
-extern void tnpointseq_set_stbox(const TInstant **inst, int count, bool linear,
-  STBOX *box);
 
 /*****************************************************************************/
 
@@ -74,15 +60,6 @@ extern Datum boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
 
-extern int boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
-  bool (*func)(const STBOX *, const STBOX *), bool invert);
-extern int boxop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
-  bool (*func)(const STBOX *, const STBOX *), bool spatial, bool invert);
-extern bool boxop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool (*func)(const STBOX *, const STBOX *), bool invert);
-extern bool boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBOX *, const STBOX *));
-
 /*****************************************************************************/
 
-#endif /* __TNPOINT_BOXOPS_H__ */
+#endif /* __PG_TNPOINT_BOXOPS_H__ */

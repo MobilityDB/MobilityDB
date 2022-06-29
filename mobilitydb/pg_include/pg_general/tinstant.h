@@ -32,8 +32,8 @@
  * Basic functions for temporal instants.
  */
 
-#ifndef __TINSTANT_H__
-#define __TINSTANT_H__
+#ifndef __PG_TINSTANT_H__
+#define __PG_TINSTANT_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -44,46 +44,11 @@
 
 /*****************************************************************************/
 
-/* General functions */
-
-extern Datum *tinstant_value_ptr(const TInstant *inst);
-extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
-extern double tnumberinst_double(const TInstant *inst);
-
-/* Input/output functions */
-
-extern char *tinstant_to_string(const TInstant *inst,
-  char *(*value_out)(mobdbType, Datum));
-
-/* Restriction Functions */
-
-extern bool tinstant_restrict_values_test(const TInstant *inst,
-  const Datum *values, int count, bool atfunc);
-extern bool tnumberinst_restrict_span_test(const TInstant *inst,
-  const Span *span, bool atfunc);
-extern bool tnumberinst_restrict_spans_test(const TInstant *inst,
-  Span **normspans, int count, bool atfunc);
-extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
-  const TimestampSet *ts, bool atfunc);
-extern bool tinstant_restrict_periodset_test(const TInstant *inst,
-  const PeriodSet *ps, bool atfunc);
-
-/* Intersection function */
-
-extern bool intersection_tinstant_tinstant(const TInstant *inst1,
-  const TInstant *inst2, TInstant **inter1, TInstant **inter2);
-
-/*****************************************************************************/
-
-#if ! MEOS
-
 /* Send/receive functions */
 
 extern TInstant *tinstant_recv(StringInfo buf, mobdbType temptype);
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 
-#endif /* ! MEOS */
-
 /*****************************************************************************/
 
-#endif
+#endif /* __PG_TINSTANT_H__ */

@@ -41,6 +41,10 @@
 
 #include "npoint/tnpoint_spatialrels.h"
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/palloc.h>
+#include <fmgr.h>
 /* MobilityDB */
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"

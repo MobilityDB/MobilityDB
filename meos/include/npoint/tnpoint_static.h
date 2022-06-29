@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MobilityDB */
 #include "npoint/tnpoint.h"
 
@@ -70,8 +70,6 @@ extern Nsegment *npoint_to_nsegment(const Npoint *np);
 
 extern Nsegment *nsegment_in(char *str);
 extern char *nsegment_out(const Nsegment *ns);
-extern Nsegment *nsegment_recv(StringInfo buf);
-extern bytea *nsegment_send(const Nsegment *ns);
 
 /* Accessor functions */
 

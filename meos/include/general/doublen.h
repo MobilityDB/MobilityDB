@@ -57,19 +57,4 @@ extern bool double4_eq(const double4 *d1, const double4 *d2);
 
 /*****************************************************************************/
 
-#if ! MEOS
-
-extern double2 *double2_recv(StringInfo buf);
-extern bytea *double2_send(double2 *d);
-
-extern double3 *double3_recv(StringInfo buf);
-extern bytea *double3_send(double3 *d);
-
-extern double4 *double4_recv(StringInfo buf);
-extern bytea *double4_send(double4 *d);
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
-
-#endif
+#endif /* __DOUBLEN_H__ */

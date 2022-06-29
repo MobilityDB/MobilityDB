@@ -42,7 +42,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <libpq/pqformat.h>
+// #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -284,33 +284,6 @@ nsegment_out(const Nsegment *ns)
 {
   char *result = psprintf("NSegment(%ld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
   return result;
-}
-
-/**
- * @brief Receive function for network segments
- */
-Nsegment *
-nsegment_recv(StringInfo buf)
-{
-  Nsegment *result = palloc0(sizeof(Nsegment));
-  result->rid = pq_getmsgint64(buf);
-  result->pos1 = pq_getmsgfloat8(buf);
-  result->pos2 = pq_getmsgfloat8(buf);
-  return result;
-}
-
-/**
- * @brief Send function for network segments
- */
-bytea *
-nsegment_send(const Nsegment *ns)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint64(&buf, (uint64) ns->rid);
-  pq_sendfloat8(&buf, ns->pos1);
-  pq_sendfloat8(&buf, ns->pos2);
-  return pq_endtypsend(&buf);
 }
 
 /*****************************************************************************

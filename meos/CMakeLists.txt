@@ -6,7 +6,7 @@ message(STATUS "-------------------------")
 message(STATUS "Building the MEOS library")
 message(STATUS "-------------------------")
 
-# Set MEOS option for excluding from the build files not needed for MEOS
+# Set MEOS option for building the MEOS library
 set(MEOS ON)
 
 # Enable code specific to MEOS, typically user-oriented wrapper functions
@@ -17,6 +17,7 @@ add_definitions(-DMEOS=1)
 # Set the version and name of the MEOS library
 set(MEOS_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MEOS_LIB_NAME "MEOS-${MEOS_LIB_VERSION}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 #-----------------------------------------
 # Set default PostgreSQL Version for MEOS

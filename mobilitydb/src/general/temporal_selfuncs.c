@@ -68,6 +68,7 @@
 /* MobilityDB */
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_analyze.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/tnumber_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
 

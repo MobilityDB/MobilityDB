@@ -32,158 +32,13 @@
  * Functions for building a cache of type and operator Oids.
  */
 
-#ifndef TEMP_CATALOG_H
-#define TEMP_CATALOG_H
+#ifndef __PG_TEMPORAL_CATALOG_H__
+#define __PG_TEMPORAL_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 
-/*****************************************************************************
- * Data structures
- *****************************************************************************/
-
-/**
- * @brief Enumeration that defines the built-in and temporal types used in
- * MobilityDB.
- *
- * The Oids of these types are cached in a global array and
- * the enum values are used in the global array for the operator cache.
- */
-typedef enum
-{
-  // T_UNKNOWN = 0,
-  T_BOOL,          /**< boolean type */
-  T_DOUBLE2,       /**< double2 type */
-  T_DOUBLE3,       /**< double3 type */
-  T_DOUBLE4,       /**< double4 type */
-  T_FLOAT8,        /**< float8 type */
-  T_FLOATSPAN,     /**< float8 span type */
-  T_INT4,          /**< int4 type */
-#if ! MEOS
-  T_INT4RANGE,     /**< int4 range type */
-#endif
-  T_INTSPAN,       /**< int4 span type */
-  T_INT8,          /**< int8 type */
-  T_PERIOD,        /**< period type */
-  T_PERIODSET,     /**< period set type */
-  T_STBOX,         /**< spatiotemporal box type */
-  T_TBOOL,         /**< temporal boolean type */
-  T_TBOX,          /**< temporal box type */
-  T_TDOUBLE2,      /**< temporal double2 type */
-  T_TDOUBLE3,      /**< temporal double3 type */
-  T_TDOUBLE4,      /**< temporal double4 type */
-  T_TEXT,          /**< text type */
-  T_TFLOAT,        /**< temporal float type */
-  T_TIMESTAMPSET,  /**< timestamp set type */
-  T_TIMESTAMPTZ,   /**< timestamp with time zone type */
-  T_TINT,          /**< temporal integer type */
-#if ! MEOS
-  T_TSTZRANGE,     /**< timestamp with time zone rabge type */
-#endif
-  T_TTEXT,         /**< temporal text type */
-  T_GEOMETRY,      /**< geometry type */
-  T_GEOGRAPHY,     /**< geography type */
-  T_TGEOMPOINT,    /**< temporal geometry point type */
-  T_TGEOGPOINT,    /**< temporal geography point type */
-#if ! MEOS
-  T_NPOINT,        /**< network point type */
-  T_NSEGMENT,      /**< network segment type */
-  T_TNPOINT,       /**< temporal network point type */
-#endif
-} mobdbType;
-
-/**
- * Enumeration that defines the classes of Boolean operators used in MobilityDB.
- * The OIDs of the operators corresponding to these classes are cached in
- * a global array.
- */
-typedef enum
-{
-  // UNKNOWN_OP = 0,
-  EQ_OP,           /**< Equality `=` operator */
-  NE_OP,           /**< Distinct `!=` operator */
-  LT_OP,           /**< Less than `<` operator */
-  LE_OP,           /**< Less than or equal to `<=` operator */
-  GT_OP,           /**< Greater than `<` operator */
-  GE_OP,           /**< Greater than or equal to `>=` operator */
-  ADJACENT_OP,     /**< Adjacent `-|-` operator */
-  UNION_OP,        /**< Union `+` operator */
-  MINUS_OP,        /**< Minus `-` operator */
-  INTERSECT_OP,    /**< Intersection `*` operator */
-  OVERLAPS_OP,     /**< Overlaps `&&` operator */
-  CONTAINS_OP,     /**< Contains `@>` operator */
-  CONTAINED_OP,    /**< Contained `<@` operator */
-  SAME_OP,         /**< Same `~=` operator */
-  LEFT_OP,         /**< Left `<<` operator */
-  OVERLEFT_OP,     /**< Overleft `&<` operator */
-  RIGHT_OP,        /**< Right `>>` operator */
-  OVERRIGHT_OP,    /**< Overright `&>` operator */
-  BELOW_OP,        /**< Below `<<|` operator */
-  OVERBELOW_OP,    /**< Overbelow `&<|` operator */
-  ABOVE_OP,        /**< Above `|>>` operator */
-  OVERABOVE_OP,    /**< Overbove `|&>` operator */
-  FRONT_OP,        /**< Front `<</` operator */
-  OVERFRONT_OP,    /**< Overfront `&</` operator */
-  BACK_OP,         /**< Back `/>>` operator */
-  OVERBACK_OP,     /**< Overback `/&>` operator */
-  BEFORE_OP,       /**< Before `<<#` operator */
-  OVERBEFORE_OP,   /**< Overbefore `&<#` operator */
-  AFTER_OP,        /**< After `#>>` operator */
-  OVERAFTER_OP,    /**< Overafter `#&>` operator */
-} CachedOp;
-
-/**
- * Structure to represent the temporal type cache array.
- */
-typedef struct
-{
-  mobdbType temptype;    /**< Enum value of the temporal type */
-  mobdbType basetype;    /**< Enum value of the base type */
-} temptype_cache_struct;
-
-/**
- * Structure to represent the span type cache array.
- */
-typedef struct
-{
-  mobdbType spantype;    /**< Enum value of the span type */
-  mobdbType basetype;    /**< Enum value of the base type */
-} spantype_cache_struct;
-
 /*****************************************************************************/
-
-/* Cache functions */
-
-extern mobdbType temptype_basetype(mobdbType temptype);
-extern mobdbType spantype_basetype(mobdbType spantype);
-extern mobdbType basetype_spantype(mobdbType basetype);
-
-/* Catalog functions */
-
-extern bool time_type(mobdbType timetype);
-extern void ensure_time_type(mobdbType timetype);
-extern bool span_type(mobdbType spantype);
-extern void ensure_span_type(mobdbType spantype);
-extern void ensure_span_basetype(mobdbType basetype);
-extern bool temporal_type(mobdbType temptype);
-extern void ensure_temporal_type(mobdbType temptype);
-extern void ensure_temporal_basetype(mobdbType basetype);
-extern bool temptype_continuous(mobdbType temptype);
-extern void ensure_temptype_continuous(mobdbType temptype);
-extern bool basetype_byvalue(mobdbType basetype);
-extern int16 basetype_length(mobdbType basetype);
-extern bool talpha_type(mobdbType temptype);
-extern bool tnumber_type(mobdbType temptype);
-extern void ensure_tnumber_type(mobdbType temptype);
-extern bool tnumber_basetype(mobdbType basetype);
-extern void ensure_tnumber_basetype(mobdbType basetype);
-extern bool tnumber_spantype(mobdbType spantype);
-extern void ensure_tnumber_spantype(mobdbType spantype);
-extern bool tspatial_type(mobdbType temptype);
-extern bool tspatial_basetype(mobdbType basetype);
-extern bool tgeo_basetype(mobdbType basetype);
-extern bool tgeo_type(mobdbType basetype);
-extern void ensure_tgeo_type(mobdbType basetype);
 
 /* MobilityDB functions */
 
@@ -191,6 +46,7 @@ extern Oid type_oid(mobdbType t);
 extern Oid oper_oid(CachedOp op, mobdbType lt, mobdbType rt);
 extern mobdbType oid_type(Oid typid);
 
-#endif /* TEMPCACHE_H */
-
 /*****************************************************************************/
+
+#endif /* __PG_TEMPORAL_CATALOG_H__ */
+

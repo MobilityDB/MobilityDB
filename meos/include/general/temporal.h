@@ -37,23 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-
-#if ! MEOS
-  #include <c.h>
-  #include <utils/palloc.h>
-  #include <utils/elog.h>
-  // #include <catalog/pg_type.h>
-  #if POSTGRESQL_VERSION_NUMBER < 140000
-    /* MobilityDB has embedded the file c.h from PG version 14. In previous
-     * PG versions this file defined the followingowing constant */
-    #define MAXDIM 6
-  #endif /* POSTGRESQL_VERSION_NUMBER < 140000 */
-  #include <utils/array.h>
-  #include <utils/lsyscache.h>
-  #include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
-#endif /* ! MEOS */
-
-/* MobilityDB */
+/* MEOS */
 #include "general/span.h"
 #include "general/temporal_catalog.h"
 #include "general/timetypes.h"

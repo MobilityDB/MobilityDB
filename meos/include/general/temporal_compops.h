@@ -50,4 +50,4 @@ extern Temporal *tcomp_temporal_temporal(const Temporal *temp1,
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TEMPORAL_COMPOPS_H__ */

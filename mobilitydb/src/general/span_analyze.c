@@ -49,11 +49,13 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_operator.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************/
 

@@ -49,6 +49,7 @@
 #include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 
 /*****************************************************************************

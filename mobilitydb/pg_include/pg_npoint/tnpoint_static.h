@@ -37,7 +37,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/array.h>
 #include <catalog/pg_type.h>
+#include <lib/stringinfo.h>
 /* MobilityDB */
 #include "npoint/tnpoint.h"
 
@@ -48,40 +50,16 @@
 extern ArrayType *int64arr_to_array(const int64 *int64arr, int count);
 extern ArrayType *nsegmentarr_to_array(Nsegment **nsegmentarr, int count);
 
-/* Input/Output functions */
-
-
-/* Constructor functions */
-
-
-/* Cast functions */
-
-
 /* Input/output functions */
 
 extern Nsegment *nsegment_recv(StringInfo buf);
 extern bytea *nsegment_send(const Nsegment *ns);
-
-/* Accessor functions */
-
 
 /* Transformation functions */
 
 extern Datum datum_npoint_round(Datum npoint, Datum size);
 extern Npoint *npoint_round(const Npoint *np, Datum size);
 extern Nsegment *nsegment_round(const Nsegment *ns, Datum size);
-
-/* Conversions between network and Euclidean space */
-
-
-/* SRID functions */
-
-
-/* Comparison functions */
-
-
-/* Hash functions */
-
 
 /*****************************************************************************/
 

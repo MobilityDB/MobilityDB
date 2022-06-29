@@ -38,31 +38,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include "general/temporal_catalog.h"
 
 /*****************************************************************************/
-
-/**
- * Structure to represent spans (a.k.a. ranges)
- */
-// typedef struct
-// {
-  // Datum lower;          /**< lower bound value */
-  // Datum upper;          /**< upper bound value */
-  // bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  // bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
-  // uint8 spantype;       /**< span type */
-  // uint8 basetype;       /**< span basetype */
-// } Span;
-
-/**
- * Make the Period type as a specialized Span type for faster manipulation
- * of the time dimension
- */
-// typedef Span Period;
 
 /**
  * Internal representation of either bound of a span (not what's on disk)
@@ -75,7 +55,6 @@ typedef struct
   uint8 spantype;       /**< span type */
   uint8 basetype;       /**< span basetype */
 } SpanBound;
-
 
 /*
  * fmgr macros for span types
@@ -102,23 +81,6 @@ extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
 extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
-
-/*****************************************************************************/
-
-#if ! MEOS
-
-#include <lib/stringinfo.h>
-
-/* Send/receive functions */
-
-extern Span *span_recv(StringInfo buf);
-extern void span_write(const Span *s, StringInfo buf);
-
-/* Transformation functions */
-
-extern Span *floatspan_round(Span *span, Datum size);
-
-#endif /* ! MEOS */
 
 /*****************************************************************************/
 

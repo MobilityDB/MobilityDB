@@ -37,6 +37,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/palloc.h>
+#include <fmgr.h>
+#include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
 /* MobilityDB */

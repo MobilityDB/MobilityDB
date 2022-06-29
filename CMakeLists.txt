@@ -21,16 +21,31 @@ include(CheckSymbolExists)
 #-------------------------------------
 
 # Option for including network points
-option(NPOINT
-  "Set ON|OFF (default=ON) to include network points
+option(MEOS
+  "Set MEOS (default=OFF) to build the MEOS library instead of the MobilityDB
+  PostgreSQL extension
   "
-  ON
+  OFF
 )
 
-# TODO Include network points for MobilityDB
+if(NOT MEOS)
+  # Option for including network points
+  option(NPOINT
+    "Set ON|OFF (default=ON) to include network points
+    "
+    ON
+  )
+else()
+  # Set NPOINT option for excluding support for network points, which require a
+  # table named `ways` containing the geometries of the road network
+  set(NPOINT OFF)
+endif()
+
 if(NPOINT)
+  message(STATUS "Including network points")
   add_definitions(-DNPOINT=1)
 else()
+  message(STATUS "Excluding network points")
   add_definitions(-DNPOINT=0)
 endif()
 
@@ -116,8 +131,12 @@ endif()
 # Build either MobilityDB or MEOS
 #-------------------------------------
 
-# add_subdirectory(meos)
-add_subdirectory(mobilitydb)
+
+if(MEOS)
+  add_subdirectory(meos)
+else()
+  add_subdirectory(mobilitydb)
+endif()
 
 #-----------------------------------------------------------------------------
 # Documentation

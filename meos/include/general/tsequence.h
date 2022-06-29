@@ -129,15 +129,4 @@ extern int tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps,
 
 /*****************************************************************************/
 
-#if ! MEOS
-
-/* Send/receive functions */
-
-extern TSequence *tsequence_recv(StringInfo buf, mobdbType temptype);
-extern void tsequence_write(const TSequence *seq, StringInfo buf);
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
-
 #endif

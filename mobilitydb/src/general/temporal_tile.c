@@ -45,11 +45,13 @@
 #include <postgres.h>
 #include <funcapi.h>
 #include <utils/datetime.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Number bucket functions

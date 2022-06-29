@@ -32,12 +32,11 @@
  * @brief Operators for time types.
  */
 
-#include "general/span_ops.h"
-
 /* C */
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>

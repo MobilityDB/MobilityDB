@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/temporal.h"
 #include "npoint/tnpoint_static.h"
@@ -56,9 +56,10 @@ extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern TInstant *nai_tnpoint_tnpoint(const Temporal *temp,
   const Temporal *temp2);
 
-extern double nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo);
-extern double nad_tnpoint_npoint(Temporal *temp, Npoint *np);
-extern double nad_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2);
+extern double nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
+extern double nad_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern double nad_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
 extern bool shortestline_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *geo, GSERIALIZED **result);

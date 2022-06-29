@@ -1,5 +1,5 @@
 /*****************************************************************************
- *
+ * @brief
  * This MobilityDB code is provided under The PostgreSQL License.
  * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
@@ -28,7 +28,9 @@
  *****************************************************************************/
 
 /**
- * @file ttext_textfuncs.c
+ * @ingroup mobilitydb_temporal_text
+ * @brief @file ttext_textfuncs.c
+ * @ingroup mobilitydb_temporal_text
  * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
@@ -39,12 +41,14 @@
 #include "general/temporal_util.h"
 
 /*****************************************************************************
- * Text concatenation
+ * @ingroup mobilitydb_temporal_text
+ * @brief Text concatenation
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
- * Return the concatenation of the text value and the temporal text values
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return the concatenation of the text and the temporal text values
  */
 PGDLLEXPORT Datum
 Textcat_text_ttext(PG_FUNCTION_ARGS)
@@ -58,7 +62,8 @@ Textcat_text_ttext(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
- * Return the concatenation of the temporal text value and the text value
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return the concatenation of the temporal text and the text values
  */
 PGDLLEXPORT Datum
 Textcat_ttext_text(PG_FUNCTION_ARGS)
@@ -72,7 +77,8 @@ Textcat_ttext_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
- * Return the concatenation of the two temporal text values
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return the concatenation of the two temporal text values
  */
 PGDLLEXPORT Datum
 Textcat_ttext_ttext(PG_FUNCTION_ARGS)
@@ -91,7 +97,8 @@ Textcat_ttext_ttext(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Ttext_upper);
 /**
- * Transform the temporal text value into uppercase
+ * @ingroup mobilitydb_temporal_text
+ * @brief Transform the temporal text value into uppercase
  */
 PGDLLEXPORT Datum
 Ttext_upper(PG_FUNCTION_ARGS)
@@ -104,7 +111,8 @@ Ttext_upper(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
- * Transform the temporal text value into lowercase
+ * @ingroup mobilitydb_temporal_text
+ * @brief Transform the temporal text value into lowercase
  */
 PGDLLEXPORT Datum
 Ttext_lower(PG_FUNCTION_ARGS)

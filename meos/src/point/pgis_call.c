@@ -619,7 +619,7 @@ PGIS_LWGEOM_reverse(const GSERIALIZED *geom)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   lwgeom_reverse_in_place(lwgeom);
-  GSERIALIZED *result = geometry_serialize(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwgeom);
   return result;
 }
 
@@ -791,7 +791,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
   if (lwgeom_needs_bbox(lwgeom)) lwgeom_add_bbox(lwgeom);
 
-  result = geometry_serialize(lwgeom);
+  result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
 
   return result;
@@ -993,7 +993,7 @@ PGIS_union_geometry_array(GSERIALIZED **gsarr, int nelems)
   /* One geom geom? Return it */
   if (nelems == 1)
     return gsarr[0];
-  
+
   bool is3d = false, gotsrid = false;
   int curgeom = 0;
   int empty_type = 0;
@@ -1002,7 +1002,7 @@ PGIS_union_geometry_array(GSERIALIZED **gsarr, int nelems)
   GEOSGeometry *g = NULL;
   GEOSGeometry *g_union = NULL;
 
-  initGEOS(lwpgnotice, lwgeom_geos_error);
+  initGEOS(lwnotice, lwgeom_geos_error);
 
   /* Collect the non-empty inputs and stuff them into a GEOS collection */
   GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * nelems);
@@ -1067,7 +1067,7 @@ PGIS_union_geometry_array(GSERIALIZED **gsarr, int nelems)
   {
     /* If it was only empties, we'll return the largest type number */
     if (empty_type > 0)
-      return geometry_serialize(lwgeom_construct_empty(empty_type, srid, is3d,
+      return geo_serialize(lwgeom_construct_empty(empty_type, srid, is3d,
         0));
     /* Nothing but NULL, returns NULL */
     else
@@ -1812,7 +1812,7 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
     return NULL;
   }
 
-  ret = geometry_serialize(olwgeom);
+  ret = geo_serialize(olwgeom);
   lwgeom_free(olwgeom);
   return ret;
 }
@@ -1839,7 +1839,7 @@ PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1, GSERIALIZED *geom2)
     elog(ERROR,"line_locate_point: 2st arg isn't a point");
   }
 
-  gserialized_error_if_srid_mismatch(geom1, geom2, __func__);
+  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
   lwline = lwgeom_as_lwline(lwgeom_from_gserialized(geom1));
   lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom2));

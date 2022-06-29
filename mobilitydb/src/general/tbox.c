@@ -36,6 +36,8 @@
 
 /* C */
 #include <assert.h>
+/* PostgreSQL */
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include "general/temporal_util.h"
@@ -525,7 +527,7 @@ Tbox_expand_temporal(PG_FUNCTION_ARGS)
  * @brief Set the precision of the value dimension of the temporal box to
  * the number of decimal places.
  */
-TBOX *
+static TBOX *
 tbox_round(const TBOX *box, int size)
 {
   ensure_has_X_tbox(box);

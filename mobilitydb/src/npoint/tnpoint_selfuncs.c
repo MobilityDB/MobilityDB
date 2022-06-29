@@ -36,6 +36,7 @@
 #include "pg_npoint/tnpoint_selfuncs.h"
 
 /* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
 
 /*****************************************************************************/

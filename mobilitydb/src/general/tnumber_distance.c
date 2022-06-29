@@ -37,11 +37,15 @@
 /* C */
 #include <float.h>
 #include <math.h>
-/* MobilityDB */
+/* PostgreSQL */
+#include <postgres.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Temporal distance

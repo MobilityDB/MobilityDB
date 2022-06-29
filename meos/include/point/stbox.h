@@ -43,27 +43,6 @@
 #include "general/timetypes.h"
 
 /*****************************************************************************
- * Struct definition
- *****************************************************************************/
-
-/**
- * Structure to represent spatiotemporal boxes
- */
-// typedef struct
-// {
-  // double      xmin;   /**< minimum x value */
-  // double      xmax;   /**< maximum x value */
-  // double      ymin;   /**< minimum y value */
-  // double      ymax;   /**< maximum y value */
-  // double      zmin;   /**< minimum z value */
-  // double      zmax;   /**< maximum z value */
-  // TimestampTz tmin;   /**< minimum timestamp */
-  // TimestampTz tmax;   /**< maximum timestamp */
-  // int32       srid;   /**< SRID */
-  // int16       flags;  /**< flags */
-// } STBOX;
-
-/*****************************************************************************
  * fmgr macros
  *****************************************************************************/
 
@@ -87,11 +66,6 @@ extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
 /* SRID functions */
 
 extern STBOX * stbox_set_srid(const STBOX *box, int32 srid);
-extern STBOX * stbox_transform(const STBOX *box, int32 srid);
-
-/* Transformation functions */
-
-extern STBOX *stbox_round(const STBOX *box, Datum prec);
 
 /*****************************************************************************/
 

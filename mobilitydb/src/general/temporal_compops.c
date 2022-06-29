@@ -40,6 +40,7 @@
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Generic functions

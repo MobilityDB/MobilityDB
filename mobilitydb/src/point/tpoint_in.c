@@ -32,9 +32,11 @@
  * @brief Input of temporal points in WKT, EWKT, , EWKB, and MF-JSON format.
  */
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal_util.h"
 #include "point/tpoint_parser.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Input in EWKT format

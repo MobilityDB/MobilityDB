@@ -917,28 +917,6 @@ hypot4d(double x, double y, double z, double m)
  * Input/output PostgreSQL functions
  *****************************************************************************/
 
-// #if ! MEOS
-// extern Oid type_oid(mobdbType type);
-// /**
- // * @brief Call input function of the base type
- // * @note Function needed for the geography type to call the function
- // * srid_is_latlong(fcinfo, srid)
- // */
-// Datum
-// call_input(mobdbType type, char *str, bool end)
-// {
-  // Oid typid = type_oid(type);
-  // Oid infunc;
-  // Oid basetypid;
-  // FmgrInfo infuncinfo;
-  // getTypeInputInfo(typid, &infunc, &basetypid);
-  // fmgr_info(infunc, &infuncinfo);
-  // Datum result = InputFunctionCall(&infuncinfo, str, basetypid, -1);
-  // ensure_end_input(&str, end, "base type");
-  // return result;
-// }
-// #endif /* ! MEOS */
-
 /**
  * Call input function of the base type
  */
@@ -967,11 +945,7 @@ basetype_input(mobdbType basetype, char *str, bool end __attribute__((unused)))
     case T_GEOMETRY:
       return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
     case T_GEOGRAPHY:
-// #if ! MEOS
-      // return call_input(T_GEOGRAPHY, str, end);
-// #else
       return PointerGetDatum(PGIS_geography_in(str, -1));
-// #endif
 #if NPOINT
     case T_NPOINT:
       return PointerGetDatum(npoint_parse(&str, end));

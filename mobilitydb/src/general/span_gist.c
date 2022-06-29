@@ -40,6 +40,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <access/gist.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -48,6 +49,7 @@
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * GiST consistent methods

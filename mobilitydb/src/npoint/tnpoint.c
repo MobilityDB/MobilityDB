@@ -34,7 +34,7 @@
 
 #include "npoint/tnpoint.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
@@ -42,6 +42,7 @@
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"
 /* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 #include "pg_npoint/tnpoint_static.h"
 
 /*****************************************************************************

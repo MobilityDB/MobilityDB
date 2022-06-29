@@ -33,9 +33,11 @@
  * temporal aggregates.
  */
 
-#ifndef __DOUBLEN_H__
-#define __DOUBLEN_H__
+#ifndef __PG_DOUBLEN_H__
+#define __PG_DOUBLEN_H__
 
+/* PostgreSQL */
+#include <lib/stringinfo.h>
 /* MobilityDB */
 #include "general/temporal.h"
 
@@ -52,19 +54,4 @@ extern bytea *double4_send(double4 *d);
 
 /*****************************************************************************/
 
-#if ! MEOS
-
-extern double2 *double2_recv(StringInfo buf);
-extern bytea *double2_send(double2 *d);
-
-extern double3 *double3_recv(StringInfo buf);
-extern bytea *double3_send(double3 *d);
-
-extern double4 *double4_recv(StringInfo buf);
-extern bytea *double4_send(double4 *d);
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
-
-#endif
+#endif /* __PG_DOUBLEN_H__ */

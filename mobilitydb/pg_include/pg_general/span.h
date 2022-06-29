@@ -33,80 +33,14 @@
  * two Boolean values stating whether the bounds are inclusive or not.
  */
 
-#ifndef __SPAN_H__
-#define __SPAN_H__
+#ifndef __PG_SPAN_H__
+#define __PG_SPAN_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
-/* MobilityDB */
-#include "general/temporal_catalog.h"
-
-/*****************************************************************************/
-
-/**
- * Structure to represent spans (a.k.a. ranges)
- */
-typedef struct
-{
-  Datum lower;          /**< lower bound value */
-  Datum upper;          /**< upper bound value */
-  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
-  uint8 spantype;       /**< span type */
-  uint8 basetype;       /**< span basetype */
-} Span;
-
-/**
- * Make the Period type as a specialized Span type for faster manipulation
- * of the time dimension
- */
-typedef Span Period;
-
-/**
- * Internal representation of either bound of a span (not what's on disk)
- */
-typedef struct
-{
-  Datum val;            /**< bound value */
-  bool inclusive;       /**< bound is inclusive (vs exclusive) */
-  bool lower;           /**< this is the lower (vs upper) bound */
-  uint8 spantype;       /**< span type */
-  uint8 basetype;       /**< span basetype */
-} SpanBound;
-
-
-/*
- * fmgr macros for span types
- */
-
-#define DatumGetSpanP(X)           ((Span *) DatumGetPointer(X))
-#define SpanPGetDatum(X)           PointerGetDatum(X)
-#define PG_GETARG_SPAN_P(X)        DatumGetSpanP(PG_GETARG_POINTER(X))
-#define PG_RETURN_SPAN_P(X)        PG_RETURN_POINTER(X)
-
-/*****************************************************************************/
-
-/* General functions */
-
-extern void span_deserialize(const Span *s, SpanBound *lower,
-  SpanBound *upper);
-extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
-extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
-extern int span_bound_qsort_cmp(const void *a1, const void *a2);
-extern int span_lower_cmp(const Span *a, const Span *b);
-extern int span_upper_cmp(const Span *a, const Span *b);
-extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
-extern void span_bounds(const Span *s, double *xmin, double *xmax);
-
-extern size_t span_to_wkb_size(const Span *s);
-extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
-
-/*****************************************************************************/
-
-#if ! MEOS
-
 #include <lib/stringinfo.h>
+
+/*****************************************************************************/
 
 /* Send/receive functions */
 
@@ -117,8 +51,6 @@ extern void span_write(const Span *s, StringInfo buf);
 
 extern Span *floatspan_round(Span *span, Datum size);
 
-#endif /* ! MEOS */
-
 /*****************************************************************************/
 
-#endif /* __SPAN_H__ */
+#endif /* __PG_SPAN_H__ */

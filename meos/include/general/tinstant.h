@@ -75,15 +75,4 @@ extern bool intersection_tinstant_tinstant(const TInstant *inst1,
 
 /*****************************************************************************/
 
-#if ! MEOS
-
-/* Send/receive functions */
-
-extern TInstant *tinstant_recv(StringInfo buf, mobdbType temptype);
-extern void tinstant_write(const TInstant *inst, StringInfo buf);
-
-#endif /* ! MEOS */
-
-/*****************************************************************************/
-
 #endif

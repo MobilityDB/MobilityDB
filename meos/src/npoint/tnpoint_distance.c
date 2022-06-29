@@ -189,7 +189,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * and the geometry
  */
 double
-nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo)
+nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 {
   if (gserialized_is_empty(geo))
     return -1;
@@ -205,7 +205,7 @@ nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo)
  * and the network point
  */
 double
-nad_tnpoint_npoint(Temporal *temp, Npoint *np)
+nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   GSERIALIZED *traj = tnpoint_geom(temp);
@@ -221,7 +221,7 @@ nad_tnpoint_npoint(Temporal *temp, Npoint *np)
  * points
  */
 double
-nad_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2)
+nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)

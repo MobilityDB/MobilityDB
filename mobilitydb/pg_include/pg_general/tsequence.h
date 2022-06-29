@@ -32,8 +32,8 @@
  * Basic functions for temporal sequences.
  */
 
-#ifndef __TSEQUENCE_H__
-#define __TSEQUENCE_H__
+#ifndef __PG_TSEQUENCE_H__
+#define __PG_TSEQUENCE_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -43,101 +43,11 @@
 
 /*****************************************************************************/
 
-/* General functions */
-
-extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
-extern void *tsequence_bbox_ptr(const TSequence *seq);
-extern void tsequence_make_valid1(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear);
-extern TSequence *tsequence_make1(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear, bool normalize);
-extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
-  int *countseqs, int count, int totalseqs);
-
-/* Append and merge functions */
-
-extern TSequence **tseqarr_normalize(const TSequence **sequences,
-  int count, int *newcount);
-extern TSequence **tsequence_merge_array1(const TSequence **sequences,
-  int count, int *totalcount);
-
-/* Synchronization functions */
-
-extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
-  const TSequence *seq2, TSequence **sync1, TSequence **sync2,
-  bool interpoint);
-
-/* Intersection functions */
-
-extern bool tlinearsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, mobdbType basetype, Datum *inter,
-  TimestampTz *t);
-extern bool tsegment_intersection(const TInstant *start1,
-  const TInstant *end1, bool linear1, const TInstant *start2,
-  const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
-  TimestampTz *t);
-
-extern bool intersection_tsequence_tinstant(const TSequence *seq,
-  const TInstant *inst, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_tsequence(const TInstant *inst,
-  const TSequence *seq, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequence_tinstantset(const TSequence *seq,
-  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequence(const TInstantSet *is,
-  const TSequence *seq, TInstantSet **inter1, TInstantSet **inter2);
-
-/* Input/output functions */
-
-extern char *tsequence_to_string(const TSequence *seq, bool component,
-  char *(*value_out)(mobdbType, Datum));
-
-/* Transformation functions */
-
-extern int tstepseq_tlinearseq1(const TSequence *seq, TSequence **result);
-
-/* Accessor functions */
-
-extern int tfloatseq_spans1(const TSequence *seq, Span **result);
-extern int tsequence_segments1(const TSequence *seq, TSequence **result);
-extern int tsequence_timestamps1(const TSequence *seq, TimestampTz *result);
-extern int tsequence_values1(const TSequence *seq, Datum *result);
-extern Datum tsegment_value_at_timestamp(const TInstant *inst1,
-  const TInstant *inst2, bool linear, TimestampTz t);
-
-/* Restriction Functions */
-
-extern int tsequence_restrict_value1(const TSequence *seq, Datum value,
-  bool atfunc, TSequence **result);
-extern int tsequence_at_values1(const TSequence *seq, const Datum *values,
-  int count, TSequence **result);
-extern int tnumberseq_restrict_span2(const TSequence *seq,
-  const Span *span, bool atfunc, TSequence **result);
-extern int tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
-  int count, bool atfunc, bool bboxtest, TSequence **result);
-extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
-  const TInstant *inst2, bool linear, TimestampTz t);
-extern int tsequence_minus_timestamp1(const TSequence *seq, TimestampTz t,
-  TSequence **result);
-extern int tsequence_minus_timestampset1(const TSequence *seq,
-  const TimestampSet *ss, TSequence **result);
-extern int tsequence_minus_period1(const TSequence *seq, const Period *p,
-  TSequence **result);
-extern int tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
-  TSequence **result);
-extern int tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps,
-  int from, TSequence **result);
-
-/*****************************************************************************/
-
-#if ! MEOS
-
 /* Send/receive functions */
 
 extern TSequence *tsequence_recv(StringInfo buf, mobdbType temptype);
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
 
-#endif /* ! MEOS */
-
 /*****************************************************************************/
 
-#endif
+#endif /* __PG_TSEQUENCE_H__ */

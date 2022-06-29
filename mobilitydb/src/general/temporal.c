@@ -52,9 +52,12 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
 /* MobilityDB */
+#include "pg_general/doxygen_mobilitydb_api.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
+#include "pg_general/tinstant.h"
+#include "pg_general/tsequence.h"
 #include "pg_point/tpoint_spatialfuncs.h"
-
 
 /* To avoid including fmgrprotos.h */
 extern Datum timestamp_mi(PG_FUNCTION_ARGS);
@@ -128,8 +131,8 @@ struct tempsubtype_struct tempsubtype_struct_array[] =
 };
 
 /**
- * @brief Return the string representation of the subtype of the
- * temporal type corresponding to the enum value
+ * @brief Return the string representation of the subtype of the temporal type
+ * corresponding to the enum value
  */
 const char *
 tempsubtype_name(int16 subtype)
@@ -316,6 +319,7 @@ temporal_bbox_slice(Datum tempdatum, void *box)
 
 PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Version of the MobilityDB extension
  */
 PGDLLEXPORT Datum
@@ -328,6 +332,7 @@ Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
 
 PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Versions of the MobilityDB extension and its dependencies
  */
 PGDLLEXPORT Datum
@@ -345,13 +350,8 @@ Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
 
 PG_FUNCTION_INFO_V1(Temporal_in);
 /**
+ * @ingroup mobilitydb_temporal_in_out
  * @brief Generic input function for temporal types
- *
- * @note Examples of input for temporal instants:
- * @code
- * false @ 2012-01-01 08:00:00
- * 1.5 @ 2012-01-01 08:00:00
- * @endcode
  */
 PGDLLEXPORT Datum
 Temporal_in(PG_FUNCTION_ARGS)
@@ -369,6 +369,7 @@ Temporal_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_out);
 /**
+ * @ingroup mobilitydb_temporal_in_out
  * @brief Generic output function for temporal types
  */
 PGDLLEXPORT Datum
@@ -381,7 +382,7 @@ Temporal_out(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief @brief Return a temporal value from its binary representation read from
+ * @brief Return a temporal value from its binary representation read from
  * a buffer.
  * @note Function needed for temporal aggregation and thus only instant and
  * sequence subtypes must be considered
@@ -401,7 +402,7 @@ temporal_recv(StringInfo buf)
 }
 
 /**
- * @brief @brief Write the binary representation of a temporal value into a buffer.
+ * @brief Write the binary representation of a temporal value into a buffer.
  * @note Function needed for temporal aggregation and thus only instant and
  * sequence subtypes must be considered
  */
@@ -420,6 +421,7 @@ temporal_write(const Temporal *temp, StringInfo buf)
 
 PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
+ * @ingroup mobilitydb_temporal_in_out
  * @brief Generic receive function for temporal types
  */
 PGDLLEXPORT Datum
@@ -434,7 +436,8 @@ Temporal_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_send);
 /*
- * Generic send function for temporal types
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Generic send function for temporal types
  */
 PGDLLEXPORT Datum
 Temporal_send(PG_FUNCTION_ARGS)
@@ -455,6 +458,7 @@ Temporal_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tinstant_constructor);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant from the arguments
  */
 PGDLLEXPORT Datum
@@ -469,6 +473,7 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tinstantset_constructor);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from the array of temporal instants
  */
 PGDLLEXPORT Datum
@@ -507,6 +512,7 @@ tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_interp)
 
 PG_FUNCTION_INFO_V1(Tstepseq_constructor);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence with stepwise interpolation from the array of
  * temporal instants
  */
@@ -518,6 +524,7 @@ Tstepseq_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence with linear or stepwise interpolation from
  * the array of temporal instants
  */
@@ -529,6 +536,7 @@ Tlinearseq_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from the array of temporal sequences
  */
 PGDLLEXPORT Datum
@@ -585,6 +593,7 @@ tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_interp)
 
 PG_FUNCTION_INFO_V1(Tstepseqset_constructor_gaps);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set with stepwise interpolation from the
  * array of temporal instants
  */
@@ -596,6 +605,7 @@ Tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tlinearseqset_constructor_gaps);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set with linear or stepwise interpolation
  * from the array of temporal instants
  */
@@ -609,6 +619,7 @@ Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tinstantset_from_base);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from a base value and a timestamp set
  */
 PGDLLEXPORT Datum
@@ -624,6 +635,7 @@ Tinstantset_from_base(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tsequence_from_base);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period
  */
 PGDLLEXPORT Datum
@@ -643,6 +655,7 @@ Tsequence_from_base(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
 /**
+ * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from from a base value and a
  * timestamp set
  */
@@ -669,6 +682,7 @@ Tsequenceset_from_base(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_append_tinstant);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Append an instant to the end of a temporal value
  */
 PGDLLEXPORT Datum
@@ -684,6 +698,7 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_merge);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Merge the two temporal values
  */
 PGDLLEXPORT Datum
@@ -703,6 +718,7 @@ Temporal_merge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_merge_array);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Merge the array of temporal values
  */
 PGDLLEXPORT Datum
@@ -724,6 +740,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
+ * @ingroup mobilitydb_temporal_cast
  * @brief Cast a temporal integer as a temporal float
  */
 PGDLLEXPORT Datum
@@ -737,6 +754,7 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
+ * @ingroup mobilitydb_temporal_cast
  * @brief Cast a temporal float as a temporal integer
  */
 PGDLLEXPORT Datum
@@ -750,6 +768,7 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_to_period);
 /**
+ * @ingroup mobilitydb_temporal_cast
  * @brief Return the bounding period on which a temporal value is defined
  *
  * @note We cannot detoast only the header since we don't know whether the
@@ -767,6 +786,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
+ * @ingroup mobilitydb_temporal_cast
  * @brief Return the bounding box of a temporal number
  */
 PGDLLEXPORT Datum
@@ -784,6 +804,7 @@ Tnumber_to_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal instant
  */
 PGDLLEXPORT Datum
@@ -797,6 +818,7 @@ Temporal_to_tinstant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_to_tinstantset);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal instant set
  */
 PGDLLEXPORT Datum
@@ -810,6 +832,7 @@ Temporal_to_tinstantset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence
  */
 PGDLLEXPORT Datum
@@ -823,6 +846,7 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence set
  */
 PGDLLEXPORT Datum
@@ -836,6 +860,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tempstep_to_templinear);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value with continuous base type from stepwise
  * to linear interpolation
  */
@@ -851,6 +876,7 @@ Tempstep_to_templinear(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_shift);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value a shifted by an interval
  */
 PGDLLEXPORT Datum
@@ -865,6 +891,7 @@ Temporal_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_tscale);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value scaled by an interval
  */
 PGDLLEXPORT Datum
@@ -880,6 +907,7 @@ Temporal_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_shift_tscale);
 /**
+ * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value shifted and scaled by the intervals
  */
 PGDLLEXPORT Datum
@@ -900,6 +928,7 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_subtype);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the string representation of the subtype of a temporal value
  */
 PGDLLEXPORT Datum
@@ -915,6 +944,7 @@ Temporal_subtype(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_interpolation);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal value
  */
 PGDLLEXPORT Datum
@@ -930,6 +960,7 @@ Temporal_interpolation(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_memory_size);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the size in bytes of a temporal value
  */
 PGDLLEXPORT Datum
@@ -941,6 +972,7 @@ Temporal_memory_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_values);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values of a temporal value as an array
  */
 PGDLLEXPORT Datum
@@ -958,6 +990,7 @@ Temporal_values(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_span);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the value span of a temporal integer
  */
 PGDLLEXPORT Datum
@@ -971,6 +1004,7 @@ Tnumber_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tfloat_spans);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values of a temporal float as an array of spans
  */
 PGDLLEXPORT Datum
@@ -987,6 +1021,7 @@ Tfloat_spans(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tinstant_get_value);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base value of a temporal instant
  */
 PGDLLEXPORT Datum
@@ -1005,6 +1040,7 @@ Tinstant_get_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_time);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the time on which a temporal value is defined as a period set
  */
 PGDLLEXPORT Datum
@@ -1018,6 +1054,7 @@ Temporal_time(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tinstant_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the timestamp of a temporal instant
  */
 PGDLLEXPORT Datum
@@ -1035,6 +1072,7 @@ Tinstant_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_start_value);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start base value of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1048,6 +1086,7 @@ Temporal_start_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_end_value);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end base value of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1061,6 +1100,7 @@ Temporal_end_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_min_value);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the minimum base value of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1074,6 +1114,7 @@ Temporal_min_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_max_value);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the maximum base value of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1087,6 +1128,7 @@ Temporal_max_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_min_instant);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return a pointer to the instant with the minimum base value of the
  * temporal value
  */
@@ -1101,6 +1143,7 @@ Temporal_min_instant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_max_instant);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return a pointer to the instant with maximum base value of the
  * temporal value.
  */
@@ -1115,6 +1158,7 @@ Temporal_max_instant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_timespan);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the timespan of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1128,6 +1172,7 @@ Temporal_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_duration);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the duration of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1141,6 +1186,7 @@ Temporal_duration(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_num_sequences);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set)
  */
 PGDLLEXPORT Datum
@@ -1155,6 +1201,7 @@ Temporal_num_sequences(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_start_sequence);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start sequence of a temporal sequence (set)
  */
 PGDLLEXPORT Datum
@@ -1168,6 +1215,7 @@ Temporal_start_sequence(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_end_sequence);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end sequence of a temporal sequence (set)
  */
 PGDLLEXPORT Datum
@@ -1181,6 +1229,7 @@ Temporal_end_sequence(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_sequence_n);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence (set)
  */
 PGDLLEXPORT Datum
@@ -1197,6 +1246,7 @@ Temporal_sequence_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_sequences);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the sequences of a temporal sequence (set) as an array
  */
 PGDLLEXPORT Datum
@@ -1214,6 +1264,7 @@ Temporal_sequences(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_segments);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the segments of a temporal sequence (set) as an array
  */
 PGDLLEXPORT Datum
@@ -1230,6 +1281,7 @@ Temporal_segments(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_num_instants);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1243,6 +1295,7 @@ Temporal_num_instants(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_start_instant);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start instant of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1256,6 +1309,7 @@ Temporal_start_instant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_end_instant);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end instant of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1269,6 +1323,7 @@ Temporal_end_instant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_instant_n);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th instant of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1286,6 +1341,7 @@ Temporal_instant_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_instants);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the distinct instants of a temporal value as an array
  */
 PGDLLEXPORT Datum
@@ -1303,6 +1359,7 @@ Temporal_instants(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_num_timestamps);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1316,6 +1373,7 @@ Temporal_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_start_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start timestamp of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1329,6 +1387,7 @@ Temporal_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_end_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end timestamp of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1342,6 +1401,7 @@ Temporal_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_timestamp_n);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th distinct timestamp of a temporal value
  */
 PGDLLEXPORT Datum
@@ -1358,6 +1418,7 @@ Temporal_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_timestamps);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the distinct timestamps of a temporal value as an array
  */
 PGDLLEXPORT Datum
@@ -1377,6 +1438,7 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Generic function for the temporal ever/always comparison operators
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -1396,6 +1458,7 @@ temporal_ev_al_comp_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Temporal_ever_eq);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is ever equal to a base value
  */
 PGDLLEXPORT Datum
@@ -1406,6 +1469,7 @@ Temporal_ever_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_always_eq);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is always equal to the base value
  */
 PGDLLEXPORT Datum
@@ -1416,6 +1480,7 @@ Temporal_always_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ever_ne);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is ever different from a base value
  */
 PGDLLEXPORT Datum
@@ -1426,6 +1491,7 @@ Temporal_ever_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_always_ne);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is always different from a base value
  */
 PGDLLEXPORT Datum
@@ -1438,6 +1504,7 @@ Temporal_always_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ever_lt);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is ever less than a base value
  */
 PGDLLEXPORT Datum
@@ -1448,6 +1515,7 @@ Temporal_ever_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_always_lt);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is always less than a base value
  */
 PGDLLEXPORT Datum
@@ -1458,6 +1526,7 @@ Temporal_always_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ever_le);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is ever less than or equal to a base value
  */
 PGDLLEXPORT Datum
@@ -1468,6 +1537,7 @@ Temporal_ever_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_always_le);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is always less than or equal to a base value
  */
 PGDLLEXPORT Datum
@@ -1478,6 +1548,7 @@ Temporal_always_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ever_gt);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is ever greater than a base value
  */
 PGDLLEXPORT Datum
@@ -1488,6 +1559,7 @@ Temporal_ever_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_always_gt);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is always greater than a base value
  */
 PGDLLEXPORT Datum
@@ -1498,6 +1570,7 @@ Temporal_always_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ever_ge);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is ever greater than or equal
  * to a base value
  */
@@ -1509,6 +1582,7 @@ Temporal_ever_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_always_ge);
 /**
+ * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal value is always greater than or equal
  * to a base value
  */
@@ -1541,6 +1615,7 @@ temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Temporal_at_value);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a base value
  */
 PGDLLEXPORT Datum
@@ -1551,6 +1626,7 @@ Temporal_at_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_value);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a base value
  */
 PGDLLEXPORT Datum
@@ -1604,6 +1680,7 @@ temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Temporal_at_values);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to an array of base values
  */
 PGDLLEXPORT Datum
@@ -1614,6 +1691,7 @@ Temporal_at_values(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_values);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of an array of base values
  */
 PGDLLEXPORT Datum
@@ -1638,6 +1716,7 @@ tnumber_restrict_span_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Tnumber_at_span);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a span of base values
  */
 PGDLLEXPORT Datum
@@ -1648,6 +1727,7 @@ Tnumber_at_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_minus_span);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a span of base values
  */
 PGDLLEXPORT Datum
@@ -1698,6 +1778,7 @@ tnumber_restrict_spans_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Tnumber_at_spans);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to an array of spans of base values
  */
 PGDLLEXPORT Datum
@@ -1708,6 +1789,7 @@ Tnumber_at_spans(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_minus_spans);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of an array of spans
  * of base values
  */
@@ -1721,6 +1803,7 @@ Tnumber_minus_spans(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_at_min);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to its minimum base value
  */
 PGDLLEXPORT Datum
@@ -1736,6 +1819,7 @@ Temporal_at_min(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_min);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of its minimum base value
  */
 PGDLLEXPORT Datum
@@ -1751,6 +1835,7 @@ Temporal_minus_min(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_at_max);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to its maximum base value
  */
 PGDLLEXPORT Datum
@@ -1765,6 +1850,7 @@ Temporal_at_max(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_max);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of its maximum base value
  */
 PGDLLEXPORT Datum
@@ -1796,6 +1882,7 @@ temporal_restrict_timestamp_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Temporal_at_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamp
  */
 PGDLLEXPORT Datum
@@ -1806,6 +1893,7 @@ Temporal_at_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp
  */
 PGDLLEXPORT Datum
@@ -1818,6 +1906,7 @@ Temporal_minus_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_value_at_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base value of a temporal value at the timestamp
  */
 PGDLLEXPORT Datum
@@ -1837,6 +1926,7 @@ Temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_at_timestampset);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
  */
 PGDLLEXPORT Datum
@@ -1854,6 +1944,7 @@ Temporal_at_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
  */
 PGDLLEXPORT Datum
@@ -1885,6 +1976,7 @@ temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Temporal_at_period);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a period
  */
 PGDLLEXPORT Datum
@@ -1895,6 +1987,7 @@ Temporal_at_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_period);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period
  */
 PGDLLEXPORT Datum
@@ -1907,6 +2000,7 @@ Temporal_minus_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_at_periodset);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a period set
  */
 PGDLLEXPORT Datum
@@ -1924,6 +2018,7 @@ Temporal_at_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_minus_periodset);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period set
  */
 PGDLLEXPORT Datum
@@ -1959,6 +2054,7 @@ tnumber_restrict_tbox_ext(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(Tnumber_at_tbox);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a temporal box
  */
 PGDLLEXPORT Datum
@@ -1969,6 +2065,7 @@ Tnumber_at_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a temporal box
  */
 PGDLLEXPORT Datum
@@ -1983,6 +2080,7 @@ Tnumber_minus_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_intersects_timestamp);
 /**
+ * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a timestamp
  */
 PGDLLEXPORT Datum
@@ -1997,6 +2095,7 @@ Temporal_intersects_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_intersects_timestampset);
 /**
+ * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a timestamp set
  */
 PGDLLEXPORT Datum
@@ -2012,6 +2111,7 @@ Temporal_intersects_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_intersects_period);
 /**
+ * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a period
  */
 PGDLLEXPORT Datum
@@ -2026,6 +2126,7 @@ Temporal_intersects_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_intersects_periodset);
 /**
+ * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a period set
  */
 PGDLLEXPORT Datum
@@ -2045,6 +2146,7 @@ Temporal_intersects_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_integral);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Return the integral (area under the curve) of a temporal number
  */
 PGDLLEXPORT Datum
@@ -2058,6 +2160,7 @@ Tnumber_integral(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_twavg);
 /**
+ * @ingroup mobilitydb_temporal_time
  * @brief Return the time-weighted average of a temporal number
  */
 PGDLLEXPORT Datum
@@ -2075,6 +2178,7 @@ Tnumber_twavg(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return true if the temporal values are equal
  */
 PGDLLEXPORT Datum
@@ -2090,6 +2194,7 @@ Temporal_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return true if the temporal values are different
  */
 PGDLLEXPORT Datum
@@ -2107,6 +2212,7 @@ Temporal_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_cmp);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second temporal value
  *
@@ -2125,6 +2231,7 @@ Temporal_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_lt);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return true if the first temporal value is less than the second one
  */
 PGDLLEXPORT Datum
@@ -2140,6 +2247,7 @@ Temporal_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_le);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  */
@@ -2156,6 +2264,7 @@ Temporal_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_ge);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  */
@@ -2172,6 +2281,7 @@ Temporal_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_gt);
 /**
+ * @ingroup mobilitydb_temporal_comp
  * @brief Return true if the first temporal value is greater than the second one
  */
 PGDLLEXPORT Datum
@@ -2191,6 +2301,7 @@ Temporal_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_hash);
 /**
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the hash value of a temporal value
  */
 PGDLLEXPORT Datum

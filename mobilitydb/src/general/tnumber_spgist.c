@@ -108,6 +108,7 @@
 #include <meos_internal.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/tnumber_gist.h"
 
 /*****************************************************************************

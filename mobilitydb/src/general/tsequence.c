@@ -36,10 +36,12 @@
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
+/* MobilityDB */
+#include "pg_general/tinstant.h"
 
 /* The send and receive functions are needed for temporal aggregation */
 

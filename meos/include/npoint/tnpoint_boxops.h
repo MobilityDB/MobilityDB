@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* PostgreSQL */
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
@@ -58,21 +58,6 @@ extern void tnpointseq_set_stbox(const TInstant **inst, int count, bool linear,
   STBOX *box);
 
 /*****************************************************************************/
-
-extern Datum boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *), bool spatial);
-extern Datum boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *), bool spatial);
-extern Datum boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
 
 extern int boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
   bool (*func)(const STBOX *, const STBOX *), bool invert);

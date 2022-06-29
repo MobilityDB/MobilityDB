@@ -34,6 +34,8 @@
 
 #include "general/time_ops.h"
 
+/* PostgreSQL */
+#include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include "general/periodset.h"

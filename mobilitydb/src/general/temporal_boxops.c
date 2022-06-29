@@ -45,13 +45,16 @@
 
 #include "general/temporal_boxops.h"
 
-/* MobilityDB */
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/palloc.h>
+#include <fmgr.h>
+#include <utils/timestamp.h>
+/* MEOS */
 #include <meos.h>
-// #include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
-#if NPOINT
-  // #include "npoint/tnpoint_boxops.h"
-#endif
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************/
 

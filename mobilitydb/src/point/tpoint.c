@@ -34,6 +34,8 @@
 
 #include "point/tpoint.h"
 
+/* PostgreSQL */
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -43,8 +45,8 @@
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_point/postgis.h"
-
 
 /* PostgreSQL removed pg_atoi in version 15 */
 #if !MEOS && POSTGRESQL_VERSION_NUMBER >= 150000

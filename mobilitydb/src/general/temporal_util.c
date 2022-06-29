@@ -39,11 +39,15 @@
 /* PostgreSQL */
 #include <utils/lsyscache.h>
 #include <catalog/pg_collation_d.h>
+#include <catalog/pg_type_d.h>
+#include <utils/array.h>
 #include <utils/rangetypes.h>
 #include <utils/varlena.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/doublen.h"
+/* MobilityDB */
+#include "pg_general/doublen.h"
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Call PostgreSQL functions

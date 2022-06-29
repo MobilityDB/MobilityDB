@@ -42,18 +42,6 @@
 
 /*****************************************************************************/
 
-/**
- * Structure to represent temporal boxes
- */
-// typedef struct
-// {
-  // double      xmin;   /**< minimum number value */
-  // double      xmax;   /**< maximum number value */
-  // TimestampTz tmin;   /**< minimum timestamp */
-  // TimestampTz tmax;   /**< maximum timestamp */
-  // int16       flags;  /**< flags */
-// } TBOX;
-
 // typedef struct
 // {
   // Span      xspan;   /**< span for the values */
@@ -79,10 +67,6 @@ extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
 
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
 extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
-
-/* Transformation functions */
-
-extern TBOX *tbox_round(const TBOX *box, int size);
 
 /*****************************************************************************/
 

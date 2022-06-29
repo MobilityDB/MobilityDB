@@ -82,6 +82,44 @@ npoint_send(const Npoint *np)
   return pq_endtypsend(&buf);
 }
 
+/**
+ * @brief Receive function for network segments
+ */
+Nsegment *
+nsegment_recv(StringInfo buf)
+{
+  Nsegment *result = palloc0(sizeof(Nsegment));
+  result->rid = pq_getmsgint64(buf);
+  result->pos1 = pq_getmsgfloat8(buf);
+  result->pos2 = pq_getmsgfloat8(buf);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Nsegment_recv);
+/**
+ * Receive function for network segments
+ */
+PGDLLEXPORT Datum
+Nsegment_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PG_RETURN_POINTER(nsegment_recv(buf));
+}
+
+/**
+ * @brief Send function for network segments
+ */
+bytea *
+nsegment_send(const Nsegment *ns)
+{
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendint64(&buf, (uint64) ns->rid);
+  pq_sendfloat8(&buf, ns->pos1);
+  pq_sendfloat8(&buf, ns->pos2);
+  return pq_endtypsend(&buf);
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -205,17 +243,6 @@ Nsegment_out(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   PG_RETURN_CSTRING(nsegment_out(ns));
-}
-
-PG_FUNCTION_INFO_V1(Nsegment_recv);
-/**
- * Receive function for network segments
- */
-PGDLLEXPORT Datum
-Nsegment_recv(PG_FUNCTION_ARGS)
-{
-  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(nsegment_recv(buf));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_send);

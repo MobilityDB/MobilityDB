@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
+#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */

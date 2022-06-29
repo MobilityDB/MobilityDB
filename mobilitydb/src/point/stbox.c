@@ -36,6 +36,8 @@
 
 /* C */
 #include <assert.h>
+/* PostgreSQL */
+#include <lib/stringinfo.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -677,7 +679,7 @@ Stbox_set_srid(PG_FUNCTION_ARGS)
 /**
  * @brief Transform a spatiotemporal box into another spatial reference system
  */
-STBOX *
+static STBOX *
 stbox_transform(const STBOX *box, int32 srid)
 {
   ensure_has_X_stbox(box);
@@ -762,7 +764,7 @@ Stbox_expand_temporal(PG_FUNCTION_ARGS)
 /**
  * @brief Sets the precision of the coordinates of the spatiotemporal box.
  */
-STBOX *
+static STBOX *
 stbox_round(const STBOX *box, Datum prec)
 {
   ensure_has_X_stbox(box);
