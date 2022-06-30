@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_boxops.h
- * Bounding box operators for temporal types.
+ * @brief Bounding box operators for temporal types.
  */
 
 #ifndef __TEMPORAL_BOXOPS_H__

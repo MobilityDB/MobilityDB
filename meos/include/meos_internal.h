@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file meos_internal.h
- * Internal API of the Mobility Engine Open Source(MEOS) library.
+ * @brief Internal API of the Mobility Engine Open Source(MEOS) library.
  */
 
 #ifndef __MEOS_INTERNAL_H__

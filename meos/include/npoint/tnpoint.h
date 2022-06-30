@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint.h
- * Functions for temporal network points.
+ * @brief Functions for temporal network points.
  */
 
 #ifndef __TNPOINT_H__

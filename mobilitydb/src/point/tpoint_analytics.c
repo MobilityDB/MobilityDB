@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_analytics.c
  * @brief Analytic functions for temporal points and temporal floats.
  */
 

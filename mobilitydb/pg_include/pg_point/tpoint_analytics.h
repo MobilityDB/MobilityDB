@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_analytics.h
- * Analytics functions for temporal points.
+ * @brief Analytics functions for temporal points.
  */
 
 #ifndef __TPOINT_ANALYTICS_H__

@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_spatialfuncs.h
- * Spatial functions for temporal points.
+ * @brief Spatial functions for temporal points.
  */
 
 #ifndef __PG_TPOINT_SPATIALFUNCS_H__

@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file span_selfuncs.h
- * Functions for selectivity estimation of time types operators
+ * @brief Functions for selectivity estimation of time types operators
  */
 
 #ifndef __SPAN_SELFUNCS_H__

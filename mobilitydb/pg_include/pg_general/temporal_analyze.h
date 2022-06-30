@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_analyze.h
- * Functions for gathering statistics from temporal alphanumeric columns
+ * @brief Functions for gathering statistics from temporal alphanumeric columns
  */
 
 #ifndef __TEMPORAL_ANALYZE_H__

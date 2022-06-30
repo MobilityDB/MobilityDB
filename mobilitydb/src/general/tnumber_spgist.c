@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_spgist.c
  * @brief SP-GiST implementation of 4-dimensional quad-tree over temporal
  * integers and temporal floats.
  *

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_boxops.c
  * @brief Bounding box operators for temporal points.
  */
 

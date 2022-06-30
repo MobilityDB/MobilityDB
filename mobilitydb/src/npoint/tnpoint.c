@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint.c
  * @brief Basic functions for temporal network points.
  */
 

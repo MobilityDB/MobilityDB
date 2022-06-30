@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_distance.h
- * Distance functions for temporal numbers.
+ * @brief Distance functions for temporal numbers.
  */
 
 #ifndef __TNUMBER_DISTANCE_H__

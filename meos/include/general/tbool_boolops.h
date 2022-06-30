@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tbool_boolops.h
- * Temporal Boolean operators (and, or, not).
+ * @brief Temporal Boolean operators (and, or, not).
  */
 
 #ifndef __TBOOL_BOOLOPS_H__

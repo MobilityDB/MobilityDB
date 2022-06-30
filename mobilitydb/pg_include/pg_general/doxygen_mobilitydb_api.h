@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file doxygen_mobilitydb_api.h
  * @brief Definitions of the sections for the MobilityDB API
  */
 
@@ -48,7 +47,7 @@
  * @ingroup mobilitydb_api
  * @brief Functions for span and time types.
  *
- * @defgroup mobilitydb_spantime_input_output Input/output functions
+ * @defgroup mobilitydb_spantime_in_out Input/output functions
  * @ingroup mobilitydb_spantime
  * @brief Input/output functions for span and time types.
  *
@@ -98,7 +97,7 @@
  * @ingroup mobilitydb_api
  * @brief Functions for box types.
  *
- * @defgroup mobilitydb_box_input_output Input/output functions
+ * @defgroup mobilitydb_box_in_out Input/output functions
  * @ingroup mobilitydb_box
  * @brief Input/output functions for box types.
  *
@@ -227,6 +226,10 @@
  * @defgroup mobilitydb_temporal_tiling Multidimensional tiling functions
  * @ingroup mobilitydb_temporal
  * @brief Multidimensional tiling functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_tile Tile functions
+ * @ingroup mobilitydb_temporal
+ * @brief Tile functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_similarity Similarity functions
  * @ingroup mobilitydb_temporal

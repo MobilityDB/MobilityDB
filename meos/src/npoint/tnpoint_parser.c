@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_parser.c
  * @brief Functions for parsing static network types.
  */
 

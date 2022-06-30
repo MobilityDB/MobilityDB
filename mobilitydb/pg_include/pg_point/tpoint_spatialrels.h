@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_spatialrels.h
- * Spatial relationships for temporal points.
+ * @brief Spatial relationships for temporal points.
  */
 
 #ifndef __TPOINT_SPATIALRELS_H__

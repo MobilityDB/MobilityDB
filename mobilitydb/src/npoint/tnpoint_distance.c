@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_distance.c
  * @brief Temporal distance for temporal network points.
  */
 

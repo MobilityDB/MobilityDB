@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint.h
- * Functions for temporal points.
+ * @brief Functions for temporal points.
  */
 
 #ifndef __TPOINT_H__

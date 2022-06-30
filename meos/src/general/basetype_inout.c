@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file basetype_inout.c
  * @brief Functions for string input/output base types taken from PostgreSQL
  * version 14.2 source code.
  */

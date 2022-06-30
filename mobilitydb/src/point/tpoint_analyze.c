@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_analyze.c
  * @brief Functions for gathering statistics from temporal point columns.
  *
  * Various kind of statistics are collected for both the value and the time

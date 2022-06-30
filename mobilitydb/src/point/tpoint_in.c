@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_in.c
  * @brief Input of temporal points in WKT, EWKT, , EWKB, and MF-JSON format.
  */
 

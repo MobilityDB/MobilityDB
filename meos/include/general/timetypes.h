@@ -27,8 +27,8 @@
  *
  *****************************************************************************/
 
-/** @file timetypes.h
- * Functions for time types based on `TimestampTz`, that is,
+/**
+ * @brief Functions for time types based on `TimestampTz`, that is,
  * `TimestampSet`, `Period`, and `PeriodSet`.
  *
  * The `Period` type is a specialized version of the `RangeType` in PostgreSQL.

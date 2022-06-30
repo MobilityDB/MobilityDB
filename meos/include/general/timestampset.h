@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file timestampset.h
- * Basic functions for set of (distinct) timestamps.
+ * @brief Basic functions for set of (distinct) timestamps.
  */
 
 #ifndef __TIMESTAMPSET_H__

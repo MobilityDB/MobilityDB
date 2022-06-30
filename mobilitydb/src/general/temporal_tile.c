@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_tile.c
  * @brief Bucket and tile functions for temporal types.
  *
  * @note The time bucket functions are inspired from TimescaleDB.

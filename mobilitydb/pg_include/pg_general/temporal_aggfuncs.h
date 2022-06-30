@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_aggfuncs.h
- * Temporal aggregate functions
+ * @brief Temporal aggregate functions
  */
 
 #ifndef __TEMPORAL_AGGFUNCS_H__

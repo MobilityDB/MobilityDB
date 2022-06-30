@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_spatialfuncs.c
- * Geospatial functions for temporal network points.
+ * @brief Geospatial functions for temporal network points.
  */
 
 #ifndef __TNPOINT_SPATIALFUNCS_H__

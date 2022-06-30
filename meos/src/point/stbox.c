@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file stbox.c
  * @brief Functions for spatiotemporal bounding boxes.
  */
 

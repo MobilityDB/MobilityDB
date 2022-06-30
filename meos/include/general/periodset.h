@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file periodset.c
- * Basic functions for set of disjoint periods.
+ * @brief Basic functions for set of disjoint periods.
  */
 
 #ifndef __PERIODSET_H__

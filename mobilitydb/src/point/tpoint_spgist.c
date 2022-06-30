@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_spgist.c
  * @brief SP-GiST implementation of 8-dimensional quad-tree over temporal
  * points.
  *
@@ -92,8 +91,6 @@
  * except the root.  For the root node, we are setting the boundaries
  * that we don't yet have as infinity.
  */
-
-#include "pg_point/tpoint_spgist.h"
 
 /* C */
 #include <assert.h>

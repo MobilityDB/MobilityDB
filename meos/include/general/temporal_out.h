@@ -28,9 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file temporal_out.h
- * Basic routines for spans (a.k.a. ranges) composed of two `Datum` values and
- * two Boolean values stating whether the bounds are inclusive or not.
+ * @brief Basic routines for spans (a.k.a. ranges) composed of two `Datum`
+ * values and two Boolean values stating whether the bounds are inclusive.
  */
 
 #ifndef __TEMPORAL_OUT_H__

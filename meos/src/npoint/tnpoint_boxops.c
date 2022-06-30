@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_boxops.c
  * @brief Bounding box operators for temporal network points.
  *
  * These operators test the bounding boxes of temporal npoints, which are

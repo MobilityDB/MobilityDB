@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_catalog.h
- * Functions for building a cache of type and operator Oids.
+ * @brief Functions for building a cache of type and operator Oids.
  */
 
 #ifndef __TEMPORAL_CATALOG_H__

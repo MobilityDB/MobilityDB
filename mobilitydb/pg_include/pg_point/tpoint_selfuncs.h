@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_selfuncs.h
- * Selectivity functions for temporal point types.
+ * @brief Selectivity functions for temporal point types.
  */
 
 #ifndef __TPOINT_SELFUNCS_H__

@@ -28,11 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file temporal_waggfuncs.c
  * @brief Window aggregate functions for temporal types.
  */
-
-#include "pg_general/temporal_waggfuncs.h"
 
 /* PostgreSQL */
 #include <postgres.h>

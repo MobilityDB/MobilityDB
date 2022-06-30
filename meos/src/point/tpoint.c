@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint.c
  * @brief General functions for temporal points.
  */
 

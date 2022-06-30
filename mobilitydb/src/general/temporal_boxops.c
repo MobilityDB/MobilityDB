@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_boxops.c
  * @brief Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are

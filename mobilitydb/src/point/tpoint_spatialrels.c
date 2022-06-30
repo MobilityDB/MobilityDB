@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_spatialrels.c
  * @brief Ever spatial relationships for temporal points.
  *
  * These relationships compute the ever spatial relationship between the
@@ -92,7 +91,9 @@ spatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum
 
 PG_FUNCTION_INFO_V1(Contains_geo_tpoint);
 /**
- * Return true if a geometry ever contains a temporal point
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a geometry ever contains a temporal point
+ * @sqlfunc contains()
  */
 PGDLLEXPORT Datum
 Contains_geo_tpoint(PG_FUNCTION_ARGS)
@@ -113,7 +114,9 @@ Contains_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_geo_tpoint);
 /**
- * Return true if a geometry and a temporal point are ever disjoint
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a geometry and a temporal point are ever disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
@@ -132,7 +135,9 @@ Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_tpoint_geo);
 /**
- * Return true if a temporal point and a geometry are ever disjoint
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a temporal point and a geometry are ever disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
@@ -149,11 +154,11 @@ Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result ? true : false);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Disjoint_tpoint_tpoint);
 /**
- * Return true if the temporal points are ever disjoint
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the temporal points are ever disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -167,7 +172,9 @@ Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_geo_tpoint);
 /**
- * Return true if a geometry and a temporal point ever intersect
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a geometry and a temporal point ever intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -186,7 +193,9 @@ Intersects_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_tpoint_geo);
 /**
- * Return true if a temporal point and a geometry ever intersect
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a temporal point and a geometry ever intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -203,11 +212,11 @@ Intersects_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Intersects_tpoint_tpoint);
 /**
- * Return true if the temporal points ever intersect
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the temporal points ever intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -223,7 +232,9 @@ Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_geo_tpoint);
 /**
- * Return true if a geometry and a temporal point ever touch
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a geometry and a temporal point ever touch
+ * @sqlfunc touches()
  */
 PGDLLEXPORT Datum
 Touches_geo_tpoint(PG_FUNCTION_ARGS)
@@ -240,7 +251,9 @@ Touches_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_tpoint_geo);
 /**
- * Return true if a temporal point and a geometry ever touch
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a temporal point and a geometry ever touch
+ * @sqlfunc touches()
  */
 PGDLLEXPORT Datum
 Touches_tpoint_geo(PG_FUNCTION_ARGS)
@@ -262,8 +275,10 @@ Touches_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_geo_tpoint);
 /**
- * Return true if a geometry and a temporal point are ever within the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a geometry and a temporal point are ever within the
  * given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
@@ -283,8 +298,10 @@ Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_tpoint_geo);
 /**
- * Return true if a temporal point and a geometry are ever within the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if a temporal point and a geometry are ever within the
  * given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
@@ -302,12 +319,11 @@ Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Dwithin_tpoint_tpoint);
 /**
- * Return a temporal Boolean that states whether the temporal points
- * are within the given distance
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the temporal points are even within the given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)

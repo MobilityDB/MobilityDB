@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_boxops.h
- * Bounding box operators for temporal points.
+ * @brief Bounding box operators for temporal points.
  */
 
 #ifndef __TPOINT_BOXOPS_H__

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_gist.c
  * @brief R-tree GiST index for temporal points.
  */
 

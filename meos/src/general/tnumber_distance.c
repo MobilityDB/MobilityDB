@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_distance.c
  * @brief Distance functions for temporal numbers.
  */
 
@@ -192,7 +191,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   mobdbType restype;
   if (temp1->subtype == T_TINT && temp1->subtype == T_TINT)
     restype = T_TINT;
-  else 
+  else
     restype = T_TFLOAT;
   return distance_tnumber_tnumber1(temp1, temp2, restype);
 }
@@ -327,7 +326,7 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   double result = nad_tbox_tbox(&box1, &box2);
   if (temp1->subtype == T_TINT && temp2->subtype == T_TINT)
     return Int32GetDatum(result);
-  else 
+  else
     return Float8GetDatum(result);
 }
 

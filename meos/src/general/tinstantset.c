@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tinstantset.c
  * @brief General functions for temporal instant sets.
  */
 

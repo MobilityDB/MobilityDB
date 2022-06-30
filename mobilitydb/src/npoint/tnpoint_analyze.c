@@ -28,12 +28,9 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_analyze.c
  * @brief Functions for gathering statistics from temporal network point
  * columns.
  */
-
-#include "pg_npoint/tnpoint_analyze.h"
 
 /* PostgreSQL */
 #include <postgres.h>

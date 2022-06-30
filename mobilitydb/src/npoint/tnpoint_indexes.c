@@ -28,14 +28,14 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_indexes.c
  * @brief R-tree GiST and quad-tree SP-GiST indexes for temporal network
  * points.
  */
 
-#include "pg_npoint/tnpoint_indexes.h"
-
 /* PostgreSQL */
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <fmgr.h>
 #include <access/gist.h>
 /* MobilityDB */
 #include "point/tpoint.h"

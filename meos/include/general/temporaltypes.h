@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporaltypes.h
- * General functions for temporal types.
+ * @brief General functions for temporal types.
  */
 
 #ifndef __TEMPORALTYPES_H__

@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_tempspatialrels.c
- * Temporal spatial relationships for temporal network points.
+ * @brief Temporal spatial relationships for temporal network points.
  */
 
 #ifndef __TNPOINT_TEMPSPATIALRELS_H__

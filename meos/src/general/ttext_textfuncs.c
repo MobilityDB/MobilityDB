@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file ttext_textfuncs.c
  * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 

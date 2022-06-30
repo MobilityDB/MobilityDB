@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file periodset.c
  * @brief General functions for set of disjoint periods.
  */
 

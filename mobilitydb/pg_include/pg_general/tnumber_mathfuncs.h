@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_mathfuncs.c
- * Temporal mathematical operators (+, -, *, /) and functions (round,
+ * @brief Temporal mathematical operators (+, -, *, /) and functions (round,
  * degrees).
  */
 

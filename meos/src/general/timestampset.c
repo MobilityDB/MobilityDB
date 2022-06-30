@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file timestampset.c
  * @brief General functions for `timestampset` values composed of an ordered
  * list of distinct `timestamptz` values.
  */

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file doxygen_libmeos.h
  * @brief Sections for the documentation of the MEOS library
  */
 

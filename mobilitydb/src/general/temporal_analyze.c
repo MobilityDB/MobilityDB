@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_analyze.c
  * @brief Functions for gathering statistics from temporal alphanumeric
  * columns.
  *

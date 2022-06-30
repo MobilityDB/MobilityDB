@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_supportfn.h
- * Support functions for temporal types.
+ * @brief Support functions for temporal types.
  */
 
 #ifndef __TIME_SUPPORTFN_H__

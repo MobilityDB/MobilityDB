@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_boxops.h
- * Bounding box operators for temporal network points.
+ * @brief Bounding box operators for temporal network points.
  */
 
 #ifndef __TNPOINT_BOXOPS_H__

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_distance.c
  * @brief Distance functions for temporal numbers.
  */
 

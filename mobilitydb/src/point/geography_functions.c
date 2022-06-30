@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file geography_functions.c
  * @brief Spatial functions for PostGIS geography.
  *
  * These functions are supposed to be included in a forthcoming version of

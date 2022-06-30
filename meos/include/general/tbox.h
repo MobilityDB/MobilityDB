@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tbox.h
- * Functions for temporal bounding boxes.
+ * @brief Functions for temporal bounding boxes.
  */
 
 #ifndef __TBOX_H__

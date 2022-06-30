@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_selfuncs.h
- * Selectivity functions for temporal types
+ * @brief Selectivity functions for temporal types
  */
 
 #ifndef __TEMPORAL_SELFUNCS_H__

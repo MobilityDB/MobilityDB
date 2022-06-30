@@ -28,15 +28,12 @@
  *****************************************************************************/
 
 /**
- * @file temporal_posops.c
  * @brief Relative position operators for temporal types.
  *
  * The following operators are defined:
  * - `left`, `overleft`, `right`, `overright` for the value dimension
  * - `before`, `overbefore`, `after`, `overafter`for the time dimension
  */
-
-#include "general/temporal_posops.h"
 
 /* C */
 #include <assert.h>

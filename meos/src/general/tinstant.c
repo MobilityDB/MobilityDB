@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tinstant.c
  * @brief General functions for temporal instants.
  */
 

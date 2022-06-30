@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_distance.c
- * Temporal distance for temporal network points.
+ * @brief Temporal distance for temporal network points.
  */
 
 #ifndef __TNPOINT_DISTANCE_H__

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_boxops.c
  * @brief Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an

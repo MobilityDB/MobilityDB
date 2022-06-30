@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_static.h
- * Network-based static point/segments
+ * @brief Network-based static point/segments
  */
 
 #ifndef __TNPOINT_STATIC_H__

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_supportfn.c
  * @brief Index support functions for temporal types.
  */
 

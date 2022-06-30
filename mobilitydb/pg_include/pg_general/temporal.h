@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal.h
- * Basic functions for temporal types of any subtype.
+ * @brief Basic functions for temporal types of any subtype.
  */
 
 #ifndef __PG_TEMPORAL_H__

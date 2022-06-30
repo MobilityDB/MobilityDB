@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file time_aggfuncs.c
  * @brief Aggregate functions for time types.
  */
 

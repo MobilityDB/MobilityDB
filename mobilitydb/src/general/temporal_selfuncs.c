@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_selfuncs.c
  * @brief Functions for selectivity estimation of operators on temporal types
  * whose bounding box is a `Period`, that is, `tbool` and `ttext`.
  *

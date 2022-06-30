@@ -28,14 +28,11 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_datagen.c
  * @brief Data generator for MobilityDB.
  *
  * These functions are used in the BerlinMOD data generator
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  */
-
-#include "pg_point/tpoint_datagen.h"
 
 /* PostgreSQL */
 #include <postgres.h>

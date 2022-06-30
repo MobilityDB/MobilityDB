@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file span.c
  * @brief General functions for spans (a.k.a. ranges) composed of two `Datum`
  * values and two Boolean values stating whether the bounds are inclusive.
  */
@@ -58,7 +57,8 @@
 
 PG_FUNCTION_INFO_V1(Span_in);
 /**
- * Input function for periods
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Input function for periods
  */
 PGDLLEXPORT Datum
 Span_in(PG_FUNCTION_ARGS)
@@ -71,7 +71,8 @@ Span_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_out);
 /**
- * Output function for periods
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Output function for periods
  */
 PGDLLEXPORT Datum
 Span_out(PG_FUNCTION_ARGS)
@@ -116,7 +117,8 @@ span_write(const Span *s, StringInfo buf)
 
 PG_FUNCTION_INFO_V1(Span_recv);
 /**
- * Generic receive function for spans
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Generic receive function for spans
  */
 PGDLLEXPORT Datum
 Span_recv(PG_FUNCTION_ARGS)
@@ -130,7 +132,8 @@ Span_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_send);
 /*
- * Generic send function for spans
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Generic send function for spans
  */
 PGDLLEXPORT Datum
 Span_send(PG_FUNCTION_ARGS)
@@ -151,7 +154,7 @@ Span_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_constructor2);
 /**
- * Construct a span from the two arguments
+ * @brief Construct a span from the two arguments
  */
 PGDLLEXPORT Datum
 Span_constructor2(PG_FUNCTION_ARGS)
@@ -168,7 +171,7 @@ Span_constructor2(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_constructor4);
 /**
- * Construct a span from the four arguments
+ * @brief Construct a span from the four arguments
  */
 PGDLLEXPORT Datum
 Span_constructor4(PG_FUNCTION_ARGS)
@@ -190,7 +193,7 @@ Span_constructor4(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Elem_to_span);
 /**
- * Cast the timestamp value as a span
+ * @brief Cast the timestamp value as a span
  */
 PGDLLEXPORT Datum
 Elem_to_span(PG_FUNCTION_ARGS)
@@ -203,7 +206,7 @@ Elem_to_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
- * Convert the integer span as a integer range value
+ * @brief Convert the integer span as a integer range value
  */
 PGDLLEXPORT Datum
 Span_to_range(PG_FUNCTION_ARGS)
@@ -218,7 +221,7 @@ Span_to_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Range_to_span);
 /**
- * Convert the integer range value as a integer span
+ * @brief Convert the integer range value as a integer span
  */
 PGDLLEXPORT Datum
 Range_to_span(PG_FUNCTION_ARGS)
@@ -256,7 +259,7 @@ Range_to_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_lower);
 /**
- * Return the lower bound value
+ * @brief Return the lower bound value
  */
 PGDLLEXPORT Datum
 Span_lower(PG_FUNCTION_ARGS)
@@ -267,7 +270,7 @@ Span_lower(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_upper);
 /**
- * Return the upper bound value
+ * @brief Return the upper bound value
  */
 PGDLLEXPORT Datum
 Span_upper(PG_FUNCTION_ARGS)
@@ -280,7 +283,7 @@ Span_upper(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_lower_inc);
 /**
- * Return true if the lower bound value is inclusive
+ * @brief Return true if the lower bound value is inclusive
  */
 PGDLLEXPORT Datum
 Span_lower_inc(PG_FUNCTION_ARGS)
@@ -291,7 +294,7 @@ Span_lower_inc(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_upper_inc);
 /**
- * Return true if the upper bound value is inclusive
+ * @brief Return true if the upper bound value is inclusive
  */
 PGDLLEXPORT Datum
 Span_upper_inc(PG_FUNCTION_ARGS)
@@ -302,7 +305,7 @@ Span_upper_inc(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_width);
 /**
- * Return the duration of the period
+ * @brief Return the duration of the period
  */
 PGDLLEXPORT Datum
 Span_width(PG_FUNCTION_ARGS)
@@ -314,7 +317,7 @@ Span_width(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_duration);
 /**
- * Return the duration of the period
+ * @brief Return the duration of the period
  */
 PGDLLEXPORT Datum
 Period_duration(PG_FUNCTION_ARGS)
@@ -330,7 +333,7 @@ Period_duration(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_shift);
 /**
- * Shift the period value by the interval
+ * @brief Shift the period value by the interval
  */
 PGDLLEXPORT Datum
 Period_shift(PG_FUNCTION_ARGS)
@@ -344,7 +347,7 @@ Period_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_tscale);
 /**
- * Shift the period  value by the interval
+ * @brief Shift the period  value by the interval
  */
 PGDLLEXPORT Datum
 Period_tscale(PG_FUNCTION_ARGS)
@@ -358,7 +361,7 @@ Period_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_shift_tscale);
 /**
- * Shift the period value by the interval
+ * @brief Shift the period value by the interval
  */
 PGDLLEXPORT Datum
 Period_shift_tscale(PG_FUNCTION_ARGS)
@@ -390,7 +393,7 @@ floatspan_round(Span *span, Datum size)
 
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
- * Set the precision of the float range to the number of decimal places
+ * @brief Set the precision of the float range to the number of decimal places
  */
 PGDLLEXPORT Datum
 Floatspan_round(PG_FUNCTION_ARGS)
@@ -407,7 +410,7 @@ Floatspan_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_eq);
 /**
- * Return true if the first span is equal to the second one
+ * @brief Return true if the first span is equal to the second one
  */
 PGDLLEXPORT Datum
 Span_eq(PG_FUNCTION_ARGS)
@@ -419,7 +422,7 @@ Span_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_ne);
 /**
- * Return true if the first span is different from the second one
+ * @brief Return true if the first span is different from the second one
  */
 PGDLLEXPORT Datum
 Span_ne(PG_FUNCTION_ARGS)
@@ -431,7 +434,7 @@ Span_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first span
+ * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal, or greater than the second one
  */
 PGDLLEXPORT Datum
@@ -444,7 +447,7 @@ Span_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_lt);
 /**
- * Return true if the first span is less than the second one
+ * @brief Return true if the first span is less than the second one
  */
 PGDLLEXPORT Datum
 Span_lt(PG_FUNCTION_ARGS)
@@ -456,7 +459,7 @@ Span_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_le);
 /**
- * Return true if the first span is less than or equal to the second one
+ * @brief Return true if the first span is less than or equal to the second one
  */
 PGDLLEXPORT Datum
 Span_le(PG_FUNCTION_ARGS)
@@ -468,7 +471,7 @@ Span_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_ge);
 /**
- * Return true if the first span is greater than or equal to the second one
+ * @brief Return true if the first span is greater than or equal to the second one
  */
 PGDLLEXPORT Datum
 Span_ge(PG_FUNCTION_ARGS)
@@ -480,7 +483,7 @@ Span_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_gt);
 /**
- * Return true if the first span is greater than the second one
+ * @brief Return true if the first span is greater than the second one
  */
 PGDLLEXPORT Datum
 Span_gt(PG_FUNCTION_ARGS)
@@ -496,7 +499,7 @@ Span_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_hash);
 /**
- * Return the 32-bit hash value of a span.
+ * @brief Return the 32-bit hash value of a span.
  */
 PGDLLEXPORT Datum
 Span_hash(PG_FUNCTION_ARGS)
@@ -508,7 +511,7 @@ Span_hash(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_hash_extended);
 /**
- * Return the 64-bit hash value of a span obtained with a seed.
+ * @brief Return the 64-bit hash value of a span obtained with a seed.
  */
 PGDLLEXPORT Datum
 Span_hash_extended(PG_FUNCTION_ARGS)

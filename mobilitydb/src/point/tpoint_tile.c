@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_tile.c
  * @brief Functions for spatial and spatiotemporal tiles.
  */
 
@@ -588,7 +587,9 @@ stbox_tile_state_get(STboxGridState *state, STBOX *box)
 
 PG_FUNCTION_INFO_V1(Stbox_multidim_grid);
 /**
- * Generate a multidimensional grid for temporal points.
+ * @ingroup mobilitydb_temporal_tile
+ * @brief Generate a multidimensional grid for temporal points.
+ * @sqlfunc multidimGrid()
  */
 PGDLLEXPORT Datum
 Stbox_multidim_grid(PG_FUNCTION_ARGS)
@@ -692,8 +693,10 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_multidim_tile);
 /**
- * Generate a tile in a multidimensional grid for temporal points.
-*/
+ * @ingroup mobilitydb_temporal_tile
+ * @brief Generate a tile in a multidimensional grid for temporal points.
+ * @sqlfunc multidimTile()
+ */
 PGDLLEXPORT Datum
 Stbox_multidim_tile(PG_FUNCTION_ARGS)
 {
@@ -943,7 +946,9 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
 
 PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
- * Split a temporal point with respect to a spatial grid.
+ * @ingroup mobilitydb_temporal_tile
+ * @brief Split a temporal point with respect to a spatial grid.
+ * @sqlfunc spaceSplit()
  */
 PGDLLEXPORT Datum
 Tpoint_space_split(PG_FUNCTION_ARGS)
@@ -1077,7 +1082,9 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
- * Split a temporal point with respect to a spatiotemporal grid.
+ * @ingroup mobilitydb_temporal_tile
+ * @brief Split a temporal point with respect to a spatiotemporal grid.
+ * @sqlfunc spaceTimeSplit()
  */
 PGDLLEXPORT Datum
 Tpoint_space_time_split(PG_FUNCTION_ARGS)

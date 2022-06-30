@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_meos.c
  * @brief General functions for temporal points.
  */
 

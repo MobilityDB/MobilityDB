@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_parser.h
- * Functions for parsing temporal types.
+ * @brief Functions for parsing temporal types.
  */
 
 #ifndef __TEMPORAL_PARSER_H__

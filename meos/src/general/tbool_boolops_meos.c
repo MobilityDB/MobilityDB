@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tbool_boolops.c
  * @brief Temporal Boolean operators: and, or, not.
  */
 

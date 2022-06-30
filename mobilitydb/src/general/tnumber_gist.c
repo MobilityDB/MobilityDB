@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_gist.c
  * @brief R-tree GiST index for temporal integers and temporal floats.
  *
  * These functions are based on those in the file `gistproc.c`.

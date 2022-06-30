@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_spatialfuncs.c
  * @brief Spatial functions for temporal points.
  */
 
@@ -857,18 +856,18 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geometric point is ever equal to a point.
  * @sqlop @p ?=
- */ 
+ */
 bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 {
   return tpoint_ever_eq(temp, PointerGetDatum(gs));
 
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geographic point is ever equal to a point.
  * @sqlop @p ?=
- */ 
+ */
 bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 {
   return tpoint_ever_eq(temp, PointerGetDatum(gs));
@@ -980,17 +979,17 @@ tpoint_always_eq(const Temporal *temp, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geometric point is always equal to a point.
  * @sqlop @p %=
- */ 
+ */
 bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 {
   return tpoint_always_eq(temp, PointerGetDatum(gs));
 }
- 
+
 /**
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geographic point is always equal to a point.
  * @sqlop @p %=
- */ 
+ */
 bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 {
   return tpoint_always_eq(temp, PointerGetDatum(gs));
@@ -1216,7 +1215,7 @@ interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
  * Create a point
  */
 GSERIALIZED *
-gspoint_make(double x, double y, double z, bool hasz, bool geodetic, 
+gspoint_make(double x, double y, double z, bool hasz, bool geodetic,
   int32 srid)
 {
   LWPOINT *lwpoint = hasz ?
@@ -3858,7 +3857,7 @@ TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
   bool atfunc)
 {
-  bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst), 
+  bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst),
     PointerGetDatum(gs)));
   if ((atfunc && !inter) || (!atfunc && inter))
     return NULL;

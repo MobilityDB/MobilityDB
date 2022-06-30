@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_parser.c
  * @brief Functions for parsing temporal points.
  */
 

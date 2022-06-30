@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file skiplist.c
  * @brief Functions manipulating skiplists.
  */
 

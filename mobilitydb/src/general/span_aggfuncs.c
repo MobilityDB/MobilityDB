@@ -28,11 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file span_aggfuncs.c
  * @brief Aggregate function for span types.
  */
-
-// #include "general/span_aggfuncs.h"
 
 /* PostgreSQL */
 #include <postgres.h>

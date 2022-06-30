@@ -307,12 +307,10 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   OPERATOR  17    -|- (tint, tfloat),
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
   OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tfloat) FOR ORDER BY pg_catalog.float_ops,
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tint, timestamptz),
   OPERATOR  28    &<# (tint, timestampset),
@@ -442,12 +440,10 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tint),
   OPERATOR  17    -|- (tfloat, tfloat),
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, timestamptz),
   OPERATOR  28    &<# (tfloat, timestampset),

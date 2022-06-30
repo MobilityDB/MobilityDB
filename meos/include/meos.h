@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file meos.h
- * API of the Mobility Engine Open Source (MEOS) library.
+ * @brief API of the Mobility Engine Open Source (MEOS) library.
  */
 
 #ifndef __MEOS_H__

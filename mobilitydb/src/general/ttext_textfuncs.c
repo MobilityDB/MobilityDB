@@ -28,9 +28,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup mobilitydb_temporal_text
- * @brief @file ttext_textfuncs.c
- * @ingroup mobilitydb_temporal_text
  * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
@@ -41,14 +38,14 @@
 #include "general/temporal_util.h"
 
 /*****************************************************************************
- * @ingroup mobilitydb_temporal_text
- * @brief Text concatenation
+ * Text concatenation
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of the text and the temporal text values
+ * @sqlfunc textcat()
  */
 PGDLLEXPORT Datum
 Textcat_text_ttext(PG_FUNCTION_ARGS)
@@ -64,6 +61,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of the temporal text and the text values
+ * @sqlfunc textcat()
  */
 PGDLLEXPORT Datum
 Textcat_ttext_text(PG_FUNCTION_ARGS)
@@ -79,6 +77,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of the two temporal text values
+ * @sqlfunc textcat()
  */
 PGDLLEXPORT Datum
 Textcat_ttext_ttext(PG_FUNCTION_ARGS)
@@ -99,6 +98,7 @@ PG_FUNCTION_INFO_V1(Ttext_upper);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Transform the temporal text value into uppercase
+ * @sqlfunc upper()
  */
 PGDLLEXPORT Datum
 Ttext_upper(PG_FUNCTION_ARGS)
@@ -113,6 +113,7 @@ PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Transform the temporal text value into lowercase
+ * @sqlfunc lower()
  */
 PGDLLEXPORT Datum
 Ttext_lower(PG_FUNCTION_ARGS)

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file pgis_call.c
  * @brief MobilityDB functions PGIS_func(...) corresponding to external
  * PostGIS functions func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.

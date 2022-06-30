@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_util.c
- * Miscellaneous utility functions for temporal types.
+ * @brief Miscellaneous utility functions for temporal types.
  */
 
 #ifndef __TEMPORAL_UTIL_H__

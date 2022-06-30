@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tinstantset.h
- * Basic functions for temporal instant sets.
+ * @brief Basic functions for temporal instant sets.
  */
 
 #ifndef __TINSTANTSET_H__

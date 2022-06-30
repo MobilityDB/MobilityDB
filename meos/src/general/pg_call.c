@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file pg_call.c
  * @brief MobilityDB functions pg_func(...) corresponding to external
  * PostgreSQL functions func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.

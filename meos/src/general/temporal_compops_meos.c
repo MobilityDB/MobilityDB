@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_compops_meos.c
  * @brief Temporal comparison operators: #=, #<>, #<, #>, #<=, #>=.
  */
 

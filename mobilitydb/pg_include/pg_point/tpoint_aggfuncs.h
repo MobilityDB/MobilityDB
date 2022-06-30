@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_aggfuncs.h
- * Aggregate functions for temporal points.
+ * @brief Aggregate functions for temporal points.
  */
 
 #ifndef __TPOINT_AGGFUNCS_H__

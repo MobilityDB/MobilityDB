@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tinstant.h
- * Basic functions for temporal instants.
+ * @brief Basic functions for temporal instants.
  */
 
 #ifndef __TINSTANT_H__

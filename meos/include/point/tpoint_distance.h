@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_distance.h
- * Distance functions for temporal points.
+ * @brief Distance functions for temporal points.
  */
 
 #ifndef __TPOINT_DISTANCE_H__

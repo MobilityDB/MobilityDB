@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file geography_funcs.h
- * Spatial functions for PostGIS geography.
+ * @brief Spatial functions for PostGIS geography.
  */
 
 #ifndef __GEOGRAPHY_FUNCTIONS_H__

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_spatialfuncs.c
  * @brief Spatial functions for temporal network points.
  */
 

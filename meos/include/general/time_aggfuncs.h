@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_aggfuncs.h
- * Aggregate functions for time types
+ * @brief Aggregate functions for time types
  */
 
 #ifndef __TIME_AGGFUNCS_H__

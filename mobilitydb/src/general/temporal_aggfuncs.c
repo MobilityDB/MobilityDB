@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_aggfuncs.c
  * @brief General aggregate functions for temporal types.
  */
 

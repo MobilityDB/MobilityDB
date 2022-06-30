@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_util.c
  * @brief General utility functions for temporal types.
  */
 

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tsequenceset.c
  * @brief General functions for temporal sequence sets.
  */
 

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tbox.c
  * @brief Functions for temporal bounding boxes.
  */
 

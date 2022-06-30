@@ -72,11 +72,9 @@ CREATE OPERATOR CLASS intspan_quadtree_ops
   OPERATOR  17    -|- (intspan, intspan),
   -- equals
   OPERATOR  18    = (intspan, intspan),
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
   OPERATOR  25    <-> (intspan, int) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspan, intspan) FOR ORDER BY pg_catalog.float_ops,
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &< (intspan, int),
   OPERATOR  28    &< (intspan, intspan),
@@ -111,11 +109,9 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
   OPERATOR  17    -|- (floatspan, floatspan),
   -- equals
   OPERATOR  18    = (floatspan, floatspan),
-#if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
   OPERATOR  25    <-> (floatspan, float) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspan, floatspan) FOR ORDER BY pg_catalog.float_ops,
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &< (floatspan, float),
   OPERATOR  28    &< (floatspan, floatspan),

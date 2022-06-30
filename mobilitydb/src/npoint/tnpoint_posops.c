@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_posops.c
  * @brief Relative position operators for temporal network points.
  *
  * The following operators are defined for the spatial dimension:
@@ -53,7 +52,10 @@
 
 PG_FUNCTION_INFO_V1(Left_geom_tnpoint);
 /**
- * Return true if the geometry is strictly to the left of the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry is strictly to the left of the temporal network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -63,7 +65,10 @@ Left_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_geom_tnpoint);
 /**
- * Return true if the geometry does not extend to the right of the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry does not extend to the right of the temporal network point
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -73,7 +78,10 @@ Overleft_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_geom_tnpoint);
 /**
- * Return true if the geometry is strictly to the right of the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry is strictly to the right of the temporal network point
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -83,7 +91,10 @@ Right_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_geom_tnpoint);
 /**
- * Return true if the geometry does not extend to the left of the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry does not extend to the left of the temporal network point
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -93,7 +104,10 @@ Overright_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_geom_tnpoint);
 /**
- * Return true if the geometry is strictly below the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry is strictly below the temporal network point
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -103,7 +117,10 @@ Below_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_geom_tnpoint);
 /**
- * Return true if the geometry does not extend above the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry does not extend above the temporal network point
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -113,7 +130,10 @@ Overbelow_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_geom_tnpoint);
 /**
- * Return true if the geometry is strictly above the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry is strictly above the temporal network point
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -123,7 +143,10 @@ Above_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_geom_tnpoint);
 /**
- * Return true if the geometry does not extend below the temporal network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the geometry does not extend below the temporal network point
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_geom_tnpoint(PG_FUNCTION_ARGS)
@@ -136,8 +159,11 @@ Overabove_geom_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_geom);
 /**
- * Return true if the temporal network point is strictly to the left of the
- * geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly to the left of
+ * the geometry
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -147,8 +173,11 @@ Left_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_geom);
 /**
- * Return true if the temporal network point does not extend to the right of
- * the geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend to the
+ * right of the geometry
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -158,8 +187,11 @@ Overleft_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_geom);
 /**
- * Return true if the temporal network point is strictly to the right of the
- * geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly to the right
+ * of the geometry
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -169,8 +201,11 @@ Right_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_geom);
 /**
- * Return true if the temporal network point does not extend to the left of
- * the geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend to the left
+ * of the geometry
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -180,7 +215,10 @@ Overright_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_geom);
 /**
- * Return true if the temporal network point is strictly below the geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly below the geometry
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -190,7 +228,10 @@ Below_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_geom);
 /**
- * Return true if the temporal network point does not extend above the geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend above the geometry
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -200,7 +241,10 @@ Overbelow_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_geom);
 /**
- * Return true if the temporal network point is strictly above the geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly above the geometry
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -210,7 +254,10 @@ Above_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_geom);
 /**
- * Return true if the temporal network point does not extend below the geometry
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend below the geometry
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_tnpoint_geom(PG_FUNCTION_ARGS)
@@ -223,8 +270,11 @@ Overabove_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box is strictly to the left of the
  * temporal network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -234,8 +284,11 @@ Left_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box does not extend to the right of the
  * temporal network point
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -245,8 +298,11 @@ Overleft_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box is strictly to the right of the
  * temporal network point
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -256,8 +312,11 @@ Right_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box does not extend to the left of the
  * temporal network point
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -267,8 +326,11 @@ Overright_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly below the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box is strictly below the temporal
  * network point
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -278,8 +340,11 @@ Below_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend above the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box does not extend above the temporal
  * network point
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -289,8 +354,11 @@ Overbelow_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly above the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box is strictly above the temporal
  * network point
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -300,8 +368,11 @@ Above_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend below the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box does not extend below the temporal
  * network point
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -311,8 +382,11 @@ Overabove_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly before of the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box is strictly before of the temporal
  * network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Before_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -322,8 +396,11 @@ Before_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend after the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box does not extend after the temporal
  * network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Overbefore_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -333,8 +410,11 @@ Overbefore_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly after the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box is strictly after the temporal
  * network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 After_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -344,8 +424,11 @@ After_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend before the temporal
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the spatiotemporal box does not extend before the temporal
  * network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Overafter_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -358,8 +441,11 @@ Overafter_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly to the left of the
  * spatiotemporal box
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -369,8 +455,11 @@ Left_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend to the right of
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend to the right of
  * the spatiotemporal box
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -380,8 +469,11 @@ Overleft_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly to the right of the
  * spatiotemporal box
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -391,8 +483,11 @@ Right_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend to the left of
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend to the left of
  * the spatiotemporal box
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -402,8 +497,11 @@ Overright_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly below the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly below the
  * spatiotemporal box
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -413,8 +511,11 @@ Below_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend above the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend above the
  * spatiotemporal box
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -424,8 +525,11 @@ Overbelow_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly above the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly above the
  * spatiotemporal box
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -435,8 +539,11 @@ Above_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend below the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend below the
  * spatiotemporal box
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -446,8 +553,11 @@ Overabove_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly before the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly before the
  * spatiotemporal box
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Before_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -457,8 +567,11 @@ Before_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend after the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend after the
  * spatiotemporal box
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Overbefore_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -468,8 +581,11 @@ Overbefore_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly after the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point is strictly after the
  * spatiotemporal box
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 After_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -479,8 +595,11 @@ After_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend before the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal network point does not extend before the
  * spatiotemporal box
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Overafter_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -493,8 +612,11 @@ Overafter_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_npoint_tnpoint);
 /**
- * Return true if the network point is strictly to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point is strictly to the left of the
  * temporal point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -504,8 +626,11 @@ Left_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_npoint_tnpoint);
 /**
- * Return true if the network point does not extend to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point does not extend to the right of the
  * temporal point
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -515,8 +640,11 @@ Overleft_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_npoint_tnpoint);
 /**
- * Return true if the network point is strictly to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point is strictly to the right of the
  * temporal point
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -526,8 +654,11 @@ Right_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_npoint_tnpoint);
 /**
- * Return true if the network point does not extend to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point does not extend to the left of the
  * temporal point
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -537,7 +668,10 @@ Overright_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_npoint_tnpoint);
 /**
- * Return true if the network point is strictly below the temporal point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point is strictly below the temporal point
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -547,7 +681,10 @@ Below_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_npoint_tnpoint);
 /**
- * Return true if the network point does not extend above the temporal point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point does not extend above the temporal point
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -557,7 +694,10 @@ Overbelow_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_npoint_tnpoint);
 /**
- * Return true if the network point is strictly above the temporal point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point is strictly above the temporal point
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -567,7 +707,10 @@ Above_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_npoint_tnpoint);
 /**
- * Return true if the network point does not extend below the temporal point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the network point does not extend below the temporal point
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -580,8 +723,11 @@ Overabove_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_npoint);
 /**
- * Return true if the temporal point is strictly to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point is strictly to the left of the
  * network point
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -591,8 +737,11 @@ Left_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_npoint);
 /**
- * Return true if the temporal point does not extend to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point does not extend to the right of the
  * network point
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -602,8 +751,11 @@ Overleft_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_npoint);
 /**
- * Return true if the temporal point is strictly to the right of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point is strictly to the right of the
  * network point
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -613,8 +765,11 @@ Right_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_npoint);
 /**
- * Return true if the temporal point does not extend to the left of the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point does not extend to the left of the
  * network point
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -624,7 +779,10 @@ Overright_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_npoint);
 /**
- * Return true if the temporal point is strictly below the network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point is strictly below the network point
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -634,7 +792,10 @@ Below_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_npoint);
 /**
- * Return true if the temporal point does not extend above the network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point does not extend above the network point
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -644,7 +805,10 @@ Overbelow_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_npoint);
 /**
- * Return true if the temporal point is strictly above the network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point is strictly above the network point
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -654,7 +818,10 @@ Above_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_npoint);
 /**
- * Return true if the temporal point does not extend below the network point
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the temporal point does not extend below the network point
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -667,8 +834,11 @@ Overabove_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly to the left of
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point is strictly to the left of
  * the second one
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Left_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -678,8 +848,11 @@ Left_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend to the right
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point does not extend to the right
  * of the second one
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -689,8 +862,11 @@ Overleft_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly to the right of
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point is strictly to the right of
  * the second one
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
  */
 PGDLLEXPORT Datum
 Right_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -700,8 +876,11 @@ Right_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend to the left
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point does not extend to the left
  * of the second one
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -711,8 +890,11 @@ Overright_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly below the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point is strictly below the
  * second one
+ * @sqlfunc temporal_below()
+ * @sqlop @p <<|
  */
 PGDLLEXPORT Datum
 Below_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -722,8 +904,11 @@ Below_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend above the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point does not extend above the
  * second one
+ * @sqlfunc temporal_overbelow()
+ * @sqlop @p &<|
  */
 PGDLLEXPORT Datum
 Overbelow_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -733,8 +918,11 @@ Overbelow_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly above the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point is strictly above the
  * second one
+ * @sqlfunc temporal_above()
+ * @sqlop @p |>>
  */
 PGDLLEXPORT Datum
 Above_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -744,8 +932,11 @@ Above_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend below the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point does not extend below the
  * second one
+ * @sqlfunc temporal_overabove()
+ * @sqlop @p |&>
  */
 PGDLLEXPORT Datum
 Overabove_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -755,8 +946,11 @@ Overabove_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly before the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point is strictly before the
  * second one
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Before_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -766,8 +960,11 @@ Before_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend after the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point does not extend after the
  * second one
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Overbefore_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -777,8 +974,11 @@ Overbefore_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly after the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point is strictly after the
  * second one
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 After_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -788,8 +988,11 @@ After_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend before the
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if the first temporal network point does not extend before the
  * second one
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
  */
 PGDLLEXPORT Datum
 Overafter_tnpoint_tnpoint(PG_FUNCTION_ARGS)

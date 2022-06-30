@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file span_gist.c
  * @brief R-tree GiST index for time types.
  *
  * These functions are based on those in the file `rangetypes_gist.c`.

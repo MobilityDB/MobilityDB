@@ -28,9 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file postgis.h
- * PostGIS definitions that are needed in MobilityDB but are not exported
- * in PostGIS headers
+ * @brief PostGIS definitions that are needed in MobilityDB but are not
+ * exported in PostGIS headers
  */
 
 #ifndef __POSTGIS_H__

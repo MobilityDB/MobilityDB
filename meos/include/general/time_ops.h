@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_ops.h
- * Operators for time types.
+ * @brief Operators for time types.
  */
 
 #ifndef __TIME_OPS_H__

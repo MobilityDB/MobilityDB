@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tsequence.c
  * @brief General functions for temporal sequences.
  */
 

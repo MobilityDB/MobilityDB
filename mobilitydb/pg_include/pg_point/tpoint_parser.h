@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_parser.h
- * Functions for parsing temporal points.
+ * @brief Functions for parsing temporal points.
  */
 
 #ifndef __TPOINT_PARSER_H__

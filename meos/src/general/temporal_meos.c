@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal.c
  * @brief Basic functions for temporal types of any subtype.
  */
 

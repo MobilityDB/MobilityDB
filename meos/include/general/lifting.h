@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file lifting.c
- * Generic functions for lifting functions and operators on temporal types.
+ * @brief Generic functions for lifting functions and operators on temporal
+ * types.
  */
 
 #ifndef __LIFTING_H__

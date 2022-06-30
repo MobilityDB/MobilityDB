@@ -28,13 +28,10 @@
  *****************************************************************************/
 
 /**
- * @file temporal_spgist.c
  * @brief Quad-tree SP-GiST index for temporal boolean and temporal text types.
  *
  * These functions are based on those in the file `rangetypes_spgist.c`.
  */
-
-#include "pg_general/temporal_spgist.h"
 
 /* C */
 #include <assert.h>
@@ -49,7 +46,6 @@
 #include "general/temporaltypes.h"
 /* MobilityDB */
 #include "pg_general/time_gist.h"
-#include "pg_general/time_spgist.h"
 
 /*****************************************************************************
  * SP-GiST compress functions

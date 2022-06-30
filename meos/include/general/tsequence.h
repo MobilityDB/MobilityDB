@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tsequence.h
- * Basic functions for temporal sequences.
+ * @brief Basic functions for temporal sequences.
  */
 
 #ifndef __TSEQUENCE_H__

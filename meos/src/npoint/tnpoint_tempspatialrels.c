@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_tempspatialrels.c
  * @brief Temporal spatial relationships for temporal network points.
  *
  * These relationships are applied at each instant and result in a temporal

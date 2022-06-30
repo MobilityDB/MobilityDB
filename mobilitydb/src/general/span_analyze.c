@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file span_analyze.c
  * @brief Functions for gathering statistics from time type columns.
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.

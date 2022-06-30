@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_gist.c
- * R-tree GiST index for temporal integers and temporal floats
+ * @brief R-tree GiST index for temporal integers and temporal floats
  */
 
 #ifndef __TNUMBER_GIST_H__

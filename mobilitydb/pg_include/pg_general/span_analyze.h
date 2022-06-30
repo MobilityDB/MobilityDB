@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file span_analyze.h
- * Functions for gathering statistics from time type columns
+ * @brief Functions for gathering statistics from time type columns
  */
 
 #ifndef __SPAN_ANALYZE_H__

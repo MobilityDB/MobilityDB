@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_posops.c
  * @brief Relative position operators for temporal geometry points.
  *
  * The following operators are defined for the spatial dimension:
@@ -43,8 +42,6 @@
  * types. In this file they are defined when one of the arguments is an
  * `STBOX`.
  */
-
-#include "pg_point/tpoint_posops.h"
 
 /* MEOS */
 #include <meos.h>

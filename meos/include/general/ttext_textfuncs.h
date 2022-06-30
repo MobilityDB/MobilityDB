@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file ttext_textfuncs.h
- * Temporal text functions: `textcat`, `lower`, `upper`.
+ * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
 #ifndef __TTEXT_TEXTFUNCS_H__

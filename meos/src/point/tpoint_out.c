@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_out.c
  * @brief Output of temporal points in WKT, EWKT, and MF-JSON format.
  */
 

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file temporal_parser.c
  * @brief Functions for parsing time types and temporal types.
  *
  * Many functions make two passes for parsing, the first one to obtain the

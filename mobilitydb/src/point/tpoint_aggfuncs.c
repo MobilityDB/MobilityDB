@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_aggfuncs.c
  * @brief Aggregate functions for temporal points.
  *
  * The only functions currently provided are extent and temporal centroid.

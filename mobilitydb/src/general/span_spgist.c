@@ -28,14 +28,11 @@
  *****************************************************************************/
 
 /**
- * @file span_spgist.c
  * @brief Quad-tree SP-GiST index for span types.
  *
  * The functions in this file are based on those in the file
  * `rangetypes_spgist.c`.
  */
-
-#include "pg_general/span_spgist.h"
 
 /* C */
 #include <assert.h>

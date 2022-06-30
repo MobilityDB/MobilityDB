@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_analyze.h
- * Functions for gathering statistics from temporal point columns
+ * @brief Functions for gathering statistics from temporal point columns
  */
 
 #ifndef __TPOINT_ANALYZE_H__

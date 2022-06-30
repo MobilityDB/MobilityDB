@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file temporal_compops.h
- * Temporal comparison operators (=, <>, <, >, <=, >=).
+ * @brief Temporal comparison operators (=, <>, <, >, <=, >=).
  */
 
 #ifndef __TEMPORAL_COMPOPS_H__

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file geo_constructors.c
  * @brief Constructors for the 2D geometric operations.
  *
  * This module implements the constructors  for the following geometric

@@ -28,14 +28,12 @@
  *****************************************************************************/
 
 /**
- * @file temporal_gist.c
  * @brief R-tree GiST index for temporal types where only the time dimension
  * is taken into account for indexing, currently, `tbool` and `ttext`.
  */
 
-#include "pg_general/temporal_gist.h"
-
 /* PostgreSQL */
+#include <postgres.h>
 #include <access/stratnum.h>
 #include <access/gist.h>
 /* MEOS */

@@ -28,7 +28,6 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_distance.c
  * @brief Distance functions for temporal points.
  */
 
@@ -949,7 +948,7 @@ shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool found1 = temporal_value_at_timestamp(temp1, inst->t, false, &value1);
   bool found2 = temporal_value_at_timestamp(temp2, inst->t, false, &value2);
   assert (found1 && found2);
-  
+
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
   *result = geo_serialize(line);
   lwgeom_free(line);

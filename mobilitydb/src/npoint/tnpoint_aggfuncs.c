@@ -28,13 +28,10 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_aggfuncs.c
  * @brief Aggregate functions for temporal network points.
  *
  * The only function currently provided is temporal centroid.
  */
-
-#include "pg_npoint/tnpoint_aggfuncs.h"
 
 /* C */
 #include <assert.h>

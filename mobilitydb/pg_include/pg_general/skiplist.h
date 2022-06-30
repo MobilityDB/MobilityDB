@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file skiplist.h
- * Skiplist data structure used for performing aggregates
+ * @brief Skiplist data structure used for performing aggregates
  */
 
 #ifndef __SKIPLIST_H__
