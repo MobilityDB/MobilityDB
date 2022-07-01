@@ -405,6 +405,18 @@ CREATE FUNCTION tint(tfloat)
 CREATE CAST (tint AS tfloat) WITH FUNCTION tfloat(tint);
 CREATE CAST (tfloat AS tint) WITH FUNCTION tint(tfloat);
 
+CREATE FUNCTION tbox(tint)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tnumber_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(tfloat)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tnumber_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint);
+CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/

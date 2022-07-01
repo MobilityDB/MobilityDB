@@ -718,18 +718,6 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
   54
 (1 row)
 
-SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tint;
-   round    
-------------
- 100.000000
-(1 row)
-
-SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tfloat;
-   round   
------------
- 99.917602
-(1 row)
-
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
  startvalue 
 ------------

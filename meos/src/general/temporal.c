@@ -1154,6 +1154,42 @@ temporal_set_period(const Temporal *temp, Period *p)
   return;
 }
 
+/**
+ * @ingroup libmeos_temporal_cast
+ * @brief Return the value span of a temporal number.
+ * @sqlfunc valueSpan()
+ */
+Span *
+tnumber_to_span(const Temporal *temp)
+{
+  Span *result = NULL;
+  mobdbType basetype = temptype_basetype(temp->temptype);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+  {
+    Datum value = tinstant_value((TInstant *) temp);
+    result = span_make(value, value, true, true, basetype);
+  }
+  else
+  {
+    TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
+    Datum min = 0, max = 0;
+    ensure_tnumber_type(temp->temptype);
+    if (temp->temptype == T_TINT)
+    {
+      min = Int32GetDatum((int)(box->xmin));
+      max = Int32GetDatum((int)(box->xmax));
+    }
+    else /* temp->temptype == T_TFLOAT */
+    {
+      min = Float8GetDatum(box->xmin);
+      max = Float8GetDatum(box->xmax);
+    }
+    result = span_make(min, max, true, true, basetype);
+  }
+  return result;
+}
+
 #if MEOS
 /**
  * @ingroup libmeos_box_cast
@@ -1580,42 +1616,6 @@ temporal_time(const Temporal *temp)
     result = tsequence_time((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_time((TSequenceSet *) temp);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
- * @brief Return the value span of a temporal number.
- * @sqlfunc valueSpan()
- */
-Span *
-tnumber_span(const Temporal *temp)
-{
-  Span *result = NULL;
-  mobdbType basetype = temptype_basetype(temp->temptype);
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-  {
-    Datum value = tinstant_value((TInstant *) temp);
-    result = span_make(value, value, true, true, basetype);
-  }
-  else
-  {
-    TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
-    Datum min = 0, max = 0;
-    ensure_tnumber_type(temp->temptype);
-    if (temp->temptype == T_TINT)
-    {
-      min = Int32GetDatum((int)(box->xmin));
-      max = Int32GetDatum((int)(box->xmax));
-    }
-    else /* temp->temptype == T_TFLOAT */
-    {
-      min = Float8GetDatum(box->xmin);
-      max = Float8GetDatum(box->xmax);
-    }
-    result = span_make(min, max, true, true, basetype);
-  }
   return result;
 }
 

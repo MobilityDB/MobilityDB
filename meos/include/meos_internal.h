@@ -48,8 +48,6 @@
 #define TimestampTzGetDatum(X) Int64GetDatum(X)
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
 
-extern int timestamptz_cmp_internal(TimestampTz dt1, TimestampTz dt2);
-
 /*****************************************************************************
  * Functions for span and time types
  *****************************************************************************/

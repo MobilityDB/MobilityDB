@@ -353,7 +353,7 @@ PG_FUNCTION_INFO_V1(Temporal_in);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Generic input function for temporal types
- * @sqlfunc tbool_in(), tint_in(), tfloat_in(), ttext_in(), 
+ * @sqlfunc tbool_in(), tint_in(), tfloat_in(), ttext_in(),
  */
 PGDLLEXPORT Datum
 Temporal_in(PG_FUNCTION_ARGS)
@@ -373,7 +373,7 @@ PG_FUNCTION_INFO_V1(Temporal_out);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Generic output function for temporal types
- * @sqlfunc tbool_out(), tint_out(), tfloat_out(), ttext_out(), 
+ * @sqlfunc tbool_out(), tint_out(), tfloat_out(), ttext_out(),
  */
 PGDLLEXPORT Datum
 Temporal_out(PG_FUNCTION_ARGS)
@@ -426,7 +426,7 @@ PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Generic receive function for temporal types
- * @sqlfunc tbool_recv(), tint_recv(), tfloat_recv(), ttext_recv(), 
+ * @sqlfunc tbool_recv(), tint_recv(), tfloat_recv(), ttext_recv(),
  */
 PGDLLEXPORT Datum
 Temporal_recv(PG_FUNCTION_ARGS)
@@ -442,7 +442,7 @@ PG_FUNCTION_INFO_V1(Temporal_send);
 /*
  * @ingroup mobilitydb_temporal_in_out
  * @brief Generic send function for temporal types
- * @sqlfunc tbool_send(), tint_send(), tfloat_send(), ttext_send(), 
+ * @sqlfunc tbool_send(), tint_send(), tfloat_send(), ttext_send(),
  */
 PGDLLEXPORT Datum
 Temporal_send(PG_FUNCTION_ARGS)
@@ -465,7 +465,7 @@ PG_FUNCTION_INFO_V1(Tinstant_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant from the arguments
- * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), 
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(),
  */
 PGDLLEXPORT Datum
 Tinstant_constructor(PG_FUNCTION_ARGS)
@@ -481,7 +481,7 @@ PG_FUNCTION_INFO_V1(Tinstantset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from the array of temporal instants
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(), 
+ * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  */
 PGDLLEXPORT Datum
 Tinstantset_constructor(PG_FUNCTION_ARGS)
@@ -522,7 +522,7 @@ PG_FUNCTION_INFO_V1(Tstepseq_constructor);
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence with stepwise interpolation from the array of
  * temporal instants
- * @sqlfunc tbool_seq(), tint_seq(), ttext_seq(), 
+ * @sqlfunc tbool_seq(), tint_seq(), ttext_seq(),
  */
 PGDLLEXPORT Datum
 Tstepseq_constructor(PG_FUNCTION_ARGS)
@@ -547,7 +547,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from the array of temporal sequences
- * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), 
+ * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(),
  */
 PGDLLEXPORT Datum
 Tsequenceset_constructor(PG_FUNCTION_ARGS)
@@ -606,7 +606,7 @@ PG_FUNCTION_INFO_V1(Tstepseqset_constructor_gaps);
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set with stepwise interpolation from the
  * array of temporal instants
- * @sqlfunc tbool_seqset_gaps(), tint_seqset_gaps(), ttext_seqset_gaps(), 
+ * @sqlfunc tbool_seqset_gaps(), tint_seqset_gaps(), ttext_seqset_gaps(),
  */
 PGDLLEXPORT Datum
 Tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
@@ -755,10 +755,10 @@ PG_FUNCTION_INFO_V1(Tnumber_to_span);
  * @sqlop @p ::
  */
 PGDLLEXPORT Datum
-Tnumber_span(PG_FUNCTION_ARGS)
+Tnumber_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *result = tnumber_span(temp);
+  Span *result = tnumber_to_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -1572,7 +1572,7 @@ Tempstep_to_templinear(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
- 
+
 PG_FUNCTION_INFO_V1(Temporal_shift);
 /**
  * @ingroup mobilitydb_temporal_transf

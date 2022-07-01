@@ -1779,7 +1779,7 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    Span *span = tnumber_span((const Temporal *) temp);
+    Span *span = tnumber_to_span((const Temporal *) temp);
     Datum start_value = span->lower;
     /* We need to add size to obtain the end value of the last bucket */
     Datum end_value = datum_add(span->upper, size, basetype, basetype);
@@ -1918,7 +1918,7 @@ Tnumber_value_time_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    Span *span = tnumber_span((const Temporal *) temp);
+    Span *span = tnumber_to_span((const Temporal *) temp);
     Datum start_value = span->lower;
     /* We need to add size to obtain the end value of the last bucket */
     Datum end_value = datum_add(span->upper, size, basetype, basetype);

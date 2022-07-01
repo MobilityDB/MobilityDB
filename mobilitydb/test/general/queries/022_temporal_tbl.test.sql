@@ -226,9 +226,6 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
 
-SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tint;
-SELECT round(MAX(upper(valueSpan(temp)))::numeric, 6) FROM tbl_tfloat;
-
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
 SELECT round(MAX(startValue(temp))::numeric, 6) FROM tbl_tfloat;

@@ -182,7 +182,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     if (tnumber)
     {
-      Span *span = tnumber_span(temp);
+      Span *span = tnumber_to_span(temp);
       span_deserialize(span, &span_lower, &span_upper);
       value_lowers[non_null_cnt] = span_lower;
       value_uppers[non_null_cnt] = span_upper;

@@ -785,6 +785,7 @@ extern TSequenceSet *ttextseqset_from_base(text *txt, const PeriodSet *ps);
 
 extern Temporal *tfloat_to_tint(const Temporal *temp);
 extern Temporal *tint_to_tfloat(const Temporal *temp);
+extern Span *tnumber_to_span(const Temporal *temp);
 
 /*****************************************************************************/
 
@@ -828,7 +829,6 @@ extern int tint_max_value(Temporal *temp);
 extern int tint_min_value(Temporal *temp);
 extern int tint_start_value(Temporal *temp);
 extern int *tint_values(Temporal *temp);
-extern Span *tnumber_span(const Temporal *temp);
 extern GSERIALIZED *tpoint_end_value(Temporal *temp);
 extern GSERIALIZED *tpoint_start_value(Temporal *temp);
 extern GSERIALIZED **tpoint_values(Temporal *temp);

@@ -38,8 +38,9 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <common/hashfn.h>
-// #include <utils/timestamp.h>
+#include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>

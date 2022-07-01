@@ -226,7 +226,7 @@ ERROR:  Invalid end value for temporal sequence
 LINE 1: SELECT tbool '[true@2001-01-01 08:00:00, false@2001-01-01 08...
                      ^
 SELECT tbool '[true@2001-01-01, true@2001-01-02';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal value: Missing closing bracket/parenthesis
 LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02';
                      ^
 SELECT tbool '[true@2001-01-01, true@2001-01-02],';
@@ -321,7 +321,7 @@ ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00
 LINE 1: SELECT ttext_seqset(ttext '{[AA@2000-01-01, AA@2000-01-03], ...
                                   ^
 SELECT tfloat_seqset(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]');
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal value: Missing closing brace
 LINE 1: SELECT tfloat_seqset(tfloat '{[1@2000-01-01, 2@2000-01-03], ...
                                     ^
 SELECT tfloat_seqset(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]},');
@@ -2856,66 +2856,6 @@ SELECT getValues(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04
  getvalues  
 ------------
  {"[1, 2]"}
-(1 row)
-
-SELECT valueSpan(tint '1@2000-01-01');
- valuespan 
------------
- [1, 2)
-(1 row)
-
-SELECT valueSpan(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- valuespan 
------------
- [1, 3)
-(1 row)
-
-SELECT valueSpan(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- valuespan 
------------
- [1, 3)
-(1 row)
-
-SELECT valueSpan(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- valuespan 
------------
- [1, 4)
-(1 row)
-
-SELECT valueSpan(tfloat '1.5@2000-01-01');
- valuespan  
-------------
- [1.5, 1.5]
-(1 row)
-
-SELECT valueSpan(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- valuespan  
-------------
- [1.5, 2.5]
-(1 row)
-
-SELECT valueSpan(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- valuespan  
-------------
- [1.5, 2.5]
-(1 row)
-
-SELECT valueSpan(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- valuespan  
-------------
- [1.5, 2.5]
-(1 row)
-
-SELECT valueSpan(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- valuespan  
-------------
- [1.5, 3.5]
-(1 row)
-
-SELECT valueSpan(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- valuespan  
-------------
- [1.5, 3.5]
 (1 row)
 
 SELECT startValue(tbool 't@2000-01-01');
@@ -6013,9 +5953,9 @@ SELECT shiftTscale(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
 
 /* Errors */
 SELECT tscale(tfloat '1@2000-01-01', '0');
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive
 SELECT tscale(tfloat '1@2000-01-01', '-1 day');
-ERROR:  The interval must be positive: -1 days
+ERROR:  The interval must be positive
 SELECT tbool 't@2000-01-01' ?= true;
  ?column? 
 ----------
