@@ -103,8 +103,10 @@ jobs:
           # Previous coverage before embeding liblwgeom
           # lcov --capture --directory . --output-file=lcov.info
           # Selecting the coverage information from only the /src directory
-          lcov --capture --directory . --output-file=lcov_temp.info
-          lcov --extract lcov_temp.info */MobilityDB/meos/src/* */MobilityDB/mobilitydb/src/* --output-file=lcov.info
+          # lcov --capture --directory . --output-file=lcov_temp.info
+          # lcov --extract lcov_temp.info */MobilityDB/meos/src/* */MobilityDB/mobilitydb/src/* --output-file=lcov.info
+          # New version for excluding MEOS files
+          lcov --capture --directory . --exclude *_meos.c --include */MobilityDB/meos/src/* --include */MobilityDB/mobilitydb/src/* --output-file=lcov.info
 
       - name: Coveralls
         if: matrix.coverage == '1'
