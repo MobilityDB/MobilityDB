@@ -52,7 +52,9 @@
 
 PG_FUNCTION_INFO_V1(Periodset_in);
 /**
- * Return a period set from its string representation
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Return a period set from its string representation
+ * @sqlfunc periodset_in()
  */
 PGDLLEXPORT Datum
 Periodset_in(PG_FUNCTION_ARGS)
@@ -64,7 +66,9 @@ Periodset_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_out);
 /**
- * Return the string representation of a period set
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Return the string representation of a period set
+ * @sqlfunc periodset_out()
  */
 PGDLLEXPORT Datum
 Periodset_out(PG_FUNCTION_ARGS)
@@ -77,7 +81,9 @@ Periodset_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_recv);
 /**
- * Receive function for period set
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Receive function for period set
+ * @sqlfunc periodset_recv()
  */
 PGDLLEXPORT Datum
 Periodset_recv(PG_FUNCTION_ARGS)
@@ -91,7 +97,9 @@ Periodset_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_send);
 /**
- * Send function for period set
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Send function for period set
+ * @sqlfunc periodset_send()
  */
 PGDLLEXPORT Datum
 Periodset_send(PG_FUNCTION_ARGS)
@@ -111,7 +119,9 @@ Periodset_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_constructor);
 /**
- * Construct a period set from an array of period values
+ * @ingroup mobilitydb_spantime_constructor
+ * @brief Construct a period set from an array of period values
+ * @sqlfunc periodset()
  */
 PGDLLEXPORT Datum
 Periodset_constructor(PG_FUNCTION_ARGS)
@@ -132,7 +142,9 @@ Periodset_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamp_to_periodset);
 /**
- * Cast the timestamp value as a period set
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Cast the timestamp value as a period set
+ * @sqlfunc periodset()
  */
 PGDLLEXPORT Datum
 Timestamp_to_periodset(PG_FUNCTION_ARGS)
@@ -144,7 +156,9 @@ Timestamp_to_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_to_periodset);
 /**
- * Cast the timestamp set value as a period set
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Cast the timestamp set value as a period set
+ * @sqlfunc periodset()
  */
 PGDLLEXPORT Datum
 Timestampset_to_periodset(PG_FUNCTION_ARGS)
@@ -156,7 +170,9 @@ Timestampset_to_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_to_periodset);
 /**
- * Cast the period value as a period set
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Cast the period value as a period set
+ * @sqlfunc periodset()
  */
 PGDLLEXPORT Datum
 Period_to_periodset(PG_FUNCTION_ARGS)
@@ -186,7 +202,9 @@ periodset_period_slice(Datum psdatum, Period *p)
 
 PG_FUNCTION_INFO_V1(Periodset_to_period);
 /**
- * Return the bounding period on which a period set is defined
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Return the bounding period on which a period set is defined
+ * @sqlfunc period()
  */
 PGDLLEXPORT Datum
 Periodset_to_period(PG_FUNCTION_ARGS)
@@ -203,7 +221,9 @@ Periodset_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_mem_size);
 /**
- * Return the size in bytes of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the size in bytes of a period set
+ * @sqlfunc memSize()
  */
 PGDLLEXPORT Datum
 Periodset_mem_size(PG_FUNCTION_ARGS)
@@ -216,7 +236,9 @@ Periodset_mem_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timespan);
 /**
- * Return the timespan of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the timespan of a period set
+ * @sqlfunc timespan()
  */
 PGDLLEXPORT Datum
 Periodset_timespan(PG_FUNCTION_ARGS)
@@ -229,7 +251,9 @@ Periodset_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_duration);
 /**
- * Return the timespan of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the timespan of a period set
+ * @sqlfunc duration()
  */
 PGDLLEXPORT Datum
 Periodset_duration(PG_FUNCTION_ARGS)
@@ -242,7 +266,9 @@ Periodset_duration(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_num_periods);
 /**
- * Return the number of periods of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the number of periods of a period set
+ * @sqlfunc numPeriods()
  */
 PGDLLEXPORT Datum
 Periodset_num_periods(PG_FUNCTION_ARGS)
@@ -255,7 +281,9 @@ Periodset_num_periods(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_start_period);
 /**
- * Return the start period of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the start period of a period set
+ * @sqlfunc startPeriod()
  */
 PGDLLEXPORT Datum
 Periodset_start_period(PG_FUNCTION_ARGS)
@@ -268,7 +296,9 @@ Periodset_start_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_end_period);
 /**
- * Return the end period of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the end period of a period set
+ * @sqlfunc endPeriod()
  */
 PGDLLEXPORT Datum
 Periodset_end_period(PG_FUNCTION_ARGS)
@@ -281,7 +311,9 @@ Periodset_end_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_period_n);
 /**
- * Return the n-th period of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the n-th period of a period set
+ * @sqlfunc periodN()
  */
 PGDLLEXPORT Datum
 Periodset_period_n(PG_FUNCTION_ARGS)
@@ -297,7 +329,9 @@ Periodset_period_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_periods);
 /**
- * Return the periods of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the periods of a period set
+ * @sqlfunc periods()
  */
 PGDLLEXPORT Datum
 Periodset_periods(PG_FUNCTION_ARGS)
@@ -313,7 +347,9 @@ Periodset_periods(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_num_timestamps);
 /**
- * Return the number of timestamps of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the number of timestamps of a period set
+ * @sqlfunc numTimestamps()
  */
 PGDLLEXPORT Datum
 Periodset_num_timestamps(PG_FUNCTION_ARGS)
@@ -326,7 +362,9 @@ Periodset_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_start_timestamp);
 /**
- * Return the start timestamp of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the start timestamp of a period set
+ * @sqlfunc startTimestamp()
  */
 PGDLLEXPORT Datum
 Periodset_start_timestamp(PG_FUNCTION_ARGS)
@@ -340,7 +378,9 @@ Periodset_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_end_timestamp);
 /**
- * Return the end timestamp of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the end timestamp of a period set
+ * @sqlfunc endTimestamp()
  */
 PGDLLEXPORT Datum
 Periodset_end_timestamp(PG_FUNCTION_ARGS)
@@ -354,7 +394,9 @@ Periodset_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timestamp_n);
 /**
- * Return the n-th timestamp of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the n-th timestamp of a period set
+ * @sqlfunc timestampN()
  */
 PGDLLEXPORT Datum
 Periodset_timestamp_n(PG_FUNCTION_ARGS)
@@ -370,7 +412,9 @@ Periodset_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timestamps);
 /**
- * Return the timestamps of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the timestamps of a period set
+ * @sqlfunc timestamps()
  */
 PGDLLEXPORT Datum
 Periodset_timestamps(PG_FUNCTION_ARGS)
@@ -385,12 +429,14 @@ Periodset_timestamps(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Modifications functions
+ * Transformation functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Periodset_shift);
 /**
- * Shift a period set by an interval
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Shift a period set by an interval
+ * @sqlfunc shift()
  */
 PGDLLEXPORT Datum
 Periodset_shift(PG_FUNCTION_ARGS)
@@ -404,7 +450,9 @@ Periodset_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_tscale);
 /**
- * Shift a period set by an interval
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Shift a period set by an interval
+ * @sqlfunc tscale()
  */
 PGDLLEXPORT Datum
 Periodset_tscale(PG_FUNCTION_ARGS)
@@ -418,7 +466,9 @@ Periodset_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_shift_tscale);
 /**
- * Shift a period set by an interval
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Shift a period set by an interval
+ * @sqlfunc shiftTscale()
  */
 PGDLLEXPORT Datum
 Periodset_shift_tscale(PG_FUNCTION_ARGS)
@@ -437,8 +487,10 @@ Periodset_shift_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first period set
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return -1, 0, or 1 depending on whether the first period set
  * is less than, equal, or greater than the second one
+ * @sqlfunc periodset_cmp()
  */
 PGDLLEXPORT Datum
 Periodset_cmp(PG_FUNCTION_ARGS)
@@ -453,7 +505,10 @@ Periodset_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_eq);
 /**
- * Return true if the first period set is equal to the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first period set is equal to the second one
+ * @sqlfunc periodset_eq()
+ * @sqlop @p =
  */
 PGDLLEXPORT Datum
 Periodset_eq(PG_FUNCTION_ARGS)
@@ -468,7 +523,10 @@ Periodset_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_ne);
 /**
- * Return true if the first period set is different from the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first period set is different from the second one
+ * @sqlfunc periodset_ne()
+ * @sqlop @p <>
  */
 PGDLLEXPORT Datum
 Periodset_ne(PG_FUNCTION_ARGS)
@@ -485,7 +543,10 @@ Periodset_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_lt);
 /**
- * Return true if the first period set is less than the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first period set is less than the second one
+ * @sqlfunc periodset_lt()
+ * @sqlop @p <
  */
 PGDLLEXPORT Datum
 Periodset_lt(PG_FUNCTION_ARGS)
@@ -500,8 +561,11 @@ Periodset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_le);
 /**
- * Return true if the first period set is less than or equal to
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first period set is less than or equal to
  * the second one
+ * @sqlfunc periodset_le()
+ * @sqlop @p <=
  */
 PGDLLEXPORT Datum
 Periodset_le(PG_FUNCTION_ARGS)
@@ -516,8 +580,11 @@ Periodset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_ge);
 /**
- * Return true if the first period set is greater than or equal to
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first period set is greater than or equal to
  * the second one
+ * @sqlfunc periodset_ge()
+ * @sqlop @p >=
  */
 PGDLLEXPORT Datum
 Periodset_ge(PG_FUNCTION_ARGS)
@@ -532,7 +599,10 @@ Periodset_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_gt);
 /**
- * Return true if the first period set is greater than the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first period set is greater than the second one
+ * @sqlfunc periodset_gt()
+ * @sqlop @p >
  */
 PGDLLEXPORT Datum
 Periodset_gt(PG_FUNCTION_ARGS)
@@ -553,7 +623,9 @@ Periodset_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_hash);
 /**
- * Return the 32-bit hash value of a period set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the 32-bit hash value of a period set
+ * @sqlfunc periodset_hash()
  */
 PGDLLEXPORT Datum
 Periodset_hash(PG_FUNCTION_ARGS)
@@ -565,7 +637,9 @@ Periodset_hash(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_hash_extended);
 /**
- * Return the 64-bit hash value of a period set using a seed
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the 64-bit hash value of a period set using a seed
+ * @sqlfunc periodset_hash_extended()
  */
 PGDLLEXPORT Datum
 Periodset_hash_extended(PG_FUNCTION_ARGS)

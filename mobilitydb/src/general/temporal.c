@@ -2281,7 +2281,7 @@ Tnumber_integral(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_twavg);
 /**
- * @ingroup mobilitydb_temporal_time
+ * @ingroup mobilitydb_temporal_agg
  * @brief Return the time-weighted average of a temporal number
  * @sqlfunc twAvg()
  */

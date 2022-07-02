@@ -58,7 +58,10 @@
 
 PG_FUNCTION_INFO_V1(Npoint_to_stbox);
 /**
- * Return the bounding box of the network point value
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Return the bounding box of the network point value
+ * @sqlfunc stbox()
+ * @sqlop @p ::
  */
 PGDLLEXPORT Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
@@ -71,7 +74,10 @@ Npoint_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_to_stbox);
 /**
- * Return the bounding box of the network segment value
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Return the bounding box of the network segment value
+ * @sqlfunc stbox()
+ * @sqlop @p ::
  */
 PGDLLEXPORT Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
@@ -82,9 +88,14 @@ Nsegment_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Npoint_timestamp_to_stbox);
 /**
- * Transform a network point and a timestamp to a spatiotemporal box
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Transform a network point and a timestamp to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlop @p
  */
 PGDLLEXPORT Datum
 Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
@@ -98,7 +109,10 @@ Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_period_to_stbox);
 /**
- * Transform a network point and a period to a spatiotemporal box
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Transform a network point and a period to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlop @p
  */
 PGDLLEXPORT Datum
 Npoint_period_to_stbox(PG_FUNCTION_ARGS)
@@ -114,7 +128,10 @@ Npoint_period_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnpoint_to_stbox);
 /**
- * Transform a temporal network point to a spatiotemporal box
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Transform a temporal network point to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlop @p ::
  */
 PGDLLEXPORT Datum
 Tnpoint_to_stbox(PG_FUNCTION_ARGS)
@@ -130,7 +147,7 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Generic box function for a geometry and a temporal network point
+ * @brief Generic box function for a geometry and a temporal network point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -150,7 +167,7 @@ boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic box function for a temporal network point and a geometry
+ * @brief Generic box function for a temporal network point and a geometry
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -170,7 +187,7 @@ boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic box function for an stbox and a temporal network point
+ * @brief Generic box function for an stbox and a temporal network point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -191,7 +208,7 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic box function for a temporal network point and an stbox
+ * @brief Generic box function for a temporal network point and an stbox
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -212,7 +229,7 @@ boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic box function for a network point and a temporal network point
+ * @brief Generic box function for a network point and a temporal network point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -229,7 +246,7 @@ boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic box function for a temporal network point and a network point
+ * @brief Generic box function for a temporal network point and a network point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -246,7 +263,7 @@ boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic box function for two temporal network points
+ * @brief Generic box function for two temporal network points
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -269,8 +286,11 @@ boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Overlaps_geo_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the geometry and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the geometry and
  * the temporal network point overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -280,8 +300,11 @@ Overlaps_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box and the spatiotemporal box of
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box and the spatiotemporal box of
  * the temporal network point overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -291,8 +314,11 @@ Overlaps_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_npoint_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the network point and the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the network point and the
  * temporal network point overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -304,8 +330,11 @@ Overlaps_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_tnpoint_geo);
 /**
- * Return true if the spatiotemporal boxes of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network point and
  * the geometry overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -315,8 +344,11 @@ Overlaps_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_tnpoint_stbox);
 /**
- * Return true if the spatiotemporal box of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point and
  * the spatiotemporal box overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -326,8 +358,11 @@ Overlaps_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_tnpoint_npoint);
 /**
- * Return true if the spatiotemporal boxes of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network point and
  * the network point overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -337,8 +372,11 @@ Overlaps_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_tnpoint_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the temporal network points
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network points
  * overlap
+ * @sqlfunc overlaps_bbox()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -352,8 +390,11 @@ Overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_bbox_geo_tnpoint);
 /**
- * Return true if the spatiotemporal box of the geometry contains the one of
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the geometry contains the one of
  * the temporal network point
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -363,8 +404,11 @@ Contains_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box contains the one of the temporal
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box contains the one of the temporal
  * network point
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -374,8 +418,11 @@ Contains_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_npoint_tnpoint);
 /**
- * Return true if the spatiotemporal box of the network point contains the one
+ * @ingroup mobilitydb_temporal_bbox 
+ * @brief Return true if the spatiotemporal box of the network point contains the one
  * of the temporal network point
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -387,8 +434,11 @@ Contains_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_tnpoint_geo);
 /**
- * Return true if the spatiotemporal box of the temporal network point
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the one of the geometry
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -398,8 +448,11 @@ Contains_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_tnpoint_stbox);
 /**
- * Return true if the spatiotemporal box of the temporal network point
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the spatiotemporal box
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -409,8 +462,11 @@ Contains_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_tnpoint_npoint);
 /**
- * Return true if the spatiotemporal box of the temporal network point
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the one of the network point
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -420,8 +476,11 @@ Contains_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_tnpoint_tnpoint);
 /**
- * Return true if the spatiotemporal box of the first temporal network point
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the first temporal network point
  * contain the one of the second temporal network point
+ * @sqlfunc contains_bbox()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -435,8 +494,11 @@ Contains_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_geo_tnpoint);
 /**
- * Return true if the spatiotemporal box of the geometry is contained by the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the geometry is contained by the
  * one of the temporal network point
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -446,8 +508,11 @@ Contained_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is contained by the one of the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box is contained by the one of the
  * temporal network point
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -457,8 +522,11 @@ Contained_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_npoint_tnpoint);
 /**
- * Return true if the spatiotemporal box of the network point is contained by
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the network point is contained by
  * the one of the temporal network point
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -470,8 +538,11 @@ Contained_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_tnpoint_geo);
 /**
- * Return true if the spatiotemporal box of the temporal network point is
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained by the one of the geometry
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -481,8 +552,11 @@ Contained_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_tnpoint_stbox);
 /**
- * Return true if the spatiotemporal box of the temporal network point is
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained by the spatiotemporal box
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -492,8 +566,11 @@ Contained_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_tnpoint_npoint);
 /**
- * Return true if the spatiotemporal box of the temporal network point is
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained by the one of the network point
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -503,8 +580,11 @@ Contained_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_tnpoint_tnpoint);
 /**
- * Return true if the spatiotemporal box of the first temporal network point
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the first temporal network point
  * is contained by the one of the second temporal network point
+ * @sqlfunc contained_bbox()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -518,8 +598,11 @@ Contained_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_geo_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the geometry and the temporal
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the geometry and the temporal
  * network point are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -529,8 +612,11 @@ Same_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box and the spatiotemporal box of the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
  * temporal network point are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -540,8 +626,11 @@ Same_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_npoint_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the network point and the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the network point and the
  * temporal network point are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -553,8 +642,11 @@ Same_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_tnpoint_geo);
 /**
- * Return true if the spatiotemporal boxes of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network point and
  * the geometry are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -564,8 +656,11 @@ Same_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_tnpoint_stbox);
 /**
- * Return true if the spatiotemporal box of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point and
  * the spatiotemporal box are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -575,8 +670,11 @@ Same_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_tnpoint_npoint);
 /**
- * Return true if the spatiotemporal boxes of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network point and
  * the network point are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -586,8 +684,11 @@ Same_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Same_tnpoint_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the temporal network points
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network points
  * are equal in the common dimensions
+ * @sqlfunc same_bbox()
+ * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
 Same_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -601,8 +702,11 @@ Same_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_geo_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the geometry and the temporal
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the geometry and the temporal
  * network point are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -612,8 +716,11 @@ Adjacent_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box and the spatiotemporal box of the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
  * temporal network point are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -623,8 +730,11 @@ Adjacent_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_npoint_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the network point and the
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the network point and the
  * temporal network point are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -636,8 +746,11 @@ Adjacent_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_tnpoint_geo);
 /**
- * Return true if the spatiotemporal boxes of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network point and
  * the geometry are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -647,8 +760,11 @@ Adjacent_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_tnpoint_stbox);
 /**
- * Return true if the spatiotemporal box of the temporal network point
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal box of the temporal network point
  * and the spatiotemporal box are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -658,8 +774,11 @@ Adjacent_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_tnpoint_npoint);
 /**
- * Return true if the spatiotemporal boxes of the temporal network point and
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network point and
  * the network point are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -669,8 +788,11 @@ Adjacent_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_tnpoint_tnpoint);
 /**
- * Return true if the spatiotemporal boxes of the temporal network points
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return true if the spatiotemporal boxes of the temporal network points
  * are adjacent
+ * @sqlfunc adjacent_bbox()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_tnpoint_tnpoint(PG_FUNCTION_ARGS)

@@ -56,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * Generic arithmetic operator on a number an a temporal number
+ * @brief Generic arithmetic operator on a number an a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
@@ -76,7 +76,7 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 }
 
 /**
- * Generic arithmetic operator on a temporal number an a number
+ * @brief Generic arithmetic operator on a temporal number an a number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
@@ -96,7 +96,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 }
 
 /**
- * Generic arithmetic operator on a temporal numbers
+ * @brief Generic arithmetic operator on a temporal numbers
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] oper Enumeration that states the arithmetic operator
@@ -125,7 +125,10 @@ arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 
 PG_FUNCTION_INFO_V1(Add_number_tnumber);
 /**
- * Return the temporal addition of a number and a temporal number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal addition of a number and a temporal number
+ * @sqlfunc tnumber_add()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Add_number_tnumber(PG_FUNCTION_ARGS)
@@ -135,7 +138,10 @@ Add_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Add_tnumber_number);
 /**
- * Return the temporal addition of a temporal number and a number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal addition of a temporal number and a number
+ * @sqlfunc tnumber_add()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Add_tnumber_number(PG_FUNCTION_ARGS)
@@ -145,7 +151,10 @@ Add_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 /**
- * Return the temporal addition of the temporal numbers
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal addition of the temporal numbers
+ * @sqlfunc tnumber_add()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Add_tnumber_tnumber(PG_FUNCTION_ARGS)
@@ -159,7 +168,10 @@ Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Sub_number_tnumber);
 /**
- * Return the temporal subtraction of a number and a temporal number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal subtraction of a number and a temporal number
+ * @sqlfunc tnumber_sub()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Sub_number_tnumber(PG_FUNCTION_ARGS)
@@ -169,7 +181,10 @@ Sub_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Sub_tnumber_number);
 /**
- * Return the temporal subtraction of a temporal number and a number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal subtraction of a temporal number and a number
+ * @sqlfunc tnumber_sub()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Sub_tnumber_number(PG_FUNCTION_ARGS)
@@ -179,7 +194,10 @@ Sub_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 /**
- * Return the temporal subtraction of the temporal numbers
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal subtraction of the temporal numbers
+ * @sqlfunc tnumber_sub()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
@@ -193,7 +211,10 @@ Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Mult_number_tnumber);
 /**
- * Return the temporal multiplication of a number and a temporal number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal multiplication of a number and a temporal number
+ * @sqlfunc tnumber_mult()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Mult_number_tnumber(PG_FUNCTION_ARGS)
@@ -203,7 +224,10 @@ Mult_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Mult_tnumber_number);
 /**
- * Return the temporal multiplication of a temporal number and a number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal multiplication of a temporal number and a number
+ * @sqlfunc tnumber_mult()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Mult_tnumber_number(PG_FUNCTION_ARGS)
@@ -213,7 +237,10 @@ Mult_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 /**
- * Return the temporal multiplication of the temporal numbers
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal multiplication of the temporal numbers
+ * @sqlfunc tnumber_mult()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
@@ -228,7 +255,10 @@ Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Div_number_tnumber);
 /**
- * Return the temporal division of a number and a temporal number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal division of a number and a temporal number
+ * @sqlfunc tnumber_div()
+ * @sqlop @p /
  */
 PGDLLEXPORT Datum
 Div_number_tnumber(PG_FUNCTION_ARGS)
@@ -238,7 +268,10 @@ Div_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Div_tnumber_number);
 /**
- * Return the temporal division of a temporal number and a number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal division of a temporal number and a number
+ * @sqlfunc tnumber_div()
+ * @sqlop @p /
  */
 PGDLLEXPORT Datum
 Div_tnumber_number(PG_FUNCTION_ARGS)
@@ -248,7 +281,10 @@ Div_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 /**
- * Return the temporal multiplication of the temporal numbers
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the temporal multiplication of the temporal numbers
+ * @sqlfunc tnumber_div()
+ * @sqlop @p /
  */
 PGDLLEXPORT Datum
 Div_tnumber_tnumber(PG_FUNCTION_ARGS)
@@ -303,7 +339,9 @@ tnumber_round(const Temporal *temp, Datum digits)
 
 PG_FUNCTION_INFO_V1(Tnumber_round);
 /**
- * Round a temporal number to a given number of decimal places
+ * @ingroup mobilitydb_temporal_math
+ * @brief Round a temporal number to a given number of decimal places
+ * @sqlfunc round()
  */
 PGDLLEXPORT Datum
 Tnumber_round(PG_FUNCTION_ARGS)
@@ -317,7 +355,10 @@ Tnumber_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_degrees);
 /**
- * Convert a temporal number from radians to degrees
+ * @ingroup mobilitydb_temporal_math
+ * @brief Convert a temporal number from radians to degrees
+ * @sqlfunc degrees()
+ * @sqlop @p
  */
 PGDLLEXPORT Datum
 Tnumber_degrees(PG_FUNCTION_ARGS)
@@ -334,7 +375,10 @@ Tnumber_degrees(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_derivative);
 /**
- * Return the derivative of a temporal number
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the derivative of a temporal number
+ * @sqlfunc derivative()
+ * @sqlop @p
  */
 PGDLLEXPORT Datum
 Tnumber_derivative(PG_FUNCTION_ARGS)

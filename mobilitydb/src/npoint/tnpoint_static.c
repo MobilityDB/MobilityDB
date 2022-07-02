@@ -94,17 +94,6 @@ nsegment_recv(StringInfo buf)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Nsegment_recv);
-/**
- * Receive function for network segments
- */
-PGDLLEXPORT Datum
-Nsegment_recv(PG_FUNCTION_ARGS)
-{
-  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(nsegment_recv(buf));
-}
-
 /**
  * @brief Send function for network segments
  */
@@ -172,9 +161,11 @@ nsegment_round(const Nsegment *ns, Datum size)
 
 PG_FUNCTION_INFO_V1(Npoint_in);
 /**
- * Input function for network points
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input function for network points
  * Example of input:
  *    (1, 0.5)
+ * @sqlfunc npoint_in()
  */
 PGDLLEXPORT Datum
 Npoint_in(PG_FUNCTION_ARGS)
@@ -185,7 +176,9 @@ Npoint_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_out);
 /**
- * Output function for network points
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output function for network points
+ * @sqlfunc npoint_out()
  */
 PGDLLEXPORT Datum
 Npoint_out(PG_FUNCTION_ARGS)
@@ -196,7 +189,9 @@ Npoint_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_recv);
 /**
- * Receive function for network points
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Receive function for network points
+ * @sqlfunc npoint_recv()
  */
 PGDLLEXPORT Datum
 Npoint_recv(PG_FUNCTION_ARGS)
@@ -207,7 +202,9 @@ Npoint_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_send);
 /**
- * Send function for network points
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Send function for network points
+ * @sqlfunc npoint_send()
  */
 PGDLLEXPORT Datum
 Npoint_send(PG_FUNCTION_ARGS)
@@ -222,9 +219,11 @@ Npoint_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_in);
 /**
- * Input function for network segments
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input function for network segments
  * Example of input:
  *    (1, 0.5, 0.6)
+ * @sqlfunc nsegment_in()
  */
 PGDLLEXPORT Datum
 Nsegment_in(PG_FUNCTION_ARGS)
@@ -235,7 +234,9 @@ Nsegment_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_out);
 /**
- * Output function for network segments
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output function for network segments
+ * @sqlfunc nsegment_out()
  */
 PGDLLEXPORT Datum
 Nsegment_out(PG_FUNCTION_ARGS)
@@ -244,9 +245,24 @@ Nsegment_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(nsegment_out(ns));
 }
 
+PG_FUNCTION_INFO_V1(Nsegment_recv);
+/**
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Receive function for network segments
+ * @sqlfunc nsegment_recv()
+ */
+PGDLLEXPORT Datum
+Nsegment_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PG_RETURN_POINTER(nsegment_recv(buf));
+}
+
 PG_FUNCTION_INFO_V1(Nsegment_send);
 /**
- * Send function for network segments
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Send function for network segments
+ * @sqlfunc nsegment_sent()
  */
 PGDLLEXPORT Datum
 Nsegment_send(PG_FUNCTION_ARGS)
@@ -261,7 +277,9 @@ Nsegment_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_constructor);
 /**
- * Construct a network segment from the arguments
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a network segment from the arguments
+ * @sqlfunc npoint()
  */
 PGDLLEXPORT Datum
 Npoint_constructor(PG_FUNCTION_ARGS)
@@ -273,7 +291,9 @@ Npoint_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_constructor);
 /**
- * Construct a network segment from the arguments
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a network segment from the arguments
+ * @sqlfunc nsegment()
  */
 PGDLLEXPORT Datum
 Nsegment_constructor(PG_FUNCTION_ARGS)
@@ -284,9 +304,15 @@ Nsegment_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(nsegment_make(rid, pos1, pos2));
 }
 
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
- * Cast a network segment from a network point
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Cast a network segment from a network point
+ * @sqlfunc nsegment()
  */
 PGDLLEXPORT Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
@@ -301,7 +327,9 @@ Npoint_to_nsegment(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_route);
 /**
- * Return the route of the network point
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the route of the network point
+ * @sqlfunc route()
  */
 PGDLLEXPORT Datum
 Npoint_route(PG_FUNCTION_ARGS)
@@ -312,7 +340,9 @@ Npoint_route(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_position);
 /**
- * Return the position of the network point
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the position of the network point
+ * @sqlfunc position()
  */
 PGDLLEXPORT Datum
 Npoint_position(PG_FUNCTION_ARGS)
@@ -323,7 +353,9 @@ Npoint_position(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_route);
 /**
- * Return the route of the network segment
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the route of the network segment
+ * @sqlfunc route()
  */
 PGDLLEXPORT Datum
 Nsegment_route(PG_FUNCTION_ARGS)
@@ -334,7 +366,9 @@ Nsegment_route(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_start_position);
 /**
- * Return the start position of the network segment
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the start position of the network segment
+ * @sqlfunc startPosition()
  */
 PGDLLEXPORT Datum
 Nsegment_start_position(PG_FUNCTION_ARGS)
@@ -345,7 +379,9 @@ Nsegment_start_position(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_end_position);
 /**
- * Return the end position of the network segment
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the end position of the network segment
+ * @sqlfunc endPosition()
  */
 PGDLLEXPORT Datum
 Nsegment_end_position(PG_FUNCTION_ARGS)
@@ -354,10 +390,16 @@ Nsegment_end_position(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(nsegment_end_position(ns));
 }
 
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Npoint_round);
 /**
- * Set the precision of the position of a network point to the number of
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Set the precision of the position of a network point to the number of
  * decimal places
+ * @sqlfunc round()
  */
 PGDLLEXPORT Datum
 Npoint_round(PG_FUNCTION_ARGS)
@@ -369,8 +411,10 @@ Npoint_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_round);
 /**
- * Set the precision of the position of a network point to the number of
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Set the precision of the position of a network point to the number of
  * decimal places
+ * @sqlfunc round()
  */
 PGDLLEXPORT Datum
 Nsegment_round(PG_FUNCTION_ARGS)
@@ -386,7 +430,9 @@ Nsegment_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_to_geom);
 /**
- * Transforms the network point into a geometry
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Transforms the network point into a geometry
+ * @sqlfunc geometry()
  */
 PGDLLEXPORT Datum
 Npoint_to_geom(PG_FUNCTION_ARGS)
@@ -398,7 +444,9 @@ Npoint_to_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geom_to_npoint);
 /**
- * Transforms the geometry into a network point
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Transforms the geometry into a network point
+ * @sqlfunc npoint()
  */
 PGDLLEXPORT Datum
 Geom_to_npoint(PG_FUNCTION_ARGS)
@@ -412,7 +460,9 @@ Geom_to_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_to_geom);
 /**
- * Transforms the network segment into a geometry
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Transforms the network segment into a geometry
+ * @sqlfunc geometry()
  */
 PGDLLEXPORT Datum
 Nsegment_to_geom(PG_FUNCTION_ARGS)
@@ -424,7 +474,9 @@ Nsegment_to_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geom_to_nsegment);
 /**
- * Transforms the geometry into a network segment
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Transforms the geometry into a network segment
+ * @sqlfunc nsegment()
  */
 PGDLLEXPORT Datum
 Geom_to_nsegment(PG_FUNCTION_ARGS)
@@ -442,7 +494,9 @@ Geom_to_nsegment(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_get_srid);
 /**
- * Return the SRID of the network point
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the SRID of the network point
+ * @sqlfunc SRID()
  */
 PGDLLEXPORT Datum
 Npoint_get_srid(PG_FUNCTION_ARGS)
@@ -454,7 +508,9 @@ Npoint_get_srid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_get_srid);
 /**
- * Return the SRID of the network segment
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the SRID of the network segment
+ * @sqlfunc SRID()
  */
 PGDLLEXPORT Datum
 Nsegment_get_srid(PG_FUNCTION_ARGS)
@@ -470,7 +526,10 @@ Nsegment_get_srid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_eq);
 /**
- * Return true if the first network point is equal to the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network point is equal to the second one
+ * @sqlfunc npoint_eq()
+ * @sqlop @p =
  */
 PGDLLEXPORT Datum
 Npoint_eq(PG_FUNCTION_ARGS)
@@ -482,7 +541,10 @@ Npoint_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_ne);
 /**
- * Return true if the first network point is not equal to the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network point is not equal to the second one
+ * @sqlfunc npoint_ne()
+ * @sqlop @p <>
  */
 PGDLLEXPORT Datum
 Npoint_ne(PG_FUNCTION_ARGS)
@@ -494,10 +556,12 @@ Npoint_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first network point
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
+ * @sqlfunc npoint_cmp()
  */
 PGDLLEXPORT Datum
 Npoint_cmp(PG_FUNCTION_ARGS)
@@ -509,7 +573,10 @@ Npoint_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_lt);
 /**
- * Return true if the first network point is less than the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network point is less than the second one
+ * @sqlfunc npoint_lt()
+ * @sqlop @p <
  */
 PGDLLEXPORT Datum
 Npoint_lt(PG_FUNCTION_ARGS)
@@ -521,8 +588,11 @@ Npoint_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_le);
 /**
- * Return true if the first network point is less than or equal to the
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network point is less than or equal to the
  * second one
+ * @sqlfunc npoint_le()
+ * @sqlop @p <=
  */
 PGDLLEXPORT Datum
 Npoint_le(PG_FUNCTION_ARGS)
@@ -534,8 +604,11 @@ Npoint_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_ge);
 /**
- * Return true if the first network point is greater than or equal to the
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network point is greater than or equal to the
  * second one
+ * @sqlfunc npoint_ge()
+ * @sqlop @p >=
  */
 PGDLLEXPORT Datum
 Npoint_ge(PG_FUNCTION_ARGS)
@@ -547,7 +620,10 @@ Npoint_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_gt);
 /**
- * Return true if the first network point is greater than the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network point is greater than the second one
+ * @sqlfunc npoint_gt()
+ * @sqlop @p >
  */
 PGDLLEXPORT Datum
 Npoint_gt(PG_FUNCTION_ARGS)
@@ -561,7 +637,10 @@ Npoint_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_eq);
 /**
- * Return true if the first network segment is equal to the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network segment is equal to the second one
+ * @sqlfunc nsegment_eq()
+ * @sqlop @p =
  */
 PGDLLEXPORT Datum
 Nsegment_eq(PG_FUNCTION_ARGS)
@@ -573,7 +652,10 @@ Nsegment_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_ne);
 /**
- * Return true if the first network segment is not equal to the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network segment is not equal to the second one
+ * @sqlfunc nsegment_ne()
+ * @sqlop @p <>
  */
 PGDLLEXPORT Datum
 Nsegment_ne(PG_FUNCTION_ARGS)
@@ -585,8 +667,10 @@ Nsegment_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first network segment
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal, or greater than the second one
+ * @sqlfunc nsegment_cmp()
  */
 PGDLLEXPORT Datum
 Nsegment_cmp(PG_FUNCTION_ARGS)
@@ -600,7 +684,10 @@ Nsegment_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_lt);
 /**
- * Return true if the first network segment is less than the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network segment is less than the second one
+ * @sqlfunc nsegment_lt()
+ * @sqlop @p <
  */
 PGDLLEXPORT Datum
 Nsegment_lt(PG_FUNCTION_ARGS)
@@ -612,8 +699,11 @@ Nsegment_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_le);
 /**
- * Return true if the first network segment is less than or equal to the
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network segment is less than or equal to the
  * second one
+ * @sqlfunc nsegment_le()
+ * @sqlop @p <=
  */
 PGDLLEXPORT Datum
 Nsegment_le(PG_FUNCTION_ARGS)
@@ -625,8 +715,11 @@ Nsegment_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_ge);
 /**
- * Return true if the first network segment is greater than or equal to the
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network segment is greater than or equal to the
  * second one
+ * @sqlfunc nsegment_ge()
+ * @sqlop @p >=
  */
 PGDLLEXPORT Datum
 Nsegment_ge(PG_FUNCTION_ARGS)
@@ -638,7 +731,10 @@ Nsegment_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_gt);
 /**
- * Return true if the first network segment is greater than the second one
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return true if the first network segment is greater than the second one
+ * @sqlfunc nsegment_gt()
+ * @sqlop @p >
  */
 PGDLLEXPORT Datum
 Nsegment_gt(PG_FUNCTION_ARGS)

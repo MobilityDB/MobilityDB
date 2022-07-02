@@ -131,7 +131,7 @@ pg_atoi(const char *s, int size, int c)
 #define PGC_ERRMSG_MAXLEN 2048
 
 /**
- * Output an error message
+ * @brief Output an error message
  */
 static void
 pg_error(const char *fmt, va_list ap)
@@ -144,7 +144,7 @@ pg_error(const char *fmt, va_list ap)
 }
 
 /**
- * Output a notice message
+ * @brief Output a notice message
  */
 static void
 pg_notice(const char *fmt, va_list ap)
@@ -157,7 +157,7 @@ pg_notice(const char *fmt, va_list ap)
 }
 
 /**
- * Set the handlers for initializing the liblwgeom library
+ * @brief Set the handlers for initializing the liblwgeom library
  */
 void
 temporalgeom_init()
@@ -170,7 +170,7 @@ temporalgeom_init()
  *****************************************************************************/
 
 /**
- * Check the consistency of the metadata we want to enforce in the typmod:
+ * @brief Check the consistency of the metadata we want to enforce in the typmod:
  * SRID, type and dimensionality. If things are inconsistent, shut down the query.
  */
 static Temporal *
@@ -215,26 +215,21 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
- * Generic input function for temporal points
- *
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Generic input function for temporal points
  * @note Examples of input for the various temporal types:
- * - Instant
  * @code
+ * // Instant
  * Point(0 0) @ 2012-01-01 08:00:00
- * @endcode
- * - Instant set
- * @code
+ * // Instant set
  * { Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 }
- * @endcode
- * - Sequence
- * @code
+ * // Sequence
  * [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
- * @endcode
- * - Sequence set
- * @code
+ * // Sequence set
  * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
- * [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
+ *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
+ * @sqlfunc tpoint_in()
  */
 PGDLLEXPORT Datum
 Tpoint_in(PG_FUNCTION_ARGS)
@@ -246,7 +241,7 @@ Tpoint_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Input typmod information for temporal points
+ * @brief Input typmod information for temporal points
  */
 static uint32
 tpoint_typmod_in(ArrayType *arr, int is_geography)
@@ -375,7 +370,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 
 PG_FUNCTION_INFO_V1(Tgeompoint_typmod_in);
 /**
- * Input typmod information for temporal geometric points
+ * @brief Input typmod information for temporal geometric points
  */
 PGDLLEXPORT Datum
 Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
@@ -387,7 +382,7 @@ Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tgeogpoint_typmod_in);
 /**
- * Input typmod information for temporal geographic points
+ * @brief Input typmod information for temporal geographic points
  */
 PGDLLEXPORT Datum
 Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
@@ -402,7 +397,7 @@ Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_typmod_out);
 /**
- * Output typmod information for temporal points
+ * @brief Output typmod information for temporal points
  */
 PGDLLEXPORT Datum
 Tpoint_typmod_out(PG_FUNCTION_ARGS)
@@ -445,7 +440,7 @@ Tpoint_typmod_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_enforce_typmod);
 /**
- * Enforce typmod information for temporal points with respect to
+ * @brief Enforce typmod information for temporal points with respect to
  * temporal type, dimensions, and SRID
  */
 PGDLLEXPORT Datum
@@ -464,7 +459,9 @@ Tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
- * Construct a temporal instant point value from the arguments
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a temporal instant point value from the arguments
+ * @sqlfunc tgeompoint_inst(), tgeogpoint_inst(),
  */
 PGDLLEXPORT Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
@@ -482,12 +479,15 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Accessor functions
+ * Cast functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
- * Return the bounding box of a temporal point
+ * @ingroup mobilitydb_temporal_cast
+ * @brief Return the bounding box of a temporal point
+ * @sqlfunc stbox()
+ * @sqlop @p ::
  */
 PGDLLEXPORT Datum
 Tpoint_to_stbox(PG_FUNCTION_ARGS)
@@ -504,8 +504,10 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geo_expand_spatial);
 /**
- * Return the bounding box of a temporal point expanded on the
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
+ * @sqlfunc expandSpatial()
  */
 PGDLLEXPORT Datum
 Geo_expand_spatial(PG_FUNCTION_ARGS)
@@ -521,8 +523,10 @@ Geo_expand_spatial(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_expand_spatial);
 /**
- * Return the bounding box of a temporal point expanded on the
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
+ * @sqlfunc expandSpatial()
  */
 PGDLLEXPORT Datum
 Tpoint_expand_spatial(PG_FUNCTION_ARGS)
@@ -539,7 +543,7 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return the temporal comparison of a point and a temporal point
+ * @brief Return the temporal comparison of a point and a temporal point
  */
 static Datum
 tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
@@ -556,7 +560,7 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Return the temporal comparison of a temporal point and a point
+ * @brief Return the temporal comparison of a temporal point and a point
  */
 static Datum
 tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
@@ -576,7 +580,10 @@ tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
 /**
- * Return the temporal equality of a point and a temporal point
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return the temporal equality of a point and a temporal point
+ * @sqlfunc tpoint_teq()
+ * @sqlop @p #=
  */
 PGDLLEXPORT Datum
 Teq_geo_tpoint(PG_FUNCTION_ARGS)
@@ -586,7 +593,10 @@ Teq_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
 /**
- * Return the temporal equality of the temporal point and a point
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return the temporal equality of the temporal point and a point
+ * @sqlfunc tpoint_teq()
+ * @sqlop @p #=
  */
 PGDLLEXPORT Datum
 Teq_tpoint_geo(PG_FUNCTION_ARGS)
@@ -596,7 +606,10 @@ Teq_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
 /**
- * Return the temporal inequality of a point and a temporal point
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return the temporal inequality of a point and a temporal point
+ * @sqlfunc tpoint_tne()
+ * @sqlop @p #=
  */
 PGDLLEXPORT Datum
 Tne_geo_tpoint(PG_FUNCTION_ARGS)
@@ -606,7 +619,10 @@ Tne_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
 /**
- * Return the temporal inequality of the temporal point and a point
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Return the temporal inequality of the temporal point and a point
+ * @sqlfunc tpoint_tne()
+ * @sqlop @p #=
  */
 PGDLLEXPORT Datum
 Tne_tpoint_geo(PG_FUNCTION_ARGS)
@@ -621,8 +637,10 @@ Tne_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_values);
 /**
- * Return the base values (that is, the trajectory) of a temporal point
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the base values (that is, the trajectory) of a temporal point
  * value as a geometry/geography
+ * @sqlfunc getValues()
  */
 PGDLLEXPORT Datum
 Tpoint_values(PG_FUNCTION_ARGS)

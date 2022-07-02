@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Generic spatial relationships for a temporal network point and a geometry
+ * @brief Generic spatial relationships for a temporal network point and a geometry
  */
 Datum
 spatialrel_geo_tnpoint_ext(FunctionCallInfo fcinfo,
@@ -69,7 +69,7 @@ spatialrel_geo_tnpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic spatial relationships for a temporal network point and a geometry
+ * @brief Generic spatial relationships for a temporal network point and a geometry
  */
 static Datum
 spatialrel_tnpoint_geo_ext(FunctionCallInfo fcinfo,
@@ -83,7 +83,7 @@ spatialrel_tnpoint_geo_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic spatial relationships for a temporal network point and a network point
+ * @brief Generic spatial relationships for a temporal network point and a network point
  */
 static Datum
 spatialrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
@@ -97,7 +97,7 @@ spatialrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic spatial relationships for a temporal network point and a network point
+ * @brief Generic spatial relationships for a temporal network point and a network point
  */
 static Datum
 spatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
@@ -111,7 +111,7 @@ spatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Return true if the temporal network points ever satisfy the spatial
+ * @brief Return true if the temporal network points ever satisfy the spatial
  * relationship
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -137,8 +137,10 @@ spatialrel_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Contains_geo_tnpoint);
 /**
- * Return true if the geometry contains the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the geometry contains the trajectory of the temporal network
  * point
+ * @sqlfunc contains()
  */
 PGDLLEXPORT Datum
 Contains_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -152,8 +154,10 @@ Contains_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_geo_tnpoint);
 /**
- * Return true if the geometry and the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the geometry and the trajectory of the temporal network
  * point are disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -163,8 +167,10 @@ Disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_npoint_tnpoint);
 /**
- * Return true if the network point and the trajectory of the temporal
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the network point and the trajectory of the temporal
  * network point are disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -174,8 +180,10 @@ Disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_tnpoint_geo);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * geometry are disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -185,8 +193,10 @@ Disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Disjoint_tnpoint_npoint);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * network point are disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -194,11 +204,11 @@ Disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
   return spatialrel_tnpoint_npoint_ext(fcinfo, &geom_disjoint2d);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Disjoint_tnpoint_tnpoint);
 /**
- * Return true if the temporal points are ever disjoint
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the temporal points are ever disjoint
+ * @sqlfunc disjoint()
  */
 PGDLLEXPORT Datum
 Disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -212,8 +222,10 @@ Disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_geo_tnpoint);
 /**
- * Return true if the geometry and the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the geometry and the trajectory of the temporal network
  * point intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -223,8 +235,10 @@ Intersects_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_npoint_tnpoint);
 /**
- * Return true if the network point and the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the network point and the trajectory of the temporal network
  * point intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -234,8 +248,10 @@ Intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_tnpoint_geo);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * geometry intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -245,8 +261,10 @@ Intersects_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersects_tnpoint_npoint);
 /**
- * Return true if the trajectory of the temporal network point and the network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the network
  * point intersect
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -254,11 +272,11 @@ Intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
   return spatialrel_tnpoint_npoint_ext(fcinfo, &geom_intersects2d);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Intersects_tnpoint_tnpoint);
 /**
- * Return true if the temporal points are ever disjoint
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the temporal points are ever disjoint
+ * @sqlfunc intersects()
  */
 PGDLLEXPORT Datum
 Intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -272,8 +290,10 @@ Intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_geo_tnpoint);
 /**
- * Return true if the geometry and the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the geometry and the trajectory of the temporal network
  * point are within the given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -289,8 +309,10 @@ Dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_npoint_tnpoint);
 /**
- * Return true if the network point and the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the network point and the trajectory of the temporal network
  * point are within the given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -306,8 +328,10 @@ Dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_tnpoint_geo);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * geometry are within the given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -323,8 +347,10 @@ Dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_tnpoint_npoint);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * network point are within the given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -340,8 +366,10 @@ Dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Dwithin_tnpoint_tnpoint);
 /**
- * Return true if the trajectories of the temporal network points are within
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectories of the temporal network points are within
  * the given distance
+ * @sqlfunc dwithin()
  */
 PGDLLEXPORT Datum
 Dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -363,20 +391,24 @@ Dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_geo_tnpoint);
 /**
- * Return true if the geometry and the trajectory of the temporal network
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the geometry and the trajectory of the temporal network
  * point touch
+ * @sqlfunc touches()
  */
 PGDLLEXPORT Datum
 Touches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_geo_tnpoint_ext(fcinfo, &geom_touches);
 }
-/**
- * Return true if the network point and the trajectory of the temporal
- * network point touch
- */
-PG_FUNCTION_INFO_V1(Touches_npoint_tnpoint);
 
+PG_FUNCTION_INFO_V1(Touches_npoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the network point and the trajectory of the temporal
+ * network point touch
+ * @sqlfunc touches()
+ */
 PGDLLEXPORT Datum
 Touches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -385,8 +417,10 @@ Touches_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_tnpoint_geo);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * geometry touch
+ * @sqlfunc touches()
  */
 PGDLLEXPORT Datum
 Touches_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -396,8 +430,10 @@ Touches_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Touches_tnpoint_npoint);
 /**
- * Return true if the trajectory of the temporal network point and the
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Return true if the trajectory of the temporal network point and the
  * network point touch
+ * @sqlfunc touches()
  */
 PGDLLEXPORT Datum
 Touches_tnpoint_npoint(PG_FUNCTION_ARGS)

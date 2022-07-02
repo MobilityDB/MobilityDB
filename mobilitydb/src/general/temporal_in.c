@@ -46,7 +46,10 @@
 
 PG_FUNCTION_INFO_V1(Temporal_from_mfjson);
 /**
- * Return a temporal point from its MF-JSON representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a temporal value from its MF-JSON representation.
+ * @sqlfunc tboolFromMFJSON(), tintFromMFJSON(), tfloatFromMFJSON(),
+ * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
  */
 PGDLLEXPORT Datum
 Temporal_from_mfjson(PG_FUNCTION_ARGS)
@@ -63,7 +66,10 @@ Temporal_from_mfjson(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_from_wkb);
 /**
- * Return a span from its WKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a span from its WKB representation
+ * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary
+ * 
  */
 PGDLLEXPORT Datum
 Span_from_wkb(PG_FUNCTION_ARGS)
@@ -77,7 +83,9 @@ Span_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_from_hexwkb);
 /**
- * Return a span from its HEXWKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a span from its HEXWKB representation
+ * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB
  */
 PGDLLEXPORT Datum
 Span_from_hexwkb(PG_FUNCTION_ARGS)
@@ -94,7 +102,10 @@ Span_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
 /**
- * Return a timestamp set from its WKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a timestamp set from its WKB representation
+ * @sqlfunc timestampsetFromBinary()
+ * 
  */
 PGDLLEXPORT Datum
 Timestampset_from_wkb(PG_FUNCTION_ARGS)
@@ -108,7 +119,9 @@ Timestampset_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_from_hexwkb);
 /**
- * Return a temporal point from its HexWKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a timestamp set from its HexWKB representation
+ * @sqlfunc timestampsetFromHexWKB()
  */
 PGDLLEXPORT Datum
 Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
@@ -125,7 +138,9 @@ Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_from_wkb);
 /**
- * Return a timestamp set from its WKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a timestamp set from its WKB representation
+ * @sqlfunc periodsetFromBinary()
  */
 PGDLLEXPORT Datum
 Periodset_from_wkb(PG_FUNCTION_ARGS)
@@ -139,7 +154,9 @@ Periodset_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_from_hexwkb);
 /**
- * Return a temporal point from its HexWKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a period set from its HexWKB representation
+ * @sqlfunc periodsetFromHexWKB()
  */
 PGDLLEXPORT Datum
 Periodset_from_hexwkb(PG_FUNCTION_ARGS)
@@ -156,7 +173,9 @@ Periodset_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_from_wkb);
 /**
- * Return a temporal box from its WKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a temporal box from its WKB representation
+ * @sqlfunc tboxFromBinary()
  */
 PGDLLEXPORT Datum
 Tbox_from_wkb(PG_FUNCTION_ARGS)
@@ -170,7 +189,9 @@ Tbox_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
 /**
- * Return a temporal point from its HexWKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a temporal box from its HexWKB representation
+ * @sqlfunc tboxFromHexWKB()
  */
 PGDLLEXPORT Datum
 Tbox_from_hexwkb(PG_FUNCTION_ARGS)
@@ -187,7 +208,9 @@ Tbox_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_from_wkb);
 /**
- * Return a temporal box from its WKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a temporal box from its WKB representation
+ * @sqlfunc stboxFromBinary()
  */
 PGDLLEXPORT Datum
 Stbox_from_wkb(PG_FUNCTION_ARGS)
@@ -201,7 +224,9 @@ Stbox_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
 /**
- * Return a temporal point from its HexWKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a spatiotemporal box from its HexWKB representation
+ * @sqlfunc stboxFromHexWKB()
  */
 PGDLLEXPORT Datum
 Stbox_from_hexwkb(PG_FUNCTION_ARGS)
@@ -218,7 +243,10 @@ Stbox_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_from_wkb);
 /**
- * Return a temporal type from its WKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a temporal type from its WKB representation
+ * @sqlfunc tboolFromBinary(), tintFromBinary(), tfloatFromBinary(),
+ * ttextFromBinary(), tgeompointFromBinary(), tgeogpointFromBinary()
  */
 PGDLLEXPORT Datum
 Temporal_from_wkb(PG_FUNCTION_ARGS)
@@ -232,7 +260,10 @@ Temporal_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
 /**
- * Return a temporal type from its HEXWKB representation
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Input a temporal value from its HexWKB representation
+ * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
+ * ttextFromHexWKB(), tgeompointFromHexWKB(), tgeogpointFromHexWKB()
  */
 PGDLLEXPORT Datum
 Temporal_from_hexwkb(PG_FUNCTION_ARGS)

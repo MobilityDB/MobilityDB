@@ -468,8 +468,10 @@ CREATE OPERATOR -|- (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-/*****************************************************************************/
-
+/*****************************************************************************
+ * Set operators
+ *****************************************************************************/
+ 
 CREATE FUNCTION span_union(intspan, intspan)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Union_span_span'
@@ -489,28 +491,6 @@ CREATE OPERATOR + (
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = +
 );
-
-/*****************************************************************************/
-
-CREATE FUNCTION span_minus(intspan, intspan)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Minus_span_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(floatspan, floatspan)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Minus_span_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR - (
-  PROCEDURE = span_minus,
-  LEFTARG = intspan, RIGHTARG = intspan
-);
-CREATE OPERATOR - (
-  PROCEDURE = span_minus,
-  LEFTARG = floatspan, RIGHTARG = floatspan
-);
-
-/*****************************************************************************/
 
 CREATE FUNCTION span_intersection(intspan, intspan)
   RETURNS intspan
@@ -532,7 +512,27 @@ CREATE OPERATOR * (
   COMMUTATOR = *
 );
 
-/*****************************************************************************/
+CREATE FUNCTION span_minus(intspan, intspan)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Minus_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_minus(floatspan, floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Minus_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR - (
+  PROCEDURE = span_minus,
+  LEFTARG = intspan, RIGHTARG = intspan
+);
+CREATE OPERATOR - (
+  PROCEDURE = span_minus,
+  LEFTARG = floatspan, RIGHTARG = floatspan
+);
+
+/*****************************************************************************
+ * Distance operators
+ *****************************************************************************/
 
 CREATE FUNCTION span_distance(int, int)
   RETURNS float

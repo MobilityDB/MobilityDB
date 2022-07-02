@@ -56,7 +56,9 @@
 
 PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
- * Output a temporal point in Well-Known Text (WKT) format
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a temporal point in Well-Known Text (WKT) format
+ * @sqlfunc asText()
  */
 PGDLLEXPORT Datum
 Tpoint_as_text(PG_FUNCTION_ARGS)
@@ -71,8 +73,10 @@ Tpoint_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 /**
- * Output a temporal point in Extended Well-Known Text (EWKT) format,
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
+ * @sqlfunc asEWKT()
  */
 PGDLLEXPORT Datum
 Tpoint_as_ewkt(PG_FUNCTION_ARGS)
@@ -113,7 +117,9 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 
 PG_FUNCTION_INFO_V1(Geoarr_as_text);
 /**
- * Output a geometry/geography array in Well-Known Text (WKT) format
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a geometry/geography array in Well-Known Text (WKT) format
+ * @sqlfunc asText()
  */
 PGDLLEXPORT Datum
 Geoarr_as_text(PG_FUNCTION_ARGS)
@@ -123,8 +129,10 @@ Geoarr_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 /**
- * Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
+ * @sqlfunc asEWKT()
  */
 PGDLLEXPORT Datum
 Geoarr_as_ewkt(PG_FUNCTION_ARGS)
@@ -160,7 +168,9 @@ tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 /**
- * Output a temporal point array in Well-Known Text (WKT) format
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a temporal point array in Well-Known Text (WKT) format
+ * @sqlfunc asText()
  */
 PGDLLEXPORT Datum
 Tpointarr_as_text(PG_FUNCTION_ARGS)
@@ -170,8 +180,10 @@ Tpointarr_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 /**
- * Output a temporal point array in Extended Well-Known Text (EWKT) format,
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a temporal point array in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
+ * @sqlfunc asEWKT()
  */
 PGDLLEXPORT Datum
 Tpointarr_as_ewkt(PG_FUNCTION_ARGS)

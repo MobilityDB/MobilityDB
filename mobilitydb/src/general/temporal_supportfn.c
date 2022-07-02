@@ -315,7 +315,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
  *   AS 'MODULE_PATHNAME','temporal_ever_eq'
  *   SUPPORT temporal_supportfn
  *   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- * @code
+ * @endcode
  * The function must also have an entry above in the IndexableFunctions array
  * so that we know what index search strategy we want to apply.
  */

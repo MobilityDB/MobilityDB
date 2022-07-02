@@ -52,7 +52,9 @@
 
 PG_FUNCTION_INFO_V1(Timestampset_in);
 /**
- * Input function for timestamp sets
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Input function for timestamp sets
+ * @sqlfunc timestampset_in()
  */
 PGDLLEXPORT Datum
 Timestampset_in(PG_FUNCTION_ARGS)
@@ -64,7 +66,9 @@ Timestampset_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_out);
 /**
- * Output function for timestamp sets
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Output function for timestamp sets
+ * @sqlfunc timestampset_out()
  */
 PGDLLEXPORT Datum
 Timestampset_out(PG_FUNCTION_ARGS)
@@ -77,7 +81,9 @@ Timestampset_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_recv);
 /**
- * Receive function for timestamp set
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Receive function for timestamp set
+ * @sqlfunc timestampset_recv()
  */
 PGDLLEXPORT Datum
 Timestampset_recv(PG_FUNCTION_ARGS)
@@ -91,7 +97,9 @@ Timestampset_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_send);
 /**
- * Send function for timestamp set
+ * @ingroup mobilitydb_spantime_in_out
+ * @brief Send function for timestamp set
+ * @sqlfunc timestampset_send()
  */
 PGDLLEXPORT Datum
 Timestampset_send(PG_FUNCTION_ARGS)
@@ -111,7 +119,9 @@ Timestampset_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_constructor);
 /**
- * Construct a timestamp set from an array of timestamps
+ * @ingroup mobilitydb_spantime_constructor
+ * @brief Construct a timestamp set from an array of timestamps
+ * @sqlfunc timestampset()
  */
 PGDLLEXPORT Datum
 Timestampset_constructor(PG_FUNCTION_ARGS)
@@ -131,7 +141,9 @@ Timestampset_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamp_to_timestampset);
 /**
- * Cast a timestamp as a timestamp set
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Cast a timestamp as a timestamp set
+ * @sqlfunc timestampset()
  */
 PGDLLEXPORT Datum
 Timestamp_to_timestampset(PG_FUNCTION_ARGS)
@@ -142,7 +154,8 @@ Timestamp_to_timestampset(PG_FUNCTION_ARGS)
 }
 
 /**
- * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Peak into a timestamp set datum to find the bounding box. If the datum needs
  * to be detoasted, extract only the header and not the full object.
  */
 void
@@ -161,7 +174,9 @@ timestampset_period_slice(Datum tsdatum, Period *p)
 
 PG_FUNCTION_INFO_V1(Timestampset_to_period);
 /**
- * Return the bounding period on which a timestamp set is defined
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Return the bounding period on which a timestamp set is defined
+ * @sqlfunc period()
  */
 PGDLLEXPORT Datum
 Timestampset_to_period(PG_FUNCTION_ARGS)
@@ -178,7 +193,9 @@ Timestampset_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_mem_size);
 /**
- * Return the size in bytes of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the size in bytes of a timestamp set
+ * @sqlfunc memSize()
  */
 PGDLLEXPORT Datum
 Timestampset_mem_size(PG_FUNCTION_ARGS)
@@ -191,7 +208,9 @@ Timestampset_mem_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timespan);
 /**
- * Return the timespan of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the timespan of a timestamp set
+ * @sqlfunc timespan()
  */
 PGDLLEXPORT Datum
 Timestampset_timespan(PG_FUNCTION_ARGS)
@@ -204,7 +223,9 @@ Timestampset_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_num_timestamps);
 /**
- * Return the number of timestamps of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the number of timestamps of a timestamp set
+ * @sqlfunc numTimestamp()
  */
 PGDLLEXPORT Datum
 Timestampset_num_timestamps(PG_FUNCTION_ARGS)
@@ -216,7 +237,9 @@ Timestampset_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_start_timestamp);
 /**
- * Return the start timestamp of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the start timestamp of a timestamp set
+ * @sqlfunc startTimestamp()
  */
 PGDLLEXPORT Datum
 Timestampset_start_timestamp(PG_FUNCTION_ARGS)
@@ -229,7 +252,9 @@ Timestampset_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_end_timestamp);
 /**
- * Return the end timestamp of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the end timestamp of a timestamp set
+ * @sqlfunc endTimestamp()
  */
 PGDLLEXPORT Datum
 Timestampset_end_timestamp(PG_FUNCTION_ARGS)
@@ -242,7 +267,9 @@ Timestampset_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timestamp_n);
 /**
- * Return the n-th timestamp of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the n-th timestamp of a timestamp set
+ * @sqlfunc timestampN()
  */
 PGDLLEXPORT Datum
 Timestampset_timestamp_n(PG_FUNCTION_ARGS)
@@ -259,7 +286,9 @@ Timestampset_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timestamps);
 /**
- * Return the timestamps of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the timestamps of a timestamp set
+ * @sqlfunc timestamps()
  */
 PGDLLEXPORT Datum
 Timestampset_timestamps(PG_FUNCTION_ARGS)
@@ -273,12 +302,14 @@ Timestampset_timestamps(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Modification functions
+ * Transformation functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Timestampset_shift);
 /**
- * Shift a timestamp set by an interval
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Shift a timestamp set by an interval
+ * @sqlfunc shift()
  */
 PGDLLEXPORT Datum
 Timestampset_shift(PG_FUNCTION_ARGS)
@@ -292,7 +323,9 @@ Timestampset_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_tscale);
 /**
- * Scale a timestamp set by an interval
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Scale a timestamp set by an interval
+ * @sqlfunc tscale()
  */
 PGDLLEXPORT Datum
 Timestampset_tscale(PG_FUNCTION_ARGS)
@@ -307,7 +340,9 @@ Timestampset_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
 /**
- * Shift and scale a timestamp set by the intervals
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Shift and scale a timestamp set by the intervals
+ * @sqlfunc shiftTscale()
  */
 PGDLLEXPORT Datum
 Timestampset_shift_tscale(PG_FUNCTION_ARGS)
@@ -326,8 +361,10 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first timestamp set
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * is less than, equal, or greater than the second temporal value
+ * @sqlfunc timestampset_cmp()
  */
 PGDLLEXPORT Datum
 Timestampset_cmp(PG_FUNCTION_ARGS)
@@ -342,7 +379,10 @@ Timestampset_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_eq);
 /**
- * Return true if the first timestamp set is equal to the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first timestamp set is equal to the second one
+ * @sqlfunc timestampset_eq()
+ * @sqlop @p =
  */
 PGDLLEXPORT Datum
 Timestampset_eq(PG_FUNCTION_ARGS)
@@ -357,7 +397,10 @@ Timestampset_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_ne);
 /**
- * Return true if the first timestamp set is different from the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first timestamp set is different from the second one
+ * @sqlfunc timestampset_ne()
+ * @sqlop @p <>
  */
 PGDLLEXPORT Datum
 Timestampset_ne(PG_FUNCTION_ARGS)
@@ -372,7 +415,10 @@ Timestampset_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_lt);
 /**
- * Return true if the first timestamp set is less than the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first timestamp set is less than the second one
+ * @sqlfunc timestampset_lt()
+ * @sqlop @p <
  */
 PGDLLEXPORT Datum
 Timestampset_lt(PG_FUNCTION_ARGS)
@@ -387,8 +433,11 @@ Timestampset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_le);
 /**
- * Return true if the first timestamp set is less than
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first timestamp set is less than
  * or equal to the second one
+ * @sqlfunc timestampset_le()
+ * @sqlop @p <=
  */
 PGDLLEXPORT Datum
 Timestampset_le(PG_FUNCTION_ARGS)
@@ -403,8 +452,11 @@ Timestampset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_ge);
 /**
- * Return true if the first timestamp set is greater than
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
+ * @sqlfunc timestampset_ge()
+ * @sqlop @p >=
  */
 PGDLLEXPORT Datum
 Timestampset_ge(PG_FUNCTION_ARGS)
@@ -419,7 +471,10 @@ Timestampset_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_gt);
 /**
- * Return true if the first timestamp set is greater than the second one
+ * @ingroup mobilitydb_spantime_comp
+ * @brief Return true if the first timestamp set is greater than the second one
+ * @sqlfunc timestampset_gt()
+ * @sqlop @p >
  */
 PGDLLEXPORT Datum
 Timestampset_gt(PG_FUNCTION_ARGS)
@@ -438,7 +493,9 @@ Timestampset_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_hash);
 /**
- * Return the 32-bit hash value of a timestamp set
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the 32-bit hash value of a timestamp set
+ * @sqlfunc timestampset_hash()
  */
 PGDLLEXPORT Datum
 Timestampset_hash(PG_FUNCTION_ARGS)
@@ -450,7 +507,9 @@ Timestampset_hash(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_hash_extended);
 /**
- * Return the 64-bit hash value of a timestamp set using a seed
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the 64-bit hash value of a timestamp set using a seed
+ * @sqlfunc timestampset_hash_extended()
  */
 PGDLLEXPORT Datum
 Timestampset_hash_extended(PG_FUNCTION_ARGS)

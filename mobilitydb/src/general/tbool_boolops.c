@@ -42,7 +42,10 @@
 
 PG_FUNCTION_INFO_V1(Tand_bool_tbool);
 /**
- * Return the boolean and of a boolean and a temporal boolean
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean and of a boolean and a temporal boolean
+ * @sqlfunc temporal_and()
+ * @sqlop @p &
  */
 PGDLLEXPORT Datum
 Tand_bool_tbool(PG_FUNCTION_ARGS)
@@ -56,7 +59,10 @@ Tand_bool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tand_tbool_bool);
 /**
- * Return the boolean and of a temporal boolean and a boolean
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean and of a temporal boolean and a boolean
+ * @sqlfunc temporal_and()
+ * @sqlop @p &
  */
 PGDLLEXPORT Datum
 Tand_tbool_bool(PG_FUNCTION_ARGS)
@@ -70,7 +76,10 @@ Tand_tbool_bool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tand_tbool_tbool);
 /**
- * Return the boolean and of the temporal booleans
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean and of the temporal booleans
+ * @sqlfunc temporal_and()
+ * @sqlop @p &
  */
 PGDLLEXPORT Datum
 Tand_tbool_tbool(PG_FUNCTION_ARGS)
@@ -91,7 +100,10 @@ Tand_tbool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tor_bool_tbool);
 /**
- * Return the boolean or of a boolean and the temporal boolean
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean or of a boolean and the temporal boolean
+ * @sqlfunc temporal_or()
+ * @sqlop @p |
  */
 PGDLLEXPORT Datum
 Tor_bool_tbool(PG_FUNCTION_ARGS)
@@ -105,7 +117,10 @@ Tor_bool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tor_tbool_bool);
 /**
- * Return the boolean or of a temporal boolean and a boolean
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean or of a temporal boolean and a boolean
+ * @sqlfunc temporal_or()
+ * @sqlop @p |
  */
 PGDLLEXPORT Datum
 Tor_tbool_bool(PG_FUNCTION_ARGS)
@@ -119,7 +134,10 @@ Tor_tbool_bool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tor_tbool_tbool);
 /**
- * Return the boolean or of the temporal booleans
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean or of the temporal booleans
+ * @sqlfunc temporal_or()
+ * @sqlop @p |
  */
 PGDLLEXPORT Datum
 Tor_tbool_tbool(PG_FUNCTION_ARGS)
@@ -140,7 +158,10 @@ Tor_tbool_tbool(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnot_tbool);
 /**
- * Return the boolean not of a temporal boolean
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the boolean not of a temporal boolean
+ * @sqlfunc temporal_not()
+ * @sqlop @p ~
  */
 PGDLLEXPORT Datum
 Tnot_tbool(PG_FUNCTION_ARGS)

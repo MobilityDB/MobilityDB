@@ -223,10 +223,6 @@
  * @ingroup mobilitydb_temporal
  * @brief Local aggregate functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_tiling Multidimensional tiling functions
- * @ingroup mobilitydb_temporal
- * @brief Multidimensional tiling functions for temporal types.
- *
  * @defgroup mobilitydb_temporal_tile Tile functions
  * @ingroup mobilitydb_temporal
  * @brief Tile functions for temporal types.

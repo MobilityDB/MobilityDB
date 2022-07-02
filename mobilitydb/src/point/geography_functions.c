@@ -41,21 +41,15 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if ! MEOS
-  #include <fmgr.h>
-  #include <utils/array.h>
-#endif /* ! MEOS */
+#include <fmgr.h>
+#include <utils/array.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
-#if ! MEOS
-  #include <lwgeom_pg.h>
-#endif /* ! MEOS */
+#include <lwgeom_pg.h>
 #include <lwgeodetic_tree.h>
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"
-
-#if ! MEOS
 
 /***********************************************************************
  * Closest point and closest line functions for geographies.
@@ -139,11 +133,6 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-
-#endif /* ! MEOS */
-
-
-#if ! MEOS
 
 /**
 Returns the point in first input geography that is closest to the second
@@ -815,5 +804,3 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-
-#endif /* ! MEOS */

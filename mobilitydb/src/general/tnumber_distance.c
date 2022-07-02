@@ -52,7 +52,10 @@
 
 PG_FUNCTION_INFO_V1(Distance_number_tnumber);
 /**
- * Return the temporal distance between a number and a temporal number
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the temporal distance between a number and a temporal number
+ * @sqlfunc tnumber_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_number_tnumber(PG_FUNCTION_ARGS)
@@ -69,7 +72,10 @@ Distance_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_tnumber_number);
 /**
- * Return the temporal distance between a temporal number and a number
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the temporal distance between a temporal number and a number
+ * @sqlfunc tnumber_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_tnumber_number(PG_FUNCTION_ARGS)
@@ -86,7 +92,10 @@ Distance_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_tnumber_tnumber);
 /**
- * Return the temporal distance between two temporal numbers
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the temporal distance between two temporal numbers
+ * @sqlfunc tnumber_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
@@ -109,7 +118,9 @@ Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_number_tnumber);
 /**
- * Return the temporal distance between a number and a temporal number
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the temporal distance between a number and a temporal number
+ * @sqlfunc nearestApproachDistance()
  */
 PGDLLEXPORT Datum
 NAD_number_tnumber(PG_FUNCTION_ARGS)
@@ -125,7 +136,9 @@ NAD_number_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnumber_number);
 /**
- * Return the temporal distance between a temporal number and a number
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the temporal distance between a temporal number and a number
+ * @sqlfunc nearestApproachDistance()
  */
 PGDLLEXPORT Datum
 NAD_tnumber_number(PG_FUNCTION_ARGS)
@@ -141,7 +154,9 @@ NAD_tnumber_number(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
 /**
- * Return the nearest approach distance between the temporal boxes
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between the temporal boxes
+ * @sqlfunc nearestApproachDistance()
  */
 PGDLLEXPORT Datum
 NAD_tbox_tbox(PG_FUNCTION_ARGS)
@@ -156,8 +171,10 @@ NAD_tbox_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tbox_tnumber);
 /**
- * Return the nearest approach distance between a temporal box and a
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal box and a
  * temporal number
+ * @sqlfunc nearestApproachDistance()
  */
 PGDLLEXPORT Datum
 NAD_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -173,8 +190,10 @@ NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnumber_tbox);
 /**
- * Return the nearest approach distance between a temporal number and a
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal number and a
  * temporal box
+ * @sqlfunc nearestApproachDistance()
  */
 PGDLLEXPORT Datum
 NAD_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -190,7 +209,9 @@ NAD_tnumber_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnumber_tnumber);
 /**
- * Return the nearest approach distance between the temporal numbers
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between the temporal numbers
+ * @sqlfunc nearestApproachDistance()
  */
 PGDLLEXPORT Datum
 NAD_tnumber_tnumber(PG_FUNCTION_ARGS)

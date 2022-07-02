@@ -44,7 +44,7 @@
 /*****************************************************************************/
 
 /**
- * Return the size in bytes to read from toast to get the basic information
+ * @brief Return the size in bytes to read from toast to get the basic information
  * from a variable-length time type: Time struct (i.e., TimestampSet
  * or PeriodSet) and bounding box size
 */
@@ -59,7 +59,10 @@ time_max_header_size(void)
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_timestamp);
 /**
- * Return true if a timestamp set contains a timestamp
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set contains a timestamp
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -73,7 +76,10 @@ Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_timestampset_timestampset);
 /**
- * Return true if the first timestamp set contains the second one
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the first timestamp set contains the second one
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -88,7 +94,10 @@ Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_timestamp);
 /**
- * Return true if a period contains a timestamp
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period contains a timestamp
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_period_timestamp(PG_FUNCTION_ARGS)
@@ -100,7 +109,10 @@ Contains_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_timestampset);
 /**
- * Return true if a period contains a timestamp set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period contains a timestamp set
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_period_timestampset(PG_FUNCTION_ARGS)
@@ -114,7 +126,10 @@ Contains_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_period);
 /**
- * Return true if a period contains a period
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period contains a period
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_period_period(PG_FUNCTION_ARGS)
@@ -126,7 +141,10 @@ Contains_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_timestamp);
 /**
- * Return true if a period set contains a timestamp
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set contains a timestamp
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -140,7 +158,10 @@ Contains_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_timestampset);
 /**
- * Return true if a period set contains a timestamp set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set contains a timestamp set
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -155,7 +176,10 @@ Contains_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_period);
 /**
- * Return true if a period set contains a period set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set contains a period set
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_periodset_period(PG_FUNCTION_ARGS)
@@ -169,7 +193,10 @@ Contains_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_period_periodset);
 /**
- * Return true if a period contains a period set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period contains a period set
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_period_periodset(PG_FUNCTION_ARGS)
@@ -183,7 +210,10 @@ Contains_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_periodset_periodset);
 /**
- * Return true if the first period set contains the second one
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the first period set contains the second one
+ * @sqlfunc time_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_periodset_periodset(PG_FUNCTION_ARGS)
@@ -201,7 +231,10 @@ Contains_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_timestampset);
 /**
- * Return true if a timestamp is contained by a timestamp set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp is contained by a timestamp set
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -215,7 +248,10 @@ Contained_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_period);
 /**
- * Return true if a timestamp is contained by a period
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp is contained by a period
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_timestamp_period(PG_FUNCTION_ARGS)
@@ -227,7 +263,10 @@ Contained_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestamp_periodset);
 /**
- * Return true if a timestamp is contained by a period set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp is contained by a period set
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -241,7 +280,10 @@ Contained_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_timestampset);
 /**
- * Return true if the first timestamp set is contained by the second one
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the first timestamp set is contained by the second one
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -256,7 +298,10 @@ Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_period);
 /**
- * Return true if a timestamp set is contained by a period
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set is contained by a period
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_timestampset_period(PG_FUNCTION_ARGS)
@@ -270,7 +315,10 @@ Contained_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_timestampset_periodset);
 /**
- * Return true if a timestamp set is contained by a period set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set is contained by a period set
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -285,7 +333,10 @@ Contained_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_period_period);
 /**
- * Return true if a period is contained by the second one
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period is contained by the second one
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_period_period(PG_FUNCTION_ARGS)
@@ -297,7 +348,10 @@ Contained_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_period_periodset);
 /**
- * Return true if a period is contained by a period set
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period is contained by a period set
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_period_periodset(PG_FUNCTION_ARGS)
@@ -311,7 +365,10 @@ Contained_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_periodset_period);
 /**
- * Return true if a period set is contained by a period
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set is contained by a period
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_periodset_period(PG_FUNCTION_ARGS)
@@ -325,7 +382,10 @@ Contained_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_periodset_periodset);
 /**
- * Return true if the first period set is contained by the second one
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the first period set is contained by the second one
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_periodset_periodset(PG_FUNCTION_ARGS)
@@ -343,7 +403,10 @@ Contained_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_timestampset);
 /**
- * Return true if the timestamp sets overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the timestamp sets overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -358,7 +421,10 @@ Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_period);
 /**
- * Return true if a timestamp set and a period overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set and a period overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_period(PG_FUNCTION_ARGS)
@@ -372,7 +438,10 @@ Overlaps_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_periodset);
 /**
- * Return true if a timestamp set and a period set overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set and a period set overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -387,7 +456,10 @@ Overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_timestampset);
 /**
- * Return true if a period and a timestamp set overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period and a timestamp set overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_period_timestampset(PG_FUNCTION_ARGS)
@@ -401,7 +473,10 @@ Overlaps_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_period);
 /**
- * Return true if the periods overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the periods overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_period_period(PG_FUNCTION_ARGS)
@@ -413,7 +488,10 @@ Overlaps_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_period_periodset);
 /**
- * Return true if a period and a period set overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period and a period set overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_period_periodset(PG_FUNCTION_ARGS)
@@ -427,7 +505,10 @@ Overlaps_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_timestampset);
 /**
- * Return true if a period set and a timestamp set overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set and a timestamp set overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -442,7 +523,10 @@ Overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_period);
 /**
- * Return true if a period set and a period overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set and a period overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_period(PG_FUNCTION_ARGS)
@@ -456,7 +540,10 @@ Overlaps_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_periodset_periodset);
 /**
- * Return true if the period sets overlap
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the period sets overlap
+ * @sqlfunc time_overlaps()
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_periodset_periodset(PG_FUNCTION_ARGS)
@@ -474,7 +561,10 @@ Overlaps_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestamp_period);
 /**
- * Return true if a timestamp and a period are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp and a period are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_timestamp_period(PG_FUNCTION_ARGS)
@@ -486,7 +576,10 @@ Adjacent_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestamp_periodset);
 /**
- * Return true if a timestamp and a period set are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp and a period set are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -500,7 +593,10 @@ Adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_period);
 /**
- * Return true if a timestamp set and a period are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set and a period are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_timestampset_period(PG_FUNCTION_ARGS)
@@ -514,7 +610,10 @@ Adjacent_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_timestampset_periodset);
 /**
- * Return true if a timestamp set and a period set are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a timestamp set and a period set are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -529,7 +628,10 @@ Adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_timestamp);
 /**
- * Return true if a period and a timestamp are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period and a timestamp are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_period_timestamp(PG_FUNCTION_ARGS)
@@ -541,7 +643,10 @@ Adjacent_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_timestampset);
 /**
- * Return true if a period and a timestamp set are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period and a timestamp set are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_period_timestampset(PG_FUNCTION_ARGS)
@@ -555,7 +660,10 @@ Adjacent_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_period);
 /**
- * Return true if the periods are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the periods are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_period_period(PG_FUNCTION_ARGS)
@@ -567,7 +675,10 @@ Adjacent_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_period_periodset);
 /**
- * Return true if a period and a period set are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period and a period set are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_period_periodset(PG_FUNCTION_ARGS)
@@ -581,7 +692,10 @@ Adjacent_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_timestamp);
 /**
- * Return true if a period set and a timestamp are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set and a timestamp are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -595,7 +709,10 @@ Adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_timestampset);
 /**
- * Return true if a period set and a timestamp set are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set and a timestamp set are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -610,7 +727,10 @@ Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_period);
 /**
- * Return true if a period set and a period are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a period set and a period are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_period(PG_FUNCTION_ARGS)
@@ -624,7 +744,10 @@ Adjacent_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Adjacent_periodset_periodset);
 /**
- * Return true if the period sets are adjacent
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if the period sets are adjacent
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_periodset_periodset(PG_FUNCTION_ARGS)
@@ -642,7 +765,10 @@ Adjacent_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestamp_timestampset);
 /**
- * Return true if a timestamp is strictly before a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is strictly before a timestamp set
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -656,7 +782,10 @@ Before_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestamp_period);
 /**
- * Return true if a timestamp is strictly before a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is strictly before a period
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestamp_period(PG_FUNCTION_ARGS)
@@ -668,7 +797,10 @@ Before_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestamp_periodset);
 /**
- * Return true if a timestamp is strictly before a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is strictly before a period set
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -682,7 +814,10 @@ Before_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_timestamp);
 /**
- * Return true if a timestamp set is strictly before a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is strictly before a timestamp
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -696,7 +831,10 @@ Before_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_timestampset);
 /**
- * Return true if the first timestamp set is strictly before the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first timestamp set is strictly before the second one
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -711,7 +849,10 @@ Before_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_period);
 /**
- * Return true if a timestamp set is strictly before a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is strictly before a period
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestampset_period(PG_FUNCTION_ARGS)
@@ -725,7 +866,10 @@ Before_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_timestampset_periodset);
 /**
- * Return true if a timestamp set is strictly before a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is strictly before a period set
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -740,7 +884,10 @@ Before_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_timestamp);
 /**
- * Return true if a period is strictly before a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly before a timestamp
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_period_timestamp(PG_FUNCTION_ARGS)
@@ -752,7 +899,10 @@ Before_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_timestampset);
 /**
- * Return true if a period is strictly before a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly before a timestamp set
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_period_timestampset(PG_FUNCTION_ARGS)
@@ -766,7 +916,10 @@ Before_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_period);
 /**
- * Return true if a period is strictly before the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly before the second one
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_period_period(PG_FUNCTION_ARGS)
@@ -778,7 +931,10 @@ Before_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_period_periodset);
 /**
- * Return true if a period is strictly before a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly before a period set
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_period_periodset(PG_FUNCTION_ARGS)
@@ -792,7 +948,10 @@ Before_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_timestamp);
 /**
- * Return true if a period set is strictly before a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is strictly before a timestamp
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -806,7 +965,10 @@ Before_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_timestampset);
 /**
- * Return true if a period set is strictly before a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is strictly before a timestamp set
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -821,7 +983,10 @@ Before_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_period);
 /**
- * Return true if a period set is strictly before a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is strictly before a period
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_periodset_period(PG_FUNCTION_ARGS)
@@ -835,7 +1000,10 @@ Before_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_periodset_periodset);
 /**
- * Return true if the first period set is strictly before the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period set is strictly before the second one
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Before_periodset_periodset(PG_FUNCTION_ARGS)
@@ -853,7 +1021,10 @@ Before_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestamp_timestampset);
 /**
- * Return true if a timestamp is strictly after a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is strictly after a timestamp set
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -867,7 +1038,10 @@ After_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestamp_period);
 /**
- * Return true if a timestamp is strictly after a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is strictly after a period
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestamp_period(PG_FUNCTION_ARGS)
@@ -879,7 +1053,10 @@ After_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestamp_periodset);
 /**
- * Return true if a timestamp is strictly after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is strictly after a period set
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -893,7 +1070,10 @@ After_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_timestamp);
 /**
- * Return true if a timestamp set is strictly after a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is strictly after a timestamp
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -907,7 +1087,10 @@ After_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_timestampset);
 /**
- * Return true if the first timestamp set is strictly after the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first timestamp set is strictly after the second one
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -922,7 +1105,10 @@ After_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_period);
 /**
- * Return true if a timestamp set is strictly after a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is strictly after a period
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestampset_period(PG_FUNCTION_ARGS)
@@ -936,7 +1122,10 @@ After_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_timestampset_periodset);
 /**
- * Return true if a timestamp set is strictly after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is strictly after a period set
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -951,7 +1140,10 @@ After_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_timestamp);
 /**
- * Return true if a period is strictly after a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly after a timestamp
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_period_timestamp(PG_FUNCTION_ARGS)
@@ -963,7 +1155,10 @@ After_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_timestampset);
 /**
- * Return true if a period is strictly after a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly after a timestamp set
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_period_timestampset(PG_FUNCTION_ARGS)
@@ -977,7 +1172,10 @@ After_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_period);
 /**
- * Return true if the first period is strictly after the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period is strictly after the second one
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_period_period(PG_FUNCTION_ARGS)
@@ -989,7 +1187,10 @@ After_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_period_periodset);
 /**
- * Return true if a period is strictly after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is strictly after a period set
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_period_periodset(PG_FUNCTION_ARGS)
@@ -1003,7 +1204,10 @@ After_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_timestamp);
 /**
- * Return true if a period set is strictly after a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is strictly after a timestamp
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -1017,7 +1221,10 @@ After_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_timestampset);
 /**
- * Return true if a period set is strictly after a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is strictly after a timestamp set
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -1032,7 +1239,10 @@ After_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_period);
 /**
- * Return true if a period set is strictly after a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is strictly after a period
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_periodset_period(PG_FUNCTION_ARGS)
@@ -1046,7 +1256,10 @@ After_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_periodset_periodset);
 /**
- * Return true if the first period set is strictly after the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period set is strictly after the second one
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 After_periodset_periodset(PG_FUNCTION_ARGS)
@@ -1064,7 +1277,10 @@ After_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_timestampset);
 /**
- * Return true if a timestamp is not after a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not after a timestamp set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -1078,7 +1294,10 @@ Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_period);
 /**
- * Return true if a timestamp is not after a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not after a period
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestamp_period(PG_FUNCTION_ARGS)
@@ -1090,7 +1309,10 @@ Overbefore_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_periodset);
 /**
- * Return true if a timestamp is not after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not after a period set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -1104,7 +1326,10 @@ Overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestamp);
 /**
- * Return true if a timestamp is not after a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not after a timestamp
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -1118,7 +1343,10 @@ Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestampset);
 /**
- * Return true if the first timestamp set is not after the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first timestamp set is not after the second one
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -1133,7 +1361,10 @@ Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_period);
 /**
- * Return true if a timestamp set is not after a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is not after a period
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_period(PG_FUNCTION_ARGS)
@@ -1147,7 +1378,10 @@ Overbefore_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_timestampset_periodset);
 /**
- * Return true if a timestamp set is not after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is not after a period set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -1162,7 +1396,10 @@ Overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_timestamp);
 /**
- * Return true if a period is not after a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is not after a timestamp
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_period_timestamp(PG_FUNCTION_ARGS)
@@ -1174,7 +1411,10 @@ Overbefore_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_timestampset);
 /**
- * Return true if a period is not after a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is not after a timestamp set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_period_timestampset(PG_FUNCTION_ARGS)
@@ -1188,7 +1428,10 @@ Overbefore_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_period);
 /**
- * Return true if the first period is not after the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period is not after the second one
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_period_period(PG_FUNCTION_ARGS)
@@ -1200,7 +1443,10 @@ Overbefore_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_period_periodset);
 /**
- * Return true if a period is not after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is not after a period set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_period_periodset(PG_FUNCTION_ARGS)
@@ -1214,7 +1460,10 @@ Overbefore_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_timestamp);
 /**
- * Return true if a period set is not after a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is not after a timestamp
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -1228,7 +1477,10 @@ Overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_timestampset);
 /**
- * Return true if a period set is not after a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is not after a timestamp set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -1243,7 +1495,10 @@ Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_period);
 /**
- * Return true if a period set is not after a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is not after a period set
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_period(PG_FUNCTION_ARGS)
@@ -1257,7 +1512,10 @@ Overbefore_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_periodset_periodset);
 /**
- * Return true if the first period set is not after the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period set is not after the second one
+ * @sqlfunc time_overbefore()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overbefore_periodset_periodset(PG_FUNCTION_ARGS)
@@ -1275,7 +1533,10 @@ Overbefore_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestamp_timestampset);
 /**
- * Return true if a timestamp is not before a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not before a timestamp set
+ * @sqlfunc time_overafter()
+ * @sqlop @p
  */
 PGDLLEXPORT Datum
 Overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -1289,7 +1550,10 @@ Overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestamp_period);
 /**
- * Return true if a timestamp is not before a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not before a period
+ * @sqlfunc time_overafter()
+ * @sqlop @p
  */
 PGDLLEXPORT Datum
 Overafter_timestamp_period(PG_FUNCTION_ARGS)
@@ -1301,7 +1565,10 @@ Overafter_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestamp_periodset);
 /**
- * Return true if a timestamp is not before a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp is not before a period set
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -1315,7 +1582,10 @@ Overafter_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_timestamp);
 /**
- * Return true if a timestamp set is not before a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is not before a timestamp
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -1329,7 +1599,10 @@ Overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_timestampset);
 /**
- * Return true if the first timestamp set is not before the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first timestamp set is not before the second one
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -1344,7 +1617,10 @@ Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_period);
 /**
- * Return true if a timestamp set is not before a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is not before a period
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_period(PG_FUNCTION_ARGS)
@@ -1358,7 +1634,10 @@ Overafter_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_timestampset_periodset);
 /**
- * Return true if a timestamp set is not before a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a timestamp set is not before a period set
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -1373,7 +1652,10 @@ Overafter_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_timestamp);
 /**
- * Return true if a period is not before a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is not before a timestamp
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_period_timestamp(PG_FUNCTION_ARGS)
@@ -1385,7 +1667,10 @@ Overafter_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_timestampset);
 /**
- * Return true if a period is not before a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is not before a timestamp set
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_period_timestampset(PG_FUNCTION_ARGS)
@@ -1399,7 +1684,10 @@ Overafter_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_period);
 /**
- * Return true if the first period is not before the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period is not before the second one
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_period_period(PG_FUNCTION_ARGS)
@@ -1411,7 +1699,10 @@ Overafter_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_period_periodset);
 /**
- * Return true if a period is not before a period set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period is not before a period set
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_period_periodset(PG_FUNCTION_ARGS)
@@ -1425,7 +1716,10 @@ Overafter_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_timestamp);
 /**
- * Return true if a period set is not before a timestamp
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is not before a timestamp
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -1439,7 +1733,10 @@ Overafter_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_timestampset);
 /**
- * Return true if a period set is not before a timestamp set
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is not before a timestamp set
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -1454,7 +1751,10 @@ Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_period);
 /**
- * Return true if a period set is not before a period
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if a period set is not before a period
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_periodset_period(PG_FUNCTION_ARGS)
@@ -1468,7 +1768,10 @@ Overafter_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_periodset_periodset);
 /**
- * Return true if the first period set is not before the second one
+ * @ingroup mobilitydb_spantime_pos
+ * @brief Return true if the first period set is not before the second one
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overafter_periodset_periodset(PG_FUNCTION_ARGS)
@@ -1487,7 +1790,10 @@ Overafter_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_timestamp);
 /**
- * Return the union of the timestamps
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of the timestamps
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -1500,7 +1806,10 @@ Union_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_timestampset);
 /**
- * Return the union of a timestamp and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a timestamp and a timestamp set
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -1514,7 +1823,10 @@ Union_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_period);
 /**
- * Return the union of a timestamp and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a timestamp and a period
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestamp_period(PG_FUNCTION_ARGS)
@@ -1527,7 +1839,10 @@ Union_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestamp_periodset);
 /**
- * Return the union of a timestamp and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a timestamp and a period set
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -1543,7 +1858,10 @@ Union_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_timestamp);
 /**
- * Return the union of a timestamp set and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a timestamp set and a timestamp
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -1557,7 +1875,10 @@ Union_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_timestampset);
 /**
- * Return the union of the timestamp sets
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of the timestamp sets
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -1572,7 +1893,10 @@ Union_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_period);
 /**
- * Return the union of a timestamp set and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a timestamp set and a period
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestampset_period(PG_FUNCTION_ARGS)
@@ -1586,7 +1910,10 @@ Union_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_timestampset_periodset);
 /**
- * Return the union of a timestamp set and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a timestamp set and a period set
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -1603,7 +1930,10 @@ Union_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_timestamp);
 /**
- * Return the union of a period and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a period and a timestamp
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_period_timestamp(PG_FUNCTION_ARGS)
@@ -1616,7 +1946,10 @@ Union_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_timestampset);
 /**
- * Return the union of a period and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a period and a timestamp set
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_period_timestampset(PG_FUNCTION_ARGS)
@@ -1630,7 +1963,10 @@ Union_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_period);
 /**
- * Return the union of the periods
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of the periods
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_period_period(PG_FUNCTION_ARGS)
@@ -1642,7 +1978,10 @@ Union_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_period_periodset);
 /**
- * Return the union of a period and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a period and a period set
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_period_periodset(PG_FUNCTION_ARGS)
@@ -1658,7 +1997,10 @@ Union_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_timestamp);
 /**
- * Return the union of a period set and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a period set and a timestamp
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -1672,7 +2014,10 @@ Union_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_timestampset);
 /**
- * Return the union of a period set and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a period set and a timestamp set
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -1687,7 +2032,10 @@ Union_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_period);
 /**
- * Return the union of a period set and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a period set and a period
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_periodset_period(PG_FUNCTION_ARGS)
@@ -1701,7 +2049,10 @@ Union_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_periodset_periodset);
 /**
- * Return the union of the period sets
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of the period sets
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_periodset_periodset(PG_FUNCTION_ARGS)
@@ -1720,7 +2071,10 @@ Union_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_timestamp);
 /**
- * Return the intersection of the timestamps
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of the timestamps
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -1736,7 +2090,10 @@ Intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_timestampset);
 /**
- * Return the intersection of a timestamp and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a timestamp and a timestamp set
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -1753,7 +2110,10 @@ Intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_period);
 /**
- * Return the intersection of a timestamp and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a timestamp and a period
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_period(PG_FUNCTION_ARGS)
@@ -1769,7 +2129,10 @@ Intersection_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestamp_periodset);
 /**
- * Return the intersection of a timestamp and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a timestamp and a period set
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -1786,7 +2149,10 @@ Intersection_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_timestamp);
 /**
- * Return the intersection of a timestamp set and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a timestamp set and a timestamp
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -1803,7 +2169,10 @@ Intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_timestampset);
 /**
- * Return the intersection of the timestamp sets
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of the timestamp sets
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -1820,7 +2189,10 @@ Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_period);
 /**
+ * @ingroup mobilitydb_spantime_set
  * @brief Return the intersection of a timestamp set and a period.
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_period(PG_FUNCTION_ARGS)
@@ -1836,7 +2208,10 @@ Intersection_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_periodset);
 /**
- * Return the intersection of a timestamp set and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a timestamp set and a period set
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -1855,7 +2230,10 @@ Intersection_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_timestamp);
 /**
- * Return the intersection of a period and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a period and a timestamp
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_period_timestamp(PG_FUNCTION_ARGS)
@@ -1871,7 +2249,10 @@ Intersection_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_timestampset);
 /**
- * Return the intersection of a period and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a period and a timestamp set
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_period_timestampset(PG_FUNCTION_ARGS)
@@ -1888,7 +2269,10 @@ Intersection_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_period);
 /**
- * Return the intersection of the periods
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of the periods
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_period_period(PG_FUNCTION_ARGS)
@@ -1903,7 +2287,10 @@ Intersection_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_period_periodset);
 /**
- * Return the intersection of a period and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a period and a period set
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_period_periodset(PG_FUNCTION_ARGS)
@@ -1921,7 +2308,10 @@ Intersection_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_timestamp);
 /**
- * Return the intersection of a period set and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a period set and a timestamp
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -1938,7 +2328,10 @@ Intersection_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_timestampset);
 /**
- * Return the intersection of a period set and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a period set and a timestamp set
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -1955,7 +2348,10 @@ Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_period);
 /**
- * Return the intersection of a period set and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a period set and a period
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_periodset_period(PG_FUNCTION_ARGS)
@@ -1971,7 +2367,10 @@ Intersection_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_periodset);
 /**
- * Return the intersection of the period sets
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of the period sets
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_periodset_periodset(PG_FUNCTION_ARGS)
@@ -1993,7 +2392,10 @@ Intersection_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_timestamp);
 /**
+ * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of the timestamps
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -2008,7 +2410,10 @@ Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_timestampset);
 /**
- * Return the difference of a timestamp and a a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a timestamp and a a timestamp set
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -2025,7 +2430,10 @@ Minus_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_period);
 /**
- * Return the difference of a timestamp and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a timestamp and a period
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestamp_period(PG_FUNCTION_ARGS)
@@ -2041,7 +2449,10 @@ Minus_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestamp_periodset);
 /**
- * Return the difference of a timestamp and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a timestamp and a period set
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -2060,7 +2471,10 @@ Minus_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_timestamp);
 /**
- * Return the difference of a timestamp set and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a timestamp set and a timestamp
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -2076,7 +2490,10 @@ Minus_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_timestampset);
 /**
- * Return the difference of the timestamp sets
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of the timestamp sets
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -2093,7 +2510,10 @@ Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_period);
 /**
- * Return the difference of a timestamp set and period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a timestamp set and period
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestampset_period(PG_FUNCTION_ARGS)
@@ -2109,7 +2529,10 @@ Minus_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_periodset);
 /**
- * Return the difference of a timestamp set and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a timestamp set and a period set
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -2128,7 +2551,10 @@ Minus_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_timestamp);
 /**
- * Return the difference of a period and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a period and a timestamp
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_period_timestamp(PG_FUNCTION_ARGS)
@@ -2144,7 +2570,10 @@ Minus_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_timestampset);
 /**
- * Return the difference of a period and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a period and a timestamp set
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_period_timestampset(PG_FUNCTION_ARGS)
@@ -2161,7 +2590,10 @@ Minus_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_period);
 /**
+ * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of the periods.
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_period_period(PG_FUNCTION_ARGS)
@@ -2176,7 +2608,10 @@ Minus_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_period_periodset);
 /**
- * Return the difference of a period and a period set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a period and a period set
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_period_periodset(PG_FUNCTION_ARGS)
@@ -2194,7 +2629,10 @@ Minus_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_timestamp);
 /**
- * Return the difference of a period set and a timestamp
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a period set and a timestamp
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -2210,7 +2648,10 @@ Minus_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_timestampset);
 /**
- * Return the difference of a period set and a timestamp set
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a period set and a timestamp set
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -2227,7 +2668,10 @@ Minus_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_period);
 /**
- * Return the difference of a period set and a period
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a period set and a period
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_periodset_period(PG_FUNCTION_ARGS)
@@ -2243,7 +2687,10 @@ Minus_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_periodset_periodset);
 /**
- * Return the difference of the period sets
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of the period sets
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_periodset_periodset(PG_FUNCTION_ARGS)
@@ -2264,7 +2711,10 @@ Minus_periodset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestamp);
 /**
- * Return the distance in seconds between the timestamps
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between the timestamps
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
@@ -2277,7 +2727,10 @@ Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestampset);
 /**
- * Return the distance in seconds between a timestamp and a timestamp set
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a timestamp and a timestamp set
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
@@ -2292,7 +2745,10 @@ Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_period);
 /**
- * Return the distance in seconds between a timestamp and a period
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a timestamp and a period
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestamp_period(PG_FUNCTION_ARGS)
@@ -2305,7 +2761,10 @@ Distance_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_periodset);
 /**
- * Return the distance in seconds between a timestamp and a period set
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a timestamp and a period set
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestamp_periodset(PG_FUNCTION_ARGS)
@@ -2320,7 +2779,10 @@ Distance_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestamp);
 /**
- * Return the distance in seconds between a timestamp set and a timestamp
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a timestamp set and a timestamp
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
@@ -2335,7 +2797,10 @@ Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestampset);
 /**
- * Return the distance in seconds between the timestamp sets
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between the timestamp sets
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
@@ -2351,7 +2816,10 @@ Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_period);
 /**
- * Return the distance in seconds between a timestamp set and a period
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a timestamp set and a period
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestampset_period(PG_FUNCTION_ARGS)
@@ -2366,7 +2834,10 @@ Distance_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_periodset);
 /**
- * Return the distance in seconds between a timestamp set and a period set
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a timestamp set and a period set
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_timestampset_periodset(PG_FUNCTION_ARGS)
@@ -2382,7 +2853,10 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_timestamp);
 /**
- * Return the distance in seconds between a period and a timestamp
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a period and a timestamp
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_period_timestamp(PG_FUNCTION_ARGS)
@@ -2395,7 +2869,10 @@ Distance_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_timestampset);
 /**
- * Return the distance in seconds between a period and a timestamp set
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a period and a timestamp set
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_period_timestampset(PG_FUNCTION_ARGS)
@@ -2410,7 +2887,10 @@ Distance_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_period);
 /**
- * Return the distance in seconds between the periods
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between the periods
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_period_period(PG_FUNCTION_ARGS)
@@ -2423,7 +2903,10 @@ Distance_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_periodset);
 /**
- * Return the distance in seconds between a period and a period set
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a period and a period set
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_period_periodset(PG_FUNCTION_ARGS)
@@ -2438,7 +2921,10 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestamp);
 /**
- * Return the distance in seconds between a period set and a timestamp
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a period set and a timestamp
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_periodset_timestamp(PG_FUNCTION_ARGS)
@@ -2453,7 +2939,10 @@ Distance_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestampset);
 /**
- * Return the distance in seconds between a period set and a timestamp set
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a period set and a timestamp set
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_periodset_timestampset(PG_FUNCTION_ARGS)
@@ -2469,7 +2958,10 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_period);
 /**
- * Return the distance in seconds between a period set and a period
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between a period set and a period
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_periodset_period(PG_FUNCTION_ARGS)
@@ -2484,7 +2976,10 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_periodset);
 /**
- * Return the distance in seconds between the period sets
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance in seconds between the period sets
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_periodset_periodset(PG_FUNCTION_ARGS)
