@@ -40,9 +40,13 @@
 #include <math.h>
 /* PostgreSQL */
 #include <common/int128.h>
-#include <common/hashfn.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
+#endif
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
@@ -201,26 +205,26 @@ int DateStyle = USE_ISO_DATES;
 void
 DateTimeParseError(int dterr, const char *str, const char *datatype)
 {
-	switch (dterr)
-	{
-		case DTERR_FIELD_OVERFLOW:
-			elog(ERROR, "date/time field value out of range: \"%s\"", str);
-			break;
-		case DTERR_MD_FIELD_OVERFLOW:
-			/* <nanny>same as above, but add hint about DateStyle</nanny> */
-			elog(ERROR, "date/time field value out of range: \"%s\"", str);
-			break;
-		case DTERR_INTERVAL_OVERFLOW:
-			elog(ERROR, "interval field value out of range: \"%s\"", str);
-			break;
-		case DTERR_TZDISP_OVERFLOW:
-			elog(ERROR, "time zone displacement out of range: \"%s\"", str);
-			break;
-		case DTERR_BAD_FORMAT:
-		default:
-			elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
-			break;
-	}
+  switch (dterr)
+  {
+    case DTERR_FIELD_OVERFLOW:
+      elog(ERROR, "date/time field value out of range: \"%s\"", str);
+      break;
+    case DTERR_MD_FIELD_OVERFLOW:
+      /* <nanny>same as above, but add hint about DateStyle</nanny> */
+      elog(ERROR, "date/time field value out of range: \"%s\"", str);
+      break;
+    case DTERR_INTERVAL_OVERFLOW:
+      elog(ERROR, "interval field value out of range: \"%s\"", str);
+      break;
+    case DTERR_TZDISP_OVERFLOW:
+      elog(ERROR, "time zone displacement out of range: \"%s\"", str);
+      break;
+    case DTERR_BAD_FORMAT:
+    default:
+      elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
+      break;
+  }
 }
 
 /*
@@ -230,60 +234,60 @@ DateTimeParseError(int dterr, const char *str, const char *datatype)
 bool
 AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
 {
-	static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
-		INT64CONST(1000000),
-		INT64CONST(100000),
-		INT64CONST(10000),
-		INT64CONST(1000),
-		INT64CONST(100),
-		INT64CONST(10),
-		INT64CONST(1)
-	};
+  static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
 
-	static const int64 TimestampOffsets[MAX_TIMESTAMP_PRECISION + 1] = {
-		INT64CONST(500000),
-		INT64CONST(50000),
-		INT64CONST(5000),
-		INT64CONST(500),
-		INT64CONST(50),
-		INT64CONST(5),
-		INT64CONST(0)
-	};
+  static const int64 TimestampOffsets[MAX_TIMESTAMP_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
 
-	if (!TIMESTAMP_NOT_FINITE(*time)
-		&& (typmod != -1) && (typmod != MAX_TIMESTAMP_PRECISION))
-	{
-		if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
-		{
-			if (error)
-			{
-				*error = true;
-				return false;
-			}
+  if (!TIMESTAMP_NOT_FINITE(*time)
+    && (typmod != -1) && (typmod != MAX_TIMESTAMP_PRECISION))
+  {
+    if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
+    {
+      if (error)
+      {
+        *error = true;
+        return false;
+      }
 
-			elog(ERROR, "timestamp(%d) precision must be between %d and %d",
-							typmod, 0, MAX_TIMESTAMP_PRECISION);
-		}
+      elog(ERROR, "timestamp(%d) precision must be between %d and %d",
+              typmod, 0, MAX_TIMESTAMP_PRECISION);
+    }
 
-		if (*time >= INT64CONST(0))
-		{
-			*time = ((*time + TimestampOffsets[typmod]) / TimestampScales[typmod]) *
-				TimestampScales[typmod];
-		}
-		else
-		{
-			*time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
-					  * TimestampScales[typmod]);
-		}
-	}
+    if (*time >= INT64CONST(0))
+    {
+      *time = ((*time + TimestampOffsets[typmod]) / TimestampScales[typmod]) *
+        TimestampScales[typmod];
+    }
+    else
+    {
+      *time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
+            * TimestampScales[typmod]);
+    }
+  }
 
-	return true;
+  return true;
 }
 
 void
 AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
-	(void) AdjustTimestampForTypmodError(time, typmod, NULL);
+  (void) AdjustTimestampForTypmodError(time, typmod, NULL);
 }
 
 /* EncodeSpecialTimestamp()
@@ -292,12 +296,12 @@ AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 void
 EncodeSpecialTimestamp(Timestamp dt, char *str)
 {
-	if (TIMESTAMP_IS_NOBEGIN(dt))
-		strcpy(str, EARLY);
-	else if (TIMESTAMP_IS_NOEND(dt))
-		strcpy(str, LATE);
-	else						/* shouldn't happen */
-		elog(ERROR, "invalid argument for EncodeSpecialTimestamp");
+  if (TIMESTAMP_IS_NOBEGIN(dt))
+    strcpy(str, EARLY);
+  else if (TIMESTAMP_IS_NOEND(dt))
+    strcpy(str, LATE);
+  else            /* shouldn't happen */
+    elog(ERROR, "invalid argument for EncodeSpecialTimestamp");
 }
 
 /**
@@ -615,6 +619,83 @@ pg_interval_cmp(const Interval *interval1, const Interval *interval2)
 /*****************************************************************************
  * Functions adapted from hashfn.h and hashfn.c
  *****************************************************************************/
+
+#if POSTGRESQL_VERSION_NUMBER < 130000
+
+/* Rotate a uint32 value left by k bits - note multiple evaluation! */
+#define rot(x,k) (((x)<<(k)) | ((x)>>(32-(k))))
+
+#define mix(a,b,c) \
+{ \
+  a -= c;  a ^= rot(c, 4);	c += b; \
+  b -= a;  b ^= rot(a, 6);	a += c; \
+  c -= b;  c ^= rot(b, 8);	b += a; \
+  a -= c;  a ^= rot(c,16);	c += b; \
+  b -= a;  b ^= rot(a,19);	a += c; \
+  c -= b;  c ^= rot(b, 4);	b += a; \
+}
+
+#define final(a,b,c) \
+{ \
+  c ^= b; c -= rot(b,14); \
+  a ^= c; a -= rot(c,11); \
+  b ^= a; b -= rot(a,25); \
+  c ^= b; c -= rot(b,16); \
+  a ^= c; a -= rot(c, 4); \
+  b ^= a; b -= rot(a,14); \
+  c ^= b; c -= rot(b,24); \
+}
+
+/*
+ * hash_bytes_uint32() -- hash a 32-bit value to a 32-bit value
+ *
+ * This has the same result as
+ *    hash_bytes(&k, sizeof(uint32))
+ * but is faster and doesn't force the caller to store k into memory.
+ */
+uint32
+hash_bytes_uint32(uint32 k)
+{
+  uint32    a,
+        b,
+        c;
+
+  a = b = c = 0x9e3779b9 + (uint32) sizeof(uint32) + 3923095;
+  a += k;
+
+  final(a, b, c);
+
+  /* report the result */
+  return c;
+}
+
+/*
+ * hash_bytes_uint32_extended() -- hash 32-bit value to 64-bit value, with seed
+ *
+ * Like hash_bytes_uint32, this is a convenience function.
+ */
+uint64
+hash_bytes_uint32_extended(uint32 k, uint64 seed)
+{
+  uint32 a, b, c;
+  a = b = c = 0x9e3779b9 + (uint32) sizeof(uint32) + 3923095;
+
+  if (seed != 0)
+  {
+    a += (uint32) (seed >> 32);
+    b += (uint32) seed;
+    mix(a, b, c);
+  }
+
+  a += k;
+
+  final(a, b, c);
+
+  /* report the result */
+  return ((uint64) b << 32) | c;
+}
+
+#endif /* POSTGRESQL_VERSION_NUMBER < 130000 */
 
 /*
  * @brief Get the 32-bit hash value of an int64 value.

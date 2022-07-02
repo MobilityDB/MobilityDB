@@ -43,6 +43,8 @@
  * `STBOX`.
  */
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
 #include <meos.h>
 /* MobilityDB */

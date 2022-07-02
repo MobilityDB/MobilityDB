@@ -104,7 +104,7 @@ jobs:
           # lcov --capture --directory . --output-file=lcov.info
           # Selecting the coverage information from only the /src directory
           lcov --capture --directory . --output-file=lcov_temp.info
-          lcov --extract lcov_temp.info */MobilityDB/src/* --output-file=lcov.info
+          lcov --extract lcov_temp.info */MobilityDB/meos/src/* */MobilityDB/mobilitydb/src/* --output-file=lcov.info
 
       - name: Coveralls
         if: matrix.coverage == '1'

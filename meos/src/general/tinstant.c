@@ -37,8 +37,12 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <common/hashfn.h>
 #include <utils/timestamp.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
+#endif
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>

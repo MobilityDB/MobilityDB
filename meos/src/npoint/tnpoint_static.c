@@ -510,7 +510,7 @@ route_geom(int64 rid)
 int64
 rid_from_geom(Datum geom)
 {
-  char *geomstr = ewkt_out(ANYOID, geom);
+  char *geomstr = ewkt_out(InvalidOid, geom);
   char sql[128];
   sprintf(sql, "SELECT gid FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, DIST_EPSILON, geomstr);
@@ -559,7 +559,7 @@ geom_npoint(Datum geom)
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_geom, srid_ways);
 
-  char *geomstr = ewkt_out(ANYOID, geom);
+  char *geomstr = ewkt_out(InvalidOid, geom);
   char sql[512];
   sprintf(sql, "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
     "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "

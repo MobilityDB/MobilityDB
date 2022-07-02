@@ -50,10 +50,11 @@
 #endif
 
 /* Definition in numutils.c */
- extern int64 pg_strtoint64(const char *s);
 extern int32 pg_strtoint32(const char *s);
-extern int pg_ulltoa_n(uint64 l, char *a);
-extern int pg_ultoa_n(uint32 value, char *a);
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  extern int pg_ultoa_n(uint32 value, char *a);
+  extern int pg_ulltoa_n(uint64 l, char *a);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /*****************************************************************************
  * Functions adapted from bool.c
@@ -204,6 +205,7 @@ int4_in(char *str)
   return pg_strtoint32(str);
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 130000
 /*
  * pg_ltoa: converts a signed 32-bit integer to its string representation and
  * returns strlen(a).
@@ -230,6 +232,7 @@ mobdb_ltoa(int32 value, char *a)
 	a[len] = '\0';
 	return len;
 }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /**
  * @brief Return a string from an int4
@@ -239,7 +242,11 @@ char *
 int4_out(int32 val)
 {
   char *result = palloc(12);  /* sign, 10 digits, '\0' */
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   mobdb_ltoa(val, result);
+#else
+  sprintf(result, "%d", val);
+#endif
   return result;
 }
 
@@ -266,6 +273,7 @@ int8_in(char *str)
   return result;
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 130000
 /*
  * pg_lltoa: converts a signed 64-bit integer to its string representation and
  * returns strlen(a).
@@ -292,6 +300,7 @@ mobdb_lltoa(int64 value, char *a)
   a[len] = '\0';
   return len;
 }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /**
  * @brief Return a string from an int8
@@ -300,17 +309,20 @@ mobdb_lltoa(int64 value, char *a)
 char *
 int8_out(int64 val)
 {
-  char buf[MAXINT8LEN + 1];
   char *result;
-  int len;
-
-  len = mobdb_lltoa(val, buf) + 1;
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  char buf[MAXINT8LEN + 1];
+  int len = mobdb_lltoa(val, buf) + 1;
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()
    * to avoid the strlen() call that would otherwise be done in pstrdup().
    */
   result = palloc(len);
   memcpy(result, buf, len);
+#else
+  result = palloc(MAXINT8LEN + 1);
+  sprintf(result, "%ld", val);
+#endif
   return result;
 }
 
