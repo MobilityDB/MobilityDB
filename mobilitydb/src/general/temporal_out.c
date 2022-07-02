@@ -31,6 +31,8 @@
  * @brief Output of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 
+/* PostgreSQL */
+#include <postgres.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */
