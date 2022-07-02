@@ -1,40 +1,33 @@
-/**
- * @brief Restrict a temporal geometric point to (the complement of) an array
- * of points.
- * @sqlfunc atValues()
- */
-static Temporal *
-tgeogpoint_restrict_values(const Temporal *temp, GSERIALIZED **values,
-  int count, bool atfunc)
+
+
+
+
+
+
+LWPOINT *
+lwpointarr_remove_duplicates(LWPOINT **lwpoints, int count)
 {
-  Datum *datumarr = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i ++)
-    datumarr[i] = PointerGetDatum(values[i]);
-  Temporal *result = temporal_restrict_values(temp, datumarr, count, atfunc);
-  pfree(datumarr);
+  if (count == 1)
+    return lwpoint_clone(lwpoints[0]);
+
+  const LWPOINT **newpoints = palloc(sizeof(LWPOINT *) * count);
+  memcpy(newpoints, points, sizeof(LWPOINT *) * count);
+  lwpointarr_sort(newpoints, count);
+  int newcount = lwpointarr_remove_duplicates(newpoints, count);
+  if (FLAGS_GET_Z(lwpoints[0]->flags))
+  {
+    
+  }
+  else
+  {
+    
+  }
+  LWGEOM *result =  ?
+    (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count,
+      lwpoints) :
+    (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
+      NULL, (uint32_t) count, lwpoints);
+  FLAGS_SET_Z(result->flags, FLAGS_GET_Z(lwpoints[0]->flags));
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(lwpoints[0]->flags));
   return result;
 }
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geographic point to an array of points.
- * @sqlfunc atValues()
- */
-Temporal *
-tgeogpoint_at_values(const Temporal *temp, GSERIALIZED **values, int count)
-{
-  return tgeogpoint_restrict_values(temp, values, count, REST_AT);
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geographic point to the complement of an array of
- * points.
- * @sqlfunc minusValues()
- */
-Temporal *
-tgeogpoint_minus_values(const Temporal *temp, GSERIALIZED **values, int count)
-{
-  return tgeogpoint_restrict_values(temp, values, count, REST_MINUS);
-}
-

@@ -1590,8 +1590,88 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
  *****************************************************************************/
 
 /**
- * Compute a trajectory from a set of points. The result is either a line or
- * a multipoint depending on whether the interpolation is step or linear
+ * @brief Return -1, 0, or 1 depending on whether the first LWPOINT
+ * is less than, equal, or greater than the second one.
+ * @pre There is no empty point in the array, the points are of the same
+ * dimensionality
+ */
+static int
+lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
+{
+  assert(FLAGS_GET_ZM(p->flags) == FLAGS_GET_ZM(q->flags));
+  int ndims = FLAGS_NDIMS(p->flags);
+  POINT4D p4d, q4d;
+  /* We are sure the points are not empty */
+  lwpoint_getPoint4d_p(p, &p4d);
+  lwpoint_getPoint4d_p(q, &q4d);
+  int cmp = float8_cmp_internal(p4d.x, q4d.x);
+  if (cmp != 0)
+    return cmp;
+  cmp = float8_cmp_internal(p4d.y, q4d.y);
+  if (cmp != 0)
+    return cmp;
+  if (ndims == 0)
+    return 0;
+  if (FLAGS_GET_Z(p->flags))
+  {
+    cmp = float8_cmp_internal(p4d.z, q4d.z);
+    if (cmp != 0)
+      return cmp;
+  }
+  if (FLAGS_GET_M(p->flags))
+  {
+    cmp = float8_cmp_internal(p4d.m, q4d.m);
+    if (cmp != 0)
+      return cmp;
+  }
+  return 0;
+}
+
+/**
+ * @brief Comparator function for lwpoints
+ */
+static int
+lwpoint_sort_cmp(const LWPOINT **l, const LWPOINT **r)
+{
+  return lwpoint_cmp(*l, *r);
+}
+
+/**
+ * @brief Sort function for lwpoints
+ */
+void
+lwpointarr_sort(LWPOINT **points, int count)
+{
+  qsort(points, (size_t) count, sizeof(LWPOINT *),
+    (qsort_comparator) &lwpoint_sort_cmp);
+}
+
+/**
+ * @brief Remove duplicates from an array of datums
+ */
+LWGEOM **
+lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
+{
+  assert (count > 0);
+  /* We bypass the call to function lwgeom_as_lwpoint through memcpy */ 
+  LWGEOM **newpoints = palloc(sizeof(LWGEOM *) * count);
+  memcpy(newpoints, points, sizeof(LWGEOM *) * count);
+  lwpointarr_sort((LWPOINT **) newpoints, count);
+  int count1 = 0;
+  for (int i = 1; i < count; i++)
+    if (! lwpoint_same((LWPOINT *) newpoints[count1], (LWPOINT *) newpoints[i]))
+      newpoints[++ count1] = newpoints[i];
+  *newcount = count1 + 1;
+  return newpoints;
+}
+
+/**
+ * @brief Compute a trajectory from a set of points. The result is either a
+ * linestring or a multipoint depending on whether the interpolation is
+ * stepwise or linear.
+ * @note The function does not remove duplicate points, that is, repeated
+ * points in a multipoint or consecutive equal points in a line string. This
+ * should be done in the calling function.
  *
  * @param[in] lwpoints Array of points
  * @param[in] count Number of elements in the input array

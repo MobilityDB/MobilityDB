@@ -113,8 +113,11 @@ npointarr_geom(Npoint **points, int count)
     result = geo_serialize(geoms[0]);
   else
   {
-    LWGEOM *lwgeom = lwpointarr_make_trajectory(geoms, count, STEP);
+    int newcount;
+    LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
+    LWGEOM *lwgeom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
     result = geo_serialize(lwgeom);
+    pfree(newgeoms);
   }
   pfree_array((void **) geoms, count);
   return result;

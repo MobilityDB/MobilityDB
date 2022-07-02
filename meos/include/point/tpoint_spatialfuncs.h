@@ -145,6 +145,8 @@ extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
 
 /* Trajectory functions */
 
+extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
+  int *newcount);
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   bool linear);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
