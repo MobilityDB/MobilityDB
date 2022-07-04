@@ -400,7 +400,7 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       int nargs = list_length(args);
       IndexableFunction idxfn = {NULL, 0, 0, 0};
       Oid opfamilyoid = req->opfamily; /* Operator family of the index */
-      const IndexableFunction *funcarr;
+      const IndexableFunction *funcarr = NULL;
       if (tempfamily == TEMPORALTYPE)
         funcarr = TemporalIndexableFunctions;
       else if (tempfamily == TNUMBERTYPE)
@@ -408,9 +408,16 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       else if (tempfamily == TPOINTTYPE)
         funcarr = TPointIndexableFunctions;
 #if NPOINT
-      else /* tempfamily == TNPOINTTYPE */
+      else if (tempfamily == TNPOINTTYPE)
         funcarr = TNPointIndexableFunctions;
 #endif /* NPOINT */
+      else
+      {
+        /* We should never arrive here */
+        elog(WARNING, "Unknown temporal family for support functions: %d",
+          tempfamily);
+        PG_RETURN_POINTER((Node *) NULL);
+      }
       if (! func_needs_index(funcoid, funcarr, &idxfn))
       {
         if (isfunc)

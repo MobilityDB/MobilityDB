@@ -189,7 +189,7 @@ Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   mobdbType restype;
-  if (temp1->subtype == T_TINT && temp1->subtype == T_TINT)
+  if (temp1->subtype == T_TINT && temp2->subtype == T_TINT)
     restype = T_TINT;
   else
     restype = T_TFLOAT;
