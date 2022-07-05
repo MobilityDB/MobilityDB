@@ -53,7 +53,7 @@
 #include <utils/array.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
-#include "point/postgis.h"
+#include "pg_point/postgis.h"
 
 // #if POSTGRESQL_VERSION_NUMBER < 130000
 // #if USE_FLOAT4_BYVAL
