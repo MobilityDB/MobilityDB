@@ -96,28 +96,28 @@ datum_textcat(Datum l, Datum r)
 char *
 pnstrdup(const char *in, Size size)
 {
-	char	   *tmp;
-	int			len;
+  char *tmp;
+  int len;
 
-	if (!in)
-	{
-		fprintf(stderr,
-				_("cannot duplicate null pointer (internal error)\n"));
-		exit(EXIT_FAILURE);
-	}
+  if (!in)
+  {
+    fprintf(stderr,
+        _("cannot duplicate null pointer (internal error)\n"));
+    exit(EXIT_FAILURE);
+  }
 
-	len = strnlen(in, size);
-	tmp = malloc(len + 1);
-	if (tmp == NULL)
-	{
-		fprintf(stderr, _("out of memory\n"));
-		exit(EXIT_FAILURE);
-	}
+  len = strnlen(in, size);
+  tmp = malloc(len + 1);
+  if (tmp == NULL)
+  {
+    fprintf(stderr, _("out of memory\n"));
+    exit(EXIT_FAILURE);
+  }
 
-	memcpy(tmp, in, len);
-	tmp[len] = '\0';
+  memcpy(tmp, in, len);
+  tmp[len] = '\0';
 
-	return tmp;
+  return tmp;
 }
 
 /*
@@ -129,18 +129,18 @@ pnstrdup(const char *in, Size size)
 char *
 asc_tolower(const char *buff, size_t nbytes)
 {
-	char	   *result;
-	char	   *p;
+  char     *result;
+  char     *p;
 
-	if (!buff)
-		return NULL;
+  if (!buff)
+    return NULL;
 
-	result = pnstrdup(buff, nbytes);
+  result = pnstrdup(buff, nbytes);
 
-	for (p = result; *p; p++)
-		*p = pg_ascii_tolower((unsigned char) *p);
+  for (p = result; *p; p++)
+    *p = pg_ascii_tolower((unsigned char) *p);
 
-	return result;
+  return result;
 }
 
 /*
@@ -152,18 +152,18 @@ asc_tolower(const char *buff, size_t nbytes)
 char *
 asc_toupper(const char *buff, size_t nbytes)
 {
-	char	   *result;
-	char	   *p;
+  char     *result;
+  char     *p;
 
-	if (!buff)
-		return NULL;
+  if (!buff)
+    return NULL;
 
-	result = pnstrdup(buff, nbytes);
+  result = pnstrdup(buff, nbytes);
 
-	for (p = result; *p; p++)
-		*p = pg_ascii_toupper((unsigned char) *p);
+  for (p = result; *p; p++)
+    *p = pg_ascii_toupper((unsigned char) *p);
 
-	return result;
+  return result;
 }
 
 #endif /* MEOS */

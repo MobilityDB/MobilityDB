@@ -960,6 +960,17 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   return selec;
 }
 
+Datum
+Span_sel_ext(FunctionCallInfo fcinfo, SpanPeriodSel spansel)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operid = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selec = span_sel(root, operid, args, varRelid, spansel);
+  PG_RETURN_FLOAT8((float8) selec);
+}
+
 PG_FUNCTION_INFO_V1(Span_sel);
 /**
  * Restriction selectivity for span operators
@@ -967,12 +978,17 @@ PG_FUNCTION_INFO_V1(Span_sel);
 PGDLLEXPORT Datum
 Span_sel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operid = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selec = span_sel(root, operid, args, varRelid, SPANSEL);
-  PG_RETURN_FLOAT8((float8) selec);
+  return Span_sel_ext(fcinfo, SPANSEL);
+}
+
+PG_FUNCTION_INFO_V1(Period_sel);
+/**
+ * Restriction selectivity for period operators
+ */
+PGDLLEXPORT Datum
+Period_sel(PG_FUNCTION_ARGS)
+{
+  return Span_sel_ext(fcinfo, PERIODSEL);
 }
 
 PG_FUNCTION_INFO_V1(_mobdb_span_sel);

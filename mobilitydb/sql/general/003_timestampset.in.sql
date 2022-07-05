@@ -229,25 +229,25 @@ CREATE OPERATOR < (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS timestampset_ops

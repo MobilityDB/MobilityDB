@@ -390,6 +390,11 @@ CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
   AS 'MODULE_PATHNAME', 'Span_joinsel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION period_sel(internal, oid, internal, integer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Period_sel'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- Functions for debugging the selectivity code
 
 -- Given a table, column, and span returns the estimate of what proportion

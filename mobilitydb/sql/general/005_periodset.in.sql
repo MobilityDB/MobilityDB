@@ -272,25 +272,25 @@ CREATE OPERATOR < (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS periodset_ops
