@@ -40,80 +40,11 @@
 /* MobilityDB */
 #include "general/temporal.h"
 
-/*****************************************************************************
- * Struct definitions
- *****************************************************************************/
-
-/* Network-based point */
-
-typedef struct
-{
-  int64 rid;        /**< route identifier */
-  double pos;       /**< position */
-} Npoint;
-
-/* Network-based segment */
-
-typedef struct
-{
-  int64 rid;       /**< route identifier */
-  double pos1;     /**< position1 */
-  double pos2;     /**< position2 */
-} Nsegment;
-
-/*****************************************************************************
- * fmgr macros
- *****************************************************************************/
-
-/* Npoint */
-#define DatumGetNpointP(X)         ((Npoint *) DatumGetPointer(X))
-#define NpointPGetDatum(X)         PointerGetDatum(X)
-#define PG_GETARG_NPOINT_P(X)      DatumGetNpointP(PG_GETARG_DATUM(X))
-#define PG_RETURN_NPOINT_P(X)      PG_RETURN_POINTER(X)
-
-/* Nsegment */
-#define DatumGetNsegmentP(X)       ((Nsegment *) DatumGetPointer(X))
-#define NsegmentPGetDatum(X)       PointerGetDatum(X)
-#define PG_GETARG_NSEGMENT_P(X)    DatumGetNsegmentP(PG_GETARG_DATUM(X))
-
 /*****************************************************************************/
-
-/* Input/output functions */
-
-/* Cast functions */
-
-extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
-extern TInstantSet *tnpointinstset_tgeompointinstset(const TInstantSet *is);
-extern TSequence *tnpointseq_tgeompointseq(const TSequence *seq);
-extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss);
-extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
-
-extern TInstant *tgeompointinst_tnpointinst(const TInstant *inst);
-extern TInstantSet *tgeompointinstset_tnpointinstset(const TInstantSet *is);
-extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);
-extern TSequenceSet *tgeompointseqset_tnpointseqset(const TSequenceSet *ss);
-extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 
 /* Transformation functions */
 
 extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
-
-/* Accessor functions */
-
-extern Nsegment **tnpointinst_positions(const TInstant *inst);
-extern Nsegment **tnpointinstset_positions(const TInstantSet *is, int *count);
-extern Nsegment **tnpointseq_positions(const TSequence *seq, int *count);
-extern Nsegment **tnpointseqset_positions(const TSequenceSet *ss, int *count);
-extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
-extern int64 tnpointinst_route(const TInstant *inst);
-extern int64 tnpoint_route(const Temporal *temp);
-extern int64 *tnpointinst_routes(const TInstant *inst);
-extern int64 *tnpointinstset_routes(const TInstantSet *is);
-extern int64 *tnpointseq_routes(const TSequence *seq);
-extern int64 *tnpointseqset_routes(const TSequenceSet *ss);
-extern int64 *tnpoint_routes(const Temporal *temp, int *count);
-
-extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
 /*****************************************************************************/
 

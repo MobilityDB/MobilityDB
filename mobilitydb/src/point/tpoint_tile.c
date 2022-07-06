@@ -42,12 +42,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint_tile.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_tile.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
+#include "pg_general/temporal_tile.h"
 #include "pg_point/postgis.h"
+#include "pg_point/tpoint_tile.h"
 
 /*****************************************************************************
  * Bit Matrix implementation based on

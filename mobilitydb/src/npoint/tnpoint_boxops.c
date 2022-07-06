@@ -51,6 +51,7 @@
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_point/tpoint_boxops.h"
+#include "pg_npoint/tnpoint.h"
 
 /*****************************************************************************
  * Transform a temporal Npoint to a STBOX

@@ -96,8 +96,6 @@ extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 
 /* Transformation functions */
 
-extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
-
 /* Accessor functions */
 
 extern Nsegment **tnpointinst_positions(const TInstant *inst);

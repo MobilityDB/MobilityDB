@@ -31,7 +31,7 @@
  * @brief Aggregate functions for time types.
  */
 
-#include "general/time_aggfuncs.h"
+#include "pg_general/time_aggfuncs.h"
 
 /* C */
 #include <assert.h>

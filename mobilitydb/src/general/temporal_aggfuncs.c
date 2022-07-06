@@ -42,14 +42,15 @@
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "pg_general/skiplist.h"
 #include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
 #include "general/doublen.h"
-#include "general/time_aggfuncs.h"
+/* MobilityDB */
+#include "pg_general/time_aggfuncs.h"
 
 /*****************************************************************************
  * Aggregate functions on datums

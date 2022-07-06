@@ -34,7 +34,7 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
-#include "general/temporal_tile.h"
+#include "pg_general/temporal_tile.h"
 
 /* C */
 #include <assert.h>
