@@ -149,16 +149,6 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @brief Return the nearest approach instant of the network point and the
- * temporal network point.
- */
-TInstant *
-nai_npoint_tnpoint(const Npoint *np, const Temporal *temp)
-{
-  return nai_tnpoint_npoint(temp, np);
-}
-
-/**
  * @brief Return the nearest approach instant of the two temporal network points
  */
 TInstant *

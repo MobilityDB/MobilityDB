@@ -143,8 +143,6 @@ tnpointinst_srid(const TInstant *inst)
 int
 tnpoint_srid(const Temporal *temp)
 {
-  if (temp->temptype != T_TNPOINT)
-    elog(ERROR, "unknown temporal type: %d", temp->temptype);
   int result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)

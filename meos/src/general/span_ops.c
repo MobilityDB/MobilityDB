@@ -197,6 +197,7 @@ contained_span_span(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the spans overlap.
  * @sqlop @p &&
+ * @pymeosfunc overlap()
  */
 bool
 overlaps_span_span(const Span *s1, const Span *s2)

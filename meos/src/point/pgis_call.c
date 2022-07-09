@@ -799,7 +799,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 #else
   extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
   extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
-#endif
+#endif /* MEOS */
 
 /**
  * @brief Transform the GSERIALIZED geometries into GEOSGeometry and
@@ -1230,12 +1230,14 @@ PGIS_geography_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
  * Functions adapted from lwgeom_inout.c
  *****************************************************************************/
 
+#if MEOS
 /**
 * Check the consistency of the metadata we want to enforce in the typmod:
 * srid, type and dimensionality. If things are inconsistent, shut down the query.
 * @note Function from gserialized_typmod.c
 */
-GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
+GSERIALIZED *
+postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
 {
   int32 geom_srid = gserialized_get_srid(gser);
   int32 geom_type = gserialized_get_type(gser);
@@ -1323,6 +1325,9 @@ GSERIALIZED * postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
 
   return gser;
 }
+#else
+  extern GSERIALIZED *postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod);
+#endif /* MEOS */
 
 /**
  * @brief Get a geometry from a string
@@ -1449,6 +1454,7 @@ PGIS_LWGEOM_out(GSERIALIZED *geom)
  * Functions adapted from geography_inout.c
  *****************************************************************************/
 
+#if MEOS
 /**
 * The geography type only support POINT, LINESTRING, POLYGON, MULTI* variants
 * of same, and GEOMETRYCOLLECTION. If the input type is not one of those, shut
@@ -1500,6 +1506,11 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
 
   return g_ser;
 }
+#else
+  extern void geography_valid_type(uint8_t type);
+  extern GSERIALIZED *gserialized_geography_from_lwgeom(LWGEOM *lwgeom,
+    int32 geog_typmod);
+#endif /* MEOS */
 
 /**
  * @brief Get a geography from in string

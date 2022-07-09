@@ -302,6 +302,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a period contains a timestamp.
  * @sqlop @p \@>
+ * @pymeosfunc contains_timestamp()
  */
 bool
 contains_period_timestamp(const Period *p, TimestampTz t)

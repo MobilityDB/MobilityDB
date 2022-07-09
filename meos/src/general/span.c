@@ -683,6 +683,7 @@ span_width(const Span *s)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the duration of a period as an interval.
  * @sqlfunc duration()
+ * @pymeosfunc duration()
  */
 Interval *
 period_duration(const Span *s)
@@ -717,6 +718,7 @@ span_expand(const Span *s1, Span *s2)
  * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale a period by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
+ * @pymeosfunc shift()
  */
 void
 period_shift_tscale(const Interval *start, const Interval *duration,
@@ -749,6 +751,7 @@ period_shift_tscale(const Interval *start, const Interval *duration,
  * @brief Return true if the first span is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
+ * @pymeosfunc __eq__()
  */
 bool
 span_eq(const Span *s1, const Span *s2)
@@ -779,6 +782,7 @@ span_ne(const Span *s1, const Span *s2)
  * is less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
  * @sqlfunc intspan_cmp(), floatspan_cmp(), period_cmp()
+ * @pymeosfunc _cmp()
  */
 int
 span_cmp(const Span *s1, const Span *s2)
