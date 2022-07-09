@@ -601,6 +601,7 @@ floatspan_lower(Span *s)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the lower bound of a period
  * @sqlfunc lower()
+ * @pymeosfunc lower()
  */
 TimestampTz
 period_lower(Period *p)
@@ -634,6 +635,7 @@ floatspan_upper(Span *s)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the upper bound of a period
  * @sqlfunc upper()
+ * @pymeosfunc upper()
  */
 TimestampTz
 period_upper(Period *p)
@@ -645,6 +647,7 @@ period_upper(Period *p)
  * @ingroup libmeos_spantime_accessor
  * @brief Return true if the lower bound of a span is inclusive
  * @sqlfunc lower_inc()
+ * @pymeosfunc lower_inc()
  */
 bool
 span_lower_inc(Span *s)
@@ -656,6 +659,7 @@ span_lower_inc(Span *s)
  * @ingroup libmeos_spantime_accessor
  * @brief Return true if the upper bound of a span is inclusive
  * @sqlfunc upper_inc()
+ * @pymeosfunc upper_inc()
  */
 bool
 span_upper_inc(Span *s)
