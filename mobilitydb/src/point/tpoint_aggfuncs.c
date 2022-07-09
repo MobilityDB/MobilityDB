@@ -256,17 +256,9 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 PGDLLEXPORT Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  /* Can't do anything with null inputs */
-  if (! state && ! temp)
-    PG_RETURN_NULL();
-  /* Non-null state and null temporal, return the state */
-  if (state && ! temp)
-  {
-    PG_RETURN_POINTER(state);
-  }
+  SkipList *state;
+  INPUT_AGG_STATE(state);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
 
   geoaggstate_check_temp(state, temp);
   datum_func2 func = MOBDB_FLAGS_GET_Z(temp->flags) ?

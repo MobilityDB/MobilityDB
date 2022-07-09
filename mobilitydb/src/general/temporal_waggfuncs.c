@@ -47,6 +47,22 @@
  *****************************************************************************/
 
 /**
+ * Helper macro to input the current aggregate state
+ */
+#define INPUT_AGG_STATE_ARG(state)  \
+  do {  \
+    state = PG_ARGISNULL(0) ?  \
+      NULL : (SkipList *) PG_GETARG_POINTER(0);  \
+    if (PG_ARGISNULL(1) || PG_ARGISNULL(2))  \
+    {  \
+      if (state)  \
+        PG_RETURN_POINTER(state);  \
+      else  \
+        PG_RETURN_NULL();  \
+    }  \
+  } while (0)
+
+/**
  * Extend the temporal instant value by the time interval
  *
  * @param[in] inst Temporal value
@@ -595,14 +611,8 @@ Datum
 temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool min, bool crossings)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-  {
-    if (! state)
-      PG_RETURN_NULL();
-    PG_RETURN_POINTER(state);
-  }
+  SkipList *state;
+  INPUT_AGG_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ((temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET) &&
@@ -625,14 +635,8 @@ Datum
 temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-  {
-    if (! state)
-      PG_RETURN_NULL();
-    PG_RETURN_POINTER(state);
-  }
+  SkipList *state;
+  INPUT_AGG_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   int count;

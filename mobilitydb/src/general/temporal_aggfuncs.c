@@ -564,16 +564,8 @@ static Datum
 temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  if (PG_ARGISNULL(1))
-  {
-    if (state)
-      PG_RETURN_POINTER(state);
-    else
-      PG_RETURN_NULL();
-  }
-
+  SkipList *state;
+  INPUT_AGG_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_valid_tempsubtype(temp->subtype);
   SkipList *result;
@@ -777,16 +769,8 @@ Datum
 temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings, TInstant *(*transform)(const TInstant *))
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  if (PG_ARGISNULL(1))
-  {
-    if (state)
-      PG_RETURN_POINTER(state);
-    else
-      PG_RETURN_NULL();
-  }
-
+  SkipList *state;
+  INPUT_AGG_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   int count;
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
@@ -919,16 +903,8 @@ PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
 PGDLLEXPORT Datum
 Temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  if (PG_ARGISNULL(1))
-  {
-    if (state)
-      PG_RETURN_POINTER(state);
-    else
-      PG_RETURN_NULL();
-  }
-
+  SkipList *state;
+  INPUT_AGG_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   int count;
   Temporal **temparr = temporal_transform_tcount(temp, &count);

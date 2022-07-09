@@ -89,6 +89,22 @@ typedef struct
   SkipListElem *elems;
 } SkipList;
 
+/**
+ * Helper macro to input the current aggregate state
+ */
+#define INPUT_AGG_STATE(state)  \
+  do {  \
+    state = PG_ARGISNULL(0) ?  \
+      NULL : (SkipList *) PG_GETARG_POINTER(0);  \
+    if (PG_ARGISNULL(1))  \
+    {  \
+      if (state)  \
+        PG_RETURN_POINTER(state);  \
+      else  \
+        PG_RETURN_NULL();  \
+    }  \
+  } while (0)
+
 /*****************************************************************************/
 
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,

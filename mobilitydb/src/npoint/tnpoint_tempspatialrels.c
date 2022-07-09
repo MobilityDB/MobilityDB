@@ -78,8 +78,8 @@ tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
 static Datum
 tinterrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Npoint *np = PG_GETARG_NPOINT_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
   if (PG_NARGS() == 3)

@@ -100,7 +100,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     np = DatumGetNpointP(tinstant_value(inst));
-    POINTARRAY* opa = lwline_interpolate_points(lwline, np->pos, 0);
+    POINTARRAY *opa = lwline_interpolate_points(lwline, np->pos, 0);
     LWGEOM *lwpoint;
     assert(opa->npoints <= 1);
     lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
@@ -202,9 +202,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
     TInstant *inst1 = tgeompointinst_tnpointinst(inst);
     if (inst1 == NULL)
     {
-      for (int j = 0; j < i; j++)
-        pfree(instants[j]);
-      pfree(instants);
+      pfree_array((void **) instants, i);
       return NULL;
     }
     instants[i] = inst1;
@@ -228,9 +226,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
     TSequence *seq1 = tgeompointseq_tnpointseq(seq);
     if (seq1 == NULL)
     {
-      for (int j = 0; j < i; j++)
-        pfree(sequences[j]);
-      pfree(sequences);
+      pfree_array((void **) sequences, i);
       return NULL;
     }
     sequences[i] = seq1;

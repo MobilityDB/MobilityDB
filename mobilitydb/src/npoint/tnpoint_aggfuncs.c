@@ -53,15 +53,8 @@ PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 PGDLLEXPORT Datum
 Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  if (PG_ARGISNULL(1))
-  {
-    if (state)
-      PG_RETURN_POINTER(state);
-    else
-      PG_RETURN_NULL();
-  }
+  SkipList *state;
+  INPUT_AGG_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *temp1 = tnpoint_tgeompoint(temp);
 
