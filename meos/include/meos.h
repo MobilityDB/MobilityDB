@@ -1372,8 +1372,8 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
 /* Spatial accessor functions for temporal point types */
 
-extern bool bearing_geo_geo(const GSERIALIZED *geo1, const GSERIALIZED *geo2, double *result);
-extern Temporal *bearing_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool invert);
+extern bool bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2, double *result);
+extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tpoint_azimuth(const Temporal *temp);
 extern Temporal *tpoint_cumulative_length(const Temporal *temp);

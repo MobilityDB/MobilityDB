@@ -759,6 +759,7 @@ MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   }
 }
 
+#if MEOS
 GEOSGeometry *
 POSTGIS2GEOS(const GSERIALIZED *pglwgeom)
 {
@@ -795,6 +796,10 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
   return result;
 }
+#else
+  extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
+  extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
+#endif
 
 /**
  * @brief Transform the GSERIALIZED geometries into GEOSGeometry and

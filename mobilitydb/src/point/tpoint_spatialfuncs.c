@@ -998,7 +998,7 @@ Tpoint_azimuth(PG_FUNCTION_ARGS)
  * Temporal bearing
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Bearing_geo_geo);
+PG_FUNCTION_INFO_V1(Bearing_point_point);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the temporal bearing between two geometry/geography points
@@ -1006,14 +1006,14 @@ PG_FUNCTION_INFO_V1(Bearing_geo_geo);
  * @sqlfunc bearing()
  */
 PGDLLEXPORT Datum
-Bearing_geo_geo(PG_FUNCTION_ARGS)
+Bearing_point_point(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo1 = PG_GETARG_GSERIALIZED_P(0);
   GSERIALIZED *geo2 = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result;
-  bool found = bearing_geo_geo(geo1, geo2, &result);
+  bool found = bearing_point_point(geo1, geo2, &result);
   PG_FREE_IF_COPY(geo1, 0);
   PG_FREE_IF_COPY(geo2, 1);
   if (! found)
@@ -1035,7 +1035,7 @@ Bearing_geo_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = bearing_tpoint_geo(temp, gs, INVERT);
+  Temporal *result = bearing_tpoint_point(temp, gs, INVERT);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -1043,7 +1043,7 @@ Bearing_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Bearing_tpoint_geo);
+PG_FUNCTION_INFO_V1(Bearing_tpoint_point);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the temporal bearing between a temporal point and a
@@ -1051,13 +1051,13 @@ PG_FUNCTION_INFO_V1(Bearing_tpoint_geo);
  * @sqlfunc bearing()
  */
 PGDLLEXPORT Datum
-Bearing_tpoint_geo(PG_FUNCTION_ARGS)
+Bearing_tpoint_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = bearing_tpoint_geo(temp, gs, INVERT_NO);
+  Temporal *result = bearing_tpoint_point(temp, gs, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)

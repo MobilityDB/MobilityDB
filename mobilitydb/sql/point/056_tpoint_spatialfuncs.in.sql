@@ -200,11 +200,11 @@ CREATE FUNCTION azimuth(tgeogpoint)
 -- The following two functions are meant to be included in PostGIS one day
 CREATE FUNCTION bearing(geometry, geometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Bearing_geo_geo'
+  AS 'MODULE_PATHNAME', 'Bearing_point_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(geography, geography)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Bearing_geo_geo'
+  AS 'MODULE_PATHNAME', 'Bearing_point_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bearing(geometry, tgeompoint)
@@ -213,7 +213,7 @@ CREATE FUNCTION bearing(geometry, tgeompoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeompoint, geometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Bearing_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Bearing_tpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeompoint, tgeompoint)
   RETURNS tfloat
@@ -226,7 +226,7 @@ CREATE FUNCTION bearing(geography, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeogpoint, geography)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Bearing_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Bearing_tpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- CREATE FUNCTION bearing(tgeogpoint, tgeogpoint)
   -- RETURNS tfloat

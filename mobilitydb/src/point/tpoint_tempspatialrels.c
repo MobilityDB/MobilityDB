@@ -338,8 +338,8 @@ PG_FUNCTION_INFO_V1(Tdwithin_tpoint_geo);
 PGDLLEXPORT Datum
 Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;

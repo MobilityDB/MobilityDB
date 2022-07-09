@@ -314,8 +314,10 @@ SELECT disjoint(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2
 /* Errors */
 SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
+CONTEXT:  SQL function "disjoint" statement 1
 SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+CONTEXT:  SQL function "disjoint" statement 1
 SELECT intersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
 ------------
@@ -1102,6 +1104,18 @@ SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
  touches 
 ---------
  f
+(1 row)
+
+SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
+ touches 
+---------
+ t
 (1 row)
 
 /* Errors */

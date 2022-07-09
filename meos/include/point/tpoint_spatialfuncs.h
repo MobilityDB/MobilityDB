@@ -81,11 +81,8 @@ extern Datum geom_intersection2d(Datum geom1, Datum geom2);
 
 extern void ensure_spatial_validity(const Temporal *temp1,
   const Temporal *temp2);
-// extern void ensure_not_geodetic_gs(const GSERIALIZED *gs);
 extern void ensure_not_geodetic(int16 flags);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
-extern void ensure_same_geodetic_gs(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2);
 extern void ensure_same_srid(int32_t srid1, int32_t srid2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp,

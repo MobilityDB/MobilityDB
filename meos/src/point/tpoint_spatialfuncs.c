@@ -344,19 +344,6 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
   return;
 }
 
-#if 0 /* Not used */
-/**
- * Ensure that the spatial argument has planar coordinates
- */
-void
-ensure_not_geodetic_gs(const GSERIALIZED *gs)
-{
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-    elog(ERROR, "Only planar coordinates supported");
-  return;
-}
-#endif
-
 /**
  * Ensure that the spatiotemporal argument has planar coordinates
  */
@@ -377,18 +364,6 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 {
   if (MOBDB_FLAGS_GET_X(flags1) && MOBDB_FLAGS_GET_X(flags2) &&
     MOBDB_FLAGS_GET_GEODETIC(flags1) != MOBDB_FLAGS_GET_GEODETIC(flags2))
-    elog(ERROR, "Operation on mixed planar and geodetic coordinates");
-  return;
-}
-
-/**
- * Ensure that the spatiotemporal argument have the same type of coordinates,
- * either planar or geodetic
- */
-void
-ensure_same_geodetic_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-    if (FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
     elog(ERROR, "Operation on mixed planar and geodetic coordinates");
   return;
 }
@@ -1599,7 +1574,6 @@ static int
 lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
 {
   assert(FLAGS_GET_ZM(p->flags) == FLAGS_GET_ZM(q->flags));
-  int ndims = FLAGS_NDIMS(p->flags);
   POINT4D p4d, q4d;
   /* We are sure the points are not empty */
   lwpoint_getPoint4d_p(p, &p4d);
@@ -1610,8 +1584,6 @@ lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
   cmp = float8_cmp_internal(p4d.y, q4d.y);
   if (cmp != 0)
     return cmp;
-  if (ndims == 0)
-    return 0;
   if (FLAGS_GET_Z(p->flags))
   {
     cmp = float8_cmp_internal(p4d.z, q4d.z);
@@ -1647,7 +1619,7 @@ lwpointarr_sort(LWPOINT **points, int count)
 }
 
 /**
- * @brief Remove duplicates from an array of datums
+ * @brief Remove duplicates from an array of LWGEOM points
  */
 LWGEOM **
 lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
@@ -2926,7 +2898,6 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
   }
 
   pfree(instants);
-
   return l;
 }
 
@@ -3219,11 +3190,10 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
  * @sqlfunc bearing()
  */
 bool
-bearing_geo_geo(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
+bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
   double *result)
 {
   ensure_point_type(geo1); ensure_point_type(geo2);
-  ensure_same_geodetic_gs(geo1, geo2);
   ensure_same_srid(gserialized_get_srid(geo1), gserialized_get_srid(geo2));
   ensure_same_dimensionality_gs(geo1, geo2);
   if (gserialized_is_empty(geo1) || gserialized_is_empty(geo2))
@@ -3241,7 +3211,7 @@ bearing_geo_geo(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
  * @sqlfunc bearing()
  */
 Temporal *
-bearing_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool invert)
+bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
   if (gserialized_is_empty(gs))
     return NULL;
