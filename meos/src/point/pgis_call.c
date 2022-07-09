@@ -1700,7 +1700,7 @@ GSERIALIZED *
 PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
 {
   LWGEOM *olwgeom;
-  POINTARRAY *ipa, *opa;
+  POINTARRAY *opa;
   GSERIALIZED *ret;
   int type = gserialized_get_type(geom);
 
@@ -1733,7 +1733,7 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
       return NULL;
     }
 
-    ipa = iline->points;
+    POINTARRAY *ipa = iline->points;
 
     opa = ptarray_substring(ipa, from, to, 0);
 
@@ -1749,7 +1749,7 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
     uint32_t i = 0, g = 0;
     int homogeneous = LW_TRUE;
     LWGEOM **geoms = NULL;
-    double length = 0.0, sublength = 0.0, minprop = 0.0, maxprop = 0.0;
+    double length = 0.0, sublength = 0.0, maxprop = 0.0;
 
     iline = lwgeom_as_lwmline(lwgeom_from_gserialized(geom));
 
@@ -1780,6 +1780,7 @@ PGIS_LWGEOM_line_substring(GSERIALIZED *geom, double from, double to)
         sublength += ptarray_length_2d(subline->points);
 
       /* Calculate proportions for this subline */
+      double minprop = 0.0;
       minprop = maxprop;
       maxprop = sublength / length;
 

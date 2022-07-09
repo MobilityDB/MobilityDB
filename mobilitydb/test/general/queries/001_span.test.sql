@@ -144,6 +144,7 @@ SELECT period_hash_extended('[2000-01-01,2000-01-02]', 1) <> period_hash_extende
 
 -- canonicalize
 SELECT intspan '[1,2]';
+SELECT intspan '(1,2]';
 
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);

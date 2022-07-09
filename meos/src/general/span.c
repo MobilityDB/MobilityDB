@@ -531,6 +531,7 @@ elem_to_span(Datum d, mobdbType basetype)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_cast
  * @brief Cast an element as a span
@@ -556,6 +557,7 @@ float_to_floaspan(double d)
     T_FLOAT8);
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_cast

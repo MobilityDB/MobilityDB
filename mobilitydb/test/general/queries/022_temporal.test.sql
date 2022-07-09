@@ -149,6 +149,15 @@ SELECT tbool(Instant) 'true@2000-01-01';
 SELECT tbool(InstantSet) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(Sequence) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(SequenceSet) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
+
+-- Coverage: Alternative input of Boolean values
+SELECT tbool 'y@2000-01-01';
+SELECT tbool 'n@2000-01-01';
+SELECT tbool 'on@2000-01-01';
+SELECT tbool 'off@2000-01-01';
+SELECT tbool '1@2000-01-01';
+SELECT tbool '0@2000-01-01';
+
 /* Errors */
 SELECT tbool(Instan) 'true@2000-01-01';
 SELECT tbool(InstantSet) 'true@2000-01-01';

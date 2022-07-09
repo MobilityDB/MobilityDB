@@ -3053,12 +3053,14 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
   /* Linear interpolation */
   bool lower_inc1, upper_inc1;
   bool increasing = DatumGetFloat8(value1) < DatumGetFloat8(value2);
-  Span *valuespan = increasing ?
-    span_make(value1, value2, lower_inclu, upper_inclu, basetype) :
-    span_make(value2, value1, upper_inclu, lower_inclu, basetype);
-  Span *inter = intersection_span_span(valuespan, span);
-  pfree(valuespan);
-  if (! inter)
+  Span valuespan;
+  if (increasing)
+    span_set(value1, value2, lower_inclu, upper_inclu, basetype, &valuespan);
+  else
+    span_set(value2, value1, upper_inclu, lower_inclu, basetype, &valuespan);
+  Span inter;
+  bool found = inter_span_span(&valuespan, span, &inter);
+  if (! found)
   {
     if (atfunc)
       return 0;
@@ -3071,11 +3073,10 @@ tnumberseq_restrict_span1(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* We are sure that neither lower or upper are infinite */
-  Datum lower = inter->lower;
-  Datum upper = inter->upper;
-  bool lower_inc2 = inter->lower_inc;
-  bool upper_inc2 = inter->upper_inc;
-  pfree(inter);
+  Datum lower = inter.lower;
+  Datum upper = inter.upper;
+  bool lower_inc2 = inter.lower_inc;
+  bool upper_inc2 = inter.upper_inc;
   double dlower = DatumGetFloat8(lower);
   double dupper = DatumGetFloat8(upper);
   double dvalue1 = DatumGetFloat8(value1);

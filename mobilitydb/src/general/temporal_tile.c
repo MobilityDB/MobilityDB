@@ -1551,26 +1551,27 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       /* Determine the bounds of the resulting sequence */
       if (j == first_bucket || j == last_bucket)
       {
-        Span *bucketspan = span_make(bucket_lower, bucket_upper, true, false,
-          basetype);
-        Span *inter = intersection_span_span(segspan, bucketspan);
-        if (inter)
+        Span bucketspan;
+        span_set(bucket_lower, bucket_upper, true, false, basetype,
+          &bucketspan);
+        Span inter;
+        bool found = inter_span_span(segspan, &bucketspan, &inter);
+        if (found)
         {
           if (incr)
           {
-            lower_inc1 = inter->lower_inc;
-            upper_inc1 = inter->upper_inc;
+            lower_inc1 = inter.lower_inc;
+            upper_inc1 = inter.upper_inc;
           }
           else
           {
-            lower_inc1 = inter->upper_inc;
-            upper_inc1 = inter->lower_inc;
+            lower_inc1 = inter.upper_inc;
+            upper_inc1 = inter.lower_inc;
           }
-          pfree(inter); pfree(bucketspan);
         }
         else
         {
-          // elog(ERROR, "There is a problem");
+          // elog(ERROR, "Unexpected error");
           lower_inc1 = upper_inc1 = false;
         }
       }
