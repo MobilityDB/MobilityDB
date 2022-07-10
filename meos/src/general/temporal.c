@@ -1946,7 +1946,7 @@ temporal_max_instant(const Temporal *temp)
   else if (temp->subtype == TINSTANTSET)
     result = tinstantset_max_instant((TInstantSet *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_min_instant((TSequence *) temp);
+    result = tsequence_max_instant((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_max_instant((TSequenceSet *) temp);
   return result;

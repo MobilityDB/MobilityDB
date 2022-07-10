@@ -87,11 +87,17 @@ SELECT floatspan '[1, 2]' &> floatspan '[1, 2]';
 
 SELECT floatspan '[1, 3]' + floatspan '[1, 3]';
 SELECT floatspan '[1, 3]' + floatspan '(3, 5]';
+/* Errors */
+SELECT floatspan '[1, 1]' + floatspan '[3,4]';
 
 -------------------------------------------------------------------------------
 
 SELECT floatspan '[1, 3]' - floatspan '[1, 3]';
 SELECT floatspan '[1, 3]' - floatspan '(3, 5]';
+SELECT floatspan '[1, 6]' - floatspan '[3,8]';
+SELECT floatspan '[3, 6]' - floatspan '[1, 4]';
+/* Errors */
+SELECT floatspan '[1, 6]' - floatspan '[3,4]';
 
 -------------------------------------------------------------------------------
 

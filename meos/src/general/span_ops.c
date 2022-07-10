@@ -54,11 +54,10 @@ span_elem_min(Datum l, Datum r, mobdbType type)
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
-  if (type == T_INT4)
+  else if (type == T_INT4)
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
-  if (type == T_FLOAT8)
+  else /* type == T_FLOAT8 */
     return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
-  elog(ERROR, "Unknown Min function for span base type: %d", type);
 }
 
 /**
@@ -71,11 +70,10 @@ span_elem_max(Datum l, Datum r, mobdbType type)
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
-  if (type == T_INT4)
+  else if (type == T_INT4)
     return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
-  if (type == T_FLOAT8)
+  else /* type == T_FLOAT8 */
     return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
-  elog(ERROR, "Unknown Max function for span base type: %d", type);
 }
 
 /*****************************************************************************/
@@ -634,7 +632,7 @@ union_span_span(const Span *s1, const Span *s2, bool strict)
   assert(s1->spantype == s2->spantype);
   /* If the spans do not overlap */
   if (strict && ! overlaps_span_span(s1, s2) && ! adjacent_span_span(s1, s2))
-    elog(ERROR, "The union of the two spans would not be contiguous");
+    elog(ERROR, "The result of span union would not be contiguous");
 
   /* Compute the union of the overlapping spans */
   Span *result = span_copy(s1);
@@ -713,7 +711,7 @@ minus_span_span(const Span *s1, const Span *s2)
   int cmp_u1u2 = span_bound_cmp(&upper1, &upper2);
 
   if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
-    elog(ERROR, "result of span difference would not be contiguous");
+    elog(ERROR, "The result of span difference would not be contiguous");
 
   /* Result is empty
    * s1         |----|
