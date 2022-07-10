@@ -178,6 +178,12 @@ SELECT floatspan '[3, 6]' - floatspan '[1, 4]';
 /* Errors */
 SELECT floatspan '[1, 6]' - floatspan '[3,4]';
 ERROR:  The result of span difference would not be contiguous
+SELECT intspan '[1, 3]' * intspan '[3, 5]';
+ ?column? 
+----------
+ [3, 4)
+(1 row)
+
 SELECT floatspan '[1, 3]' * floatspan '[1, 3]';
  ?column? 
 ----------

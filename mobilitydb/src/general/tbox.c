@@ -39,6 +39,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal_util.h"
 #include "general/time_ops.h"
 #include "general/tnumber_mathfuncs.h"

@@ -244,7 +244,7 @@ extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern Span *float_to_floaspan(double d);
 extern Span *int_to_intspan(int i);
 extern PeriodSet *period_to_periodset(const Period *period);
-extern void periodset_set_period(const PeriodSet *ps, Period *p);
+extern Period *periodset_to_period(const PeriodSet *ps);
 extern Period *timestamp_to_period(TimestampTz t);
 extern PeriodSet *timestamp_to_periodset(TimestampTz t);
 extern TimestampSet *timestamp_to_timestampset(TimestampTz t);
@@ -575,13 +575,13 @@ extern STBOX *stbox_copy(const STBOX *box);
 
 /* Cast functions for box types */
 
-extern void int_set_tbox(int i, TBOX *box);
-extern void float_set_tbox(double d, TBOX *box);
-extern void span_set_tbox(const Span *span, TBOX *box);
-extern void timestamp_set_tbox(TimestampTz t, TBOX *box);
-extern void timestampset_set_tbox(const TimestampSet *ss, TBOX *box);
-extern void period_set_tbox(const Period *p, TBOX *box);
-extern void periodset_set_tbox(const PeriodSet *ps, TBOX *box);
+extern TBOX *int_to_tbox(int i);
+extern TBOX *float_to_tbox(double d);
+extern TBOX *span_to_tbox(const Span *span);
+extern TBOX *timestamp_to_tbox(TimestampTz t);
+extern TBOX *timestampset_to_tbox(const TimestampSet *ss);
+extern TBOX *period_to_tbox(const Period *p);
+extern TBOX *periodset_to_tbox(const PeriodSet *ps);
 extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
 extern TBOX *float_timestamp_to_tbox(double d, TimestampTz t);
 extern TBOX *int_period_to_tbox(int i, const Period *p);
@@ -591,6 +591,7 @@ extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
 extern Span *tbox_to_intspan(const TBOX *box);
 extern Span *tbox_to_floatspan(const TBOX *box);
 extern Period *tbox_to_period(const TBOX *box);
+extern Period *stbox_to_period(const TBOX *box);
 extern TBOX *tnumber_to_tbox(Temporal *temp);
 extern GSERIALIZED *stbox_to_geometry(const STBOX *box);
 extern STBOX *tpoint_to_stbox(const Temporal *temp);

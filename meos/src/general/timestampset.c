@@ -275,6 +275,7 @@ timestampset_mem_size(const TimestampSet *ts)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the timespan of a timestamp set.
  * @sqlfunc timespan()
+ * @pymeosfunc timespan()
  */
 Interval *
 timestampset_timespan(const TimestampSet *ts)
@@ -288,8 +289,6 @@ timestampset_timespan(const TimestampSet *ts)
 /**
  * @ingroup libmeos_int_spantime_accessor
  * @brief Set a period to the bounding period of a timestamp set
- * @sqlfunc period()
- * @sqlop @p ::
  */
 void
 timestampset_set_period(const TimestampSet *ts, Period *p)
@@ -299,10 +298,28 @@ timestampset_set_period(const TimestampSet *ts, Period *p)
   return;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_cast
+ * @brief Return the bounding period of a timestamp set.
+ * @sqlfunc period()
+ * @sqlop @p ::
+ * @pymeosfunc period()
+ */
+Period *
+timestampset_to_period(const TimestampSet *ts)
+{
+  Period *result = palloc(sizeof(Period));
+  timestampset_set_period(ts, result);
+  return result;
+}
+#endif /* MEOS */
+
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of a timestamp set.
  * @sqlfunc numTimestamps()
+ * @pymeosfunc numTimestamps()
  */
 int
 timestampset_num_timestamps(const TimestampSet *ts)
@@ -314,6 +331,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the start timestamp of a timestamp set.
  * @sqlfunc startTimestamp()
+ * @pymeosfunc startTimestamp()
  */
 TimestampTz
 timestampset_start_timestamp(const TimestampSet *ts)
@@ -326,6 +344,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the end timestamp of a timestamp set.
  * @sqlfunc endTimestamp()
+ * @pymeosfunc endTimestamp()
  */
 TimestampTz
 timestampset_end_timestamp(const TimestampSet *ts)
@@ -344,6 +363,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  * @sqlfunc timestampN()
+ * @pymeosfunc timestampN()
  */
 bool
 timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
@@ -358,6 +378,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
  * @ingroup libmeos_spantime_accessor
  * @brief Return the array of timestamps of a timestamp set.
  * @sqlfunc timestamps()
+ * @pymeosfunc timestamps()
  */
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
@@ -376,6 +397,7 @@ timestampset_timestamps(const TimestampSet *ts)
  * @ingroup libmeos_spantime_transf
  * @brief Return a timestamp set shifted and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
+ * @pymeosfunc shift()
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
@@ -425,6 +447,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
  * @brief Return true if the first timestamp set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
+ * @pymeosfunc __eq__()
  */
 bool
 timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)

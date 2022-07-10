@@ -69,6 +69,7 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 
 extern Span *elem_to_span(Datum d, mobdbType basetype);
 extern void timestampset_set_period(const TimestampSet *ss, Period *p);
+extern void periodset_set_period(const PeriodSet *ps, Period *p);
 
 /*****************************************************************************/
 
@@ -138,6 +139,19 @@ extern double distance_span_elem(const Span *s, Datum d, mobdbType basetype);
 /*****************************************************************************/
 
 /* Cast functions for box types */
+
+extern void int_set_tbox(int i, TBOX *box);
+extern void float_set_tbox(double d, TBOX *box);
+extern void span_set_tbox(const Span *span, TBOX *box);
+extern void timestamp_set_tbox(TimestampTz t, TBOX *box);
+extern void timestampset_set_tbox(const TimestampSet *ss, TBOX *box);
+extern void period_set_tbox(const Period *p, TBOX *box);
+extern void periodset_set_tbox(const PeriodSet *ps, TBOX *box);
+extern bool geo_set_stbox(const GSERIALIZED *gs, STBOX *box);
+extern void timestamp_set_stbox(TimestampTz t, STBOX *box);
+extern void timestampset_set_stbox(const TimestampSet *ts, STBOX *box);
+extern void period_set_stbox(const Period *p, STBOX *box);
+extern void periodset_set_stbox(const PeriodSet *ps, STBOX *box);
 
 extern void number_set_tbox(Datum value, mobdbType basetype, TBOX *box);
 extern void stbox_set_gbox(const STBOX *box, GBOX *gbox);

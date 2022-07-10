@@ -35,7 +35,7 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_call.h"
@@ -205,13 +205,12 @@ tbox_copy(const TBOX *box)
 
 /*****************************************************************************
  * Casting
- * The functions start by setting the output argument box to 0
+ * The set functions start by setting the output argument box to 0
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_int_box_cast
  * @brief Set a temporal box from a number.
- * @sqlop @p ::
  */
 void
 number_set_tbox(Datum value, mobdbType basetype, TBOX *box)
@@ -229,9 +228,8 @@ number_set_tbox(Datum value, mobdbType basetype, TBOX *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_int_box_cast
  * @brief Set a temporal box from an integer.
- * @sqlop @p ::
  */
 void
 int_set_tbox(int i, TBOX *box)
@@ -244,10 +242,25 @@ int_set_tbox(int i, TBOX *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Set a temporal box from a float.
+ * @brief Cast an integer to a temporal box.
+ * @sqlfunc tbox()
  * @sqlop @p ::
+ */
+TBOX *
+int_to_tbox(int i)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  int_set_tbox(i, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a float.
  */
 void
 float_set_tbox(double d, TBOX *box)
@@ -260,10 +273,25 @@ float_set_tbox(double d, TBOX *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Set a temporal box from a span.
+ * @brief Cast a float to a temporal box.
+ * @sqlfunc tbox()
  * @sqlop @p ::
+ */
+TBOX *
+float_to_tbox(double d)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  float_set_tbox(d, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a span.
  */
 void
 span_set_tbox(const Span *span, TBOX *box)
@@ -277,10 +305,25 @@ span_set_tbox(const Span *span, TBOX *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Set a temporal box from a timestamp.
+ * @brief Cast a span to a temporal box.
+ * @sqlfunc tbox()
  * @sqlop @p ::
+ */
+TBOX *
+span_to_tbox(const Span *span)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  span_set_tbox(span, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a timestamp.
  */
 void
 timestamp_set_tbox(TimestampTz t, TBOX *box)
@@ -293,10 +336,25 @@ timestamp_set_tbox(TimestampTz t, TBOX *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Set a temporal box from a period set.
+ * @brief Cast a timestamp to a temporal box.
+ * @sqlfunc tbox()
  * @sqlop @p ::
+ */
+TBOX *
+timestamp_to_tbox(TimestampTz t)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  timestamp_set_tbox(t, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a period set.
  */
 void
 timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
@@ -311,10 +369,25 @@ timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Set a temporal box from a period.
+ * @brief Cast a timestamp set to a temporal box.
+ * @sqlfunc tbox()
  * @sqlop @p ::
+ */
+TBOX *
+timestampset_to_tbox(const TimestampSet *ts)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  timestampset_set_tbox(ts, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a period.
  */
 void
 period_set_tbox(const Period *p, TBOX *box)
@@ -328,10 +401,25 @@ period_set_tbox(const Period *p, TBOX *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Set a temporal box from a period set.
+ * @brief Cast a period to a temporal box.
+ * @sqlfunc tbox()
  * @sqlop @p ::
+ */
+TBOX *
+period_to_tbox(const Period *p)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  period_set_tbox(p, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a period set.
  */
 void
 periodset_set_tbox(const PeriodSet *ps, TBOX *box)
@@ -345,6 +433,22 @@ periodset_set_tbox(const PeriodSet *ps, TBOX *box)
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Cast a period set to a temporal box.
+ * @sqlfunc tbox()
+ * @sqlop @p ::
+ */
+TBOX *
+periodset_to_tbox(const PeriodSet *ps)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  periodset_set_tbox(ps, result);
+  return result;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_box_cast
@@ -506,6 +610,7 @@ tbox_hast(const TBOX *box)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
+ * @pymeosfunc xmin()
  */
 bool
 tbox_xmin(const TBOX *box, double *result)
@@ -524,6 +629,7 @@ tbox_xmin(const TBOX *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
+ * @pymeosfunc xmax()
  */
 bool
 tbox_xmax(const TBOX *box, double *result)
@@ -542,6 +648,7 @@ tbox_xmax(const TBOX *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
+ * @pymeosfunc tmin()
  */
 bool
 tbox_tmin(const TBOX *box, TimestampTz *result)
@@ -560,6 +667,7 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()
+ * @pymeosfunc tmax()
  */
 bool
 tbox_tmax(const TBOX *box, TimestampTz *result)
@@ -974,6 +1082,7 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @brief Return true if the temporal boxes are equal
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
+ * @pymeosfunc __eq__()
  */
 bool
 tbox_eq(const TBOX *box1, const TBOX *box2)

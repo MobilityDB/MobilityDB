@@ -292,22 +292,6 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_to_period);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Cast a spatiotemporal box as a period
- * @sqlfunc period()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Stbox_to_period(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_T_stbox(box);
-  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Stbox_to_box2d);
 /**
  * @ingroup mobilitydb_box_cast
@@ -355,6 +339,22 @@ Stbox_to_geometry(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   Datum result = PointerGetDatum(stbox_to_geometry(box));
   PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Stbox_to_period);
+/**
+ * @ingroup mobilitydb_box_cast
+ * @brief Cast a spatiotemporal box as a period
+ * @sqlfunc period()
+ * @sqlfunc @p ::
+ */
+PGDLLEXPORT Datum
+Stbox_to_period(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  ensure_has_T_stbox(box);
+  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

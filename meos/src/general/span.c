@@ -808,6 +808,7 @@ span_cmp(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is less than the second one.
  * @sqlop @p <
+ * @pymeosfunc __lt__()
  */
 bool
 span_lt(const Span *s1, const Span *s2)
@@ -821,6 +822,7 @@ span_lt(const Span *s1, const Span *s2)
  * @brief Return true if the first span is less than or equal to the
  * second one.
  * @sqlop @p <=
+ * @pymeosfunc __le__()
  */
 bool
 span_le(const Span *s1, const Span *s2)
@@ -834,6 +836,7 @@ span_le(const Span *s1, const Span *s2)
  * @brief Return true if the first span is greater than or equal to the
  * second one.
  * @sqlop @p >=
+ * @pymeosfunc __ge__()
  */
 bool
 span_ge(const Span *s1, const Span *s2)
@@ -846,6 +849,7 @@ span_ge(const Span *s1, const Span *s2)
  * @ingroup libmeos_spantime_comp
  * @brief Return true if the first span is greater than the second one.
  * @sqlop @p >
+ * @pymeosfunc __gt__()
  */
 bool
 span_gt(const Span *s1, const Span *s2)
