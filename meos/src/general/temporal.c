@@ -1372,25 +1372,25 @@ temporal_step_to_linear(const Temporal *temp)
  * @pymeosfunc shift()
  */
 Temporal *
-temporal_shift_tscale(const Temporal *temp, bool shift, bool tscale,
-  Interval *start, Interval *duration)
+temporal_shift_tscale(const Temporal *temp, const Interval *shift,
+  const Interval *duration)
 {
-  assert((! shift || start != NULL) && (! tscale || duration != NULL));
+  assert(shift != NULL || duration != NULL);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (start != NULL) ?
-      (Temporal *) tinstant_shift((TInstant *) temp, start) :
+    result = (shift != NULL) ?
+      (Temporal *) tinstant_shift((TInstant *) temp, shift) :
       (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
     result = (Temporal *) tinstantset_shift_tscale((TInstantSet *) temp,
-    start, duration);
+      shift, duration);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_shift_tscale((TSequence *) temp,
-      start, duration);
+      shift, duration);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_shift_tscale((TSequenceSet *) temp,
-      start, duration);
+      shift, duration);
   return result;
 }
 

@@ -340,7 +340,7 @@ PGDLLEXPORT Datum
 Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_STATE(state);
+  INPUT_AGG_TRANS_STATE(state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   SkipList *result = timestampset_agg_transfn(fcinfo, state, ts);
   PG_FREE_IF_COPY(ts, 1);
@@ -355,7 +355,7 @@ PGDLLEXPORT Datum
 Period_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_STATE(state);
+  INPUT_AGG_TRANS_STATE(state);
   Period *p = PG_GETARG_SPAN_P(1);
   SkipList *result = period_agg_transfn(fcinfo, state, p);
   PG_RETURN_POINTER(result);
@@ -369,7 +369,7 @@ PGDLLEXPORT Datum
 Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_STATE(state);
+  INPUT_AGG_TRANS_STATE(state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   SkipList *result = periodset_agg_transfn(fcinfo, state, ps);
   PG_FREE_IF_COPY(ps, 1);
@@ -456,7 +456,7 @@ PGDLLEXPORT Datum
 Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_STATE(state);
+  INPUT_AGG_TRANS_STATE(state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   TInstant **instants = timestampset_transform_tcount(ts);
   if (state)
@@ -483,7 +483,7 @@ PGDLLEXPORT Datum
 Period_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_STATE(state);
+  INPUT_AGG_TRANS_STATE(state);
   Period *p = PG_GETARG_SPAN_P(1);
   TSequence *seq = period_transform_tcount(p);
   if (state)
@@ -509,7 +509,7 @@ PGDLLEXPORT Datum
 Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_STATE(state);
+  INPUT_AGG_TRANS_STATE(state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   TSequence **sequences = periodset_transform_tcount(ps);
   if (state)
@@ -539,13 +539,8 @@ PG_FUNCTION_INFO_V1(Time_tunion_combinefn);
 PGDLLEXPORT Datum
 Time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
-  SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(1);
-  if (state1 == NULL && state2 == NULL)
-    PG_RETURN_NULL();
-
+  SkipList *state1,  *state2;
+  INPUT_AGG_COMB_STATE(state1, state2);
   SkipList *result = time_agg_combinefn(fcinfo, state1, state2);
   PG_RETURN_POINTER(result);
 }

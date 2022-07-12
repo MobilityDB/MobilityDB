@@ -1759,26 +1759,25 @@ tsequence_step_to_linear(const TSequence *seq)
  * @sqlfunc shift(), tscale(), shiftTscale().
  */
 TSequence *
-tsequence_shift_tscale(const TSequence *seq, const Interval *start,
+tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   const Interval *duration)
 {
-  assert(start != NULL || duration != NULL);
+  assert(shift != NULL || duration != NULL);
 
   /* Copy the input sequence to the result */
   TSequence *result = tsequence_copy(seq);
 
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(start, duration, &result->period);
-  TimestampTz shift;
-  if (start != NULL)
-    shift = result->period.lower - seq->period.lower;
+  period_shift_tscale(shift, duration, &result->period);
+  TimestampTz delta;
+  if (shift != NULL)
+    delta = result->period.lower - seq->period.lower;
   double scale;
   bool instant = (result->period.lower == result->period.upper);
   /* If the sequence set is instantaneous we cannot scale */
   if (duration != NULL && ! instant)
   {
-    scale =
-      (double) (result->period.upper - result->period.lower) /
+    scale = (double) (result->period.upper - result->period.lower) /
       (double) (seq->period.upper - seq->period.lower);
   }
 
@@ -1791,8 +1790,8 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
     for (int i = 1; i < seq->count - 1; i++)
     {
       inst = (TInstant *) tsequence_inst_n(result, i);
-      if (start != NULL)
-        inst->t += shift;
+      if (shift != NULL)
+        inst->t += delta;
       if (duration != NULL && ! instant)
         inst->t = result->period.lower +
           (inst->t - result->period.lower) * scale;
@@ -1803,7 +1802,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
   }
   /* Shift and/or scale bounding box */
   void *bbox = tsequence_bbox_ptr(result);
-  temporal_bbox_shift_tscale(start, duration, seq->temptype, bbox);
+  temporal_bbox_shift_tscale(shift, duration, seq->temptype, bbox);
   return result;
 }
 

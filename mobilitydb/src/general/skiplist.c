@@ -72,7 +72,7 @@ set_aggregation_context(FunctionCallInfo fcinfo)
   if (! AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported")));
-  return  MemoryContextSwitchTo(ctx);
+  return MemoryContextSwitchTo(ctx);
 }
 
 /**
@@ -309,7 +309,7 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
   else /* state->elemtype == TEMPORAL */
   {
     for (int i = 0; i < count - 2; i ++)
-      result->elems[i + 1].value = temporal_copy(values[i]);
+      result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
   }
   result->elems[count - 1].value = NULL;
   result->tail = count - 1;
@@ -382,30 +382,38 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
    * everything has to be deleted)
    */
   assert(list->length > 0);
-  Period *p;
+  Period p;
   uint8 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
-    p = span_make((TimestampTz) values[0], (TimestampTz) values[count - 1],
-      true, true, T_TIMESTAMPTZ);
+    span_set(TimestampTzGetDatum(values[0]),
+      TimestampTzGetDatum(values[count - 1]), true, true, T_TIMESTAMPTZ, &p);
   }
   else if (list->elemtype == PERIOD)
   {
-    p = span_make(((Span *) values[0])->lower, ((Span *) values[count - 1])->upper,
-      ((Span *) values[0])->lower_inc, ((Span *) values[count - 1])->upper_inc,
-      T_TIMESTAMPTZ);
+    Span *first = (Span *) values[0];
+    Span *last = (Span *) values[count - 1];
+    span_set(TimestampTzGetDatum(first->lower), TimestampTzGetDatum(last->upper),
+      first->lower_inc, last->upper_inc, T_TIMESTAMPTZ, &p);
   }
   else /* list->elemtype == TEMPORAL */
   {
     subtype = ((Temporal *) skiplist_headval(list))->subtype;
     if (subtype == TINSTANT)
-      p = span_make(((TInstant *) values[0])->t, ((TInstant *) values[count - 1])->t,
-        true, true, T_TIMESTAMPTZ);
+    {
+      TInstant *first = (TInstant *) values[0];
+      TInstant *last = (TInstant *) values[count - 1];
+      span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
+        true, true, T_TIMESTAMPTZ, &p);
+    }
     else /* subtype == TSEQUENCE */
-      p = span_make(((TSequence *)values[0])->period.lower,
-        ((TSequence *) values[count - 1])->period.upper,
-        ((TSequence *) values[0])->period.lower_inc,
-        ((TSequence *) values[count - 1])->period.upper_inc, T_TIMESTAMPTZ);
+    {
+      TSequence *first = (TSequence *) values[0];
+      TSequence *last = (TSequence *) values[count - 1];
+      span_set(TimestampTzGetDatum(first->period.lower),
+        TimestampTzGetDatum(last->period.upper), first->period.lower_inc,
+        last->period.upper_inc, T_TIMESTAMPTZ, &p);
+    }
   }
 
   int update[SKIPLIST_MAXLEVEL];
@@ -416,7 +424,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   for (int level = height - 1; level >= 0; level --)
   {
     while (e->next[level] != -1 &&
-      skiplist_elmpos(list, e->next[level], p->lower) == AFTER)
+      skiplist_elmpos(list, e->next[level], p.lower) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -429,14 +437,14 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   e = &list->elems[cur];
 
   int spliced_count = 0;
-  while (skiplist_elmpos(list, cur, p->upper) == AFTER)
+  while (skiplist_elmpos(list, cur, p.upper) == AFTER)
   {
     cur = e->next[0];
     e = &list->elems[cur];
     spliced_count++;
   }
   int upper = cur;
-  if (upper >= 0 && skiplist_elmpos(list, upper, p->upper) == DURING)
+  if (upper >= 0 && skiplist_elmpos(list, upper, p.upper) == DURING)
   {
     upper = e->next[0]; /* if found upper, one more to remove */
     spliced_count++;

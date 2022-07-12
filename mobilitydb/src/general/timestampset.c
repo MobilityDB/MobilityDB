@@ -315,8 +315,8 @@ PGDLLEXPORT Datum
 Timestampset_shift(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Interval *start = PG_GETARG_INTERVAL_P(1);
-  TimestampSet *result = timestampset_shift_tscale(ts, start, NULL);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  TimestampSet *result = timestampset_shift_tscale(ts, shift, NULL);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
@@ -348,10 +348,10 @@ PGDLLEXPORT Datum
 Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  TimestampSet *result = timestampset_shift_tscale(ts, start, duration);
+  TimestampSet *result = timestampset_shift_tscale(ts, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

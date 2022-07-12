@@ -400,34 +400,33 @@ timestampset_timestamps(const TimestampSet *ts)
  * @pymeosfunc shift()
  */
 TimestampSet *
-timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
+timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
   const Interval *duration)
 {
-  assert(start != NULL || duration != NULL);
+  assert(shift != NULL || duration != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
   TimestampSet *result = timestampset_copy(ts);
 
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(start, duration, &result->period);
+  period_shift_tscale(shift, duration, &result->period);
 
   /* Set the first instant */
   result->elems[0] = result->period.lower;
   if (ts->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
-    TimestampTz shift;
-    if (start != NULL)
-      shift = result->period.lower - ts->period.lower;
+    TimestampTz delta;
+    if (shift != NULL)
+      delta = result->period.lower - ts->period.lower;
     double scale;
     if (duration != NULL)
-      scale =
-        (double) (result->period.upper - result->period.lower) /
+      scale = (double) (result->period.upper - result->period.lower) /
         (double) (ts->period.upper - ts->period.lower);
     for (int i = 1; i < ts->count - 1; i++)
     {
-      if (start != NULL)
-        result->elems[i] += shift;
+      if (shift != NULL)
+        result->elems[i] += delta;
       if (duration != NULL)
         result->elems[i] = result->period.lower +
           (result->elems[i] - result->period.lower) * scale;

@@ -297,6 +297,7 @@ extern TimestampTz *timestampset_timestamps(const TimestampSet *ss);
 
 extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps, const Interval *start, const Interval *duration);
 extern void span_expand(const Span *s1, Span *s2);
+extern void lower_upper_shift_tscale(const Interval *shift, const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void period_shift_tscale(const Interval *start, const Interval *duration, Period *result);
 extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ss, const Interval *start, const Interval *duration);
 
@@ -595,11 +596,11 @@ extern Period *stbox_to_period(const TBOX *box);
 extern TBOX *tnumber_to_tbox(Temporal *temp);
 extern GSERIALIZED *stbox_to_geometry(const STBOX *box);
 extern STBOX *tpoint_to_stbox(const Temporal *temp);
-extern bool geo_set_stbox(const GSERIALIZED *gs, STBOX *box);
-extern void timestamp_set_stbox(TimestampTz t, STBOX *box);
-extern void timestampset_set_stbox(const TimestampSet *ss, STBOX *box);
-extern void period_set_stbox(const Period *p, STBOX *box);
-extern void periodset_set_stbox(const PeriodSet *ps, STBOX *box);
+extern STBOX *geo_to_stbox(const GSERIALIZED *gs);
+extern STBOX *timestamp_to_stbox(TimestampTz t);
+extern STBOX *timestampset_to_stbox(const TimestampSet *ts);
+extern STBOX *period_to_stbox(const Period *p);
+extern STBOX *periodset_to_stbox(const PeriodSet *ps);
 extern STBOX *geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t);
 extern STBOX *geo_period_to_stbox(const GSERIALIZED *gs, const Period *p);
 
@@ -846,7 +847,7 @@ extern text **ttext_values(Temporal *temp);
 extern Temporal *temporal_append_tinstant(const Temporal *temp, const TInstant *inst);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *temporal_merge_array(Temporal **temparr, int count);
-extern Temporal *temporal_shift_tscale(const Temporal *temp, bool shift, bool tscale, Interval *start, Interval *duration);
+extern Temporal *temporal_shift_tscale(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_step_to_linear(const Temporal *temp);
 extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tinstantset(const Temporal *temp);

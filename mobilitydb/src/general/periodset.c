@@ -442,8 +442,8 @@ PGDLLEXPORT Datum
 Periodset_shift(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Interval *start = PG_GETARG_INTERVAL_P(1);
-  PeriodSet *result = periodset_shift_tscale(ps, start, NULL);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  PeriodSet *result = periodset_shift_tscale(ps, shift, NULL);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
@@ -474,9 +474,9 @@ PGDLLEXPORT Datum
 Periodset_shift_tscale(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  PeriodSet *result = periodset_shift_tscale(ps, start, duration);
+  PeriodSet *result = periodset_shift_tscale(ps, shift, duration);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }

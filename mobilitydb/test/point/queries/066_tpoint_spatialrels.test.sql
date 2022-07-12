@@ -309,7 +309,7 @@ SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 -- Coverage: Other geometry types
 SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');
 SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
--- Notice that in the current PostGIS version the boundary of a closed circular string is empty !
+-- Notice that the boundary of a closed circular string is empty !
 SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
 
 /* Errors */

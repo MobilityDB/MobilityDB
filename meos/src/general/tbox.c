@@ -709,14 +709,9 @@ tbox_expand(const TBOX *box1, TBOX *box2)
  * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
-tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
+tbox_shift_tscale(const Interval *shift, const Interval *duration, TBOX *box)
 {
-  assert(start != NULL || duration != NULL);
-  if (start != NULL)
-    box->tmin = pg_timestamp_pl_interval(box->tmin, start);
-  box->tmax = (duration == NULL) ?
-    pg_timestamp_pl_interval(box->tmax, start) :
-    pg_timestamp_pl_interval(box->tmin, duration);
+  lower_upper_shift_tscale(shift, duration, &box->tmin, &box->tmax);
   return;
 }
 

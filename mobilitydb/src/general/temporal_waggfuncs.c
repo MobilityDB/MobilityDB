@@ -49,7 +49,7 @@
 /**
  * Helper macro to input the current aggregate state
  */
-#define INPUT_AGG_STATE_ARG(state)  \
+#define INPUT_AGG_TRANS_STATE_ARG(state)  \
   do {  \
     state = PG_ARGISNULL(0) ?  \
       NULL : (SkipList *) PG_GETARG_POINTER(0);  \
@@ -612,7 +612,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool min, bool crossings)
 {
   SkipList *state;
-  INPUT_AGG_STATE_ARG(state);
+  INPUT_AGG_TRANS_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ((temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET) &&
@@ -636,7 +636,7 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
   SkipList *state;
-  INPUT_AGG_STATE_ARG(state);
+  INPUT_AGG_TRANS_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   int count;

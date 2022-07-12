@@ -108,21 +108,21 @@ temporal_bbox_cmp(const void *box1, const void *box2, mobdbType temptype)
  * Shift and/or scale the time span of the bounding box by the intervals
  *
  * @param[in] box Bounding box
- * @param[in] start Interval to shift
+ * @param[in] shift Interval to shift
  * @param[in] duration Interval to scale
  * @param[in] temptype Temporal type
  */
 void
-temporal_bbox_shift_tscale(const Interval *start, const Interval *duration,
+temporal_bbox_shift_tscale(const Interval *shift, const Interval *duration,
   mobdbType temptype, void *box)
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    period_shift_tscale(start, duration, (Period *) box);
+    period_shift_tscale(shift, duration, (Period *) box);
   else if (tnumber_type(temptype))
-    tbox_shift_tscale(start, duration, (TBOX *) box);
+    tbox_shift_tscale(shift, duration, (TBOX *) box);
   else if (tspatial_type(temptype))
-    stbox_shift_tscale(start, duration, (STBOX *) box);
+    stbox_shift_tscale(shift, duration, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       temptype);

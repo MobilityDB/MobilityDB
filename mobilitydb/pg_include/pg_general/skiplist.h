@@ -90,12 +90,12 @@ typedef struct
 } SkipList;
 
 /**
- * Helper macro to input the current aggregate state
+ * Helper macros to input the current aggregate state
  */
-#define INPUT_AGG_STATE(state)  \
+#define INPUT_AGG_TRANS_STATE(state)  \
   do {  \
-    state = PG_ARGISNULL(0) ?  \
-      NULL : (SkipList *) PG_GETARG_POINTER(0);  \
+    state = PG_ARGISNULL(0) ? NULL :  \
+     (SkipList *) PG_GETARG_POINTER(0);  \
     if (PG_ARGISNULL(1))  \
     {  \
       if (state)  \
@@ -104,6 +104,16 @@ typedef struct
         PG_RETURN_NULL();  \
     }  \
   } while (0)
+
+#define INPUT_AGG_COMB_STATE(state1, state2)  \
+  do {  \
+  state1 = PG_ARGISNULL(0) ? NULL :  \
+    (SkipList *) PG_GETARG_POINTER(0);  \
+  state2 = PG_ARGISNULL(1) ? NULL :  \
+    (SkipList *) PG_GETARG_POINTER(1);  \
+  if (state1 == NULL && state2 == NULL)  \
+    PG_RETURN_NULL();  \
+   } while (0) 
 
 /*****************************************************************************/
 

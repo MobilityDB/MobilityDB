@@ -402,9 +402,9 @@ PGDLLEXPORT Datum
 Period_shift(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
   Period *result = span_copy(p);
-  period_shift_tscale(start, NULL, result);
+  period_shift_tscale(shift, NULL, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -434,10 +434,10 @@ PGDLLEXPORT Datum
 Period_shift_tscale(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   Period *result = span_copy(p);
-  period_shift_tscale(start, duration, result);
+  period_shift_tscale(shift, duration, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -874,10 +874,10 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * @sqlfunc shift(), tscale(), shiftTscale().
  */
 TInstantSet *
-tinstantset_shift_tscale(const TInstantSet *is, const Interval *start,
+tinstantset_shift_tscale(const TInstantSet *is, const Interval *shift,
   const Interval *duration)
 {
-  assert(start != NULL || duration != NULL);
+  assert(shift != NULL || duration != NULL);
 
   /* Copy the input instant set to the result */
   TInstantSet *result = tinstantset_copy(is);
@@ -888,10 +888,10 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *start,
   const TInstant *inst2 = tinstantset_inst_n(is, is->count - 1);
   span_set(inst1->t, inst2->t, true, true, T_TIMESTAMPTZ, &p1);
   span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
-  period_shift_tscale(start, duration, &p2);
-  TimestampTz shift;
-  if (start != NULL)
-    shift = p2.lower - p1.lower;
+  period_shift_tscale(shift, duration, &p2);
+  TimestampTz delta;
+  if (shift != NULL)
+    delta = p2.lower - p1.lower;
   double scale;
   bool instant = (p2.lower == p2.upper);
   /* If the sequence set is instantaneous we cannot scale */
@@ -907,8 +907,8 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *start,
     for (int i = 1; i < is->count - 1; i++)
     {
       inst = (TInstant *) tinstantset_inst_n(result, i);
-      if (start != NULL && (duration == NULL || instant))
-        inst->t += shift;
+      if (shift != NULL && (duration == NULL || instant))
+        inst->t += delta;
       if (duration != NULL && ! instant)
         inst->t = p2.lower + (inst->t - p1.lower) * scale;
     }
@@ -918,7 +918,7 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *start,
   }
   /* Shift and/or scale bounding box */
   void *bbox = tinstantset_bbox_ptr(result);
-  temporal_bbox_shift_tscale(start, duration, is->temptype, bbox);
+  temporal_bbox_shift_tscale(shift, duration, is->temptype, bbox);
   return result;
 }
 

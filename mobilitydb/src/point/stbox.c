@@ -1301,12 +1301,11 @@ Stbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-
-  if (!box2 && !box1)
+  if (!box1 && !box2)
     PG_RETURN_NULL();
   if (box1 && !box2)
     PG_RETURN_POINTER(box1);
-  if (box2 && !box1)
+  if (!box1 && box2)
     PG_RETURN_POINTER(box2);
   /* Both boxes are not null */
   ensure_same_dimensionality(box1->flags, box2->flags);

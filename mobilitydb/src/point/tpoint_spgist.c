@@ -103,6 +103,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "point/tpoint_boxops.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"

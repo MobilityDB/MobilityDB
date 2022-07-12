@@ -717,30 +717,48 @@ span_expand(const Span *s1, Span *s2)
 }
 
 /**
+ * @ingroup libmeos_int_spantime_transf
+ * @brief Shift and/or scale a period by the intervals.
+ * @sqlfunc shift(), tscale(), shiftTscale()
+ * @pymeosfunc shift()
+ */
+void
+lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
+  TimestampTz *lower, TimestampTz *upper)
+{
+  assert(shift != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+  bool instant = (*lower == *upper);
+
+  if (shift != NULL)
+  {
+    *lower = pg_timestamp_pl_interval(*lower, shift);
+    if (instant)
+      *upper = *lower;
+    else
+      *upper = pg_timestamp_pl_interval(*upper, shift);
+  }
+  if (duration != NULL && ! instant)
+    *upper = pg_timestamp_pl_interval(*lower, duration);
+  return;
+}
+
+/**
  * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale a period by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
 void
-period_shift_tscale(const Interval *start, const Interval *duration,
+period_shift_tscale(const Interval *shift, const Interval *duration,
   Period *result)
 {
-  assert(start != NULL || duration != NULL);
-  if (duration != NULL)
-    ensure_valid_duration(duration);
-  bool instant = (result->lower == result->upper);
-
-  if (start != NULL)
-  {
-    result->lower = pg_timestamp_pl_interval(result->lower, start);
-    if (instant)
-      result->upper = result->lower;
-    else
-      result->upper = pg_timestamp_pl_interval(result->upper, start);
-  }
-  if (duration != NULL && ! instant)
-    result->upper = pg_timestamp_pl_interval(result->lower, duration);
+  TimestampTz lower = DatumGetTimestampTz(result->lower);
+  TimestampTz upper = DatumGetTimestampTz(result->upper);
+  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  result->lower = TimestampTzGetDatum(lower);
+  result->upper = TimestampTzGetDatum(upper);
   return;
 }
 

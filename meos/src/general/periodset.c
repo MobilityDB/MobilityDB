@@ -608,10 +608,10 @@ periodset_timestamps(const PeriodSet *ps, int *count)
  * @pymeosfunc shift()
  */
 PeriodSet *
-periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
+periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
   const Interval *duration)
 {
-  assert(start != NULL || duration != NULL);
+  assert(shift != NULL || duration != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
   bool instant = (ps->period.lower == ps->period.upper);
@@ -619,23 +619,22 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
   /* Copy the input period set to the output period set */
   PeriodSet *result = periodset_copy(ps);
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(start, duration, &result->period);
+  period_shift_tscale(shift, duration, &result->period);
   /* Shift and/or scale the periods of the period set */
-  TimestampTz shift;
-  if (start != NULL)
-    shift = result->period.lower - ps->period.lower;
+  TimestampTz delta;
+  if (shift != NULL)
+    delta = result->period.lower - ps->period.lower;
   /* If the periodset is instantaneous we cannot scale */
   double scale;
   if (duration != NULL && ! instant)
-    scale =
-      (double) (result->period.upper - result->period.lower) /
+    scale = (double) (result->period.upper - result->period.lower) /
       (double) (ps->period.upper - ps->period.lower);
   for (int i = 0; i < ps->count; i++)
   {
-    if (start != NULL)
+    if (shift != NULL)
     {
-      result->elems[i].lower += shift;
-      result->elems[i].upper += shift;
+      result->elems[i].lower += delta;
+      result->elems[i].upper += delta;
     }
     if (duration != NULL && ! instant)
     {

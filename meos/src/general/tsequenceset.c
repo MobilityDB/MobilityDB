@@ -1717,10 +1717,10 @@ tsequenceset_step_to_linear(const TSequenceSet *ss)
  * @sqlfunc shift(), tscale(), shiftTscale().
  */
 TSequenceSet *
-tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start,
+tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   const Interval *duration)
 {
-  assert(start != NULL || duration != NULL);
+  assert(shift != NULL || duration != NULL);
 
   /* Copy the input sequence set to the result */
   TSequenceSet *result = tsequenceset_copy(ss);
@@ -1734,10 +1734,10 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start,
   span_set(inst1->t, inst2->t, seq1->period.lower_inc, seq2->period.upper_inc,
     T_TIMESTAMPTZ, &p1);
   span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
-  period_shift_tscale(start, duration, &p2);
-  TimestampTz shift;
-  if (start != NULL)
-    shift = p2.lower - p1.lower;
+  period_shift_tscale(shift, duration, &p2);
+  TimestampTz delta;
+  if (shift != NULL)
+    delta = p2.lower - p1.lower;
   double scale;
   bool instant = (p2.lower == p2.upper);
   /* If the sequence set is instantaneous we cannot scale */
@@ -1749,10 +1749,10 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start,
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
     /* Shift and/or scale the bounding period of the sequence */
-    if (start != NULL && (duration == NULL || seq->count == 1))
+    if (shift != NULL && (duration == NULL || seq->count == 1))
     {
-      seq->period.lower += shift;
-      seq->period.upper += shift;
+      seq->period.lower += delta;
+      seq->period.upper += delta;
     }
     /* If the sequence is instantaneous we cannot scale */
     if (duration != NULL && seq->count > 1)
@@ -1765,8 +1765,8 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start,
     {
       TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
       /* Shift and/or scale the bounding period of the sequence */
-      if (start != NULL)
-        inst->t += shift;
+      if (shift != NULL)
+        inst->t += delta;
       /* If the sequence is instantaneous we cannot scale */
       if (duration != NULL && seq->count > 1)
         inst->t = p2.lower + (inst->t - p2.lower) * scale;
