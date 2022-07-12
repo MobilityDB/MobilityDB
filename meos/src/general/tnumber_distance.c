@@ -180,6 +180,7 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
@@ -195,6 +196,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
     restype = T_TFLOAT;
   return distance_tnumber_tnumber1(temp1, temp2, restype);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Nearest approach distance

@@ -1185,7 +1185,7 @@ tnumber_to_span(const Temporal *temp)
     Datum value = tinstant_value((TInstant *) temp);
     result = span_make(value, value, true, true, basetype);
   }
-  else
+  else if (temp->subtype == TINSTANTSET || temp->temptype == T_TINT)
   {
     TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
     Datum min = 0, max = 0;
@@ -1201,6 +1201,14 @@ tnumber_to_span(const Temporal *temp)
       max = Float8GetDatum(box->xmax);
     }
     result = span_make(min, max, true, true, basetype);
+  }
+  else if (temp->subtype == TSEQUENCE)
+  {
+    result = tfloatseq_span((TSequence *) temp);
+  }
+  else /* temp->subtype == TSEQUENCESET */
+  {
+    result = tfloatseqset_span((TSequenceSet *) temp);
   }
   return result;
 }

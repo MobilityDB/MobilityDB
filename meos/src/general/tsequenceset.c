@@ -1565,17 +1565,14 @@ tfloatseqset_span(const TSequenceSet *ss)
   Span **normspans = spanarr_normalize(spans, ss->count, &newcount);
   Span *result;
   if (newcount == 1)
-  {
     result = span_copy(normspans[0]);
-    pfree_array((void **) spans, ss->count);
-    pfree_array((void **) normspans, newcount);
-    return result;
+  else
+  {
+    Span *start = normspans[0];
+    Span *end = normspans[newcount - 1];
+    result = span_make(start->lower, end->upper, start->lower_inc,
+      end->upper_inc, T_FLOAT8);
   }
-
-  Span *start = normspans[0];
-  Span *end = normspans[newcount - 1];
-  result = span_make(start->lower, end->upper, start->lower_inc,
-    end->upper_inc, T_FLOAT8);
   pfree_array((void **) normspans, newcount);
   pfree_array((void **) spans, ss->count);
   return result;

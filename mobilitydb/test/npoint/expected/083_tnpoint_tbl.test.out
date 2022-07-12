@@ -536,6 +536,12 @@ WHERE t1.temp >= t2.temp;
   5050
 (1 row)
 
+SELECT MAX(tnpoint_hash(temp)) FROM tbl_tnpoint;
+    max     
+------------
+ 2137747695
+(1 row)
+
 CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestamp(temp, '2001-06-01');

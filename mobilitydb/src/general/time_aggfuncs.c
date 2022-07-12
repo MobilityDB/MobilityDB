@@ -539,7 +539,7 @@ PG_FUNCTION_INFO_V1(Time_tunion_combinefn);
 PGDLLEXPORT Datum
 Time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
-  SkipList *state1,  *state2;
+  SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(state1, state2);
   SkipList *result = time_agg_combinefn(fcinfo, state1, state2);
   PG_RETURN_POINTER(result);

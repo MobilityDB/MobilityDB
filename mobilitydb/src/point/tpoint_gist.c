@@ -332,8 +332,7 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-  STBOX *key = (STBOX *)DatumGetPointer(entry->key),
-    query;
+  STBOX *key = DatumGetSTboxP(entry->key), query;
 
   /* Determine whether the index is lossy depending on the strategy */
   *recheck = tpoint_index_recheck(strategy);
@@ -545,7 +544,7 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    STBOX *cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
+    STBOX *cur = DatumGetSTboxP(entryvec->vector[i].key);
     if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
     {
       v->spl_left[v->spl_nleft] = i;
@@ -721,22 +720,15 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
-  OffsetNumber i,
-        maxoff;
+  OffsetNumber i, maxoff;
   ConsiderSplitContext context;
-  STBOX     *box,
-         *leftBox,
-         *rightBox;
-  int      dim,
-        nentries,
-        commonEntriesCount;
-  bool     hasz;
-  SplitInterval *intervalsLower,
-        *intervalsUpper;
+  STBOX *box, *leftBox, *rightBox;
+  int dim, nentries, commonEntriesCount;
+  SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
+  bool hasz;
 
   memset(&context, 0, sizeof(ConsiderSplitContext));
-
   maxoff = (OffsetNumber) (entryvec->n - 1);
   nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
 
@@ -749,7 +741,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    box = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
+    box = DatumGetSTboxP(entryvec->vector[i].key);
     if (i == FirstOffsetNumber)
       context.boundingBox = *box;
     else
@@ -757,7 +749,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
   }
 
   /* Determine whether there is a Z dimension */
-  box = (STBOX *)DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
+  box = DatumGetSTboxP(entryvec->vector[FirstOffsetNumber].key);
   hasz = MOBDB_FLAGS_GET_Z(box->flags);
 
   /*
@@ -778,7 +770,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
     /* Project each entry as an interval on the selected axis. */
     for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
     {
-      box = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
+      box = DatumGetSTboxP(entryvec->vector[i].key);
       if (dim == 0)
       {
         intervalsLower[i - FirstOffsetNumber].lower = box->xmin;
@@ -805,8 +797,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
      * Make two arrays of intervals: one sorted by lower bound and another
      * sorted by upper bound.
      */
-    memcpy(intervalsUpper, intervalsLower,
-         sizeof(SplitInterval) * nentries);
+    memcpy(intervalsUpper, intervalsLower, sizeof(SplitInterval) * nentries);
     qsort(intervalsLower, (size_t) nentries, sizeof(SplitInterval),
         interval_cmp_lower);
     qsort(intervalsUpper, (size_t) nentries, sizeof(SplitInterval),
@@ -983,7 +974,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
     /*
      * Get upper and lower bounds along selected axis.
      */
-    box = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
+    box = DatumGetSTboxP(entryvec->vector[i].key);
     if (context.dim == 0)
     {
       lower = box->xmin;
@@ -1050,7 +1041,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
-      box = (STBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+      box = DatumGetSTboxP(entryvec->vector[commonEntries[i].index].key);
       commonEntries[i].delta = Abs(stbox_penalty(leftBox, box) -
                      stbox_penalty(rightBox, box));
     }
@@ -1066,7 +1057,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
-      box = (STBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+      box = DatumGetSTboxP(entryvec->vector[commonEntries[i].index].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
@@ -1107,18 +1098,14 @@ PG_FUNCTION_INFO_V1(Stbox_gist_same);
 PGDLLEXPORT Datum
 Stbox_gist_same(PG_FUNCTION_ARGS)
 {
-  STBOX *b1 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(0));
-  STBOX *b2 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(1));
-  bool* result = (bool *) PG_GETARG_POINTER(2);
+  STBOX *b1 = PG_GETARG_STBOX_P(0);
+  STBOX *b2 = PG_GETARG_STBOX_P(1);
+  bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) &&
-           FLOAT8_EQ(b1->ymin, b2->ymin) &&
-           FLOAT8_EQ(b1->zmin, b2->zmin) &&
-           float8_cmp_internal(b1->tmin, b2->tmin) == 0 &&
-           FLOAT8_EQ(b1->xmax, b2->xmax) &&
-           FLOAT8_EQ(b1->ymax, b2->ymax) &&
-           FLOAT8_EQ(b1->zmax, b2->zmax) &&
-           b1->tmax == b2->tmax);
+    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
+      FLOAT8_EQ(b1->zmin, b2->zmin) && b1->tmin == b2->tmin &&
+      FLOAT8_EQ(b1->xmax, b2->xmax) && FLOAT8_EQ(b1->ymax, b2->ymax) &&
+      FLOAT8_EQ(b1->zmax, b2->zmax) && b1->tmax == b2->tmax);
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);

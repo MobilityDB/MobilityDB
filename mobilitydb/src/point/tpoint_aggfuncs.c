@@ -414,17 +414,15 @@ Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 
   Temporal **values = (Temporal **) skiplist_values(state);
   int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
-  Temporal *result = NULL;
+  Temporal *result;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
-    result = (Temporal *)tpointinst_tcentroid_finalfn(
-      (TInstant **)values, state->length, srid);
+    result = (Temporal *) tpointinst_tcentroid_finalfn((TInstant **) values,
+      state->length, srid);
   else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *)tpointseq_tcentroid_finalfn(
-      (TSequence **)values, state->length, srid);
-
+    result = (Temporal *) tpointseq_tcentroid_finalfn((TSequence **) values,
+      state->length, srid);
   pfree(values);
-
   PG_RETURN_POINTER(result);
 }
 

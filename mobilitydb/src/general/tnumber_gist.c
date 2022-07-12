@@ -300,7 +300,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
  *   NaN-aware comparisons for the value dimension
  */
 static void
-tbox_expand_rt(TBOX *box1, const TBOX *box2)
+tbox_adjust(TBOX *box1, const TBOX *box2)
 {
   box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
   box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
@@ -322,7 +322,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_expand_rt(result, DatumGetTboxP(ent[i].key));
+    tbox_adjust(result, DatumGetTboxP(ent[i].key));
   PG_RETURN_SPAN_P(result);
 }
 
@@ -463,7 +463,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
         *left_tbox = *cur;
       }
       else
-        tbox_expand_rt(left_tbox, cur);
+        tbox_adjust(left_tbox, cur);
 
       v->spl_nleft++;
     }
@@ -476,7 +476,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
         *right_tbox = *cur;
       }
       else
-        tbox_expand_rt(right_tbox, cur);
+        tbox_adjust(right_tbox, cur);
 
       v->spl_nright++;
     }
@@ -685,13 +685,11 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
   OffsetNumber i, maxoff;
   ConsiderSplitContext context;
   TBOX *box, *leftBox, *rightBox;
-  int dim, commonEntriesCount;
+  int dim, nentries, commonEntriesCount;
   SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
-  int nentries;
 
   memset(&context, 0, sizeof(ConsiderSplitContext));
-
   maxoff = (OffsetNumber) (entryvec->n - 1);
   nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
 
@@ -708,7 +706,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
     if (i == FirstOffsetNumber)
       context.boundingBox = *box;
     else
-      tbox_expand_rt(&context.boundingBox, box);
+      tbox_adjust(&context.boundingBox, box);
   }
 
   /*
@@ -742,8 +740,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
      * Make two arrays of intervals: one sorted by lower bound and another
      * sorted by upper bound.
      */
-    memcpy(intervalsUpper, intervalsLower,
-         sizeof(SplitInterval) * nentries);
+    memcpy(intervalsUpper, intervalsLower, sizeof(SplitInterval) * nentries);
     qsort(intervalsLower, (size_t) nentries, sizeof(SplitInterval),
         interval_cmp_lower);
     qsort(intervalsUpper, (size_t) nentries, sizeof(SplitInterval),
@@ -893,7 +890,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      tbox_expand_rt(leftBox, box);      \
+      tbox_adjust(leftBox, box);      \
     else                  \
       *leftBox = *(box);          \
     v->spl_left[v->spl_nleft++] = off;    \
@@ -902,7 +899,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(box, off)          \
   do {                    \
     if (v->spl_nright > 0)          \
-      tbox_expand_rt(rightBox, box);      \
+      tbox_adjust(rightBox, box);      \
     else                  \
       *rightBox = *(box);          \
     v->spl_right[v->spl_nright++] = off;  \
@@ -914,8 +911,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    double    lower,
-          upper;
+    double lower, upper;
 
     /*
      * Get upper and lower bounds along selected axis.
@@ -1036,12 +1032,9 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
   TBOX *b1 = PG_GETARG_TBOX_P(0);
   TBOX *b2 = PG_GETARG_TBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
-
   if (b1 && b2)
-    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) &&
-           FLOAT8_EQ(b1->tmin, b2->tmin) &&
-           FLOAT8_EQ(b1->xmax, b2->xmax) &&
-           FLOAT8_EQ(b1->tmax, b2->tmax));
+    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && b1->tmin == b2->tmin &&
+      FLOAT8_EQ(b1->xmax, b2->xmax) && b1->tmax == b2->tmax);
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);
