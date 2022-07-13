@@ -81,6 +81,35 @@ CREATE FUNCTION tnpoint(tnpoint, integer)
 
 CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;
 
+-- Input/output in WKB and HexWKB format
+
+CREATE FUNCTION tnpointFromBinary(bytea)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnpointFromHexWKB(text)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(tnpoint)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(tnpoint, endianenconding text)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(tnpoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(tnpoint, endianenconding text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/

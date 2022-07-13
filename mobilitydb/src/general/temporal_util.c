@@ -143,6 +143,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
   return result;
 }
 
+#if 0 /* not used */
 /**
  * Call PostgreSQL function with 3 arguments
  */
@@ -166,6 +167,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
     elog(ERROR, "function %p returned NULL", (void *) func);
   return result;
 }
+#endif /* not used */
 
 /*****************************************************************************
  * Array functions

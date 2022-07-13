@@ -48,6 +48,54 @@ SELECT tnpoint '[Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1,
 SELECT tnpoint'{[Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05, Npoint(2, 0.6)@2000-01-06]}';
 
 -------------------------------------------------------------------------------
+-- Input/output in WKB and HexWKB formats
+-------------------------------------------------------------------------------
+
+SELECT tnpointFromBinary(asBinary(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+SELECT tnpointFromBinary(asBinary(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+SELECT tnpointFromBinary(asBinary(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+SELECT tnpointFromBinary(asBinary(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'));
+
+SELECT tnpointFromBinary(asBinary(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'NDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'NDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'NDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'NDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'NDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }', 'NDR'));
+
+SELECT tnpointFromBinary(asBinary(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'XDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'XDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'XDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'XDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'XDR'));
+SELECT tnpointFromBinary(asBinary(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }', 'XDR'));
+
+-------------------------------------------------------------------------------
+
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'));
+
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'NDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'NDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'NDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'NDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'NDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }', 'NDR'));
+
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'XDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'XDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'XDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'XDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'XDR'));
+SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }', 'XDR'));
+
+-------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 
