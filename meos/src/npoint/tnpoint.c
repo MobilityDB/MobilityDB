@@ -62,8 +62,8 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   GSERIALIZED *geom = npoint_geom(np);
-  TInstant *result = tinstant_make(PointerGetDatum(geom), T_TGEOMPOINT,
-    inst->t);
+  TInstant *result = 
+    tinstant_make(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
   pfree(geom);
   return result;
 }
@@ -140,13 +140,13 @@ tnpoint_tgeompoint(const Temporal *temp)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *)tnpointinst_tgeompointinst((TInstant *) temp);
+    result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *)tnpointinstset_tgeompointinstset((TInstantSet *) temp);
+    result = (Temporal *) tnpointinstset_tgeompointinstset((TInstantSet *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *)tnpointseq_tgeompointseq((TSequence *) temp);
+    result = (Temporal *) tnpointseq_tgeompointseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *)tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
+    result = (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   return result;
 }
 
@@ -158,8 +158,8 @@ tnpoint_tgeompoint(const Temporal *temp)
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
-  Datum geom = tinstant_value(inst);
-  Npoint *np = geom_npoint(geom);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+  Npoint *np = geom_npoint(gs);
   if (np == NULL)
     return NULL;
   TInstant *result = tinstant_make(PointerGetDatum(np), T_TNPOINT, inst->t);

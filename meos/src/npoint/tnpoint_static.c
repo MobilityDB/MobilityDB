@@ -549,17 +549,16 @@ npoint_geom(const Npoint *np)
  * @brief Transforms the geometry into a network point
  */
 Npoint *
-geom_npoint(Datum geom)
+geom_npoint(const GSERIALIZED *gs)
 {
   /* Ensure validity of operation */
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   ensure_non_empty(gs);
   ensure_point_type(gs);
   int32_t srid_geom = gserialized_get_srid(gs);
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_geom, srid_ways);
 
-  char *geomstr = ewkt_out(InvalidOid, geom);
+  char *geomstr = ewkt_out(InvalidOid, PointerGetDatum(gs));
   char sql[512];
   sprintf(sql, "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
     "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
@@ -611,10 +610,9 @@ nsegment_geom(const Nsegment *ns)
  * @brief Transforms the geometry into a network segment
  */
 Nsegment *
-geom_nsegment(Datum geom)
+geom_nsegment(const GSERIALIZED *gs)
 {
   /* Ensure validity of operation */
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   ensure_non_empty(gs);
   int geomtype = gserialized_get_type(gs);
   if (geomtype != POINTTYPE && geomtype != LINETYPE)
@@ -626,7 +624,7 @@ geom_nsegment(Datum geom)
   if (geomtype == POINTTYPE)
   {
     points = palloc0(sizeof(Npoint *));
-    np = geom_npoint(geom);
+    np = geom_npoint(gs);
     if (np != NULL)
       points[k++] = np;
   }
@@ -637,12 +635,11 @@ geom_nsegment(Datum geom)
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      Datum point = PointerGetDatum(PGIS_LWGEOM_pointn_linestring(
-        DatumGetGserializedP(geom), i + 1));
+      GSERIALIZED *point = PGIS_LWGEOM_pointn_linestring(gs, i + 1);
       np = geom_npoint(point);
       if (np != NULL)
         points[k++] = np;
-      /* Cannot pfree(DatumGetPointer(point)); */
+      /* Cannot pfree(point); */
     }
   }
 

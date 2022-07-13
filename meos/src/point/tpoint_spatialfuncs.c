@@ -2069,11 +2069,10 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
-  Datum value = tinstant_value(inst);
-  GSERIALIZED *gsvalue = DatumGetGserializedP(value);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
   Datum point = (oper == GEOM_TO_GEOG) ?
-    PointerGetDatum(PGIS_geography_from_geometry(gsvalue)) :
-    PointerGetDatum(PGIS_geometry_from_geography(gsvalue));
+    PointerGetDatum(PGIS_geography_from_geometry(gs)) :
+    PointerGetDatum(PGIS_geometry_from_geography(gs));
   return tinstant_make(point, (oper == GEOM_TO_GEOG) ?
     T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
 }
@@ -2101,7 +2100,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper)
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      points[0]->srid, NULL, (uint32_t) is->count, (LWGEOM **) points);
+    points[0]->srid, NULL, (uint32_t) is->count, (LWGEOM **) points);
   GSERIALIZED *mpoint_orig = geo_serialize(lwresult);
   for (int i = 0; i < is->count; i++)
     lwpoint_free(points[i]);

@@ -82,6 +82,10 @@ typedef struct
 
 /* Cast functions */
 
+/** Symbolic constants for transforming tnpoint <-> tgeompoint */
+#define NPOINT_TO_GEOM        true
+#define GEOM_TO_NPOINT        false
+
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
 extern TInstantSet *tnpointinstset_tgeompointinstset(const TInstantSet *is);
 extern TSequence *tnpointseq_tgeompointseq(const TSequence *seq);

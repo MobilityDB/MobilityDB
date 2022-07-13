@@ -575,18 +575,14 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   lwgeom_free(line);
 
   if (fabsl(fraction) < MOBDB_EPSILON)
-  {
     *t = inst1->t;
-    return 0.0;
-  }
-  if (fabsl(fraction - 1.0) < MOBDB_EPSILON)
-  {
+  else if (fabsl(fraction - 1.0) < MOBDB_EPSILON)
     *t = inst2->t;
-    return 0.0;
+  else
+  {
+    double duration = (inst2->t - inst1->t);
+    *t = inst1->t + (TimestampTz) (duration * fraction);
   }
-
-  double duration = (inst2->t - inst1->t);
-  *t = inst1->t + (TimestampTz) (duration * fraction);
   return dist;
 }
 

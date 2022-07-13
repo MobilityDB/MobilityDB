@@ -93,23 +93,11 @@ ttext_at_value(const Temporal *temp, text *txt)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geometric point to a point.
+ * @brief Restrict a temporal point to a point.
  * @sqlfunc atValue()
  */
 Temporal *
-tgeompoint_at_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geographic point to a point.
- * @sqlfunc atValue()
- */
-Temporal *
-tgeogpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
+tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
   Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
   return result;
@@ -165,23 +153,11 @@ ttext_minus_value(const Temporal *temp, text *txt)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geometric point to the complement of a point.
+ * @brief Restrict a temporal point to the complement of a point.
  * @sqlfunc minusValue()
  */
 Temporal *
-tgeompoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geographic point to the complement of a point.
- * @sqlfunc minusValue()
- */
-Temporal *
-tgeogpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
+tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
   Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
   return result;
@@ -338,13 +314,12 @@ ttext_minus_values(const Temporal *temp, text **values, int count)
 }
 
 /**
- * @brief Restrict a temporal geometric point to (the complement of) an array
- * of points.
+ * @brief Restrict a temporal point to (the complement of) an array of points.
  * @sqlfunc atValues()
  */
 static Temporal *
-tgeompoint_restrict_values(const Temporal *temp, GSERIALIZED **values,
-  int count, bool atfunc)
+tpoint_restrict_values(const Temporal *temp, GSERIALIZED **values, int count,
+  bool atfunc)
 {
   Datum *datumarr = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i ++)
@@ -356,65 +331,24 @@ tgeompoint_restrict_values(const Temporal *temp, GSERIALIZED **values,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geometric point to an array of points.
+ * @brief Restrict a temporal point to an array of points.
  * @sqlfunc atValues()
  */
 Temporal *
-tgeompoint_at_values(const Temporal *temp, GSERIALIZED **values, int count)
+tpoint_at_values(const Temporal *temp, GSERIALIZED **values, int count)
 {
-  return tgeompoint_restrict_values(temp, values, count, REST_AT);
+  return tpoint_restrict_values(temp, values, count, REST_AT);
 }
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geometric point to the complement of an array of
- * points.
+ * @brief Restrict a temporal point to the complement of an array of points.
  * @sqlfunc minusValues()
  */
 Temporal *
-tgeompoint_minus_values(const Temporal *temp, GSERIALIZED **values, int count)
+tpoint_minus_values(const Temporal *temp, GSERIALIZED **values, int count)
 {
-  return tgeompoint_restrict_values(temp, values, count, REST_MINUS);
-}
-
-/**
- * @brief Restrict a temporal geometric point to (the complement of) an array
- * of points.
- * @sqlfunc atValues()
- */
-static Temporal *
-tgeogpoint_restrict_values(const Temporal *temp, GSERIALIZED **values,
-  int count, bool atfunc)
-{
-  Datum *datumarr = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i ++)
-    datumarr[i] = PointerGetDatum(values[i]);
-  Temporal *result = temporal_restrict_values(temp, datumarr, count, atfunc);
-  pfree(datumarr);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geographic point to an array of points.
- * @sqlfunc atValues()
- */
-Temporal *
-tgeogpoint_at_values(const Temporal *temp, GSERIALIZED **values, int count)
-{
-  return tgeogpoint_restrict_values(temp, values, count, REST_AT);
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal geographic point to the complement of an array of
- * points.
- * @sqlfunc minusValues()
- */
-Temporal *
-tgeogpoint_minus_values(const Temporal *temp, GSERIALIZED **values, int count)
-{
-  return tgeogpoint_restrict_values(temp, values, count, REST_MINUS);
+  return tpoint_restrict_values(temp, values, count, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -493,28 +427,11 @@ ttext_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tgeompoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   GSERIALIZED **value)
 {
   assert(value != NULL);
-  assert(temp->temptype == T_TGEOMPOINT);
-  Datum res;
-  bool result = temporal_value_at_timestamp(temp, t, strict, &res);
-  *value = DatumGetGserializedP(res);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal geographic point at a timestamp
- * @sqlfunc valueAtTimestamp()
- */
-bool
-tgeogpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
-  GSERIALIZED **value)
-{
-  assert(value != NULL);
-  assert(temp->temptype == T_TGEOGPOINT);
+  assert(temp->temptype == T_TGEOMPOINT || temp->temptype == T_TGEOGPOINT);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
   *value = DatumGetGserializedP(res);

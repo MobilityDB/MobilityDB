@@ -590,6 +590,65 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  *****************************************************************************/
 
 /**
+ * @brief Solve the quadratic equation and return the number of solutions
+ * and the corresponding timestamps
+ */
+static int
+tdwithin_quadratic(long double a, long double b, long double c,
+  double duration, TimestampTz lower, TimestampTz *t1, TimestampTz *t2)
+{
+  /* Solving the quadratic equation for distance = dist */
+  long double discriminant = b * b - 4 * a * c;
+
+  /* One solution */
+  if (discriminant == 0)
+  {
+    long double t5 = (-1 * b) / (2 * a);
+    if (t5 < 0.0 || t5 > 1.0)
+      return 0;
+    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
+    return 1;
+  }
+  /* No solution */
+  if (discriminant < 0)
+    return 0;
+  else
+  /* At most two solutions depending on whether they are within the time interval */
+  {
+    /* Apply a mixture of quadratic formula and Viète formula to improve precision */
+    long double t5, t6;
+    if (b >= 0)
+    {
+      t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
+      t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
+    }
+    else
+    {
+      t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
+      t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
+    }
+
+    /* If the two intervals do not intersect */
+    if (0.0 > t6 || t5 > 1.0)
+      return 0;
+    /* Compute the intersection of the two intervals */
+    long double t7 = Max(0.0, t5);
+    long double t8 = Min(1.0, t6);
+    if (fabsl(t7 - t8) < MOBDB_EPSILON)
+    {
+      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
+      return 1;
+    }
+    else
+    {
+      *t1 = lower + (TimestampTz) (t7 * duration);
+      *t2 = lower + (TimestampTz) (t8 * duration);
+      return 2;
+    }
+  }
+}
+
+/**
  * Return the timestamps at which the segments of the two temporal points
  * are within the given distance
  *
@@ -698,55 +757,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     *t2 = upper;
     return 2;
   }
-  /* Solving the quadratic equation for distance = dist */
-  long double discriminant = b * b - 4 * a * c;
-
-  /* One solution */
-  if (discriminant == 0)
-  {
-    long double t5 = (-1 * b) / (2 * a);
-    if (t5 < 0.0 || t5 > 1.0)
-      return 0;
-    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
-    return 1;
-  }
-  /* No solution */
-  if (discriminant < 0)
-    return 0;
-  else
-  /* At most two solutions depending on whether they are within the time interval */
-  {
-    /* Apply a mixture of quadratic formula and Viète formula to improve precision */
-    long double t5, t6;
-    if (b >= 0)
-    {
-      t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
-      t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
-    }
-    else
-    {
-      t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
-      t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
-    }
-
-    /* If the two intervals do not intersect */
-    if (0.0 > t6 || t5 > 1.0)
-      return 0;
-    /* Compute the intersection of the two intervals */
-    long double t7 = Max(0.0, t5);
-    long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < MOBDB_EPSILON)
-    {
-      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
-      return 1;
-    }
-    else
-    {
-      *t1 = lower + (TimestampTz) (t7 * duration);
-      *t2 = lower + (TimestampTz) (t8 * duration);
-      return 2;
-    }
-  }
+  return tdwithin_quadratic(a, b, c, duration, lower, t1, t2);
 }
 
 /**
@@ -1027,56 +1038,8 @@ tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
     b = b_x + b_y;
     c = c_x + c_y - (dist * dist);
   }
-  /* Solving the quadratic equation for distance = dist */
   assert(a != 0);
-  long double discriminant = b * b - 4 * a * c;
-
-  /* One solution */
-  if (discriminant == 0)
-  {
-    long double t5 = (-1 * b) / (2 * a);
-    if (t5 < 0.0 || t5 > 1.0)
-      return 0;
-    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
-    return 1;
-  }
-  /* No solution */
-  if (discriminant < 0)
-    return 0;
-  else
-  /* At most two solutions depending on whether they are within the time interval */
-  {
-    /* Apply a mixture of quadratic formula and Viète formula to improve precision */
-    long double t5, t6;
-    if (b >= 0)
-    {
-      t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
-      t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
-    }
-    else
-    {
-      t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
-      t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
-    }
-
-    /* If the two intervals do not intersect */
-    if (0.0 > t6 || t5 > 1.0)
-      return 0;
-    /* Compute the intersection of the two intervals */
-    long double t7 = Max(0.0, t5);
-    long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < MOBDB_EPSILON)
-    {
-      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
-      return 1;
-    }
-    else
-    {
-      *t1 = lower + (TimestampTz) (t7 * duration);
-      *t2 = lower + (TimestampTz) (t8 * duration);
-      return 2;
-    }
-  }
+  return tdwithin_quadratic(a, b, c, duration, lower, t1, t2);
 }
 
 /**

@@ -559,13 +559,13 @@ SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5
 SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)');
         nearestapproachinstant        
 --------------------------------------
- NPoint(1,0.4)@2000-01-02 00:00:00+00
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
 (1 row)
 
 SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)');
         nearestapproachinstant        
 --------------------------------------
- NPoint(1,0.4)@2000-01-02 00:00:00+00
+ NPoint(2,0.6)@2000-01-04 00:00:00+00
 (1 row)
 
 SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)');
@@ -595,13 +595,13 @@ SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@
 SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
         nearestapproachinstant        
 --------------------------------------
- NPoint(1,0.4)@2000-01-02 00:00:00+00
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
 (1 row)
 
 SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
         nearestapproachinstant        
 --------------------------------------
- NPoint(1,0.4)@2000-01-02 00:00:00+00
+ NPoint(2,0.6)@2000-01-04 00:00:00+00
 (1 row)
 
 SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');

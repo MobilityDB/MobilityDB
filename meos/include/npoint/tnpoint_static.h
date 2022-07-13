@@ -84,9 +84,9 @@ extern bool route_exists(int64 rid);
 extern double route_length(int64 rid);
 extern GSERIALIZED *route_geom(int64 rid);
 extern GSERIALIZED *npoint_geom(const Npoint *np);
-extern Npoint *geom_npoint(Datum geom);
+extern Npoint *geom_npoint(const GSERIALIZED *gs);
 extern GSERIALIZED *nsegment_geom(const Nsegment *ns);
-extern Nsegment *geom_nsegment(Datum line);
+extern Nsegment *geom_nsegment(const GSERIALIZED *gs);
 
 /* SRID functions */
 

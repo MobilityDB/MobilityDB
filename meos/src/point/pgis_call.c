@@ -1878,7 +1878,7 @@ PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1, GSERIALIZED *geom2)
  *     there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
  */
 GSERIALIZED *
-PGIS_LWGEOM_pointn_linestring(GSERIALIZED *geom, int where)
+PGIS_LWGEOM_pointn_linestring(const GSERIALIZED *geom, int where)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   LWPOINT *lwpoint = NULL;
@@ -1923,7 +1923,7 @@ PGIS_LWGEOM_pointn_linestring(GSERIALIZED *geom, int where)
 * linestring, or NULL if it is not a linestring
 */
 int
-PGIS_LWGEOM_numpoints_linestring(GSERIALIZED *geom)
+PGIS_LWGEOM_numpoints_linestring(const GSERIALIZED *geom)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   int count = -1;

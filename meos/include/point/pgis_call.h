@@ -129,9 +129,9 @@ extern double PGIS_LWGEOM_line_locate_point(GSERIALIZED *geom1,
 
 /* Functions adapted from lwgeom_ogc.c */
 
-extern GSERIALIZED *PGIS_LWGEOM_pointn_linestring(GSERIALIZED *geom,
+extern GSERIALIZED *PGIS_LWGEOM_pointn_linestring(const GSERIALIZED *geom,
   int where);
-extern int PGIS_LWGEOM_numpoints_linestring(GSERIALIZED *geom);
+extern int PGIS_LWGEOM_numpoints_linestring(const GSERIALIZED *geom);
 
 /*****************************************************************************/
 
