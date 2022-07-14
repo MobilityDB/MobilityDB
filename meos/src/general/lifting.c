@@ -990,7 +990,7 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
    * seq1 =  ...    *       *       *>
    * seq2 =    <*       *   *   * ...
    * result =  <S T S T S T * T S T S>
-   * where S, T, and * are values computed, respectively, at
+   * where S, T, and * are values computed, respectively, at the
    * Synchronization points, optional Turning points, and common points
    */
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
@@ -1207,8 +1207,8 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
   bool lower_inc = inter->lower_inc;
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
-  Datum startvalue1, startvalue2, startresult;
   TInstant *instants[2];
+  Datum startvalue1, startvalue2, startresult;
   mobdbType basetype1 = temptype_basetype(seq1->temptype);
   mobdbType basetype2 = temptype_basetype(seq2->temptype);
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);

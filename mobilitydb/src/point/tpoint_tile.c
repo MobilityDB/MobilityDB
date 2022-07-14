@@ -831,8 +831,8 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
  * @param[in] state Grid definition
  */
 static void
-tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
-  bool hast, const STboxGridState *state)
+tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz, bool hast,
+  const STboxGridState *state)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
@@ -878,8 +878,8 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *is, bool hasz,
  * @param[in] state Grid definition
  */
 static void
-tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
-  bool hast, const STboxGridState *state)
+tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz, bool hast,
+  const STboxGridState *state)
 {
   int numdims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
   int coords1[MAXDIMS], coords2[MAXDIMS];
@@ -944,20 +944,18 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
- * @ingroup mobilitydb_temporal_tile
- * @brief Split a temporal point with respect to a spatial grid.
- * @sqlfunc spaceSplit()
+ * @brief Split a temporal point with respect to a spatial and possible a
+ * temporal grid.
  */
-PGDLLEXPORT Datum
-Tpoint_space_split(PG_FUNCTION_ARGS)
+Datum
+Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
   bool hasz;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
+  bool isnull[3] = {0,0,0}; /* needed to say no value is null */
+  Datum tuple_arr[3]; /* used to construct the composite return value */
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
 
@@ -973,8 +971,15 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     double size = PG_GETARG_FLOAT8(1);
-    GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(2);
-    bool bitmatrix = PG_GETARG_BOOL(3);
+    Interval *duration = NULL;
+    TimestampTz torigin = 0;
+    int i = 2;
+    if (timesplit)
+      duration = PG_GETARG_INTERVAL_P(i++);
+    GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
+    if (timesplit)
+      torigin = PG_GETARG_TIMESTAMPTZ(i++);
+    bool bitmatrix = PG_GETARG_BOOL(i++);
 
     /* Ensure parameter validity */
     ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
@@ -983,12 +988,19 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_same_geodetic(temp->flags, sorigin->gflags);
     STBOX bounds;
     temporal_set_bbox(temp, &bounds);
+    int64 tunits = 0;
+    if (timesplit)
+    {
+      ensure_valid_duration(duration);
+      tunits = get_interval_units(duration);
+    }
+    else
+      /* Disallow T dimension for generating a spatial only grid */
+      MOBDB_FLAGS_SET_T(bounds.flags, false);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
-    /* Disallow T dimension for generating a spatial only grid */
-    MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
     if (FLAGS_GET_Z(sorigin->gflags))
       pt = datum_point3dz(PointerGetDatum(sorigin));
@@ -1003,7 +1015,8 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
     hasz = MOBDB_FLAGS_GET_Z(temp->flags);
 
     /* Create function state */
-    STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, 0, pt, 0);
+    STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, tunits,
+      pt, torigin);
     /* If a bit matrix is used to speed up the process */
     if (bitmatrix)
     {
@@ -1016,7 +1029,8 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
       count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
       if (MOBDB_FLAGS_GET_Z(state->box.flags))
         count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
-      /* We are sure that there is no additional time dimension */
+      if (state->tunits)  
+        count[numdims++] = ( (state->box.tmax - state->box.tmin) / state->tunits ) + 1;
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(state->bm, temp, state);
     }
@@ -1069,16 +1083,29 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
       continue;
     /* Form tuple and return */
     hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
-    tuple_arr[0] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
+    int i = 0;
+    tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
       hasz, false, box.srid));
-    tuple_arr[1] = PointerGetDatum(atstbox);
+    if (timesplit)
+      tuple_arr[i++] = TimestampTzGetDatum(box.tmin);
+    tuple_arr[i++] = PointerGetDatum(atstbox);
     tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
     result = HeapTupleGetDatum(tuple);
     SRF_RETURN_NEXT(funcctx, result);
   }
 }
 
-/*****************************************************************************/
+PG_FUNCTION_INFO_V1(Tpoint_space_split);
+/**
+ * @ingroup mobilitydb_temporal_tile
+ * @brief Split a temporal point with respect to a spatial grid.
+ * @sqlfunc spaceSplit()
+ */
+PGDLLEXPORT Datum
+Tpoint_space_split(PG_FUNCTION_ARGS)
+{
+  return Tpoint_space_time_split_ext(fcinfo, false);
+}
 
 PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
@@ -1089,133 +1116,7 @@ PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 PGDLLEXPORT Datum
 Tpoint_space_time_split(PG_FUNCTION_ARGS)
 {
-  FuncCallContext *funcctx;
-  STboxGridState *state;
-  bool hasz;
-  bool isnull[3] = {0,0,0}; /* needed to say no value is null */
-  Datum tuple_arr[3]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
-
-  /* If the function is being called for the first time */
-  if (SRF_IS_FIRSTCALL())
-  {
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-
-    /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    double size = PG_GETARG_FLOAT8(1);
-    Interval *duration = PG_GETARG_INTERVAL_P(2);
-    GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(3);
-    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
-    bool bitmatrix = PG_GETARG_BOOL(5);
-
-    /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
-    ensure_non_empty(sorigin);
-    ensure_point_type(sorigin);
-    ensure_valid_duration(duration);
-    int64 tunits = get_interval_units(duration);
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-    STBOX bounds;
-    temporal_set_bbox(temp, &bounds);
-    int32 srid = bounds.srid;
-    int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != SRID_UNKNOWN)
-      ensure_same_srid(srid, gs_srid);
-    POINT3DZ pt;
-    if (FLAGS_GET_Z(sorigin->gflags))
-      pt = datum_point3dz(PointerGetDatum(sorigin));
-    else
-    {
-      /* Initialize to 0 the Z dimension if it is missing */
-      memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gserialized_point2d_p(sorigin);
-      pt.x = p2d->x;
-      pt.y = p2d->y;
-    }
-    hasz = MOBDB_FLAGS_GET_Z(temp->flags);
-
-    /* Create function state */
-    STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, tunits,
-      pt, torigin);
-    /* If a bit matrix is used to speed up the process */
-    if (bitmatrix)
-    {
-      /* Create the bit matrix and set the tiles traversed by the temporal point */
-      int count[MAXDIMS];
-      memset(&count, 0, sizeof(count));
-      int numdims = 2;
-      count[0] = ( (state->box.xmax - state->box.xmin) / state->size ) + 1;
-      count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
-      if (MOBDB_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
-      if (state->tunits)
-        count[numdims++] = ( (state->box.tmax - state->box.tmin) / state->tunits ) + 1;
-      state->bm = bitmatrix_make(count, numdims);
-      tpoint_set_tiles(state->bm, temp, state);
-    }
-    funcctx->user_fctx = state;
-
-    /* Build a tuple description for a multidimensional grid tuple */
-    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
-    BlessTupleDesc(funcctx->tuple_desc);
-    MemoryContextSwitchTo(oldcontext);
-  }
-
-  /* Stuff done on every call of the function */
-  funcctx = SRF_PERCALL_SETUP();
-  /* Get state */
-  state = funcctx->user_fctx;
-  /* We need to loop since atstbox may be NULL */
-  while (true)
-  {
-    /* Stop when we have used up all the grid tiles */
-    if (state->done)
-    {
-      /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext =
-        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-      if (state->bm) pfree(state->bm);
-      pfree(state);
-      MemoryContextSwitchTo(oldcontext);
-      SRF_RETURN_DONE(funcctx);
-    }
-
-    /* Get current tile (if any) and advance state
-     * It is necessary to test if we found a tile since the previous tile
-     * may be the last one set in the associated bit matrix */
-    STBOX box;
-    bool found = stbox_tile_state_get(state, &box);
-    if (! found)
-    {
-      /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext =
-        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-      if (state->bm) pfree(state->bm);
-      pfree(state);
-      MemoryContextSwitchTo(oldcontext);
-      SRF_RETURN_DONE(funcctx);
-    }
-    stbox_tile_state_next(state);
-    /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox1(state->temp, &box, UPPER_EXC);
-    if (atstbox == NULL)
-      continue;
-    /* Form tuple and return */
-    hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
-    tuple_arr[0] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
-      hasz, false, box.srid));
-    tuple_arr[1] = TimestampTzGetDatum(box.tmin);
-    tuple_arr[2] = PointerGetDatum(atstbox);
-    tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-    result = HeapTupleGetDatum(tuple);
-    SRF_RETURN_NEXT(funcctx, result);
-  }
+  return Tpoint_space_time_split_ext(fcinfo, true);
 }
 
 /*****************************************************************************/

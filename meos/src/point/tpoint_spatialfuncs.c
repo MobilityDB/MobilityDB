@@ -2073,8 +2073,10 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
   Datum point = (oper == GEOM_TO_GEOG) ?
     PointerGetDatum(PGIS_geography_from_geometry(gs)) :
     PointerGetDatum(PGIS_geometry_from_geography(gs));
-  return tinstant_make(point, (oper == GEOM_TO_GEOG) ?
+  TInstant *result = tinstant_make(point, (oper == GEOM_TO_GEOG) ?
     T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
+  pfree(DatumGetPointer(point));
+  return result;
 }
 
 /**

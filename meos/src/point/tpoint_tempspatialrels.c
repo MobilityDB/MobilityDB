@@ -594,7 +594,7 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  * and the corresponding timestamps
  */
 static int
-tdwithin_quadratic(long double a, long double b, long double c,
+tdwithin_quadratic_eq(long double a, long double b, long double c,
   double duration, TimestampTz lower, TimestampTz *t1, TimestampTz *t2)
 {
   /* Solving the quadratic equation for distance = dist */
@@ -757,7 +757,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     *t2 = upper;
     return 2;
   }
-  return tdwithin_quadratic(a, b, c, duration, lower, t1, t2);
+  return tdwithin_quadratic_eq(a, b, c, duration, lower, t1, t2);
 }
 
 /**
@@ -978,7 +978,7 @@ tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
     /* per1 functions
      * x(t) = a1 * t + c1
      * y(t) = a2 * t + c2
-    * z(t) = a3 * t + c3 */
+     * z(t) = a3 * t + c3 */
     double a1 = (p2->x - p1->x);
     double c1 = p1->x;
     double a2 = (p2->y - p1->y);
@@ -1039,7 +1039,7 @@ tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
     c = c_x + c_y - (dist * dist);
   }
   assert(a != 0);
-  return tdwithin_quadratic(a, b, c, duration, lower, t1, t2);
+  return tdwithin_quadratic_eq(a, b, c, duration, lower, t1, t2);
 }
 
 /**

@@ -281,7 +281,8 @@ tfloat_minus_values(const Temporal *temp, double *values, int count)
  * @sqlfunc atValues()
  */
 static Temporal *
-ttext_restrict_values(const Temporal *temp, text **values, int count, bool atfunc)
+temporal_restrict_values_ref(const Temporal *temp, void **values, int count,
+  bool atfunc)
 {
   Datum *datumarr = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i ++)
@@ -299,7 +300,7 @@ ttext_restrict_values(const Temporal *temp, text **values, int count, bool atfun
 Temporal *
 ttext_at_values(const Temporal *temp, text **values, int count)
 {
-  return ttext_restrict_values(temp, values, count, REST_AT);
+  return temporal_restrict_values_ref(temp, (void **) values, count, REST_AT);
 }
 
 /**
@@ -310,23 +311,7 @@ ttext_at_values(const Temporal *temp, text **values, int count)
 Temporal *
 ttext_minus_values(const Temporal *temp, text **values, int count)
 {
-  return ttext_restrict_values(temp, values, count, REST_MINUS);
-}
-
-/**
- * @brief Restrict a temporal point to (the complement of) an array of points.
- * @sqlfunc atValues()
- */
-static Temporal *
-tpoint_restrict_values(const Temporal *temp, GSERIALIZED **values, int count,
-  bool atfunc)
-{
-  Datum *datumarr = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i ++)
-    datumarr[i] = PointerGetDatum(values[i]);
-  Temporal *result = temporal_restrict_values(temp, datumarr, count, atfunc);
-  pfree(datumarr);
-  return result;
+  return temporal_restrict_values_ref(temp, (void **) values, count, REST_MINUS);
 }
 
 /**
@@ -337,7 +322,7 @@ tpoint_restrict_values(const Temporal *temp, GSERIALIZED **values, int count,
 Temporal *
 tpoint_at_values(const Temporal *temp, GSERIALIZED **values, int count)
 {
-  return tpoint_restrict_values(temp, values, count, REST_AT);
+  return temporal_restrict_values_ref(temp, (void **) values, count, REST_AT);
 }
 
 /**
@@ -348,7 +333,7 @@ tpoint_at_values(const Temporal *temp, GSERIALIZED **values, int count)
 Temporal *
 tpoint_minus_values(const Temporal *temp, GSERIALIZED **values, int count)
 {
-  return tpoint_restrict_values(temp, values, count, REST_MINUS);
+  return temporal_restrict_values_ref(temp, (void **) values, count, REST_MINUS);
 }
 
 /*****************************************************************************/

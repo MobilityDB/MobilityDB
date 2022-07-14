@@ -108,7 +108,6 @@ static double
 tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
-
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)

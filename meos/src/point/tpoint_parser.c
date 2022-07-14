@@ -327,6 +327,7 @@ tpointseq_parse(char **str, mobdbType temptype, bool linear, bool end,
     upper_inc = false;
   else
     elog(ERROR, "Could not parse temporal point value: Missing closing bracket/parenthesis");
+  /* Ensure there is no more input */
   ensure_end_input(str, end, "temporal point");
   if (! make)
     return NULL;
