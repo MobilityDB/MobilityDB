@@ -590,65 +590,6 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  *****************************************************************************/
 
 /**
- * @brief Solve the quadratic equation and return the number of solutions
- * and the corresponding timestamps
- */
-static int
-tdwithin_quadratic_eq(long double a, long double b, long double c,
-  double duration, TimestampTz lower, TimestampTz *t1, TimestampTz *t2)
-{
-  /* Solving the quadratic equation for distance = dist */
-  long double discriminant = b * b - 4 * a * c;
-
-  /* One solution */
-  if (discriminant == 0)
-  {
-    long double t5 = (-1 * b) / (2 * a);
-    if (t5 < 0.0 || t5 > 1.0)
-      return 0;
-    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
-    return 1;
-  }
-  /* No solution */
-  if (discriminant < 0)
-    return 0;
-  else
-  /* At most two solutions depending on whether they are within the time interval */
-  {
-    /* Apply a mixture of quadratic formula and Viète formula to improve precision */
-    long double t5, t6;
-    if (b >= 0)
-    {
-      t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
-      t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
-    }
-    else
-    {
-      t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
-      t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
-    }
-
-    /* If the two intervals do not intersect */
-    if (0.0 > t6 || t5 > 1.0)
-      return 0;
-    /* Compute the intersection of the two intervals */
-    long double t7 = Max(0.0, t5);
-    long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < MOBDB_EPSILON)
-    {
-      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
-      return 1;
-    }
-    else
-    {
-      *t1 = lower + (TimestampTz) (t7 * duration);
-      *t2 = lower + (TimestampTz) (t8 * duration);
-      return 2;
-    }
-  }
-}
-
-/**
  * Return the timestamps at which the segments of the two temporal points
  * are within the given distance
  *
@@ -689,7 +630,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     double c2 = p1->y;
     double a3 = (p2->z - p1->z);
     double c3 = p1->z;
-
+  
     /* per2 functions
      * x(t) = a4 * t + c4
      * y(t) = a5 * t + c5
@@ -757,9 +698,106 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     *t2 = upper;
     return 2;
   }
-  return tdwithin_quadratic_eq(a, b, c, duration, lower, t1, t2);
+  
+  /* Solving the quadratic equation for distance = dist */
+  long double discriminant = b * b - 4 * a * c;
+
+  /* One solution */
+  if (discriminant == 0)
+  {
+    long double t5 = (-1 * b) / (2 * a);
+    if (t5 < 0.0 || t5 > 1.0)
+      return 0;
+    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
+    return 1;
+  }
+  /* No solution */
+  if (discriminant < 0)
+    return 0;
+  else
+  /* At most two solutions depending on whether they are within the time interval */
+  {
+    /* Apply a mixture of quadratic formula and Viète formula to improve precision */
+    long double t5, t6;
+    if (b >= 0)
+    {
+      t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
+      t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
+    }
+    else
+    {
+      t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
+      t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
+    }
+
+    /* If the two intervals do not intersect */
+    if (0.0 > t6 || t5 > 1.0)
+      return 0;
+    /* Compute the intersection of the two intervals */
+    long double t7 = Max(0.0, t5);
+    long double t8 = Min(1.0, t6);
+    if (fabsl(t7 - t8) < MOBDB_EPSILON)
+    {
+      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
+      return 1;
+    }
+    else
+    {
+      *t1 = lower + (TimestampTz) (t7 * duration);
+      *t2 = lower + (TimestampTz) (t8 * duration);
+      return 2;
+    }
+  }
 }
 
+int 
+tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
+  bool lower_inc, bool upper_inc, bool upper_inc1, TimestampTz t1,
+  TimestampTz t2, TInstant **instants, TSequence **result)
+{
+  const Datum datum_true = BoolGetDatum(true);
+  const Datum datum_false = BoolGetDatum(false);
+  int k = 0;
+  /* <  F  > */
+  if (solutions == 0 ||
+  (solutions == 1 && ((t1 == lower && !lower_inc) ||
+    (t1 == upper && !upper_inc))))
+  {
+    tinstant_set(instants[0], datum_false, lower);
+    tinstant_set(instants[1], datum_false, upper);
+    result[k++] = tsequence_make((const TInstant **) instants, 2,
+      lower_inc, upper_inc1, STEP, NORMALIZE_NO);
+  }
+  /*
+   *  <  T  >               2 solutions, lower == t1, upper == t2
+   *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
+   *  [T  T](  F  )         2 solutions, lower == t1, upper != t2
+   *  (  F  )[T]            1 solution && upper == t1, (t1 == t2)
+   *  (  F  )[T](  F  )     1 solution, lower != t1 (t1 == t2)
+   *  (  F  )[T  T]         2 solutions, lower != t1, upper == t2
+   *  (  F  )[T  T](  F  )  2 solutions, lower != t1, upper != t2
+   */
+  else
+  {
+    int j = 0;
+    if (t1 != lower)
+      tinstant_set(instants[j++], datum_false, lower);
+    tinstant_set(instants[j++], datum_true, t1);
+    if (solutions == 2 && t1 != t2)
+      tinstant_set(instants[j++], datum_true, t2);
+    result[k++] = tsequence_make((const TInstant **) instants, j, lower_inc,
+      (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
+    if (t2 != upper)
+    {
+      tinstant_set(instants[0], datum_false, t2);
+      tinstant_set(instants[1], datum_false, upper);
+      result[k++] = tsequence_make((const TInstant **) instants, 2, false,
+        upper_inc1, STEP, NORMALIZE_NO);
+    }
+  }
+  return k;
+}
+  
 /**
  * Return the timestamps at which the segments of two temporal points are
  * within the given distance
@@ -796,7 +834,6 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);
-  const Datum datum_false = BoolGetDatum(false);
   /* We create three temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
@@ -833,51 +870,16 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
     /* General case */
     else
     {
-      /* Find the instants t1 and t2 (if any) during which the dwithin function is true */
+      /* Find the instants t1 and t2 (if any) during which the dwithin
+       * function is true */
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
       int solutions = tdwithin_tpointsegm_tpointsegm(sv1, sev1, sv2, sev2,
         lower, upper, DatumGetFloat8(dist), hasz, func, &t1, &t2);
-
-      /* <  F  > */
       bool upper_inc1 = linear1 && linear2 && upper_inc;
-      if (solutions == 0 ||
-      (solutions == 1 && ((t1 == lower && !lower_inc) ||
-        (t1 == upper && !upper_inc))))
-      {
-        tinstant_set(instants[0], datum_false, lower);
-        tinstant_set(instants[1], datum_false, upper);
-        result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, upper_inc1, STEP, NORMALIZE_NO);
-      }
-      /*
-       *  <  T  >               2 solutions, lower == t1, upper == t2
-       *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
-       *  [T  T](  F  )         2 solutions, lower == t1, upper != t2
-       *  (  F  )[T]            1 solution && upper == t1, (t1 == t2)
-       *  (  F  )[T](  F  )     1 solution, lower != t1 (t1 == t2)
-       *  (  F  )[T  T]         2 solutions, lower != t1, upper == t2
-       *  (  F  )[T  T](  F  )  2 solutions, lower != t1, upper != t2
-       */
-      else
-      {
-        int j = 0;
-        if (t1 != lower)
-          tinstant_set(instants[j++], datum_false, lower);
-        tinstant_set(instants[j++], datum_true, t1);
-        if (solutions == 2 && t1 != t2)
-          tinstant_set(instants[j++], datum_true, t2);
-        result[k++] = tsequence_make((const TInstant **) instants, j,
-          lower_inc, (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
-        if (t2 != upper)
-        {
-          tinstant_set(instants[0], datum_false, t2);
-          tinstant_set(instants[1], datum_false, upper);
-          result[k++] = tsequence_make((const TInstant **) instants, 2, false,
-            upper_inc1, STEP, NORMALIZE_NO);
-        }
-      }
+      k += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
+        upper_inc, upper_inc1, t1, t2, instants, &result[k]);
       /* Add extra final point if only one segment is linear */
       if (upper_inc && (! linear1 || ! linear2))
       {
@@ -947,102 +949,6 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * Return the timestamps at which a temporal point segment and a point
- * are within the given distance
- *
- * @param[in] start,end Points defining the segment
- * @param[in] point Point
- * @param[in] lower,upper Timestamps associated to the segment
- * @param[in] dist Distance
- * @param[in] hasz True for 3D segments
- * @param[out] t1,t2 Resulting timestamps
- * @result Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
- */
-static int
-tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
-  TimestampTz lower, TimestampTz upper, double dist, bool hasz,
-  TimestampTz *t1, TimestampTz *t2)
-{
-  /* To reduce problems related to floating point arithmetic, lower and upper
-   * are shifted, respectively, to 0 and 1 before computing the solutions
-   * of the quadratic equation */
-  double duration = upper - lower;
-  long double a, b, c;
-  if (hasz) /* 3D */
-  {
-    const POINT3DZ *p1 = datum_point3dz_p(start);
-    const POINT3DZ *p2 = datum_point3dz_p(end);
-    const POINT3DZ *p3 = datum_point3dz_p(point);
-
-    /* per1 functions
-     * x(t) = a1 * t + c1
-     * y(t) = a2 * t + c2
-     * z(t) = a3 * t + c3 */
-    double a1 = (p2->x - p1->x);
-    double c1 = p1->x;
-    double a2 = (p2->y - p1->y);
-    double c2 = p1->y;
-    double a3 = (p2->z - p1->z);
-    double c3 = p1->z;
-
-    /* per2 functions
-     * x(t) = c4
-     * y(t) = c5
-     * z(t) = c6 */
-    double c4 = p3->x;
-    double c5 = p3->y;
-    double c6 = p3->z;
-
-    /* compute the distance function */
-    double a_x = a1 * a1;
-    double a_y = a2 * a2;
-    double a_z = a3 * a3;
-    double b_x = 2 * a1 * (c1 - c4);
-    double b_y = 2 * a2 * (c2 - c5);
-    double b_z = 2 * a3 * (c3 - c6);
-    double c_x = (c1 - c4) * (c1 - c4);
-    double c_y = (c2 - c5) * (c2 - c5);
-    double c_z = (c3 - c6) * (c3 - c6);
-    /* distance function = dist */
-    a = a_x + a_y + a_z;
-    b = b_x + b_y + b_z;
-    c = c_x + c_y + c_z - (dist * dist);
-  }
-  else /* 2D */
-  {
-    const POINT2D *p1 = datum_point2d_p(start);
-    const POINT2D *p2 = datum_point2d_p(end);
-    const POINT2D *p3 = datum_point2d_p(point);
-    /* per1 functions
-     * x(t) = a1 * t + c1
-     * y(t) = a2 * t + c2 */
-    double a1 = (p2->x - p1->x);
-    double c1 = p1->x;
-    double a2 = (p2->y - p1->y);
-    double c2 = p1->y;
-    /* per2 functions
-     * x(t) = c3
-     * y(t) = c4 */
-    double c3 = p3->x;
-    double c4 = p3->y;
-    /* compute the distance function */
-    double a_x = a1 * a1;
-    double a_y = a2 * a2;
-    double b_x = 2 * a1 * (c1 - c3);
-    double b_y = 2 * a2 * (c2 - c4);
-    double c_x = (c1 - c3) * (c1 - c3);
-    double c_y = (c2 - c4) * (c2 - c4);
-    /* distance function = dist */
-    a = a_x + a_y;
-    b = b_x + b_y;
-    c = c_x + c_y - (dist * dist);
-  }
-  assert(a != 0);
-  return tdwithin_quadratic_eq(a, b, c, duration, lower, t1, t2);
-}
-
-/**
  * Return the timestamps at which a temporal point and a point are
  * within the given distance
  *
@@ -1075,7 +981,6 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);
-  const Datum datum_false = BoolGetDatum(false);
   /* We create three temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
@@ -1112,47 +1017,11 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
       /* Find the instants t1 and t2 (if any) during which the dwithin
        * function is true */
       TimestampTz t1, t2;
-      int solutions = tdwithin_tpointsegm_point(sv, ev, point,
-        lower, upper, DatumGetFloat8(dist), hasz, &t1, &t2);
-
-      /* <  F  > */
+      int solutions = tdwithin_tpointsegm_tpointsegm(sv, ev, point, point,
+        lower, upper, DatumGetFloat8(dist), hasz, func, &t1, &t2);
       bool upper_inc1 = linear && upper_inc;
-      if (solutions == 0 ||
-      (solutions == 1 && ((t1 == lower && !lower_inc) ||
-        (t1 == upper && !upper_inc))))
-      {
-        tinstant_set(instants[0], datum_false, lower);
-        tinstant_set(instants[1], datum_false, upper);
-        result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, upper_inc1, STEP, NORMALIZE_NO);
-      }
-      /*
-       *  <  T  >               2 solutions, lower == t1, upper == t2
-       *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
-       *  [T  T](  F  )         2 solutions, lower == t1, upper != t2
-       *  (  F  )[T]            1 solution && upper == t1, (t1 == t2)
-       *  (  F  )[T](  F  )     1 solution, lower != t1 (t1 == t2)
-       *  (  F  )[T  T]         2 solutions, lower != t1, upper == t2
-       *  (  F  )[T  T](  F  )  2 solutions, lower != t1, upper != t2
-       */
-      else
-      {
-        int j = 0;
-        if (t1 != lower)
-          tinstant_set(instants[j++], datum_false, lower);
-        tinstant_set(instants[j++], datum_true, t1);
-        if (solutions == 2 && t1 != t2)
-          tinstant_set(instants[j++], datum_true, t2);
-        result[k++] = tsequence_make((const TInstant **) instants, j, lower_inc,
-          (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
-        if (t2 != upper)
-        {
-          tinstant_set(instants[0], datum_false, t2);
-          tinstant_set(instants[1], datum_false, upper);
-          result[k++] = tsequence_make((const TInstant **) instants, 2, false,
-            upper_inc1, STEP, NORMALIZE_NO);
-        }
-      }
+      k += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
+        upper_inc, upper_inc1, t1, t2, instants, &result[k]);
     }
     start = end;
     sv = ev;

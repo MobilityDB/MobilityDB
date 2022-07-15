@@ -84,7 +84,7 @@
  *     synchronizes the sequences possibly adding the turning points between
  *     two consecutive instants and applies the `*` operator to each instant.
  *     The result is a `tfloatseq`.
- *   - `tfloatseq < tfloatseq => tfunc_tsequence_tsequence_discont`
+ *   - `tfloatseq < tfloatseq => tfunc_tsequence_tsequence_multi`
  *     synchronizes the sequences, applies the `<` operator to each instant,
  *     and if there is a crossing in the middle of two consecutive pairs of
  *     instants add an instant sequence at the crossing. The result is a
@@ -971,8 +971,11 @@ tfunc_tinstantset_to_tsequenceset(const TInstantSet *is, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function.
- * This function is applied when the result is a single sequence.
+ * @brief Synchronizes the temporal values and applies to them the function.
+ * This function is applied when the result is a single sequence and thus
+ * it is used when
+ * - the function to lift has NOT instantaneous discontinuities
+ * - the temporal values have equal interpolation.
  *
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
@@ -982,7 +985,7 @@ tfunc_tinstantset_to_tsequenceset(const TInstantSet *is, const TSequenceSet *ss,
  * @pre The sequences are both linear or both stepwise
  */
 static int
-tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
+tfunc_tsequence_tsequence_single(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo, Period *inter, TSequence **result)
 {
   /*
@@ -1072,118 +1075,22 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function.
- * This function is applied when one sequence has linear interpolation and
- * the other step interpolation and the function does not have instantaneous
- * discontinuities. The result is an array of sequences.
+ * @brief Synchronizes the temporal values and applies to them the function.
+ * This function is applied when the result is an array of sequences and thus
+ * it is used when
+ * - the function to lift has instantaneous discontinuities
+ * - one temporal value has linear and the other has step interpolation.
  *
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
+ * @param[in] discont The function to lift has instantaneous discontinuities
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  */
 static int
-tfunc_tsequence_tsequence_linearstep(const TSequence *seq1,
-  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Period *inter,
-  TSequence **result)
-{
-  /* Array that keeps the new instants added for synchronization */
-  TInstant **tofree = palloc(sizeof(TInstant *) *
-    (seq1->count + seq2->count) * 2);
-  TInstant *start1 = (TInstant *) tsequence_inst_n(seq1, 0);
-  TInstant *start2 = (TInstant *) tsequence_inst_n(seq2, 0);
-  int i = 1, j = 1, k = 0, l = 0;
-  /* Synchronize the start instant */
-  if (start1->t < (TimestampTz) inter->lower)
-  {
-    start1 = tsequence_at_timestamp(seq1, inter->lower);
-    tofree[l++] = start1;
-    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
-  }
-  else if (start2->t < (TimestampTz) inter->lower)
-  {
-    start2 = tsequence_at_timestamp(seq2, inter->lower);
-    tofree[l++] = start2;
-    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
-  }
-  bool lower_inc = inter->lower_inc;
-  bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
-  TInstant *instants[2];
-  Datum startvalue1, startvalue2, startresult;
-  /* Each iteration of the loop adds one sequence */
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
-  while (i < seq1->count && j < seq2->count)
-  {
-    /* Compute the function at the start instant */
-    startvalue1 = tinstant_value(start1);
-    startvalue2 = tinstant_value(start2);
-    startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
-    /* Synchronize the end instant */
-    TInstant *end1 = (TInstant *) tsequence_inst_n(seq1, i);
-    TInstant *end2 = (TInstant *) tsequence_inst_n(seq2, j);
-    int cmp = timestamptz_cmp_internal(end1->t, end2->t);
-    if (cmp == 0)
-    {
-      i++; j++;
-    }
-    else if (cmp < 0)
-    {
-      i++;
-      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
-      tofree[l++] = end2;
-    }
-    else
-    {
-      j++;
-      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
-      tofree[l++] = end1;
-    }
-    /* Compute the function at the end instant */
-    Datum endvalue1 = linear1 ? tinstant_value(end1) : startvalue1;
-    Datum endvalue2 = linear2 ? tinstant_value(end2) : startvalue2;
-    Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
-    instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-    instants[1] = tinstant_make(endresult, lfinfo->restype, end1->t);
-    result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc, false,
-      lfinfo->reslinear, NORMALIZE_NO);
-    pfree(instants[0]); pfree(instants[1]);
-    DATUM_FREE(startresult, resbasetype);
-    DATUM_FREE(endresult, resbasetype);
-    start1 = end1; start2 = end2;
-    lower_inc = true;
-  }
-  /* Add a final instant if any */
-  if (inter->upper_inc)
-  {
-    startvalue1 = tinstant_value(start1);
-    startvalue2 = tinstant_value(start2);
-    startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
-    instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-    result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
-    pfree(instants[0]);
-    DATUM_FREE(startresult, resbasetype);
-  }
-  pfree_array((void **) tofree, l);
-  return k;
-}
-
-/**
- * Synchronizes the temporal values and applies to them the function.
- * This function is applied for functions with instantaneous discontinuities
- * and thus the result is an array of sequences. This function is applied
- * when at least one temporal value has linear interpolation.
- *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
- * @param[in] seq1,seq2 Temporal values
- * @param[in] lfinfo Information about the lifted function
- * @param[in] inter Overlapping period of the two sequences
- */
-static int
-tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
-  LiftedFunctionInfo *lfinfo, Period *inter, TSequence **result)
+tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
+  LiftedFunctionInfo *lfinfo, Period *inter, bool discont, TSequence **result)
 {
   /* Array that keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
@@ -1209,10 +1116,17 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   TInstant *instants[2];
   Datum startvalue1, startvalue2, startresult;
-  mobdbType basetype1 = temptype_basetype(seq1->temptype);
-  mobdbType basetype2 = temptype_basetype(seq2->temptype);
+  mobdbType basetype1, basetype2;
+  if (discont)
+  {
+    basetype1 = temptype_basetype(seq1->temptype);
+    basetype2 = temptype_basetype(seq2->temptype);
+  }
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);
-  /* Each iteration of the loop adds between one and three sequences */
+  /* Each iteration of the loop adds 
+   * - one sequence when the interpolations of the temporal values are different
+   * - between one and three sequences for functions with discontinuities
+   */
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */
@@ -1243,98 +1157,113 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
     Datum endvalue1 = linear1 ? tinstant_value(end1) : startvalue1;
     Datum endvalue2 = linear2 ? tinstant_value(end2) : startvalue2;
     Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
-
-    Datum intvalue1, intvalue2, intresult;
-    TimestampTz inttime;
-    bool lower_eq = false, upper_eq = false;
-    /* If both segments are constant compute the function at the start and
-     * end instants */
-    if (datum_eq(startvalue1, endvalue1, basetype1) &&
-      datum_eq(startvalue2, endvalue2, basetype2))
+    
+    /* Add the sequence(s) for the iteration */
+    if (! discont)
     {
+      /* Single sequence */
       instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-      instants[1] = tinstant_make(startresult, lfinfo->restype, end1->t);
-      result[k++] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, false, lfinfo->reslinear, NORMALIZE_NO);
+      instants[1] = tinstant_make(endresult, lfinfo->restype, end1->t);
+      result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+        false, lfinfo->reslinear, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
-    }
-    /* If either the start values or the end values are equal and both have
-     * linear interpolation compute the function at the start instant,
-     * at an intermediate point, and at the end instant */
-    else if (datum_eq2(startvalue1, startvalue2, basetype1, basetype2) ||
-         (linear1 && linear2 &&
-          datum_eq2(endvalue1, endvalue2, basetype1, basetype2)))
-    {
-      /* Compute the function at the middle time between start and the end instants */
-      inttime = start1->t + ((end1->t - start1->t) / 2);
-      intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
-      intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
-      intresult = tfunc_base_base(intvalue1, intvalue2, lfinfo);
-      lower_eq = lower_inc && datum_eq(startresult, intresult, resbasetype);
-      upper_eq = datum_eq(intresult, endresult, resbasetype);
-      if (lower_inc && ! lower_eq)
-      {
-        instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-        result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
-        pfree(instants[0]);
-      }
-      instants[0] = tinstant_make(intresult, lfinfo->restype, start1->t);
-      instants[1] = tinstant_make(intresult, lfinfo->restype, end1->t);
-      result[k++] = tsequence_make((const TInstant **) instants, 2,
-        lower_eq, false, lfinfo->reslinear, NORMALIZE_NO);
-      pfree(instants[0]); pfree(instants[1]);
-      DATUM_FREE(intvalue1, basetype1);
-      DATUM_FREE(intvalue2, basetype2);
-      DATUM_FREE(intresult, resbasetype);
     }
     else
     {
-      /* Determine whether there is a crossing and if there is one compute the
-       * value at the crossing */
-      bool hascross = tsegment_intersection(start1, end1, linear1,
-        start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
-      if (hascross)
+      Datum intvalue1, intvalue2, intresult;
+      TimestampTz inttime;
+      bool lower_eq = false, upper_eq = false;
+      /* If both segments are constant compute the function at the start and
+       * end instants */
+      if (datum_eq(startvalue1, endvalue1, basetype1) &&
+        datum_eq(startvalue2, endvalue2, basetype2))
       {
-        intresult = tfunc_base_base(intvalue1, intvalue2, lfinfo);
-        lower_eq = datum_eq(startresult, intresult, resbasetype);
-        upper_eq = datum_eq(intresult, endresult, resbasetype);
-      }
-      /* If there is no crossing or the value at the crossing is equal to the
-       * start value compute the function at the start and end instants */
-      if (! hascross || (lower_eq && upper_eq))
-      {
+        /* Single sequence */
         instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
         instants[1] = tinstant_make(startresult, lfinfo->restype, end1->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
           lower_inc, false, lfinfo->reslinear, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
       }
-      else
+      /* If either the start values or the end values are equal and both have
+       * linear interpolation compute the function at the start instant,
+       * at an intermediate point, and at the end instant */
+      else if (datum_eq2(startvalue1, startvalue2, basetype1, basetype2) ||
+           (linear1 && linear2 &&
+            datum_eq2(endvalue1, endvalue2, basetype1, basetype2)))
       {
-        /* First sequence */
-        instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-        instants[1] = tinstant_make(startresult, lfinfo->restype, inttime);
-        result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, lower_eq, lfinfo->reslinear, NORMALIZE_NO);
-        pfree(instants[0]); pfree(instants[1]);
-        /* Second sequence if any */
-        if (! lower_eq && ! upper_eq)
+        /* Compute the function at the middle time between start and the end instants */
+        inttime = start1->t + ((end1->t - start1->t) / 2);
+        intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
+        intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
+        intresult = tfunc_base_base(intvalue1, intvalue2, lfinfo);
+        lower_eq = lower_inc && datum_eq(startresult, intresult, resbasetype);
+        upper_eq = datum_eq(intresult, endresult, resbasetype);
+        if (lower_inc && ! lower_eq)
         {
-          instants[0] = tinstant_make(intresult, lfinfo->restype, inttime);
+          instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
           result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
           pfree(instants[0]);
         }
-        /* Third sequence */
-        instants[0] = tinstant_make(endresult, lfinfo->restype, inttime);
-        instants[1] = tinstant_make(endresult, lfinfo->restype, end1->t);
+        instants[0] = tinstant_make(intresult, lfinfo->restype, start1->t);
+        instants[1] = tinstant_make(intresult, lfinfo->restype, end1->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          upper_eq, false, lfinfo->reslinear, NORMALIZE_NO);
+          lower_eq, false, lfinfo->reslinear, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
         DATUM_FREE(intvalue1, basetype1);
         DATUM_FREE(intvalue2, basetype2);
         DATUM_FREE(intresult, resbasetype);
       }
+      else
+      {
+        /* Determine whether there is a crossing and if there is one compute the
+         * value at the crossing */
+        bool hascross = tsegment_intersection(start1, end1, linear1,
+          start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
+        if (hascross)
+        {
+          intresult = tfunc_base_base(intvalue1, intvalue2, lfinfo);
+          lower_eq = datum_eq(startresult, intresult, resbasetype);
+          upper_eq = datum_eq(intresult, endresult, resbasetype);
+        }
+        /* If there is no crossing or the value at the crossing is equal to the
+         * start value compute the function at the start and end instants */
+        if (! hascross || (lower_eq && upper_eq))
+        {
+          instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
+          instants[1] = tinstant_make(startresult, lfinfo->restype, end1->t);
+          result[k++] = tsequence_make((const TInstant **) instants, 2,
+            lower_inc, false, lfinfo->reslinear, NORMALIZE_NO);
+          pfree(instants[0]); pfree(instants[1]);
+        }
+        else
+        {
+          /* First sequence */
+          instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
+          instants[1] = tinstant_make(startresult, lfinfo->restype, inttime);
+          result[k++] = tsequence_make((const TInstant **) instants, 2,
+            lower_inc, lower_eq, lfinfo->reslinear, NORMALIZE_NO);
+          pfree(instants[0]); pfree(instants[1]);
+          /* Second sequence if any */
+          if (! lower_eq && ! upper_eq)
+          {
+            instants[0] = tinstant_make(intresult, lfinfo->restype, inttime);
+            result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+            pfree(instants[0]);
+          }
+          /* Third sequence */
+          instants[0] = tinstant_make(endresult, lfinfo->restype, inttime);
+          instants[1] = tinstant_make(endresult, lfinfo->restype, end1->t);
+          result[k++] = tsequence_make((const TInstant **) instants, 2,
+            upper_eq, false, lfinfo->reslinear, NORMALIZE_NO);
+          pfree(instants[0]); pfree(instants[1]);
+          DATUM_FREE(intvalue1, basetype1);
+          DATUM_FREE(intvalue2, basetype2);
+          DATUM_FREE(intresult, resbasetype);
+        }
+      }
     }
+
     DATUM_FREE(startresult, resbasetype);
     DATUM_FREE(endresult, resbasetype);
     start1 = end1; start2 = end2;
@@ -1356,8 +1285,7 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronizes the temporal values and applies to them the function
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
  */
@@ -1387,11 +1315,11 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
   }
 
   if (lfinfo->discont)
-    return tfunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, &inter, result);
+    return tfunc_tsequence_tsequence_multi(seq1, seq2, lfinfo, &inter, true, result);
   if (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags))
-    return tfunc_tsequence_tsequence_lineareq(seq1, seq2, lfinfo, &inter, result);
+    return tfunc_tsequence_tsequence_single(seq1, seq2, lfinfo, &inter, result);
   else
-    return tfunc_tsequence_tsequence_linearstep(seq1, seq2, lfinfo, &inter, result);
+    return tfunc_tsequence_tsequence_multi(seq1, seq2, lfinfo, &inter, false, result);
 }
 
 /**

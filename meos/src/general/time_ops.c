@@ -2455,7 +2455,6 @@ static int
 minus_period_period1(const Period *p1, const Period *p2, Period **result)
 {
   SpanBound lower1, lower2, upper1, upper2;
-
   span_deserialize((const Span *) p1, &lower1, &upper1);
   span_deserialize((const Span *) p2, &lower2, &upper2);
 
