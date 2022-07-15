@@ -4056,7 +4056,8 @@ tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps, int from,
   {
     const Period *p1 = periodset_per_n(ps, i);
     /* If the remaining periods are to the left of the current period */
-    int cmp = timestamptz_cmp_internal(curr->period.upper, p1->lower);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(curr->period.upper),
+      DatumGetTimestampTz(p1->lower));
     if (cmp < 0 || (cmp == 0 && curr->period.upper_inc && ! p1->lower_inc))
     {
       result[k++] = curr;

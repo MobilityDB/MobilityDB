@@ -178,6 +178,65 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
 }
 
 /**
+ * @brief Compute d/dx (Euclidean distance) = 0 for two 2D segments
+ */
+static bool
+point2d_min_dist(const POINT2D *p1, const POINT2D *p2,
+  const POINT2D *p3, const POINT2D *p4, double *fraction)
+{
+  long double denum, dx1, dy1, dx2, dy2, f1, f2, f3, f4;
+  
+    dx1 = p2->x - p1->x;
+    dy1 = p2->y - p1->y;
+    dx2 = p4->x - p3->x;
+    dy2 = p4->y - p3->y;
+
+    f1 = p3->x * (dx1 - dx2);
+    f2 = p1->x * (dx2 - dx1);
+    f3 = p3->y * (dy1 - dy2);
+    f4 = p1->y * (dy2 - dy1);
+
+   denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dy2*dy2 + dx2*dx2;
+  if (denum == 0)
+    return false;
+
+  *fraction = (double) ((f1 + f2 + f3 + f4) / denum);
+  return true;
+}
+
+/**
+ * @brief Compute d/dx (Euclidean distance) = 0 for two 3D segments
+ */
+static bool
+point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
+  const POINT3DZ *p3, const POINT3DZ *p4, double *fraction)
+{
+  long double denum, dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
+  
+  dx1 = p2->x - p1->x;
+  dy1 = p2->y - p1->y;
+  dz1 = p2->z - p1->z;
+  dx2 = p4->x - p3->x;
+  dy2 = p4->y - p3->y;
+  dz2 = p4->z - p3->z;
+
+  f1 = p3->x * (dx1 - dx2);
+  f2 = p1->x * (dx2 - dx1);
+  f3 = p3->y * (dy1 - dy2);
+  f4 = p1->y * (dy2 - dy1);
+  f5 = p3->z * (dz1 - dz2);
+  f6 = p1->z * (dz2 - dz1);
+
+  denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) +
+    dx2*dx2 + dy2*dy2 + dz2*dz2;
+  if (denum == 0)
+    return false;
+
+  *fraction = (double) ((f1 + f2 + f3 + f4 + f5 + f6) / denum);
+  return true;
+}
+
+/**
  * Return the value and timestamp at which the two temporal geometric point
  * segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
@@ -198,41 +257,19 @@ static bool
 tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  long double denum, fraction;
-  long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
+  double fraction;
   long double duration = (long double) (end1->t - start1->t);
 
   bool hasz = MOBDB_FLAGS_GET_Z(start1->flags);
   if (hasz) /* 3D */
   {
-    long double dz1, dz2, f5, f6;
     const POINT3DZ *p1 = datum_point3dz_p(tinstant_value(start1));
     const POINT3DZ *p2 = datum_point3dz_p(tinstant_value(end1));
     const POINT3DZ *p3 = datum_point3dz_p(tinstant_value(start2));
     const POINT3DZ *p4 = datum_point3dz_p(tinstant_value(end2));
-    /* The following basically computes d/dx (Euclidean distance) = 0->
-       To reduce problems related to floating point arithmetic, t1 and t2
-       are shifted, respectively, to 0 and 1 before computing d/dx */
-    dx1 = p2->x - p1->x;
-    dy1 = p2->y - p1->y;
-    dz1 = p2->z - p1->z;
-    dx2 = p4->x - p3->x;
-    dy2 = p4->y - p3->y;
-    dz2 = p4->z - p3->z;
-
-    f1 = p3->x * (dx1 - dx2);
-    f2 = p1->x * (dx2 - dx1);
-    f3 = p3->y * (dy1 - dy2);
-    f4 = p1->y * (dy2 - dy1);
-    f5 = p3->z * (dz1 - dz2);
-    f6 = p1->z * (dz2 - dz1);
-
-    denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) +
-      dx2*dx2 + dy2*dy2 + dz2*dz2;
-    if (denum == 0)
+    bool found = point3d_min_dist(p1, p2, p3, p4, &fraction);
+    if (!found)
       return false;
-
-    fraction = (f1 + f2 + f3 + f4 + f5 + f6) / denum;
   }
   else /* 2D */
   {
@@ -240,25 +277,9 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     const POINT2D *p2 = datum_point2d_p(tinstant_value(end1));
     const POINT2D *p3 = datum_point2d_p(tinstant_value(start2));
     const POINT2D *p4 = datum_point2d_p(tinstant_value(end2));
-    /* The following basically computes d/dx (Euclidean distance) = 0.
-       To reduce problems related to floating point arithmetic, t1 and t2
-       are shifted, respectively, to 0 and 1 before computing d/dx */
-    dx1 = p2->x - p1->x;
-    dy1 = p2->y - p1->y;
-    dx2 = p4->x - p3->x;
-    dy2 = p4->y - p3->y;
-
-    f1 = p3->x * (dx1 - dx2);
-    f2 = p1->x * (dx2 - dx1);
-    f3 = p3->y * (dy1 - dy2);
-    f4 = p1->y * (dy2 - dy1);
-
-    denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dy2*dy2 + dx2*dx2;
-    /* If the segments are parallel */
-    if (denum == 0)
+    bool found = point2d_min_dist(p1, p2, p3, p4, &fraction);
+    if (!found)
       return false;
-
-    fraction = (f1 + f2 + f3 + f4) / denum;
   }
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
@@ -307,28 +328,10 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     /* We know that the distance is 0 */
     if (mindist)
       *mindist = 0.0;
-    /* In this case we must take the temporality into account */
-    long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6, denum;
-    dx1 = A2.x - A1.x;
-    dy1 = A2.y - A1.y;
-    dz1 = A2.z - A1.z;
-    dx2 = B2.x - B1.x;
-    dy2 = B2.y - B1.y;
-    dz2 = B2.z - B1.z;
-
-    f1 = B1.x * (dx1 - dx2);
-    f2 = A1.x * (dx2 - dx1);
-    f3 = B1.y * (dy1 - dy2);
-    f4 = A1.y * (dy2 - dy1);
-    f5 = B1.z * (dz1 - dz2);
-    f6 = A1.z * (dz2 - dz1);
-
-    denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) +
-      dx2*dx2 + dy2*dy2 + dz2*dz2;
-    if (denum == 0)
+    bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
+      (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
+    if (!found)
       return false;
-
-    fraction = (double) ((f1 + f2 + f3 + f4 + f5 + f6) / denum);
   }
   else
   {
@@ -343,7 +346,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     /* Compute distance from beginning of the segment to one closest point */
     long double seglength = sphere_distance(&(e1.start), &(e1.end));
     long double length = sphere_distance(&(e1.start), &close1);
-    fraction = (double) (length / seglength);
+    fraction = length / seglength;
   }
 
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))

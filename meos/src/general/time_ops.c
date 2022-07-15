@@ -74,12 +74,12 @@ pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
 {
-  int32 cmp = timestamptz_cmp_internal(p->lower, t);
+  int32 cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
   if (cmp > 0)
     return BEFORE;
   if (cmp == 0 && !(p->lower_inc))
     return BEFORE;
-  cmp = timestamptz_cmp_internal(p->upper, t);
+  cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
   if (cmp < 0)
     return AFTER;
   if (cmp == 0 && !(p->upper_inc))
@@ -307,11 +307,11 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 bool
 contains_period_timestamp(const Period *p, TimestampTz t)
 {
-  int cmp = timestamptz_cmp_internal(p->lower, t);
+  int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
   if (cmp > 0 || (cmp == 0 && ! p->lower_inc))
     return false;
 
-  cmp = timestamptz_cmp_internal(p->upper, t);
+  cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
   if (cmp < 0 || (cmp == 0 && ! p->upper_inc))
     return false;
 
@@ -728,7 +728,8 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
     p2 = periodset_per_n(ps2, j);
     if (overlaps_span_span(p1, p2))
       return true;
-    int cmp = timestamptz_cmp_internal(p1->upper, p2->upper);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p1->upper),
+      DatumGetTimestampTz(p2->upper));
     if (cmp == 0)
     {
       i++; j++;
@@ -932,7 +933,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 before_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(t, p->lower);
+  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->lower));
   return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
 }
 
@@ -1008,7 +1009,7 @@ bool
 before_period_timestamp(const Period *p, TimestampTz t)
 {
 
-  int cmp = timestamptz_cmp_internal(p->upper, t);
+  int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
   return (cmp < 0 || (cmp == 0 && ! p->upper_inc));
 }
 
@@ -1109,7 +1110,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 after_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(t, p->upper);
+  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->upper));
   return (cmp > 0 || (cmp == 0 && ! p->upper_inc));
 }
 
@@ -1184,7 +1185,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 after_period_timestamp(const Period *p, TimestampTz t)
 {
-  int cmp = timestamptz_cmp_internal(t, p->lower);
+  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->lower));
   return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
 }
 
@@ -1285,7 +1286,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overbefore_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(t, p->upper);
+  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->upper));
   return (cmp < 0 || (cmp == 0 && p->upper_inc));
 }
 
@@ -1460,7 +1461,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overafter_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(p->lower, t);
+  int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
   return (cmp < 0 || (cmp == 0 && p->lower_inc));
 }
 
@@ -2233,7 +2234,8 @@ intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
     Period *inter = intersection_span_span(p1, p2);
     if (inter != NULL)
       periods[k++] = inter;
-    int cmp = timestamptz_cmp_internal(p1->upper, p2->upper);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p1->upper),
+      DatumGetTimestampTz(p2->upper));
     if (cmp == 0 && p1->upper_inc == p2->upper_inc)
     {
       i++; j++;
@@ -2549,7 +2551,8 @@ minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
   {
     const Period *p1 = periodset_per_n(ps, i);
     /* If the remaining periods are to the left of the current period */
-    int cmp = timestamptz_cmp_internal(curr->upper, p1->lower);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(curr->upper),
+      DatumGetTimestampTz(p1->lower));
     if (cmp < 0 || (cmp == 0 && curr->upper_inc && ! p1->lower_inc))
     {
       result[k++] = curr;

@@ -273,7 +273,8 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
       sequences1[k] = interseq1;
       sequences2[k++] = interseq2;
     }
-    int cmp = timestamptz_cmp_internal(seq->period.upper, seq1->period.upper);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
+      DatumGetTimestampTz(seq1->period.upper));
     if (cmp < 0 ||
       (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
       break;
@@ -327,7 +328,8 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
       sequences1[k] = interseq1;
       sequences2[k++] = interseq2;
     }
-    int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq1->period.upper),
+      DatumGetTimestampTz(seq2->period.upper));
     if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
     {
       i++; j++;
@@ -418,7 +420,8 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
       instants1[k] = tsequence_at_timestamp(seq, inst->t);
       instants2[k++] = inst;
     }
-    int cmp = timestamptz_cmp_internal(seq->period.upper, inst->t);
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
+      inst->t);
     if (cmp == 0)
     {
       i++; j++;
@@ -2276,7 +2279,8 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
         TSequence *newseq = tsequence_at_period(seq, p);
         sequences[k++] = tofree[l++] = newseq;
       }
-      int cmp = timestamptz_cmp_internal(p->upper, seq->period.upper);
+      int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
+        DatumGetTimestampTz(seq->period.upper));
       if (cmp < 0 || (cmp == 0 && seq->period.upper_inc))
         break;
     }
@@ -2365,7 +2369,8 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
         TSequence *seq1 = tsequence_at_period(seq, p2);
         if (seq1 != NULL)
           sequences[k++] = seq1;
-        int cmp = timestamptz_cmp_internal(seq->period.upper, p2->upper);
+        int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
+          DatumGetTimestampTz(p2->upper));
         if (cmp == 0 && seq->period.upper_inc == p2->upper_inc)
         {
           i++; j++;
