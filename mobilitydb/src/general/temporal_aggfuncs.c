@@ -251,18 +251,18 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
    * (3@2000-01-04, 4@2000-01-05]
    */
   Period period;
-  TimestampTz lower1 = seq1->period.lower;
-  TimestampTz upper1 = seq1->period.upper;
+  TimestampTz lower1 = DatumGetTimestampTz(seq1->period.lower);
+  TimestampTz upper1 = DatumGetTimestampTz(seq1->period.upper);
   bool lower1_inc = seq1->period.lower_inc;
   bool upper1_inc = seq1->period.upper_inc;
 
-  TimestampTz lower2 = seq2->period.lower;
-  TimestampTz upper2 = seq2->period.upper;
+  TimestampTz lower2 = DatumGetTimestampTz(seq2->period.lower);
+  TimestampTz upper2 = DatumGetTimestampTz(seq2->period.upper);
   bool lower2_inc = seq2->period.lower_inc;
   bool upper2_inc = seq2->period.upper_inc;
 
-  TimestampTz lower = inter.lower;
-  TimestampTz upper = inter.upper;
+  TimestampTz lower = DatumGetTimestampTz(inter.lower);
+  TimestampTz upper = DatumGetTimestampTz(inter.upper);
   bool lower_inc = inter.lower_inc;
   bool upper_inc = inter.upper_inc;
   TSequence *sequences[3];
@@ -274,12 +274,14 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   int cmp2 = timestamp_cmp_internal(lower2, lower);
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
   {
-    span_set(lower1, lower, lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
+    span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
+      lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
-    span_set(lower2, lower, lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
+    span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
+      lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
 
@@ -307,12 +309,14 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   cmp2 = timestamp_cmp_internal(upper, upper2);
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
   {
-    span_set(upper, upper1, ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
+    span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
+      ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq1, &period);
   }
-  else if (cmp2 < 0 || (!upper_inc && upper2_inc && cmp2 == 0))
+  else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
-    span_set(upper, upper2, ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
+    span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
+      ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
 

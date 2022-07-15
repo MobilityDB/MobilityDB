@@ -292,30 +292,19 @@ static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
   mobdbType type = oid_type(scankey->sk_subtype);
-  if (type == T_INT4 || type == T_FLOAT8)
+  if (type == T_INT4 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
   {
     Datum d = scankey->sk_argument;
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN)
+  else if (type == T_INTSPAN || type == T_FLOATSPAN || type == T_PERIOD)
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);
     memcpy(result, s, sizeof(Span));
   }
-  /* For temporal types whose bounding box is a span */
-  else if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    span_set(t, t, true, true, T_TIMESTAMPTZ, result);
-  }
   else if (type == T_TIMESTAMPSET)
   {
     timestampset_period_slice(scankey->sk_argument, result);
-  }
-  else if (type == T_PERIOD)
-  {
-    Period *p = DatumGetSpanP(scankey->sk_argument);
-    memcpy(result, p, sizeof(Period));
   }
   else if (type == T_PERIODSET)
   {

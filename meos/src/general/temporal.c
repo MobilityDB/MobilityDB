@@ -3400,7 +3400,8 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
   if (hast)
   {
     Period p;
-    span_set(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ, &p);
+    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
+      true, true, T_TIMESTAMPTZ, &p);
     temp1 = temporal_restrict_period(temp, &p, REST_AT);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */

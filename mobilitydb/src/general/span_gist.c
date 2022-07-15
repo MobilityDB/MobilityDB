@@ -167,36 +167,23 @@ static bool
 span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
 {
   mobdbType type = oid_type(typid);
-  if (type == T_INT4 || type == T_FLOAT8)
+  if (type == T_INT4 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
   {
-    /* Since function span_gist_consistent is strict, i is not NULL */
+    /* Since function span_gist_consistent is strict, d is not NULL */
     Datum d = PG_GETARG_DATUM(1);
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN)
+  else if (type == T_INTSPAN || type == T_FLOATSPAN || type == T_PERIOD)
   {
-    Span *p = PG_GETARG_SPAN_P(1);
-    if (p == NULL)
+    Span *s = PG_GETARG_SPAN_P(1);
+    if (s == NULL)
       PG_RETURN_BOOL(false);
-    memcpy(result, p, sizeof(Span));
-  }
-  else if (type == T_TIMESTAMPTZ)
-  {
-    /* Since function span_gist_consistent is strict, t is not NULL */
-    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    span_set(t, t, true, true, type, result);
+    memcpy(result, s, sizeof(Span));
   }
   else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
     timestampset_period_slice(tsdatum, result);
-  }
-  else if (type == T_PERIOD)
-  {
-    Period *p = PG_GETARG_SPAN_P(1);
-    if (p == NULL)
-      PG_RETURN_BOOL(false);
-    memcpy(result, p, sizeof(Period));
   }
   else if (type == T_PERIODSET)
   {

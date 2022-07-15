@@ -2597,7 +2597,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 5.0, '5 days
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid. &Z_support; &SRF;</para>
 					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  bitmatrix=TRUE): setof point_tpoint</varname></para>
+					<para><varname>  bitmatrix=true): setof point_tpoint</varname></para>
 					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
@@ -2620,7 +2620,7 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid. &Z_support; &SRF;</para>
 					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
-					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=TRUE):</varname></para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=true):</varname></para>
 					<para><varname>  setof point_time_tpoint</varname></para>
 					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting xml:space="preserve">

@@ -118,7 +118,7 @@ Tfloat_simplify(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
-  Temporal *result = tfloat_simplify(temp, eps_dist);
+  Temporal *result = temporal_simplify(temp, eps_dist, 0);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -134,7 +134,7 @@ Tpoint_simplify(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
   double eps_speed = PG_GETARG_FLOAT8(2);
-  Temporal *result = tpoint_simplify(temp, eps_dist, eps_speed);
+  Temporal *result = temporal_simplify(temp, eps_dist, eps_speed);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

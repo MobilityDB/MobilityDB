@@ -1728,8 +1728,8 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   const TSequence *seq2 = tsequenceset_seq_n(ss, ss->count - 1);
   const TInstant *inst1 = tsequence_inst_n(seq1, 0);
   const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
-  span_set(inst1->t, inst2->t, seq1->period.lower_inc, seq2->period.upper_inc,
-    T_TIMESTAMPTZ, &p1);
+  span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
+    seq1->period.lower_inc, seq2->period.upper_inc, T_TIMESTAMPTZ, &p1);
   span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
   period_shift_tscale(shift, duration, &p2);
   TimestampTz delta;

@@ -393,8 +393,8 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   {
     Span *first = (Span *) values[0];
     Span *last = (Span *) values[count - 1];
-    span_set(TimestampTzGetDatum(first->lower), TimestampTzGetDatum(last->upper),
-      first->lower_inc, last->upper_inc, T_TIMESTAMPTZ, &p);
+    span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
+      T_TIMESTAMPTZ, &p);
   }
   else /* list->elemtype == TEMPORAL */
   {
@@ -410,9 +410,8 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
     {
       TSequence *first = (TSequence *) values[0];
       TSequence *last = (TSequence *) values[count - 1];
-      span_set(TimestampTzGetDatum(first->period.lower),
-        TimestampTzGetDatum(last->period.upper), first->period.lower_inc,
-        last->period.upper_inc, T_TIMESTAMPTZ, &p);
+      span_set(first->period.lower, last->period.upper,
+        first->period.lower_inc, last->period.upper_inc, T_TIMESTAMPTZ, &p);
     }
   }
 

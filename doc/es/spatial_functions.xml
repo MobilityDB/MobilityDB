@@ -578,7 +578,7 @@ SELECT expandSpatial(tgeompoint 'Point(0 0)@2012-01-01', 2);
 				<listitem id="asMVTGeom">
 					<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
 					<para>Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile. El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores de marca de tiempo asociados codificados como época de Unix &Z_support;</para>
-					<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=TRUE): geom_times</varname></para>
+					<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true): geom_times</varname></para>
 					<para>Los parámetros son los siguientes:</para>
 					<itemizedlist>
 						<listitem><para><varname>tpoint</varname> es el punto temporal para transformar</para></listitem>

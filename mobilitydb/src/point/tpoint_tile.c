@@ -712,7 +712,6 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (PG_NARGS() == 3)
   {
     size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     sorigin = PG_GETARG_GSERIALIZED_P(2);
   }
   else /* PG_NARGS() == 6 */
@@ -720,7 +719,6 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
     /* If time arguments are given */
     t = PG_GETARG_TIMESTAMPTZ(1);
     size = PG_GETARG_FLOAT8(2);
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     Interval *duration = PG_GETARG_INTERVAL_P(3);
     ensure_valid_duration(duration);
     tunits = get_interval_units(duration);
@@ -728,6 +726,8 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
     torigin = PG_GETARG_TIMESTAMPTZ(5);
     hast = true;
   }
+  /* Ensure parameter validity */
+  ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(point);
@@ -761,8 +761,8 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (hast)
     tmin = timestamptz_bucket(t, tunits, torigin);
   STBOX *result = palloc0(sizeof(STBOX));
-  stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz,
-    hast, srid);
+  stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz, hast,
+    srid);
   PG_RETURN_POINTER(result);
 }
 
@@ -973,37 +973,40 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     double size = PG_GETARG_FLOAT8(1);
     Interval *duration = NULL;
     TimestampTz torigin = 0;
+    int64 tunits = 0;
     int i = 2;
     if (timesplit)
+    {
       duration = PG_GETARG_INTERVAL_P(i++);
+      ensure_valid_duration(duration);
+      tunits = get_interval_units(duration);
+    }
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
+    STBOX bounds;
+    temporal_set_bbox(temp, &bounds);
+    if (! timesplit)
+      /* Disallow T dimension for generating a spatial only grid */
+      MOBDB_FLAGS_SET_T(bounds.flags, false);
 
     /* Ensure parameter validity */
     ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, sorigin->gflags);
-    STBOX bounds;
-    temporal_set_bbox(temp, &bounds);
-    int64 tunits = 0;
-    if (timesplit)
-    {
-      ensure_valid_duration(duration);
-      tunits = get_interval_units(duration);
-    }
-    else
-      /* Disallow T dimension for generating a spatial only grid */
-      MOBDB_FLAGS_SET_T(bounds.flags, false);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    if (FLAGS_GET_Z(sorigin->gflags))
+    bool hasz = (bool) MOBDB_FLAGS_GET_Z(temp->flags);
+    if (hasz)
+    {
+      ensure_has_Z_gs(sorigin);
       pt = datum_point3dz(PointerGetDatum(sorigin));
+    }
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
@@ -1012,7 +1015,6 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
-    hasz = MOBDB_FLAGS_GET_Z(temp->flags);
 
     /* Create function state */
     STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, tunits,

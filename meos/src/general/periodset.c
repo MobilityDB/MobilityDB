@@ -188,15 +188,13 @@ periodset_make(const Period **periods, int count, bool normalize)
   SET_VARSIZE(result, memsize);
   result->count = newcount;
 
-  /* Compute the bounding box */
+  /* Compute the bounding period */
   span_set(newperiods[0]->lower, newperiods[newcount - 1]->upper,
     newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc,
     T_TIMESTAMPTZ, &result->period);
   /* Copy the period array */
   for (int i = 0; i < newcount; i++)
-    span_set(newperiods[i]->lower, newperiods[i]->upper,
-      newperiods[i]->lower_inc, newperiods[i]->upper_inc, T_TIMESTAMPTZ,
-      &result->elems[i]);
+    memcpy(&result->elems[i], newperiods[i], sizeof(Span));
   /* Free after normalization */
   if (normalize && count > 1)
     pfree_array((void **) newperiods, newcount);
@@ -253,7 +251,8 @@ PeriodSet *
 timestamp_to_periodset(TimestampTz t)
 {
   Span p;
-  span_set(t, t, true, true, T_TIMESTAMPTZ, &p);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &p);
   PeriodSet *result = period_to_periodset(&p);
   return result;
 }
@@ -336,8 +335,7 @@ periodset_timespan(const PeriodSet *ps)
 void
 periodset_set_period(const PeriodSet *ps, Period *p)
 {
-  const Period *p1 = (Period *) &ps->period;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
+  memcpy(p, &ps->period, sizeof(Span));
   return;
 }
 

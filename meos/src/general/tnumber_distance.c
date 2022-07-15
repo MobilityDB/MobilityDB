@@ -291,7 +291,8 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
   if (hast)
   {
     temporal_set_period(temp, &p1);
-    span_set(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ, &p2);
+    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
+      true, true, T_TIMESTAMPTZ, &p2);
     if (! inter_span_span(&p1, &p2, &inter))
       return DBL_MAX;
   }

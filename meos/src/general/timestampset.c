@@ -195,9 +195,9 @@ timestampset_make(const TimestampTz *times, int count)
   SET_VARSIZE(result, memsize);
   result->count = count;
 
-  /* Compute the bounding box */
-  span_set(times[0], times[count - 1], true, true, T_TIMESTAMPTZ,
-    &result->period);
+  /* Compute the bounding period */
+  span_set(TimestampTzGetDatum(times[0]), TimestampTzGetDatum(times[count - 1]),
+    true, true, T_TIMESTAMPTZ, &result->period);
   /* Copy the timestamp array */
   for (int i = 0; i < count; i++)
     result->elems[i] = times[i];
@@ -294,7 +294,8 @@ void
 timestampset_set_period(const TimestampSet *ts, Period *p)
 {
   const Period *p1 = &ts->period;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, p);
+  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc,
+    T_TIMESTAMPTZ, p);
   return;
 }
 

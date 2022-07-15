@@ -1687,7 +1687,8 @@ PeriodSet *
 union_timestamp_period(TimestampTz t, const Period *p)
 {
   Period p1;
-  span_set(t, t, true, true, T_TIMESTAMPTZ, &p1);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &p1);
   PeriodSet *result = union_period_period(p, &p1);
   return result;
 }
@@ -1701,7 +1702,8 @@ PeriodSet *
 union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
   Period p;
-  span_set(t, t, true, true, T_TIMESTAMPTZ, &p);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &p);
   PeriodSet *result = union_period_periodset(&p, ps);
   return result;
 }
@@ -1770,7 +1772,8 @@ PeriodSet *
 union_period_timestamp(const Period *p, TimestampTz t)
 {
   Period p1;
-  span_set(t, t, true, true, T_TIMESTAMPTZ, &p1);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &p1);
   PeriodSet *result = union_period_period(p, &p1);
   return result;
 }
@@ -1818,7 +1821,7 @@ union_period_period(const Period *p1, const Period *p2)
 
   /* Compute the union of the overlapping periods */
   Period p;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, T_TIMESTAMPTZ, &p);
+  memcpy(&p, p1, sizeof(Span));
   span_expand(p2, &p);
   PeriodSet *result = period_to_periodset(&p);
   return result;
@@ -1851,7 +1854,8 @@ PeriodSet *
 union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
 {
   Period p;
-  span_set(t, t, true, true, T_TIMESTAMPTZ, &p);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &p);
   PeriodSet *result = union_period_periodset(&p, ps);
   return result;
 }

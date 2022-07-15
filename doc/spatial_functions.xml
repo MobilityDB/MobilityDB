@@ -578,7 +578,7 @@ ramp_color(
 				<listitem id="asMVTGeom">
 					<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
 					<para>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile. The result is a couple composed of a <varname>geometry</varname> value and an array of associated timestamp values encoded as Unix epoch &Z_support;</para>
-					<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=TRUE): geom_times</varname></para>
+					<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true): geom_times</varname></para>
 					<para>The parameters are as follows:</para>
 					<itemizedlist>
 						<listitem><para><varname>tpoint</varname> is the temporal point to transform</para></listitem>

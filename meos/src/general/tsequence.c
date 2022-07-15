@@ -2077,8 +2077,7 @@ tsequence_duration(const TSequence *seq)
 void
 tsequence_set_period(const TSequence *seq, Period *p)
 {
-  span_set(seq->period.lower, seq->period.upper, seq->period.lower_inc,
-    seq->period.upper_inc, T_TIMESTAMPTZ, p);
+  memcpy(p, &seq->period, sizeof(Span));
   return;
 }
 

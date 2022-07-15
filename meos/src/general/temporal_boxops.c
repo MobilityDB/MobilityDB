@@ -182,7 +182,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   ensure_temporal_type(inst->temptype);
   memset(box, 0, temporal_bbox_size(inst->temptype));
   if (talpha_type(inst->temptype))
-    span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, (Span *) box);
+    span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+    true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
     double dvalue = tnumberinst_double(inst);
@@ -233,7 +234,8 @@ tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
+    span_set(TimestampTzGetDatum(instants[0]->t), 
+      TimestampTzGetDatum(instants[count - 1]->t), true, true, T_TIMESTAMPTZ,
       (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
@@ -269,7 +271,8 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    span_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
+    span_set(TimestampTzGetDatum(instants[0]->t),
+      TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
@@ -363,7 +366,8 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
 {
   Period p1, p2;
   temporal_set_period(temp, &p1);
-  span_set(t, t, true, true, T_TIMESTAMPTZ, &p2);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }

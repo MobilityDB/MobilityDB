@@ -358,9 +358,9 @@ tpoint_to_geo(const Temporal *temp, bool segmentize)
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tpointinst_to_geo((TInstant *)temp);
+    result = tpointinst_to_geo((TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
-    result = tpointinstset_to_geo((TInstantSet *)temp);
+    result = tpointinstset_to_geo((TInstantSet *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = segmentize ?
          tpointseq_to_geo_segmentize((TSequence *) temp) :
@@ -1006,138 +1006,6 @@ int_cmp(const void *a, const void *b)
   return *ia - *ib;
 }
 
-/**
- * Simplify the temporal sequence number using a
- * Douglas-Peucker-like line simplification algorithm.
- *
- * @param[in] seq Temporal point
- * @param[in] eps_dist Epsilon speed
- * @param[in] minpts Minimum number of points
- */
-static TSequence *
-tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
-{
-  static size_t stack_size = 256;
-  int *stack, *outlist; /* recursion stack */
-  int stack_static[stack_size];
-  int outlist_static[stack_size];
-  int sp = -1; /* recursion stack pointer */
-  int i1, split;
-  uint32_t outn = 0;
-  uint32_t i;
-  double dist;
-
-  /* Do not try to simplify really short things */
-  if (seq->count < 3)
-    return tsequence_copy(seq);
-
-  /* Only heap allocate book-keeping arrays if necessary */
-  if ((unsigned int) seq->count > stack_size)
-  {
-    stack = palloc(sizeof(int) * seq->count);
-    outlist = palloc(sizeof(int) * seq->count);
-  }
-  else
-  {
-    stack = stack_static;
-    outlist = outlist_static;
-  }
-
-  i1 = 0;
-  stack[++sp] = seq->count - 1;
-  /* Add first point to output list */
-  outlist[outn++] = 0;
-  do
-  {
-    tfloatseq_dp_findsplit(seq, i1, stack[sp], &split, &dist);
-    bool dosplit = (dist >= 0 &&
-      (dist > eps_dist || outn + sp + 1 < minpts));
-    if (dosplit)
-      stack[++sp] = split;
-    else
-    {
-      outlist[outn++] = stack[sp];
-      i1 = stack[sp--];
-    }
-  }
-  while (sp >= 0);
-
-  /* Put list of retained points into order */
-  qsort(outlist, outn, sizeof(int), int_cmp);
-  /* Create new TSequence */
-  const TInstant **instants = palloc(sizeof(TInstant *) * outn);
-  for (i = 0; i < outn; i++)
-    instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make((const TInstant **) instants, outn,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
-  pfree(instants);
-
-  /* Only free if arrays are on heap */
-  if (stack != stack_static)
-    pfree(stack);
-  if (outlist != outlist_static)
-    pfree(outlist);
-
-  return result;
-}
-
-/**
- * Simplify the temporal sequence set number using a
- * Douglas-Peucker-like line simplification algorithm.
- *
- * @param[in] ss Temporal point
- * @param[in] eps_dist Epsilon speed
- * @param[in] minpts Minimum number of points
- */
-static TSequenceSet *
-tfloatseqset_simplify(const TSequenceSet *ss, double eps_dist, uint32_t minpts)
-{
-  const TSequence *seq;
-
-  /* Singleton sequence set */
-  if (ss->count == 1)
-  {
-    seq = tsequenceset_seq_n(ss, 0);
-    TSequence *seq1 = tfloatseq_simplify(seq, eps_dist, minpts);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
-    pfree(seq1);
-    return result;
-  }
-
-  /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tfloatseq_simplify(seq, eps_dist, minpts);
-  }
-  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_temporal_analytics
- * @brief Simplify the temporal number using a Douglas-Peucker-like line
- * simplification algorithm.
- * @sqlfunc simplify()
- */
-Temporal *
-tfloat_simplify(Temporal *temp, double eps_dist)
-{
-  Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
-    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    result = temporal_copy(temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
-      eps_dist, 2);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
-      eps_dist, 2);
-  return result;
-}
-
 /***********************************************************************
  * Simple spatio-temporal Douglas-Peucker line simplification.
  * No checks are done to avoid introduction of self-intersections.
@@ -1411,33 +1279,25 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
     *dist = -1;
 }
 
-/***********************************************************************/
-
-/**
- * Simplify the temporal sequence point using a spatio-temporal
- * extension of the Douglas-Peucker line simplification algorithm.
- *
- * @param[in] seq Temporal point
- * @param[in] eps_dist Epsilon speed
- * @param[in] eps_speed Epsilon speed
- * @param[in] minpts Minimum number of points
- */
+/*****************************************************************************/
+ 
 static TSequence *
-tpointseq_simplify(const TSequence *seq, double eps_dist,
-  double eps_speed, uint32_t minpts)
+tsequence_simplify(const TSequence *seq, double eps_dist, double eps_speed,
+  uint32_t minpts)
 {
   static size_t stack_size = 256;
   int *stack, *outlist; /* recursion stack */
   int stack_static[stack_size];
   int outlist_static[stack_size];
   int sp = -1; /* recursion stack pointer */
-  int p1, split;
+  int i1, split;
   uint32_t outn = 0;
   uint32_t i;
   double dist, delta_speed;
   bool withspeed = eps_speed > 0;
 
-  /* Do not try to simplify really short things */
+  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
+  /* Do not try to simplify really short things */      
   if (seq->count < 3)
     return tsequence_copy(seq);
 
@@ -1453,13 +1313,17 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
     outlist = outlist_static;
   }
 
-  p1 = 0;
+  i1 = 0;
   stack[++sp] = seq->count - 1;
   /* Add first point to output list */
   outlist[outn++] = 0;
   do
   {
-    tpointseq_dp_findsplit(seq, p1, stack[sp], withspeed, &split, &dist, &delta_speed);
+    if (seq->temptype == T_TFLOAT)
+      tfloatseq_dp_findsplit(seq, i1, stack[sp], &split, &dist);
+    else /* tgeo_type(seq->temptype) */
+      tpointseq_dp_findsplit(seq, i1, stack[sp], withspeed, &split, &dist,
+        &delta_speed);
     bool dosplit;
     if (withspeed)
       dosplit = (dist >= 0 &&
@@ -1472,7 +1336,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
     else
     {
       outlist[outn++] = stack[sp];
-      p1 = stack[sp--];
+      i1 = stack[sp--];
     }
   }
   while (sp >= 0);
@@ -1483,7 +1347,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make(instants, outn,
+  TSequence *result = tsequence_make((const TInstant **) instants, outn,
     seq->period.lower_inc, seq->period.upper_inc,
     MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
   pfree(instants);
@@ -1498,7 +1362,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
 }
 
 /**
- * Simplify the temporal sequence set point using a spatio-temporal
+ * Simplify the temporal sequence set float/point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  *
  * @param[in] ss Temporal point
@@ -1507,39 +1371,26 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
-tpointseqset_simplify(const TSequenceSet *ss, double eps_dist,
+tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
   double eps_speed, uint32_t minpts)
 {
-  const TSequence *seq;
-
-  /* Singleton sequence set */
-  if (ss->count == 1)
-  {
-    seq = tsequenceset_seq_n(ss, 0);
-    TSequence *seq1 = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
-    pfree(seq1);
-    return result;
-  }
-
-  /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tsequence_simplify(seq, eps_dist, eps_speed, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
  * @ingroup libmeos_temporal_analytics
- * @brief Simplify the temporal point using a spatio-temporal
+ * @brief Simplify the temporal float/point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  * @sqlfunc simplify()
  */
 Temporal *
-tpoint_simplify(Temporal *temp, double eps_dist, double eps_speed)
+temporal_simplify(Temporal *temp, double eps_dist, double eps_speed)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1547,10 +1398,10 @@ tpoint_simplify(Temporal *temp, double eps_dist, double eps_speed)
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_simplify((TSequence *)temp, eps_dist,
+    result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
       eps_speed, 2);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp, eps_dist,
+    result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp, eps_dist,
       eps_speed, 2);
   return result;
 }
@@ -2117,7 +1968,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
 
   /* Epsilon speed is not taken into account, i.e., parameter set to 0 */
-  Temporal *tpoint2 = tpoint_simplify(tpoint1, res, 0);
+  Temporal *tpoint2 = temporal_simplify(tpoint1, res, 0);
   pfree(tpoint1);
 
   /* Transform to tile coordinate space */

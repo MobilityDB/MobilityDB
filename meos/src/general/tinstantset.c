@@ -666,7 +666,8 @@ tinstantset_set_period(const TInstantSet *is, Period *p)
 {
   TimestampTz lower = tinstantset_start_timestamp(is);
   TimestampTz upper = tinstantset_end_timestamp(is);
-  return span_set(lower, upper, true, true, T_TIMESTAMPTZ, p);
+  return span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
+    true, true, T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -886,7 +887,8 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *shift,
   Period p1, p2;
   const TInstant *inst1 = tinstantset_inst_n(is, 0);
   const TInstant *inst2 = tinstantset_inst_n(is, is->count - 1);
-  span_set(inst1->t, inst2->t, true, true, T_TIMESTAMPTZ, &p1);
+  span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
+    true, true, T_TIMESTAMPTZ, &p1);
   span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
   period_shift_tscale(shift, duration, &p2);
   TimestampTz delta;
