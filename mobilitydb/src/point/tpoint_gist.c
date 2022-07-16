@@ -513,7 +513,6 @@ typedef struct
 {
   int  entriesCount;  /**< total number of entries being split */
   STBOX boundingBox;  /**< minimum bounding box across all entries */
-
   /** Information about currently selected split follows */
   bool first;        /**< true if no split was selected yet */
   double leftUpper;  /**< upper bound of left interval */

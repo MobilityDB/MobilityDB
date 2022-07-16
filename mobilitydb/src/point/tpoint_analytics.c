@@ -67,10 +67,11 @@ PG_FUNCTION_INFO_V1(Tpoint_to_geo);
 PGDLLEXPORT Datum
 Tpoint_to_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
-  Datum result = tpoint_to_geo(temp, segmentize);
-  PG_FREE_IF_COPY(temp, 0);
+  Datum result;
+  tpoint_to_geo_measure(tpoint, NULL, segmentize, &result);
+  PG_FREE_IF_COPY(tpoint, 0);
   PG_RETURN_DATUM(result);
 }
 
@@ -98,7 +99,7 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
-  bool segmentize = PG_GETARG_BOOL(2);
+  bool segmentize = (PG_NARGS() == 3) ? PG_GETARG_BOOL(2) : false;
   Datum result;
   bool found = tpoint_to_geo_measure(tpoint, measure, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
