@@ -47,7 +47,10 @@
 
 /* Functions on generic bounding boxes of temporal types */
 
-extern size_t temporal_max_bbox_size();
+extern bool bbox_type(mobdbType bboxtype);
+extern void ensure_bbox_type(mobdbType bboxtype);
+extern size_t bbox_get_size(mobdbType bboxtype);
+extern int bbox_max_dims(mobdbType bboxtype);
 extern uint32_t temporal_max_header_size(void);
 extern bool temporal_bbox_eq(const void *box1, const void *box2,
   mobdbType temptype);

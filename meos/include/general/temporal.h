@@ -296,78 +296,8 @@ enum MOBDB_WKB_TSUBTYPE
 #define DEFAULT_INTSPAN_ORIGIN (0)
 
 /*****************************************************************************
- * Struct definitions for temporal types
+ * Additional struct definitions for temporal types
  *****************************************************************************/
-
-/**
- * Structure to represent the common structure of temporal values of
- * any temporal subtype
- */
-// typedef struct
-// {
-  // int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  // uint8         temptype;     /**< Temporal type */
-  // uint8         subtype;      /**< Temporal subtype */
-  // int16         flags;        /**< Flags */
-  // /* variable-length data follows, if any */
-// } Temporal;
-
-/**
- * Structure to represent temporal values of instant subtype
- */
-// typedef struct
-// {
-  // int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  // uint8         temptype;     /**< Temporal type */
-  // uint8         subtype;      /**< Temporal subtype */
-  // int16         flags;        /**< Flags */
-  // TimestampTz   t;            /**< Timestamp (8 bytes) */
-  // /* variable-length data follows */
-// } TInstant;
-
-/**
- * Structure to represent temporal values of instant set subtype
- */
-// typedef struct
-// {
-  // int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  // uint8         temptype;     /**< Temporal type */
-  // uint8         subtype;      /**< Temporal subtype */
-  // int16         flags;        /**< Flags */
-  // int32         count;        /**< Number of TInstant elements */
-  // int16         bboxsize;     /**< Size of the bounding box */
-  // /**< beginning of variable-length data */
-// } TInstantSet;
-
-/**
- * Structure to represent temporal values of sequence subtype
- */
-// typedef struct
-// {
-  // int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  // uint8         temptype;     /**< Temporal type */
-  // uint8         subtype;      /**< Temporal subtype */
-  // int16         flags;        /**< Flags */
-  // int32         count;        /**< Number of TInstant elements */
-  // int16         bboxsize;     /**< Size of the bounding box */
-  // Period        period;       /**< Time span (24 bytes) */
-  // /**< beginning of variable-length data */
-// } TSequence;
-
-/**
- * Structure to represent temporal values of sequence set subtype
- */
-// typedef struct
-// {
-  // int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  // uint8         temptype;     /**< Temporal type */
-  // uint8         subtype;      /**< Temporal subtype */
-  // int16         flags;        /**< Flags */
-  // int32         count;        /**< Number of TSequence elements */
-  // int32         totalcount;   /**< Total number of TInstant elements in all TSequence elements */
-  // int16         bboxsize;     /**< Size of the bounding box */
-  // /**< beginning of variable-length data */
-// } TSequenceSet;
 
 /**
  * Structure to represent all types of bounding boxes
@@ -411,15 +341,6 @@ typedef struct
   double    c;
   double    d;
 } double4;
-
-/**
- * Struct for storing a similarity match
- */
-// typedef struct
-// {
-  // int i;
-  // int j;
-// } Match;
 
 /*****************************************************************************
  * Miscellaneous

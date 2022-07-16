@@ -40,12 +40,12 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-#include <access/gist.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <general/temporal_boxops.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_catalog.h"
@@ -300,8 +300,10 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
  *   NaN-aware comparisons for the value dimension
  */
 static void
-tbox_adjust(TBOX *box1, const TBOX *box2)
+tbox_adjust(void *bbox1, void *bbox2)
 {
+  TBOX *box1 = (TBOX *) bbox1;
+  TBOX *box2 = (TBOX *) bbox2;
   box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
   box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
   box1->tmin = Min(box1->tmin, box2->tmin);
@@ -322,8 +324,8 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_adjust(result, DatumGetTboxP(ent[i].key));
-  PG_RETURN_SPAN_P(result);
+    tbox_adjust((void *) result, DatumGetPointer(ent[i].key));
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -404,9 +406,11 @@ tbox_size(const TBOX *box)
  * Return the amount by which the union of the two boxes is larger than
  * the original TBOX's area.  The result can be +Infinity, but not NaN.
  */
-static double
-tbox_penalty(const TBOX *original, const TBOX *new)
+double
+tbox_penalty(void *bbox1, void *bbox2)
 {
+  const TBOX *original = (TBOX *) bbox1;
+  const TBOX *new = (TBOX *) bbox2;
   TBOX unionbox;
   tbox_union_rt(original, new, &unionbox);
   return tbox_size(&unionbox) - tbox_size(original);
@@ -420,11 +424,11 @@ PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
 PGDLLEXPORT Datum
 Tbox_gist_penalty(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
   float *result = (float *) PG_GETARG_POINTER(2);
-  const TBOX *origbox = DatumGetTboxP(origentry->key);
-  const TBOX *newbox = DatumGetTboxP(newentry->key);
+  void *origbox = DatumGetPointer(origentry->key);
+  void *newbox = DatumGetPointer(newentry->key);
   *result = (float) tbox_penalty(origbox, newbox);
   PG_RETURN_POINTER(result);
 }
@@ -437,12 +441,14 @@ Tbox_gist_penalty(PG_FUNCTION_ARGS)
  * Trivial split: half of entries will be placed on one page
  * and another half - to another
  */
-static void
-tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+void
+bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
+  mobdbType bboxtype, void (*bbox_adjust)(void *, void *))
 {
   OffsetNumber i, maxoff;
-  TBOX *left_tbox = NULL, *right_tbox = NULL;
+  void *left_tbox = NULL, *right_tbox = NULL;
   size_t nbytes;
+  size_t bbox_size = bbox_get_size(bboxtype);
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
 
@@ -453,17 +459,17 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    TBOX *cur = DatumGetTboxP(entryvec->vector[i].key);
+    void *cur = DatumGetPointer(entryvec->vector[i].key);
     if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
     {
       v->spl_left[v->spl_nleft] = i;
       if (left_tbox == NULL)
       {
-        left_tbox = palloc0(sizeof(TBOX));
-        *left_tbox = *cur;
+        left_tbox = palloc0(bbox_size);
+        memcpy(left_tbox, cur, bbox_size);
       }
       else
-        tbox_adjust(left_tbox, cur);
+        bbox_adjust(left_tbox, cur);
 
       v->spl_nleft++;
     }
@@ -472,11 +478,11 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
       v->spl_right[v->spl_nright] = i;
       if (right_tbox == NULL)
       {
-        right_tbox = palloc0(sizeof(TBOX));
-        *right_tbox = *cur;
+        right_tbox = palloc0(bbox_size);
+        memcpy(right_tbox, cur, bbox_size);
       }
       else
-        tbox_adjust(right_tbox, cur);
+        bbox_adjust(right_tbox, cur);
 
       v->spl_nright++;
     }
@@ -524,31 +530,12 @@ non_negative(float val)
 }
 
 /**
- * Structure keeping context for the method tbox_gist_consider_split.
- *
- * Contains information about currently selected split and some general
- * information.
- */
-typedef struct
-{
-  int entriesCount;  /**< total number of entries being split */
-  TBOX boundingBox;  /**< minimum bounding box across all entries */
-  /* Information about currently selected split follows */
-  bool first;        /**< true if no split was selected yet */
-  double leftUpper;  /**< upper bound of left interval */
-  double rightLower; /**< lower bound of right interval */
-  float4 ratio;
-  float4 overlap;
-  int dim;           /**< axis of this split */
-  double range;      /**< width of general MBR projection to the selected axis */
-} ConsiderSplitContext;
-
-/**
  * Consider replacement of currently selected split with the better one.
  */
-static inline void
-tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
-  double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)
+inline void
+bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
+  mobdbType bboxtype, double rightLower, int minLeftCount, double leftUpper,
+  int maxLeftCount)
 {
   int leftCount, rightCount;
   float4 ratio, overlap;
@@ -579,8 +566,8 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 
   if (ratio > LIMIT_RATIO)
   {
-    double    range;
-    bool    selectthis = false;
+    double range;
+    bool selectthis = false;
 
     /*
      * The ratio is acceptable, so compare current split with previously
@@ -589,10 +576,26 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
      * overlaps. We switch dimension if find less overlap (non-negative)
      * or less range with same overlap.
      */
-    if (dimNum == 0)
-      range = context->boundingBox.xmax - context->boundingBox.xmin;
-    else
-      range = (double) (context->boundingBox.tmax - context->boundingBox.tmin);
+    if (bboxtype == T_TBOX)
+    {
+      TBOX *bbox = (TBOX *) & context->boundingBox;
+      if (dimNum == 0)
+        range = bbox->xmax - bbox->xmin;
+      else
+        range = (double) (bbox->tmax - bbox->tmin);
+    }
+    else /* bboxtype == T_STBOX */
+    {
+      STBOX *bbox = (STBOX *) & context->boundingBox;
+      if (dimNum == 0)
+        range = bbox->xmax - bbox->xmin;
+      else if (dimNum == 1)
+        range = bbox->ymax - bbox->ymin;
+      else if (dimNum == 2)
+        range = bbox->zmax - bbox->zmin;
+      else
+        range = (double) (bbox->tmax - bbox->tmin);
+    }
 
     overlap = (float4) ((leftUpper - rightLower) / range);
 
@@ -657,7 +660,7 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
  * minimize the overlap of the groups. Then the same is repeated for the
  * Y-axis, and the overall best split is chosen. The quality of a split is
  * determined by overlap along that axis and some other criteria (see
- * tbox_gist_consider_split).
+ * bbox_gist_consider_split).
  *
  * After that, all the entries are divided into three groups:
  *
@@ -673,21 +676,21 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 
-PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
-/**
- * GiST picksplit method for temporal numbers
- */
-PGDLLEXPORT Datum
-Tbox_gist_picksplit(PG_FUNCTION_ARGS)
+Datum
+bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype, 
+  void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
   OffsetNumber i, maxoff;
   ConsiderSplitContext context;
-  TBOX *box, *leftBox, *rightBox;
+  void *box, *leftBox, *rightBox;
   int dim, nentries, commonEntriesCount;
   SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
+  int maxdims = bbox_max_dims(bboxtype);
+  size_t bbox_size = bbox_get_size(bboxtype);
+  bool hasz = false;
 
   memset(&context, 0, sizeof(ConsiderSplitContext));
   maxoff = (OffsetNumber) (entryvec->n - 1);
@@ -702,37 +705,72 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    box = DatumGetTboxP(entryvec->vector[i].key);
+    box = DatumGetPointer(entryvec->vector[i].key);
     if (i == FirstOffsetNumber)
-      context.boundingBox = *box;
+      memcpy(&context.boundingBox, box, bbox_size);
     else
-      tbox_adjust(&context.boundingBox, box);
+      bbox_adjust(&context.boundingBox, box);
+  }
+
+  if (bboxtype == T_STBOX)
+  {
+    /* Determine whether there is a Z dimension */
+    box = DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
+    hasz = MOBDB_FLAGS_GET_Z(((STBOX *) box)->flags);
   }
 
   /*
    * Iterate over axes for optimal split searching.
    */
   context.first = true;    /* nothing selected yet */
-  for (dim = 0; dim < 2; dim++)
+  for (dim = 0; dim < maxdims; dim++)
   {
-    double    leftUpper,
-          rightLower;
-    int      i1,
-          i2;
+    double leftUpper, rightLower;
+    int i1, i2;
+
+    /* Skip the process for Z dimension if it is missing */
+    if (dim == 2 && ! hasz)
+      continue;
 
     /* Project each entry as an interval on the selected axis. */
     for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
     {
-      box = DatumGetTboxP(entryvec->vector[i].key);
-      if (dim == 0)
+      box = DatumGetPointer(entryvec->vector[i].key);
+      if (bboxtype == T_TBOX)
       {
-        intervalsLower[i - FirstOffsetNumber].lower = box->xmin;
-        intervalsLower[i - FirstOffsetNumber].upper = box->xmax;
+        if (dim == 0)
+        {
+          intervalsLower[i - FirstOffsetNumber].lower = ((TBOX *) box)->xmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((TBOX *) box)->xmax;
+        }
+        else
+        {
+          intervalsLower[i - FirstOffsetNumber].lower = ((TBOX *) box)->tmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((TBOX *) box)->tmax;
+        }
       }
-      else
+      else /* bboxtype == T_STBOX */
       {
-        intervalsLower[i - FirstOffsetNumber].lower = box->tmin;
-        intervalsLower[i - FirstOffsetNumber].upper = box->tmax;
+        if (dim == 0)
+        {
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->xmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->xmax;
+        }
+        else if (dim == 1)
+        {
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->ymin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->ymax;
+        }
+        else if (dim == 2)
+        {
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->zmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->zmax;
+        }
+        else
+        {
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->tmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->tmax;
+        }
       }
     }
 
@@ -789,8 +827,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
       /*
        * Find next lower bound of right group.
        */
-      while (i1 < nentries &&
-           FLOAT8_EQ(rightLower, intervalsLower[i1].lower))
+      while (i1 < nentries && FLOAT8_EQ(rightLower, intervalsLower[i1].lower))
       {
         if (FLOAT8_LT(leftUpper, intervalsLower[i1].upper))
           leftUpper = intervalsLower[i1].upper;
@@ -811,7 +848,8 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
       /*
        * Consider found split.
        */
-      tbox_gist_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
+      bbox_gist_consider_split(&context, dim, bboxtype, rightLower, i1,
+        leftUpper, i2);
     }
 
     /*
@@ -847,8 +885,8 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
       /*
        * Consider found split.
        */
-      tbox_gist_consider_split(&context, dim,
-                 rightLower, i1 + 1, leftUpper, i2 + 1);
+      bbox_gist_consider_split(&context, dim, bboxtype, rightLower, i1 + 1,
+        leftUpper, i2 + 1);
     }
   }
 
@@ -857,7 +895,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
    */
   if (context.first)
   {
-    tbox_gist_fallback_split(entryvec, v);
+    bbox_gist_fallback_split(entryvec, v, bboxtype, &tbox_adjust);
     PG_RETURN_POINTER(v);
   }
 
@@ -876,8 +914,8 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
   v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
-  leftBox = palloc0(sizeof(TBOX));
-  rightBox = palloc0(sizeof(TBOX));
+  leftBox = palloc0(bbox_size);
+  rightBox = palloc0(bbox_size);
 
   /*
    * Allocate an array for "common entries" - entries which can be placed to
@@ -890,18 +928,18 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      tbox_adjust(leftBox, box);      \
+      bbox_adjust(leftBox, box);      \
     else                  \
-      *leftBox = *(box);          \
+      memcpy(leftBox, box, bbox_size);          \
     v->spl_left[v->spl_nleft++] = off;    \
   } while(0)
 
 #define PLACE_RIGHT(box, off)          \
   do {                    \
     if (v->spl_nright > 0)          \
-      tbox_adjust(rightBox, box);      \
+      bbox_adjust(rightBox, box);      \
     else                  \
-      *rightBox = *(box);          \
+      memcpy(rightBox, box, bbox_size);          \
     v->spl_right[v->spl_nright++] = off;  \
   } while(0)
 
@@ -916,16 +954,42 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
     /*
      * Get upper and lower bounds along selected axis.
      */
-    box = DatumGetTboxP(entryvec->vector[i].key);
-    if (context.dim == 0)
+    box = DatumGetPointer(entryvec->vector[i].key);
+    if (bboxtype == T_TBOX)
     {
-      lower = box->xmin;
-      upper = box->xmax;
+      if (context.dim == 0)
+      {
+        lower = ((TBOX *) box)->xmin;
+        upper = ((TBOX *) box)->xmax;
+      }
+      else
+      {
+        lower = ((TBOX *) box)->tmin;
+        upper = ((TBOX *) box)->tmax;
+      }
     }
-    else
+    else /* bboxtype == T_STBOX */
     {
-      lower = box->tmin;
-      upper = box->tmax;
+      if (context.dim == 0)
+      {
+        lower = ((STBOX *) box)->xmin;
+        upper = ((STBOX *) box)->xmax;
+      }
+      else if (context.dim == 1)
+      {
+        lower = ((STBOX *) box)->ymin;
+        upper = ((STBOX *) box)->ymax;
+      }
+      else if (context.dim == 2 && hasz)
+      {
+        lower = ((STBOX *) box)->zmin;
+        upper = ((STBOX *) box)->zmax;
+      }
+      else
+      {
+        lower = ((STBOX *) box)->tmin;
+        upper = ((STBOX *) box)->tmax;
+      }
     }
 
     if (FLOAT8_LE(upper, context.leftUpper))
@@ -965,7 +1029,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
      * Calculate minimum number of entries that must be placed in both
      * groups, to reach LIMIT_RATIO.
      */
-    int      m = (int) ceil(LIMIT_RATIO * (double) nentries);
+    int m = (int) ceil(LIMIT_RATIO * (double) nentries);
 
     /*
      * Calculate delta between penalties of join "common entries" to
@@ -973,23 +1037,24 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
-      box = DatumGetTboxP(entryvec->vector[commonEntries[i].index].key);
-      commonEntries[i].delta = Abs(tbox_penalty(leftBox, box) -
-        tbox_penalty(rightBox, box));
+      box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+      commonEntries[i].delta = Abs(bbox_penalty(leftBox, box) -
+        bbox_penalty(rightBox, box));
     }
 
     /*
      * Sort "common entries" by calculated deltas in order to distribute
      * the most ambiguous entries first.
      */
-    qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry), common_entry_cmp);
+    qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry),
+      common_entry_cmp);
 
     /*
      * Distribute "common entries" between groups.
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
-      box = DatumGetTboxP(entryvec->vector[commonEntries[i].index].key);
+      box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
@@ -1015,6 +1080,15 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(v);
 }
 
+PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
+/**
+ * GiST picksplit method for temporal numbers
+ */
+PGDLLEXPORT Datum
+Tbox_gist_picksplit(PG_FUNCTION_ARGS)
+{
+  return bbox_gist_picksplit_ext(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
+}
 /*****************************************************************************
  * GiST same method
  *****************************************************************************/

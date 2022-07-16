@@ -58,6 +58,58 @@
  *****************************************************************************/
 
 /**
+ * Return true if the type is a bounding box type
+ */
+bool
+bbox_type(mobdbType bboxtype)
+{
+  if (bboxtype == T_PERIOD || bboxtype == T_TBOX || bboxtype == T_STBOX)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type corresponds to a bounding box type
+ */
+void
+ensure_bbox_type(mobdbType bboxtype)
+{
+  if (! bbox_type(bboxtype))
+    elog(ERROR, "unknown bounding box type: %d", bboxtype);
+  return;
+}
+
+/**
+ * Return the size of a bounding box type
+ */
+size_t
+bbox_get_size(mobdbType bboxtype)
+{
+  ensure_bbox_type(bboxtype);
+  if (bboxtype == T_PERIOD)
+    return sizeof(Period);
+  if (bboxtype == T_TBOX)
+    return sizeof(TBOX);
+  else /* bboxtype == T_STBOX */
+    return sizeof(STBOX);
+}
+
+/**
+ * Return the maximum number of dimensions of a bounding box type
+ */
+int
+bbox_max_dims(mobdbType bboxtype)
+{
+  ensure_bbox_type(bboxtype);
+  if (bboxtype == T_PERIOD)
+    return 1;
+  if (bboxtype == T_TBOX)
+    return 2;
+  else /* bboxtype == T_STBOX */
+    return 4;
+}
+
+/**
  * Return true if two bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
@@ -148,7 +200,7 @@ temptype_without_bbox(mobdbType temptype)
 }
 
 /**
- * Return the size of a bounding box
+ * Return the size of a bounding box of a temporal type
  */
 size_t
 temporal_bbox_size(mobdbType temptype)
