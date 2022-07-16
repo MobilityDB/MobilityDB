@@ -328,14 +328,14 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  */
 static int
-tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TSequence *seq,
-  const TSequence *measure)
+tpointseq_to_geo_measure_segmentize1(const TSequence *seq,
+  const TSequence *measure, LWGEOM **result)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
   const TInstant *m = tsequence_inst_n(measure, 0);
@@ -373,12 +373,12 @@ tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TSequence *seq,
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
  *
+ * @param[in] seq Temporal point
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
- * @param[in] seq Temporal point
  */
 static int
-tpointseq_to_geo_segmentize1(LWGEOM **result, const TSequence *seq)
+tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
   LWPOINT *points[2];
@@ -417,9 +417,9 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
   int count = (seq->count == 1) ? 1 : seq->count - 1;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
   if (measure)
-    tpointseq_to_geo_measure_segmentize1(geoms, seq, measure);
+    tpointseq_to_geo_measure_segmentize1(seq, measure, geoms);
   else
-    tpointseq_to_geo_segmentize1(geoms, seq);
+    tpointseq_to_geo_segmentize1(seq, geoms);
   Datum result;
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -469,10 +469,10 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
     if (measure)
     {
       m = tsequenceset_seq_n(measure, i);
-      k += tpointseq_to_geo_measure_segmentize1(&geoms[k], seq, m);
+      k += tpointseq_to_geo_measure_segmentize1(seq, m, &geoms[k]);
     }
     else
-      k += tpointseq_to_geo_segmentize1(&geoms[k], seq);
+      k += tpointseq_to_geo_segmentize1(seq, &geoms[k]);
     /* Output type not initialized */
     if (! colltype)
       colltype = (uint8_t) lwtype_get_collectiontype(geoms[k - 1]->type);
@@ -1436,8 +1436,8 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
  * Affine transform a temporal point (iterator function)
  */
 static void
-tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
-  const AFFINE *a, int srid, bool hasz)
+tpointinst_affine1(const TInstant *inst, const AFFINE *a, int srid,
+  bool hasz, TInstant **result)
 {
   Datum value = tinstant_value(inst);
   double x, y;
@@ -1478,7 +1478,7 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
   int srid = tpointinst_srid(inst);
   bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
   TInstant *result;
-  tpointinst_affine_iterator(&result, inst, a, srid, hasz);
+  tpointinst_affine1(inst, a, srid, hasz, &result);
   return result;
 }
 
@@ -1494,7 +1494,7 @@ tpointinstset_affine(const TInstantSet *is, const AFFINE *a)
   for (int i = 0; i < is->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(is, i);
-    tpointinst_affine_iterator(&instants[i], inst, a, srid, hasz);
+    tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
   }
   TInstantSet *result = tinstantset_make_free(instants, is->count, MERGE_NO);
   return result;
@@ -1512,7 +1512,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    tpointinst_affine_iterator(&instants[i], inst, a, srid, hasz);
+    tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
   }
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
@@ -1557,6 +1557,19 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
  * Grid functions
  *****************************************************************************/
 
+static void
+point_grid(Datum value, bool hasz, const gridspec *grid, POINT4D *p)
+{
+  /* Read and round point */
+  datum_point4d(value, p);
+  if (grid->xsize > 0)
+    p->x = rint((p->x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
+  if (grid->ysize > 0)
+    p->y = rint((p->y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
+  if (hasz && grid->zsize > 0)
+    p->z = rint((p->z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
+}
+
 /**
  * Stick a temporal point to the given grid specification.
  */
@@ -1569,28 +1582,16 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 
   int srid = tpointinst_srid(inst);
   Datum value = tinstant_value(inst);
-
-  /* Read and round point */
   POINT4D p;
-  datum_point4d(value, &p);
-  double x = p.x;
-  double y = p.y;
-  double z = hasz ? p.z : 0;
-  if (grid->xsize > 0)
-    x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
-  if (grid->ysize > 0)
-    y = rint((p.y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
-  if (hasz && grid->zsize > 0)
-    z = rint((p.z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
-
+  point_grid(value, hasz, grid, &p);
   /* Write rounded values into the next instant */
   LWPOINT *lwpoint = hasz ?
-    lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
+    lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
   lwpoint_free(lwpoint);
 
-  /* Construct the result */
-  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+    /* Construct the result */
+    TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
@@ -1611,26 +1612,15 @@ tpointinstset_grid(const TInstantSet *is, const gridspec *grid)
     POINT4D p, prev_p;
     const TInstant *inst = tinstantset_inst_n(is, i);
     Datum value = tinstant_value(inst);
-
-    /* Read and round point */
-    datum_point4d(value, &p);
-    double x = p.x;
-    double y = p.y;
-    double z = hasz ? p.z : 0;
-    if (grid->xsize > 0)
-      x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
-    if (grid->ysize > 0)
-      y = rint((p.y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
-    if (hasz && grid->zsize > 0)
-      z = rint((p.z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
-
+    point_grid(value, hasz, grid, &p);
     /* Skip duplicates */
-    if (i > 1 && prev_p.x == x && prev_p.y == y && (hasz ? prev_p.z == z : 1))
+    if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
+      (hasz ? prev_p.z == p.z : 1))
       continue;
 
     /* Write rounded values into the next instant */
     LWPOINT *lwpoint = hasz ?
-      lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
+      lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
     instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);
@@ -1656,26 +1646,15 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     POINT4D p, prev_p;
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
-
-    /* Read and round point */
-    datum_point4d(value, &p);
-    double x = p.x;
-    double y = p.y;
-    double z = hasz ? p.z : 0;
-    if (grid->xsize > 0)
-      x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
-    if (grid->ysize > 0)
-      y = rint((p.y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
-    if (hasz && grid->zsize > 0)
-      z = rint((p.z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
-
+    point_grid(value, hasz, grid, &p);
     /* Skip duplicates */
-    if (i > 1 && prev_p.x == x && prev_p.y == y && (hasz ? prev_p.z == z : 1))
+    if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
+      (hasz ? prev_p.z == p.z : 1))
       continue;
 
     /* Write rounded values into the next instant */
     LWPOINT *lwpoint = hasz ?
-      lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
+      lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
     instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);

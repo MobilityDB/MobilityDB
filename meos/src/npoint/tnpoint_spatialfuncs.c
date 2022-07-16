@@ -811,9 +811,8 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
     last_value = tinstant_value(allinstants[n - 1]);
     allinstants[n++] = tinstant_make(last_value, T_TFLOAT, inst1->t);
     /* Resulting sequence has stepwise interpolation */
-    result[l++] = tsequence_make((const TInstant **) allinstants, n,
-      lower_inc, true, false, true);
-    pfree_array((void **) allinstants, n);
+    result[l++] = tsequence_make_free(allinstants, n, lower_inc, true,
+      STEP, true);
   }
   pfree(instants);
   pfree(countinsts);
