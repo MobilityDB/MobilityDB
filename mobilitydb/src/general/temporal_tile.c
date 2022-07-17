@@ -1748,17 +1748,68 @@ tnumber_value_split(Temporal *temp, Datum start_bucket, Datum size,
   return fragments;
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_value_split);
+/*****************************************************************************
+ * Value and time split functions for temporal numbers
+ *****************************************************************************/
+
 /**
- * Split a temporal value into fragments with respect to period buckets.
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] value_buckets Initial values of the tiles
+ * @param[in] time_buckets Initial timestamps of the tiles
+ * @param[in] fragments Fragments of the input temporal value
+ * @param[in] count Number of elements in the input arrays
+ *
+ * @pre count is greater than 0
  */
-PGDLLEXPORT Datum
-Tnumber_value_split(PG_FUNCTION_ARGS)
+ValueTimeSplitState *
+value_time_split_state_make(Datum size, int64 tunits, Datum *value_buckets,
+  TimestampTz *time_buckets, Temporal **fragments, int count)
+{
+  assert(count > 0);
+  ValueTimeSplitState *state = palloc0(sizeof(ValueTimeSplitState));
+  /* Fill in state */
+  state->done = false;
+  state->size = size;
+  state->tunits = tunits;
+  state->value_buckets = value_buckets;
+  state->time_buckets = time_buckets;
+  state->fragments = fragments;
+  state->i = 0;
+  state->count = count;
+  return state;
+}
+
+/**
+ * Increment the current state to the next tile of the multidimensional grid
+ *
+ * @param[in] state State to increment
+ */
+void
+value_time_split_state_next(ValueTimeSplitState *state)
+{
+  /* Move to the next split */
+  state->i++;
+  if (state->i == state->count)
+    state->done = true;
+  return;
+}
+
+/*****************************************************************************
+ * External value and time split functions for temporal numbers
+ *****************************************************************************/
+
+/**
+ * @brief Split a temporal value with respect to a base value and possibly a
+ * temporal grid.
+ */
+Datum
+Tnumber_value_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 {
   FuncCallContext *funcctx;
-  ValueSplitState *state;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
+  ValueTimeSplitState *state;
+  bool isnull[3] = {0,0,0}; /* needed to say no value is null */
+  Datum tuple_arr[3]; /* used to construct the composite return value */
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
 
@@ -1768,7 +1819,19 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Datum size = PG_GETARG_DATUM(1);
-    Datum origin = PG_GETARG_DATUM(2);
+    Interval *duration = NULL;
+    TimestampTz torigin = 0;
+    int64 tunits = 0;
+    int i = 2;
+    if (timesplit)
+    {
+      duration = PG_GETARG_INTERVAL_P(i++);
+      ensure_valid_duration(duration);
+      tunits = get_interval_units(duration);
+    }
+    Datum origin = PG_GETARG_DATUM(i++);
+    if (timesplit)  
+      torigin = PG_GETARG_TIMESTAMPTZ(i++);
 
     /* Ensure parameter validity */
     mobdbType basetype = temptype_basetype(temp->temptype);
@@ -1777,7 +1840,8 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
     Span *span = tnumber_to_span((const Temporal *) temp);
@@ -1792,15 +1856,74 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
       floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
         DatumGetFloat8(size));
 
-    /* Split the temporal value */
-    Datum *buckets;
-    int newcount;
-    Temporal **fragments = tnumber_value_split(temp, start_bucket, size,
-      count, &buckets, &newcount);
-    assert(newcount > 0);
+    /* Compute the time bounds, if any */
+    int time_count = 1;
+    TimestampTz start_time_bucket = 0, end_time_bucket = 0;
+    if (timesplit)
+    {
+      Period p;
+      temporal_set_period(temp, &p);
+      TimestampTz start_time = p.lower;
+      TimestampTz end_time = p.upper;
+      start_time_bucket = timestamptz_bucket(start_time, tunits, torigin);
+      /* We need to add tunits to obtain the end timestamp of the last bucket */
+      end_time_bucket = timestamptz_bucket(end_time, tunits, torigin) + tunits;
+      time_count =
+        (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
+      /* Adjust the number of tiles */
+      count *= time_count;
+    }
 
+    /* Split the temporal value */
+    Datum *value_buckets;
+    TimestampTz *time_buckets = NULL;
+    Temporal **fragments;
+    int newcount;
+    if (! timesplit)
+    {
+      fragments = tnumber_value_split(temp, start_bucket, size, count,
+        &value_buckets, &newcount);
+    }
+    else
+    {
+      value_buckets = palloc(sizeof(Datum) * count);
+      time_buckets = palloc(sizeof(TimestampTz) * count);
+      fragments = palloc(sizeof(Temporal *) * count);
+      int k = 0;
+      Datum lower_value = start_bucket;
+      while (datum_lt(lower_value, end_bucket, basetype))
+      {
+        Datum upper_value = datum_add(lower_value, size, basetype, basetype);
+        Span s;
+        span_set(lower_value, upper_value, true, false, basetype, &s);
+        Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
+        if (atspan != NULL)
+        {
+          int num_time_splits;
+          TimestampTz *times;
+          Temporal **time_splits = temporal_time_split(atspan,
+            start_time_bucket, end_time_bucket, tunits, torigin, time_count, 
+            &times, &num_time_splits);
+          for (int i = 0; i < num_time_splits; i++)
+          {
+            value_buckets[i + k] = lower_value;
+            time_buckets[i + k] = times[i];
+            fragments[i + k] = time_splits[i];
+          }
+          k += num_time_splits;
+          pfree(time_splits);
+          pfree(times);
+          pfree(atspan);
+        }
+        lower_value = upper_value;
+      }
+      newcount = k;
+    }
+
+    assert(newcount > 0);
     /* Create function state */
-    funcctx->user_fctx = value_split_state_make(size, buckets, fragments, newcount);
+    funcctx->user_fctx = value_time_split_state_make(size, tunits,
+      value_buckets, time_buckets, fragments, newcount);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -1825,195 +1948,41 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
     SRF_RETURN_DONE(funcctx);
   }
 
-  /* Store timestamp and split */
-  tuple_arr[0] = state->buckets[state->i];
-  tuple_arr[1] = PointerGetDatum(state->fragments[state->i]);
-  /* Advance state */
-  value_split_state_next(state);
-  /* Form tuple and return */
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
-  SRF_RETURN_NEXT(funcctx, result);
-}
-
-/*****************************************************************************
- * Value and time split functions for temporal numbers
- *****************************************************************************/
-
-/**
- * Create the initial state that persists across multiple calls of the function
- *
- * @param[in] value_buckets Initial values of the tiles
- * @param[in] time_buckets Initial timestamps of the tiles
- * @param[in] fragments Fragments of the input temporal value
- * @param[in] count Number of elements in the input arrays
- *
- * @pre count is greater than 0
- */
-ValueTimeSplitState *
-value_time_split_state_make(Datum *value_buckets, TimestampTz *time_buckets,
-  Temporal **fragments, int count)
-{
-  assert(count > 0);
-  ValueTimeSplitState *state = palloc0(sizeof(ValueTimeSplitState));
-  /* Fill in state */
-  state->done = false;
-  state->value_buckets = value_buckets;
-  state->time_buckets = time_buckets;
-  state->fragments = fragments;
-  state->i = 0;
-  state->count = count;
-  return state;
-}
-
-/**
- * Increment the current state to the next tile of the multidimensional grid
- *
- * @param[in] state State to increment
- */
-void
-value_time_split_state_next(ValueTimeSplitState *state)
-{
-  /* Move to the next split */
-  state->i++;
-  if (state->i == state->count)
-    state->done = true;
-  return;
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
-/**
- * Split a temporal value into fragments with respect to period tiles.
- */
-PGDLLEXPORT Datum
-Tnumber_value_time_split(PG_FUNCTION_ARGS)
-{
-  FuncCallContext *funcctx;
-  ValueTimeSplitState *state;
-  bool isnull[3] = {0,0,0}; /* needed to say no value is null */
-  Datum tuple_arr[3]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
-
-  /* If the function is being called for the first time */
-  if (SRF_IS_FIRSTCALL())
-  {
-    /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    Datum size = PG_GETARG_DATUM(1);
-    Interval *duration = PG_GETARG_INTERVAL_P(2);
-    Datum origin = PG_GETARG_DATUM(3);
-    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
-
-    /* Ensure parameter validity */
-    mobdbType basetype = temptype_basetype(temp->temptype);
-    ensure_positive_datum(size, basetype);
-    ensure_valid_duration(duration);
-    int64 tunits = get_interval_units(duration);
-
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-
-    /* Compute the value bounds */
-    Span *span = tnumber_to_span((const Temporal *) temp);
-    Datum start_value = span->lower;
-    /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(span->upper, size, basetype, basetype);
-    Datum start_bucket = number_bucket(start_value, size, origin, basetype);
-    Datum end_bucket = number_bucket(end_value, size, origin, basetype);
-    int value_count = (basetype == T_INT4) ?
-      (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) / DatumGetInt32(size) :
-      floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) / DatumGetFloat8(size));
-
-    /* Compute the time bounds */
-    Period p;
-    temporal_set_period(temp, &p);
-    TimestampTz start_time = p.lower;
-    TimestampTz end_time = p.upper;
-    TimestampTz start_time_bucket = timestamptz_bucket(start_time,
-      tunits, torigin);
-    /* We need to add tunits to obtain the end timestamp of the last bucket */
-    TimestampTz end_time_bucket = timestamptz_bucket(end_time, tunits,
-      torigin) + tunits;
-    int time_count = (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
-
-    /* Compute the number of tiles */
-    int count = value_count * time_count;
-
-    /* Split the temporal value */
-    Datum *value_buckets = palloc(sizeof(Datum) * count);
-    TimestampTz *time_buckets = palloc(sizeof(TimestampTz) * count);
-    Temporal **fragments = palloc(sizeof(Temporal *) * count);
-    int k = 0;
-    Datum lower_value = start_bucket;
-    while (datum_lt(lower_value, end_bucket, basetype))
-    {
-      Datum upper_value = datum_add(lower_value, size, basetype, basetype);
-      span = span_make(lower_value, upper_value, true, false, basetype);
-      Temporal *atspan = tnumber_restrict_span(temp, span, REST_AT);
-      if (atspan != NULL)
-      {
-        int num_time_splits;
-        TimestampTz *times;
-        Temporal **time_splits = temporal_time_split(atspan, start_time_bucket,
-          end_time_bucket, tunits, torigin, time_count, &times,
-          &num_time_splits);
-        for (int i = 0; i < num_time_splits; i++)
-        {
-          value_buckets[i + k] = lower_value;
-          time_buckets[i + k] = times[i];
-          fragments[i + k] = time_splits[i];
-        }
-        k += num_time_splits;
-        pfree(time_splits);
-        pfree(times);
-      }
-      pfree(span);
-      lower_value = upper_value;
-    }
-
-    assert(k > 0);
-    /* Create function state */
-    funcctx->user_fctx = value_time_split_state_make(value_buckets,
-      time_buckets, fragments, k);
-    /* Build a tuple description for the function output */
-    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
-    BlessTupleDesc(funcctx->tuple_desc);
-    MemoryContextSwitchTo(oldcontext);
-    PG_FREE_IF_COPY(temp, 0);
-  }
-
-  /* stuff done on every call of the function */
-  funcctx = SRF_PERCALL_SETUP();
-  /* get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've output all the fragments */
-  if (state->done)
-  {
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-    for (int i = 0; i < state->count; i++)
-      pfree(state->fragments[i]);
-    pfree(state);
-    MemoryContextSwitchTo(oldcontext);
-    SRF_RETURN_DONE(funcctx);
-  }
-
   /* Store value, timestamp, and split */
   tuple_arr[0] = state->value_buckets[state->i];
-  tuple_arr[1] = TimestampTzGetDatum(state->time_buckets[state->i]);
-  tuple_arr[2] = PointerGetDatum(state->fragments[state->i]);
+  int j = 1;
+  if (timesplit)
+    tuple_arr[j++] = TimestampTzGetDatum(state->time_buckets[state->i]);
+  tuple_arr[j++] = PointerGetDatum(state->fragments[state->i]);
   /* Advance state */
   value_time_split_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
+}
+
+
+PG_FUNCTION_INFO_V1(Tnumber_value_split);
+/**
+ * Split a temporal value into fragments with respect to period tiles.
+ */
+PGDLLEXPORT Datum
+Tnumber_value_split(PG_FUNCTION_ARGS)
+{
+  return Tnumber_value_time_split_ext(fcinfo, false);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
+/**
+ * Split a temporal value into fragments with respect to span and period tiles.
+ */
+PGDLLEXPORT Datum
+Tnumber_value_time_split(PG_FUNCTION_ARGS)
+{
+  return Tnumber_value_time_split_ext(fcinfo, true);
 }
 
 /*****************************************************************************/

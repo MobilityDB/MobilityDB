@@ -438,62 +438,6 @@ Tbox_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Trivial split: half of entries will be placed on one page
- * and another half - to another
- */
-void
-bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
-  mobdbType bboxtype, void (*bbox_adjust)(void *, void *))
-{
-  OffsetNumber i, maxoff;
-  void *left_tbox = NULL, *right_tbox = NULL;
-  size_t nbytes;
-  size_t bbox_size = bbox_get_size(bboxtype);
-
-  maxoff = (OffsetNumber) (entryvec->n - 1);
-
-  nbytes = (maxoff + 2) * sizeof(OffsetNumber);
-  v->spl_left = palloc(nbytes);
-  v->spl_right = palloc(nbytes);
-  v->spl_nleft = v->spl_nright = 0;
-
-  for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
-  {
-    void *cur = DatumGetPointer(entryvec->vector[i].key);
-    if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
-    {
-      v->spl_left[v->spl_nleft] = i;
-      if (left_tbox == NULL)
-      {
-        left_tbox = palloc0(bbox_size);
-        memcpy(left_tbox, cur, bbox_size);
-      }
-      else
-        bbox_adjust(left_tbox, cur);
-
-      v->spl_nleft++;
-    }
-    else
-    {
-      v->spl_right[v->spl_nright] = i;
-      if (right_tbox == NULL)
-      {
-        right_tbox = palloc0(bbox_size);
-        memcpy(right_tbox, cur, bbox_size);
-      }
-      else
-        bbox_adjust(right_tbox, cur);
-
-      v->spl_nright++;
-    }
-  }
-
-  v->spl_ldatum = PointerGetDatum(left_tbox);
-  v->spl_rdatum = PointerGetDatum(right_tbox);
-  return;
-}
-
-/**
  * Interval comparison function by lower bound of the interval;
  */
 int
@@ -578,7 +522,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
      */
     if (bboxtype == T_TBOX)
     {
-      TBOX *bbox = (TBOX *) & context->boundingBox;
+      TBOX *bbox = (TBOX *) &context->boundingBox;
       if (dimNum == 0)
         range = bbox->xmax - bbox->xmin;
       else
@@ -586,7 +530,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
     }
     else /* bboxtype == T_STBOX */
     {
-      STBOX *bbox = (STBOX *) & context->boundingBox;
+      STBOX *bbox = (STBOX *) &context->boundingBox;
       if (dimNum == 0)
         range = bbox->xmax - bbox->xmin;
       else if (dimNum == 1)
@@ -651,6 +595,63 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
   }
 }
 
+/* Helper macros to place an entry in the left or right group */
+#define PLACE_LEFT(box, off) \
+  do {  \
+    if (v->spl_nleft > 0)  \
+      bbox_adjust(leftBox, box);  \
+    else  \
+      memcpy(leftBox, box, bbox_size);  \
+    v->spl_left[v->spl_nleft++] = off;  \
+  } while(0)
+
+#define PLACE_RIGHT(box, off)  \
+  do {  \
+    if (v->spl_nright > 0)  \
+      bbox_adjust(rightBox, box);  \
+    else  \
+      memcpy(rightBox, box, bbox_size);  \
+    v->spl_right[v->spl_nright++] = off;  \
+  } while(0)
+
+/**
+ * Trivial split: half of entries will be placed on one page and the other
+ * half on another page
+ */
+void
+bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
+  mobdbType bboxtype, void (*bbox_adjust)(void *, void *))
+{
+  OffsetNumber i;
+  OffsetNumber maxoff = (OffsetNumber) (entryvec->n - 1);
+  /* Split entries before this to left page, after to right: */
+  OffsetNumber split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 2 +
+    FirstOffsetNumber);
+
+  size_t nbytes = (maxoff + 2) * sizeof(OffsetNumber);
+  v->spl_left = palloc(nbytes);
+  v->spl_right = palloc(nbytes);
+  v->spl_nleft = v->spl_nright = 0;
+
+  /* Allocate bounding boxes of left and right groups */
+  size_t bbox_size = bbox_get_size(bboxtype);
+  void *leftBox = palloc0(bbox_size);
+  void *rightBox = palloc0(bbox_size);
+  
+  for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
+  {
+    void *box = DatumGetPointer(entryvec->vector[i].key);
+    if (i < split_idx)
+      PLACE_LEFT(box, i);
+    else
+      PLACE_RIGHT(box, i);
+  }
+
+  v->spl_ldatum = PointerGetDatum(leftBox);
+  v->spl_rdatum = PointerGetDatum(rightBox);
+  return;
+}
+
 /**
  * Double sorting split algorithm.
  *
@@ -675,7 +676,6 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
  * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
-
 Datum
 bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype, 
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
@@ -683,11 +683,12 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
   OffsetNumber i, maxoff;
-  ConsiderSplitContext context;
+  ConsiderSplitContext context; 
   void *box, *leftBox, *rightBox;
-  int dim, nentries, commonEntriesCount;
-  SplitInterval *intervalsLower, *intervalsUpper;
+  SplitInterval *intervalsLower, *intervalsUpper; 
   CommonEntry *commonEntries;
+  int nentries, commonEntriesCount, dim;
+
   int maxdims = bbox_max_dims(bboxtype);
   size_t bbox_size = bbox_get_size(bboxtype);
   bool hasz = false;
@@ -712,9 +713,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
       bbox_adjust(&context.boundingBox, box);
   }
 
+  /* Determine whether there is a Z dimension for spatiotemporal boxes */
   if (bboxtype == T_STBOX)
   {
-    /* Determine whether there is a Z dimension */
     box = DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
     hasz = MOBDB_FLAGS_GET_Z(((STBOX *) box)->flags);
   }
@@ -780,9 +781,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
      */
     memcpy(intervalsUpper, intervalsLower, sizeof(SplitInterval) * nentries);
     qsort(intervalsLower, (size_t) nentries, sizeof(SplitInterval),
-        interval_cmp_lower);
+      (qsort_comparator) interval_cmp_lower);
     qsort(intervalsUpper, (size_t) nentries, sizeof(SplitInterval),
-        interval_cmp_upper);
+      (qsort_comparator) interval_cmp_upper);
 
     /*----
      * The goal is to form a left and right interval, so that every entry
@@ -910,8 +911,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
   /* Allocate vectors for results */
   v->spl_left = palloc(nentries * sizeof(OffsetNumber));
   v->spl_right = palloc(nentries * sizeof(OffsetNumber));
-  v->spl_nleft = 0;
-  v->spl_nright = 0;
+  v->spl_nleft = v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
   leftBox = palloc0(bbox_size);
@@ -923,25 +923,6 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
    */
   commonEntriesCount = 0;
   commonEntries = palloc(nentries * sizeof(CommonEntry));
-
-  /* Helper macros to place an entry in the left or right group */
-#define PLACE_LEFT(box, off)          \
-  do {                    \
-    if (v->spl_nleft > 0)          \
-      bbox_adjust(leftBox, box);      \
-    else                  \
-      memcpy(leftBox, box, bbox_size);          \
-    v->spl_left[v->spl_nleft++] = off;    \
-  } while(0)
-
-#define PLACE_RIGHT(box, off)          \
-  do {                    \
-    if (v->spl_nright > 0)          \
-      bbox_adjust(rightBox, box);      \
-    else                  \
-      memcpy(rightBox, box, bbox_size);          \
-    v->spl_right[v->spl_nright++] = off;  \
-  } while(0)
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect

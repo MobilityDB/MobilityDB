@@ -201,18 +201,21 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   DEFAULT FOR TYPE tint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tint, int),
+  OPERATOR  1    << (tint, float),
   OPERATOR  1    << (tint, intspan),
   OPERATOR  1    << (tint, tbox),
   OPERATOR  1    << (tint, tint),
   OPERATOR  1    << (tint, tfloat),
    -- overlaps or left
   OPERATOR  2    &< (tint, int),
+  OPERATOR  2    &< (tint, float),
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
   OPERATOR  2    &< (tint, tfloat),
   -- overlaps
   OPERATOR  3    && (tint, int),
+  OPERATOR  3    && (tint, float),
   OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, timestamptz),
   OPERATOR  3    && (tint, timestampset),
@@ -223,18 +226,21 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  3    && (tint, tfloat),
   -- overlaps or right
   OPERATOR  4    &> (tint, int),
+  OPERATOR  4    &> (tint, float),
   OPERATOR  4    &> (tint, intspan),
   OPERATOR  4    &> (tint, tbox),
   OPERATOR  4    &> (tint, tint),
   OPERATOR  4    &> (tint, tfloat),
   -- strictly right
   OPERATOR  5    >> (tint, int),
+  OPERATOR  5    >> (tint, float),
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
   OPERATOR  5    >> (tint, tfloat),
     -- same
   OPERATOR  6    ~= (tint, int),
+  OPERATOR  6    ~= (tint, float),
   OPERATOR  6    ~= (tint, intspan),
   OPERATOR  6    ~= (tint, timestamptz),
   OPERATOR  6    ~= (tint, timestampset),
@@ -245,6 +251,7 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  6    ~= (tint, tfloat),
   -- contains
   OPERATOR  7    @> (tint, int),
+  OPERATOR  7    @> (tint, float),
   OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, timestamptz),
   OPERATOR  7    @> (tint, timestampset),
@@ -255,6 +262,7 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  7    @> (tint, tfloat),
   -- contained by
   OPERATOR  8    <@ (tint, int),
+  OPERATOR  8    <@ (tint, float),
   OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, timestamptz),
   OPERATOR  8    <@ (tint, timestampset),
@@ -265,6 +273,7 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  8    <@ (tint, tfloat),
   -- adjacent
   OPERATOR  17    -|- (tint, int),
+  OPERATOR  17    -|- (tint, float),
   OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, timestamptz),
   OPERATOR  17    -|- (tint, timestampset),
@@ -324,18 +333,21 @@ CREATE OPERATOR CLASS tint_quadtree_ops
 CREATE OPERATOR CLASS tfloat_quadtree_ops
   DEFAULT FOR TYPE tfloat USING spgist AS
   -- strictly left
+  OPERATOR  1    << (tfloat, int),
   OPERATOR  1    << (tfloat, float),
   OPERATOR  1    << (tfloat, floatspan),
   OPERATOR  1    << (tfloat, tbox),
   OPERATOR  1    << (tfloat, tint),
   OPERATOR  1    << (tfloat, tfloat),
    -- overlaps or left
+  OPERATOR  2    &< (tfloat, int),
   OPERATOR  2    &< (tfloat, float),
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tint),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
+  OPERATOR  3    && (tfloat, int),
   OPERATOR  3    && (tfloat, float),
   OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, timestamptz),
@@ -346,18 +358,21 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  3    && (tfloat, tint),
   OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
+  OPERATOR  4    &> (tfloat, int),
   OPERATOR  4    &> (tfloat, float),
   OPERATOR  4    &> (tfloat, floatspan),
   OPERATOR  4    &> (tfloat, tbox),
   OPERATOR  4    &> (tfloat, tint),
   OPERATOR  4    &> (tfloat, tfloat),
   -- strictly right
+  OPERATOR  5    >> (tfloat, int),
   OPERATOR  5    >> (tfloat, float),
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tint),
   OPERATOR  5    >> (tfloat, tfloat),
     -- same
+  OPERATOR  6    ~= (tfloat, int),
   OPERATOR  6    ~= (tfloat, float),
   OPERATOR  6    ~= (tfloat, floatspan),
   OPERATOR  6    ~= (tfloat, timestamptz),
@@ -368,6 +383,7 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  6    ~= (tfloat, tint),
   OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
+  OPERATOR  7    @> (tfloat, int),
   OPERATOR  7    @> (tfloat, float),
   OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, timestamptz),
@@ -378,6 +394,7 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  7    @> (tfloat, tint),
   OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
+  OPERATOR  8    <@ (tfloat, int),
   OPERATOR  8    <@ (tfloat, float),
   OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, timestamptz),
@@ -388,6 +405,7 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  8    <@ (tfloat, tint),
   OPERATOR  8    <@ (tfloat, tfloat),
   -- adjacent
+  OPERATOR  17    -|- (tfloat, int),
   OPERATOR  17    -|- (tfloat, float),
   OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, timestamptz),

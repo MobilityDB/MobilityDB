@@ -409,7 +409,7 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
     Datum value2 = tinstant_value(inst2);
     instants[k++] = tfunc_tinstant_base(inst1, value, lfinfo);
     /* If not constant segment and linear compute the function on the potential
-       intermediate point before adding the new instant */
+       intermediate turning point before adding the new instant */
     Datum intervalue;
     TimestampTz intertime;
     if (lfinfo->tpfunc_base != NULL && linear &&
@@ -497,8 +497,8 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
     else if (datum_eq2(startvalue, value, basetype, lfinfo->argtype[1]) ||
          datum_eq2(endvalue, value, basetype, lfinfo->argtype[1]))
     {
-      /* Compute the function at the middle time between start and the end instants */
-      inttime = start->t + ((end->t - start->t)/2);
+      /* Compute the function at the middle time between the start and end instants */
+      inttime = start->t + ((end->t - start->t) / 2);
       intvalue = tsegment_value_at_timestamp(start, end, linear, inttime);
       intresult = tfunc_base_base(intvalue, value, lfinfo);
       lower_eq = lower_inc && datum_eq(startresult, intresult, resbasetype);
@@ -539,8 +539,8 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
         /* Compute the function at the start and end instants */
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, end->t);
-        result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, hascross ? upper_eq : false, lfinfo->reslinear, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+          hascross ? upper_eq : false, lfinfo->reslinear, NORMALIZE_NO);
         if (! hascross && upper_inc)
         {
           tinstant_set(instants[0], endresult, end->t);
@@ -1193,7 +1193,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
            (linear1 && linear2 &&
             datum_eq2(endvalue1, endvalue2, basetype1, basetype2)))
       {
-        /* Compute the function at the middle time between start and the end instants */
+        /* Compute the function at the middle time between the start and end instants */
         inttime = start1->t + ((end1->t - start1->t) / 2);
         intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
         intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
@@ -1899,13 +1899,12 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
     Datum intvalue1, intvalue2;
     TimestampTz inttime;
     /* If either the start values or the end values are equal and both have
-     * linear interpolation compute the function at the start instant,
-     * at an intermediate point, and at the end instant */
+     * linear interpolation compute the function an intermediate point */
     if (datum_eq2(startvalue1, startvalue2, basetype1, basetype2) ||
          (linear1 && linear2 &&
           datum_eq2(endvalue1, endvalue2, basetype1, basetype2)))
     {
-      /* Compute the function at the middle time between start and the end instants */
+      /* Compute the function at the middle time between the start and end instants */
       inttime = start1->t + ((end1->t - start1->t) / 2);
       intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
       intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);

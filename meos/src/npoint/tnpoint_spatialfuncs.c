@@ -741,6 +741,29 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2, int *count)
 }
 
 /**
+ * Helper function to make a sequence from the set of instants computed so far
+ */
+static TSequence *
+tsequence_assemble_instants(TInstant ***instants, int *countinsts,
+  int totalinsts, int from, int to, bool lower_inc, TimestampTz last_time)
+{
+  TInstant **allinstants = palloc(sizeof(TInstant *) * (totalinsts + 1));
+  int n = 0;
+  for (int j = from; j < to; j++)
+  {
+    for (int k = 0; k < countinsts[j]; k++)
+      allinstants[n++] = instants[j][k];
+    if (instants[j] != NULL)
+      pfree(instants[j]);
+  }
+  /* Add closing instant */
+  Datum last_value = tinstant_value(allinstants[n - 1]);
+  allinstants[n++] = tinstant_make(last_value, T_TFLOAT, last_time);
+  /* Resulting sequence has stepwise interpolation */
+  return tsequence_make_free(allinstants, n, lower_inc, true, STEP, true);
+}
+
+/**
  * Temporal azimuth of a temporal network point of sequence subtype
  */
 static int
@@ -755,7 +778,6 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
   int totalinsts = 0; /* number of created instants so far */
   int l = 0; /* number of created sequences */
   int m = 0; /* index of the segment from which to assemble instants */
-  Datum last_value;
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
@@ -765,24 +787,11 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
     /* If constant segment */
     if (countinsts[i] == 0)
     {
-      /* Assemble all instants created so far */
       if (totalinsts != 0)
       {
-        TInstant **allinstants = palloc(sizeof(TInstant *) * (totalinsts + 1));
-        int n = 0;
-        for (int j = m; j < i; j++)
-        {
-          for (int k = 0; k < countinsts[j]; k++)
-            allinstants[n++] = instants[j][k];
-          if (instants[j] != NULL)
-            pfree(instants[j]);
-        }
-        /* Add closing instant */
-        last_value = tinstant_value(allinstants[n - 1]);
-        allinstants[n++] = tinstant_make(last_value, T_TFLOAT, inst1->t);
-        /* Resulting sequence has stepwise interpolation */
-        result[l++] = tsequence_make_free(allinstants, n, lower_inc, true,
-          STEP, true);
+        /* Assemble all instants created so far */
+        result[l++] = tsequence_assemble_instants(instants, countinsts,
+          totalinsts, m, i, lower_inc, inst1->t);
         /* Indicate that we have consommed all instants created so far */
         m = i;
         totalinsts = 0;
@@ -798,21 +807,8 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
   if (totalinsts != 0)
   {
     /* Assemble all instants created so far */
-    TInstant **allinstants = palloc(sizeof(TInstant *) * (totalinsts + 1));
-    int n = 0;
-    for (int j = m; j < seq->count - 1; j++)
-    {
-      for (int k = 0; k < countinsts[j]; k++)
-        allinstants[n++] = instants[j][k];
-      if (instants[j] != NULL)
-        pfree(instants[j]);
-    }
-    /* Add closing instant */
-    last_value = tinstant_value(allinstants[n - 1]);
-    allinstants[n++] = tinstant_make(last_value, T_TFLOAT, inst1->t);
-    /* Resulting sequence has stepwise interpolation */
-    result[l++] = tsequence_make_free(allinstants, n, lower_inc, true,
-      STEP, true);
+    result[l++] = tsequence_assemble_instants(instants, countinsts,
+      totalinsts, m, seq->count - 1, lower_inc, inst1->t);
   }
   pfree(instants);
   pfree(countinsts);

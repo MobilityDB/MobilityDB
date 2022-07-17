@@ -119,6 +119,8 @@ typedef struct TimeSplitState
 typedef struct ValueTimeSplitState
 {
   bool done;
+  Datum size;
+  int64 tunits;
   Datum *value_buckets;
   TimestampTz *time_buckets;
   Temporal **fragments;

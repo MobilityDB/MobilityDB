@@ -590,8 +590,9 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  *****************************************************************************/
 
 /**
- * Return the timestamps at which the segments of the two temporal points
- * are within the given distance
+ * Return the timestamps at which EITHER the segments of the two temporal
+ * points OR a segment of a temporal point and a point are within the given
+ * distance.
  *
  * @param[in] sv1,ev1 Points defining the first segment
  * @param[in] sv2,ev2 Points defining the second segment

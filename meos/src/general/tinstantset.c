@@ -962,8 +962,8 @@ tinstantset_always_eq(const TInstantSet *is, Datum value)
   if (! temporal_bbox_ev_al_eq((Temporal *) is, value, ALWAYS))
     return false;
 
-  /* The bounding box test above is enough to compute the answer for
-   * temporal numbers */
+  /* The bounding box test above is enough to compute the answer for temporal
+   * numbers */
   if (tnumber_type(is->temptype))
     return true;
 
@@ -1059,8 +1059,8 @@ tinstantset_always_le(const TInstantSet *is, Datum value)
   if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, ALWAYS))
     return false;
 
-  /* The bounding box test above is enough to compute
-   * the answer for temporal numbers */
+  /* The bounding box test above is enough to compute the answer for temporal
+   * numbers */
   if (tnumber_type(is->temptype))
     return true;
 

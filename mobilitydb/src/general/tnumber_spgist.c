@@ -722,7 +722,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-  TBOX *key = DatumGetTboxP(in->leafDatum);
+  TBOX *key = DatumGetTboxP(in->leafDatum), box;
   bool result = true;
   int i;
 
@@ -739,11 +739,9 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    TBOX query;
-
     /* Cast the query to a box and perform the test */
-    tnumber_spgist_get_tbox(&in->scankeys[i], &query);
-    result = tbox_index_consistent_leaf(key, &query, strategy);
+    tnumber_spgist_get_tbox(&in->scankeys[i], &box);
+    result = tbox_index_consistent_leaf(key, &box, strategy);
 
     /* If any check is failed, we have found our answer. */
     if (! result)
@@ -758,7 +756,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      TBOX box;
+      /* Cast the order by argument to a box and perform the test */
       tnumber_spgist_get_tbox(&in->orderbys[i], &box);
       distances[i] = nad_tbox_tbox(&box, key);
     }

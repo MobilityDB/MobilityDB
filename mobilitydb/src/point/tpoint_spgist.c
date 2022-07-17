@@ -924,7 +924,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-  STBOX *key = DatumGetSTboxP(in->leafDatum);
+  STBOX *key = DatumGetSTboxP(in->leafDatum), box;
   bool result = true;
   int i;
 
@@ -938,13 +938,11 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    STBOX query;
-
     /* Update the recheck flag according to the strategy */
     out->recheck |= tpoint_index_recheck(strategy);
 
-    if (tpoint_spgist_get_stbox(&in->scankeys[i], &query))
-      result = stbox_index_consistent_leaf(key, &query, strategy);
+    if (tpoint_spgist_get_stbox(&in->scankeys[i], &box))
+      result = stbox_index_consistent_leaf(key, &box, strategy);
     else
       result = false;
     /* If any check is failed, we have found our answer. */
@@ -960,7 +958,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      STBOX box;
+      /* Cast the order by argument to a box and perform the test */
       if (tpoint_spgist_get_stbox(&in->orderbys[i], &box))
         distances[i] = nad_stbox_stbox(&box, key);
       else
