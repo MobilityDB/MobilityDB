@@ -234,7 +234,8 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
  * Get enumeration value associated to the operator according to the family
  */
 static bool
-temporal_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfamily)
+temporal_cachedop_family(Oid operid, CachedOp *cachedOp,
+  TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);

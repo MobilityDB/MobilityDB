@@ -794,13 +794,40 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
 /*****************************************************************************/
 
 /**
+ * Transform the constant into a span
+ */
+void
+span_const_to_span(Node *other, Span *span)
+{
+  Oid consttype = ((Const *) other)->consttype;
+  mobdbType type = oid_type(consttype);
+  const Span *s;
+  assert(span_basetype(type) || span_type(type));
+  if (span_basetype(type))
+  {
+    /* The right argument is a span base constant. We convert it into
+     * a singleton span */
+    Datum value = ((Const *) other)->constvalue;
+    span_set(value, value, true, true, type, span);
+  }
+  else /* span_type(type) */
+  {
+    /* The right argument is a span constant. We convert it into
+     * its bounding period. */
+    s = DatumGetSpanP(((Const *) other)->constvalue);
+    memcpy(span, s, sizeof(Span));
+  }
+  return;
+}
+
+/**
  * Transform the constant into a period
  */
 void
 time_const_to_period(Node *other, Period *period)
 {
-  Oid timetypid = ((Const *) other)->consttype;
-  mobdbType timetype = oid_type(timetypid);
+  Oid consttype = ((Const *) other)->consttype;
+  mobdbType timetype = oid_type(consttype);
   const Period *p;
   ensure_time_type(timetype);
   if (timetype == T_TIMESTAMPTZ)
@@ -899,8 +926,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    */
   if (spansel == SPANSEL)
   {
-    Span *s = DatumGetSpanP(((Const *) other)->constvalue);
-    memcpy(&span, s, sizeof(Span));
+    span_const_to_span(other, &span);
   }
   else
   {
