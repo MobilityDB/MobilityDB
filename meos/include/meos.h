@@ -592,7 +592,7 @@ extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
 extern Span *tbox_to_intspan(const TBOX *box);
 extern Span *tbox_to_floatspan(const TBOX *box);
 extern Period *tbox_to_period(const TBOX *box);
-extern Period *stbox_to_period(const TBOX *box);
+extern Period *stbox_to_period(const STBOX *box);
 extern TBOX *tnumber_to_tbox(Temporal *temp);
 extern GSERIALIZED *stbox_to_geometry(const STBOX *box);
 extern STBOX *tpoint_to_stbox(const Temporal *temp);
@@ -722,21 +722,21 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
 
 /* Input/output functions for temporal types */
 
-extern Temporal * tbool_in(char *str);
-extern char * temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern char * temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision, char *srs);
-extern uint8_t * temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern Temporal * temporal_from_hexwkb(const char *hexwkb);
-extern Temporal * temporal_from_mfjson(char *mfjson);
-extern Temporal * temporal_from_wkb(uint8_t *wkb, int size);
-extern char * temporal_out(const Temporal *temp);
-extern Temporal * tfloat_in(char *str);
-extern Temporal * tgeogpoint_in(char *str);
-extern Temporal * tgeompoint_in(char *str);
-extern Temporal * tint_in(char *str);
-extern char * tpoint_as_ewkt(const Temporal *temp);
-extern char * tpoint_as_text(const Temporal *temp);
-extern Temporal * ttext_in(char *str);
+extern Temporal *tbool_in(char *str);
+extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
+extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision, char *srs);
+extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
+extern Temporal *temporal_from_hexwkb(const char *hexwkb);
+extern Temporal *temporal_from_mfjson(char *mfjson);
+extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
+extern char *temporal_out(const Temporal *temp);
+extern Temporal *tfloat_in(char *str);
+extern Temporal *tgeogpoint_in(char *str);
+extern Temporal *tgeompoint_in(char *str);
+extern Temporal *tint_in(char *str);
+extern char *tpoint_as_ewkt(const Temporal *temp);
+extern char *tpoint_as_text(const Temporal *temp);
+extern Temporal *ttext_in(char *str);
 
 /*****************************************************************************/
 
@@ -1427,6 +1427,16 @@ extern bool temporal_intersects_timestampset(const Temporal *temp, const Timesta
 extern double tnumber_integral(const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
+
+/*****************************************************************************/
+
+/* Tile functions for temporal types */
+
+extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
+extern Temporal **tnumber_value_split(Temporal *temp, Datum start_bucket,
+  Datum size, int count, Datum **buckets, int *newcount);
 
 /*****************************************************************************/
 

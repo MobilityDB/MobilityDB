@@ -1367,9 +1367,7 @@ temporal_step_to_linear(const Temporal *temp)
  * @brief Return a temporal value shifted and/or scaled by the intervals.
  *
  * @param[in] temp Temporal value
- * @param[in] shift True when a shift of the timespan must be performed
- * @param[in] tscale True when a scale of the timespan must be performed
- * @param[in] start Interval for shift
+ * @param[in] shift Interval for shift
  * @param[in] duration Interval for scale
  * @pre The duration is greater than 0 if is not NULL
  * @see tinstant_shift

@@ -294,8 +294,8 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 /**
  * Expand the first box to include the second one
  *
- * @param[inout] box1 Resulting box
- * @param[in] box2 Add-on box
+ * @param[inout] bbox1 Resulting box
+ * @param[in] bbox2 Add-on box
  * @note This function is similar to tbox_expand in file tbox.c but uses
  *   NaN-aware comparisons for the value dimension
  */
@@ -637,7 +637,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
   size_t bbox_size = bbox_get_size(bboxtype);
   void *leftBox = palloc0(bbox_size);
   void *rightBox = palloc0(bbox_size);
-  
+
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
     void *box = DatumGetPointer(entryvec->vector[i].key);
@@ -677,15 +677,15 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 Datum
-bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype, 
+bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
   OffsetNumber i, maxoff;
-  ConsiderSplitContext context; 
+  ConsiderSplitContext context;
   void *box, *leftBox, *rightBox;
-  SplitInterval *intervalsLower, *intervalsUpper; 
+  SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
   int nentries, commonEntriesCount, dim;
 

@@ -27,69 +27,25 @@
  *
  *****************************************************************************/
 
-#ifndef __PG_TEMPORAL_TILE_H__
-#define __PG_TEMPORAL_TILE_H__
+#ifndef __TEMPORAL_TILE_H__
+#define __TEMPORAL_TILE_H__
 
 /* MobilityDB */
-#include "general/temporal.h"
+#include "temporal.h"
 
 /*****************************************************************************/
 
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the bucket list
- */
-typedef struct SpanBucketState
-{
-  bool done;
-  int i;
-  mobdbType basetype;
-  Temporal *temp; /* NULL when generating bucket list, used for splitting */
-  Datum size;
-  Datum origin;
-  Datum minvalue;
-  Datum maxvalue;
-  Datum value;
-} SpanBucketState;
+extern double float_bucket(double value, double size, double origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+  TimestampTz torigin);
+extern Datum datum_bucket(Datum value, Datum size, Datum offset,
+  mobdbType basetype);
 
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the multidimensional grid
- */
-typedef struct TboxGridState
-{
-  bool done;
-  int i;
-  double xsize;
-  int64 tunits;
-  TBOX box;
-  double value;
-  TimestampTz t;
-} TboxGridState;
+extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
 
 /*****************************************************************************/
 
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
-typedef struct ValueTimeSplitState
-{
-  bool done;
-  Datum size;
-  int64 tunits;
-  Datum *value_buckets;
-  TimestampTz *time_buckets;
-  Temporal **fragments;
-  int i;
-  int count;
-} ValueTimeSplitState;
-
-/*****************************************************************************/
-
-extern int64 get_interval_units(Interval *interval);
-
-/*****************************************************************************/
-
-#endif /* __PG_TEMPORAL_TILE_H__ */
+#endif /* __TEMPORAL_TILE_H__ */
 

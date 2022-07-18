@@ -121,11 +121,16 @@ target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 
 #--------------------------------
-# Belongs to MobilityDB
+# Belongs to MEOS
 #--------------------------------
 
+install(
+  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos.h"
+  DESTINATION "/usr/local/include")
 install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
-message(STATUS "Building MEOS: Destination library: '/usr/local/lib'")
+message(STATUS "Building MEOS:")
+message(STATUS "  Library file: '/usr/local/lib'")
+message(STATUS "  Include file: '/usr/local/include'")
 
 #-----------------------------------------------------------------------------
 # Documentation
