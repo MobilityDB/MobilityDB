@@ -86,8 +86,7 @@ CREATE TYPE time_period AS (
   period period
 );
 
-CREATE FUNCTION bucketList(period, interval,
-  timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION bucketList(period, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_period
   AS 'MODULE_PATHNAME', 'Period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -107,8 +106,8 @@ CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
     -- SELECT @extschema@.timeBucket(ts-"offset", size)+"offset";
 -- $BODY$;
 
-CREATE FUNCTION periodBucket("time" timestamptz, duration interval,
-  origin timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION periodBucket(timestamptz, interval,
+  timestamptz DEFAULT '2000-01-03')
   RETURNS period
   AS 'MODULE_PATHNAME', 'Period_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
