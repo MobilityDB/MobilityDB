@@ -26,7 +26,7 @@
  * to test the inclusion of a point in a polygon. This file is originally
  * located in the /postgis directory */
 
-#include "postgres.h"
+// #include "postgres.h"
 #include <liblwgeom.h>
 
 /*******************************************************************************

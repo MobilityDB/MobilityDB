@@ -1,0 +1,2024 @@
+SELECT contains(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT contains(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT contains(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT contains(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ contains 
+----------
+ 
+(1 row)
+
+/* Errors */
+SELECT contains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT contains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+SELECT contains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
+SELECT disjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeompoint '{Point(0 0)@2000-01-01, Point(0 2)@2000-01-02}');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(0 2)@2000-01-02]');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeompoint '{[Point(0 0)@2000-01-01, Point(0 2)@2000-01-02],[Point(0 2)@2000-01-03, Point(0 0)@2000-01-04]}');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeompoint '{Point(3 3)@2000-01-01, Point(4 4)@2000-01-02}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
+ disjoint 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT intersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-02');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(1 1)@2000-01-04, Point(2 2)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-03');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '{Point(2 2)@2000-01-01
+, Point(2 2)@2000-01-03}');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02], [Point(1 1)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-04, Point(2 2)@2000-01-06}');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(3 3)@2000-01-03, Point(3 3)@2000-01-04)}', tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-04]');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(1 0)@2000-01-01, Point(1 1)@2000-01-02]');
+ intersects 
+------------
+ t
+(1 row)
+
+/* Errors */
+SELECT intersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT intersects(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT intersects(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT intersects(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT touches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+/* Errors */
+SELECT touches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT dwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1,2 2)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1,2 2)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'Linestring Z empty', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Linestring Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5,2.5 2.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Linestring Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Linestring Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Linestring(1 1,2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Linestring(1 1,2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Linestring(1 1,2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Linestring(1 1 1,2 2 2)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Linestring(1.5 1.5,2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Linestring empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Linestring(1.5 1.5 1.5,2.5 2.5 2.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Linestring Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-02]', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-03}', 10);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-05]', tgeompoint '{Point(1 1)@2000-01-04, Point(2 2)@2000-01-06}', 10);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-02]', tgeompoint '[Point(0 2)@2000-01-01, Point(1 1)@2000-01-02]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-04}', 10);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-06]}', tgeompoint '[Point(1 1)@2000-01-04, Point(2 2)@2000-01-05]', 10);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-06]}', tgeompoint '{[Point(1 1)@2000-01-01],[Point(1 1)@2000-01-04, Point(2 2)@2000-01-05]}', 10);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', tgeompoint '{[Point(1 2)@2000-01-01, Point(2 3)@2000-01-02]}', 0.5);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(2 1)@2000-01-02]', 1);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(2 3)@2000-01-02]', 1);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(5 0)@2000-01-01, Point(3 2)@2000-01-02]', 1);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 1);
+ dwithin 
+---------
+ t
+(1 row)
+
+/* Errors */
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);
+ERROR:  Operation on mixed SRID
+SELECT dwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID
+SELECT dwithin(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID
+SELECT dwithin(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)', 2);
+ERROR:  Operation on mixed SRID
+SELECT dwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID

@@ -1,0 +1,603 @@
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ *
+ *****************************************************************************/
+
+/**
+ * @brief R-tree GiST index for temporal points.
+ */
+
+#include "pg_point/tpoint_gist.h"
+
+/* C */
+#include <assert.h>
+#include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
+#include <access/gist.h>
+#include <utils/float.h>
+#include <utils/timestamp.h>
+/* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
+/* MobilityDB */
+#include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
+#include "pg_general/time_gist.h"
+#include "pg_general/tnumber_gist.h"
+
+/*****************************************************************************
+ * GiST consistent methods
+ *****************************************************************************/
+
+/**
+ * Leaf-level consistency for temporal points.
+ *
+ * Since spatiotemporal boxes do not distinguish between inclusive and
+ * exclusive bounds it is necessary to generalize the tests, e.g.,
+ * - before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin)
+ *   e.g., to take into account before([a,b],(b,c])
+ * - after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
+ *   e.g., to take into account after((b,c],[a,b])
+ *
+ * @param[in] key Element in the index
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
+ * @note This function is used for both GiST and SP-GiST indexes
+ */
+bool
+stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
+  StrategyNumber strategy)
+{
+  bool retval;
+
+  switch (strategy)
+  {
+    case RTOverlapStrategyNumber:
+      retval = overlaps_stbox_stbox(key, query);
+      break;
+    case RTContainsStrategyNumber:
+      retval = contains_stbox_stbox(key, query);
+      break;
+    case RTContainedByStrategyNumber:
+      retval = contained_stbox_stbox(key, query);
+      break;
+    case RTSameStrategyNumber:
+      retval = same_stbox_stbox(key, query);
+      break;
+    case RTAdjacentStrategyNumber:
+      retval = adjacent_stbox_stbox(key, query);
+      break;
+    case RTLeftStrategyNumber:
+      retval = left_stbox_stbox(key, query);
+      break;
+    case RTOverLeftStrategyNumber:
+      retval = overleft_stbox_stbox(key, query);
+      break;
+    case RTRightStrategyNumber:
+      retval = right_stbox_stbox(key, query);
+      break;
+    case RTOverRightStrategyNumber:
+      retval = overright_stbox_stbox(key, query);
+      break;
+    case RTBelowStrategyNumber:
+      retval = below_stbox_stbox(key, query);
+      break;
+    case RTOverBelowStrategyNumber:
+      retval = overbelow_stbox_stbox(key, query);
+      break;
+    case RTAboveStrategyNumber:
+      retval = above_stbox_stbox(key, query);
+      break;
+    case RTOverAboveStrategyNumber:
+      retval = overabove_stbox_stbox(key, query);
+      break;
+    case RTFrontStrategyNumber:
+      retval = front_stbox_stbox(key, query);
+      break;
+    case RTOverFrontStrategyNumber:
+      retval = overfront_stbox_stbox(key, query);
+      break;
+    case RTBackStrategyNumber:
+      retval = back_stbox_stbox(key, query);
+      break;
+    case RTOverBackStrategyNumber:
+      retval = overback_stbox_stbox(key, query);
+      break;
+    case RTBeforeStrategyNumber:
+      retval = /* before_stbox_stbox(key, query) */
+        (key->tmax <= query->tmin);
+      break;
+    case RTOverBeforeStrategyNumber:
+      retval = overbefore_stbox_stbox(key, query);
+      break;
+    case RTAfterStrategyNumber:
+      retval = /* after_stbox_stbox(key, query)*/
+        (key->tmin >= query->tmax);
+      break;
+    case RTOverAfterStrategyNumber:
+      retval = overafter_stbox_stbox(key, query);
+      break;
+    default:
+      elog(ERROR, "unrecognized strategy number: %d", strategy);
+      retval = false;    /* keep compiler quiet */
+      break;
+  }
+  return retval;
+}
+
+/**
+ * Internal-page consistent method for temporal points.
+ *
+ * Return false if for all data items x below entry, the predicate
+ * x op query must be false, where op is the oper corresponding to strategy
+ * in the pg_amop table.
+ *
+ * @param[in] key Element in the index
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
+ */
+static bool
+stbox_gist_consistent(const STBOX *key, const STBOX *query,
+  StrategyNumber strategy)
+{
+  bool retval;
+
+  switch (strategy)
+  {
+    case RTOverlapStrategyNumber:
+    case RTContainedByStrategyNumber:
+      retval = overlaps_stbox_stbox(key, query);
+      break;
+    case RTContainsStrategyNumber:
+    case RTSameStrategyNumber:
+      retval = contains_stbox_stbox(key, query);
+      break;
+    case RTAdjacentStrategyNumber:
+      if (adjacent_stbox_stbox(key, query))
+        return true;
+      return overlaps_stbox_stbox(key, query);
+    case RTLeftStrategyNumber:
+      retval = !overright_stbox_stbox(key, query);
+      break;
+    case RTOverLeftStrategyNumber:
+      retval = !right_stbox_stbox(key, query);
+      break;
+    case RTRightStrategyNumber:
+      retval = !overleft_stbox_stbox(key, query);
+      break;
+    case RTOverRightStrategyNumber:
+      retval = !left_stbox_stbox(key, query);
+      break;
+    case RTBelowStrategyNumber:
+      retval = !overabove_stbox_stbox(key, query);
+      break;
+    case RTOverBelowStrategyNumber:
+      retval = !above_stbox_stbox(key, query);
+      break;
+    case RTAboveStrategyNumber:
+      retval = !overbelow_stbox_stbox(key, query);
+      break;
+    case RTOverAboveStrategyNumber:
+      retval = !below_stbox_stbox(key, query);
+      break;
+    case RTFrontStrategyNumber:
+      retval = !overback_stbox_stbox(key, query);
+      break;
+    case RTOverFrontStrategyNumber:
+      retval = !back_stbox_stbox(key, query);
+      break;
+    case RTBackStrategyNumber:
+      retval = !overfront_stbox_stbox(key, query);
+      break;
+    case RTOverBackStrategyNumber:
+      retval = !front_stbox_stbox(key, query);
+      break;
+    case RTBeforeStrategyNumber:
+      retval = !overafter_stbox_stbox(key, query);
+      break;
+    case RTOverBeforeStrategyNumber:
+      retval = !after_stbox_stbox(key, query);
+      break;
+    case RTAfterStrategyNumber:
+      retval = !overbefore_stbox_stbox(key, query);
+      break;
+    case RTOverAfterStrategyNumber:
+      retval = !before_stbox_stbox(key, query);
+      break;
+    default:
+      elog(ERROR, "unrecognized strategy number: %d", strategy);
+      retval = false;    /* keep compiler quiet */
+      break;
+  }
+  return retval;
+}
+
+/**
+ * Determine whether a recheck is necessary depending on the strategy
+ *
+ * @param[in] strategy Operator of the operator class being applied
+ */
+bool
+tpoint_index_recheck(StrategyNumber strategy)
+{
+  /* These operators are based on bounding boxes and do not consider
+   * inclusive or exclusive bounds */
+  switch (strategy)
+  {
+    case RTLeftStrategyNumber:
+    case RTOverLeftStrategyNumber:
+    case RTRightStrategyNumber:
+    case RTOverRightStrategyNumber:
+    case RTBelowStrategyNumber:
+    case RTOverBelowStrategyNumber:
+    case RTAboveStrategyNumber:
+    case RTOverAboveStrategyNumber:
+    case RTFrontStrategyNumber:
+    case RTOverFrontStrategyNumber:
+    case RTBackStrategyNumber:
+    case RTOverBackStrategyNumber:
+      return false;
+    default:
+      return true;
+  }
+}
+
+/**
+ * Transform the query argument into a box initializing the dimensions that
+ * must not be taken into account by the operators to infinity.
+ */
+static bool
+tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
+  mobdbType type)
+{
+  if (tgeo_basetype(type))
+  {
+    GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+    if (gs == NULL || gserialized_is_empty(gs))
+      return false;
+    geo_set_stbox(gs, result);
+  }
+  else if (type == T_TIMESTAMPTZ)
+  {
+    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    timestamp_set_stbox(t, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_stbox_slice(tsdatum, result);
+  }
+  else if (type == T_PERIOD)
+  {
+    Period *p = PG_GETARG_SPAN_P(1);
+    period_set_stbox(p, result);
+  }
+  else if (type == T_PERIODSET)
+  {
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_stbox_slice(psdatum, result);
+  }
+  else if (type == T_STBOX)
+  {
+    STBOX *box = PG_GETARG_STBOX_P(1);
+    if (box == NULL)
+      return false;
+    memcpy(result, box, sizeof(STBOX));
+  }
+  else if (tspatial_type(type))
+  {
+    if (PG_ARGISNULL(1))
+      return false;
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", type);
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
+/**
+ * GiST consistent method for temporal points
+ */
+PGDLLEXPORT Datum
+Stbox_gist_consistent(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
+  STBOX *key = DatumGetSTboxP(entry->key), query;
+
+  /* Determine whether the index is lossy depending on the strategy */
+  *recheck = tpoint_index_recheck(strategy);
+
+  if (key == NULL)
+    PG_RETURN_BOOL(false);
+
+  /* Transform the query into a box */
+  if (! tpoint_gist_get_stbox(fcinfo, &query, oid_type(typid)))
+    PG_RETURN_BOOL(false);
+
+  if (GIST_LEAF(entry))
+    result = stbox_index_consistent_leaf(key, &query, strategy);
+  else
+    result = stbox_gist_consistent(key, &query, strategy);
+
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * GiST union method
+ *****************************************************************************/
+
+/**
+ * Increase the first box to include the second one
+ */
+void
+stbox_adjust(void *bbox1, void *bbox2)
+{
+  STBOX *box1 = (STBOX *) bbox1;
+  STBOX *box2 = (STBOX *) bbox2;
+  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
+  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
+  box1->ymin = FLOAT8_MIN(box1->ymin, box2->ymin);
+  box1->ymax = FLOAT8_MAX(box1->ymax, box2->ymax);
+  box1->zmin = FLOAT8_MIN(box1->zmin, box2->zmin);
+  box1->zmax = FLOAT8_MAX(box1->zmax, box2->zmax);
+  box1->tmin = Min(box1->tmin, box2->tmin);
+  box1->tmax = Max(box1->tmax, box2->tmax);
+  return;
+}
+
+PG_FUNCTION_INFO_V1(Stbox_gist_union);
+/**
+ * GiST union method for temporal points
+ *
+ * Return the minimal bounding box that encloses all the entries in entryvec
+ */
+PGDLLEXPORT Datum
+Stbox_gist_union(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GISTENTRY *ent = entryvec->vector;
+  STBOX *result = stbox_copy(DatumGetSTboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    stbox_adjust(result, DatumGetSTboxP(ent[i].key));
+  PG_RETURN_SPAN_P(result);
+}
+
+/*****************************************************************************
+ * GiST compress methods
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_gist_compress);
+/**
+ * GiST compress methods for temporal points
+ */
+PGDLLEXPORT Datum
+Tpoint_gist_compress(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (entry->leafkey)
+  {
+    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+    STBOX *box = palloc(sizeof(STBOX));
+    temporal_bbox_slice(entry->key, box);
+    gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
+      entry->offset, false);
+    PG_RETURN_POINTER(retval);
+  }
+  PG_RETURN_POINTER(entry);
+}
+
+/*****************************************************************************
+ * GiST penalty method
+ *****************************************************************************/
+
+/**
+ * Calculates the union of two tboxes.
+ *
+ * @param[in] a,b Input boxes
+ * @param[out] new Resulting box
+ */
+static void
+stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
+{
+  memset(new, 0, sizeof(STBOX));
+  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
+  new->ymax = FLOAT8_MAX(a->ymax, b->ymax);
+  new->zmax = FLOAT8_MAX(a->zmax, b->zmax);
+  new->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
+  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  new->ymin = FLOAT8_MIN(a->ymin, b->ymin);
+  new->zmin = FLOAT8_MIN(a->zmin, b->zmin);
+  new->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
+  return;
+}
+
+/**
+ * Return the size of a spatiotemporal box for penalty-calculation purposes.
+ * The result can be +Infinity, but not NaN.
+ */
+static double
+stbox_size(const STBOX *box)
+{
+  /*
+   * Check for zero-width cases.  Note that we define the size of a zero-
+   * by-infinity box as zero.  It's important to special-case this somehow,
+   * as naively multiplying infinity by zero will produce NaN.
+   *
+   * The less-than cases should not happen, but if they do, say "zero".
+   */
+  if (FLOAT8_LE(box->xmax, box->xmin) || FLOAT8_LE(box->ymax, box->ymin) ||
+    FLOAT8_LE(box->zmax, box->zmin) || box->tmax <= box->tmin)
+    return 0.0;
+
+  /*
+   * We treat NaN as larger than +Infinity, so any distance involving a NaN
+   * and a non-NaN is infinite.  Note the previous check eliminated the
+   * possibility that the low fields are NaNs.
+   */
+  if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
+    return get_float8_infinity();
+  return (box->xmax - box->xmin) * (box->ymax - box->ymin) *
+    (box->zmax - box->zmin) * (box->tmax - box->tmin);
+}
+
+/**
+ * Return the amount by which the union of the two boxes is larger than
+ * the original STBOX's volume.  The result can be +Infinity, but not NaN.
+ */
+double
+stbox_penalty(void *bbox1, void *bbox2)
+{
+  const STBOX *original = (STBOX *) bbox1;
+  const STBOX *new = (STBOX *) bbox2;
+  STBOX unionbox;
+  stbox_union_rt(original, new, &unionbox);
+  return stbox_size(&unionbox) - stbox_size(original);
+}
+
+PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
+/**
+ * GiST penalty method for temporal points.
+ * As in the R-tree paper, we use change in area as our penalty metric
+ */
+PGDLLEXPORT Datum
+Stbox_gist_penalty(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  float *result = (float *) PG_GETARG_POINTER(2);
+  void *origstbox = (STBOX *) DatumGetPointer(origentry->key);
+  void *newbox = (STBOX *) DatumGetPointer(newentry->key);
+  *result = (float) stbox_penalty(origstbox, newbox);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST picksplit method
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
+/**
+ * GiST picksplit method for temporal points.
+ *
+ * The algorithm finds split of boxes by considering splits along each axis.
+ * Each entry is first projected as an interval on the X-axis, and different
+ * ways to split the intervals into two groups are considered, trying to
+ * minimize the overlap of the groups. Then the same is repeated for the
+ * Y-axis and the Z-axis, and the overall best split is chosen.
+ * The quality of a split is determined by overlap along that axis and some
+ * other criteria (see bbox_gist_consider_split).
+ *
+ * After that, all the entries are divided into three groups:
+ *
+ * 1. Entries which should be placed to the left group
+ * 2. Entries which should be placed to the right group
+ * 3. "Common entries" which can be placed to any of groups without affecting
+ *    of overlap along selected axis.
+ *
+ * The common entries are distributed by minimizing penalty.
+ *
+ * For details see:
+ * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
+ * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
+ */
+PGDLLEXPORT Datum
+Stbox_gist_picksplit(PG_FUNCTION_ARGS)
+{
+  return bbox_gist_picksplit_ext(fcinfo, T_STBOX, &stbox_adjust, &stbox_penalty);
+}
+/*****************************************************************************
+ * GiST same method
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Stbox_gist_same);
+/**
+ * GiST same method for temporal points.
+ *
+ * Return true only when boxes are exactly the same.  We can't use fuzzy
+ * comparisons here without breaking index consistency; therefore, this isn't
+ * equivalent to stbox_same().
+ */
+PGDLLEXPORT Datum
+Stbox_gist_same(PG_FUNCTION_ARGS)
+{
+  STBOX *b1 = PG_GETARG_STBOX_P(0);
+  STBOX *b2 = PG_GETARG_STBOX_P(1);
+  bool *result = (bool *) PG_GETARG_POINTER(2);
+  if (b1 && b2)
+    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
+      FLOAT8_EQ(b1->zmin, b2->zmin) && b1->tmin == b2->tmin &&
+      FLOAT8_EQ(b1->xmax, b2->xmax) && FLOAT8_EQ(b1->ymax, b2->ymax) &&
+      FLOAT8_EQ(b1->zmax, b2->zmax) && b1->tmax == b2->tmax);
+  else
+    *result = (b1 == NULL && b2 == NULL);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Stbox_gist_distance);
+/**
+ * GiST support function. Take in a query and an entry and return the "distance"
+ * between them.
+*/
+PGDLLEXPORT Datum
+Stbox_gist_distance(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  STBOX *key = (STBOX *) DatumGetPointer(entry->key);
+  STBOX query;
+  double distance;
+
+  /* The index is lossy for leaf levels */
+  if (GIST_LEAF(entry))
+    *recheck = true;
+
+  if (key == NULL)
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /* Transform the query into a box */
+  if (! tpoint_gist_get_stbox(fcinfo, &query, oid_type(typid)))
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /* Since we only have boxes we'll return the minimum possible distance,
+   * and let the recheck sort things out in the case of leaves */
+  distance = nad_stbox_stbox(key, &query);
+
+  PG_RETURN_FLOAT8(distance);
+}
+
+/*****************************************************************************/

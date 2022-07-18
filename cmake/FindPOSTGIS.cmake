@@ -42,6 +42,7 @@ else()
   endif()
 endif()
 
+message(STATUS "Looking for postgis.control file in ${POSTGRESQL_SHARE_DIR}/extension")
 find_file(POSTGIS_CONTROL postgis.control
   PATHS "${POSTGRESQL_SHARE_DIR}/extension")
 

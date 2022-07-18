@@ -354,6 +354,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="isGeodetic"><varname>hasZ</varname></link>: Is geodetic?</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="Xmin"><varname>Xmin</varname></link>: Get the minimum X value</para>
 				</listitem>
 
@@ -392,11 +396,11 @@
 			<title>Modification Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric value dimension of the bounding box by a float value</para>
+					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric dimension of the bounding box by a float value</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandSpatial"><varname>expandSpatial</varname></link>: Expand the spatial value dimension of the bounding box by a float value</para>
+					<para><link linkend="expandSpatial"><varname>expandSpatial</varname></link>: Expand the spatial dimension of the bounding box by a float value</para>
 					</listitem>
 
 				<listitem>
@@ -1259,6 +1263,15 @@
 
 					<listitem>
 						<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Bounding Box Functions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpoint_expandSpatial"><varname>expandSpatial</varname></link>: Get the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

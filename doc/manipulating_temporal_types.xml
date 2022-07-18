@@ -137,10 +137,10 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 		We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.
 	</para>
 
-	<sect1 id="input_output_temporal_tyes">
+	<sect1 id="input_output_temporal_types">
 		<title>Input/Output of Temporal Types</title>
 			<para>
-				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. We present next the functions for input and output temporal types.
+				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT), Moving Features JSON (MF-JSON), and Well-Known Binary (WKB) input/output format for all temporal types. We start by describing the WKT format.
 			</para>
 
 		<para>
@@ -236,10 +236,41 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 
 
 		<para>
-			We give below the input/output functions in Well-Known Binary (WKB) format for temporal alphanumeric types. The corresponding functions for temporal points are detailed in <xref linkend="tpoint_inout" />.
+			We give below the input/output functions in Moving Features JSON (MF-JSON) and Well-Known Binary (WKB) format for temporal alphanumeric types. The corresponding functions for temporal points are detailed in <xref linkend="tpoint_inout" />.
 		</para>
 
 		<itemizedlist>
+			<listitem id="temporal_asMFJSON">
+				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Get the Moving Features JSON representation</para>
+				<para><varname>asMFJSON(ttype,options integer=0,maxdecdigits integer=15): bytea</varname></para>
+				<para>The last <varname>options</varname> argument could be used to add a bounding box in the MFJSON output:</para>
+				<itemizedlist>
+					<listitem><para>0: means no option (default value)</para></listitem>
+					<listitem><para>1: MFJSON BBOX</para></listitem>
+				</itemizedlist>
+				<programlisting xml:space="preserve">
+SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
+-- {"type":"MovingBoolean","stBoundedBy":{"period":{"begin":"2019-01-01 18:00:00+01",
+  "end":"2019-01-01 18:00:00+01",'lower_inc':true,'upper_inc':true}},"values":true,
+  "datetimes":"2019-01-01T18:00:00+01","interpolations":["Discrete"]}
+SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
+-- {"type":"MovingInteger","stBoundedBy":{"bbox":[10,25],
+  "period":{"begin":"2019-01-01 18:00:00+01","end":"2019-01-01 18:10:00+01"}},
+  "values":[10,25],"datetimes":["2019-01-01T18:00:00+01","2019-01-01T18:10:00+01"],
+  "interpolations":["Discrete"]}
+SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
+-- {"type":"MovingFloat","values":[10.5,25.5],
+  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}
+SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
+  driving@2019-01-01 18:10:00+02]}');
+-- {"type":"MovingText","sequences":[{"values":["walking","driving"],
+  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "lower_inc":true,"upper_inc":true}],"interpolations":["Stepwise"]}
+</programlisting>
+			</listitem>
+
 			<listitem id="temporal_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 				<para>Get the Well-Known Binary (WKB) representation</para>
@@ -2566,7 +2597,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 5.0, '5 days
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid. &Z_support; &SRF;</para>
 					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  bitmatrix=TRUE): setof point_tpoint</varname></para>
+					<para><varname>  bitmatrix=true): setof point_tpoint</varname></para>
 					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
@@ -2589,7 +2620,7 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid. &Z_support; &SRF;</para>
 					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
-					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=TRUE):</varname></para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=true):</varname></para>
 					<para><varname>  setof point_time_tpoint</varname></para>
 					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting xml:space="preserve">

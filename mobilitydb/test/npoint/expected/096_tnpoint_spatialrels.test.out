@@ -1,0 +1,732 @@
+SELECT contains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contains(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(1, 0.5)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(1, 0.5)');
+ disjoint 
+----------
+ f
+(1 row)
+
+SELECT disjoint(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]', tnpoint '[Npoint(1, 0.4)@2000-01-01, Npoint(1, 0.2)@2000-01-02]');
+ disjoint 
+----------
+ t
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ intersects 
+------------
+ f
+(1 row)
+
+SELECT intersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(1, 0.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT intersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(1, 0.5)');
+ intersects 
+------------
+ t
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(1, 0.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(1, 0.5)', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-02', 2);
+ dwithin 
+---------
+ 
+(1 row)
+

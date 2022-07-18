@@ -125,9 +125,6 @@ git clone --branch develop https://github.com/MobilityDB/MobilityDB
 shared_preload_libraries = 'postgis-3'
 max_locks_per_transaction = 128
 </programlisting>
-			<para>
-				You can replace <varname>postgis-2.5</varname> above if you want to use PostGIS 2.5.
-			</para>
 
 			<para>
 				If you do not preload the PostGIS library you will not be able to load the MobilityDB library and will get an error message such as the following one:
@@ -226,7 +223,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can be used but may cause problems compiling some dependencies such as PostGIS.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL version 11 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
-				<listitem><para>PostGIS version 2.5 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
+				<listitem><para>PostGIS version 3 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 				<listitem><para>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</para></listitem>
 			</itemizedlist>
 			<para>

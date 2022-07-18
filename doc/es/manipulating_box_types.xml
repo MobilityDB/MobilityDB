@@ -36,7 +36,7 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
 </programlisting>
 		</para>
 
-		<para>Un <varname>stbox</varname> se compone de dimensiones de valor espacial y/o de tiempo, donde las coordenadas de la dimensión de valor espacial pueden ser 2D o 3D. Para cada dimensión, se dan los valores mínimos y máximos. Las coordenadas pueden ser cartesianas (planas) o geodésicas (esféricas). Se puede especificar el SRID de las coordenadas; si no es el caso, se asume un valor de 0 (desconocido) y 4326 (correspondiente a WGS84), respectivamente, para coordenadas planas y geodésicas. Ejemplos de entrada de valores <varname>stbox</varname> son los siguientes:
+		<para>Un <varname>stbox</varname> se compone de dimensiones espacial y/o temporal, donde las coordenadas de la dimensión espacial pueden ser 2D o 3D. Para cada dimensión, se dan los valores mínimos y máximos. Las coordenadas pueden ser cartesianas (planas) o geodésicas (esféricas). Se puede especificar el SRID de las coordenadas; si no es el caso, se asume un valor de 0 (desconocido) y 4326 (correspondiente a WGS84), respectivamente, para coordenadas planas y geodésicas. Ejemplos de entrada de valores <varname>stbox</varname> son los siguientes:
 			<programlisting xml:space="preserve">
 -- Sólo dimensión de valor con coordenadas X e Y
 SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
@@ -306,6 +306,18 @@ SELECT hasZ(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 </programlisting>
 			</listitem>
 
+			<listitem id="isGeodetic">
+				<indexterm><primary><varname>isGeodetic</varname></primary></indexterm>
+				<para>¿Es geodética?</para>
+				<para><varname>isGeodetic(stbox): boolean</varname></para>
+				<programlisting xml:space="preserve">
+SELECT isGeodetic(stbox 'GEODSTBOX((1.0, 1.0, 0.0), (3.0, 3.0, 1.0))');
+-- true
+SELECT isGeodetic(stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))');
+-- false
+</programlisting>
+			</listitem>
+
 			<listitem id="hasT">
 				<indexterm><primary><varname>hasT</varname></primary></indexterm>
 				<para>¿Tiene dimension T?</para>
@@ -413,7 +425,7 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 			<itemizedlist>
 				<listitem id="expandValue">
 					<indexterm><primary><varname>expandValue</varname></primary></indexterm>
-					<para>Extender la dimensión de valor numérico del cuadro delimitador con un valor flotante</para>
+					<para>Extender la dimensión numérica del cuadro delimitador con un valor flotante</para>
 					<para><varname>expandValue(tbox,float): tbox</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);
@@ -425,7 +437,7 @@ SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);
 
 				<listitem id="expandSpatial">
 					<indexterm><primary><varname>expandSpatial</varname></primary></indexterm>
-					<para>Extender la dimensión de valor espacial del cuadro delimitador con un valor flotante</para>
+					<para>Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
 					<para><varname>expandSpatial(stbox,float): stbox</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))', 1);
@@ -734,7 +746,7 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-
 
 		<para>Estos operadores consideran la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran el valor X para el tipo <varname>tbox</varname> y las coordenadas X para el tipo <varname>stbox</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para el tipo <varname>stbox</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para el tipo <varname>stbox</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión de tiempo para los tipos <varname>tbox</varname> y <varname>stbox</varname>. Los operadores generan un error si ambos cuadros delimitadores no tienen la dimensión requerida.</para>
 
-		<para>Los operadores para la dimensión de valor numérico del tipo  <varname>tbox</varname> se dan a continuación.</para>
+		<para>Los operadores para la dimensión numérica del tipo <varname>tbox</varname> se dan a continuación.</para>
 
 		<itemizedlist>
 			<listitem id="tbox_left">
@@ -784,7 +796,7 @@ SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;
 </programlisting>
 			</listitem>
 		</itemizedlist>
-		<para>Los operadores para la dimensión de valor espacial del tipo <varname>stbox</varname> se dan a continuación. </para>
+		<para>Los operadores para la dimensión espacial del tipo <varname>stbox</varname> se dan a continuación. </para>
 
 		<itemizedlist>
 			<listitem id="stbox_left">

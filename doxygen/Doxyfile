@@ -251,7 +251,7 @@ TAB_SIZE               = 4
 # commands \{ and \} for these it is advised to use the version @{ and @} or use
 # a double escape (\\{ and \\})
 
-ALIASES                ="sqlfunc=@par SQL Function:^^","sqlop=@par SQL Operator:^^"
+ALIASES                ="sqlfunc=@par SQL Function:^^","sqlop=@par SQL Operator:^^","pymeosfunc=@par PyMEOS Function:^^"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -606,7 +606,7 @@ SORT_MEMBER_DOCS       = NO
 # this will also influence the order of the classes in the class list.
 # The default value is: NO.
 
-SORT_BRIEF_DOCS        = NO
+SORT_BRIEF_DOCS        = YES
 
 # If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen will sort the
 # (brief and detailed) documentation of class members so that constructors and
@@ -819,7 +819,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../src @CMAKE_CURRENT_SOURCE_DIR@/../include @CMAKE_CURRENT_SOURCE_DIR@
+INPUT                  = @CMAKE_SOURCE_DIR@/meos @CMAKE_SOURCE_DIR@/mobilitydb
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -934,7 +934,7 @@ EXCLUDE_PATTERNS       =
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        = PG_FUNCTION_INFO_V1
+EXCLUDE_SYMBOLS        = PG_FUNCTION_INFO_V1 PGDLLEXPORT
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include

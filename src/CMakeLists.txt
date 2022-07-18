@@ -1,5 +1,0 @@
-add_subdirectory(general)
-add_subdirectory(point)
-if(NOT MEOS)
-  add_subdirectory(npoint)
-endif()

@@ -25,7 +25,7 @@
 				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. We present next the functions for input and output box types.
 			</para>
 
-		<para>A <varname>tbox</varname> is composed of a numeric value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
+		<para>A <varname>tbox</varname> is composed of a numeric and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
 			<programlisting xml:space="preserve">
 -- Both value and time dimensions
 SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))';
@@ -36,7 +36,7 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
 </programlisting>
 		</para>
 
-		<para>An <varname>stbox</varname> is composed of a spatial value and/or time dimensions, where the coordinates of the spatial value dimension may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Examples of input of <varname>stbox</varname> values are as follows:
+		<para>An <varname>stbox</varname> is composed of a spatial and/or time dimensions, where the coordinates of the spatial dimension may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Examples of input of <varname>stbox</varname> values are as follows:
 			<programlisting xml:space="preserve">
 -- Only value dimension with X and Y coordinates
 SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
@@ -317,6 +317,18 @@ SELECT hasT(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 </programlisting>
 			</listitem>
 
+			<listitem id="isGeodetic">
+				<indexterm><primary><varname>isGeodetic</varname></primary></indexterm>
+				<para>Is geodetic?</para>
+				<para><varname>isGeodetic(stbox): boolean</varname></para>
+				<programlisting xml:space="preserve">
+SELECT isGeodetic(stbox 'GEODSTBOX((1.0, 1.0, 0.0), (3.0, 3.0, 1.0))');
+-- true
+SELECT isGeodetic(stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))');
+-- false
+</programlisting>
+			</listitem>
+
 			<listitem id="Xmin">
 				<indexterm><primary><varname>Xmin</varname></primary></indexterm>
 				<para>Get the minimum X value</para>
@@ -412,7 +424,7 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 			<itemizedlist>
 				<listitem id="expandValue">
 					<indexterm><primary><varname>expandValue</varname></primary></indexterm>
-					<para>Expand the numeric value dimension of the bounding box by a float value</para>
+					<para>Expand the numeric dimension of the bounding box by a float value</para>
 					<para><varname>expandValue(tbox,float): tbox</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);
@@ -424,7 +436,7 @@ SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);
 
 				<listitem id="expandSpatial">
 					<indexterm><primary><varname>expandSpatial</varname></primary></indexterm>
-					<para>Expand the spatial value dimension of the bounding box by a float value</para>
+					<para>Expand the spatial dimension of the bounding box by a float value</para>
 					<para><varname>expandSpatial(stbox,float): stbox</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))', 1);
@@ -733,7 +745,7 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-
 
 		<para>These operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the X value for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for the <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if both boxes do not have the required dimension.</para>
 
-		<para>The operators for the numeric value dimension of the <varname>tbox</varname> type are given next.</para>
+		<para>The operators for the numeric dimension of the <varname>tbox</varname> type are given next.</para>
 
 		<itemizedlist>
 			<listitem id="tbox_left">
@@ -783,7 +795,7 @@ SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;
 </programlisting>
 			</listitem>
 		</itemizedlist>
-		<para>The operators for the spatial value dimension of the <varname>stbox</varname> type are given next.</para>
+		<para>The operators for the spatial dimension of the <varname>stbox</varname> type are given next.</para>
 
 		<itemizedlist>
 			<listitem id="stbox_left">
