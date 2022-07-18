@@ -69,12 +69,12 @@ CREATE OPERATOR CLASS intspan_quadtree_ops
   OPERATOR  2     &< (intspan, intspan),
   -- overlaps
   OPERATOR  3     && (intspan, intspan),
-  -- strictly right
-  OPERATOR  4     >> (intspan, int),
-  OPERATOR  4     >> (intspan, intspan),
   -- overlaps or right
-  OPERATOR  5     &> (intspan, int),
-  OPERATOR  5     &> (intspan, intspan),
+  OPERATOR  4     &> (intspan, int),
+  OPERATOR  4     &> (intspan, intspan),
+  -- strictly right
+  OPERATOR  5     >> (intspan, int),
+  OPERATOR  5     >> (intspan, intspan),
   -- contains
   OPERATOR  7     @> (intspan, int),
   OPERATOR  7     @> (intspan, intspan),
@@ -106,12 +106,13 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
   OPERATOR  2     &< (floatspan, floatspan),
   -- overlaps
   OPERATOR  3     && (floatspan, floatspan),
-  -- strictly right
-  OPERATOR  4     >> (floatspan, float),
-  OPERATOR  4     >> (floatspan, floatspan),
   -- overlaps or right
-  OPERATOR  5     &> (floatspan, float),
-  OPERATOR  5     &> (floatspan, floatspan),
+  OPERATOR  4     &> (floatspan, float),
+  OPERATOR  4     &> (floatspan, floatspan),
+  -- strictly right
+  OPERATOR  5     >> (floatspan, float),
+  OPERATOR  5     >> (floatspan, floatspan),
+  -- contains
   -- contains
   OPERATOR  7     @> (floatspan, float),
   OPERATOR  7     @> (floatspan, floatspan),

@@ -80,19 +80,15 @@ span_index_consistent_leaf(const Span *key, const Span *query,
     case RTAdjacentStrategyNumber:
       return adjacent_span_span(key, query);
     case RTLeftStrategyNumber:
-      return left_span_span(key, query);
-    case RTOverLeftStrategyNumber:
-      return overleft_span_span(key, query);
-    case RTRightStrategyNumber:
-      return right_span_span(key, query);
-    case RTOverRightStrategyNumber:
-      return overright_span_span(key, query);
     case RTBeforeStrategyNumber:
       return left_span_span(key, query);
+    case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
       return overleft_span_span(key, query);
+    case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
       return right_span_span(key, query);
+    case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
       return overright_span_span(key, query);
     default:
@@ -124,19 +120,15 @@ span_gist_consistent(const Span *key, const Span *query,
     case RTAdjacentStrategyNumber:
       return adjacent_span_span(key, query) || overlaps_span_span(key, query);
     case RTLeftStrategyNumber:
-      return ! overright_span_span(key, query);
-    case RTOverLeftStrategyNumber:
-      return ! right_span_span(key, query);
-    case RTRightStrategyNumber:
-      return ! overleft_span_span(key, query);
-    case RTOverRightStrategyNumber:
-      return ! left_span_span(key, query);
     case RTBeforeStrategyNumber:
       return ! overright_span_span(key, query);
+    case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
       return ! right_span_span(key, query);
+    case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
       return ! overleft_span_span(key, query);
+    case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
       return ! left_span_span(key, query);
     default:
