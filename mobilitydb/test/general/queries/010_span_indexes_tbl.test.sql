@@ -62,6 +62,9 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]';
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
 
+SELECT k, i <-> 101 FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+SELECT k, i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0;
@@ -76,6 +79,9 @@ SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]';
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
+
+SELECT k, round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
+SELECT k, round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
 
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_big_rtree_idx;
@@ -101,6 +107,9 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]';
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
 
+SELECT k, i <-> 101 FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+SELECT k, i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0;
@@ -115,6 +124,9 @@ SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]';
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
+
+SELECT k, round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
+SELECT k, round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
 
 DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_big_quadtree_idx;

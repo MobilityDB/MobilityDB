@@ -36,6 +36,10 @@
  * R-tree GiST indexes
  ******************************************************************************/
 
+CREATE FUNCTION span_gist_consistent(internal, intspan, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_union(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_union'
@@ -52,13 +56,13 @@ CREATE FUNCTION span_gist_same(intspan, intspan, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_distance(internal, intspan, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_fetch(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_fetch'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_consistent(internal, intspan, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS intspan_rtree_ops
@@ -95,17 +99,22 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(intspan, intspan, internal),
+  FUNCTION  8  span_gist_distance(internal, intspan, smallint, oid, internal),
   FUNCTION  9  span_gist_fetch(internal);
 
 /******************************************************************************/
 
+CREATE FUNCTION span_gist_consistent(internal, floatspan, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_same(floatspan, floatspan, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_consistent(internal, floatspan, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+CREATE FUNCTION span_gist_distance(internal, floatspan, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS floatspan_rtree_ops
@@ -142,6 +151,7 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(floatspan, floatspan, internal),
+  FUNCTION  8  span_gist_distance(internal, floatspan, smallint, oid, internal),
   FUNCTION  9  span_gist_fetch(internal);
 
 /******************************************************************************

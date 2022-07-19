@@ -102,6 +102,22 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
    697
 (1 row)
 
+SELECT k, i <-> 101 FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+  k   | ?column? 
+------+----------
+ 1335 |        1
+ 1835 |        1
+ 3534 |        1
+(3 rows)
+
+SELECT k, i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+  k   | ?column? 
+------+----------
+ 1335 |        1
+ 1835 |        1
+ 3534 |        1
+(3 rows)
+
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
  count 
 -------
@@ -179,6 +195,22 @@ SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
 -------
    565
 (1 row)
+
+SELECT k, round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
+  k   |  round   
+------+----------
+ 2851 | 1.391026
+ 9772 | 1.682749
+  929 | 1.708919
+(3 rows)
+
+SELECT k, round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
+  k   |  round   
+------+----------
+ 2851 | 1.391026
+ 9772 | 1.682749
+  929 | 1.708919
+(3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
 DROP INDEX
@@ -272,6 +304,22 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
    697
 (1 row)
 
+SELECT k, i <-> 101 FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+  k   | ?column? 
+------+----------
+ 9838 |        1
+ 6744 |        1
+ 7526 |        1
+(3 rows)
+
+SELECT k, i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 2 LIMIT 3;
+  k   | ?column? 
+------+----------
+ 9838 |        1
+ 6744 |        1
+ 7526 |        1
+(3 rows)
+
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
  count 
 -------
@@ -349,6 +397,22 @@ SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
 -------
    565
 (1 row)
+
+SELECT k, round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
+  k   |  round   
+------+----------
+ 2851 | 1.391026
+ 9772 | 1.682749
+  929 | 1.708919
+(3 rows)
+
+SELECT k, round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 2 LIMIT 3;
+  k   |  round   
+------+----------
+ 2851 | 1.391026
+ 9772 | 1.682749
+  929 | 1.708919
+(3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
 DROP INDEX

@@ -37,6 +37,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <access/gist.h>
 #include <utils/timestamp.h>
@@ -854,6 +855,43 @@ Span_gist_same(PG_FUNCTION_ARGS)
   bool *result = (bool *) PG_GETARG_POINTER(2);
   *result = span_eq(p1, p2);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Span_gist_distance);
+/**
+ * GiST support function. Take in a query and an entry and return the "distance"
+ * between them.
+*/
+PGDLLEXPORT Datum
+Span_gist_distance(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  Span *key = (Span *) DatumGetPointer(entry->key);
+  Span query;
+  double distance;
+
+  /* The index is lossy for leaf levels */
+  if (GIST_LEAF(entry))
+    *recheck = true;
+
+  if (key == NULL)
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /* Transform the query into a box */
+  if (! span_gist_get_span(fcinfo, &query, typid))
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /* Since we only have boxes we'll return the minimum possible distance,
+   * and let the recheck sort things out in the case of leaves */
+  distance = distance_span_span(key, &query);
+
+  PG_RETURN_FLOAT8(distance);
 }
 
 /*****************************************************************************
