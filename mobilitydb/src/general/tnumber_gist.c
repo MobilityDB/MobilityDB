@@ -159,31 +159,31 @@ tnumber_gist_consistent(const TBOX *key, const TBOX *query,
       break;
     case RTAdjacentStrategyNumber:
       retval = adjacent_tbox_tbox(key, query) ||
-         overlaps_tbox_tbox(key, query);
+        overlaps_tbox_tbox(key, query);
       break;
     case RTLeftStrategyNumber:
-      retval = !overright_tbox_tbox(key, query);
+      retval = ! overright_tbox_tbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
-      retval = !right_tbox_tbox(key, query);
+      retval = ! right_tbox_tbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = !overleft_tbox_tbox(key, query);
+      retval = ! overleft_tbox_tbox(key, query);
       break;
     case RTOverRightStrategyNumber:
-      retval = !left_tbox_tbox(key, query);
+      retval = ! left_tbox_tbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = !overafter_tbox_tbox(key, query);
+      retval = ! overafter_tbox_tbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = !after_tbox_tbox(key, query);
+      retval = ! after_tbox_tbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = !overbefore_tbox_tbox(key, query);
+      retval = ! overbefore_tbox_tbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
-      retval = !before_tbox_tbox(key, query);
+      retval = ! before_tbox_tbox(key, query);
       break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);

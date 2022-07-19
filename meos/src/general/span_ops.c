@@ -492,7 +492,11 @@ overleft_float_floatspan(double d, const Span *s)
 bool
 overleft_span_elem(const Span *s, Datum d, mobdbType basetype)
 {
-  return datum_le2(s->upper, d, s->basetype, basetype);
+  /* Integer spans are canonicalized and thus their upper bound is exclusive.
+   * Therefore, we cannot simply check that s->upper <= d */
+  Span s1;
+  span_set(d, d, true, true, basetype, &s1);
+  return overleft_span_span(s, &s1);
 }
 
 #if MEOS

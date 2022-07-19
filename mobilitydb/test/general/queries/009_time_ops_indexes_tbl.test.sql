@@ -29,20 +29,16 @@
 
 -------------------------------------------------------------------------------
 -- File timeops.c
--- Tests of operators for time types.
+-- Tests of operators that do involve indexes for time types.
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_timestampset_rtree_idx;
 DROP INDEX IF EXISTS tbl_period_rtree_idx;
 DROP INDEX IF EXISTS tbl_periodset_rtree_idx;
-DROP INDEX IF EXISTS tbl_intspan_rtree_idx;
-DROP INDEX IF EXISTS tbl_floatspan_rtree_idx;
 
 DROP INDEX IF EXISTS tbl_timestampset_quadtree_idx;
 DROP INDEX IF EXISTS tbl_period_quadtree_idx;
 DROP INDEX IF EXISTS tbl_periodset_quadtree_idx;
-DROP INDEX IF EXISTS tbl_intspan_quadtree_idx;
-DROP INDEX IF EXISTS tbl_floatspan_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
@@ -163,70 +159,6 @@ INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p = t2.p;
 INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
-
--------------------------------------------------------------------------------
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'integer', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'intspan', 'integer', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i << t2.i;
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f << t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f << t2.f;
-
--------------------------------------------------------------------------------
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'integer', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &< t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'intspan', 'integer', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &< t2.i;
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &< t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &< t2.f;
-
--------------------------------------------------------------------------------
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'integer', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i >> t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'intspan', 'integer', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i >> t2.i;
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f >> t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f >> t2.f;
-
--------------------------------------------------------------------------------
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'integer', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &> t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'intspan', 'integer', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &> t2.i;
-
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f;
-INSERT INTO test_timeops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f;
 
 -------------------------------------------------------------------------------
 
@@ -377,8 +309,6 @@ SELECT '#&>', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_peri
 CREATE INDEX tbl_timestampset_rtree_idx ON tbl_timestampset USING GIST(ts);
 CREATE INDEX tbl_period_rtree_idx ON tbl_period USING GIST(p);
 CREATE INDEX tbl_periodset_rtree_idx ON tbl_periodset USING GIST(ps);
-CREATE INDEX tbl_intspan_rtree_idx ON tbl_intspan USING GIST(i);
-CREATE INDEX tbl_floatspan_rtree_idx ON tbl_floatspan USING GIST(f);
 
 -------------------------------------------------------------------------------
 
@@ -529,94 +459,6 @@ WHERE op = '=' AND leftarg = 'period' AND rightarg = 'period';
 UPDATE test_timeops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
 WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i )
-WHERE op = '<<' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i )
-WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i << t2.i )
-WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f << t2.f )
-WHERE op = '<<' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f )
-WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f << t2.f )
-WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &< t2.i )
-WHERE op = '&<' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i )
-WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &< t2.i )
-WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &< t2.f )
-WHERE op = '&<' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f )
-WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &< t2.f )
-WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i >> t2.i )
-WHERE op = '>>' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i )
-WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i >> t2.i )
-WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f >> t2.f )
-WHERE op = '>>' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f )
-WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f >> t2.f )
-WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &> t2.i )
-WHERE op = '&>' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i )
-WHERE op =  '&>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &> t2.i )
-WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
-WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f )
-WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
-WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 
 -------------------------------------------------------------------------------
 
@@ -827,16 +669,10 @@ WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 DROP INDEX tbl_timestampset_rtree_idx;
 DROP INDEX tbl_period_rtree_idx;
 DROP INDEX tbl_periodset_rtree_idx;
-DROP INDEX tbl_intspan_rtree_idx;
-DROP INDEX tbl_floatspan_rtree_idx;
-
--------------------------------------------------------------------------------
 
 CREATE INDEX tbl_timestampset_quadtree_idx ON tbl_timestampset USING SPGIST(ts);
 CREATE INDEX tbl_period_quadtree_idx ON tbl_period USING SPGIST(p);
 CREATE INDEX tbl_periodset_quadtree_idx ON tbl_periodset USING SPGIST(ps);
-CREATE INDEX tbl_intspan_quadtree_idx ON tbl_intspan USING SPGIST(i);
-CREATE INDEX tbl_floatspan_quadtree_idx ON tbl_floatspan USING SPGIST(f);
 
 -------------------------------------------------------------------------------
 
@@ -987,94 +823,6 @@ WHERE op = '=' AND leftarg = 'period' AND rightarg = 'period';
 UPDATE test_timeops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
 WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i )
-WHERE op = '<<' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i )
-WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i << t2.i )
-WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f << t2.f )
-WHERE op = '<<' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f )
-WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f << t2.f )
-WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &< t2.i )
-WHERE op = '&<' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i )
-WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &< t2.i )
-WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &< t2.f )
-WHERE op = '&<' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f )
-WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &< t2.f )
-WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i >> t2.i )
-WHERE op = '>>' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i )
-WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i >> t2.i )
-WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f >> t2.f )
-WHERE op = '>>' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f )
-WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f >> t2.f )
-WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
--------------------------------------------------------------------------------
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &> t2.i )
-WHERE op = '&>' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i )
-WHERE op =  '&>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &> t2.i )
-WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
-WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspan';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f )
-WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
-UPDATE test_timeops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
-WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 
 -------------------------------------------------------------------------------
 
@@ -1284,8 +1032,6 @@ WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 DROP INDEX tbl_timestampset_quadtree_idx;
 DROP INDEX tbl_period_quadtree_idx;
 DROP INDEX tbl_periodset_quadtree_idx;
-DROP INDEX tbl_intspan_quadtree_idx;
-DROP INDEX tbl_floatspan_quadtree_idx;
 
 -------------------------------------------------------------------------------
 

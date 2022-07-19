@@ -241,7 +241,7 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15;
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15;
  count 
 -------
-  1136
+  1239
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85;
