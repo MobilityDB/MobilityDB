@@ -1,26 +1,14 @@
-# Postgres version dependant files
-if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
-  set(013_span_spgist 013_span_spgist)
-  set(014_time_spgist 014_time_spgist)
-  set(044_temporal_spgist 044_temporal_spgist)
-  if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 120000)
-    set(019_geo_constructors 019_geo_constructors)
-  endif()
-endif()
-
 SET(LOCAL_FILES
   001_span
   003_timestampset
   005_periodset
   007_span_ops
   009_time_ops
-  011_span_gist
-  012_time_gist
-  ${013_span_spgist}
-  ${014_time_spgist}
+  011_span_indexes
+  013_time_indexes
   015_span_aggfuncs
   017_time_aggfuncs
-  ${019_geo_constructors}
+  019_geo_constructors
   021_tbox
   022_temporal
   023_temporal_inout
@@ -36,8 +24,8 @@ SET(LOCAL_FILES
   038_temporal_aggfuncs
   040_temporal_waggfuncs
   042_temporal_gist
-  ${044_temporal_spgist}
-  999_tempcache
+  044_temporal_spgist
+  999_temporal_cache
   )
 
 foreach (f ${LOCAL_FILES})

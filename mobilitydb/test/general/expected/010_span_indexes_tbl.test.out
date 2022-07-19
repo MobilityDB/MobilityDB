@@ -200,28 +200,28 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
    105
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 50;
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15;
  count 
 -------
-  4889
+  1136
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 50;
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15;
  count 
 -------
-  4889
+  1136
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 50;
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85;
  count 
 -------
-  4391
+   571
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 50;
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 85;
  count 
 -------
-  4517
+   697
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]';
@@ -248,28 +248,28 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]';
    174
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]';
  count 
 -------
-  4350
+  1136
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]';
  count 
 -------
-  5549
+  2282
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]';
  count 
 -------
-  3849
+     0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
  count 
 -------
-  5047
+   697
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
@@ -284,28 +284,28 @@ SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 50.0;
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0;
  count 
 -------
-  4828
+  1027
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 50.0;
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0;
  count 
 -------
-  4828
+  1027
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 50.0;
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0;
  count 
 -------
-  4461
+   565
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 50.0;
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0;
  count 
 -------
-  4461
+   565
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]';
@@ -326,28 +326,28 @@ SELECT COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]';
    495
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]';
  count 
 -------
-  4262
+  1027
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]';
  count 
 -------
-  5379
+  2133
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]';
  count 
 -------
-  3925
+     0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
  count 
 -------
-  5016
+   565
 (1 row)
 
 DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
