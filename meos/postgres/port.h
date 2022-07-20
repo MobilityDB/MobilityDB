@@ -195,14 +195,15 @@ extern unsigned char pg_ascii_tolower(unsigned char ch);
 #undef printf
 #endif
 
-extern int	pg_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
-extern int	pg_snprintf(char *str, size_t count, const char *fmt,...) pg_attribute_printf(3, 4);
-extern int	pg_vsprintf(char *str, const char *fmt, va_list args);
-extern int	pg_sprintf(char *str, const char *fmt,...) pg_attribute_printf(2, 3);
-extern int	pg_vfprintf(FILE *stream, const char *fmt, va_list args);
-extern int	pg_fprintf(FILE *stream, const char *fmt,...) pg_attribute_printf(2, 3);
-extern int	pg_vprintf(const char *fmt, va_list args);
-extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
+// MEOS
+// extern int	pg_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
+// extern int	pg_snprintf(char *str, size_t count, const char *fmt,...) pg_attribute_printf(3, 4);
+// extern int	pg_vsprintf(char *str, const char *fmt, va_list args);
+// extern int	pg_sprintf(char *str, const char *fmt,...) pg_attribute_printf(2, 3);
+// extern int	pg_vfprintf(FILE *stream, const char *fmt, va_list args);
+// extern int	pg_fprintf(FILE *stream, const char *fmt,...) pg_attribute_printf(2, 3);
+// extern int	pg_vprintf(const char *fmt, va_list args);
+// extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
 
 /*
  * We use __VA_ARGS__ for printf to prevent replacing references to
@@ -212,14 +213,15 @@ extern int	pg_printf(const char *fmt,...) pg_attribute_printf(1, 2);
  * pg_printf explicitly.)  For printf's sibling functions, use
  * parameterless macros so that function pointers will work unsurprisingly.
  */
-#define vsnprintf		pg_vsnprintf
-#define snprintf		pg_snprintf
-#define vsprintf		pg_vsprintf
-#define sprintf			pg_sprintf
-#define vfprintf		pg_vfprintf
-#define fprintf			pg_fprintf
-#define vprintf			pg_vprintf
-#define printf(...)		pg_printf(__VA_ARGS__)
+// MEOS
+// #define vsnprintf		pg_vsnprintf
+// #define snprintf		pg_snprintf
+// #define vsprintf		pg_vsprintf
+// #define sprintf			pg_sprintf
+// #define vfprintf		pg_vfprintf
+// #define fprintf			pg_fprintf
+// #define vprintf			pg_vprintf
+// #define printf(...)		pg_printf(__VA_ARGS__)
 
 /* This is also provided by snprintf.c */
 extern int	pg_strfromd(char *str, size_t count, int precision, double value);
@@ -434,18 +436,18 @@ extern ssize_t pg_pwrite(int fd, const void *buf, size_t nbyte, off_t offset);
 #endif
 
 /* For pg_pwritev() and pg_preadv(), see port/pg_iovec.h. */
+// MEOS
+// #if !HAVE_DECL_STRLCAT
+// extern size_t strlcat(char *dst, const char *src, size_t siz);
+// #endif
 
-#if !HAVE_DECL_STRLCAT
-extern size_t strlcat(char *dst, const char *src, size_t siz);
-#endif
+// #if !HAVE_DECL_STRLCPY
+// extern size_t strlcpy(char *dst, const char *src, size_t siz);
+// #endif
 
-#if !HAVE_DECL_STRLCPY
-extern size_t strlcpy(char *dst, const char *src, size_t siz);
-#endif
-
-#if !HAVE_DECL_STRNLEN
-extern size_t strnlen(const char *str, size_t maxlen);
-#endif
+// #if !HAVE_DECL_STRNLEN
+// extern size_t strnlen(const char *str, size_t maxlen);
+// #endif
 
 #if !defined(HAVE_RANDOM)
 extern long random(void);
