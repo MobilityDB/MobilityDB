@@ -52,8 +52,9 @@
 #undef PG_INT64_TYPE
 
 #include "pg_config.h"
+// MEOS
 #include "pg_config_manual.h"	/* must be after pg_config.h */
-#include "pg_config_os.h"		/* must be before any system header files */
+// #include "pg_config_os.h"		/* must be before any system header files */
 
 /* System header files that should be available everywhere in Postgres */
 #include <stdio.h>
@@ -640,49 +641,51 @@ typedef struct varlena text;
 typedef struct varlena BpChar;	/* blank-padded char, ie SQL char(n) */
 typedef struct varlena VarChar; /* var-length char, ie SQL varchar(n) */
 
-/*
- * Specialized array types.  These are physically laid out just the same
- * as regular arrays (so that the regular array subscripting code works
- * with them).  They exist as distinct types mostly for historical reasons:
- * they have nonstandard I/O behavior which we don't want to change for fear
- * of breaking applications that look at the system catalogs.  There is also
- * an implementation issue for oidvector: it's part of the primary key for
- * pg_proc, and we can't use the normal btree array support routines for that
- * without circularity.
- */
-typedef struct
-{
-	int32		vl_len_;		/* these fields must match ArrayType! */
-	int			ndim;			/* always 1 for int2vector */
-	int32		dataoffset;		/* always 0 for int2vector */
-	Oid			elemtype;
-	int			dim1;
-	int			lbound1;
-	int16		values[FLEXIBLE_ARRAY_MEMBER];
-} int2vector;
+// MEOS
+// /*
+ // * Specialized array types.  These are physically laid out just the same
+ // * as regular arrays (so that the regular array subscripting code works
+ // * with them).  They exist as distinct types mostly for historical reasons:
+ // * they have nonstandard I/O behavior which we don't want to change for fear
+ // * of breaking applications that look at the system catalogs.  There is also
+ // * an implementation issue for oidvector: it's part of the primary key for
+ // * pg_proc, and we can't use the normal btree array support routines for that
+ // * without circularity.
+ // */
+// typedef struct
+// {
+	// int32		vl_len_;		/* these fields must match ArrayType! */
+	// int			ndim;			/* always 1 for int2vector */
+	// int32		dataoffset;		/* always 0 for int2vector */
+	// Oid			elemtype;
+	// int			dim1;
+	// int			lbound1;
+	// int16		values[FLEXIBLE_ARRAY_MEMBER];
+// } int2vector;
 
-typedef struct
-{
-	int32		vl_len_;		/* these fields must match ArrayType! */
-	int			ndim;			/* always 1 for oidvector */
-	int32		dataoffset;		/* always 0 for oidvector */
-	Oid			elemtype;
-	int			dim1;
-	int			lbound1;
-	Oid			values[FLEXIBLE_ARRAY_MEMBER];
-} oidvector;
+// typedef struct
+// {
+	// int32		vl_len_;		/* these fields must match ArrayType! */
+	// int			ndim;			/* always 1 for oidvector */
+	// int32		dataoffset;		/* always 0 for oidvector */
+	// Oid			elemtype;
+	// int			dim1;
+	// int			lbound1;
+	// Oid			values[FLEXIBLE_ARRAY_MEMBER];
+// } oidvector;
 
-/*
- * Representation of a Name: effectively just a C string, but null-padded to
- * exactly NAMEDATALEN bytes.  The use of a struct is historical.
- */
-typedef struct nameData
-{
-	char		data[NAMEDATALEN];
-} NameData;
-typedef NameData *Name;
+// MEOS
+// /*
+ // * Representation of a Name: effectively just a C string, but null-padded to
+ // * exactly NAMEDATALEN bytes.  The use of a struct is historical.
+ // */
+// typedef struct nameData
+// {
+	// char		data[NAMEDATALEN];
+// } NameData;
+// typedef NameData *Name;
 
-#define NameStr(name)	((name).data)
+// #define NameStr(name)	((name).data)
 
 
 /* ----------------------------------------------------------------
@@ -1363,6 +1366,7 @@ typedef intptr_t sigjmp_buf[5];
 #endif
 
 /* /port compatibility functions */
-#include "port.h"
+//MEOS
+// #include "port.h"
 
 #endif							/* C_H */
