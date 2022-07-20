@@ -517,7 +517,6 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->nNodes; i++)
     {
       out->nodeNumbers[i] = i;
-
       if (in->norderbys > 0)
       {
         /* Use parent quadrant nodebox as traversalValue */
@@ -649,11 +648,8 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   bool result = true;
   int i;
 
-  /**
-   * Initialization so that all the tests are lossy.
-   * This will be changed below for some tests.
-   */
-  out->recheck = true;
+  /* Initialize the value to do not recheck, will be updated below */
+  out->recheck = false;
 
   /* leafDatum is what it is... */
   out->leafValue = in->leafDatum;

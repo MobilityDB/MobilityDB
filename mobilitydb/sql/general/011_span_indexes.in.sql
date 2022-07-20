@@ -187,8 +187,20 @@ CREATE FUNCTION span_spgist_leaf_consistent(internal, internal)
 
 CREATE OPERATOR CLASS intspan_quadtree_ops
   DEFAULT FOR TYPE intspan USING spgist AS
+  -- strictly left
+  OPERATOR  1     << (intspan, int),
+  OPERATOR  1     << (intspan, intspan),
+  -- overlaps or left
+  OPERATOR  2     &< (intspan, int),
+  OPERATOR  2     &< (intspan, intspan),
   -- overlaps
   OPERATOR  3     && (intspan, intspan),
+  -- overlaps or right
+  OPERATOR  4     &> (intspan, int),
+  OPERATOR  4     &> (intspan, intspan),
+  -- strictly right
+  OPERATOR  5     >> (intspan, int),
+  OPERATOR  5     >> (intspan, intspan),
   -- contains
   OPERATOR  7     @> (intspan, int),
   OPERATOR  7     @> (intspan, intspan),
@@ -201,18 +213,6 @@ CREATE OPERATOR CLASS intspan_quadtree_ops
   -- nearest approach distance
   OPERATOR  25    <-> (intspan, int) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspan, intspan) FOR ORDER BY pg_catalog.float_ops,
-  -- overlaps or before
-  OPERATOR  28    &< (intspan, int),
-  OPERATOR  28    &< (intspan, intspan),
-  -- strictly before
-  OPERATOR  29    << (intspan, int),
-  OPERATOR  29    << (intspan, intspan),
-  -- strictly after
-  OPERATOR  30    >> (intspan, int),
-  OPERATOR  30    >> (intspan, intspan),
-  -- overlaps or after
-  OPERATOR  31    &> (intspan, int),
-  OPERATOR  31    &> (intspan, intspan),
   -- functions
   FUNCTION  1  intspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
@@ -224,8 +224,20 @@ CREATE OPERATOR CLASS intspan_quadtree_ops
 
 CREATE OPERATOR CLASS floatspan_quadtree_ops
   DEFAULT FOR TYPE floatspan USING spgist AS
+  -- strictly left
+  OPERATOR  1     << (floatspan, float),
+  OPERATOR  1     << (floatspan, floatspan),
+  -- overlaps or left
+  OPERATOR  2     &< (floatspan, float),
+  OPERATOR  2     &< (floatspan, floatspan),
   -- overlaps
   OPERATOR  3     && (floatspan, floatspan),
+  -- overlaps or right
+  OPERATOR  4     &> (floatspan, float),
+  OPERATOR  4     &> (floatspan, floatspan),
+  -- strictly right
+  OPERATOR  5     >> (floatspan, float),
+  OPERATOR  5     >> (floatspan, floatspan),
   -- contains
   OPERATOR  7     @> (floatspan, float),
   OPERATOR  7     @> (floatspan, floatspan),
@@ -238,18 +250,6 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
   -- nearest approach distance
   OPERATOR  25    <-> (floatspan, float) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspan, floatspan) FOR ORDER BY pg_catalog.float_ops,
-  -- overlaps or before
-  OPERATOR  28    &< (floatspan, float),
-  OPERATOR  28    &< (floatspan, floatspan),
-  -- strictly before
-  OPERATOR  29    << (floatspan, float),
-  OPERATOR  29    << (floatspan, floatspan),
-  -- strictly after
-  OPERATOR  30    >> (floatspan, float),
-  OPERATOR  30    >> (floatspan, floatspan),
-  -- overlaps or after
-  OPERATOR  31    &> (floatspan, float),
-  OPERATOR  31    &> (floatspan, floatspan),
   -- functions
   FUNCTION  1  floatspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),

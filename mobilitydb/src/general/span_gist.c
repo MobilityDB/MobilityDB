@@ -184,7 +184,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     periodset_period_slice(psdatum, result);
   }
   /* For temporal types whose bounding box is a period */
-  else if (temporal_type(type))
+  else if (talpha_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
     temporal_bbox_slice(tempdatum, result);
