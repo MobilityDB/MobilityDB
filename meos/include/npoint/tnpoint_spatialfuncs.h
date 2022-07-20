@@ -67,13 +67,13 @@ extern GSERIALIZED *tnpoint_geom(const Temporal *temp);
 
 extern bool npoint_same(const Npoint *np1, const Npoint *np2);
 
-extern double tnpoint_length(Temporal *temp);
-extern Temporal *tnpoint_cumulative_length(Temporal *temp);
-extern Temporal *tnpoint_speed(Temporal *temp);
-extern Datum tnpoint_twcentroid(Temporal *temp);
-extern Temporal *tnpoint_azimuth(Temporal *temp);
-extern Temporal *tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *gs,
-  bool atfunc);
+extern double tnpoint_length(const Temporal *temp);
+extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
+extern Temporal *tnpoint_speed(const Temporal *temp);
+extern Datum tnpoint_twcentroid(const Temporal *temp);
+extern Temporal *tnpoint_azimuth(const Temporal *temp);
+extern Temporal *tnpoint_restrict_geometry(const Temporal *temp,
+  const GSERIALIZED *gs, bool atfunc);
 
 /*****************************************************************************/
 

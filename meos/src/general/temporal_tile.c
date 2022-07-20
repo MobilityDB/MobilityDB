@@ -301,9 +301,9 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
 {
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
-  /* This loop is needed for filtering unnecesary time buckets for the sequences
-   * composing a sequence set */
-  /* The upper bound for the bucket is exclusive => the test below is >= */
+  /* This loop is needed for filtering unnecesary time buckets for the
+   * sequences composing a sequence set.
+   * The upper bound for the bucket is exclusive => the test below is >= */
   while (lower < end &&
     ((TimestampTz) seq->period.lower >= upper ||
      lower > (TimestampTz) seq->period.upper ||
@@ -726,8 +726,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no]++;
-    result[bucket_no * numcols + seq_no] = tsequence_make(&inst1, 1,
-      true, true, STEP, NORMALIZE);
+    result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEP);
   }
   pfree_array((void **) tofree, l);
   return;

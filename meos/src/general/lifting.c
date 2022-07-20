@@ -1862,7 +1862,8 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
     /* Compute the function at the start instant */
     startvalue1 = tinstant_value(start1);
     startvalue2 = tinstant_value(start2);
-    if (lower_inc && DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo)))
+    if (lower_inc &&
+        DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo)))
     {
       pfree_array((void **) tofree, l);
       return 1;

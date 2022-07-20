@@ -2138,8 +2138,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
     inst1 = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
     inst2 = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
     if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
-      result[k++] = tsequence_make((const TInstant **) &inst1, 1,
-        true, true, linear, NORMALIZE_NO);
+      result[k++] = tinstant_to_tsequence(inst1, linear);
   }
   return k;
 }

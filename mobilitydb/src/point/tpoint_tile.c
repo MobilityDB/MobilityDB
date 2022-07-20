@@ -602,6 +602,7 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
 
+  /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */

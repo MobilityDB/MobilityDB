@@ -2453,15 +2453,16 @@ TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  const TInstant *inst;
+  const TInstant *inst1;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst = tsequence_inst_n(seq, 0);
-    TInstant *inst1 = tinstant_make(Float8GetDatum(0), T_TFLOAT, inst->t);
-    TSequence *result = tinstant_to_tsequence(inst1, linear);
-    pfree(inst1);
+    inst1 = tsequence_inst_n(seq, 0);
+    TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
+      inst1->t);
+    TSequence *result = tinstant_to_tsequence(inst, linear);
+    pfree(inst);
     return result;
   }
 
@@ -2472,15 +2473,15 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     Datum length = Float8GetDatum(0.0);
     for (int i = 0; i < seq->count; i++)
     {
-      inst = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(length, T_TFLOAT, inst->t);
+      inst1 = tsequence_inst_n(seq, i);
+      instants[i] = tinstant_make(length, T_TFLOAT, inst1->t);
     }
   }
   else
   /* Linear interpolation */
   {
     datum_func2 func = pt_distance_fn(seq->flags);
-    const TInstant *inst1 = tsequence_inst_n(seq, 0);
+    inst1 = tsequence_inst_n(seq, 0);
     Datum value1 = tinstant_value(inst1);
     double length = prevlength;
     instants[0] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst1->t);
@@ -2495,11 +2496,8 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
       value1 = value2;
     }
   }
-  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE);
-
-  pfree_array((void **) instants, seq->count);
-  return result;
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, linear, NORMALIZE);
 }
 
 /**
@@ -2520,14 +2518,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
     const TInstant *end = tsequence_inst_n(sequences[i], sequences[i]->count - 1);
     length = DatumGetFloat8(tinstant_value(end));
   }
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    ss->count, NORMALIZE_NO);
-
-  for (int i = 1; i < ss->count; i++)
-    pfree(sequences[i]);
-  pfree(sequences);
-
-  return result;
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
 /**
