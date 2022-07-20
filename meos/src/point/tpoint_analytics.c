@@ -1578,9 +1578,8 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
     lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
   lwpoint_free(lwpoint);
-
-    /* Construct the result */
-    TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+  /* Construct the result */
+  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;

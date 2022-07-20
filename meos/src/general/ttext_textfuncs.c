@@ -101,8 +101,7 @@ pnstrdup(const char *in, Size size)
 
   if (!in)
   {
-    fprintf(stderr,
-        _("cannot duplicate null pointer (internal error)\n"));
+    fprintf(stderr, _("cannot duplicate null pointer (internal error)\n"));
     exit(EXIT_FAILURE);
   }
 
@@ -129,8 +128,8 @@ pnstrdup(const char *in, Size size)
 char *
 asc_tolower(const char *buff, size_t nbytes)
 {
-  char     *result;
-  char     *p;
+  char *result;
+  char *p;
 
   if (!buff)
     return NULL;
@@ -152,8 +151,8 @@ asc_tolower(const char *buff, size_t nbytes)
 char *
 asc_toupper(const char *buff, size_t nbytes)
 {
-  char     *result;
-  char     *p;
+  char *result;
+  char *p;
 
   if (!buff)
     return NULL;
