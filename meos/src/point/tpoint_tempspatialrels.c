@@ -253,8 +253,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base(datum_no, T_TBOOL,
-      &seq->period, STEP);
+    result[0] = tsequence_from_base_time(datum_no, T_TBOOL, &seq->period,
+      STEP);
     *count = 1;
     return result;
   }
@@ -265,7 +265,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base(datum_no, T_TBOOL, &seq->period, STEP);
+    result[0] = tsequence_from_base_time(datum_no, T_TBOOL, &seq->period,
+      STEP);
     pfree(DatumGetPointer(inter));
     *count = 1;
     return result;
@@ -279,8 +280,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base(datum_yes, T_TBOOL,
-      &seq->period, STEP);
+    result[0] = tsequence_from_base_time(datum_yes, T_TBOOL, &seq->period,
+      STEP);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
     *count = 1;
@@ -293,8 +294,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base(datum_no, T_TBOOL,
-      &seq->period, STEP);
+    result[0] = tsequence_from_base_time(datum_no, T_TBOOL, &seq->period,
+      STEP);
     pfree(DatumGetPointer(gsinter));
     *count = 1;
     return result;
@@ -315,15 +316,15 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     newcount += ps->count;
   result = palloc(sizeof(TSequence *) * newcount);
   for (int i = 0; i < countper; i++)
-    result[i] = tsequence_from_base(datum_yes, T_TBOOL,
-      periods[i], STEP);
+    result[i] = tsequence_from_base_time(datum_yes, T_TBOOL, periods[i],
+      STEP);
   if (ps != NULL)
   {
     for (int i = 0; i < ps->count; i++)
     {
       const Period *p = periodset_per_n(ps, i);
-      result[i + countper] = tsequence_from_base(datum_no, T_TBOOL,
-        p, STEP);
+      result[i + countper] = tsequence_from_base_time(datum_no, T_TBOOL, p,
+        STEP);
     }
     tseqarr_sort(result, newcount);
     pfree(ps);
@@ -631,7 +632,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     double c2 = p1->y;
     double a3 = (p2->z - p1->z);
     double c3 = p1->z;
-  
+
     /* per2 functions
      * x(t) = a4 * t + c4
      * y(t) = a5 * t + c5
@@ -699,7 +700,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     *t2 = upper;
     return 2;
   }
-  
+
   /* Solving the quadratic equation for distance = dist */
   long double discriminant = b * b - 4 * a * c;
 
@@ -751,7 +752,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   }
 }
 
-int 
+int
 tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc, bool upper_inc1, TimestampTz t1,
   TimestampTz t2, TInstant **instants, TSequence **result)
@@ -798,7 +799,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   }
   return k;
 }
-  
+
 /**
  * Return the timestamps at which the segments of two temporal points are
  * within the given distance

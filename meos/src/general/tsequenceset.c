@@ -875,6 +875,104 @@ tsequenceset_copy(const TSequenceSet *ss)
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_int_temporal_constructor
+ * @brief Construct a temporal sequence set from a base value and the time
+ * frame of another temporal sequence set.
+ *
+ * @param[in] value Base value
+ * @param[in] temptype Temporal type
+ * @param[in] ss Period set
+ * @param[in] linear True when the resulting value has linear interpolation
+ */
+TSequenceSet *
+tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss,
+  bool linear)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tsequence_from_base_time(value, temptype, &seq->period,
+      linear);
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal boolean sequence set from a boolean and the
+ * time frame of another temporal sequence set
+ */
+TSequenceSet *
+tboolseqset_from_base(bool b, const TSequenceSet *ss)
+{
+  return tsequenceset_from_base(BoolGetDatum(b), T_TBOOL, ss, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal integer sequence set from an integer and the
+ * time frame of another temporal sequence set
+ */
+TSequenceSet *
+tintseqset_from_base(int i, const TSequenceSet *ss)
+{
+  return tsequenceset_from_base(Int32GetDatum(i), T_TINT, ss, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal float sequence set from a float and the time
+ * frame of another temporal sequence set.
+ */
+TSequenceSet *
+tfloatseqset_from_base(bool b, const TSequenceSet *ss, bool linear)
+{
+  return tsequenceset_from_base(BoolGetDatum(b), T_TFLOAT, ss, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal text sequence set from a text and the time
+ * frame of another temporal sequence set.
+ */
+TSequenceSet *
+ttextseqset_from_base(const text *txt, const TSequenceSet *ss)
+{
+  return tsequenceset_from_base(PointerGetDatum(txt), T_TTEXT, ss, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geometric point sequence set from a point and
+ * the time frame of another temporal sequence set
+ */
+TSequenceSet *
+tgeompointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
+  bool linear)
+{
+  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, ss, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geographic point sequence set from a point and
+ * the time frame of another temporal sequence set
+ */
+TSequenceSet *
+tgeogpointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
+  bool linear)
+{
+  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, ss, linear);
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+
 /**
  * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal sequence set from a base value and a period set.
@@ -885,14 +983,14 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @param[in] linear True when the resulting value has linear interpolation
  */
 TSequenceSet *
-tsequenceset_from_base(Datum value, mobdbType temptype, const PeriodSet *ps,
-  bool linear)
+tsequenceset_from_base_time(Datum value, mobdbType temptype,
+  const PeriodSet *ps, bool linear)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    sequences[i] = tsequence_from_base(value, temptype, p, linear);
+    sequences[i] = tsequence_from_base_time(value, temptype, p, linear);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
@@ -904,9 +1002,9 @@ tsequenceset_from_base(Datum value, mobdbType temptype, const PeriodSet *ps,
  * period set.
  */
 TSequenceSet *
-tboolseqset_from_base(bool b, const PeriodSet *ps)
+tboolseqset_from_base_time(bool b, const PeriodSet *ps)
 {
-  return tsequenceset_from_base(BoolGetDatum(b), T_TBOOL, ps, false);
+  return tsequenceset_from_base_time(BoolGetDatum(b), T_TBOOL, ps, STEP);
 }
 
 /**
@@ -915,9 +1013,9 @@ tboolseqset_from_base(bool b, const PeriodSet *ps)
  * period set.
  */
 TSequenceSet *
-tintseqset_from_base(int i, const PeriodSet *ps)
+tintseqset_from_base_time(int i, const PeriodSet *ps)
 {
-  return tsequenceset_from_base(Int32GetDatum(i), T_TINT, ps, false);
+  return tsequenceset_from_base_time(Int32GetDatum(i), T_TINT, ps, STEP);
 }
 
 /**
@@ -925,9 +1023,9 @@ tintseqset_from_base(int i, const PeriodSet *ps)
  * @brief Construct a temporal float sequence set from a float and a period set.
  */
 TSequenceSet *
-tfloatseqset_from_base(bool b, const PeriodSet *ps, bool linear)
+tfloatseqset_from_base_time(bool b, const PeriodSet *ps, bool linear)
 {
-  return tsequenceset_from_base(BoolGetDatum(b), T_TFLOAT, ps, linear);
+  return tsequenceset_from_base_time(BoolGetDatum(b), T_TFLOAT, ps, linear);
 }
 
 /**
@@ -935,9 +1033,9 @@ tfloatseqset_from_base(bool b, const PeriodSet *ps, bool linear)
  * @brief Construct a temporal text sequence set from a text and a period set.
  */
 TSequenceSet *
-ttextseqset_from_base(text *txt, const PeriodSet *ps)
+ttextseqset_from_base_time(const text *txt, const PeriodSet *ps)
 {
-  return tsequenceset_from_base(PointerGetDatum(txt), T_TTEXT, ps, false);
+  return tsequenceset_from_base_time(PointerGetDatum(txt), T_TTEXT, ps, false);
 }
 
 /**
@@ -946,9 +1044,11 @@ ttextseqset_from_base(text *txt, const PeriodSet *ps)
  * period set.
  */
 TSequenceSet *
-tgeompointseqset_from_base(GSERIALIZED *gs, const PeriodSet *ps, bool linear)
+tgeompointseqset_from_base_time(const GSERIALIZED *gs, const PeriodSet *ps,
+  bool linear)
 {
-  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, ps, linear);
+  return tsequenceset_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ps,
+    linear);
 }
 
 /**
@@ -957,9 +1057,11 @@ tgeompointseqset_from_base(GSERIALIZED *gs, const PeriodSet *ps, bool linear)
  * period set.
  */
 TSequenceSet *
-tgeogpointseqset_from_base(GSERIALIZED *gs, const PeriodSet *ps, bool linear)
+tgeogpointseqset_from_base_time(const GSERIALIZED *gs, const PeriodSet *ps,
+  bool linear)
 {
-  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, ps, linear);
+  return tsequenceset_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ps,
+    linear);
 }
 #endif /* MEOS */
 

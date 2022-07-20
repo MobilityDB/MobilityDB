@@ -629,45 +629,43 @@ Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tinstantset_from_base);
+PG_FUNCTION_INFO_V1(Tinstantset_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from a base value and a timestamp set
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset()
  */
 PGDLLEXPORT Datum
-Tinstantset_from_base(PG_FUNCTION_ARGS)
+Tinstantset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TInstantSet *result = tinstantset_from_base(value, temptype, ts);
+  TInstantSet *result = tinstantset_from_base_time(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tsequence_from_base);
+PG_FUNCTION_INFO_V1(Tsequence_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 PGDLLEXPORT Datum
-Tsequence_from_base(PG_FUNCTION_ARGS)
+Tsequence_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  bool linear;
-  if (PG_NARGS() == 2)
-    linear = false;
-  else
+  bool linear = false;
+  if (PG_NARGS() > 2)
     linear = PG_GETARG_BOOL(2);
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequence *result = tsequence_from_base(value, temptype, p, linear);
+  TSequence *result = tsequence_from_base_time(value, temptype, p, linear);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
+PG_FUNCTION_INFO_V1(Tsequenceset_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from from a base value and a
@@ -675,18 +673,16 @@ PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset()
  */
 PGDLLEXPORT Datum
-Tsequenceset_from_base(PG_FUNCTION_ARGS)
+Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool linear;
-  if (PG_NARGS() == 2)
-    linear = false;
-  else
+  bool linear = false;
+  if (PG_NARGS() > 2)
     linear = PG_GETARG_BOOL(2);
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequenceSet *result = tsequenceset_from_base(value, temptype,
-    ps, linear);
+  TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
+    linear);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
 }

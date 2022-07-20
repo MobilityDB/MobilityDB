@@ -462,7 +462,7 @@ static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   const TInstant *inst1;
-  
+
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -630,7 +630,7 @@ tnpointseqset_speed(const TSequenceSet *ss)
 Temporal *
 tnpoint_speed(const Temporal *temp)
 {
-  Temporal *result;
+  Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
     ;

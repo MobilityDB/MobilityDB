@@ -333,7 +333,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   }
   else
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid temporal point type modifier:")));
+      errmsg("Invalid temporal point type modifier:")));
 
   /* Shift to remove the 4 bits of the temporal type */
   TYPMOD_DEL_SUBTYPE(typmod);

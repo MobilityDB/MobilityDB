@@ -1331,17 +1331,14 @@ geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
  * @param[out] t Timestamp
+ * @pre The geometry is not empty
  */
 bool
 tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);
-  if (gserialized_is_empty(gs))
-  {
-    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
-    return false;
-  }
+  assert(! gserialized_is_empty(gs));
 
   /* We are sure that the trajectory is a line */
   Datum start = tinstant_value(inst1);
@@ -1625,7 +1622,7 @@ LWGEOM **
 lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 {
   assert (count > 0);
-  /* We bypass the call to function lwgeom_as_lwpoint through memcpy */ 
+  /* We bypass the call to function lwgeom_as_lwpoint through memcpy */
   LWGEOM **newpoints = palloc(sizeof(LWGEOM *) * count);
   memcpy(newpoints, points, sizeof(LWGEOM *) * count);
   lwpointarr_sort((LWPOINT **) newpoints, count);
@@ -2228,10 +2225,6 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 }
 
 /*****************************************************************************
- * Set precision of the coordinates
- *****************************************************************************/
-
-/*****************************************************************************
  * Functions for extracting coordinates
  *****************************************************************************/
 
@@ -2420,35 +2413,6 @@ tpoint_length(const Temporal *temp)
  * @brief Return the cumulative length traversed by a temporal point.
  * @sqlfunc cumulativeLength()
  */
-TInstant *
-tpointinst_cumulative_length(const TInstant *inst)
-{
-  return tinstant_make(Float8GetDatum(0.0), T_TFLOAT, inst->t);
-}
-
-/**
- * @ingroup libmeos_int_temporal_spatial_accessor
- * @brief Return the cumulative length traversed by a temporal point.
- * @sqlfunc cumulativeLength()
- */
-TInstantSet *
-tpointinstset_cumulative_length(const TInstantSet *is)
-{
-  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  Datum length = Float8GetDatum(0.0);
-  for (int i = 0; i < is->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    instants[i] = tinstant_make(length, T_TFLOAT, inst->t);
-  }
-  return tinstantset_make_free(instants, is->count, MERGE_NO);
-}
-
-/**
- * @ingroup libmeos_int_temporal_spatial_accessor
- * @brief Return the cumulative length traversed by a temporal point.
- * @sqlfunc cumulativeLength()
- */
 TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
@@ -2531,10 +2495,8 @@ tpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_cumulative_length((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_cumulative_length((TInstantSet *) temp);
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+    result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp, false);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == TSEQUENCESET */

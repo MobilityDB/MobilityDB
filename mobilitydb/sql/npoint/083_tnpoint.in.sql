@@ -134,15 +134,15 @@ CREATE FUNCTION tnpoint_seqset(tnpoint[])
 
 CREATE FUNCTION tnpoint_instset(npoint, timestampset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base'
+  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, period, boolean DEFAULT true)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(npoint, periodset, boolean DEFAULT true)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear boolean DEFAULT true,

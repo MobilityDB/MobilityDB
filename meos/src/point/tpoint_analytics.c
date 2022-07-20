@@ -449,7 +449,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
   const TSequenceSet *measure)
 {
   const TSequence *seq, *m = NULL;
-  
+
   /* Instantaneous sequence */
   if (ss->count == 1)
   {
@@ -498,7 +498,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
 /**
  * @ingroup libmeos_temporal_analytics
  * @brief Construct a geometry/geography with M measure from the temporal
- * point and 
+ * point and
  * - either the temporal float given in the second argument (if any)
  * - or the time information of the temporal point where the M coordinates
  *   encode the timestamps in number of seconds since '1970-01-01'
@@ -1089,7 +1089,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
 }
 
 /*****************************************************************************/
- 
+
 static TSequence *
 tsequence_simplify(const TSequence *seq, double eps_dist, double eps_speed,
   uint32_t minpts)
@@ -1106,7 +1106,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, double eps_speed,
   bool withspeed = eps_speed > 0;
 
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
-  /* Do not try to simplify really short things */      
+  /* Do not try to simplify really short things */
   if (seq->count < 3)
     return tsequence_copy(seq);
 
@@ -1199,7 +1199,7 @@ tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
  * @sqlfunc simplify()
  */
 Temporal *
-temporal_simplify(Temporal *temp, double eps_dist, double eps_speed)
+temporal_simplify(const Temporal *temp, double eps_dist, double eps_speed)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1210,8 +1210,8 @@ temporal_simplify(Temporal *temp, double eps_dist, double eps_speed)
     result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
       eps_speed, 2);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp, eps_dist,
-      eps_speed, 2);
+    result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
+      eps_dist, eps_speed, 2);
   return result;
 }
 
@@ -1406,14 +1406,14 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_remove_repeated_points((TInstantSet *) temp,
-      tolerance, min_points);
+    result = (Temporal *) tpointinstset_remove_repeated_points(
+      (TInstantSet *) temp, tolerance, min_points);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_remove_repeated_points((TSequence *) temp,
-      tolerance, min_points);
+    result = (Temporal *) tpointseq_remove_repeated_points(
+      (TSequence *) temp, tolerance, min_points);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_remove_repeated_points((TSequenceSet *) temp,
-      tolerance, min_points);
+    result = (Temporal *) tpointseqset_remove_repeated_points(
+      (TSequenceSet *) temp, tolerance, min_points);
   return result;
 }
 
@@ -1725,7 +1725,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
 
   resx = width / extent;
   resy = height / extent;
-  res = (resx < resy ? resx : resy)/2;
+  res = (resx < resy ? resx : resy) / 2;
   fx = extent / width;
   fy = -(extent / height);
 

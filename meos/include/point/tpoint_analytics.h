@@ -51,7 +51,7 @@ extern bool tpoint_to_geo_measure(const Temporal *tpoint,
 /* Simple Douglas-Peucker-like value simplification for temporal floats and
  * temporal points. */
 
-extern Temporal *temporal_simplify(Temporal *temp, double eps_dist,
+extern Temporal *temporal_simplify(const Temporal *temp, double eps_dist,
   double eps_speed);
 
 /* Transform the temporal point to Mapbox Vector Tile format */
