@@ -876,9 +876,9 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   Span query;
   double distance;
 
-  /* The index is lossy for leaf levels */
+  /* The index is not lossy */
   if (GIST_LEAF(entry))
-    *recheck = true;
+    *recheck = false;
 
   if (key == NULL)
     PG_RETURN_FLOAT8(DBL_MAX);
