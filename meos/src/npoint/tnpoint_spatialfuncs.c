@@ -438,7 +438,7 @@ tnpointseqset_length(const TSequenceSet *ss)
  * Length traversed by a temporal network point
  */
 double
-tnpoint_length(Temporal *temp)
+tnpoint_length(const Temporal *temp)
 {
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
@@ -458,48 +458,17 @@ tnpoint_length(Temporal *temp)
 /**
  * Cumulative length traversed by a temporal network point
  */
-static TInstant *
-tnpointinst_set_zero(const TInstant *inst)
-{
-  return tinstant_make(Float8GetDatum(0.0), T_TFLOAT, inst->t);
-}
-
-/**
- * Cumulative length traversed by a temporal network point
- */
-static TInstantSet *
-tnpointinstset_set_zero(const TInstantSet *is)
-{
-  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  Datum zero = Float8GetDatum(0.0);
-  for (int i = 0; i < is->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    instants[i] = tinstant_make(zero, T_TFLOAT, inst->t);
-  }
-  TInstantSet *result = tinstantset_make((const TInstant **) instants,
-    is->count, MERGE_NO);
-  for (int i = 1; i < is->count; i++)
-    pfree(instants[i]);
-  pfree(instants);
-  return result;
-}
-
-/**
- * Cumulative length traversed by a temporal network point
- */
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   const TInstant *inst1;
-  TInstant *inst;
+
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT, inst1->t);
-    TSequence *result = tsequence_make((const TInstant **) &inst, 1,
-      true, true, true, false);
+    TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT, inst1->t);
+    TSequence *result = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
     return result;
   }
@@ -570,14 +539,12 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
  * Cumulative length traversed by a temporal network point
  */
 Temporal *
-tnpoint_cumulative_length(Temporal *temp)
+tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tnpointinst_set_zero((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tnpointinstset_set_zero((TInstantSet *) temp);
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+    result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp, false);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == TSEQUENCESET */
@@ -661,14 +628,12 @@ tnpointseqset_speed(const TSequenceSet *ss)
  * Speed of a temporal network point
  */
 Temporal *
-tnpoint_speed(Temporal *temp)
+tnpoint_speed(const Temporal *temp)
 {
-  Temporal *result;
+  Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tnpointinst_set_zero((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tnpointinstset_set_zero((TInstantSet *) temp);
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+    ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -684,7 +649,7 @@ tnpoint_speed(Temporal *temp)
  * Return the time-weighed centroid of a temporal network point
  */
 Datum
-tnpoint_twcentroid(Temporal *temp)
+tnpoint_twcentroid(const Temporal *temp)
 {
   Temporal *tgeom = tnpoint_tgeompoint(temp);
   Datum result = PointerGetDatum(tpoint_twcentroid(tgeom));
@@ -851,7 +816,7 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
  * Temporal azimuth of a temporal network point
  */
 Temporal *
-tnpoint_azimuth(Temporal *temp)
+tnpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
@@ -874,7 +839,8 @@ tnpoint_azimuth(Temporal *temp)
  * Restrict a temporal network point to (the complement of) a geometry
  */
 Temporal *
-tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *geo, bool atfunc)
+tnpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *geo,
+  bool atfunc)
 {
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
   if (gserialized_is_empty(geo))

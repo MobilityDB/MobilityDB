@@ -613,9 +613,7 @@ Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_VOID();
   }
 
-  /*
-   * Transform the queries into bounding boxes.
-   */
+  /* Transform the queries into bounding boxes. */
   if (in->nkeys > 0)
   {
     queries = palloc0(sizeof(TBOX) * in->nkeys);
@@ -651,28 +649,28 @@ Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
           flag = contain4D(&next_nodebox, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight4D(&next_nodebox, &queries[i]);
+          flag = ! overRight4D(&next_nodebox, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right4D(&next_nodebox, &queries[i]);
+          flag = ! right4D(&next_nodebox, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft4D(&next_nodebox, &queries[i]);
+          flag = ! overLeft4D(&next_nodebox, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left4D(&next_nodebox, &queries[i]);
+          flag = ! left4D(&next_nodebox, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter4D(&next_nodebox, &queries[i]);
+          flag = ! overAfter4D(&next_nodebox, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after4D(&next_nodebox, &queries[i]);
+          flag = ! after4D(&next_nodebox, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore4D(&next_nodebox, &queries[i]);
+          flag = ! overBefore4D(&next_nodebox, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before4D(&next_nodebox, &queries[i]);
+          flag = ! before4D(&next_nodebox, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);

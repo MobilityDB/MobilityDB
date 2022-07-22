@@ -305,53 +305,53 @@ CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear boolean DEFAULT true,
 
 CREATE FUNCTION tbool_instset(boolean, timestampset)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base'
+  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_instset(integer, timestampset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base'
+  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_instset(float, timestampset)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base'
+  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_instset(text, timestampset)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base'
+  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seq(boolean, period)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_seq(integer, period)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seq(float, period, boolean DEFAULT true)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_seq(text, period)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seqset(boolean, periodset)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_seqset(integer, periodset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seqset(float, periodset, boolean DEFAULT true)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_seqset(text, periodset)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

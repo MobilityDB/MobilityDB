@@ -691,40 +691,17 @@ temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-  {
-    TInstant *inst = (TInstant *) temp;
-    result = (Temporal *) tinstant_make(value, temptype, inst->t);
-  }
+    result = (Temporal *) tinstant_make(value, temptype,
+      ((TInstant *) temp)->t);
   else if (temp->subtype == TINSTANTSET)
-  {
-    TInstantSet *ti = (TInstantSet *) temp;
-    int count;
-    TimestampTz *times = tinstantset_timestamps(ti, &count);
-    TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-    for (int i = 0; i < ti->count; i++)
-      instants[i] = tinstant_make(value, temptype, times[i]);
-    result = (Temporal *) tinstantset_make_free(instants, ti->count, MERGE_NO);
-    pfree(times);
-  }
+    result = (Temporal *) tinstantset_from_base(value, temptype,
+      (TInstantSet *) temp);
   else if (temp->subtype == TSEQUENCE)
-  {
-    TSequence *seq = (TSequence *) temp;
-    result = (Temporal *) tsequence_from_base(value, temptype, &seq->period,
-      linear);
-  }
+    result = (Temporal *) tsequence_from_base(value, temptype,
+      (TSequence *) temp, linear);
   else /* temp->subtype == TSEQUENCESET */
-  {
-    TSequenceSet *ts = (TSequenceSet *) temp;
-    TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-    for (int i = 0; i < ts->count; i++)
-    {
-      const TSequence *seq = tsequenceset_seq_n(ts, i);
-      sequences[i] = tsequence_from_base(value, temptype, &seq->period,
-        linear);
-    }
-    result = (Temporal *) tsequenceset_make_free(sequences, ts->count,
-      NORMALIZE_NO);
-  }
+    result = (Temporal *) tsequenceset_from_base(value, temptype,
+      (TSequenceSet *) temp, linear);
   return result;
 }
 
@@ -1367,9 +1344,7 @@ temporal_step_to_linear(const Temporal *temp)
  * @brief Return a temporal value shifted and/or scaled by the intervals.
  *
  * @param[in] temp Temporal value
- * @param[in] shift True when a shift of the timespan must be performed
- * @param[in] tscale True when a scale of the timespan must be performed
- * @param[in] start Interval for shift
+ * @param[in] shift Interval for shift
  * @param[in] duration Interval for scale
  * @pre The duration is greater than 0 if is not NULL
  * @see tinstant_shift

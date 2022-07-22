@@ -77,7 +77,7 @@ timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
   {
     TimestampTz t1 = times1[i];
     TimestampTz t2 = times2[j];
-    int cmp = timestamp_cmp_internal(t1, t2);
+    int cmp = timestamptz_cmp_internal(t1, t2);
     if (cmp == 0)
     {
       result[count++] = t1;

@@ -469,28 +469,14 @@ float8_in(char *num, const char *type_name, const char *orig_string)
 /*
  * float8out_internal - guts of float8out()
  *
- * This is exposed for use by functions that want a reasonably
- * platform-independent way of outputting doubles.
- * The result is always palloc'd.
+ * This function is NOT the one from PostgreSQL, it uses the PostGIS function
+ * to print doubles.
  */
 char *
 float8_out(double num)
 {
-  // MobilityDB
-  // char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
-  // lwprint_double(num, DBL_DIG, ascii);
-
-  char *ascii = palloc(32);
-  // int ndig = DBL_DIG + extra_float_digits;
-
-  if (extra_float_digits > 0)
-  {
-    double_to_shortest_decimal_buf(num, ascii);
-    return ascii;
-  }
-
-  // (void) pg_strfromd(ascii, 32, ndig, num);
-  (void) pg_strfromd(ascii, 32, DBL_DIG, num);
+  char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
+  lwprint_double(num, DBL_DIG, ascii);
   return ascii;
 }
 

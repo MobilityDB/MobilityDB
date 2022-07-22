@@ -889,7 +889,7 @@ DROP INDEX tbl_tgeompoint3D_quadtree_idx;
 DROP INDEX
 CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint_seq(geometry 'Point(5 5 5)', p) AS temp FROM tbl_period_big;
 SELECT 12500
-CREATE INDEX tbl_tgeompoint3D_big_allthesame_spgist_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
+CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
 CREATE INDEX
 ANALYZE tbl_tgeompoint3D_big_allthesame;
 ANALYZE

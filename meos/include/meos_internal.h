@@ -297,11 +297,14 @@ extern Temporal *temporal_from_base(Datum value, mobdbType temptype, const Tempo
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, mobdbType temptype, TimestampTz t);
 extern TInstantSet *tinstantset_copy(const TInstantSet *is);;
-extern TInstantSet *tinstantset_from_base(Datum value, mobdbType temptype, const TimestampSet *ss);
+extern TInstantSet *tinstantset_from_base(Datum value, mobdbType temptype, const TInstantSet *is);
+extern TInstantSet *tinstantset_from_base_time(Datum value, mobdbType temptype, const TimestampSet *ss);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const Period *p, bool linear);
+extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq, bool linear);
+extern TSequence *tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p, bool linear);
 extern TSequenceSet *tsequenceset_copy (const TSequenceSet *ss);
-extern TSequenceSet *tsequenceset_from_base(Datum value, mobdbType temptype, const PeriodSet *ps, bool linear);
+extern TSequenceSet *tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss, bool linear);
+extern TSequenceSet *tsequenceset_from_base_time(Datum value, mobdbType temptype, const PeriodSet *ps, bool linear);
 
 /*****************************************************************************/
 
@@ -632,9 +635,7 @@ extern bool tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2);
 
 /* Spatial accessor functions for temporal point types */
 
-extern TInstant *tpointinst_cumulative_length(const TInstant *inst);
 extern int tpointinst_srid(const TInstant *inst);
-extern TInstantSet *tpointinstset_cumulative_length(const TInstantSet *is);
 extern bool tpointinstset_is_simple(const TInstantSet *is);
 extern int tpointinstset_srid(const TInstantSet *is);
 extern GSERIALIZED *tpointinstset_trajectory(const TInstantSet *is);

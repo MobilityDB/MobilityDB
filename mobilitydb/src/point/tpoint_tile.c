@@ -43,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
+#include "general/temporal_tile.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal_tile.h"
@@ -55,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * Create a bit matrix
+ * @brief Create a bit matrix
  */
 static BitMatrix *
 bitmatrix_make(int *count, int numdims)
@@ -80,7 +81,7 @@ bitmatrix_make(int *count, int numdims)
 }
 
 /**
- * Get the value of the bit in the bit matrix
+ * @brief Get the value of the bit in the bit matrix
  */
 static bool
 bitmatrix_get(const BitMatrix *bm, int *coords)
@@ -104,7 +105,7 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
 }
 
 /**
- * Set the value of the bit in the bit matrix
+ * @brief Set the value of the bit in the bit matrix
  */
 static void
 bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
@@ -130,7 +131,7 @@ bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
 
 #ifdef DEBUG_BUILD
 /**
- * Print a 2D bit matrix
+ * @brief Print a 2D bit matrix
  * @note This function is only used for debugging purposes
  */
 void
@@ -193,7 +194,7 @@ bitmatrix_print2D(const BitMatrix *bm, int *coords)
 }
 
 /**
- * Print the bit matrix
+ * @brief Print the bit matrix
  * @note This function is only used while debugging
  */
 void
@@ -260,7 +261,7 @@ bitmatrix_print(const BitMatrix *bm)
 
 #ifdef DEBUG_BUILD
 /**
- * Print the coordinates of a tile
+ * @brief Print the coordinates of a tile
  * @note This function is only used for debugging purposes
  */
 void
@@ -277,7 +278,7 @@ coord_print(int *coords, int numdims)
 #endif
 
 /**
- * Set in the bit matrix the bits of the tiles connecting with a line the
+ * @brief Set in the bit matrix the bits of the tiles connecting with a line the
  * two input tiles
  *
  * @param[out] bm Bit matrix
@@ -389,7 +390,7 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
  *****************************************************************************/
 
 /**
- * Generate a tile from the current state of the multidimensional grid
+ * @brief Generate a tile from the current state of the multidimensional grid
  *
  * @param[out] result Box representing the tile
  * @param[in] x,y,z,t Lower coordinates of the tile to output
@@ -424,7 +425,7 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
 }
 
 /**
- * Create the initial state that persists across multiple calls of the function
+ * @brief Create the initial state that persists across multiple calls of the function
  *
  * @param[in] temp Optional temporal point to split
  * @param[in] box Bounds for generating the multidimensional grid
@@ -472,7 +473,7 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
 }
 
 /**
- * Increment the current state to the next tile of the multidimensional grid
+ * @brief Increment the current state to the next tile of the multidimensional grid
  *
  * @param[in] state State to increment
  */
@@ -556,7 +557,7 @@ stbox_tile_state_next(STboxGridState *state)
 }
 
 /**
- * Get the current tile of the multidimensional grid
+ * @brief Get the current tile of the multidimensional grid
  *
  * @param[in] state State to increment
  * @param[out] box Current tile
@@ -587,7 +588,7 @@ stbox_tile_state_get(STboxGridState *state, STBOX *box)
 
 PG_FUNCTION_INFO_V1(Stbox_multidim_grid);
 /**
- * @ingroup mobilitydb_temporal_tile
+ * @brief @ingroup mobilitydb_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
  * @sqlfunc multidimGrid()
  */
@@ -601,6 +602,7 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
 
+  /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
@@ -771,7 +773,7 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Transform the minimum values of a tile into matrix coordinates
+ * @brief Transform the minimum values of a tile into matrix coordinates
  *
  * @param[out] coords Matrix coordinates
  * @param[in] x,y,z,t Minimum values of the tile
@@ -793,7 +795,7 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
 }
 
 /**
- * Get the coordinates of the tile corresponding the temporal instant point
+ * @brief Get the coordinates of the tile corresponding the temporal instant point
  *
  * @param[out] coords Tile coordinates
  * @param[in] inst Temporal point
@@ -822,7 +824,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
 }
 
 /**
- * Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
  * @param[in] inst Temporal point
@@ -844,7 +846,7 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz, bool hast,
 }
 
 /**
- * Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
  * @param[in] is Temporal point
@@ -869,7 +871,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *is, bool hasz,
 }
 
 /**
- * Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
  * @param[in] seq Temporal point
@@ -897,7 +899,7 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz, bool hast,
 }
 
 /**
- * Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
  * @param[in] ss Temporal point
@@ -918,7 +920,7 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ss, bool hasz,
 }
 
 /**
- * Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
  * @param[in] temp Temporal point
@@ -1033,7 +1035,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
       if (MOBDB_FLAGS_GET_Z(state->box.flags))
         count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
-      if (state->tunits)  
+      if (state->tunits)
         count[numdims++] = ( (state->box.tmax - state->box.tmin) / state->tunits ) + 1;
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(state->bm, temp, state);

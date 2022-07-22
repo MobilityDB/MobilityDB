@@ -27,8 +27,8 @@
  *
  *****************************************************************************/
 
-#ifndef __TEMPORAL_TILE_H__
-#define __TEMPORAL_TILE_H__
+#ifndef __PG_TEMPORAL_TILE_H__
+#define __PG_TEMPORAL_TILE_H__
 
 /* MobilityDB */
 #include "general/temporal.h"
@@ -54,21 +54,6 @@ typedef struct SpanBucketState
 
 /**
  * Struct for storing the state that persists across multiple calls generating
- * the bucket list
- */
-typedef struct PeriodBucketState
-{
-  bool done;
-  int i;
-  int64 tunits;
-  int64 torigin;
-  TimestampTz mint;
-  TimestampTz maxt;
-  TimestampTz t;
-} PeriodBucketState;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
  * the multidimensional grid
  */
 typedef struct TboxGridState
@@ -88,58 +73,23 @@ typedef struct TboxGridState
  * Struct for storing the state that persists across multiple calls to output
  * the temporal fragments
  */
-typedef struct ValueSplitState
-{
-  bool done;
-  Datum size;
-  Datum *buckets;
-  Temporal **fragments;
-  int i;
-  int count;
-} ValueSplitState;
-
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
-typedef struct TimeSplitState
-{
-  bool done;
-  int64 tunits;
-  TimestampTz *buckets;
-  Temporal **fragments;
-  int i;
-  int count;
-} TimeSplitState;
-
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
 typedef struct ValueTimeSplitState
 {
-  bool done;
+  bool done;           /**< True when all the tiles have been processed */
+  int i;               /**< Number of current tile */
   Datum size;
   int64 tunits;
   Datum *value_buckets;
   TimestampTz *time_buckets;
   Temporal **fragments;
-  int i;
   int count;
 } ValueTimeSplitState;
 
 /*****************************************************************************/
 
-extern double float_bucket(double value, double size, double origin);
-extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
-  TimestampTz torigin);
 extern int64 get_interval_units(Interval *interval);
-
-extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start,
-  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
-  TimestampTz **buckets, int *newcount);
 
 /*****************************************************************************/
 
-#endif /* __TEMPORAL_TILE_H__ */
+#endif /* __PG_TEMPORAL_TILE_H__ */
 

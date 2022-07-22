@@ -231,6 +231,10 @@
  * @ingroup libmeos_temporal
  * @brief Local aggregate functions for temporal types.
  *
+ * @defgroup libmeos_temporal_tile Tile functions
+ * @ingroup libmeos_temporal
+ * @brief Tile functions for temporal types.
+ *
  * @defgroup libmeos_temporal_similarity Similarity functions
  * @ingroup libmeos_temporal
  * @brief Similarity functions for temporal types.

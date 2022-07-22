@@ -199,12 +199,23 @@ ensure_span_type(mobdbType spantype)
 }
 
 /**
+ * Return true if the type is a time type
+ */
+bool
+span_basetype(mobdbType basetype)
+{
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
  * Ensure that the span base type is supported by MobilityDB
  */
 void
 ensure_span_basetype(mobdbType basetype)
 {
-  if (basetype != T_TIMESTAMPTZ && basetype != T_INT4 && basetype != T_FLOAT8)
+  if (! span_basetype(basetype))
     elog(ERROR, "unknown span base type: %d", basetype);
   return;
 }

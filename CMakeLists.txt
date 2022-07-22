@@ -65,6 +65,8 @@ project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSIO
 message(STATUS "Building MobilityDB version ${PROJECT_VERSION}")
 # Enable testing, must follow project() call above
 include(CTest)
+# Make CTest run verbose for the output of the failed tests
+set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 enable_testing()
 
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")

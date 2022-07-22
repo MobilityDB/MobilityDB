@@ -244,6 +244,7 @@ span_canonicalize(Span *s)
       s->upper_inc = false;
     }
   }
+  return;
 }
 
 /**
@@ -268,8 +269,7 @@ spanarr_normalize(Span **spans, int count, int *newcount)
   for (int i = 1; i < count; i++)
   {
     Span *next = spans[i];
-    if (overlaps_span_span(current, next) ||
-      adjacent_span_span(current, next))
+    if (overlaps_span_span(current, next) || adjacent_span_span(current, next))
     {
       /* Compute the union of the spans */
       Span *newspan = span_copy(current);

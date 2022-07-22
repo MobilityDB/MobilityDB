@@ -37,6 +37,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <access/gist.h>
 #include <utils/timestamp.h>
@@ -80,19 +81,15 @@ span_index_consistent_leaf(const Span *key, const Span *query,
     case RTAdjacentStrategyNumber:
       return adjacent_span_span(key, query);
     case RTLeftStrategyNumber:
-      return left_span_span(key, query);
-    case RTOverLeftStrategyNumber:
-      return overleft_span_span(key, query);
-    case RTRightStrategyNumber:
-      return right_span_span(key, query);
-    case RTOverRightStrategyNumber:
-      return overright_span_span(key, query);
     case RTBeforeStrategyNumber:
       return left_span_span(key, query);
+    case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
       return overleft_span_span(key, query);
+    case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
       return right_span_span(key, query);
+    case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
       return overright_span_span(key, query);
     default:
@@ -124,19 +121,15 @@ span_gist_consistent(const Span *key, const Span *query,
     case RTAdjacentStrategyNumber:
       return adjacent_span_span(key, query) || overlaps_span_span(key, query);
     case RTLeftStrategyNumber:
-      return ! overright_span_span(key, query);
-    case RTOverLeftStrategyNumber:
-      return ! right_span_span(key, query);
-    case RTRightStrategyNumber:
-      return ! overleft_span_span(key, query);
-    case RTOverRightStrategyNumber:
-      return ! left_span_span(key, query);
     case RTBeforeStrategyNumber:
       return ! overright_span_span(key, query);
+    case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
       return ! right_span_span(key, query);
+    case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
       return ! overleft_span_span(key, query);
+    case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
       return ! left_span_span(key, query);
     default:
@@ -191,7 +184,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     periodset_period_slice(psdatum, result);
   }
   /* For temporal types whose bounding box is a period */
-  else if (temporal_type(type))
+  else if (talpha_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
     temporal_bbox_slice(tempdatum, result);
@@ -862,6 +855,43 @@ Span_gist_same(PG_FUNCTION_ARGS)
   bool *result = (bool *) PG_GETARG_POINTER(2);
   *result = span_eq(p1, p2);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Span_gist_distance);
+/**
+ * GiST support function. Take in a query and an entry and return the "distance"
+ * between them.
+*/
+PGDLLEXPORT Datum
+Span_gist_distance(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  Span *key = (Span *) DatumGetPointer(entry->key);
+  Span query;
+  double distance;
+
+  /* The index is not lossy */
+  if (GIST_LEAF(entry))
+    *recheck = false;
+
+  if (key == NULL)
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /* Transform the query into a box */
+  if (! span_gist_get_span(fcinfo, &query, typid))
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /* Since we only have boxes we'll return the minimum possible distance,
+   * and let the recheck sort things out in the case of leaves */
+  distance = distance_span_span(key, &query);
+
+  PG_RETURN_FLOAT8(distance);
 }
 
 /*****************************************************************************

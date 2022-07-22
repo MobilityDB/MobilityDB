@@ -403,13 +403,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(
 SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint;
     round    
 -------------
- 1781.066337
+ 2517.034440
 (1 row)
 
 SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint;
       round      
 -----------------
- 67147405.621475
+ 75503509.305624
 (1 row)
 
 SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
@@ -421,7 +421,7 @@ SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompo
 SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
       round      
 -----------------
- 73304578.740012
+ 75084456.388854
 (1 row)
 
 SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint;

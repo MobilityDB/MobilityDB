@@ -27,39 +27,21 @@
  *
  *****************************************************************************/
 
-/**
- * @brief Analytics functions for temporal points.
- */
+#ifndef __TEMPORAL_TILE_H__
+#define __TEMPORAL_TILE_H__
 
-#ifndef __TPOINT_ANALYTICS_H__
-#define __TPOINT_ANALYTICS_H__
-
-/* PostgreSQL */
-#include <postgres.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
+#include "temporal.h"
 
 /*****************************************************************************/
 
-/* Convert a temporal point from/to a trajectory geometry/geography */
-
-extern Datum tpoint_to_geo(const Temporal *temp, bool segmentize);
-extern Temporal *geo_to_tpoint(const GSERIALIZED *gs);
-extern bool tpoint_to_geo_measure(const Temporal *tpoint,
-  const Temporal *measure, bool segmentize, Datum *result);
-
-/* Simple Douglas-Peucker-like value simplification for temporal floats and
- * temporal points. */
-
-extern Temporal *temporal_simplify(const Temporal *temp, double eps_dist,
-  double eps_speed);
-
-/* Transform the temporal point to Mapbox Vector Tile format */
-
-extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds,
-  int32_t extent, int32_t buffer, bool clip_geom, Datum *geom,
-  TimestampTz **timesarr, int *count);
+extern double float_bucket(double value, double size, double origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+  TimestampTz torigin);
+extern Datum datum_bucket(Datum value, Datum size, Datum offset,
+  mobdbType basetype);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TEMPORAL_TILE_H__ */
+

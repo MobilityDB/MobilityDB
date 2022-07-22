@@ -163,6 +163,7 @@ extern bool time_type(mobdbType timetype);
 extern void ensure_time_type(mobdbType timetype);
 extern bool span_type(mobdbType spantype);
 extern void ensure_span_type(mobdbType spantype);
+extern bool span_basetype(mobdbType basetype);
 extern void ensure_span_basetype(mobdbType basetype);
 extern bool temporal_type(mobdbType temptype);
 extern void ensure_temporal_type(mobdbType temptype);

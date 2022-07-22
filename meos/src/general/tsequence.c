@@ -1495,6 +1495,98 @@ tsequence_copy(const TSequence *seq)
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_int_temporal_constructor
+ * @brief Construct a temporal sequence from a base value and the time frame
+ * of another temporal sequence.
+ *
+ * @param[in] value Base value
+ * @param[in] temptype Temporal type
+ * @param[in] p Period
+ * @param[in] linear True when the sequence has linear interpolation
+ */
+TSequence *
+tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq,
+  bool linear)
+{
+  return tsequence_from_base_time(value, temptype,
+    (const Period *) &seq->period, linear);
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal boolean sequence from a boolean and the time
+ * frame of another temporal sequence.
+ */
+TSequence *
+tboolseq_from_base(bool b, const TSequence *seq)
+{
+  return tsequence_from_base(BoolGetDatum(b), T_TBOOL, seq, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal integer sequence from an integer and the time
+ * frame of another temporal sequence.
+ */
+TSequence *
+tintseq_from_base(int i, const TSequence *seq)
+{
+  return tsequence_from_base(Int32GetDatum(i), T_TINT, seq, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal float sequence from a float and the time frame
+ * of another temporal sequence.
+ */
+TSequence *
+tfloatseq_from_base(bool b, const TSequence *seq, bool linear)
+{
+  return tsequence_from_base(BoolGetDatum(b), T_TFLOAT, seq, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal text sequence from a text and the time frame
+ * of another temporal sequence.
+ */
+TSequence *
+ttextseq_from_base(const text *txt, const TSequence *seq)
+{
+  return tsequence_from_base(PointerGetDatum(txt), T_TTEXT, seq, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geometric point sequence from a point and the
+ * time frame of another temporal sequence.
+ */
+TSequence *
+tgeompointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
+  bool linear)
+{
+  return tsequence_from_base(PointerGetDatum(gs), T_TGEOMPOINT, seq, linear);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal geographic point sequence from a point and the
+ * time frame of another temporal sequence.
+ */
+TSequence *
+tgeogpointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
+  bool linear)
+{
+  return tsequence_from_base(PointerGetDatum(gs), T_TGEOGPOINT, seq, linear);
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+
 /**
  * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period.
@@ -1505,7 +1597,7 @@ tsequence_copy(const TSequence *seq)
  * @param[in] linear True when the sequence has linear interpolation
  */
 TSequence *
-tsequence_from_base(Datum value, mobdbType temptype, const Period *p,
+tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p,
   bool linear)
 {
   int count;
@@ -1532,9 +1624,9 @@ tsequence_from_base(Datum value, mobdbType temptype, const Period *p,
  * @brief Construct a temporal boolean sequence from a boolean and a period.
  */
 TSequence *
-tboolseq_from_base(bool b, const Period *p)
+tboolseq_from_base_time(bool b, const Period *p)
 {
-  return tsequence_from_base(BoolGetDatum(b), T_TBOOL, p, false);
+  return tsequence_from_base_time(BoolGetDatum(b), T_TBOOL, p, false);
 }
 
 /**
@@ -1542,9 +1634,9 @@ tboolseq_from_base(bool b, const Period *p)
  * @brief Construct a temporal integer sequence from an integer and a period.
  */
 TSequence *
-tintseq_from_base(int i, const Period *p)
+tintseq_from_base_time(int i, const Period *p)
 {
-  return tsequence_from_base(Int32GetDatum(i), T_TINT, p, false);
+  return tsequence_from_base_time(Int32GetDatum(i), T_TINT, p, false);
 }
 
 /**
@@ -1552,9 +1644,9 @@ tintseq_from_base(int i, const Period *p)
  * @brief Construct a temporal float sequence from a float and a period.
  */
 TSequence *
-tfloatseq_from_base(bool b, const Period *p, bool linear)
+tfloatseq_from_base_time(bool b, const Period *p, bool linear)
 {
-  return tsequence_from_base(BoolGetDatum(b), T_TFLOAT, p, linear);
+  return tsequence_from_base_time(BoolGetDatum(b), T_TFLOAT, p, linear);
 }
 
 /**
@@ -1562,9 +1654,9 @@ tfloatseq_from_base(bool b, const Period *p, bool linear)
  * @brief Construct a temporal text sequence from a text and a period.
  */
 TSequence *
-ttextseq_from_base(text *txt, const Period *p)
+ttextseq_from_base_time(const text *txt, const Period *p)
 {
-  return tsequence_from_base(PointerGetDatum(txt), T_TTEXT, p, false);
+  return tsequence_from_base_time(PointerGetDatum(txt), T_TTEXT, p, false);
 }
 
 /**
@@ -1573,9 +1665,10 @@ ttextseq_from_base(text *txt, const Period *p)
  * period.
  */
 TSequence *
-tgeompointseq_from_base(GSERIALIZED *gs, const Period *p, bool linear)
+tgeompointseq_from_base_time(const GSERIALIZED *gs, const Period *p,
+  bool linear)
 {
-  return tsequence_from_base(PointerGetDatum(gs), T_TGEOMPOINT, p, linear);
+  return tsequence_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, p, linear);
 }
 
 /**
@@ -1584,9 +1677,10 @@ tgeompointseq_from_base(GSERIALIZED *gs, const Period *p, bool linear)
  * period.
  */
 TSequence *
-tgeogpointseq_from_base(GSERIALIZED *gs, const Period *p, bool linear)
+tgeogpointseq_from_base_time(const GSERIALIZED *gs, const Period *p,
+  bool linear)
 {
-  return tsequence_from_base(PointerGetDatum(gs), T_TGEOGPOINT, p, linear);
+  return tsequence_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, p, linear);
 }
 #endif /* MEOS */
 
@@ -2138,8 +2232,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
     inst1 = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
     inst2 = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
     if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
-      result[k++] = tsequence_make((const TInstant **) &inst1, 1,
-        true, true, linear, NORMALIZE_NO);
+      result[k++] = tinstant_to_tsequence(inst1, linear);
   }
   return k;
 }

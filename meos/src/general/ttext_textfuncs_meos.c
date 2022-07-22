@@ -46,7 +46,7 @@
  * @sqlop @p ||
  */
 Temporal *
-textcat_text_ttext(text *txt, Temporal *temp)
+textcat_text_ttext(const text *txt, const Temporal *temp)
 {
   Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
     &datum_textcat, INVERT);
@@ -59,7 +59,7 @@ textcat_text_ttext(text *txt, Temporal *temp)
  * @sqlop @p ||
  */
 Temporal *
-textcat_ttext_text(const Temporal *temp, text *txt)
+textcat_ttext_text(const Temporal *temp, const text *txt)
 {
   Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
     &datum_textcat, INVERT_NO);

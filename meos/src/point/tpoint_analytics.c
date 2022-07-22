@@ -449,7 +449,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
   const TSequenceSet *measure)
 {
   const TSequence *seq, *m = NULL;
-  
+
   /* Instantaneous sequence */
   if (ss->count == 1)
   {
@@ -498,7 +498,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
 /**
  * @ingroup libmeos_temporal_analytics
  * @brief Construct a geometry/geography with M measure from the temporal
- * point and 
+ * point and
  * - either the temporal float given in the second argument (if any)
  * - or the time information of the temporal point where the M coordinates
  *   encode the timestamps in number of seconds since '1970-01-01'
@@ -855,9 +855,7 @@ tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
 static double
 dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 {
-  double dx = p2->x - p1->x;
-  double dy = p2->y - p1->y;
-  return hypot(dx, dy);
+  return hypot(p2->x - p1->x, p2->y - p1->y);
 }
 
 /**
@@ -866,10 +864,7 @@ dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 static double
 dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 {
-  double dx = p2->x - p1->x;
-  double dy = p2->y - p1->y;
-  double dz = p2->z - p1->z;
-  return hypot3d(dx, dy, dz);
+  return hypot3d(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z);
 }
 
 /**
@@ -878,11 +873,7 @@ dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 static double
 dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
 {
-  double dx = p2->x - p1->x;
-  double dy = p2->y - p1->y;
-  double dz = p2->z - p1->z;
-  double dm = p2->m - p1->m;
-  return hypot4d(dx, dy, dz, dm);
+  return hypot4d(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z, p2->m - p1->m);
 }
 
 /**
@@ -904,7 +895,7 @@ dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
     return dist2d_pt_pt(p, A);
 
   r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) ) /
-    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) );
+      ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) );
 
   if (r < 0) /* If the first vertex A is closest to the point p */
     return dist2d_pt_pt(p, A);
@@ -938,9 +929,9 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
     return dist3d_pt_pt(p, A);
 
   r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
-      (p->z-A->z) * (B->z-A->z) ) /
-    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
-      (B->z-A->z) * (B->z-A->z) );
+        (p->z-A->z) * (B->z-A->z) ) /
+      ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
+        (B->z-A->z) * (B->z-A->z) );
 
   if (r < 0) /* If the first vertex A is closest to the point p */
     return dist3d_pt_pt(p, A);
@@ -975,9 +966,9 @@ dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
     return dist4d_pt_pt(p, A);
 
   r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
-      (p->z-A->z) * (B->z-A->z) + (p->m-A->m) * (B->m-A->m) ) /
-    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
-      (B->z-A->z) * (B->z-A->z) + (B->m-A->m) * (B->m-A->m) );
+        (p->z-A->z) * (B->z-A->z) + (p->m-A->m) * (B->m-A->m) ) /
+      ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
+        (B->z-A->z) * (B->z-A->z) + (B->m-A->m) * (B->m-A->m) );
 
   if (r < 0) /* If the first vertex A is closest to the point p */
     return dist4d_pt_pt(p, A);
@@ -1033,10 +1024,8 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       p3b = datum_point3dz(tinstant_value(inst2));
       if (withspeed)
       {
-        p4a.x = p3a.x; p4a.y = p3a.y;
-        p4a.z = p3a.z; p4a.m = speed_seg;
-        p4b.x = p3b.x; p4b.y = p3b.y;
-        p4b.z = p3b.z; p4b.m = speed_seg;
+        p4a.x = p3a.x; p4a.y = p3a.y; p4a.z = p3a.z; p4a.m = speed_seg;
+        p4b.x = p3b.x; p4b.y = p3b.y; p4b.z = p3b.z; p4b.m = speed_seg;
       }
     }
     else
@@ -1093,14 +1082,14 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       inst1 = inst2;
     }
     *dist = hasz ? dist3d_pt_seg(&p3k, &p3a, &p3b) :
-    sqrt(distance2d_sqr_pt_seg(&p2k, &p2a, &p2b));
+      sqrt(distance2d_sqr_pt_seg(&p2k, &p2a, &p2b));
   }
   else
     *dist = -1;
 }
 
 /*****************************************************************************/
- 
+
 static TSequence *
 tsequence_simplify(const TSequence *seq, double eps_dist, double eps_speed,
   uint32_t minpts)
@@ -1117,7 +1106,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, double eps_speed,
   bool withspeed = eps_speed > 0;
 
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
-  /* Do not try to simplify really short things */      
+  /* Do not try to simplify really short things */
   if (seq->count < 3)
     return tsequence_copy(seq);
 
@@ -1210,7 +1199,7 @@ tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
  * @sqlfunc simplify()
  */
 Temporal *
-temporal_simplify(Temporal *temp, double eps_dist, double eps_speed)
+temporal_simplify(const Temporal *temp, double eps_dist, double eps_speed)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1221,8 +1210,8 @@ temporal_simplify(Temporal *temp, double eps_dist, double eps_speed)
     result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
       eps_speed, 2);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp, eps_dist,
-      eps_speed, 2);
+    result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
+      eps_dist, eps_speed, 2);
   return result;
 }
 
@@ -1417,14 +1406,14 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_remove_repeated_points((TInstantSet *) temp,
-      tolerance, min_points);
+    result = (Temporal *) tpointinstset_remove_repeated_points(
+      (TInstantSet *) temp, tolerance, min_points);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_remove_repeated_points((TSequence *) temp,
-      tolerance, min_points);
+    result = (Temporal *) tpointseq_remove_repeated_points(
+      (TSequence *) temp, tolerance, min_points);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_remove_repeated_points((TSequenceSet *) temp,
-      tolerance, min_points);
+    result = (Temporal *) tpointseqset_remove_repeated_points(
+      (TSequenceSet *) temp, tolerance, min_points);
   return result;
 }
 
@@ -1589,9 +1578,8 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
     lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
   lwpoint_free(lwpoint);
-
-    /* Construct the result */
-    TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+  /* Construct the result */
+  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
@@ -1737,7 +1725,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
 
   resx = width / extent;
   resy = height / extent;
-  res = (resx < resy ? resx : resy)/2;
+  res = (resx < resy ? resx : resy) / 2;
   fx = extent / width;
   fy = -(extent / height);
 

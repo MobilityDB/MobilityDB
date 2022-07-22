@@ -21,6 +21,7 @@ add_library(general OBJECT
   temporal_parser.c
   temporal_posops_meos.c
   temporal_similarity.c
+  temporal_tile.c
   temporal_util.c
   time_ops.c
   timestampset.c
