@@ -170,7 +170,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   {
     TInstant *inst1 = instants1[i];
     TInstant *inst2 = instants2[j];
-    int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       result[count++] = tinstant_make(
@@ -270,8 +270,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
 
   /* Compute the aggregation on the period before the
    * intersection of the intervals */
-  int cmp1 = timestamp_cmp_internal(lower1, lower);
-  int cmp2 = timestamp_cmp_internal(lower2, lower);
+  int cmp1 = timestamptz_cmp_internal(lower1, lower);
+  int cmp2 = timestamptz_cmp_internal(lower2, lower);
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
@@ -305,8 +305,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
 
   /* Compute the aggregation on the period after the intersection
    * of the intervals */
-  cmp1 = timestamp_cmp_internal(upper, upper1);
-  cmp2 = timestamp_cmp_internal(upper, upper2);
+  cmp1 = timestamptz_cmp_internal(upper, upper1);
+  cmp2 = timestamptz_cmp_internal(upper, upper2);
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
@@ -367,7 +367,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
     int countstep = tsequence_tagg1(seq1, seq2, func, crossings, &sequences[k]);
     k += countstep - 1;
     /* If both upper bounds are equal */
-    int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+    int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
     {
       k++; i++; j++;

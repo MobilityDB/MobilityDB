@@ -558,7 +558,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
 
   if (spliced_count != 0)
   {
-    /* We need to delete the new aggregate values */
+    /* Delete the new aggregate values */
     if (list->elemtype == TIMESTAMPTZ)
       pfree(values);
     else
