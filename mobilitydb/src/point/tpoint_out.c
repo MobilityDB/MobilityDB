@@ -31,11 +31,11 @@
  * @brief Output of temporal points in WKT, EWKT, and MF-JSON format.
  */
 
-#include "point/tpoint_out.h"
-
 /* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */
