@@ -231,8 +231,8 @@ tgeogpointinst_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  *
  * @param[in] inst Temporal instant
- * @param[in] value_out Function called to output the base value
- *    depending on its Oid
+ * @param[in] value_out Function called to output the base value depending on
+ * its type
  */
 char *
 tinstant_to_string(const TInstant *inst, char *(*value_out)(mobdbType, Datum))

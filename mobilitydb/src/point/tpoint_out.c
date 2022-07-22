@@ -64,9 +64,9 @@ PGDLLEXPORT Datum
 Tpoint_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-	int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-	if (PG_NARGS() > 1)
-     dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  // int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  // if (PG_NARGS() > 1)
+     // dbl_dig_for_wkt = PG_GETARG_INT32(1);
   char *str = tpoint_as_text(temp);
   text *result = cstring2text(str);
   pfree(str);
