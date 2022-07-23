@@ -59,8 +59,7 @@ extern char *int8_out(int64 val);
 
 extern float8 float8_in(char *num, const char *type_name,
   const char *orig_string);
-extern char *float8_out(int64 val);
-
+extern char *float8_out(double num, int maxdd);
 extern float8 pg_dsin(float8 arg1);
 extern float8 pg_dcos(float8 arg1);
 extern float8 pg_datan(float8 arg1);

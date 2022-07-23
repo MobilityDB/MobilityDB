@@ -467,16 +467,19 @@ float8_in(char *num, const char *type_name, const char *orig_string)
 #define DBL_DIG                __DBL_DIG__
 
 /*
- * float8out_internal - guts of float8out()
+ * This function uses the PostGIS function lwprint_double to print an ordinate
+ * value using at most **maxdd** number of decimal digits. The actual number
+ * of printed decimal digits may be less than the requested ones if out of
+ * significant digits.
  *
- * This function is NOT the one from PostgreSQL, it uses the PostGIS function
- * to print doubles.
+ * The function will write at most OUT_DOUBLE_BUFFER_SIZE bytes, including the
+ * terminating NULL.
  */
 char *
-float8_out(double num)
+float8_out(double num, int maxdd)
 {
   char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
-  lwprint_double(num, DBL_DIG, ascii);
+  lwprint_double(num, maxdd, ascii); /* DBL_DIG was used before */
   return ascii;
 }
 

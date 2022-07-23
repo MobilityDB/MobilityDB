@@ -214,7 +214,9 @@ extern char *span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out);
 extern uint8_t *span_as_wkb(const Span *s, uint8_t variant, size_t *size_out);
 extern Span *span_from_hexwkb(const char *hexwkb);
 extern Span *span_from_wkb(uint8_t *wkb, int size);
-extern char *span_out(const Span *s);
+extern Span *floatspan_out(const Span *s, int maxdd);
+extern Span *intspan_out(const Span *s);
+extern Period *period_out(const Span *s);
 extern char *timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
 extern uint8_t *timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
 extern TimestampSet *timestampset_from_hexwkb(const char *hexwkb);
@@ -547,7 +549,7 @@ extern bool timestampset_gt(const TimestampSet *ss1, const TimestampSet *ss2);
 /* Input/output functions for box types */
 
 extern TBOX *tbox_in(char *str);
-extern char *tbox_out(const TBOX *box);
+extern char *tbox_out(const TBOX *box, int maxdd);
 extern TBOX *tbox_from_wkb(uint8_t *wkb, int size);
 extern TBOX *tbox_from_hexwkb(const char *hexwkb);
 extern STBOX *stbox_from_wkb(uint8_t *wkb, int size);
@@ -557,7 +559,7 @@ extern char *tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size);
 extern uint8_t *stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out);
 extern char *stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size);
 extern STBOX *stbox_in(char *str);
-extern char *stbox_out(const STBOX *box);
+extern char *stbox_out(const STBOX *box, int maxdd);
 
 /*****************************************************************************/
 
@@ -723,20 +725,24 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
 /* Input/output functions for temporal types */
 
 extern Temporal *tbool_in(char *str);
+extern char *tbool_out(const Temporal *temp);
 extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision, char *srs);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_mfjson(char *mfjson);
 extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
-extern char *temporal_out(const Temporal *temp);
 extern Temporal *tfloat_in(char *str);
+extern char *tfloat_out(const Temporal *temp, int maxdd);
 extern Temporal *tgeogpoint_in(char *str);
 extern Temporal *tgeompoint_in(char *str);
 extern Temporal *tint_in(char *str);
-extern char *tpoint_as_ewkt(const Temporal *temp);
-extern char *tpoint_as_text(const Temporal *temp);
+extern char *tint_out(const Temporal *temp);
+extern char *tpoint_as_ewkt(const Temporal *temp, int maxdd);
+extern char *tpoint_as_text(const Temporal *temp, int maxdd);
+extern char *tpoint_out(const Temporal *temp, int maxdd);
 extern Temporal *ttext_in(char *str);
+extern char *ttext_out(const Temporal *temp);
 
 /*****************************************************************************/
 

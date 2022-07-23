@@ -40,6 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/time_ops.h"
 #include "general/tnumber_mathfuncs.h"
@@ -83,7 +84,10 @@ PGDLLEXPORT Datum
 Tbox_out(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_CSTRING(tbox_out(box));
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  PG_RETURN_CSTRING(tbox_out(box, Int32GetDatum(dbl_dig_for_wkt)));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_recv);

@@ -41,6 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/tinstant.h"
 #include "general/tinstantset.h"
@@ -64,10 +65,10 @@ PGDLLEXPORT Datum
 Tpoint_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  // if (PG_NARGS() > 1)
-     // dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = tpoint_as_text(temp);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = tpoint_as_text(temp, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -85,7 +86,10 @@ PGDLLEXPORT Datum
 Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = tpoint_as_ewkt(temp);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = tpoint_as_ewkt(temp, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -108,9 +112,12 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
     PG_FREE_IF_COPY(array, 0);
     PG_RETURN_NULL();
   }
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Datum *geoarr = datumarr_extract(array, &count);
-  char **strarr = geoarr_as_text(geoarr, count, extended);
+  char **strarr = geoarr_as_text(geoarr, count, dbl_dig_for_wkt, extended);
   ArrayType *result = strarr_to_textarray(strarr, count);
   pfree_array((void **) strarr, count);
   pfree(geoarr);
@@ -158,10 +165,13 @@ tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
     PG_FREE_IF_COPY(array, 0);
     PG_RETURN_NULL();
   }
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Temporal **temparr = temporalarr_extract(array, &count);
   char **strarr = tpointarr_as_text((const Temporal **) temparr, count,
-    extended);
+    dbl_dig_for_wkt, extended);
   ArrayType *result = strarr_to_textarray(strarr, count);
   pfree_array((void **) strarr, count);
   pfree(temparr);

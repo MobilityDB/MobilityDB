@@ -235,11 +235,12 @@ tgeogpointinst_in(char *str)
  * its type
  */
 char *
-tinstant_to_string(const TInstant *inst, char *(*value_out)(mobdbType, Datum))
+tinstant_to_string(const TInstant *inst, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
-  char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
+  char *t = pg_timestamptz_out(inst->t);
   mobdbType basetype = temptype_basetype(inst->temptype);
-  char *value = value_out(basetype, tinstant_value(inst));
+  char *value = value_out(basetype, tinstant_value(inst), arg);
   char *result;
   if (inst->temptype == T_TTEXT)
   {
@@ -261,9 +262,9 @@ tinstant_to_string(const TInstant *inst, char *(*value_out)(mobdbType, Datum))
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  */
 char *
-tinstant_out(const TInstant *inst)
+tinstant_out(const TInstant *inst, Datum arg)
 {
-  return tinstant_to_string(inst, &basetype_output);
+  return tinstant_to_string(inst, arg, &basetype_output);
 }
 
 /*****************************************************************************

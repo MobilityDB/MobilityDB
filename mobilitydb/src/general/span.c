@@ -45,6 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal_catalog.h"
@@ -80,7 +81,10 @@ PGDLLEXPORT Datum
 Span_out(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_CSTRING(span_out(s));
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  PG_RETURN_CSTRING(span_out(s, Int32GetDatum(dbl_dig_for_wkt)));
 }
 
 /* Needed for time aggregation */

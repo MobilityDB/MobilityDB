@@ -52,7 +52,7 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 /* Input/Output functions */
 
 extern Npoint *npoint_in(char *str, bool end);
-extern char *npoint_out(const Npoint *np);
+extern char *npoint_out(const Npoint *np, int maxdd);
 
 /* Constructor functions */
 
@@ -68,7 +68,7 @@ extern Nsegment *npoint_to_nsegment(const Npoint *np);
 /* Input/output functions */
 
 extern Nsegment *nsegment_in(char *str);
-extern char *nsegment_out(const Nsegment *ns);
+extern char *nsegment_out(const Nsegment *ns, int maxdd);
 
 /* Accessor functions */
 

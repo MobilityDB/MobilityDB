@@ -70,10 +70,10 @@ double2_make(double a, double b)
  * @brief Output function for double2 values
  */
 char *
-double2_out(double2 *d)
+double2_out(double2 *d, int maxdd)
 {
-  char *astr = basetype_output(T_FLOAT8, Float8GetDatum(d->a));
-  char *bstr = basetype_output(T_FLOAT8, Float8GetDatum(d->b));
+  char *astr = float8_out(d->a, maxdd);
+  char *bstr = float8_out(d->b, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + 4);
   sprintf(result, "(%s,%s)", astr, bstr);
   pfree(astr);
@@ -151,11 +151,11 @@ double3_make(double a, double b, double c)
  * @brief Output function for double3 values
  */
 char *
-double3_out(double3 *d)
+double3_out(double3 *d, int maxdd)
 {
-  char *astr = basetype_output(T_FLOAT8, Float8GetDatum(d->a));
-  char *bstr = basetype_output(T_FLOAT8, Float8GetDatum(d->b));
-  char *cstr = basetype_output(T_FLOAT8, Float8GetDatum(d->c));
+  char *astr = float8_out(d->a, maxdd);
+  char *bstr = float8_out(d->b, maxdd);
+  char *cstr = float8_out(d->c, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) + 5);
   sprintf(result, "(%s,%s,%s)", astr, bstr, cstr);
   pfree(astr);
@@ -240,12 +240,12 @@ double4_make(double a, double b, double c, double d)
  * @brief Output function for double4 values
  */
 char *
-double4_out(double4 *d)
+double4_out(double4 *d, int maxdd)
 {
-  char *astr = basetype_output(T_FLOAT8, Float8GetDatum(d->a));
-  char *bstr = basetype_output(T_FLOAT8, Float8GetDatum(d->b));
-  char *cstr = basetype_output(T_FLOAT8, Float8GetDatum(d->c));
-  char *dstr = basetype_output(T_FLOAT8, Float8GetDatum(d->d));
+  char *astr = float8_out(d->a, maxdd);
+  char *bstr = float8_out(d->b, maxdd);
+  char *cstr = float8_out(d->c, maxdd);
+  char *dstr = float8_out(d->d, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) +
     strlen(dstr) + 6);
   sprintf(result, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);

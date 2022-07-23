@@ -574,8 +574,8 @@ tgeogpointseqset_in(char *str)
  * depending on its Oid
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ss,
-  char *(*value_out)(mobdbType, Datum))
+tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
@@ -588,7 +588,7 @@ tsequenceset_to_string(const TSequenceSet *ss,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    strings[i] = tsequence_to_string(seq, true, value_out);
+    strings[i] = tsequence_to_string(seq, arg, true, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}');
@@ -599,9 +599,9 @@ tsequenceset_to_string(const TSequenceSet *ss,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  */
 char *
-tsequenceset_out(const TSequenceSet *ss)
+tsequenceset_out(const TSequenceSet *ss, Datum arg)
 {
-  return tsequenceset_to_string(ss, &basetype_output);
+  return tsequenceset_to_string(ss, arg,  &basetype_output);
 }
 
 /*****************************************************************************

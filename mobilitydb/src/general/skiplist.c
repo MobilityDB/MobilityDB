@@ -46,6 +46,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_call.h"
 #include "general/time_ops.h"
 /* MobilityDB */
 #include "pg_general/span.h"
@@ -233,14 +234,16 @@ skiplist_print(const SkipList *list)
     {
       char *val;
       if (list->elemtype == TIMESTAMPTZ)
-        val = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(e->value));
+        val = pg_timestamptz_out((TimestampTz) e->value);
       else if (list->elemtype == PERIOD)
-        val = span_out(e->value);
+        /* The second argument of span_out is not used for periods */
+        val = span_out(e->value, Int32GetDatum(0));
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
         temporal_set_period(e->value, &p);
-        val = span_out(&p);
+        /* The second argument of span_out is not used for periods */
+        val = span_out(&p, Int32GetDatum(0));
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);

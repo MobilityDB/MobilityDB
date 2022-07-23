@@ -51,8 +51,8 @@ extern double tnumberinst_double(const TInstant *inst);
 
 /* Input/output functions */
 
-extern char *tinstant_to_string(const TInstant *inst,
-  char *(*value_out)(mobdbType, Datum));
+extern char *tinstant_to_string(const TInstant *inst, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum));
 
 /* Restriction Functions */
 

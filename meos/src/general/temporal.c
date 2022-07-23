@@ -171,15 +171,15 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 {
   if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
   {
-    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
-    char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst2->t));
+    char *t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst2->t);
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
         temptype_basetype(inst1->temptype)))
   {
-    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+    char *t1 = pg_timestamptz_out(inst1->t);
     elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
   }
   return;
@@ -334,8 +334,8 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
          ( upper1 == lower2 && sequences[i - 1]->period.upper_inc &&
            sequences[i]->period.lower_inc ) )
     {
-      char *t1 = basetype_output(T_TIMESTAMPTZ, sequences[i - 1]->period.upper);
-      char *t2 = basetype_output(T_TIMESTAMPTZ, sequences[i]->period.lower);
+      char *t1 = pg_timestamptz_out(upper1);
+      char *t2 = pg_timestamptz_out(lower2);
       elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
     }
     ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
@@ -633,7 +633,7 @@ tgeogpoint_in(char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  * @see tinstant_out
  * @see tinstantset_out
@@ -641,20 +641,75 @@ tgeogpoint_in(char *str)
  * @see tsequenceset_out
  */
 char *
-temporal_out(const Temporal *temp)
+temporal_out(const Temporal *temp, Datum arg)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_out((TInstant *) temp);
+    result = tinstant_out((TInstant *) temp, arg);
   else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_out((TInstantSet *) temp);
+    result = tinstantset_out((TInstantSet *) temp, arg);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_out((TSequence *) temp);
+    result = tsequence_out((TSequence *) temp, arg);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_out((TSequenceSet *) temp);
+    result = tsequenceset_out((TSequenceSet *) temp, arg);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tbool_out(const Temporal *temp)
+{
+  return temporal_out(temp);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal integer from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tint_out(const Temporal *temp)
+{
+  return temporal_out(temp);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation.
+ */
+Temporal *
+tfloat_out(const Temporal *temp, int maxdd)
+{
+  return temporal_out(temp, Int32GetDatum(maxdd));
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation.
+ */
+Temporal *
+ttext_out(const Temporal *temp)
+{
+  return temporal_out(temp);
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal geometric/geographic point from its Well-Known Text
+ * (WKT) representation.
+ */
+Temporal *
+tpoint_out(const Temporal *temp, int maxdd)
+{
+  return temporal_out(temp, Int32GetDatum(maxdd));
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions

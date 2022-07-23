@@ -343,8 +343,8 @@ tgeogpointinstset_in(char *str)
  * its type
  */
 char *
-tinstantset_to_string(const TInstantSet *is,
-  char *(*value_out)(mobdbType, Datum))
+tinstantset_to_string(const TInstantSet *is, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * is->count);
   size_t outlen = 0;
@@ -352,7 +352,7 @@ tinstantset_to_string(const TInstantSet *is,
   for (int i = 0; i < is->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(is, i);
-    strings[i] = tinstant_to_string(inst, value_out);
+    strings[i] = tinstant_to_string(inst, arg, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, is->count, outlen, "", '{', '}');
@@ -364,9 +364,9 @@ tinstantset_to_string(const TInstantSet *is,
  * set.
  */
 char *
-tinstantset_out(const TInstantSet *is)
+tinstantset_out(const TInstantSet *is, Datum arg)
 {
-  return tinstantset_to_string(is, &basetype_output);
+  return tinstantset_to_string(is, arg, &basetype_output);
 }
 
 /*****************************************************************************

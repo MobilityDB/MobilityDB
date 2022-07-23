@@ -54,7 +54,7 @@ extern char *text2cstring(const text *textptr);
 /* Input/output functions */
 
 extern Datum basetype_input(mobdbType type, char *str, bool end);
-extern char *basetype_output(mobdbType type, Datum value);
+extern char *basetype_output(mobdbType type, Datum value, Datum arg);
 
 /* Array functions */
 
