@@ -384,10 +384,10 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+  TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    times[i] = timestampset_time_n(ts, i);
-  return times;
+    result[i] = timestampset_time_n(ts, i);
+  return result;
 }
 
 /*****************************************************************************

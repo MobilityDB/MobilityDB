@@ -299,19 +299,13 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
 
   /* Fill values first */
   result->elems[0].value = NULL;
-  if (elemtype == TIMESTAMPTZ)
+  for (int i = 0; i < count - 2; i++)
   {
-    for (int i = 0; i < count - 2; i ++)
+    if (elemtype == TIMESTAMPTZ)
       result->elems[i + 1].value = values[i];
-  }
-  else if (elemtype == PERIOD)
-  {
-    for (int i = 0; i < count - 2; i ++)
+    else if (elemtype == PERIOD)
       result->elems[i + 1].value = span_copy((Span *) values[i]);
-  }
-  else /* state->elemtype == TEMPORAL */
-  {
-    for (int i = 0; i < count - 2; i ++)
+    else /* state->elemtype == TEMPORAL */
       result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
   }
   result->elems[count - 1].value = NULL;
@@ -562,14 +556,6 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
       height = rheight;
   }
 
-  if (spliced_count != 0)
-  {
-    /* Delete the new aggregate values */
-    if (list->elemtype == TIMESTAMPTZ)
-      pfree(values);
-    else
-      pfree_array(values, count);
-  }
   return;
 }
 

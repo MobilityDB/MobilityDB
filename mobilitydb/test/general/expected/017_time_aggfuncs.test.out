@@ -102,7 +102,7 @@ SELECT extent(temp::period) FROM tbl_tfloat_big;
 SELECT numPeriods(tunion(temp::period)) from tbl_tfloat_big;
  numperiods 
 ------------
-       3995
+       4014
 (1 row)
 
 reset parallel_setup_cost;

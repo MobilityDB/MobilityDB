@@ -817,6 +817,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
     seq = tsequence_make((const TInstant **) instants, count, true, true,
       linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    pfree(seq);
     return result;
   }
 
@@ -831,6 +832,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
     seq = tsequence_make1((const TInstant **) instants, count,
       true, true, linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    pfree(seq);
   }
   else
   {

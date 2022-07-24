@@ -3766,7 +3766,10 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ss)
     inst = tsequence_at_timestamp(seq, timestampset_time_n(ss, 0));
     if (inst == NULL)
       return NULL;
-    return tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
+    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1,
+      MERGE_NO);
+    pfree(inst);
+    return result;
   }
 
   /* Bounding box test */
