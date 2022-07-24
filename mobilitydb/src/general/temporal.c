@@ -380,10 +380,7 @@ PGDLLEXPORT Datum
 Temporal_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *result = temporal_out(temp, dbl_dig_for_wkt);
+  char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

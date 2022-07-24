@@ -59,6 +59,7 @@ SELECT asText(tnpoint 'Interp=Stepwise;[NPoint(1, 0.123456789)@2000-01-01, NPoin
 SELECT asText(tnpoint 'Interp=Stepwise;{[NPoint(1, 0.123456789)@2000-01-01, NPoint(1, 0.523456789)@2000-01-02, NPoint(1, 0.123456789)@2000-01-03],[NPoint(2, 0.723456789)@2000-01-04, NPoint(2, 0.723456789)@2000-01-05]}', 6);
 
 -------------------------------------------------------------------------------
+-- Maximum decimal digits
 
 SELECT tnpointFromBinary(asBinary(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
 SELECT tnpointFromBinary(asBinary(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));

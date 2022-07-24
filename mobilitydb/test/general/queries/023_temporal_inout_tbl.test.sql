@@ -35,6 +35,13 @@ SELECT asText(tfloat '{[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456
 SELECT asText(tfloat 'Interp=Stepwise;[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03]', 6);
 SELECT asText(tfloat 'Interp=Stepwise;{[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03],[3.723456789@2000-01-04, 3.723456789@2000-01-05]}', 6);
 
+-- Array of temporal values
+SELECT asText('{}'::tfloat[]);
+SELECT asText(ARRAY[tbool 'true@2000-01-01']);
+SELECT asText(ARRAY[tint '1@2000-01-01']);
+SELECT asText(ARRAY[tfloat '1@2000-01-01']);
+SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
+
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
 -------------------------------------------------------------------------------

@@ -34,6 +34,36 @@ SELECT asText(tfloat 'Interp=Stepwise;{[0.123456789@2000-01-01, 1.523456789@2000
  Interp=Stepwise;{[0.123457@2000-01-01 00:00:00+00, 1.523457@2000-01-02 00:00:00+00, 0.123457@2000-01-03 00:00:00+00], [3.723457@2000-01-04 00:00:00+00, 3.723457@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT asText('{}'::tfloat[]);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(ARRAY[tbool 'true@2000-01-01']);
+            astext            
+------------------------------
+ {"t@2000-01-01 00:00:00+00"}
+(1 row)
+
+SELECT asText(ARRAY[tint '1@2000-01-01']);
+            astext            
+------------------------------
+ {"1@2000-01-01 00:00:00+00"}
+(1 row)
+
+SELECT asText(ARRAY[tfloat '1@2000-01-01']);
+            astext            
+------------------------------
+ {"1@2000-01-01 00:00:00+00"}
+(1 row)
+
+SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
+               astext               
+------------------------------------
+ {"\"ABC\"@2000-01-01 00:00:00+00"}
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
  count 
 -------

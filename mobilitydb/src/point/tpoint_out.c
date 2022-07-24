@@ -55,6 +55,27 @@
  * Output in WKT and EWKT format
  *****************************************************************************/
 
+/**
+ * @ingroup mobilitydb_temporal_in_out
+ * @brief Output a temporal point in Well-Known Text (WKT) format
+ * @sqlfunc asText()
+ */
+static Datum
+Tpoint_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = extended ?
+    tpoint_as_ewkt(temp, dbl_dig_for_wkt) :
+    tpoint_as_text(temp, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
 PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
  * @ingroup mobilitydb_temporal_in_out
@@ -64,15 +85,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_text);
 PGDLLEXPORT Datum
 Tpoint_as_text(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = tpoint_as_text(temp, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
+  return Tpoint_as_text_ext(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
@@ -85,24 +98,17 @@ PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 PGDLLEXPORT Datum
 Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = tpoint_as_ewkt(temp, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
+  return Tpoint_as_text_ext(fcinfo, true);
 }
 
 /*****************************************************************************/
 
 /**
- * Output a geometry/geography array in Well-Known Text (WKT) format
+ * Output a geometry/geography or temporal geometry/geography point array in
+ * Well-Known Text (WKT) format
  */
 static Datum
-geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -116,11 +122,22 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
-  Datum *geoarr = datumarr_extract(array, &count);
-  char **strarr = geoarr_as_text(geoarr, count, dbl_dig_for_wkt, extended);
+  char **strarr;
+  if (temparr)
+  {
+    Temporal **temparr = temporalarr_extract(array, &count);
+    strarr = tpointarr_as_text((const Temporal **) temparr, count,
+      dbl_dig_for_wkt, extended);
+    pfree(temparr);
+  }
+  else
+  {
+    Datum *geoarr = datumarr_extract(array, &count);
+    strarr = geoarr_as_text(geoarr, count, dbl_dig_for_wkt, extended);
+    pfree(geoarr);
+  }
   ArrayType *result = strarr_to_textarray(strarr, count);
   pfree_array((void **) strarr, count);
-  pfree(geoarr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -134,7 +151,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_text);
 PGDLLEXPORT Datum
 Geoarr_as_text(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text_ext(fcinfo, false);
+  return geoarr_as_text_ext(fcinfo, false, false);
 }
 
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
@@ -147,36 +164,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 PGDLLEXPORT Datum
 Geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text_ext(fcinfo, true);
-}
-
-/**
- * Output a temporal point array in Well-Known Text (WKT) or
- * Extended Well-Known Text (EWKT) format
- */
-static Datum
-tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-
-  Temporal **temparr = temporalarr_extract(array, &count);
-  char **strarr = tpointarr_as_text((const Temporal **) temparr, count,
-    dbl_dig_for_wkt, extended);
-  ArrayType *result = strarr_to_textarray(strarr, count);
-  pfree_array((void **) strarr, count);
-  pfree(temparr);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
+  return geoarr_as_text_ext(fcinfo, false, true);
 }
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_text);
@@ -188,7 +176,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 PGDLLEXPORT Datum
 Tpointarr_as_text(PG_FUNCTION_ARGS)
 {
-  return tpointarr_as_text_ext(fcinfo, false);
+  return geoarr_as_text_ext(fcinfo, true, false);
 }
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
@@ -201,7 +189,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 PGDLLEXPORT Datum
 Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return tpointarr_as_text_ext(fcinfo, true);
+  return geoarr_as_text_ext(fcinfo, true, true);
 }
 
 /*****************************************************************************/
