@@ -34,6 +34,7 @@
 #include "npoint/tnpoint_parser.h"
 
 /* MobilityDB */
+// #include "general/pg_call.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"

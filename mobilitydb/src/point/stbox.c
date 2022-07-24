@@ -79,10 +79,7 @@ PGDLLEXPORT Datum
 Stbox_out(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  PG_RETURN_CSTRING(stbox_out(box, dbl_dig_for_wkt));
+  PG_RETURN_CSTRING(stbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PG_FUNCTION_INFO_V1(Stbox_recv);
@@ -117,6 +114,29 @@ Stbox_send(PG_FUNCTION_ARGS)
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Output in WKT format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Stbox_as_text);
+/**
+ * @ingroup mobilitydb_box_in_out
+ * @brief Output function for spatiotemporal boxes.
+ * @sqlfunc asText()
+ */
+PGDLLEXPORT Datum
+Stbox_as_text(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = stbox_out(box, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************

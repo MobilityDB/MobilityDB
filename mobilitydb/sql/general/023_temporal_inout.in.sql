@@ -111,11 +111,11 @@ CREATE FUNCTION asText(tint[])
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(tfloat)
+CREATE FUNCTION asText(tfloat, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tfloat[])
+CREATE FUNCTION asText(tfloat[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

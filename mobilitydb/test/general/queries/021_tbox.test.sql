@@ -59,7 +59,10 @@ COPY tbl_tbox_tmp FROM '/tmp/tbl_tbox' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_tbox_tmp;
 
--- Input/output from/to WKB and HexWKB
+-- Input/output from/to WKT, WKB and HexWKB
+
+-- Maximum decimal digits
+SELECT asText(tbox 'TBOX((1.123456789,2000-01-01),(2.123456789,2000-01-02))', 6);
 
 SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromHexWKB(asHexWKB(b)) <> b;

@@ -74,7 +74,10 @@ COPY tbl_stbox3d_tmp FROM '/tmp/tbl_stbox3d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_stbox3d_tmp;
 
--- Input/output from WKB and HexWKB
+-- Input/output from WKT, WKB and HexWKB
+
+-- Maximum decimal digits
+SELECT asText(stbox 'STBOX T((1.123456789,1.23456789,2000-01-01),(2.12345678,2.123456789,2000-01-02))', 6);
 
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;

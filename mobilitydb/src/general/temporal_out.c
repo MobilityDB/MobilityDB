@@ -115,7 +115,7 @@ PGDLLEXPORT Datum
 Temporal_as_mfjson(PG_FUNCTION_ARGS)
 {
   bool with_bbox = 0;
-  int precision = DBL_DIG;
+  int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int option = 0;
   char *srs = NULL;
 
@@ -162,8 +162,8 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
   {
     precision = PG_GETARG_INT32(2);
-    if (precision > DBL_DIG)
-      precision = DBL_DIG;
+    if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
+      precision = OUT_DEFAULT_DECIMAL_DIGITS;
     else if (precision < 0)
       precision = 0;
   }

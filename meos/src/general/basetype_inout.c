@@ -463,9 +463,6 @@ float8_in(char *num, const char *type_name, const char *orig_string)
   return result;
 }
 
-/* Definition taken from GCC's float.h */
-#define DBL_DIG                __DBL_DIG__
-
 /*
  * This function uses the PostGIS function lwprint_double to print an ordinate
  * value using at most **maxdd** number of decimal digits. The actual number
@@ -479,7 +476,7 @@ char *
 float8_out(double num, int maxdd)
 {
   char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
-  lwprint_double(num, maxdd, ascii); /* DBL_DIG was used before */
+  lwprint_double(num, maxdd, ascii);
   return ascii;
 }
 
