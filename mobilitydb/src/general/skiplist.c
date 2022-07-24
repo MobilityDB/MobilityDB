@@ -423,10 +423,12 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   int cur = 0;
   int height = list->elems[cur].height;
   SkipListElem *e = &list->elems[cur];
+  TimestampTz t;
   for (int level = height - 1; level >= 0; level --)
   {
+    t = DatumGetTimestampTz(p.lower);
     while (e->next[level] != -1 &&
-      skiplist_elmpos(list, e->next[level], p.lower) == AFTER)
+      skiplist_elmpos(list, e->next[level], t) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -439,14 +441,15 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   e = &list->elems[cur];
 
   int spliced_count = 0;
-  while (skiplist_elmpos(list, cur, p.upper) == AFTER)
+  t = DatumGetTimestampTz(p.upper);
+  while (skiplist_elmpos(list, cur, t) == AFTER)
   {
     cur = e->next[0];
     e = &list->elems[cur];
     spliced_count++;
   }
   int upper = cur;
-  if (upper >= 0 && skiplist_elmpos(list, upper, p.upper) == DURING)
+  if (upper >= 0 && skiplist_elmpos(list, upper, t) == DURING)
   {
     upper = e->next[0]; /* if found upper, one more to remove */
     spliced_count++;

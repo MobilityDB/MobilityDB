@@ -49,7 +49,7 @@ SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromMFJSON(asMFJSON(temp)) <> temp;
 -- We need to add asewkt to avoid problems due to floating point precision
--- SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND asText(tfloatFromMFJSON(asMFJSON(temp))) <> asText(temp);
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND asText(tfloatFromMFJSON(asMFJSON(temp))) <> asText(temp);
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJSON(temp)) <> temp;
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp)) <> temp;

@@ -243,10 +243,7 @@ PGDLLEXPORT Datum
 Nsegment_out(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  PG_RETURN_CSTRING(nsegment_out(ns, dbl_dig_for_wkt));
+  PG_RETURN_CSTRING(nsegment_out(ns, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_recv);
