@@ -324,6 +324,7 @@ timestamp_parse(char **str)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
+  /* The last argument is for an unused typmod */
   Datum result = pg_timestamptz_in(*str, -1);
   (*str)[delim] = bak;
   *str += delim;

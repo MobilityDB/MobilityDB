@@ -193,7 +193,8 @@ tinstarr_similarity(const TInstant **instants1, int count1,
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 double
-temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
+temporal_similarity(const Temporal *temp1, const Temporal *temp2,
+  SimFunc simfunc)
 {
   double result;
   int count1, count2;
@@ -216,7 +217,7 @@ temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
  * @sqlfunc frechetDistance()
  */
 double
-temporal_frechet_distance(Temporal *temp1, Temporal *temp2)
+temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
   return temporal_similarity(temp1, temp2, FRECHET);
 }
@@ -229,7 +230,7 @@ temporal_frechet_distance(Temporal *temp1, Temporal *temp2)
  * @sqlfunc dynamicTimeWarp()
  */
 double
-temporal_dyntimewarp_distance(Temporal *temp1, Temporal *temp2)
+temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
   return temporal_similarity(temp1, temp2, DYNTIMEWARP);
 }
@@ -436,8 +437,8 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
  * @brief Compute the similarity path between two temporal values
  */
 Match *
-temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
-  SimFunc simfunc)
+temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
+  int *count, SimFunc simfunc)
 {
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);
@@ -462,7 +463,7 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
  * @sqlfunc frechetDistancePath()
  */
 Match *
-temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
+temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   return temporal_similarity_path(temp1, temp2, count, FRECHET);
 }
@@ -476,7 +477,7 @@ temporal_frechet_path(Temporal *temp1, Temporal *temp2, int *count)
  * @sqlfunc dynamicTimeWarpPath()
  */
 Match *
-temporal_dyntimewarp_path(Temporal *temp1, Temporal *temp2, int *count)
+temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }

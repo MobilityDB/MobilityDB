@@ -197,7 +197,6 @@ extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
 /* Input/output functions for temporal types */
 
 extern char **geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended);
-extern char *span_out(const Span *s, Datum arg);
 extern char *tboolinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *tboolinst_from_mfjson(json_object *mfjson);
 extern TInstant *tboolinst_in(char *str);
@@ -212,7 +211,6 @@ extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(char *str);
 extern Temporal *temporal_in(char *str, mobdbType temptype);
 extern char **temporalarr_out(const Temporal **temparr, int count, Datum arg);
-extern char *temporal_out(const Temporal *temp, Datum arg);
 extern char *tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
 extern TInstant *tfloatinst_in(char *str);
@@ -330,11 +328,11 @@ extern void tsequenceset_set_period(const TSequenceSet *ss, Period *p);
 
 /* Accessor functions for temporal types */
 
-extern Datum temporal_end_value(Temporal *temp);
+extern Datum temporal_end_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
 extern Datum temporal_min_value(const Temporal *temp);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
-extern Datum temporal_start_value(Temporal *temp);
+extern Datum temporal_start_value(const Temporal *temp);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern Span **tfloatinst_spans(const TInstant *inst, int *count);
 extern Span **tfloatinstset_spans(const TInstantSet *is, int *count);
@@ -717,6 +715,8 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /* Multidimensional tiling functions for temporal types */
 
+extern Temporal **tnumber_value_split(const Temporal *temp, Datum start_bucket,
+  Datum size, int count, Datum **buckets, int *newcount);
 
 /*****************************************************************************/
 

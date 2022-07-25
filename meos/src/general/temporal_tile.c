@@ -42,7 +42,6 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <funcapi.h>
 #include <utils/datetime.h>
 /* MEOS */
 #include <meos.h>
@@ -76,7 +75,9 @@ int_bucket(int value, int size, int offset)
     offset = offset % size;
     if ((offset > 0 && value < PG_INT32_MIN + offset) ||
       (offset < 0 && value > PG_INT32_MAX + offset))
+    {
       elog(ERROR, "number out of span");
+    }
     value -= offset;
   }
   int result = (value / size) * size;
@@ -89,7 +90,9 @@ int_bucket(int value, int size, int offset)
      * truncates toward 0 in C99.
      */
     if (result < PG_INT32_MIN + size)
+    {
       elog(ERROR, "number out of span");
+    }
     else
       result -= size;
   }
@@ -165,7 +168,9 @@ timestamptz_bucket(TimestampTz timestamp, int64 size, TimestampTz offset)
      * truncates toward 0 in C99.
      */
     if (result < DT_NOBEGIN + size)
+    {
       elog(ERROR, "timestamp out of span");
+    }
     else
       result -= size;
   }
@@ -518,7 +523,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @sqlfunc timeSplit()
  */
 Temporal **
-temporal_time_split(Temporal *temp, TimestampTz start, TimestampTz end,
+temporal_time_split(const Temporal *temp, TimestampTz start, TimestampTz end,
   int64 tunits, TimestampTz torigin, int count, TimestampTz **buckets,
   int *newcount)
 {
@@ -1015,8 +1020,13 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
 
 /*****************************************************************************/
 
+/**
+ * @ingroup libmeos_int_temporal_tile
+ * @brief Split a temporal number into an array of fragments according to value
+ * buckets.
+ */
 Temporal **
-tnumber_value_split(Temporal *temp, Datum start_bucket, Datum size,
+tnumber_value_split(const Temporal *temp, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   assert(count > 0);
@@ -1037,5 +1047,39 @@ tnumber_value_split(Temporal *temp, Datum start_bucket, Datum size,
       start_bucket, size, count, buckets, newcount);
   return fragments;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_tile
+ * @brief Split a temporal integer into an array of fragments according to
+ * value buckets.
+ */
+Temporal **
+tint_value_split(const Temporal *temp, int start_bucket, int size,
+  int count, int **buckets, int *newcount)
+{
+  Temporal **result = tnumber_value_split(temp, Int32GetDatum(start_bucket),
+    Int32GetDatum(size), count, (Datum **) buckets, newcount);
+  for (int i = 0; i < count; i++)
+    *buckets[i] = DatumGetInt32(*buckets[i]);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_tile
+ * @brief Split a temporal float into an array of fragments according to value
+ * buckets.
+ */
+Temporal **
+tfloat_value_split(const Temporal *temp, double start_bucket, double size,
+  int count, float **buckets, int *newcount)
+{
+  Temporal **result = tnumber_value_split(temp, Float8GetDatum(start_bucket),
+    Float8GetDatum(size), count, (Datum **) buckets, newcount);
+  for (int i = 0; i < count; i++)
+    *buckets[i] = DatumGetFloat8(*buckets[i]);
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

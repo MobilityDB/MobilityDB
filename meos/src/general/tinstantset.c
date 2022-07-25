@@ -571,7 +571,7 @@ tfloatinstset_from_base_time(bool b, const TimestampSet *ts)
  * @brief Construct a temporal text instant set from a text and a timestamp set.
  */
 TInstantSet *
-ttextinstset_from_base_time(text *txt, const TimestampSet *ts)
+ttextinstset_from_base_time(const text *txt, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(txt), T_TTEXT, ts);
 }
@@ -582,7 +582,7 @@ ttextinstset_from_base_time(text *txt, const TimestampSet *ts)
  * timestamp set.
  */
 TInstantSet *
-tgeompointinstset_from_base_time(GSERIALIZED *gs, const TimestampSet *ts)
+tgeompointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ts);
 }
@@ -593,7 +593,7 @@ tgeompointinstset_from_base_time(GSERIALIZED *gs, const TimestampSet *ts)
  * timestamp set.
  */
 TInstantSet *
-tgeogpointinstset_from_base_time(GSERIALIZED *gs, const TimestampSet *ts)
+tgeogpointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ts);
 }

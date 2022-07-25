@@ -36,7 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <common/shortest_dec.h>
 #include <utils/float.h>
 /* PostgreSQL */
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */

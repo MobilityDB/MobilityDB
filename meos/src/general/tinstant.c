@@ -388,7 +388,7 @@ tfloatinst_make(double d, TimestampTz t)
  * @sqlfunc tint_inst()
  */
 TInstant *
-ttextinst_make(text *txt, TimestampTz t)
+ttextinst_make(const text *txt, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
@@ -399,7 +399,7 @@ ttextinst_make(text *txt, TimestampTz t)
  * @sqlfunc tgeompoint_inst()
  */
 TInstant *
-tgeogpointinst_make(GSERIALIZED *gs, TimestampTz t)
+tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
 }
@@ -409,7 +409,7 @@ tgeogpointinst_make(GSERIALIZED *gs, TimestampTz t)
  * @sqlfunc tgeogpoint_inst().
  */
 TInstant *
-tgeompointinst_make(GSERIALIZED *gs, TimestampTz t)
+tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
 }

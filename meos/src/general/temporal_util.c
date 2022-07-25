@@ -972,8 +972,10 @@ basetype_output(mobdbType basetype, Datum value, Datum arg)
       return bool_out(DatumGetBool(value));
     case T_INT4:
       return int4_out(DatumGetInt32(value));
-    // case T_INT8:
-      // return int8_out(DatumGetInt64(value));
+  #if 0 /* not used */
+    case T_INT8:
+      return int8_out(DatumGetInt64(value));
+  #endif /* not used */
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), DatumGetInt32(arg));
     case T_TEXT:

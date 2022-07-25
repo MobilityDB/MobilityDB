@@ -99,8 +99,8 @@ CREATE AGGREGATE tcount(timestampset) (
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize
+  -- , PARALLEL = SAFE
 );
 
 CREATE AGGREGATE tcount(period) (
@@ -119,8 +119,8 @@ CREATE AGGREGATE tcount(periodset) (
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize
+  -- , PARALLEL = SAFE
 );
 
 /*****************************************************************************/

@@ -334,7 +334,7 @@ geom_ever_contains(Datum geom1, Datum geom2)
  * @sqlfunc contains()
  */
 int
-contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp)
+contains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
 {
   if (gserialized_is_empty(geo))
     return -1;
@@ -527,7 +527,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfunc dwithin()
  */
 int
-dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist)
+dwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   if (gserialized_is_empty(gs))
     return -1;

@@ -47,6 +47,7 @@
 /* PostgreSQL */
 #include <utils/float.h>
 /* MobilityDB */
+#include "general/pg_call.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************
