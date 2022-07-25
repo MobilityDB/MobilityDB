@@ -76,6 +76,11 @@ CREATE FUNCTION stboxFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Stbox_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asText(stbox, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Stbox_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
 CREATE FUNCTION asBinary(stbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Stbox_as_wkb'

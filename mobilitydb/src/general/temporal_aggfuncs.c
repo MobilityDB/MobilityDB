@@ -910,7 +910,8 @@ Temporal_tcount_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32, false);
+    skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32,
+      false);
   }
   else
   {

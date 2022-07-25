@@ -196,7 +196,7 @@ extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
 
 /* Input/output functions for temporal types */
 
-extern char **geoarr_as_text(const Datum *geoarr, int count, bool extended);
+extern char **geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended);
 extern char *tboolinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *tboolinst_from_mfjson(json_object *mfjson);
 extern TInstant *tboolinst_in(char *str);
@@ -210,7 +210,7 @@ extern char *tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(char *str);
 extern Temporal *temporal_in(char *str, mobdbType temptype);
-extern char **temporalarr_out(const Temporal **temparr, int count);
+extern char **temporalarr_out(const Temporal **temparr, int count, Datum arg);
 extern char *tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
 extern TInstant *tfloatinst_in(char *str);
@@ -250,11 +250,11 @@ extern TSequenceSet *tgeompointseqset_in(char *str);
 extern char *tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox, char *srs);
 extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
 extern TInstant *tinstant_in(char *str, mobdbType temptype);
-extern char *tinstant_out(const TInstant *inst);
+extern char *tinstant_out(const TInstant *inst, Datum arg);
 extern char *tinstantset_as_mfjson(const TInstantSet *is, int precision, bool with_bbox, char *srs);
 extern TInstantSet *tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
 extern TInstantSet *tinstantset_in(char *str, mobdbType temptype);
-extern char *tinstantset_out(const TInstantSet *is);
+extern char *tinstantset_out(const TInstantSet *is, Datum arg);
 extern char *tintinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *tintinst_from_mfjson(json_object *mfjson);
 extern TInstant *tintinst_in(char *str);
@@ -267,15 +267,15 @@ extern TSequence *tintseq_in(char *str);
 extern char *tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *tintseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tintseqset_in(char *str);
-extern char **tpointarr_as_text(const Temporal **temparr, int count, bool extended);
+extern char **tpointarr_as_text(const Temporal **temparr, int count, int maxdd, bool extended);
 extern char *tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox, char *srs);
 extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, bool linear);
 extern TSequence *tsequence_in(char *str, mobdbType temptype, bool linear);
-extern char *tsequence_out(const TSequence *seq);
+extern char *tsequence_out(const TSequence *seq, Datum arg);
 extern char *tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox, char *srs);
 extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, bool linear);
 extern TSequenceSet *tsequenceset_in(char *str, mobdbType temptype, bool linear);
-extern char *tsequenceset_out(const TSequenceSet *ss);
+extern char *tsequenceset_out(const TSequenceSet *ss, Datum arg);
 extern char *ttextinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *ttextinst_from_mfjson(json_object *mfjson);
 extern TInstant *ttextinst_in(char *str);
@@ -328,11 +328,11 @@ extern void tsequenceset_set_period(const TSequenceSet *ss, Period *p);
 
 /* Accessor functions for temporal types */
 
-extern Datum temporal_end_value(Temporal *temp);
+extern Datum temporal_end_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
 extern Datum temporal_min_value(const Temporal *temp);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
-extern Datum temporal_start_value(Temporal *temp);
+extern Datum temporal_start_value(const Temporal *temp);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern Span **tfloatinst_spans(const TInstant *inst, int *count);
 extern Span **tfloatinstset_spans(const TInstantSet *is, int *count);
@@ -715,6 +715,8 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /* Multidimensional tiling functions for temporal types */
 
+extern Temporal **tnumber_value_split(const Temporal *temp, Datum start_bucket,
+  Datum size, int count, Datum **buckets, int *newcount);
 
 /*****************************************************************************/
 

@@ -137,7 +137,8 @@ periodset_out(const PeriodSet *ps)
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    strings[i] = span_out(p);
+    /* The second argument of span_out is not used for periods */
+    strings[i] = span_out(p, Int32GetDatum(0));
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');

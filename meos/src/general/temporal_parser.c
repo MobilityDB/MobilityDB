@@ -41,6 +41,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_call.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
@@ -323,7 +324,8 @@ timestamp_parse(char **str)
     delim++;
   char bak = (*str)[delim];
   (*str)[delim] = '\0';
-  Datum result = basetype_input(T_TIMESTAMPTZ, *str, false);
+  /* The last argument is for an unused typmod */
+  Datum result = pg_timestamptz_in(*str, -1);
   (*str)[delim] = bak;
   *str += delim;
   return result;

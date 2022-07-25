@@ -339,12 +339,14 @@ tgeogpointinstset_in(char *str)
  * set.
  *
  * @param[in] is Temporal instant set
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */
 char *
-tinstantset_to_string(const TInstantSet *is,
-  char *(*value_out)(mobdbType, Datum))
+tinstantset_to_string(const TInstantSet *is, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * is->count);
   size_t outlen = 0;
@@ -352,7 +354,7 @@ tinstantset_to_string(const TInstantSet *is,
   for (int i = 0; i < is->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(is, i);
-    strings[i] = tinstant_to_string(inst, value_out);
+    strings[i] = tinstant_to_string(inst, arg, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, is->count, outlen, "", '{', '}');
@@ -364,9 +366,9 @@ tinstantset_to_string(const TInstantSet *is,
  * set.
  */
 char *
-tinstantset_out(const TInstantSet *is)
+tinstantset_out(const TInstantSet *is, Datum arg)
 {
-  return tinstantset_to_string(is, &basetype_output);
+  return tinstantset_to_string(is, arg, &basetype_output);
 }
 
 /*****************************************************************************
@@ -571,7 +573,7 @@ tfloatinstset_from_base_time(bool b, const TimestampSet *ts)
  * @brief Construct a temporal text instant set from a text and a timestamp set.
  */
 TInstantSet *
-ttextinstset_from_base_time(text *txt, const TimestampSet *ts)
+ttextinstset_from_base_time(const text *txt, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(txt), T_TTEXT, ts);
 }
@@ -582,7 +584,7 @@ ttextinstset_from_base_time(text *txt, const TimestampSet *ts)
  * timestamp set.
  */
 TInstantSet *
-tgeompointinstset_from_base_time(GSERIALIZED *gs, const TimestampSet *ts)
+tgeompointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ts);
 }
@@ -593,7 +595,7 @@ tgeompointinstset_from_base_time(GSERIALIZED *gs, const TimestampSet *ts)
  * timestamp set.
  */
 TInstantSet *
-tgeogpointinstset_from_base_time(GSERIALIZED *gs, const TimestampSet *ts)
+tgeogpointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ts);
 }

@@ -57,12 +57,12 @@
  * @note The parameter type is not needed for temporal points
  */
 static char *
-wkt_out(Oid typid __attribute__((unused)), Datum value)
+wkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum arg)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
+  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DatumGetInt32(arg), &len);
   char *result = palloc(len);
   strcpy(result, wkt);
   lwgeom_free(geom);
@@ -77,12 +77,12 @@ wkt_out(Oid typid __attribute__((unused)), Datum value)
  * @note The parameter type is not needed for temporal points
  */
 char *
-ewkt_out(Oid typid __attribute__((unused)), Datum value)
+ewkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum arg)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DBL_DIG, &len);
+  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DatumGetInt32(arg), &len);
   char *result = palloc(len);
   strcpy(result, wkt);
   lwgeom_free(geom);
@@ -96,18 +96,22 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
  * @sqlfunc asText()
  */
 char *
-tpoint_as_text(const Temporal *temp)
+tpoint_as_text(const Temporal *temp, int maxdd)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_to_string((TInstant *) temp, &wkt_out);
+    result = tinstant_to_string((TInstant *) temp, Int32GetDatum(maxdd),
+      &wkt_out);
   else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
+    result = tinstantset_to_string((TInstantSet *) temp, Int32GetDatum(maxdd),
+      &wkt_out);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
+    result = tsequence_to_string((TSequence *) temp, Int32GetDatum(maxdd),
+      false, &wkt_out);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
+    result = tsequenceset_to_string((TSequenceSet *) temp, Int32GetDatum(maxdd),
+      &wkt_out);
   return result;
 }
 
@@ -118,7 +122,7 @@ tpoint_as_text(const Temporal *temp)
  * @sqlfunc asEWKT()
  */
 char *
-tpoint_as_ewkt(const Temporal *temp)
+tpoint_as_ewkt(const Temporal *temp, int maxdd)
 {
   int srid = tpoint_srid(temp);
   char str1[20];
@@ -127,7 +131,7 @@ tpoint_as_ewkt(const Temporal *temp)
       MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
   else
     str1[0] = '\0';
-  char *str2 = tpoint_as_text(temp);
+  char *str2 = tpoint_as_text(temp, maxdd);
   char *result = palloc(strlen(str1) + strlen(str2) + 1);
   strcpy(result, str1);
   strcat(result, str2);
@@ -144,17 +148,19 @@ tpoint_as_ewkt(const Temporal *temp)
  *
  * @param[in] geoarr Array of geometries/geographies
  * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True when the output is in EWKT
  * @sqlfunc asText(), asEWKT()
  */
 char **
-geoarr_as_text(const Datum *geoarr, int count, bool extended)
+geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 {
   char **result = palloc(sizeof(char *) * count);
+  Datum arg = Int32GetDatum(maxdd);
   for (int i = 0; i < count; i++)
     /* The wkt_out and ewkt_out functions do not use the first argument */
     result[i] = extended ?
-      ewkt_out(0, geoarr[i]) : wkt_out(0, geoarr[i]);
+      ewkt_out(0, geoarr[i], arg) : wkt_out(0, geoarr[i], arg);
   return result;
 }
 
@@ -165,12 +171,13 @@ geoarr_as_text(const Datum *geoarr, int count, bool extended)
  * @sqlfunc asText(), asEWKT()
  */
 char **
-tpointarr_as_text(const Temporal **temparr, int count, bool extended)
+tpointarr_as_text(const Temporal **temparr, int count, int maxdd,
+  bool extended)
 {
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
-      tpoint_as_text(temparr[i]);
+    result[i] = extended ? tpoint_as_ewkt(temparr[i], maxdd) :
+      tpoint_as_text(temparr[i], maxdd);
   return result;
 }
 

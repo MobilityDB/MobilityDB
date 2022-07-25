@@ -39,6 +39,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_call.h"
 #include "general/tbox.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -273,7 +274,8 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
       strcpy(datetime, strdatevalue);
       /* Replace 'T' by ' ' before converting to timestamptz */
       datetime[10] = ' ';
-      times[i] = basetype_input(T_TIMESTAMPTZ, datetime, false);
+      /* The last argument is for an unused typmod */
+      times[i] = pg_timestamptz_in(datetime, -1);
     }
   }
   *count = numdates;
@@ -350,7 +352,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   strcpy(str, strdatetimes);
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
-  TimestampTz t = basetype_input(T_TIMESTAMPTZ, str, false);
+  TimestampTz t = pg_timestamptz_in(str, -1);
   TInstant *result = tinstant_make(value, temptype, t);
   if (! byvalue)
     pfree(DatumGetPointer(value));

@@ -40,6 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/time_ops.h"
 #include "general/tnumber_mathfuncs.h"
@@ -83,7 +84,7 @@ PGDLLEXPORT Datum
 Tbox_out(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_CSTRING(tbox_out(box));
+  PG_RETURN_CSTRING(tbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_recv);
@@ -118,6 +119,29 @@ Tbox_send(PG_FUNCTION_ARGS)
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Output in WKT format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tbox_as_text);
+/**
+ * @ingroup mobilitydb_box_in_out
+ * @brief Output function for temporal boxes.
+ * @sqlfunc asText()
+ */
+PGDLLEXPORT Datum
+Tbox_as_text(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = tbox_out(box, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************

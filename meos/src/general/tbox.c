@@ -103,7 +103,7 @@ tbox_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
  */
 char *
-tbox_out(const TBOX *box)
+tbox_out(const TBOX *box, int maxdd)
 {
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
@@ -113,13 +113,13 @@ tbox_out(const TBOX *box)
   assert(hasx || hast);
   if (hasx)
   {
-    xmin = basetype_output(T_FLOAT8, Float8GetDatum(box->xmin));
-    xmax = basetype_output(T_FLOAT8, Float8GetDatum(box->xmax));
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
   }
   if (hast)
   {
-    tmin = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
-    tmax = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
+    tmin = pg_timestamptz_out(box->tmin);
+    tmax = pg_timestamptz_out(box->tmax);
   }
   if (hasx)
   {

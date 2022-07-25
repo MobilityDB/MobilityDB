@@ -48,6 +48,7 @@
 /* MEOS */
 #include <meos.h>
 #include "general/pg_call.h"
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/pgis_call.h"
@@ -56,7 +57,7 @@
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_parser.h"
 
-/** Buffer size for input and output of npoint values */
+/** Buffer size for input and output of npoint and nsegment values */
 #define MAXNPOINTLEN    128
 
 /*****************************************************************************
@@ -257,13 +258,13 @@ npoint_in(char *str, bool end)
  * @brief Return the string representation of a network point
  */
 char *
-npoint_out(const Npoint *np)
+npoint_out(const Npoint *np, int maxdd)
 {
-  static size_t size = MAXNPOINTLEN + 1;
-  char *result = palloc(size);
-  char *rid = basetype_output(T_INT8, Int64GetDatum(np->rid));
-  char *pos = basetype_output(T_FLOAT8, Float8GetDatum(np->pos));
-  snprintf(result, size, "NPoint(%s,%s)", rid, pos);
+  char *result = palloc(MAXNPOINTLEN);
+  char *rid = int8_out(np->rid);
+  char *pos = float8_out(np->pos, maxdd);
+  snprintf(result, MAXNPOINTLEN - 1, "NPoint(%s,%s)", rid, pos);
+  pfree(rid); pfree(pos); 
   return result;
 }
 
@@ -282,9 +283,14 @@ nsegment_in(char *str)
  * @brief Output function for network segments
  */
 char *
-nsegment_out(const Nsegment *ns)
+nsegment_out(const Nsegment *ns, int maxdd)
 {
-  char *result = psprintf("NSegment(%ld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
+  char *result = palloc(MAXNPOINTLEN);
+  char *rid = int8_out(ns->rid);
+  char *pos1 = float8_out(ns->pos1, maxdd);
+  char *pos2 = float8_out(ns->pos2, maxdd);
+  snprintf(result, MAXNPOINTLEN - 1, "NSegment(%s,%s,%s)", rid, pos1, pos2);
+  pfree(rid); pfree(pos1); pfree(pos2); 
   return result;
 }
 
@@ -558,7 +564,7 @@ geom_npoint(const GSERIALIZED *gs)
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_geom, srid_ways);
 
-  char *geomstr = ewkt_out(InvalidOid, PointerGetDatum(gs));
+  char *geomstr = ewkt_out(0, PointerGetDatum(gs), OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[512];
   sprintf(sql, "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
     "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "

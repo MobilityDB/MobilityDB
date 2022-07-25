@@ -38,8 +38,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_util.h"
 #include "general/temporal_out.h"
+#include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal_util.h"
 #include "pg_point/postgis.h"
@@ -58,7 +58,10 @@ PGDLLEXPORT Datum
 Temporal_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = temporal_out(temp);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = temporal_out(temp, Int32GetDatum(dbl_dig_for_wkt));
   text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -84,9 +87,13 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(array, 0);
     PG_RETURN_NULL();
   }
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Temporal **temparr = temporalarr_extract(array, &count);
-  char **strarr = temporalarr_out((const Temporal **) temparr, count);
+  char **strarr = temporalarr_out((const Temporal **) temparr, count,
+    Int32GetDatum(dbl_dig_for_wkt));
   ArrayType *result = strarr_to_textarray(strarr, count);
   pfree_array((void **) strarr, count);
   pfree(temparr);
@@ -108,7 +115,7 @@ PGDLLEXPORT Datum
 Temporal_as_mfjson(PG_FUNCTION_ARGS)
 {
   bool with_bbox = 0;
-  int precision = DBL_DIG;
+  int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int option = 0;
   char *srs = NULL;
 
@@ -123,7 +130,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
    * 4 = long crs, only for temporal points
    */
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    option = PG_GETARG_INT32(1);
+   option = PG_GETARG_INT32(1);
 
   if (isgeo)
   {
@@ -155,8 +162,8 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
   {
     precision = PG_GETARG_INT32(2);
-    if (precision > DBL_DIG)
-      precision = DBL_DIG;
+    if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
+      precision = OUT_DEFAULT_DECIMAL_DIGITS;
     else if (precision < 0)
       precision = 0;
   }

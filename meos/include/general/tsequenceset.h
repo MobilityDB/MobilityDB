@@ -73,8 +73,8 @@ extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
 
 /* Input/output functions */
 
-extern char *tsequenceset_to_string(const TSequenceSet *ss,
-  char *(*value_out)(mobdbType, Datum));
+extern char *tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum));
 
 /*****************************************************************************/
 

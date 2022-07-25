@@ -55,10 +55,10 @@ typedef struct
 
 /*****************************************************************************/
 
-extern double temporal_similarity(Temporal *temp1, Temporal *temp2,
+extern double temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   SimFunc simfunc);
-extern Match *temporal_similarity_path(Temporal *temp1, Temporal *temp2,
-  int *count, SimFunc simfunc);
+extern Match *temporal_similarity_path(const Temporal *temp1,
+  const Temporal *temp2, int *count, SimFunc simfunc);
 
 /*****************************************************************************/
 

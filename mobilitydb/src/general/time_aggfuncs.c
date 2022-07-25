@@ -169,6 +169,7 @@ timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
       CROSSINGS_NO);
     result = state;
   }
+  pfree(times);
   return result;
 }
 
@@ -246,7 +247,11 @@ time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
   int count2 = state2->length;
   void **values = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values, count2, NULL, CROSSINGS_NO);
-  pfree(values);
+  /* Delete the new aggregate values */
+  if (state2->elemtype == TIMESTAMPTZ)
+    pfree(values);
+  else
+    pfree_array(values, count2);
   return state1;
 }
 

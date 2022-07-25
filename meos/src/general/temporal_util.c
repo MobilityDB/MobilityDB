@@ -961,7 +961,7 @@ basetype_input(mobdbType basetype, char *str, bool end __attribute__((unused)))
  * Call output function of the base type
  */
 char *
-basetype_output(mobdbType basetype, Datum value)
+basetype_output(mobdbType basetype, Datum value, Datum arg)
 {
   ensure_temporal_basetype(basetype);
   switch (basetype)
@@ -972,10 +972,12 @@ basetype_output(mobdbType basetype, Datum value)
       return bool_out(DatumGetBool(value));
     case T_INT4:
       return int4_out(DatumGetInt32(value));
+  #if 0 /* not used */
     case T_INT8:
       return int8_out(DatumGetInt64(value));
+  #endif /* not used */
     case T_FLOAT8:
-      return float8_out(DatumGetFloat8(value));
+      return float8_out(DatumGetFloat8(value), DatumGetInt32(arg));
     case T_TEXT:
       return text2cstring(DatumGetTextP(value));
     case T_GEOMETRY:
@@ -984,7 +986,7 @@ basetype_output(mobdbType basetype, Datum value)
       return PGIS_geography_out(DatumGetGserializedP(value));
 #if NPOINT
     case T_NPOINT:
-      return npoint_out(DatumGetNpointP(value));
+      return npoint_out(DatumGetNpointP(value), DatumGetInt32(arg));
 #endif
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);

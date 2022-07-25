@@ -51,8 +51,8 @@ extern bool tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t,
 
 /* Input/output functions */
 
-extern char *tinstantset_to_string(const TInstantSet *is,
-  char *(*value_out)(mobdbType, Datum));
+extern char *tinstantset_to_string(const TInstantSet *is, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum));
 
 /* Intersection functions */
 

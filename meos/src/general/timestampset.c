@@ -149,7 +149,7 @@ timestampset_out(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    strings[i] = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(t));
+    strings[i] = pg_timestamptz_out(t);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
@@ -384,10 +384,10 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+  TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    times[i] = timestampset_time_n(ts, i);
-  return times;
+    result[i] = timestampset_time_n(ts, i);
+  return result;
 }
 
 /*****************************************************************************

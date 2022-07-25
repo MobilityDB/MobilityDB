@@ -46,6 +46,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_call.h"
 #include "general/time_ops.h"
 /* MobilityDB */
 #include "pg_general/span.h"
@@ -233,14 +234,16 @@ skiplist_print(const SkipList *list)
     {
       char *val;
       if (list->elemtype == TIMESTAMPTZ)
-        val = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(e->value));
+        val = pg_timestamptz_out((TimestampTz) e->value);
       else if (list->elemtype == PERIOD)
-        val = span_out(e->value);
+        /* The second argument of span_out is not used for periods */
+        val = span_out(e->value, Int32GetDatum(0));
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
         temporal_set_period(e->value, &p);
-        val = span_out(&p);
+        /* The second argument of span_out is not used for periods */
+        val = span_out(&p, Int32GetDatum(0));
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);
@@ -296,19 +299,13 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
 
   /* Fill values first */
   result->elems[0].value = NULL;
-  if (elemtype == TIMESTAMPTZ)
+  for (int i = 0; i < count - 2; i++)
   {
-    for (int i = 0; i < count - 2; i ++)
+    if (elemtype == TIMESTAMPTZ)
       result->elems[i + 1].value = values[i];
-  }
-  else if (elemtype == PERIOD)
-  {
-    for (int i = 0; i < count - 2; i ++)
+    else if (elemtype == PERIOD)
       result->elems[i + 1].value = span_copy((Span *) values[i]);
-  }
-  else /* state->elemtype == TEMPORAL */
-  {
-    for (int i = 0; i < count - 2; i ++)
+    else /* state->elemtype == TEMPORAL */
       result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
   }
   result->elems[count - 1].value = NULL;
@@ -420,10 +417,12 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   int cur = 0;
   int height = list->elems[cur].height;
   SkipListElem *e = &list->elems[cur];
+  TimestampTz t;
   for (int level = height - 1; level >= 0; level --)
   {
+    t = DatumGetTimestampTz(p.lower);
     while (e->next[level] != -1 &&
-      skiplist_elmpos(list, e->next[level], p.lower) == AFTER)
+      skiplist_elmpos(list, e->next[level], t) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -436,14 +435,15 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   e = &list->elems[cur];
 
   int spliced_count = 0;
-  while (skiplist_elmpos(list, cur, p.upper) == AFTER)
+  t = DatumGetTimestampTz(p.upper);
+  while (skiplist_elmpos(list, cur, t) == AFTER)
   {
     cur = e->next[0];
     e = &list->elems[cur];
     spliced_count++;
   }
   int upper = cur;
-  if (upper >= 0 && skiplist_elmpos(list, upper, p.upper) == DURING)
+  if (upper >= 0 && skiplist_elmpos(list, upper, t) == DURING)
   {
     upper = e->next[0]; /* if found upper, one more to remove */
     spliced_count++;
@@ -556,14 +556,6 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
       height = rheight;
   }
 
-  if (spliced_count != 0)
-  {
-    /* Delete the new aggregate values */
-    if (list->elemtype == TIMESTAMPTZ)
-      pfree(values);
-    else
-      pfree_array(values, count);
-  }
   return;
 }
 

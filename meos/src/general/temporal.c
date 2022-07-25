@@ -171,15 +171,15 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 {
   if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
   {
-    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
-    char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst2->t));
+    char *t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst2->t);
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
         temptype_basetype(inst1->temptype)))
   {
-    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+    char *t1 = pg_timestamptz_out(inst1->t);
     elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
   }
   return;
@@ -334,8 +334,8 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
          ( upper1 == lower2 && sequences[i - 1]->period.upper_inc &&
            sequences[i]->period.lower_inc ) )
     {
-      char *t1 = basetype_output(T_TIMESTAMPTZ, sequences[i - 1]->period.upper);
-      char *t2 = basetype_output(T_TIMESTAMPTZ, sequences[i]->period.lower);
+      char *t1 = pg_timestamptz_out(upper1);
+      char *t2 = pg_timestamptz_out(lower2);
       elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
     }
     ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
@@ -633,7 +633,7 @@ tgeogpoint_in(char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_int_temporal_in_out
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  * @see tinstant_out
  * @see tinstantset_out
@@ -641,20 +641,75 @@ tgeogpoint_in(char *str)
  * @see tsequenceset_out
  */
 char *
-temporal_out(const Temporal *temp)
+temporal_out(const Temporal *temp, Datum arg)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_out((TInstant *) temp);
+    result = tinstant_out((TInstant *) temp, arg);
   else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_out((TInstantSet *) temp);
+    result = tinstantset_out((TInstantSet *) temp, arg);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_out((TSequence *) temp);
+    result = tsequence_out((TSequence *) temp, arg);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_out((TSequenceSet *) temp);
+    result = tsequenceset_out((TSequenceSet *) temp, arg);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal boolean from its Well-Known Text (WKT)
+ * representation.
+ */
+char *
+tbool_out(const Temporal *temp)
+{
+  return temporal_out(temp, Int32GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal integer from its Well-Known Text (WKT)
+ * representation.
+ */
+char *
+tint_out(const Temporal *temp)
+{
+  return temporal_out(temp, Int32GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation.
+ */
+char *
+tfloat_out(const Temporal *temp, int maxdd)
+{
+  return temporal_out(temp, Int32GetDatum(maxdd));
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation.
+ */
+char *
+ttext_out(const Temporal *temp)
+{
+  return temporal_out(temp, Int32GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_temporal_in_out
+ * @brief Return a temporal geometric/geographic point from its Well-Known Text
+ * (WKT) representation.
+ */
+char *
+tpoint_out(const Temporal *temp, int maxdd)
+{
+  return temporal_out(temp, Int32GetDatum(maxdd));
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions
@@ -745,7 +800,7 @@ tfloat_from_base(bool b, const Temporal *temp, bool linear)
  * another temporal value.
  */
 Temporal *
-ttext_from_base(text *txt, const Temporal *temp)
+ttext_from_base(const text *txt, const Temporal *temp)
 {
   return temporal_from_base(PointerGetDatum(txt), T_TTEXT, temp, false);
 }
@@ -756,7 +811,7 @@ ttext_from_base(text *txt, const Temporal *temp)
  * of another temporal value.
  */
 Temporal *
-tgeompoint_from_base(GSERIALIZED *gs, const Temporal *temp, bool linear)
+tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, bool linear)
 {
   return temporal_from_base(PointerGetDatum(gs), T_TGEOMPOINT, temp, linear);
 }
@@ -767,7 +822,7 @@ tgeompoint_from_base(GSERIALIZED *gs, const Temporal *temp, bool linear)
  * of another temporal value.
  */
 Temporal *
-tgeogpoint_from_base(GSERIALIZED *gs, const Temporal *temp, bool linear)
+tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, bool linear)
 {
   return temporal_from_base(PointerGetDatum(gs), T_TGEOGPOINT, temp, linear);
 }
@@ -1197,7 +1252,7 @@ tnumber_to_span(const Temporal *temp)
  * @sqlop @p ::
  */
 TBOX *
-tnumber_to_tbox(Temporal *temp)
+tnumber_to_tbox(const Temporal *temp)
 {
   TBOX *result = palloc(sizeof(TBOX));
   temporal_set_bbox(temp, result);
@@ -1490,7 +1545,7 @@ temporal_values(const Temporal *temp, int *count)
  * @pymeosfunc getValues()
  */
 bool *
-tbool_values(Temporal *temp)
+tbool_values(const Temporal *temp)
 {
   int count;
   Datum *datumarr = temporal_values(temp, &count);
@@ -1508,7 +1563,7 @@ tbool_values(Temporal *temp)
  * @pymeosfunc getValues()
  */
 int *
-tint_values(Temporal *temp)
+tint_values(const Temporal *temp)
 {
   int count;
   Datum *datumarr = temporal_values(temp, &count);
@@ -1526,7 +1581,7 @@ tint_values(Temporal *temp)
  * @pymeosfunc getValues()
  */
 double *
-tfloat_values(Temporal *temp)
+tfloat_values(const Temporal *temp)
 {
   int count;
   Datum *datumarr = temporal_values(temp, &count);
@@ -1544,7 +1599,7 @@ tfloat_values(Temporal *temp)
  * @pymeosfunc getValues()
  */
 text **
-ttext_values(Temporal *temp)
+ttext_values(const Temporal *temp)
 {
   int count;
   Datum *datumarr = temporal_values(temp, &count);
@@ -1562,7 +1617,7 @@ ttext_values(Temporal *temp)
  * @pymeosfunc getValues()
  */
 GSERIALIZED **
-tpoint_values(Temporal *temp)
+tpoint_values(const Temporal *temp)
 {
   int count;
   Datum *datumarr = temporal_values(temp, &count);
@@ -1633,7 +1688,7 @@ temporal_time(const Temporal *temp)
  * @pymeosfunc startValue()
  */
 Datum
-temporal_start_value(Temporal *temp)
+temporal_start_value(const Temporal *temp)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1659,7 +1714,7 @@ temporal_start_value(Temporal *temp)
  * @pymeosfunc startValue()
  */
 bool
-tbool_start_value(Temporal *temp)
+tbool_start_value(const Temporal *temp)
 {
   return DatumGetBool(temporal_start_value(temp));
 }
@@ -1671,7 +1726,7 @@ tbool_start_value(Temporal *temp)
  * @pymeosfunc startValue()
  */
 int
-tint_start_value(Temporal *temp)
+tint_start_value(const Temporal *temp)
 {
   return DatumGetInt32(temporal_start_value(temp));
 }
@@ -1683,7 +1738,7 @@ tint_start_value(Temporal *temp)
  * @pymeosfunc startValue()
  */
 double
-tfloat_start_value(Temporal *temp)
+tfloat_start_value(const Temporal *temp)
 {
   return DatumGetFloat8(temporal_start_value(temp));
 }
@@ -1695,7 +1750,7 @@ tfloat_start_value(Temporal *temp)
  * @pymeosfunc startValue()
  */
 text *
-ttext_start_value(Temporal *temp)
+ttext_start_value(const Temporal *temp)
 {
   return DatumGetTextP(temporal_start_value(temp));
 }
@@ -1707,7 +1762,7 @@ ttext_start_value(Temporal *temp)
  * @pymeosfunc startValue()
  */
 GSERIALIZED *
-tpoint_start_value(Temporal *temp)
+tpoint_start_value(const Temporal *temp)
 {
   return DatumGetGserializedP(temporal_start_value(temp));
 }
@@ -1718,7 +1773,7 @@ tpoint_start_value(Temporal *temp)
  * @brief Return the end base value of a temporal value
  */
 Datum
-temporal_end_value(Temporal *temp)
+temporal_end_value(const Temporal *temp)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1747,7 +1802,7 @@ temporal_end_value(Temporal *temp)
  * @pymeosfunc endValue()
  */
 bool
-tbool_end_value(Temporal *temp)
+tbool_end_value(const Temporal *temp)
 {
   return DatumGetBool(temporal_end_value(temp));
 }
@@ -1759,7 +1814,7 @@ tbool_end_value(Temporal *temp)
  * @pymeosfunc endValue()
  */
 int
-tint_end_value(Temporal *temp)
+tint_end_value(const Temporal *temp)
 {
   return DatumGetInt32(temporal_end_value(temp));
 }
@@ -1771,7 +1826,7 @@ tint_end_value(Temporal *temp)
  * @pymeosfunc endValue()
  */
 double
-tfloat_end_value(Temporal *temp)
+tfloat_end_value(const Temporal *temp)
 {
   return DatumGetFloat8(temporal_end_value(temp));
 }
@@ -1783,7 +1838,7 @@ tfloat_end_value(Temporal *temp)
  * @pymeosfunc endValue()
  */
 text *
-ttext_end_value(Temporal *temp)
+ttext_end_value(const Temporal *temp)
 {
   return DatumGetTextP(temporal_end_value(temp));
 }
@@ -1795,7 +1850,7 @@ ttext_end_value(Temporal *temp)
  * @pymeosfunc endValue()
  */
 GSERIALIZED *
-tpoint_end_value(Temporal *temp)
+tpoint_end_value(const Temporal *temp)
 {
   return DatumGetGserializedP(temporal_end_value(temp));
 }
@@ -1830,7 +1885,7 @@ temporal_min_value(const Temporal *temp)
  * @pymeosfunc minValue()
  */
 int
-tint_min_value(Temporal *temp)
+tint_min_value(const Temporal *temp)
 {
   return DatumGetInt32(temporal_min_value(temp));
 }
@@ -1842,7 +1897,7 @@ tint_min_value(Temporal *temp)
  * @pymeosfunc minValue()
  */
 double
-tfloat_min_value(Temporal *temp)
+tfloat_min_value(const Temporal *temp)
 {
   return DatumGetFloat8(temporal_min_value(temp));
 }
@@ -1854,7 +1909,7 @@ tfloat_min_value(Temporal *temp)
  * @pymeosfunc minValue()
  */
 text *
-ttext_min_value(Temporal *temp)
+ttext_min_value(const Temporal *temp)
 {
   return DatumGetTextP(temporal_min_value(temp));
 }
@@ -1891,7 +1946,7 @@ temporal_max_value(const Temporal *temp)
  * @pymeosfunc maxValue()
  */
 int
-tint_max_value(Temporal *temp)
+tint_max_value(const Temporal *temp)
 {
   return DatumGetInt32(temporal_max_value(temp));
 }
@@ -1903,7 +1958,7 @@ tint_max_value(Temporal *temp)
  * @pymeosfunc maxValue()
  */
 double
-tfloat_max_value(Temporal *temp)
+tfloat_max_value(const Temporal *temp)
 {
   return DatumGetFloat8(temporal_max_value(temp));
 }
@@ -1915,7 +1970,7 @@ tfloat_max_value(Temporal *temp)
  * @pymeosfunc maxValue()
  */
 text *
-ttext_max_value(Temporal *temp)
+ttext_max_value(const Temporal *temp)
 {
   return DatumGetTextP(temporal_max_value(temp));
 }
@@ -2237,7 +2292,7 @@ temporal_end_instant(const Temporal *temp)
  * @pymeosfunc instantN()
  */
 const TInstant *
-temporal_instant_n(Temporal *temp, int n)
+temporal_instant_n(const Temporal *temp, int n)
 {
   const TInstant *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2342,7 +2397,7 @@ temporal_start_timestamp(const Temporal *temp)
  * @pymeosfunc endTimestamp()
  */
 TimestampTz
-temporal_end_timestamp(Temporal *temp)
+temporal_end_timestamp(const Temporal *temp)
 {
   TimestampTz result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2365,7 +2420,7 @@ temporal_end_timestamp(Temporal *temp)
  * @pymeosfunc timestampN()
  */
 bool
-temporal_timestamp_n(Temporal *temp, int n, TimestampTz *result)
+temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)

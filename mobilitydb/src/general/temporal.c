@@ -46,6 +46,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/pg_call.h"
 #include "general/temporaltypes.h"
@@ -379,7 +380,7 @@ PGDLLEXPORT Datum
 Temporal_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = temporal_out(temp);
+  char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

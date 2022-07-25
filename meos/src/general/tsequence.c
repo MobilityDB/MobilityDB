@@ -48,12 +48,13 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/timestampset.h"
-#include "general/periodset.h"
 #include "general/doublen.h"
+#include "general/periodset.h"
+#include "general/pg_call.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
+#include "general/timestampset.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -575,8 +576,8 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
    * take into account the inclusive/exclusive bounds */
   if (inst1->t > inst->t)
   {
-    char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
-    char *t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
+    char *t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst->t);
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
   if (inst1->t == inst->t)
@@ -585,7 +586,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
       basetype);
     if (seq->period.upper_inc && ! seqresult)
     {
-      char *t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+      char *t1 = pg_timestamptz_out(inst1->t);
       elog(ERROR, "The temporal values have different value at their common instant %s", t1);
     }
     /* The result is a sequence set */
@@ -799,8 +800,8 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     if (inst1->t > inst2->t)
     {
       char *t2;
-      t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
-      t2 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst2->t));
+      t1 = pg_timestamptz_out(inst1->t);
+      t2 = pg_timestamptz_out(inst2->t);
       elog(ERROR, "The temporal values cannot overlap on time: %s, %s", t1, t2);
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
@@ -808,7 +809,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     {
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
       {
-        t1 = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst1->t));
+        t1 = pg_timestamptz_out(inst1->t);
         elog(ERROR, "The temporal values have different value at their common instant %s", t1);
       }
     }
@@ -1392,6 +1393,8 @@ tgeogpointseq_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  *
  * @param[in] seq Temporal sequence
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] component True when the output string is a component of a
  * temporal sequence set and thus no interpolation string at the begining of
  * the string should be output
@@ -1399,8 +1402,8 @@ tgeogpointseq_in(char *str)
  * depending on its Oid
  */
 char *
-tsequence_to_string(const TSequence *seq, bool component,
-  char *(*value_out)(mobdbType, Datum))
+tsequence_to_string(const TSequence *seq, Datum arg, bool component,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
@@ -1413,7 +1416,7 @@ tsequence_to_string(const TSequence *seq, bool component,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    strings[i] = tinstant_to_string(inst, value_out);
+    strings[i] = tinstant_to_string(inst, arg, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   char open = seq->period.lower_inc ? (char) '[' : (char) '(';
@@ -1427,9 +1430,9 @@ tsequence_to_string(const TSequence *seq, bool component,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  */
 char *
-tsequence_out(const TSequence *seq)
+tsequence_out(const TSequence *seq, Datum arg)
 {
-  return tsequence_to_string(seq, false, &basetype_output);
+  return tsequence_to_string(seq, arg, false, &basetype_output);
 }
 
 /*****************************************************************************
@@ -1504,7 +1507,7 @@ tsequence_copy(const TSequence *seq)
  *
  * @param[in] value Base value
  * @param[in] temptype Temporal type
- * @param[in] p Period
+ * @param[in] seq Temporal value
  * @param[in] linear True when the sequence has linear interpolation
  */
 TSequence *
@@ -3765,7 +3768,10 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ss)
     inst = tsequence_at_timestamp(seq, timestampset_time_n(ss, 0));
     if (inst == NULL)
       return NULL;
-    return tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
+    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1,
+      MERGE_NO);
+    pfree(inst);
+    return result;
   }
 
   /* Bounding box test */

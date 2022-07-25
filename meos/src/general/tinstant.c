@@ -231,15 +231,18 @@ tgeogpointinst_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  *
  * @param[in] inst Temporal instant
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */
 char *
-tinstant_to_string(const TInstant *inst, char *(*value_out)(mobdbType, Datum))
+tinstant_to_string(const TInstant *inst, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
-  char *t = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
+  char *t = pg_timestamptz_out(inst->t);
   mobdbType basetype = temptype_basetype(inst->temptype);
-  char *value = value_out(basetype, tinstant_value(inst));
+  char *value = value_out(basetype, tinstant_value(inst), arg);
   char *result;
   if (inst->temptype == T_TTEXT)
   {
@@ -261,9 +264,9 @@ tinstant_to_string(const TInstant *inst, char *(*value_out)(mobdbType, Datum))
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  */
 char *
-tinstant_out(const TInstant *inst)
+tinstant_out(const TInstant *inst, Datum arg)
 {
-  return tinstant_to_string(inst, &basetype_output);
+  return tinstant_to_string(inst, arg, &basetype_output);
 }
 
 /*****************************************************************************
@@ -387,7 +390,7 @@ tfloatinst_make(double d, TimestampTz t)
  * @sqlfunc tint_inst()
  */
 TInstant *
-ttextinst_make(text *txt, TimestampTz t)
+ttextinst_make(const text *txt, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
@@ -398,7 +401,7 @@ ttextinst_make(text *txt, TimestampTz t)
  * @sqlfunc tgeompoint_inst()
  */
 TInstant *
-tgeogpointinst_make(GSERIALIZED *gs, TimestampTz t)
+tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
 }
@@ -408,7 +411,7 @@ tgeogpointinst_make(GSERIALIZED *gs, TimestampTz t)
  * @sqlfunc tgeogpoint_inst().
  */
 TInstant *
-tgeompointinst_make(GSERIALIZED *gs, TimestampTz t)
+tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
 }

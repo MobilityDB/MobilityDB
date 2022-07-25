@@ -43,6 +43,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
@@ -184,7 +185,7 @@ PGDLLEXPORT Datum
 Npoint_out(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_CSTRING(npoint_out(np));
+  PG_RETURN_CSTRING(npoint_out(np, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_recv);
@@ -242,7 +243,7 @@ PGDLLEXPORT Datum
 Nsegment_out(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_CSTRING(nsegment_out(ns));
+  PG_RETURN_CSTRING(nsegment_out(ns, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_recv);

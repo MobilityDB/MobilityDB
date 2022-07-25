@@ -78,11 +78,11 @@ SELECT stbox 'SRID=4326;GEODSTBOX T((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
 
 /* Errors */
 SELECT stbox 'AAA(1, 2, 3)';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse spatiotemporal box
 LINE 2: SELECT stbox 'AAA(1, 2, 3)';
                      ^
 SELECT stbox 'stbox(1, 2, 3)';
-ERROR:  Could not parse STBOX: Missing opening parenthesis
+ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
 LINE 1: SELECT stbox 'stbox(1, 2, 3)';
                      ^
 SELECT stbox 'stbox((AA, 2, 3))';
@@ -94,7 +94,7 @@ ERROR:  Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox((1, AA, 3))';
                      ^
 SELECT stbox 'stbox((,),(,))';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse spatiotemporal box
 LINE 1: SELECT stbox 'stbox((,),(,))';
                      ^
 SELECT stbox 'stbox z((1, 2, AA))';
@@ -106,11 +106,11 @@ ERROR:  invalid input syntax for type timestamp with time zone: "AA"
 LINE 1: SELECT stbox 'stbox t((1, 2, AA))';
                      ^
 SELECT stbox 'stbox((1, 2, 3))';
-ERROR:  Could not parse STBOX: Missing closing parenthesis
+ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
 LINE 1: SELECT stbox 'stbox((1, 2, 3))';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03))';
-ERROR:  Could not parse STBOX: Missing opening parenthesis
+ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03))';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03),()';
@@ -130,7 +130,7 @@ ERROR:  invalid input syntax for type timestamp with time zone: ""
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2)';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)';
-ERROR:  Could not parse STBOX: Missing closing parenthesis
+ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)';
                      ^
 SELECT stbox 'SRID=4326;STBOX T((,2001-01-08), (,2001-01-04))';
@@ -142,7 +142,7 @@ ERROR:  An SRID is specified but not coordinates are given
 LINE 1: SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01...
                      ^
 SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))xxxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse spatiotemporal box value
 LINE 1: SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04...
                      ^
 COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);
@@ -162,6 +162,12 @@ SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_stbox3d_tmp;
 DROP TABLE
+SELECT asText(stbox 'STBOX T((1.123456789,1.23456789,2000-01-01),(2.12345678,2.123456789,2000-01-02))', 6);
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ STBOX T((1.123457,1.234568,2000-01-01 00:00:00+00),(2.123457,2.123457,2000-01-02 00:00:00+00))
+(1 row)
+
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromBinary(asBinary(b)) <> b;
  count 
 -------

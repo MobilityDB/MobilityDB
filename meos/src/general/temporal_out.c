@@ -34,11 +34,14 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_call.h"
 #include "general/tinstant.h"
 #include "general/tinstantset.h"
 #include "general/tsequence.h"
@@ -224,7 +227,7 @@ static size_t
 datetimes_mfjson_buf(char *output, TimestampTz t)
 {
   char *ptr = output;
-  char *tstr = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(t));
+  char *tstr = pg_timestamptz_out(t);
   /* Replace ' ' by 'T' as separator between date and time parts */
   tstr[10] = 'T';
   ptr += sprintf(ptr, "\"%s\"", tstr);
@@ -1176,11 +1179,11 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision,
  * temporal values
  */
 char **
-temporalarr_out(const Temporal **temparr, int count)
+temporalarr_out(const Temporal **temparr, int count, Datum arg)
 {
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = temporal_out(temparr[i]);
+    result[i] = temporal_out(temparr[i], arg);
   return result;
 }
 

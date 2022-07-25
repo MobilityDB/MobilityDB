@@ -393,10 +393,10 @@ unquote(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
-span_out(const Span *s)
+span_out(const Span *s, Datum arg)
 {
-  char *lower = unquote(basetype_output(s->basetype, s->lower));
-  char *upper = unquote(basetype_output(s->basetype, s->upper));
+  char *lower = unquote(basetype_output(s->basetype, s->lower, arg));
+  char *upper = unquote(basetype_output(s->basetype, s->upper, arg));
   char open = s->lower_inc ? (char) '[' : (char) '(';
   char close = s->upper_inc ? (char) ']' : (char) ')';
   char *result = palloc(strlen(lower) + strlen(upper) + 5);
@@ -404,6 +404,38 @@ span_out(const Span *s)
   pfree(lower); pfree(upper);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a span.
+ */
+char *
+floatspan_out(const Span *s, int maxdd)
+{
+  return span_out(s, Int32GetDatum(maxdd));
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a span.
+ */
+char *
+intspan_out(const Span *s)
+{
+  return span_out(s, Int32GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a span.
+ */
+char *
+period_out(const Span *s)
+{
+  return span_out(s, Int32GetDatum(0));
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions

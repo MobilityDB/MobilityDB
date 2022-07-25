@@ -183,7 +183,7 @@ stbox_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal box.
  */
 char *
-stbox_out(const STBOX *box)
+stbox_out(const STBOX *box, int maxdd)
 {
   static size_t size = MAXSTBOXLEN + 1;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL,
@@ -203,20 +203,20 @@ stbox_out(const STBOX *box)
   assert(hasx || hast);
   if (hasx)
   {
-    xmin = basetype_output(T_FLOAT8, Float8GetDatum(box->xmin));
-    xmax = basetype_output(T_FLOAT8, Float8GetDatum(box->xmax));
-    ymin = basetype_output(T_FLOAT8, Float8GetDatum(box->ymin));
-    ymax = basetype_output(T_FLOAT8, Float8GetDatum(box->ymax));
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
+    ymin = float8_out(box->ymin, maxdd);
+    ymax = float8_out(box->ymax, maxdd);
     if (geodetic || hasz)
     {
-      zmin = basetype_output(T_FLOAT8, Float8GetDatum(box->zmin));
-      zmax = basetype_output(T_FLOAT8, Float8GetDatum(box->zmax));
+      zmin = float8_out(box->zmin, maxdd);
+      zmax = float8_out(box->zmax, maxdd);
     }
   }
   if (hast)
   {
-    tmin = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmin));
-    tmax = basetype_output(T_TIMESTAMPTZ, TimestampTzGetDatum(box->tmax));
+    tmin = pg_timestamptz_out(box->tmin);
+    tmax = pg_timestamptz_out(box->tmax);
   }
   if (hasx)
   {

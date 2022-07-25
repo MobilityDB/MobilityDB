@@ -570,12 +570,14 @@ tgeogpointseqset_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  *
  * @param[in] ss Temporal sequence set
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] value_out Function called to output the base value
  * depending on its Oid
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ss,
-  char *(*value_out)(mobdbType, Datum))
+tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
+  char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
@@ -588,7 +590,7 @@ tsequenceset_to_string(const TSequenceSet *ss,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    strings[i] = tsequence_to_string(seq, true, value_out);
+    strings[i] = tsequence_to_string(seq, arg, true, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}');
@@ -599,9 +601,9 @@ tsequenceset_to_string(const TSequenceSet *ss,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  */
 char *
-tsequenceset_out(const TSequenceSet *ss)
+tsequenceset_out(const TSequenceSet *ss, Datum arg)
 {
-  return tsequenceset_to_string(ss, &basetype_output);
+  return tsequenceset_to_string(ss, arg,  &basetype_output);
 }
 
 /*****************************************************************************
@@ -817,6 +819,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
     seq = tsequence_make((const TInstant **) instants, count, true, true,
       linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    pfree(seq);
     return result;
   }
 
@@ -831,6 +834,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
     seq = tsequence_make1((const TInstant **) instants, count,
       true, true, linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    pfree(seq);
   }
   else
   {

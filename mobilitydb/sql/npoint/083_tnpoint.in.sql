@@ -81,7 +81,7 @@ CREATE FUNCTION tnpoint(tnpoint, integer)
 
 CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;
 
--- Input/output in WKB and HexWKB format
+-- Input/output in WKT, WKB and HexWKB format
 
 CREATE FUNCTION tnpointFromBinary(bytea)
   RETURNS tnpoint
@@ -90,6 +90,15 @@ CREATE FUNCTION tnpointFromBinary(bytea)
 CREATE FUNCTION tnpointFromHexWKB(text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(tnpoint, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tnpoint[], maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tnpoint)
