@@ -1393,6 +1393,8 @@ tgeogpointseq_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  *
  * @param[in] seq Temporal sequence
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] component True when the output string is a component of a
  * temporal sequence set and thus no interpolation string at the begining of
  * the string should be output
@@ -1505,7 +1507,7 @@ tsequence_copy(const TSequence *seq)
  *
  * @param[in] value Base value
  * @param[in] temptype Temporal type
- * @param[in] p Period
+ * @param[in] seq Temporal value
  * @param[in] linear True when the sequence has linear interpolation
  */
 TSequence *

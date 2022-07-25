@@ -148,6 +148,7 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
  *
  * @param[in] geoarr Array of geometries/geographies
  * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True when the output is in EWKT
  * @sqlfunc asText(), asEWKT()
  */

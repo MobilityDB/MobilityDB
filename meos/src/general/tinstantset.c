@@ -339,6 +339,8 @@ tgeogpointinstset_in(char *str)
  * set.
  *
  * @param[in] is Temporal instant set
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */

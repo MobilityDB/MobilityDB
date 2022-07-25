@@ -570,6 +570,8 @@ tgeogpointseqset_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  *
  * @param[in] ss Temporal sequence set
+ * @param[in] arg Maximum number of decimal digits to output for floating point
+ * values
  * @param[in] value_out Function called to output the base value
  * depending on its Oid
  */
