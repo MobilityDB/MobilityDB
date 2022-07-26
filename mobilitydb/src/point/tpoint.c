@@ -33,6 +33,8 @@
 
 #include "point/tpoint.h"
 
+/* C */
+#include <limits.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
