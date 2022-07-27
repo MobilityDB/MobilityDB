@@ -52,7 +52,7 @@ extern bool p_cbracket(char **str);
 extern bool p_oparen(char **str);
 extern bool p_cparen(char **str);
 extern bool p_comma(char **str);
-extern Datum basetype_parse(char **str, Oid basetypid);
+extern Datum basetype_parse(char **str, mobdbType basetypid);
 extern double double_parse(char **str);
 extern TimestampTz timestamp_parse(char **str);
 

@@ -117,7 +117,7 @@ tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
  */
 Datum
 tcomp_temporal_temporal_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid))
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);

@@ -328,7 +328,7 @@ datum2_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer)
 
 /*****************************************************************************
  * Arithmetic functions on datums
- * N.B. The validity of the Oids must be done in the calling function.
+ * N.B. The validity of the types must be done in the calling function.
  *****************************************************************************/
 
 /**
@@ -719,7 +719,7 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
  * @note Function copied from PostgreSQL since it is not exported
  */
 int
-text_cmp(text *arg1, text *arg2, Oid collid)
+text_cmp(text *arg1, text *arg2, Oid collid __attribute__((unused)))
 {
   char *a1p, *a2p;
   int len1, len2;

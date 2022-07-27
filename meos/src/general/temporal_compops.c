@@ -71,7 +71,7 @@ tcomp_temporal_base(const Temporal *temp, Datum value, mobdbType basetype,
  */
 Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, Oid, Oid))
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
 {
   if (tgeo_type(temp1->temptype))
   {

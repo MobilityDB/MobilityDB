@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for building a cache of type and operator Oids.
+ * @brief Functions for building a cache of temporal types and operators.
  */
 
 #ifndef __TEMPORAL_CATALOG_H__
@@ -44,9 +44,6 @@
 /**
  * @brief Enumeration that defines the built-in and temporal types used in
  * MobilityDB.
- *
- * The Oids of these types are cached in a global array and
- * the enum values are used in the global array for the operator cache.
  */
 typedef enum
 {
@@ -90,46 +87,6 @@ typedef enum
   T_TNPOINT,       /**< temporal network point type */
 #endif
 } mobdbType;
-
-/**
- * Enumeration that defines the classes of Boolean operators used in MobilityDB.
- * The OIDs of the operators corresponding to these classes are cached in
- * a global array.
- */
-typedef enum
-{
-  // UNKNOWN_OP = 0,
-  EQ_OP,           /**< Equality `=` operator */
-  NE_OP,           /**< Distinct `!=` operator */
-  LT_OP,           /**< Less than `<` operator */
-  LE_OP,           /**< Less than or equal to `<=` operator */
-  GT_OP,           /**< Greater than `<` operator */
-  GE_OP,           /**< Greater than or equal to `>=` operator */
-  ADJACENT_OP,     /**< Adjacent `-|-` operator */
-  UNION_OP,        /**< Union `+` operator */
-  MINUS_OP,        /**< Minus `-` operator */
-  INTERSECT_OP,    /**< Intersection `*` operator */
-  OVERLAPS_OP,     /**< Overlaps `&&` operator */
-  CONTAINS_OP,     /**< Contains `@>` operator */
-  CONTAINED_OP,    /**< Contained `<@` operator */
-  SAME_OP,         /**< Same `~=` operator */
-  LEFT_OP,         /**< Left `<<` operator */
-  OVERLEFT_OP,     /**< Overleft `&<` operator */
-  RIGHT_OP,        /**< Right `>>` operator */
-  OVERRIGHT_OP,    /**< Overright `&>` operator */
-  BELOW_OP,        /**< Below `<<|` operator */
-  OVERBELOW_OP,    /**< Overbelow `&<|` operator */
-  ABOVE_OP,        /**< Above `|>>` operator */
-  OVERABOVE_OP,    /**< Overbove `|&>` operator */
-  FRONT_OP,        /**< Front `<</` operator */
-  OVERFRONT_OP,    /**< Overfront `&</` operator */
-  BACK_OP,         /**< Back `/>>` operator */
-  OVERBACK_OP,     /**< Overback `/&>` operator */
-  BEFORE_OP,       /**< Before `<<#` operator */
-  OVERBEFORE_OP,   /**< Overbefore `&<#` operator */
-  AFTER_OP,        /**< After `#>>` operator */
-  OVERAFTER_OP,    /**< Overafter `#&>` operator */
-} CachedOp;
 
 /**
  * Structure to represent the temporal type cache array.

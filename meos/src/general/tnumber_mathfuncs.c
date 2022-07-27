@@ -215,7 +215,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype,
  */
 Temporal *
 arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  TArithmetic oper, Datum (*func)(Datum, Datum, Oid, Oid),
+  TArithmetic oper, Datum (*func)(Datum, Datum, mobdbType, mobdbType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {

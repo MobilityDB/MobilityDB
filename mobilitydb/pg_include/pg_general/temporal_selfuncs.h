@@ -41,9 +41,12 @@
 #include <utils/lsyscache.h>
 #include <utils/selfuncs.h>
 #include <utils/typcache.h>
-/* MobilityDB */
-#include "general/temporal_catalog.h"
+/* MEOS */
+#include "meos.h"
 #include "general/temporal.h"
+#include "general/temporal_catalog.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 #define BTREE_AM_OID   403
 

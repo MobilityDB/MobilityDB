@@ -573,7 +573,6 @@ tgeogpointseqset_in(char *str)
  * @param[in] arg Maximum number of decimal digits to output for floating point
  * values
  * @param[in] value_out Function called to output the base value
- * depending on its Oid
  */
 char *
 tsequenceset_to_string(const TSequenceSet *ss, Datum arg,

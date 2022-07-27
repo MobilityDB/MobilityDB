@@ -42,7 +42,7 @@
 /*****************************************************************************/
 
 extern STBOX *stbox_parse(char **str);
-extern Temporal *tpoint_parse(char **str, Oid basetypid);
+extern Temporal *tpoint_parse(char **str, mobdbType temptype);
 
 /*****************************************************************************/
 

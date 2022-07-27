@@ -90,10 +90,10 @@
  */
 typedef struct varatt_external
 {
-  int32    va_rawsize;    /* Original data size (includes header) */
+  int32    va_rawsize;     /* Original data size (includes header) */
   uint32    va_extinfo;    /* External saved size (without header) and
-                 * compression method */
-  Oid      va_valueid;    /* Unique ID of value within TOAST table */
+                            * compression method */
+  Oid      va_valueid;     /* Unique ID of value within TOAST table */
   Oid      va_toastrelid;  /* RelID of TOAST table containing it */
 }      varatt_external;
 

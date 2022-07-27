@@ -202,11 +202,9 @@ basetype_parse(char **str, mobdbType basetype)
 {
   p_whitespace(str);
   int delim = 0;
-  bool isttext = false;
   /* ttext values must be enclosed between double quotes */
   if (**str == '"')
   {
-    isttext = true;
     /* Consume the double quote */
     *str += 1;
     while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  &&
@@ -220,15 +218,13 @@ basetype_parse(char **str, mobdbType basetype)
   }
   if ((*str)[delim] == '\0')
     elog(ERROR, "Could not parse element value");
-  (*str)[delim] = '\0';
-  Datum result = basetype_input(basetype, *str, false);
-  if (isttext)
-    /* Replace the double quote */
-    (*str)[delim++] = '"';
-  else
-    /* Replace the at */
-    (*str)[delim] = '@';
-  /* since we know there's an @ here, let's take it with us */
+
+  char *str1 = palloc(sizeof(char) * (delim + 1));
+  strncpy(str1, *str, delim);
+  str1[delim] = '\0';
+  Datum result = basetype_input(basetype, str1, false);
+  pfree(str1);
+  /* since there's an @ here, let's take it with us */
   *str += delim + 1;
   return result;
 }
@@ -322,11 +318,13 @@ timestamp_parse(char **str)
   while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' &&
     (*str)[delim] != '}' && (*str)[delim] != '\0')
     delim++;
-  char bak = (*str)[delim];
-  (*str)[delim] = '\0';
+
+  char *str1 = palloc(sizeof(char) * (delim + 1));
+  strncpy(str1, *str, delim);
+  str1[delim] = '\0';
   /* The last argument is for an unused typmod */
-  Datum result = pg_timestamptz_in(*str, -1);
-  (*str)[delim] = bak;
+  Datum result = pg_timestamptz_in(str1, -1);
+  pfree(str1);
   *str += delim;
   return result;
 }
@@ -411,10 +409,11 @@ elem_parse(char **str, mobdbType basetype)
   while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
     (*str)[delim] != ')' &&  (*str)[delim] != '\0')
     delim++;
-  char bak = (*str)[delim];
-  (*str)[delim] = '\0';
-  Datum result = basetype_input(basetype, *str, false);
-  (*str)[delim] = bak;
+  char *str1 = palloc(sizeof(char) * (delim + 1));
+  strncpy(str1, *str, delim);
+  str1[delim] = '\0';
+  Datum result = basetype_input(basetype, str1, false);
+  pfree(str1);
   *str += delim;
   return result;
 }
@@ -485,7 +484,7 @@ tinstant_parse(char **str, mobdbType temptype, bool end, bool make)
  * @brief Parse a temporal instant set value from the buffer.
  *
  * @param[in] str Input string
- * @param[in] temptype Oid of the base type
+ * @param[in] temptype Base type
  */
 TInstantSet *
 tinstantset_parse(char **str, mobdbType temptype)

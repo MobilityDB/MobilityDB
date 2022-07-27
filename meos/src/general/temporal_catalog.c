@@ -28,22 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Create a cache of information about temporal types and PostgreSQL
- * Oids in global arrays in order to avoid (slow) lookups. These arrays are
- * initialized at the loading of the extension.
- *
- * The selectivity of Boolean operators is essential to determine efficient
- * execution plans for queries. The temporal extension defines several classes
- * of Boolean operators (equal, less than, overlaps, ...), currently 30, each
- * of which can have as left or right arguments a built-in type (such as
- * integer, timestamptz, box, geometry, ...) or a newly defined type (such as
- * period, tint, ...), currently 33.
- *
- * There are currently 3,392 operators, each of which is identified by an Oid.
- * To avoid enumerating all of these operators in the Oid cache, we use a
- * two-dimensional array containing all possible combinations of
- * operator/left argument/right argument (currently 23 * 40 * 40 = 36,800 cells).
- * The invalid combinations will be initialized to 0.
+ * @brief Create a cache of metadata information about temporal types and
+ * span types in global arrays.
  */
 
 #include "general/temporal_catalog.h"

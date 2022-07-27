@@ -105,7 +105,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, Oid, Oid),
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {

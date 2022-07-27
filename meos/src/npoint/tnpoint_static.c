@@ -264,7 +264,7 @@ npoint_out(const Npoint *np, int maxdd)
   char *rid = int8_out(np->rid);
   char *pos = float8_out(np->pos, maxdd);
   snprintf(result, MAXNPOINTLEN - 1, "NPoint(%s,%s)", rid, pos);
-  pfree(rid); pfree(pos); 
+  pfree(rid); pfree(pos);
   return result;
 }
 
@@ -290,7 +290,7 @@ nsegment_out(const Nsegment *ns, int maxdd)
   char *pos1 = float8_out(ns->pos1, maxdd);
   char *pos2 = float8_out(ns->pos2, maxdd);
   snprintf(result, MAXNPOINTLEN - 1, "NSegment(%s,%s,%s)", rid, pos1, pos2);
-  pfree(rid); pfree(pos1); pfree(pos2); 
+  pfree(rid); pfree(pos1); pfree(pos2);
   return result;
 }
 
@@ -516,7 +516,7 @@ route_geom(int64 rid)
 int64
 rid_from_geom(Datum geom)
 {
-  char *geomstr = ewkt_out(InvalidOid, geom);
+  char *geomstr = ewkt_out(0, geom, OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[128];
   sprintf(sql, "SELECT gid FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, DIST_EPSILON, geomstr);
