@@ -75,7 +75,8 @@ extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *a1, const void *a2);
 extern int span_lower_cmp(const Span *a, const Span *b);
 extern int span_upper_cmp(const Span *a, const Span *b);
-extern Span **spanarr_normalize(Span **spans, int count, int *newcount);
+extern Span **spanarr_normalize(Span **spans, int count, bool sort,
+  int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
 extern size_t span_to_wkb_size(const Span *s);

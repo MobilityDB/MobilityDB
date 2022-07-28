@@ -4216,7 +4216,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   }
 
   int newcount;
-  result = spanarr_normalize(periods, k, &newcount);
+  result = spanarr_normalize(periods, k, SORT, &newcount);
   *count = newcount;
   return result;
 }

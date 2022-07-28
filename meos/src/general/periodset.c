@@ -183,9 +183,11 @@ periodset_make(const Period **periods, int count, bool normalize)
   Period **newperiods = (Period **) periods;
   int newcount = count;
   if (normalize && count > 1)
-    newperiods = spanarr_normalize((Period **) periods, count, &newcount);
+    newperiods = spanarr_normalize((Period **) periods, count, SORT_NO,
+      &newcount);
   /* Notice that the first period is already declared in the struct */
-  size_t memsize = double_pad(sizeof(PeriodSet)) + double_pad(sizeof(Period)) * (newcount - 1);
+  size_t memsize = double_pad(sizeof(PeriodSet)) +
+    double_pad(sizeof(Period)) * (newcount - 1);
   PeriodSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = newcount;

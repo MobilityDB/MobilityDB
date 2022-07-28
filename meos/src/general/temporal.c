@@ -3063,7 +3063,7 @@ tnumber_bbox_restrict_spans(const Temporal *temp, Span **spans,
     pfree(newspans);
     return NULL;
   }
-  Span **normspans = spanarr_normalize(newspans, k, newcount);
+  Span **normspans = spanarr_normalize(newspans, k, SORT, newcount);
   pfree(newspans);
   return normspans;
 }

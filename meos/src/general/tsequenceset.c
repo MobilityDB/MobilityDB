@@ -1120,7 +1120,7 @@ tfloatseqset_spans(const TSequenceSet *ss, int *count)
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     k += tfloatseq_spans1(seq, &spans[k]);
   }
-  Span **result = spanarr_normalize(spans, k, count);
+  Span **result = spanarr_normalize(spans, k, SORT, count);
   pfree_array((void **) spans, k);
   return result;
 }
@@ -1670,7 +1670,7 @@ tfloatseqset_span(const TSequenceSet *ss)
   }
   /* Normalize the spans */
   int newcount;
-  Span **normspans = spanarr_normalize(spans, ss->count, &newcount);
+  Span **normspans = spanarr_normalize(spans, ss->count, SORT, &newcount);
   Span *result;
   if (newcount == 1)
     result = span_copy(normspans[0]);
