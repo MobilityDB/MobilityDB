@@ -10,6 +10,9 @@
 
 int main()
 {
+    /* Initialize session_timezone */
+    meos_timezone_initialize("Europe/Brussels");
+
     /* Read WKT into geometry object */
     Temporal *inst = tgeompoint_in("POINT(1 1)@2000-01-01");
     Temporal *is = tgeompoint_in("{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}");
@@ -19,13 +22,13 @@ int main()
 
     /* Convert result to MF-JSON */
     char *inst_wkt = temporal_as_mfjson(inst, true, 6, NULL);
-    printf("Temporal instant: %s\n", inst_wkt);
+    printf("Temporal instant:\n%s\n", inst_wkt);
     char *is_wkt = temporal_as_mfjson(inst, true, 6, NULL);
-    printf("Temporal instant set: %s\n", is_wkt);
+    printf("Temporal instant set:\n%s\n", is_wkt);
     char *seq_wkt = temporal_as_mfjson(inst, true, 6, NULL);
-    printf("Temporal sequence: %s\n", seq_wkt);
+    printf("Temporal sequence:\n%s\n", seq_wkt);
     char *ss_wkt = temporal_as_mfjson(inst, true, 6, NULL);
-    printf("Temporal sequence set: %s\n", ss_wkt);
+    printf("Temporal sequence set:\n%s\n", ss_wkt);
 
     /* Clean up allocated objects */
     free(inst); free(inst_wkt);

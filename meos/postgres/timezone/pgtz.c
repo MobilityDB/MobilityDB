@@ -10,38 +10,30 @@
  *
  *-------------------------------------------------------------------------
  */
+#define _GNU_SOURCE
 #include "postgres.h"
 
 #include <ctype.h>
 #include <fcntl.h>
 #include <time.h>
-/* PostgreSQL */
-#include <postgres.h>
-/* MobilityDB */
-#include <dirent.h>
-
-// MobilityDB
-// #include "datatype/timestamp.h"
+#include <dirent.h> /* MobilityDB */
+#include <sys/stat.h> /* MobilityDB */
+#include <search.h> /* MobilityDB */
+// #include "datatype/timestamp.h" /* MobilityDB */
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
+#define TZ_HTABLE_MAXSIZE 32
+
 /* Current session timezone (controlled by TimeZone GUC) */
-// pg_tz *session_timezone = NULL; /* MobilityDB */
-pg_tz *session_timezone = pg_tzset("Europe/Brussels");
+pg_tz *session_timezone = NULL;
 
 /* Current log timezone (controlled by log_timezone GUC) */
-pg_tz *log_timezone = NULL;
+// pg_tz *log_timezone = NULL;
 
 static bool scan_directory_ci(const char *dirname,
                 const char *fname, int fnamelen,
                 char *canonname, int canonnamelen);
-
-/* Empty stub for generating a temporary version of the MEOS library */
-pg_tz *
-pg_tzset(const char *name __attribute__((unused)))
-{
-  elog(ERROR, "Function not yet implemented");
-}
 
 /*
  * Return full pathname of timezone data directory
@@ -229,34 +221,23 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
  * load and parse the TZ definition file every time one is selected.
  * Because we want timezone names to be found case-insensitively,
  * the hash key is the uppercased name of the zone.
+ * MobilityDB: We use a fixed size hash table instead of a dynamic hash table
+ * as in the original PG code.
  */
-typedef struct
-{
-  /* tznameupper contains the all-upper-case name of the timezone */
-  char    tznameupper[TZ_STRLEN_MAX + 1];
-  pg_tz    tz;
-} pg_tz_cache;
 
-#if 0 /* MobilityDB not used */
-
-static HTAB *timezone_cache = NULL;
+static struct hsearch_data *timezone_cache = NULL;
 
 static bool
 init_timezone_hashtable(void)
 {
-  HASHCTL    hash_ctl;
-
-  hash_ctl.keysize = TZ_STRLEN_MAX + 1;
-  hash_ctl.entrysize = sizeof(pg_tz_cache);
-
-  timezone_cache = hash_create("Timezones",
-                 4,
-                 &hash_ctl,
-                 HASH_ELEM | HASH_STRINGS);
+  timezone_cache = palloc0(sizeof(struct hsearch_data));
   if (!timezone_cache)
     return false;
 
-  return true;
+  if (hcreate_r(TZ_HTABLE_MAXSIZE, timezone_cache))
+    return true;
+
+  return false;
 }
 
 /*
@@ -276,11 +257,13 @@ init_timezone_hashtable(void)
 pg_tz *
 pg_tzset(const char *name)
 {
-  pg_tz_cache *tzp;
+  // pg_tz_cache *tzp; /* MobilityDB */
+  ENTRY e;
+  ENTRY *ep = &e;
   struct state tzstate;
-  char    uppername[TZ_STRLEN_MAX + 1];
-  char    canonname[TZ_STRLEN_MAX + 1];
-  char     *p;
+  char uppername[TZ_STRLEN_MAX + 1];
+  char canonname[TZ_STRLEN_MAX + 1];
+  char *p;
 
   if (strlen(name) > TZ_STRLEN_MAX)
     return NULL;      /* not going to fit */
@@ -300,15 +283,10 @@ pg_tzset(const char *name)
     *p++ = pg_toupper((unsigned char) *name++);
   *p = '\0';
 
-  tzp = (pg_tz_cache *) hash_search(timezone_cache,
-                    uppername,
-                    HASH_FIND,
-                    NULL);
-  if (tzp)
-  {
-    /* Timezone found in cache, nothing more to do */
-    return &tzp->tz;
-  }
+  /* Look for timezone in the cache */
+  e.key = uppername;
+  if (hsearch_r(e, FIND, &ep, timezone_cache))
+    return (pg_tz *) ep->data;
 
   /*
    * "GMT" is always sent to tzparse(), as per discussion above.
@@ -335,18 +313,18 @@ pg_tzset(const char *name)
   }
 
   /* Save timezone in the cache */
-  tzp = (pg_tz_cache *) hash_search(timezone_cache,
-                    uppername,
-                    HASH_ENTER,
-                    NULL);
+  pg_tz *tz = palloc(sizeof(pg_tz));
+  strcpy(tz->TZname, canonname);
+  memcpy(&tz->state, &tzstate, sizeof(tzstate));
 
-  /* hash_search already copied uppername into the hash key */
-  strcpy(tzp->tz.TZname, canonname);
-  memcpy(&tzp->tz.state, &tzstate, sizeof(tzstate));
+  e.key = strdup(uppername);
+  e.data = tz;
+  if (hsearch_r(e, ENTER, &ep, timezone_cache))
+    return (pg_tz *) ep->data;
 
-  return &tzp->tz;
+  return NULL;
 }
-
+  
 /*
  * Load a fixed-GMT-offset timezone.
  * This is used for SQL-spec SET TIME ZONE INTERVAL 'foo' cases.
@@ -364,7 +342,8 @@ pg_tzset_offset(long gmtoffset)
 {
   long    absoffset = (gmtoffset < 0) ? -gmtoffset : gmtoffset;
   char    offsetstr[64];
-  char    tzname[128];
+  // char    tzname[128]; /* MobilityDB */
+  char    tzname[256];
 
   snprintf(offsetstr, sizeof(offsetstr),
        "%02ld", absoffset / SECS_PER_HOUR);
@@ -393,155 +372,13 @@ pg_tzset_offset(long gmtoffset)
 
 /*
  * Initialize timezone library
- *
- * This is called before GUC variable initialization begins.  Its purpose
- * is to ensure that log_timezone has a valid value before any logging GUC
- * variables could become set to values that require elog.c to provide
- * timestamps (e.g., log_line_prefix).  We may as well initialize
- * session_timezone to something valid, too.
  */
 void
-pg_timezone_initialize(void)
+meos_timezone_initialize(const char *name)
 {
-  /*
-   * We may not yet know where PGSHAREDIR is (in particular this is true in
-   * an EXEC_BACKEND subprocess).  So use "GMT", which pg_tzset forces to be
-   * interpreted without reference to the filesystem.  This corresponds to
-   * the bootstrap default for these variables in guc.c, although in
-   * principle it could be different.
-   */
-  session_timezone = pg_tzset("GMT");
-  log_timezone = session_timezone;
+  session_timezone = pg_tzset(name);
+  if (! session_timezone)
+    elog(ERROR, "Failed to initialize local timezone");
+  return;
 }
 
-
-/*
- * Functions to enumerate available timezones
- *
- * Note that pg_tzenumerate_next() will return a pointer into the pg_tzenum
- * structure, so the data is only valid up to the next call.
- *
- * All data is allocated using palloc in the current context.
- */
-#define MAX_TZDIR_DEPTH 10
-
-struct pg_tzenum
-{
-  int      baselen;
-  int      depth;
-  DIR       *dirdesc[MAX_TZDIR_DEPTH];
-  char     *dirname[MAX_TZDIR_DEPTH];
-  struct pg_tz tz;
-};
-
-/* typedef pg_tzenum is declared in pgtime.h */
-
-pg_tzenum *
-pg_tzenumerate_start(void)
-{
-  pg_tzenum  *ret = (pg_tzenum *) palloc0(sizeof(pg_tzenum));
-  char     *startdir = pstrdup(pg_TZDIR());
-
-  ret->baselen = strlen(startdir) + 1;
-  ret->depth = 0;
-  ret->dirname[0] = startdir;
-  ret->dirdesc[0] = AllocateDir(startdir);
-  if (!ret->dirdesc[0])
-    ereport(ERROR,
-        (errcode_for_file_access(),
-         errmsg("could not open directory \"%s\": %m", startdir)));
-  return ret;
-}
-
-void
-pg_tzenumerate_end(pg_tzenum *dir)
-{
-  while (dir->depth >= 0)
-  {
-    FreeDir(dir->dirdesc[dir->depth]);
-    pfree(dir->dirname[dir->depth]);
-    dir->depth--;
-  }
-  pfree(dir);
-}
-
-pg_tz *
-pg_tzenumerate_next(pg_tzenum *dir)
-{
-  while (dir->depth >= 0)
-  {
-    struct dirent *direntry;
-    char    fullname[MAXPGPATH * 2];
-    struct stat statbuf;
-
-    direntry = ReadDir(dir->dirdesc[dir->depth], dir->dirname[dir->depth]);
-
-    if (!direntry)
-    {
-      /* End of this directory */
-      FreeDir(dir->dirdesc[dir->depth]);
-      pfree(dir->dirname[dir->depth]);
-      dir->depth--;
-      continue;
-    }
-
-    if (direntry->d_name[0] == '.')
-      continue;
-
-    snprintf(fullname, sizeof(fullname), "%s/%s",
-         dir->dirname[dir->depth], direntry->d_name);
-    if (stat(fullname, &statbuf) != 0)
-      ereport(ERROR,
-          (errcode_for_file_access(),
-           errmsg("could not stat \"%s\": %m", fullname)));
-
-    if (S_ISDIR(statbuf.st_mode))
-    {
-      /* Step into the subdirectory */
-      if (dir->depth >= MAX_TZDIR_DEPTH - 1)
-        ereport(ERROR,
-            (errmsg_internal("timezone directory stack overflow")));
-      dir->depth++;
-      dir->dirname[dir->depth] = pstrdup(fullname);
-      dir->dirdesc[dir->depth] = AllocateDir(fullname);
-      if (!dir->dirdesc[dir->depth])
-        ereport(ERROR,
-            (errcode_for_file_access(),
-             errmsg("could not open directory \"%s\": %m",
-                fullname)));
-
-      /* Start over reading in the new directory */
-      continue;
-    }
-
-    /*
-     * Load this timezone using tzload() not pg_tzset(), so we don't fill
-     * the cache.  Also, don't ask for the canonical spelling: we already
-     * know it, and pg_open_tzfile's way of finding it out is pretty
-     * inefficient.
-     */
-    if (tzload(fullname + dir->baselen, NULL, &dir->tz.state, true) != 0)
-    {
-      /* Zone could not be loaded, ignore it */
-      continue;
-    }
-
-    if (!pg_tz_acceptable(&dir->tz))
-    {
-      /* Ignore leap-second zones */
-      continue;
-    }
-
-    /* OK, return the canonical zone name spelling. */
-    strlcpy(dir->tz.TZname, fullname + dir->baselen,
-        sizeof(dir->tz.TZname));
-
-    /* Timezone loaded OK. */
-    return &dir->tz;
-  }
-
-  /* Nothing more found */
-  return NULL;
-}
-
-#endif /* MobilityDB not used */
