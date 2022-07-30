@@ -55,11 +55,13 @@
 #include <access/tableam.h>
 #include <catalog/namespace.h>
 #include <utils/rel.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporaltypes.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"
 #endif
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Global variables

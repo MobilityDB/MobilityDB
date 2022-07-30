@@ -1399,7 +1399,6 @@ tgeogpointseq_in(char *str)
  * temporal sequence set and thus no interpolation string at the begining of
  * the string should be output
  * @param[in] value_out Function called to output the base value
- * depending on its Oid
  */
 char *
 tsequence_to_string(const TSequence *seq, Datum arg, bool component,

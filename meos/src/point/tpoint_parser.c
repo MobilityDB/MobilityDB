@@ -396,7 +396,7 @@ tpointseqset_parse(char **str, mobdbType temptype, bool linear,
  * @param[in] temptype Temporal type
  */
 Temporal *
-tpoint_parse(char **str, Oid temptype)
+tpoint_parse(char **str, mobdbType temptype)
 {
   int tpoint_srid = 0;
   p_whitespace(str);

@@ -16,8 +16,12 @@ add_definitions(-DMEOS=1)
 
 # Set the version and name of the MEOS library
 set(MEOS_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
-set(MEOS_LIB_NAME "MEOS-${MEOS_LIB_VERSION}")
+set(MEOS_LIB_NAME "meos")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Set the location of the directory of the time zone database
+add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
+message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 
 #-----------------------------------------
 # Set default PostgreSQL Version for MEOS

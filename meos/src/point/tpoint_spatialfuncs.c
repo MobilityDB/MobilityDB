@@ -3017,7 +3017,8 @@ get_bearing_fn(int16 flags)
  */
 static bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid __attribute__((unused)), Datum *value, TimestampTz *t)
+  Datum point, mobdbType basetypid __attribute__((unused)), Datum *value,
+  TimestampTz *t)
 {
   Datum dstart = tinstant_value(start);
   Datum dend = tinstant_value(end);
@@ -4215,7 +4216,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   }
 
   int newcount;
-  result = spanarr_normalize(periods, k, &newcount);
+  result = spanarr_normalize(periods, k, SORT, &newcount);
   *count = newcount;
   return result;
 }

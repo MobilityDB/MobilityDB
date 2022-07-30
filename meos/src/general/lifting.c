@@ -49,7 +49,7 @@
  *     and the function is applied to each pair of synchronized instants.
  * 4. Whether the type of the arguments may vary. For example, temporal
  *    numbers can be of different base type (that is, integer and float).
- *    Therefore, the Oids of the arguments must be taken into account when
+ *    Therefore, the types of the arguments must be taken into account when
  *    computing binary operators (e.g., `+` or `<`) for temporal numbers.
  * 5. The number of optional parameters of the function
  *  - no arguments, such as most spatial relationships functions (e.g.,
@@ -1124,7 +1124,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
     basetype2 = temptype_basetype(seq2->temptype);
   }
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);
-  /* Each iteration of the loop adds 
+  /* Each iteration of the loop adds
    * - one sequence when the interpolations of the temporal values are different
    * - between one and three sequences for functions with discontinuities
    */
@@ -1158,7 +1158,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
     Datum endvalue1 = linear1 ? tinstant_value(end1) : startvalue1;
     Datum endvalue2 = linear2 ? tinstant_value(end2) : startvalue2;
     Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
-    
+
     /* Add the sequence(s) for the iteration */
     if (! discont)
     {

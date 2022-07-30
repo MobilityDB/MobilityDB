@@ -116,6 +116,10 @@ extern char *text_to_cstring(const text *t);
 #define LINEAR          true
 #define STEP            false
 
+/** Symbolic constants for the normalizing spans */
+#define SORT            true
+#define SORT_NO         false
+
 /** Symbolic constants for spatial relationships */
 #define WITH_Z          true
 #define NO_Z            false

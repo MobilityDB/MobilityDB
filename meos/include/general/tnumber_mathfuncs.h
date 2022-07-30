@@ -67,7 +67,7 @@ extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
   Datum (*func)(Datum, Datum, mobdbType, mobdbType), bool invert);
 extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
-  Datum (*func)(Datum, Datum, Oid, Oid),
+  Datum (*func)(Datum, Datum, mobdbType, mobdbType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *));
 

@@ -37,9 +37,11 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/selfuncs.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 #include "general/temporal_catalog.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************/
 

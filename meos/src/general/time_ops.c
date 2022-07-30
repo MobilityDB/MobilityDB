@@ -75,14 +75,10 @@ RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
 {
   int32 cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp == 0 && !(p->lower_inc))
+  if (cmp > 0 || (cmp == 0 && !(p->lower_inc)))
     return BEFORE;
   cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
-  if (cmp < 0)
-    return AFTER;
-  if (cmp == 0 && !(p->upper_inc))
+  if (cmp < 0 || (cmp == 0 && !(p->upper_inc)))
     return AFTER;
   return DURING;
 }
@@ -907,7 +903,7 @@ adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
    * B is adjacent to C, or D is adjacent to A.
    */
   return (endps1->upper == startps2->lower && endps1->upper_inc != startps2->lower_inc) ||
-    (endps2->upper == startps1 ->lower && endps2->upper_inc != startps1 ->lower_inc);
+    (endps2->upper == startps1->lower && endps2->upper_inc != startps1->lower_inc);
 }
 
 /*****************************************************************************/
@@ -1816,7 +1812,8 @@ union_period_period(const Period *p1, const Period *p2)
       periods[0] = p2;
       periods[1] = p1;
     }
-    PeriodSet *result = periodset_make((const Period **)periods, 2, NORMALIZE_NO);
+    PeriodSet *result = periodset_make((const Period **) periods, 2,
+      NORMALIZE_NO);
     return result;
   }
 

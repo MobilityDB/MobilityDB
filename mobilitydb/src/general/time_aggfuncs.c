@@ -138,7 +138,7 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
     periods[k++] = periods1[i++];
   while (j < count2)
     periods[k++] = periods2[j++];
-  Period **result = spanarr_normalize(periods, k, newcount);
+  Period **result = spanarr_normalize(periods, k, SORT_NO, newcount);
   pfree(periods);
   return result;
 }
@@ -244,15 +244,24 @@ time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
     return state1;
 
   assert(state1->elemtype == state2->elemtype);
-  int count2 = state2->length;
-  void **values = skiplist_values(state2);
-  skiplist_splice(fcinfo, state1, values, count2, NULL, CROSSINGS_NO);
+  SkipList *smallest, *largest;
+  if (state1->length < state2->length)
+  {
+    smallest = state1; largest = state2;
+  }
+  else
+  {
+    smallest = state2; largest = state1;
+  }
+  void **values = skiplist_values(smallest);
+  skiplist_splice(fcinfo, largest, values, smallest->length, NULL,
+    CROSSINGS_NO);
   /* Delete the new aggregate values */
-  if (state2->elemtype == TIMESTAMPTZ)
+  if (smallest->elemtype == TIMESTAMPTZ)
     pfree(values);
   else
-    pfree_array(values, count2);
-  return state1;
+    pfree_array(values, smallest->length);
+  return largest;
 }
 
 /*****************************************************************************

@@ -255,13 +255,16 @@ span_canonicalize(Span *s)
  *
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the input array
+ * @param[in] sort True if the spans should be sorted before normalization
  * @param[out] newcount Number of elements in the output array
+ * @pre i
  */
 Span **
-spanarr_normalize(Span **spans, int count, int *newcount)
+spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
 {
   /* Sort the spans before normalization */
-  spanarr_sort(spans, count);
+  if (sort)
+    spanarr_sort(spans, count);
   int k = 0;
   Span **result = palloc(sizeof(Span *) * count);
   Span *current = spans[0];
