@@ -51,6 +51,10 @@
  */
 
 /**
+ * @defgroup libmeos_base Functions for base types
+ * @ingroup libmeos_api
+ * @brief Functions for base types.
+
  * @defgroup libmeos_spantime Functions for span and time types
  * @ingroup libmeos_api
  * @brief Functions for span and time types.

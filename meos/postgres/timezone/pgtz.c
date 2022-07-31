@@ -324,7 +324,7 @@ pg_tzset(const char *name)
 
   return NULL;
 }
-  
+
 /*
  * Load a fixed-GMT-offset timezone.
  * This is used for SQL-spec SET TIME ZONE INTERVAL 'foo' cases.
@@ -369,7 +369,6 @@ pg_tzset_offset(long gmtoffset)
   return pg_tzset(tzname);
 }
 
-
 /*
  * Initialize timezone library
  */
@@ -381,4 +380,27 @@ meos_timezone_initialize(const char *name)
     elog(ERROR, "Failed to initialize local timezone");
   return;
 }
+
+/*
+ * Initialize timezone library
+ */
+void
+meos_initialize(void)
+{
+  // TODO Get the current timezone from the OS
+  meos_timezone_initialize("Europe/Brussels");
+  return;
+}
+
+/*
+ * Initialize timezone library
+ */
+void
+meos_finish(void)
+{
+  if (session_timezone)
+    hdestroy_r(timezone_cache);
+  return;
+}
+
 

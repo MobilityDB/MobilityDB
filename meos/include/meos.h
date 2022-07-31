@@ -199,11 +199,19 @@ typedef struct
  * Initialization of the MEOS library
  *****************************************************************************/
 
-extern void meos_timezone_initialize(const char *name);
+extern void meos_initialize(void);
+extern void meos_finish(void);
 
 /*****************************************************************************
  * Functions for span and time types
  *****************************************************************************/
+
+/* Input/output functions for PostgreSQL base types */
+
+extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
+extern Timestamp pg_timestamp_in(char *str, int32 typmod);
+extern char *pg_timestamptz_out(TimestampTz dt);
+extern char *pg_timestamp_out(Timestamp dt);
 
 /* Input/output functions for span and time types */
 
@@ -729,20 +737,24 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
 /* Input/output functions for temporal types */
 
 extern Temporal *tbool_in(char *str);
+extern char *tbool_out(const Temporal *temp);
 extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision, char *srs);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_mfjson(char *mfjson);
 extern Temporal *temporal_from_wkb(uint8_t *wkb, int size);
-extern char *temporal_out(const Temporal *temp, Datum arg);
 extern Temporal *tfloat_in(char *str);
+extern char *tfloat_out(const Temporal *temp, int maxdd);
 extern Temporal *tgeogpoint_in(char *str);
 extern Temporal *tgeompoint_in(char *str);
 extern Temporal *tint_in(char *str);
+extern char *tint_out(const Temporal *temp);
 extern char *tpoint_as_ewkt(const Temporal *temp, int maxdd);
 extern char *tpoint_as_text(const Temporal *temp, int maxdd);
+extern char *tpoint_out(const Temporal *temp, int maxdd);
 extern Temporal *ttext_in(char *str);
+extern char *ttext_out(const Temporal *temp);
 
 /*****************************************************************************/
 
