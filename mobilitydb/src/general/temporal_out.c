@@ -117,6 +117,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   bool with_bbox = 0;
   int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int option = 0;
+  int flags = 0;
   char *srs = NULL;
 
   /* Get the temporal value */
@@ -158,17 +159,21 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (option & 1)
     with_bbox = 1;
 
+  /* Retrieve JSON flags (e.g. for pretty print) if any (default is 0) */
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+    flags = PG_GETARG_INT32(2);
+
   /* Retrieve precision if any (default is max) */
-  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+  if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
   {
-    precision = PG_GETARG_INT32(2);
+    precision = PG_GETARG_INT32(3);
     if (precision > OUT_DEFAULT_DECIMAL_DIGITS)
       precision = OUT_DEFAULT_DECIMAL_DIGITS;
     else if (precision < 0)
       precision = 0;
   }
 
-  char *mfjson = temporal_as_mfjson(temp, with_bbox, precision, srs);
+  char *mfjson = temporal_as_mfjson(temp, with_bbox, flags, precision, srs);
   text *result = cstring2text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);

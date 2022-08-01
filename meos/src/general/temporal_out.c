@@ -318,11 +318,11 @@ tbox_mfjson_buf(char *output, const TBOX *bbox, int precision)
   ptr += lwprint_double(bbox->xmin, precision, ptr);
   ptr += sprintf(ptr, ",");
   ptr += lwprint_double(bbox->xmax, precision, ptr);
-  ptr += sprintf(ptr, "],\"period\":{\"begin\":\"");
+  ptr += sprintf(ptr, "],\"period\":{\"begin\":");
   ptr += datetimes_mfjson_buf(ptr, bbox->tmin);
-  ptr += sprintf(ptr, ",\"end\":\"");
+  ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, bbox->tmax);
-  ptr += sprintf(ptr, "\"}},");
+  ptr += sprintf(ptr, "}},");
   return (ptr - output);
 }
 
@@ -1150,8 +1150,8 @@ tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
  * @sqlfunc asMFJSON()
  */
 char *
-temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision,
-  char *srs)
+temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
+  int precision, char *srs)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1166,7 +1166,12 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int precision,
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_as_mfjson((TSequenceSet *) temp, precision,
       with_bbox, srs);
-  return result;
+  if (flags == 0)
+    return result;
+
+  struct json_object *jobj = json_tokener_parse(result);
+  pfree(result);
+  return (char *) json_object_to_json_string_ext(jobj, flags);
 }
 
 /*****************************************************************************

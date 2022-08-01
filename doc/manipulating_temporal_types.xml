@@ -243,12 +243,19 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 			<listitem id="temporal_asMFJSON">
 				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Get the Moving Features JSON representation</para>
-				<para><varname>asMFJSON(ttype,options integer=0,maxdecdigits integer=15): bytea</varname></para>
-				<para>The last <varname>options</varname> argument could be used to add a bounding box in the MFJSON output:</para>
+				<para><varname>asMFJSON(ttype,options integer=0,flags integer=0,maxdecdigits integer=15): bytea</varname></para>
+				<para>The <varname>options</varname> argument can be used to add a bounding box in the MFJSON output:</para>
 				<itemizedlist>
 					<listitem><para>0: means no option (default value)</para></listitem>
 					<listitem><para>1: MFJSON BBOX</para></listitem>
 				</itemizedlist>
+				<para>The <varname>flags</varname> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Please look at the documentation of the <varname>json-c</varname> library. Typical values are as follows:</para>
+				<itemizedlist>
+					<listitem><para>0: means no option (default value)</para></listitem>
+					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
+					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
+				</itemizedlist>
+				<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
 				<programlisting xml:space="preserve">
 SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
 -- {"type":"MovingBoolean","stBoundedBy":{"period":{"begin":"2019-01-01 18:00:00+01",

@@ -28,18 +28,18 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that reads AIS data from a CSV file and outputs
+ * @brief A simple program that process AIS data from a CSV file and outputs
  * a few of these records converted into temporal values.
  *
- * In the input file `aisinput.csv` in the same directory it is assumed that
- * - The coordinates are given in the WGS84 geographic coordinate system, and
- * - The timestamps are given in the GMT time zone.
- * This simple program does not cope with erroneous inputs, such as missing
- * fields or invalid timestamp values.
+ * Please read the assumptions made about the input file `aisinput.csv` in the
+ * file `meos_read_ais.c` in the same directory. Furthermore, this program
+ * assumes the input file contains less than 30K observations for at most
+ * five ships. Also, the program does not cope with erroneous inputs, such as
+ * two or more observations for the same ship with equal timestamp values.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I. -o meos_read_ais meos_read_ais.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I. -o meos_process_ais meos_process_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -106,7 +106,10 @@ int main(void)
     if (records % 1000 == 0)
     {
       char *t_out = pg_timestamp_out(rec.T);
-      /* See above the assumptions made wrt the input data in the file */
+      /* In the input file it is assumed that
+       * - The coordinates are given in the WGS84 geographic coordinate system
+       * - The timestamps are given in GMT time zone
+       */
       sprintf(buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
         rec.Latitude, t_out);
       Temporal *inst1 = tgeogpoint_in(buffer);

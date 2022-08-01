@@ -33,7 +33,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I. -o meos_hello_world meos_hello_world.c -L/usr/local/bin -lmeos
+ * gcc -Wall -g -I. -o meos_hello_world meos_hello_world.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -53,28 +53,62 @@ int main()
   /* Initialize session_timezone */
   meos_initialize();
 
-  /* Read WKT into geometry object */
-  Temporal *inst = tgeompoint_in("POINT(1 1)@2000-01-01");
-  Temporal *is = tgeompoint_in("{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}");
-  Temporal *seq = tgeompoint_in("[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]");
-  Temporal *ss = tgeompoint_in("{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
-    "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}");
+  /* Input temporal points in WKT format */
+  char *inst_wkt = "POINT(1 1)@2000-01-01";
+  char *is_wkt = "{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}";
+  char *seq_wkt = "[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
+  char *ss_wkt = "{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
+    "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
+
+  /* Read WKT into temporal point object */
+  Temporal *inst = tgeompoint_in(inst_wkt);
+  Temporal *is = tgeompoint_in(is_wkt);
+  Temporal *seq = tgeompoint_in(seq_wkt);
+  Temporal *ss = tgeompoint_in(ss_wkt);
 
   /* Convert result to MF-JSON */
-  char *inst_wkt = temporal_as_mfjson(inst, true, 6, NULL);
-  printf("Temporal instant:\n%s\n", inst_wkt);
-  char *is_wkt = temporal_as_mfjson(is, true, 6, NULL);
-  printf("Temporal instant set:\n%s\n", is_wkt);
-  char *seq_wkt = temporal_as_mfjson(seq, true, 6, NULL);
-  printf("Temporal sequence:\n%s\n", seq_wkt);
-  char *ss_wkt = temporal_as_mfjson(ss, true, 6, NULL);
-  printf("Temporal sequence set:\n%s\n", ss_wkt);
+  char *inst_mfson = temporal_as_mfjson(inst, true, 3, 6, NULL);
+  printf("\n"
+    "--------------------\n"
+    "| Temporal Instant |\n"
+    "--------------------\n\n"
+    "WKT:\n"
+    "----\n%s\n\n"
+    "MF-JSON:\n"
+    "--------\n%s\n", inst_wkt, inst_mfson);
+  char *is_mfson = temporal_as_mfjson(is, true, 3, 6, NULL);
+  printf("\n"
+    "------------------------\n"
+    "| Temporal Instant Set |\n"
+    "------------------------\n\n"
+    "WKT:\n"
+    "----\n%s\n\n"
+    "MF-JSON:\n"
+    "--------\n%s\n", is_wkt, is_mfson);
+  char *seq_mfson = temporal_as_mfjson(seq, true, 3, 6, NULL);
+  printf("\n"
+    "---------------------\n"
+    "| Temporal Sequence |\n"
+    "---------------------\n\n"
+    "WKT:\n"
+    "----\n%s\n\n"
+    "MF-JSON:\n"
+    "--------\n%s\n", seq_wkt, seq_mfson);
+  char *ss_mfson = temporal_as_mfjson(ss, true, 3, 6, NULL);
+  printf("\n"
+    "-------------------------\n"
+    "| Temporal Sequence Set |\n"
+    "-------------------------\n\n"
+    "WKT:\n"
+    "----\n%s\n\n"
+    "MF-JSON:\n"
+    "--------\n%s\n", ss_wkt, ss_mfson);
 
   /* Clean up allocated objects */
-  free(inst); free(inst_wkt);
-  free(is); free(is_wkt);
-  free(seq); free(seq_wkt);
-  free(ss); free(ss_wkt);
+  free(inst); free(inst_mfson);
+  free(is); free(is_mfson);
+  free(seq); free(seq_mfson);
+  free(ss); free(ss_mfson);
 
   /* Finalize MEOS */
   meos_finish();
