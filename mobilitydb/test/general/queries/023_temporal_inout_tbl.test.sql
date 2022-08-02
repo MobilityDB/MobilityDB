@@ -44,11 +44,11 @@ SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
 
 -------------------------------------------------------------------------------
 -- Additional pretty-print attribute
-
-SELECT asMFJSON(tfloat '1@2000-01-01', 1, 3, 15);
-SELECT asMFJSON(tfloat '{1@2000-01-01, 2@2000-01-02}', 1, 3, 15);
-SELECT asMFJSON(tfloat '[1@2000-01-01, 2@2000-01-02]', 1, 3, 15);
-SELECT asMFJSON(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3, 15);
+-- Notice that the Linux and Mac versions of json_c produce slightly different versions of the pretty-print JSON
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2000-01-01', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2000-01-01, 2@2000-01-02}', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '[1@2000-01-01, 2@2000-01-02]', 1, 3, 15));
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3, 15));
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions

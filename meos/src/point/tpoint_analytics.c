@@ -1779,9 +1779,9 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
  * @param[out] count Number of elements in the output array
  */
 static Datum
-tpointinst_decouple(const TInstant *inst, TimestampTz **timesarr, int *count)
+tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz));
+  int64 *times = palloc(sizeof(int64));
   times[0] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   *timesarr = times;
   *count = 1;
@@ -1797,7 +1797,7 @@ tpointinst_decouple(const TInstant *inst, TimestampTz **timesarr, int *count)
  * @param[out] count Number of elements in the output array
  */
 static Datum
-tpointinstset_decouple(const TInstantSet *is, TimestampTz **timesarr,
+tpointinstset_decouple(const TInstantSet *is, int64 **timesarr,
   int *count)
 {
   /* Instantaneous sequence */
@@ -1806,7 +1806,7 @@ tpointinstset_decouple(const TInstantSet *is, TimestampTz **timesarr,
 
   /* General case */
   LWGEOM **points = palloc(sizeof(LWGEOM *) * is->count);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * is->count);
+  int64 *times = palloc(sizeof(int64) * is->count);
   for (int i = 0; i < is->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(is, i);
@@ -1836,7 +1836,7 @@ tpointinstset_decouple(const TInstantSet *is, TimestampTz **timesarr,
  * @note The timestamps are returned in Unix epoch
  */
 static LWGEOM *
-tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
+tpointseq_decouple1(const TSequence *seq, int64 *times)
 {
   /* General case */
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
@@ -1865,9 +1865,9 @@ tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
  * @param[out] count Number of elements in the output array
  */
 static Datum
-tpointseq_decouple(const TSequence *seq, TimestampTz **timesarr, int *count)
+tpointseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * seq->count);
+  int64 *times = palloc(sizeof(int64) * seq->count);
   LWGEOM *lwgeom = tpointseq_decouple1(seq, times);
   Datum result = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
@@ -1885,8 +1885,7 @@ tpointseq_decouple(const TSequence *seq, TimestampTz **timesarr, int *count)
  * @param[out] count Number of elements in the output array
  */
 static Datum
-tpointseqset_decouple(const TSequenceSet *ss, TimestampTz **timesarr,
-  int *count)
+tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -1895,7 +1894,7 @@ tpointseqset_decouple(const TSequenceSet *ss, TimestampTz **timesarr,
   /* General case */
   uint32_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ss->totalcount);
+  int64 *times = palloc(sizeof(int64) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
@@ -1929,7 +1928,7 @@ tpointseqset_decouple(const TSequenceSet *ss, TimestampTz **timesarr,
  * @param[out] count Number of elements in the output array
  */
 static Datum
-tpoint_decouple(const Temporal *temp, TimestampTz **timesarr, int *count)
+tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1953,7 +1952,7 @@ tpoint_decouple(const Temporal *temp, TimestampTz **timesarr, int *count)
  */
 bool
 tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
-  int32_t buffer, bool clip_geom, Datum *geom, TimestampTz **timesarr,
+  int32_t buffer, bool clip_geom, Datum *geom, int64 **timesarr,
   int *count)
 {
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)

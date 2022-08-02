@@ -193,11 +193,11 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00
 SELECT asMFJSON(tgeompoint '[Point(1 2 3)@2019-01-01, Point(4 5 6)@2019-01-02]', 1, 0, 2);
 
 -- Additional pretty-print attribute
-
-SELECT asMFJSON(tgeompoint 'POINT(1 1)@2000-01-01', 1, 3, 15);
-SELECT asMFJSON(tgeompoint '{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}', 1, 3, 15);
-SELECT asMFJSON(tgeompoint '[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]', 1, 3, 15);
-SELECT asMFJSON(tgeompoint '{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02], [POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}', 1, 3, 15);
+-- Notice that the Linux and Mac versions of json_c produce slightly different versions of the pretty-print JSON
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint 'POINT(1 1)@2000-01-01', 1, 3, 15)));
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}', 1, 3, 15)));
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]', 1, 3, 15)));
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02], [POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}', 1, 3, 15)));
 
 /* Errors */
 SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);

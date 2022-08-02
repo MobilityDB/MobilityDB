@@ -81,6 +81,7 @@ extern Span **spanarr_extract(ArrayType *array, int *count);
 extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, mobdbType type);
+extern ArrayType *int64arr_to_array(const int64 *longints, int count);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
 extern ArrayType *spanarr_to_array(Span **spans, int count);

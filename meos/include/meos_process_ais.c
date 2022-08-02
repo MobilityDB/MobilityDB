@@ -28,14 +28,16 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that process AIS data from a CSV file and outputs
- * a few of these records converted into temporal values.
+ * @brief A simple program that reads AIS data from a CSV file, constructs
+ * trips from these records, and outputs for each trip the MMSI, the number of
+ * instants, and the distance travelled.
  *
  * Please read the assumptions made about the input file `aisinput.csv` in the
  * file `meos_read_ais.c` in the same directory. Furthermore, this program
- * assumes the input file contains less than 30K observations for at most
+ * assumes the input file contains less than 50K observations for at most
  * five ships. Also, the program does not cope with erroneous inputs, such as
- * two or more observations for the same ship with equal timestamp values.
+ * two or more observations for the same ship with equal timestamp values and
+ * supposes that the observations are in increasing timestamp value.
  *
  * The program can be build as follows
  * @code
@@ -55,9 +57,25 @@ typedef struct
   double SOG;
 } AIS_record;
 
+typedef struct
+{
+  long int MMSI;
+  TInstant *instants[50000];
+} MMSI_instants;
+
 /* Main program */
 int main(void)
 {
+  /* Allocate space to build the instants for each trip and the trips */
+  MMSI_instants trip_instants[5];
+  TSequence *trips[5];
+  /* Number of instants for each trip */
+  int numinstants[5] = {0};
+  /* Number of ships */
+  int numships = 0;
+  /* Iterator variables */
+  int i, j;
+
   /* Initialize MEOS */
   meos_initialize();
 
@@ -102,32 +120,54 @@ int main(void)
       return 1;
     }
 
-    /* Print only 1 out of 1000 records */
-    if (records % 1000 == 0)
+    /* Find the place to store the new instant */
+    int ship = -1;
+    for (i = 0; i < 5; i++)
     {
-      char *t_out = pg_timestamp_out(rec.T);
-      /* In the input file it is assumed that
-       * - The coordinates are given in the WGS84 geographic coordinate system
-       * - The timestamps are given in GMT time zone
-       */
-      sprintf(buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-        rec.Latitude, t_out);
-      Temporal *inst1 = tgeogpoint_in(buffer);
-      char *inst1_out = tpoint_as_text(inst1, 2);
-
-      TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
-      char *inst2_out = tfloat_out((Temporal *) inst2, 2);
-      printf("MMSI: %ld, Location: %s SOG : %s\n",
-        rec.MMSI, inst1_out, inst2_out);
-
-      free(inst1); free(t_out); free(inst1_out);
-      free(inst2); free(inst2_out);
+      if (trip_instants[i].MMSI == rec.MMSI)
+      {
+        ship = i;
+        break;
+      }
     }
+    if (ship < 0)
+    {
+      ship = numships;
+      numships++;
+    }
+    trip_instants[ship].MMSI = rec.MMSI;
 
+    /*
+     * Create the instant and store it in the array of the corresponding ship.
+     * In the input file it is assumed that
+     * - The coordinates are given in the WGS84 geographic coordinate system
+     * - The timestamps are given in GMT time zone
+     */
+    char *t_out = pg_timestamp_out(rec.T);
+    sprintf(buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
+      rec.Latitude, t_out);
+    TInstant *inst = (TInstant *) tgeogpoint_in(buffer);
+    trip_instants[ship].instants[numinstants[ship]++] = inst;
   } while (!feof(file));
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     records, nulls);
+  printf("%d trips read.\n", numships);
+
+  /* Construct the trips */
+  for (i = 0; i < numships; i++)
+  {
+    trips[i] = tsequence_make((const TInstant **) trip_instants[i].instants,
+      numinstants[i], true, true, true, true);
+    printf("MMSI: %ld Number of input instants: %d, Number of instants: %d, "
+      "Distance travelled %lf\n", trip_instants[i].MMSI, numinstants[i],
+      trips[i]->count, tpoint_length((Temporal *) trips[i]));
+  }
+
+  /* Free memory */
+  for (i = 0; i < numships; i++)
+    for (j = 0; j < numinstants[i]; j++)
+      free(trip_instants[i].instants[j]);
 
   /* Close the file */
   fclose(file);
