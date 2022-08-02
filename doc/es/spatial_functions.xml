@@ -43,14 +43,21 @@
 				<listitem id="asMFJSON">
 					<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
 					<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON) &Z_support; &geography_support;</para>
-					<para><varname>asMFJSON(tpoint,options integer=0,maxdecdigits integer=15): bytea</varname></para>
-					<para>El último argumento <varname>options</varname> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</para>
+					<para><varname>asMFJSON(tpoint,options integer=0,flags integer=0,maxdecdigits integer=15): bytea</varname></para>
+					<para>El argumento <varname>options</varname> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</para>
 					<itemizedlist>
 						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
 						<listitem><para>1: MFJSON BBOX</para></listitem>
 						<listitem><para>2: MFJSON Short CRS (e.g EPSG:4326)</para></listitem>
 						<listitem><para>4: MFJSON Long CRS (e.g urn:ogc:def:crs:EPSG::4326)</para></listitem>
 					</itemizedlist>
+					<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname>. Los valores típicos son los siguientes:</para>
+					<itemizedlist>
+						<listitem><para>0: means no option (default value)</para></listitem>
+						<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
+						<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
+					</itemizedlist>
+					<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 					<programlisting xml:space="preserve">
 	SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
 	-- "{"type":"MovingPoint","coordinates":[1,2],"datetimes":"2019-01-01T17:00:00.15+01",

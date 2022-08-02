@@ -59,10 +59,11 @@ SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[Point(1 2)@2000-01-01,
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
 
-SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01',1,2)));
-SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}',1,2)));
-SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]',1,2)));
-SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}',1,2)));
+-- Additional attributes
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01',1,0,2)));
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}',1,0,2)));
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]',1,0,2)));
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}',1,0,2)));
 /* Errors */
 SELECT tgeompointFromMFJSON('ABC');
 SELECT tgeompointFromMFJSON('{"types":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
@@ -185,11 +186,18 @@ SELECT asMFJSON(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
 SELECT asMFJSON(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
 SELECT asMFJSON(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
 
-SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, 20);
-SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, -1);
-SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 2);
-SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
-SELECT asMFJSON(tgeompoint '[Point(1 2 3)@2019-01-01, Point(4 5 6)@2019-01-02]', 1, 2);
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, 0, 20);
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, 0, -1);
+SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 0, 2);
+SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 0, 2);
+SELECT asMFJSON(tgeompoint '[Point(1 2 3)@2019-01-01, Point(4 5 6)@2019-01-02]', 1, 0, 2);
+
+-- Additional pretty-print attribute
+-- Notice that the Linux and Mac versions of json_c produce slightly different versions of the pretty-print JSON
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint 'POINT(1 1)@2000-01-01', 1, 3, 15)));
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}', 1, 3, 15)));
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]', 1, 3, 15)));
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02], [POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}', 1, 3, 15)));
 
 /* Errors */
 SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);

@@ -392,7 +392,7 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_int_spantime_in_out
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *

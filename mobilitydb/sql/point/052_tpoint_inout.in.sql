@@ -149,12 +149,12 @@ CREATE FUNCTION asEWKT(geography[], maxdecimaldigits int4 DEFAULT 15)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asMFJSON(point tgeompoint, options int4 DEFAULT 0,
-    maxdecimaldigits int4 DEFAULT 15)
+    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asMFJSON(point tgeogpoint, options int4 DEFAULT 0,
-    maxdecimaldigits int4 DEFAULT 15)
+    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

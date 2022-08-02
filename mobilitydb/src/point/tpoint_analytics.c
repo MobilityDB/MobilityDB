@@ -158,7 +158,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   bool clip_geom = PG_GETARG_BOOL(4);
 
   Datum geom;
-  TimestampTz *times;
+  int64 *times; /* Timestamps are returned in Unix time */
   int count;
   bool found = tpoint_AsMVTGeom(temp, bounds, extent, buffer, clip_geom,
     &geom, &times, &count);
@@ -168,7 +168,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  ArrayType *timesarr = timestamparr_to_array(times, count);
+  ArrayType *timesarr = int64arr_to_array(times, count);
 
   /* Build a tuple description for the function output */
   TupleDesc resultTupleDesc;

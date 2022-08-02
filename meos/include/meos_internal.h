@@ -210,6 +210,7 @@ extern char *tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(char *str);
 extern Temporal *temporal_in(char *str, mobdbType temptype);
+extern char *temporal_out(const Temporal *temp, Datum arg);
 extern char **temporalarr_out(const Temporal **temparr, int count, Datum arg);
 extern char *tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);

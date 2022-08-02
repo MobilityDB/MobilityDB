@@ -254,6 +254,21 @@ datumarr_to_array(Datum *values, int count, mobdbType type)
  * Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
+int64arr_to_array(const int64 *longints, int count)
+{
+  assert(count > 0);
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    values[i] = Int64GetDatum(longints[i]);
+  ArrayType *result = construct_array(values, count, INT8OID, 8, true, 'd');
+  pfree(values);
+  return result;
+}
+
+/**
+ * Convert a C array of timestamps into a PostgreSQL array
+ */
+ArrayType *
 timestamparr_to_array(const TimestampTz *times, int count)
 {
   assert(count > 0);
