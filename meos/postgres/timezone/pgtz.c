@@ -238,7 +238,11 @@ init_timezone_hashtable(void)
   if (!timezone_cache)
     return false;
 
+#ifdef NO_HSEARCH_R
+  if (hcreate(TZ_HTABLE_MAXSIZE))
+#else
   if (hcreate_r(TZ_HTABLE_MAXSIZE, timezone_cache))
+#endif /* NO_HSEARCH_R */
     return true;
 
   return false;
@@ -289,7 +293,12 @@ pg_tzset(const char *name)
 
   /* Look for timezone in the cache */
   e.key = uppername;
+#ifdef NO_HSEARCH_R
+  ep = hsearch(e, FIND);
+  if (ep != NULL)
+#else
   if (hsearch_r(e, FIND, &ep, timezone_cache))
+#endif /* NO_HSEARCH_R */
     return (pg_tz *) ep->data;
 
   /*
@@ -323,7 +332,12 @@ pg_tzset(const char *name)
 
   e.key = strdup(uppername);
   e.data = tz;
+#ifdef NO_HSEARCH_R
+  ep = hsearch(e, ENTER);
+  if (ep != NULL)
+#else
   if (hsearch_r(e, ENTER, &ep, timezone_cache))
+#endif /* NO_HSEARCH_R */
     return (pg_tz *) ep->data;
 
   return NULL;
@@ -406,7 +420,11 @@ void
 meos_finish(void)
 {
   if (session_timezone)
+#ifdef NO_HSEARCH_R
+    hdestroy();
+#else
     hdestroy_r(timezone_cache);
+#endif
   return;
 }
 
