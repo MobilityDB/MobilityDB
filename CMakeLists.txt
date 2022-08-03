@@ -16,6 +16,21 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 
+# check if _GNU_SOURCE is available
+# this is needed for the MEOS hash table management
+# if (NOT _GNU_SOURCE)
+    # check_symbol_exists(__GNU_LIBRARY__ "features.h" _GNU_SOURCE)
+
+    # if (NOT _GNU_SOURCE)
+        # unset(_GNU_SOURCE CACHE)
+        # check_symbol_exists(_GNU_SOURCE "features.h" _GNU_SOURCE)
+    # endif ()
+# endif ()
+
+# if (_GNU_SOURCE)
+    # add_definitions(-D_GNU_SOURCE)
+# endif ()
+
 #-------------------------------------
 # RPATH settings
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
@@ -120,8 +135,16 @@ endif()
 # FFSL functions for finding the first (least significant) bit
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
+  message(STATUS "No ffsl functions provided")
   add_definitions(-DNO_FFSL)
 endif()
+
+# TODO
+# Reentrant (_r) functions for POSIX hash table management (e.g. hsearch)
+# check_symbol_exists("hsearch_r" "search.h" HAS_HSEARCH_R)
+# if(NOT HAS_HSEARCH_R)
+  # add_definitions(-DNO_HSEARCH_R)
+# endif()
 
 # MobilityDB compiler flags
 add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter)

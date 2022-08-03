@@ -77,7 +77,7 @@ int main(void)
   char buffer[1024];
 
   /* Read the first line of the file with the headers */
-  read = fscanf(file, "%s\n", buffer);
+  fscanf(file, "%1024s\n", buffer);
 
   /* Continue reading the file */
   do
