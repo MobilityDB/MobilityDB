@@ -66,6 +66,7 @@
 #if MEOS
 #define palloc0(X) (calloc(1, X))
 #define palloc malloc
+#define repalloc realloc
 #define pfree free
 #define pstrdup strdup
 #endif /* MEOS */

@@ -23,6 +23,10 @@
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
+/* Function in findtimezone.c */
+extern const char *select_default_timezone(const char *share_path);
+
+/* Size of the timezone hash table manipulated by the POSIX hsearch() functions */
 #define TZ_HTABLE_MAXSIZE 32
 
 /* Current session timezone (controlled by TimeZone GUC) */
@@ -387,8 +391,11 @@ meos_timezone_initialize(const char *name)
 void
 meos_initialize(void)
 {
-  // TODO Get the current timezone from the OS
-  meos_timezone_initialize("Europe/Brussels");
+  const char *tz_str = select_default_timezone(NULL);
+  if (tz_str == NULL)
+    meos_timezone_initialize("GMT");
+  else
+    meos_timezone_initialize(tz_str);
   return;
 }
 
