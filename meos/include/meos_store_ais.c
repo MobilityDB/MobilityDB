@@ -28,32 +28,43 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that reads AIS data from a CSV file, convert them
- * into temporal values, and store them in MobilityDB.
+ * @brief A simple program that reads AIS data from a CSV file, converts them
+ * into temporal values, and stores them in MobilityDB.
  *
  * This program uses the libpq library
  * https://www.postgresql.org/docs/current/libpq.html
  * for connecting to a PostgreSQL database that has the MobilityDB extension.
- * For this, it is required that the libpq-dev is installed in your system.
+ * For this, it is required that `libpq-dev` is installed in your system.
  * For example, in Ubuntu you can install this library as follows
  * @code
  * sudo apt-get install libpq-dev
  * @endcode
+ *
+ * You should configure PostgreSQL to accept all incoming connections by
+ * setting in the `pg_hba.conf` file
+ * @code
+ * host all all 0.0.0.0/0 md5
+ * @endcode
+ * Also, make sure that PostgreSQL allows incoming connections on all available
+ * IP interfaces by setting in the `postgresql.conf` file
+ * @code
+ * listen_addresses = '*'
+ * @endcode
+ *
  * This program is based on the libpq example programs
  * https://www.postgresql.org/docs/current/libpq-example.html
- *
  * Please read the assumptions made about the input file `aisinput.csv` in the
  * file `meos_read_ais.c` in the same directory.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/include/postgresql -o meos_save_ais meos_save_ais.c -L/usr/local/lib -lmeos -lpq
+ * gcc -Wall -g -I/usr/include/postgresql -o meos_store_ais meos_store_ais.c -L/usr/local/lib -lmeos -lpq
  * @endcode
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "libpq-fe.h"
+#include <libpq-fe.h>
 
 #include "meos.h"
 
@@ -168,7 +179,7 @@ main(int argc, char **argv)
     if (read == 5)
       records++;
 
-    if (read != 5 && !feof(file))
+    if (read != 5 && ! feof(file))
     {
       printf("Record with missing values ignored\n");
       nulls++;
@@ -177,7 +188,7 @@ main(int argc, char **argv)
     if (ferror(file))
     {
       printf("Error reading file\n");
-      return 1;
+      exit_nicely(conn);
     }
 
     /* Create the INSERT command with the values read */
