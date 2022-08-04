@@ -61,7 +61,7 @@ int main(void)
   /* Initialize MEOS */
   meos_initialize();
 
-  /* Substitute the full file path in the first argument of fopen */
+  /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");
 
   if (! file)
