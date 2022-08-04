@@ -576,7 +576,7 @@ temporal_in(char *str, mobdbType temptype)
 Temporal *
 tbool_in(char *str)
 {
-  return temporal_parse(&str, T_BOOL);
+  return temporal_parse(&str, T_TBOOL);
 }
 
 /**
@@ -587,7 +587,7 @@ tbool_in(char *str)
 Temporal *
 tint_in(char *str)
 {
-  return temporal_parse(&str, T_INT4);
+  return temporal_parse(&str, T_TINT);
 }
 
 /**
@@ -597,7 +597,7 @@ tint_in(char *str)
 Temporal *
 tfloat_in(char *str)
 {
-  return temporal_parse(&str, T_FLOAT8);
+  return temporal_parse(&str, T_TFLOAT);
 }
 
 /**
