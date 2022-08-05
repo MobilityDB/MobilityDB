@@ -854,6 +854,7 @@ hypot3d(double x, double y, double z)
   return x * sqrt(1.0 + (yx * yx) + (zx * zx));
 }
 
+#if 0 /* not used */
 /**
  * Determine the 4D hypotenuse.
  *
@@ -913,6 +914,7 @@ hypot4d(double x, double y, double z, double m)
   mx = m / x;
   return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
 }
+#endif /* not used */
 
 /*****************************************************************************
  * Input/output PostgreSQL functions

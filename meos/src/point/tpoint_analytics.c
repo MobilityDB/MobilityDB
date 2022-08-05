@@ -834,8 +834,9 @@ int_cmp(const void *a, const void *b)
  * No topology relations are considered.
  ***********************************************************************/
 
+#if 0 /* not used */
 /**
- * Return the speed of the temporal point in the segment
+ * Return the speed of the temporal point in the segment in units per second
  *
  * @param[in] inst1, inst2 Instants defining the segment
  * @param[in] func Distance function (2D, 3D, or geodetic)
@@ -850,6 +851,7 @@ tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
     DatumGetFloat8(func(value1, value2)) /
       ((double)(inst2->t - inst1->t) / 1000000);
 }
+#endif /* not used */
 
 /**
  * Return the 2D distance between the points
@@ -867,15 +869,6 @@ static double
 dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 {
   return hypot3d(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z);
-}
-
-/**
- * Return the 4D distance between the points
- */
-static double
-dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
-{
-  return hypot4d(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z, p2->m - p1->m);
 }
 
 /**
@@ -950,67 +943,25 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 }
 
 /**
- * Return the 4D distance between the point the segment
- *
- * @param[in] p Point
- * @param[in] A,B Points defining the segment
- * @note Derived from the PostGIS function lw_dist3d_pt_seg in file
- * measures3d.c
- * @see http://geomalgorithms.com/a02-_lines.html
- */
-static double
-dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
-{
-  POINT4D c;
-  double r;
-  /* If start==end, then use pt distance */
-  if (A->x == B->x && A->y == B->y && A->z == B->z && A->m == B->m)
-    return dist4d_pt_pt(p, A);
-
-  r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
-        (p->z-A->z) * (B->z-A->z) + (p->m-A->m) * (B->m-A->m) ) /
-      ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
-        (B->z-A->z) * (B->z-A->z) + (B->m-A->m) * (B->m-A->m) );
-
-  if (r < 0) /* If the first vertex A is closest to the point p */
-    return dist4d_pt_pt(p, A);
-  if (r > 1) /* If the second vertex B is closest to the point p */
-    return dist4d_pt_pt(p, B);
-
-  /* else if the point p is closer to some point between a and b
-  then we find that point and send it to dist3d_pt_pt */
-  c.x = A->x + r * (B->x - A->x);
-  c.y = A->y + r * (B->y - A->y);
-  c.z = A->z + r * (B->z - A->z);
-  c.m = A->m + r * (B->m - A->m);
-
-  return dist4d_pt_pt(p, &c);
-}
-
-/**
  * Finds a split when simplifying the temporal sequence point using a
  * spatio-temporal extension of the Douglas-Peucker line simplification
  * algorithm.
  *
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
- * @param[in] synchronized True when using the Synchronized Euclidian Distance
- * @param[in] withspeed True when the delta in the speed must be considered
+ * @param[in] synchronized True when using the Synchronized Euclidean Distance
  * @param[out] split Location of the split
  * @param[out] dist Distance at the split
- * @param[out] delta_speed Delta speed at the split
  */
 static void
 tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
-  bool withspeed, int *split, double *dist, double *delta_speed)
+  int *split, double *dist)
 {
   POINT2D p2k, p2_sync, p2a, p2b;
   POINT3DZ p3k, p3_sync, p3a, p3b;
-  POINT4D p4k, p4a, p4b;
   Datum value;
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  double speed_seg = 0;
   double d = -1;
   *split = i1;
   *dist = -1;
@@ -1018,94 +969,56 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
     return;
 
   /* Initialization of values wrt instants i1 and i2 */
-  datum_func2 func;
-  if (withspeed)
-    func = hasz ? &pt_distance3d : &pt_distance2d;
   const TInstant *start = tsequence_inst_n(seq, i1);
   const TInstant *end = tsequence_inst_n(seq, i2);
-  if (withspeed)
-    speed_seg = tpointinst_speed(start, end, func);
   if (hasz)
   {
     p3a = datum_point3dz(tinstant_value(start));
     p3b = datum_point3dz(tinstant_value(end));
-    if (withspeed)
-    {
-      p4a.x = p3a.x; p4a.y = p3a.y; p4a.z = p3a.z; p4a.m = speed_seg;
-      p4b.x = p3b.x; p4b.y = p3b.y; p4b.z = p3b.z; p4b.m = speed_seg;
-    }
   }
   else
   {
     p2a = datum_point2d(tinstant_value(start));
     p2b = datum_point2d(tinstant_value(end));
-    if (withspeed)
-    {
-      p3a.x = p2a.x; p3a.y = p2a.y; p3a.z = speed_seg;
-      p3b.x = p2b.x; p3b.y = p2b.y; p3b.z = speed_seg;
-    }
   }
 
   /* Loop for every instant between i1 and i2 */
-  const TInstant *inst1 = start;
   for (int k = i1 + 1; k < i2; k++)
   {
-    double d_tmp, speed_pt;
-    const TInstant *inst2 = tsequence_inst_n(seq, k);
-    if (withspeed)
-      speed_pt = tpointinst_speed(inst1, inst2, func);
+    double d_tmp;
+    const TInstant *inst = tsequence_inst_n(seq, k);
     if (hasz)
     {
-      p3k = datum_point3dz(tinstant_value(inst2));
+      p3k = datum_point3dz(tinstant_value(inst));
       if (synchronized)
       {
-        value = tsegment_value_at_timestamp(start, end, linear, inst2->t);
+        value = tsegment_value_at_timestamp(start, end, linear, inst->t);
         p3_sync = datum_point3dz(value);
         d_tmp = dist3d_pt_pt(&p3k, &p3_sync);
         pfree(DatumGetPointer(value));
       }
       else
-      {
-        if (withspeed)
-        {
-          p4k.x = p3k.x; p4k.y = p3k.y;
-          p4k.z = p3k.z; p4k.m = speed_pt;
-          d_tmp = dist4d_pt_seg(&p4k, &p4a, &p4b);
-        }
-        else
-          d_tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
-      }
+        d_tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
     }
     else
     {
-      p2k = datum_point2d(tinstant_value(inst2));
+      p2k = datum_point2d(tinstant_value(inst));
       if (synchronized)
       {
-        value = tsegment_value_at_timestamp(start, end, linear, inst2->t);
+        value = tsegment_value_at_timestamp(start, end, linear, inst->t);
         p2_sync = datum_point2d(value);
         d_tmp = dist2d_pt_pt(&p2k, &p2_sync);
         pfree(DatumGetPointer(value));
       }
       else
-      {
-        if (withspeed)
-        {
-          p3k.x = p2k.x; p3k.y = p2k.y; p3k.z = speed_pt;
-          d_tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
-        }
-        else
-          d_tmp = dist2d_pt_seg(&p2k, &p2a, &p2b);
-      }
+        d_tmp = dist2d_pt_seg(&p2k, &p2a, &p2b);
     }
     if (d_tmp > d)
     {
       /* record the maximum */
       d = d_tmp;
-      if (withspeed)
-        *delta_speed = fabs(speed_seg - speed_pt);
       *split = k;
     }
-    inst1 = inst2;
   }
   *dist = d;
   return;
@@ -1115,7 +1028,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
 
 static TSequence *
 tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
-  double eps_speed, uint32_t minpts)
+  uint32_t minpts)
 {
   static size_t stack_size = 256;
   int *stack, *outlist; /* recursion stack */
@@ -1125,8 +1038,7 @@ tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
   int i1, split;
   uint32_t outn = 0;
   uint32_t i;
-  double dist, delta_speed;
-  bool withspeed = eps_speed > 0;
+  double dist;
 
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
   /* Do not try to simplify really short things */
@@ -1155,15 +1067,9 @@ tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
       /* There is no synchronized distance for temporal floats */
       tfloatseq_findsplit(seq, i1, stack[sp], &split, &dist);
     else /* tgeo_type(seq->temptype) */
-      tpointseq_findsplit(seq, i1, stack[sp], synchronized, withspeed, &split,
-        &dist, &delta_speed);
-    bool dosplit;
-    if (withspeed)
-      dosplit = (dist >= 0 &&
-        (dist > eps_dist || delta_speed > eps_speed || outn + sp + 1 < minpts));
-    else
-      dosplit = (dist >= 0 &&
-        (dist > eps_dist || outn + sp + 1 < minpts));
+      tpointseq_findsplit(seq, i1, stack[sp], synchronized, &split, &dist);
+    bool dosplit = (dist >= 0 &&
+      (dist > eps_dist || outn + sp + 1 < minpts));
     if (dosplit)
       stack[++sp] = split;
     else
@@ -1200,19 +1106,17 @@ tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
  *
  * @param[in] ss Temporal point
  * @param[in] eps_dist Epsilon speed
- * @param[in] eps_speed Epsilon speed
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
 tsequenceset_simplify(const TSequenceSet *ss, bool synchronized,
-  double eps_dist, double eps_speed, uint32_t minpts)
+  double eps_dist, uint32_t minpts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tsequence_simplify(seq, synchronized, eps_dist, eps_speed,
-      minpts);
+    sequences[i] = tsequence_simplify(seq, synchronized, eps_dist, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
@@ -1224,8 +1128,7 @@ tsequenceset_simplify(const TSequenceSet *ss, bool synchronized,
  * @sqlfunc simplify()
  */
 Temporal *
-temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist,
-  double eps_speed)
+temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1234,10 +1137,10 @@ temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist,
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify((TSequence *) temp, synchronized,
-      eps_dist, eps_speed, 2);
+      eps_dist, 2);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
-      synchronized, eps_dist, eps_speed, 2);
+      synchronized, eps_dist, 2);
   return result;
 }
 
@@ -1758,9 +1661,8 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   /* Remove all non-essential points (under the output resolution) */
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
 
-  /* Synchronized distance and epsilon speed are not taken into account, i.e.,
-   * parameters set to false and 0 */
-  Temporal *tpoint2 = temporal_simplify(tpoint1, res, false, 0);
+  /* Euclidean (not synchronized) distance, i.e., parameter set to false */
+  Temporal *tpoint2 = temporal_simplify(tpoint1, res, false);
   pfree(tpoint1);
 
   /* Transform to tile coordinate space */

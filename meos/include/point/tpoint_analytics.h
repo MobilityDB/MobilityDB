@@ -48,11 +48,10 @@ extern Temporal *geo_to_tpoint(const GSERIALIZED *gs);
 extern bool tpoint_to_geo_measure(const Temporal *tpoint,
   const Temporal *measure, bool segmentize, Datum *result);
 
-/* Simple Douglas-Peucker-like value simplification for temporal floats and
- * temporal points. */
+/* Douglas-Peucker-like value simplification for temporal floats and points. */
 
 extern Temporal *temporal_simplify(const Temporal *temp, bool synchronized,
-  double eps_dist, double eps_speed);
+  double eps_dist);
 
 /* Transform the temporal point to Mapbox Vector Tile format */
 

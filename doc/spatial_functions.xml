@@ -495,44 +495,31 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@200
 					<indexterm><primary><varname>simplify</varname></primary></indexterm>
 					<para>Simplify a temporal point using a generalization of the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
 					<para><varname>simplify(tpoint,sync bool,distance float): tpoint</varname></para>
-					<para><varname>simplify(tpoint,sync bool,distance float,speed float): tpoint</varname></para>
-					<para>The first version remove points that are less than the distance passed as second argument, which is specified in the units of the coordinate system. The second version remove points that are less than the distance passed as second argument provided that the speed difference between the point and the corresponding point in the simplified version is less than the speed passed as third argument, which is specified in units per second. The second argument specifies whether the spatial-only Euclidian distance or the spatiotemporal Synchronized Euclidian Distance (SED) is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal point is returned.</para>
+					<para>The function removes points that are less than or equal to the distance passed as third argument, which is specified in the units of the coordinate system. The second argument specifies whether the Euclidean distance or the Synchronized Euclidean Distance (SED) is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal point is returned.</para>
 					<programlisting xml:space="preserve">
--- Only distance specified
+-- Euclidean distance
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 1.5)));
+  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', false, 1.5)));
 -- "LINESTRING(0 4,1 1,4 3,5 0,6 4)"
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 2)));
+  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', false, 2)));
 -- "LINESTRING(0 4,5 0,6 4)"
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4)));
+  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', false, 4)));
 -- "LINESTRING(0 4,6 4)"
 
--- Only speed difference specified
-SELECT round(speed(tgeompoint '[Point(0 4)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(2 3)@2000-01-03, Point(3 1)@2000-01-04, Point(4 3)@2000-01-05,
-  Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]') * 1e5, 2);
--- "Interp=Stepwise;[3.66@2000-01-01, 2.59@2000-01-02, 3.66@2000-01-05,
-  4.77@2000-01-06, 4.77@2000-01-07]"
-
--- Both distance and delta speed specified
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 1 / 1e5)));
--- "LINESTRING(0 4,1 1,2 3,3 1,4 3,5 0,6 4)"
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 2 / 1e5)));
--- "LINESTRING(0 4,1 1,5 0,6 4)"
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e5)));
--- "LINESTRING(0 4,6 4)"
+-- Synchronized vs Euclidean distance
+SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(3 1)@2000-01-04]', false, 1));
+-- [POINT(1 1)@2000-01-01, POINT(3 1)@2000-01-04]
+SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(3 1)@2000-01-04]', true, 1));
+-- [POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02, POINT(3 1)@2000-01-04]
 </programlisting>
+					<para>The difference between using the synchronized or the spatial-only Euclidean distance is illustrated in the last two examples above. In the first example, which uses the Euclidean distance, the second instant is removed since the perperdicular distance between <varname>POINT(2 2)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(3 1)</varname> is equal to 1. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(2 2)</varname> at timestamp <varname>2000-01-02</varname> over the temporal line segment results in <varname>Point(1.66 1)</varname> and the distance between the original point and its projection is 1.05.</para>
 					<para>A typical use for the <varname>simplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes.</para>
 				</listitem>
 

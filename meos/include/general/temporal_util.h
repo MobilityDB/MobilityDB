@@ -119,7 +119,7 @@ extern Datum datum2_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer);
 /* Hypothenuse functions */
 
 extern double hypot3d(double x, double y, double z);
-extern double hypot4d(double x, double y, double z, double m);
+// extern double hypot4d(double x, double y, double z, double m);
 
 /*****************************************************************************/
 
