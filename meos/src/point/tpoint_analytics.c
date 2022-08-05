@@ -949,7 +949,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
  *
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
- * @param[in] synchronized True when using the Synchronized Euclidian Distance
+ * @param[in] synchronized True when using the Synchronized Euclidean Distance
  * @param[out] split Location of the split
  * @param[out] dist Distance at the split
  */
@@ -1661,7 +1661,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   /* Remove all non-essential points (under the output resolution) */
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
 
-  /* Euclidian (not synchronized) distance, i.e., parameter set to false */
+  /* Euclidean (not synchronized) distance, i.e., parameter set to false */
   Temporal *tpoint2 = temporal_simplify(tpoint1, res, false);
   pfree(tpoint1);
 

@@ -493,9 +493,9 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@200
 					<indexterm><primary><varname>simplify</varname></primary></indexterm>
 					<para>Simplificar un punto temporal usando una generalización del <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
 					<para><varname>simplify(tpoint,sync bool,distance float): tpoint</varname></para>
-					<para>La función elimina los puntos cuya distancia es menor que la distancia pasada como tercer argumento, que se especifica en las unidades del sistema de coordenadas. El segundo argumento especifica si se utiliza la distancia euclidiana o la distancia euclidiana sincronizada (Synchronized Euclidian Disance o SED). Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
+					<para>La función elimina los puntos cuya distancia es menor que la distancia pasada como tercer argumento, que se especifica en las unidades del sistema de coordenadas. El segundo argumento especifica si se utiliza la distancia euclidiana o la distancia euclidiana sincronizada (Synchronized Euclidean Disance o SED). Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 					<programlisting xml:space="preserve">
--- Euclidian distance
+-- Euclidean distance
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
   Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', false, 1.5)));
@@ -509,7 +509,7 @@ SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', false, 4)));
 -- "LINESTRING(0 4,6 4)"
 
--- Synchronized vs Euclidian distance
+-- Synchronized vs Euclidean distance
 SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(3 1)@2000-01-04]', false, 1));
 -- [POINT(1 1)@2000-01-01, POINT(3 1)@2000-01-04]
