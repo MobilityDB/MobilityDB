@@ -1271,7 +1271,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     TInstant *inst = instants[i];
-    double2 *value = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
+    double2 *value = (double2 *)DatumGetPointer(&inst->value);
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
@@ -1292,7 +1292,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      double2 *value2 = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
+      double2 *value2 = (double2 *)DatumGetPointer(&inst->value);
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }

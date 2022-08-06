@@ -1706,8 +1706,7 @@ tintseq_to_tfloatseq(const TSequence *seq)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
     inst->temptype = T_TFLOAT;
-    Datum *value_ptr = tinstant_value_ptr(inst);
-    *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
+    inst->value = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
   }
   return result;
 }
@@ -1730,8 +1729,7 @@ tfloatseq_to_tintseq(const TSequence *seq)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
     inst->temptype = T_TINT;
-    Datum *value_ptr = tinstant_value_ptr(inst);
-    *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
+    inst->value = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
   }
   return result;
 }

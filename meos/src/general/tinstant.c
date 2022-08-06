@@ -62,15 +62,6 @@
  *****************************************************************************/
 
 /**
- * Return a pointer to the base value of a temporal instant
- */
-Datum *
-tinstant_value_ptr(const TInstant *inst)
-{
-  return (Datum *)((char *)inst + double_pad(sizeof(TInstant)));
-}
-
-/**
  * @ingroup libmeos_int_temporal_accessor
  * @brief Return the base value of a temporal instant
  * @sqlfunc getValue()
@@ -78,12 +69,11 @@ tinstant_value_ptr(const TInstant *inst)
 Datum
 tinstant_value(const TInstant *inst)
 {
-  Datum *value = tinstant_value_ptr(inst);
   /* For base types passed by value */
   if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
-    return *value;
+    return inst->value;
   /* For base types passed by reference */
-  return PointerGetDatum(value);
+  return PointerGetDatum(&inst->value);
 }
 
 /**
@@ -93,15 +83,15 @@ tinstant_value(const TInstant *inst)
 Datum
 tinstant_value_copy(const TInstant *inst)
 {
-  Datum *value = tinstant_value_ptr(inst);
   /* For base types passed by value */
   if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
-    return *value;
+    return inst->value;
   /* For base types passed by reference */
   int16 typlen =  basetype_length(temptype_basetype(inst->temptype));
-  size_t value_size = (typlen != -1) ? (unsigned int) typlen : VARSIZE(value);
+  size_t value_size = (typlen != -1) ? 
+    (unsigned int) typlen : VARSIZE(&inst->value);
   void *result = palloc0(value_size);
-  memcpy(result, value, value_size);
+  memcpy(result, &inst->value, value_size);
   return PointerGetDatum(result);
 }
 
@@ -118,8 +108,7 @@ void
 tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 {
   inst->t = t;
-  Datum *value_ptr = tinstant_value_ptr(inst);
-  *value_ptr = value;
+  inst->value = value;
 }
 
 /**
@@ -302,15 +291,15 @@ tinstant_out(const TInstant *inst, Datum arg)
 TInstant *
 tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
 {
-  size_t value_offset = double_pad(sizeof(TInstant));
+  // size_t value_offset = double_pad(sizeof(TInstant));
+  size_t value_offset = sizeof(TInstant) - sizeof(Datum);
   size_t size = value_offset;
   /* Create the temporal instant */
-  TInstant *result;
   size_t value_size;
   void *value_from;
   mobdbType basetype = temptype_basetype(temptype);
-  /* Copy value */
   bool typbyval = basetype_byvalue(basetype);
+  /* Copy value */
   if (typbyval)
   {
     /* For base types passed by value */
@@ -326,7 +315,7 @@ tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
       double_pad(VARSIZE(value_from));
   }
   size += value_size;
-  result = palloc0(size);
+  TInstant *result = palloc0(size);
   void *value_to = ((char *) result) + value_offset;
   memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
@@ -568,8 +557,7 @@ tintinst_to_tfloatinst(const TInstant *inst)
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_LINEAR(result->flags, true);
-  Datum *value_ptr = tinstant_value_ptr(result);
-  *value_ptr = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
+  result->value = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
   return result;
 }
 
@@ -584,8 +572,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_LINEAR(result->flags, true);
-  Datum *value_ptr = tinstant_value_ptr(result);
-  *value_ptr = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
+  result->value = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
   return result;
 }
 

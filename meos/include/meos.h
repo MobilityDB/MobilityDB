@@ -139,6 +139,9 @@ typedef struct
   uint8         subtype;      /**< Temporal subtype */
   int16         flags;        /**< Flags */
   TimestampTz   t;            /**< Timestamp (8 bytes) */
+  Datum         value;        /**< Base value for types passed by value,
+                                   first 8 bytes of the base value for values 
+                                   passed by reference */
   /* variable-length data follows */
 } TInstant;
 

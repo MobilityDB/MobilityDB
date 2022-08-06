@@ -1870,7 +1870,7 @@ tpoint_trajectory(const Temporal *temp)
 int
 tpointinst_srid(const TInstant *inst)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(inst));
+  GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
   return gserialized_get_srid(gs);
 }
 
@@ -1942,7 +1942,7 @@ TInstant *
 tpointinst_set_srid(const TInstant *inst, int32 srid)
 {
   TInstant *result = tinstant_copy(inst);
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(result));
+  GSERIALIZED *gs = DatumGetGserializedP(&result->value);
   gserialized_set_srid(gs, srid);
   return result;
 }
@@ -1959,7 +1959,7 @@ tpointinstset_set_srid(const TInstantSet *is, int32 srid)
   for (int i = 0; i < is->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(result, i);
-    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_ptr(inst));
+    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
     gserialized_set_srid(gs, srid);
   }
   STBOX *box = tinstantset_bbox_ptr(result);
@@ -1975,13 +1975,12 @@ tpointinstset_set_srid(const TInstantSet *is, int32 srid)
 TSequence *
 tpointseq_set_srid(const TSequence *seq, int32 srid)
 {
-  GSERIALIZED *gs;
   TSequence *result = tsequence_copy(seq);
   /* Set the SRID of the composing points */
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(result, i);
-    gs = DatumGetGserializedP(tinstant_value_ptr(inst));
+    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
     gserialized_set_srid(gs, srid);
   }
   /* Set the SRID of the bounding box */
@@ -2009,7 +2008,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
     {
       /* Set the SRID of the composing points */
       const TInstant *inst = tsequence_inst_n(seq, j);
-      gs = DatumGetGserializedP(tinstant_value_ptr(inst));
+      gs = DatumGetGserializedP(&inst->value);
       gserialized_set_srid(gs, srid);
     }
     /* Set the SRID of the bounding box */
@@ -2095,7 +2094,7 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper)
   for (int i = 0; i < is->count; i++)
   {
     inst = tinstantset_inst_n(is, i);
-    gs = DatumGetGserializedP(tinstant_value_ptr(inst));
+    gs = DatumGetGserializedP(&inst->value);
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
@@ -2142,7 +2141,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    gs = DatumGetGserializedP(tinstant_value_ptr(inst));
+    gs = DatumGetGserializedP(&inst->value);
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
