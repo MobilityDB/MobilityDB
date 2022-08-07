@@ -1144,6 +1144,328 @@ temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist)
   return result;
 }
 
+
+/*****************************************************************************
+ * Priority Queue.
+ *****************************************************************************/
+
+typedef struct TInstant_Node tinstant_node;
+
+struct TInstant_Node {
+	
+	const TInstant *TInstant_point;
+
+    tinstant_node *successor;
+    tinstant_node *predecessor;
+    double pi;
+    double priority;
+    int index;
+};
+
+typedef struct PriorityQueue {
+    tinstant_node **heap;
+    int length;
+    int capacity;
+} priority_queue;
+
+/**
+ *
+ * Initialisation of a the priority queue.
+ *
+ * @param size the size to initialize the priority queue with.
+ * @return a pointer to the priority queue.
+ */
+priority_queue *init(int size) {
+    priority_queue* pq = (priority_queue*) palloc(sizeof(priority_queue));
+    assert(pq);
+    pq->heap = (tinstant_node**) palloc(sizeof(tinstant_node*) * size);
+    assert(pq->heap);
+    pq->capacity = size;
+    pq->length = 0;
+    return pq;
+}
+
+/**
+ *
+ * Swap two element between them.
+ *
+ * @param pq a pointer to the priority queue.
+ * @param index the index of the first element.
+ * @param index2 the index of the second element.
+ */
+void swap(priority_queue *pq, int index, int index2) {
+
+    pq->heap[index]->index = index2;
+    pq->heap[index2]->index = index;
+    tinstant_node *tmp = pq->heap[index];
+    pq->heap[index] =  pq->heap[index2];
+    pq->heap[index2] = tmp;
+
+}
+
+/**
+ *
+ * Return the priority of the element with the smallest priority in the priority queue.
+ *
+ * @param pq a pointer to the priority queue.
+ * @return the smallest priority in the priority queue.
+ */
+double min(priority_queue *pq) {
+
+    assert(pq);
+    assert(pq->heap);
+    assert(pq->length > 0);
+
+    return pq->heap[0]->priority;
+}
+
+/**
+ *
+ *  Restore the heap property by comparing and possibly swapping a node with its parent.
+ *
+ * @param pq a pointer to the priority queue.
+ * @param index the index to start at when heapifying up
+ */
+void heapify_up(priority_queue *pq, int index) {
+    if (index <= 0) return;
+    int parent = (index - 1)/2;
+
+    if (pq->heap[index]->priority < pq->heap[parent]->priority) {
+        swap(pq, index, parent);
+        heapify_up(pq, parent);
+    }
+}
+
+/**
+ *
+ * Insertion of an element in the priority queue.
+ *
+ * @param pq a pointer to the priority queue.
+ * @param p point to insert.
+ */
+void push(priority_queue *pq, tinstant_node *p) {
+    assert(pq);
+    assert(pq->heap);
+
+    // make sure there is space
+    if (pq->length == pq->capacity) {
+        pq->heap = repalloc(pq->heap, sizeof(tinstant_node*) * (pq->capacity + 1));
+        pq->capacity++;
+        assert(pq->heap);
+    }
+
+    if (pq->length < pq->capacity) {
+
+        // add at the bottom, as a leaf
+        pq->heap[pq->length] = p;
+        p->index = pq->length;
+        pq->length++;
+
+        // fix its position
+        heapify_up(pq, p->index);
+    }
+}
+
+/**
+ *
+ *  Restore the heap property by comparing and possibly swapping a node with one of its children.
+ *
+ * @param pq a pointer to the priority queue.
+ * @param index the index to start at when heapifying down.
+ */
+void heapify_down(priority_queue *pq, int index) {
+    if (index >= pq->length - 1) return;
+    int left_child = 2 * index + 1;
+    int right_child = 2 * index + 2;
+    int smallest = index;
+
+    if (left_child < (pq->length)) {
+        if (right_child < (pq->length)) {
+            smallest = (pq->heap[left_child]->priority < pq->heap[right_child]->priority) ? left_child : right_child;
+        } else {
+            smallest = left_child;
+        }
+    }
+
+    if (pq->heap[index]->priority > pq->heap[smallest]->priority) {
+        swap(pq, index, smallest);
+        heapify_down(pq, smallest);
+    }
+}
+
+/**
+ *
+ * Deletion of the element with the smallest priority in the priority queue and return it.
+ *
+ * @param pq a pointer to the priority queue.
+ * @return the element with the smallest priority.
+ */
+tinstant_node *pop(priority_queue *pq) {
+    assert(pq);
+    assert(pq->heap);
+    assert(pq->length > 0);
+
+    // swap first with last node
+    swap(pq, 0, pq->length - 1);
+
+    // delete last (still in memory)
+    pq->length--;
+	pq->heap[pq->length]->index = -1;
+
+    // fix down first node
+    heapify_down(pq, 0);
+
+    return pq->heap[pq->length];
+}
+
+/**
+ *
+ * Freeing the memory.
+ *
+ * @param pq a pointer to the priority queue.
+ */
+void delete(priority_queue *pq) {
+    assert(pq);
+    assert(pq->heap);
+    pfree(pq->heap);
+    pfree(pq);
+}
+
+/*****************************************************************************
+ * SQUISH_E simplification.
+ *****************************************************************************/
+
+/**
+ *
+ * Adjust the priority of a point.
+ *
+ * @param p a point.
+ * @param pq a pointer to the priority queue.
+ */
+void adjust_priority(tinstant_node *p, priority_queue *pq, bool linear) {
+    if (p->successor && p->predecessor) {
+		
+		
+		Datum value;
+		POINT2D p2k, p2_sync;
+		double d_tmp;
+				
+		
+		const TInstant *start = p->predecessor->TInstant_point;
+		const TInstant *end = p->successor->TInstant_point;
+		
+		value = tsegment_value_at_timestamp(start, end, linear, p->TInstant_point->t);
+        p2_sync = datum_point2d(value);
+        d_tmp = dist2d_pt_pt(&p2k, &p2_sync);
+        pfree(DatumGetPointer(value));
+		
+		double priority = p->pi + d_tmp;
+        int check = (priority < p->priority || p->priority == INFINITY) ? 1:0;
+        check = (priority == p->priority) ? 2:check;
+        p->priority = priority;
+
+        if (check == 0) {
+            heapify_down(pq, p->index);
+        } else if (check == 1) {
+            heapify_up(pq, p->index);
+        }
+    }
+}
+
+/**
+ *
+ * Reduce the priority queue size by removing element under the SED bound.
+ *
+ * @param pq a pointer to the priority queue.
+ */	
+void reduce(priority_queue *pq, bool linear) {
+    tinstant_node *p = pop(pq);
+
+    p->predecessor->successor = p->successor;
+    p->successor->predecessor = p->predecessor;
+
+    p->successor->pi = fmax(p->priority, p->successor->pi);
+    p->predecessor->pi = fmax(p->priority, p->predecessor->pi);
+
+    adjust_priority(p->predecessor, pq, linear);
+    adjust_priority(p->successor, pq, linear);
+}
+
+/**
+ *
+ * The simplification algorithm for a spatio-temporal trajectory.
+ *
+ * @param points trajectory to simplify.
+ * @param size the size of the the trajectory.
+ * @param lambda lower bound of the compression ratio.
+ * @param mu upper bound on the SED.
+ * @return a simplified trajectory
+ */
+Temporal *Tpoint_squish(const Temporal *temp, double lambda, double mu)
+{
+	const TSequence *seq = (TSequence *) temp;
+	unsigned int size = seq->count;
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+	tinstant_node *sq_points = (tinstant_node*) palloc(sizeof(tinstant_node) * size);
+    
+	int beta = 4;
+	priority_queue *pq = init(beta);
+
+    for (unsigned int i = 0; i < size; ++i) {
+        if (i / lambda >= beta) beta ++;
+		
+		const TInstant *point = tsequence_inst_n(seq, i);
+		
+		tinstant_node sq_point = { .TInstant_point = point,
+						 .predecessor = NULL,
+						 .successor = NULL,
+						 .pi = 0,
+						 .priority = INFINITY};
+						 
+		sq_points[i] = sq_point;								 
+		push(pq, &sq_points[i]);
+		
+
+
+        if (i >= 1) {
+            sq_points[i - 1].successor = &sq_points[i];
+            sq_points[i].predecessor = &sq_points[i - 1];
+            adjust_priority(&sq_points[i - 1], pq, linear);
+        }
+
+        if (pq->length == beta) {
+            reduce(pq, linear);
+        }
+    }
+
+    while (min(pq) <= mu) {
+        reduce(pq, linear);
+    }
+	
+	const TInstant **instants = palloc(sizeof(TInstant *) * pq->length);
+	assert(instants);
+	
+	unsigned int counter = 0;
+	for (unsigned int i = 0; i < size; ++i) {
+
+		tinstant_node p = sq_points[i];
+		if (p.index != -1) {
+			instants[counter] = tsequence_inst_n(seq, i);
+			counter++;
+		}
+	}
+	
+	TSequence *result = tsequence_make((const TInstant **) instants, pq->length,
+    seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE);
+  
+	
+	delete(pq);
+	pfree(sq_points);
+	pfree(instants);
+	
+    return (Temporal *) result;
+}
+
 /*****************************************************************************
  * Mapbox Vector Tile functions for temporal points.
  *****************************************************************************/

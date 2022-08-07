@@ -96,6 +96,11 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Tpoint_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION simplify(tgeompoint, float8, float8)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Tpoint_squish_simplify'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE geom_times AS (
   geom geometry,
   times bigint[]

@@ -52,7 +52,10 @@ extern bool tpoint_to_geo_measure(const Temporal *tpoint,
 
 extern Temporal *temporal_simplify(const Temporal *temp, bool synchronized,
   double eps_dist);
-
+  
+/* SQUISH-E simplification*/  
+extern Temporal *Tpoint_squish(const Temporal *temp, double lambda, double mu);
+  
 /* Transform the temporal point to Mapbox Vector Tile format */
 
 extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds,
