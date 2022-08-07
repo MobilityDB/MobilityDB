@@ -92,6 +92,7 @@ typedef struct
  */
 typedef struct
 {
+  Period      period;
   double      xmin;   /**< minimum number value */
   double      xmax;   /**< maximum number value */
   TimestampTz tmin;   /**< minimum timestamp */
@@ -140,7 +141,7 @@ typedef struct
   int16         flags;        /**< Flags */
   TimestampTz   t;            /**< Timestamp (8 bytes) */
   Datum         value;        /**< Base value for types passed by value,
-                                   first 8 bytes of the base value for values 
+                                   first 8 bytes of the base value for values
                                    passed by reference */
   /* variable-length data follows */
 } TInstant;

@@ -364,8 +364,10 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   }
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket(box->tmin, tunits, torigin);
-    state->box.tmax = timestamptz_bucket(box->tmax, tunits, torigin);
+    state->box.tmin = timestamptz_bucket(
+      DatumGetTimestampTz(box->period.lower), tunits, torigin);
+    state->box.tmax = timestamptz_bucket(
+      DatumGetTimestampTz(box->period.upper), tunits, torigin);
   }
   state->value = state->box.xmin;
   state->t = state->box.tmin;

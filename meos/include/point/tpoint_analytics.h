@@ -46,7 +46,7 @@
 extern Datum tpoint_to_geo(const Temporal *temp, bool segmentize);
 extern Temporal *geo_to_tpoint(const GSERIALIZED *gs);
 extern bool tpoint_to_geo_measure(const Temporal *tpoint,
-  const Temporal *measure, bool segmentize, Datum *result);
+  const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /* Douglas-Peucker-like value simplification for temporal floats and points. */
 
@@ -56,7 +56,7 @@ extern Temporal *temporal_simplify(const Temporal *temp, bool synchronized,
 /* Transform the temporal point to Mapbox Vector Tile format */
 
 extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds,
-  int32_t extent, int32_t buffer, bool clip_geom, Datum *geom,
+  int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **geom,
   TimestampTz **timesarr, int *count);
 
 /*****************************************************************************/

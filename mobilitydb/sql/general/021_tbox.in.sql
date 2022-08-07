@@ -56,7 +56,7 @@ CREATE FUNCTION tbox_send(tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tbox (
-  internallength = 40,
+  internallength = 64,
   input = tbox_in,
   output = tbox_out,
   receive = tbox_recv,
@@ -80,7 +80,7 @@ CREATE FUNCTION asText(tbox, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tbox_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
+
 CREATE FUNCTION asBinary(tbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Tbox_as_wkb'

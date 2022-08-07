@@ -115,7 +115,7 @@ tpointinst_to_lwpoint(const TInstant *inst)
  * @param[in] inst Temporal point
  * @param[in] measure Temporal float
  */
-static Datum
+static GSERIALIZED *
 tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 {
   LWPOINT *point = measure ?
@@ -123,7 +123,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
     tpointinst_to_lwpoint(inst);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
   pfree(point);
-  return PointerGetDatum(result);
+  return result;
 }
 
 /**
@@ -133,7 +133,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
  * @param[in] is Temporal point
  * @param[in] measure Temporal float
  */
-static Datum
+static GSERIALIZED *
 tpointinstset_to_geo_measure(const TInstantSet *is, const TInstantSet *measure)
 {
   LWGEOM **points = palloc(sizeof(LWGEOM *) * is->count);
@@ -162,7 +162,7 @@ tpointinstset_to_geo_measure(const TInstantSet *is, const TInstantSet *measure)
   for (int i = 0; i < is->count; i++)
     lwgeom_free (points[i]);
   pfree(points);
-  return PointerGetDatum(result);
+  return result;
 }
 
 /**
@@ -258,13 +258,13 @@ tpointseq_to_geo1(const TSequence *seq)
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
  */
-static Datum
+static GSERIALIZED *
 tpointseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
   LWGEOM *lwgeom = measure ?
     tpointseq_to_geo_measure1(seq, measure) : tpointseq_to_geo1(seq);
   GSERIALIZED *result = geo_serialize(lwgeom);
-  return PointerGetDatum(result);
+  return result;
 }
 
 /**
@@ -274,7 +274,7 @@ tpointseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
  * @param[in] ss Temporal point
  * @param[in] measure Temporal float
  */
-static Datum
+static GSERIALIZED *
 tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
 {
   const TSequence *seq;
@@ -313,7 +313,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
   // TODO add the bounding box instead of ask PostGIS to compute it again
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ss->count, geoms);
-  Datum result = PointerGetDatum(geo_serialize(coll));
+  GSERIALIZED *result = geo_serialize(coll);
   /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
   pfree(geoms);
   return result;
@@ -410,7 +410,7 @@ tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  */
-static Datum
+static GSERIALIZED *
 tpointseq_to_geo_measure_segmentize(const TSequence *seq,
   const TSequence *measure)
 {
@@ -420,16 +420,16 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
     tpointseq_to_geo_measure_segmentize1(seq, measure, geoms);
   else
     tpointseq_to_geo_segmentize1(seq, geoms);
-  Datum result;
+  GSERIALIZED *result;
   /* Instantaneous sequence */
   if (seq->count == 1)
-    result = PointerGetDatum(geo_serialize(geoms[0]));
+    result = geo_serialize(geoms[0]);
   else
   {
     // TODO add the bounding box instead of ask PostGIS to compute it again
     LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
-    result = PointerGetDatum(geo_serialize(segcoll));
+    result = geo_serialize(segcoll);
   }
   for (int i = 0; i < count; i++)
     lwgeom_free(geoms[i]);
@@ -444,7 +444,7 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  */
-static Datum
+static GSERIALIZED *
 tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
   const TSequenceSet *measure)
 {
@@ -482,11 +482,11 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
          lwtype_get_collectiontype(geoms[k - 1]->type) != colltype)
       colltype = COLLECTIONTYPE;
   }
-  Datum result;
+  GSERIALIZED *result;
   // TODO add the bounding box instead of ask PostGIS to compute it again
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) k, geoms);
-  result = PointerGetDatum(geo_serialize(coll));
+  result = geo_serialize(coll);
   for (int i = 0; i < k; i++)
     lwgeom_free(geoms[i]);
   pfree(geoms);
@@ -507,7 +507,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
  */
 bool
 tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
-  bool segmentize, Datum *result)
+  bool segmentize, GSERIALIZED **result)
 {
   ensure_tgeo_type(tpoint->temptype);
   Temporal *sync1, *sync2;
@@ -1026,6 +1026,15 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
 
 /*****************************************************************************/
 
+/**
+ * Simplify the temporal sequence float/point using a spatio-temporal
+ * extension of the Douglas-Peucker line simplification algorithm.
+ *
+ * @param[in] seq Temporal point
+ * @param[in] synchronized True when computing the synchronized distance
+ * @param[in] eps_dist Epsilon distance
+ * @param[in] minpts Minimum number of points
+ */
 static TSequence *
 tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
   uint32_t minpts)
@@ -1105,7 +1114,8 @@ tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
  * extension of the Douglas-Peucker line simplification algorithm.
  *
  * @param[in] ss Temporal point
- * @param[in] eps_dist Epsilon speed
+ * @param[in] synchronized True when computing the synchronized distance
+ * @param[in] eps_dist Epsilon distance
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
@@ -1125,6 +1135,11 @@ tsequenceset_simplify(const TSequenceSet *ss, bool synchronized,
  * @ingroup libmeos_temporal_analytics
  * @brief Simplify the temporal float/point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] synchronized True when using the Synchronized Euclidian Distance.
+ * This parameter is only taken into account for temporal points.
+ * @param[in] eps_dist Epsilon distance
  * @sqlfunc simplify()
  */
 Temporal *
@@ -1707,14 +1722,14 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array
  */
-static Datum
+static GSERIALIZED *
 tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
 {
   int64 *times = palloc(sizeof(int64));
   times[0] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   *timesarr = times;
   *count = 1;
-  return tinstant_value_copy(inst);
+  return DatumGetGserializedP(tinstant_value_copy(inst));
 }
 
 /**
@@ -1725,7 +1740,7 @@ tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array
  */
-static Datum
+static GSERIALIZED *
 tpointinstset_decouple(const TInstantSet *is, int64 **timesarr, int *count)
 {
   /* Instantaneous sequence */
@@ -1745,7 +1760,7 @@ tpointinstset_decouple(const TInstantSet *is, int64 **timesarr, int *count)
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory(points, is->count,
     MOBDB_FLAGS_GET_LINEAR(is->flags));
-  Datum result = PointerGetDatum(geo_serialize(lwgeom));
+  GSERIALIZED *result = geo_serialize(lwgeom);
   pfree(lwgeom);
   *timesarr = times;
   *count = is->count;
@@ -1792,12 +1807,12 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array
  */
-static Datum
+static GSERIALIZED *
 tpointseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
 {
   int64 *times = palloc(sizeof(int64) * seq->count);
   LWGEOM *lwgeom = tpointseq_decouple1(seq, times);
-  Datum result = PointerGetDatum(geo_serialize(lwgeom));
+  GSERIALIZED *result = geo_serialize(lwgeom);
   pfree(lwgeom);
   *timesarr = times;
   *count = seq->count;
@@ -1812,7 +1827,7 @@ tpointseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array
  */
-static Datum
+static GSERIALIZED *
 tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
 {
   /* Singleton sequence set */
@@ -1840,7 +1855,7 @@ tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
   }
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ss->count, geoms);
-  Datum result = PointerGetDatum(geo_serialize(coll));
+  GSERIALIZED *result = geo_serialize(coll);
   *timesarr = times;
   *count = ss->totalcount;
   /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
@@ -1855,10 +1870,10 @@ tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array
  */
-static Datum
+static GSERIALIZED *
 tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 {
-  Datum result;
+  GSERIALIZED *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
@@ -1876,11 +1891,20 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 /**
  * @ingroup libmeos_temporal_analytics
  * @brief Transform the temporal point to Mapbox Vector Tile format
+ *
+ * @param[in] temp Temporal value
+ * @param[in] bounds Bounding box.
+ * @param[in] extent Tile extent in tile coordinate space
+ * @param[in] buffer Buffer distance in tile coordinate space
+ * @param[in] clip_geom True if temporal point should be clipped
+ * @param[out] geom Geometry
+ * @param[out] timesarr Array of timestamps encoded in Unix epoch
+ * @param[out] count Number of elements in the output array
  * @sqlfunc AsMVTGeom()
  */
 bool
 tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
-  int32_t buffer, bool clip_geom, Datum *geom, int64 **timesarr,
+  int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr,
   int *count)
 {
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)

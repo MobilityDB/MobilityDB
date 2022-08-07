@@ -260,7 +260,7 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
   /* If the boxes intersect in the value dimension return 0 */
@@ -287,13 +287,11 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2, inter;
+  Period p, inter;
   if (hast)
   {
-    temporal_set_period(temp, &p1);
-    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
-      true, true, T_TIMESTAMPTZ, &p2);
-    if (! inter_span_span(&p1, &p2, &inter))
+    temporal_set_period(temp, &p);
+    if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
   }
 

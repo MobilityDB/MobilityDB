@@ -308,6 +308,8 @@ tbox_adjust(void *bbox1, void *bbox2)
   box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
   box1->tmin = Min(box1->tmin, box2->tmin);
   box1->tmax = Max(box1->tmax, box2->tmax);
+  box1->period.lower = TimestampTzGetDatum(box1->tmin);
+  box1->period.upper = TimestampTzGetDatum(box1->tmax);
   return;
 }
 
@@ -369,8 +371,10 @@ tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
   memset(new, 0, sizeof(TBOX));
   new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
   new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  new->tmin = FLOAT8_MIN(a->tmin, b->tmin);
-  new->tmax = FLOAT8_MAX(a->tmax, b->tmax);
+  new->tmin = Min(a->tmin, b->tmin);
+  new->tmax = Max(a->tmax, b->tmax);
+  new->period.lower = TimestampTzGetDatum(new->tmin);
+  new->period.upper = TimestampTzGetDatum(new->tmax);
   return;
 }
 
@@ -389,7 +393,7 @@ tbox_size(const TBOX *box)
    * The less-than cases should not happen, but if they do, say "zero".
    */
   if (FLOAT8_LE(box->xmax, box->xmin) ||
-    FLOAT8_LE(box->tmax, box->tmin))
+    (box->tmax <= box->tmin))
     return 0.0;
 
   /*

@@ -88,7 +88,7 @@ tinstant_value_copy(const TInstant *inst)
     return inst->value;
   /* For base types passed by reference */
   int16 typlen =  basetype_length(temptype_basetype(inst->temptype));
-  size_t value_size = (typlen != -1) ? 
+  size_t value_size = (typlen != -1) ?
     (unsigned int) typlen : VARSIZE(&inst->value);
   void *result = palloc0(value_size);
   memcpy(result, &inst->value, value_size);
@@ -260,28 +260,22 @@ tinstant_out(const TInstant *inst, Datum arg)
 
 /*****************************************************************************
  * Constructor functions
- *
- * The memory structure of a temporal instant where the base value is passed
- * by reference is as follows
- * @code
- * ----------------------------------
- * ( TInstant )_X | ( Value )_X |
- * ----------------------------------
- * @endcode
- * where the `_X` are unused bytes added for double padding.
- *
- * The memory structure of a temporal instant where the base value is passed
- * by value is as follows
- * @code
- * ----------------
- * ( TInstant )_X |
- * ----------------
- * @endcode
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal instant from the arguments.
+ *
+ * The memory structure of a temporal instant is as follows
+ * @code
+ * ----------------
+ * ( TInstant )_X |
+ * ----------------
+ * @endcode
+ * where the attribute `value` of type `Datum` in the struct stores the base
+ * value independently of whether it is passed by value or by reference.
+ * For values passed by reference, the additional bytes needed are appended at
+ * the end of the struct upon creation.
  *
  * @param value Base value
  * @param t Timestamp

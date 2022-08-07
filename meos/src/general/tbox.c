@@ -118,8 +118,8 @@ tbox_out(const TBOX *box, int maxdd)
   }
   if (hast)
   {
-    tmin = pg_timestamptz_out(box->tmin);
-    tmax = pg_timestamptz_out(box->tmax);
+    tmin = pg_timestamptz_out(DatumGetTimestampTz(box->period.lower));
+    tmax = pg_timestamptz_out(DatumGetTimestampTz(box->period.upper));
   }
   if (hasx)
   {
@@ -187,6 +187,8 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
     /* Process T min/max */
     box->tmin = Min(tmin, tmax);
     box->tmax = Max(tmin, tmax);
+    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
+      true, true, T_TIMESTAMPTZ, &box->period);
   }
   return;
 }
@@ -331,6 +333,8 @@ timestamp_set_tbox(TimestampTz t, TBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   box->tmin = box->tmax = t;
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -362,8 +366,9 @@ timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   const Period *p = timestampset_period_ptr(ts);
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  memcpy(&box->period, p, sizeof(Span));
+  box->tmin = DatumGetTimestampTz(p->lower);
+  box->tmax = DatumGetTimestampTz(p->upper);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -394,8 +399,9 @@ period_set_tbox(const Period *p, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  memcpy(&box->period, p, sizeof(Span));
+  box->tmin = DatumGetTimestampTz(p->lower);
+  box->tmax = DatumGetTimestampTz(p->upper);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -427,8 +433,9 @@ periodset_set_tbox(const PeriodSet *ps, TBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   const Period *p = periodset_period_ptr(ps);
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  memcpy(&box->period, p, sizeof(Span));
+  box->tmin = DatumGetTimestampTz(p->lower);
+  box->tmax = DatumGetTimestampTz(p->upper);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -570,7 +577,7 @@ tbox_to_period(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
-  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
+  Period *result = span_copy(&box->period);
   return result;
 }
 
@@ -655,7 +662,7 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
-  *result = box->tmin;
+  *result = DatumGetTimestampTz(box->period.lower);
   return true;
 }
 
@@ -674,7 +681,7 @@ tbox_tmax(const TBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
-  *result = box->tmax;
+  *result = DatumGetTimestampTz(box->period.upper);
   return true;
 }
 
@@ -698,6 +705,7 @@ tbox_expand(const TBOX *box1, TBOX *box2)
   {
     box2->tmin = Min(box1->tmin, box2->tmin);
     box2->tmax = Max(box1->tmax, box2->tmax);
+    span_expand(&box1->period, &box2->period);
   }
   return;
 }
@@ -711,7 +719,9 @@ tbox_expand(const TBOX *box1, TBOX *box2)
 void
 tbox_shift_tscale(const Interval *shift, const Interval *duration, TBOX *box)
 {
-  lower_upper_shift_tscale(shift, duration, &box->tmin, &box->tmax);
+  period_shift_tscale(shift, duration, &box->period);
+  box->tmin = DatumGetTimestampTz(box->period.lower);
+  box->tmax = DatumGetTimestampTz(box->period.upper);
   return;
 }
 
@@ -740,8 +750,12 @@ tbox_expand_temporal(const TBOX *box, const Interval *interval)
 {
   ensure_has_T_tbox(box);
   TBOX *result = tbox_copy(box);
-  result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
-  result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
+  result->tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
+    box->period.lower), interval);
+  result->tmax = pg_timestamp_pl_interval(DatumGetTimestampTz(
+    box->period.upper), interval);
+  result->period.lower = TimestampTzGetDatum(result->tmin);
+  result->period.upper = TimestampTzGetDatum(result->tmax);
   return result;
 }
 
@@ -791,6 +805,7 @@ contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
   if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax))
     return false;
   if (hast && (box2->tmin < box1->tmin || box2->tmax > box1->tmax))
+    // ! contains_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -818,7 +833,11 @@ overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax))
     return false;
-  if (hast && (box1->tmax < box2->tmin || box1->tmin > box2->tmax))
+  if (hast && (
+    // (box1->tmax < box2->tmin || box1->tmin > box2->tmax))
+    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
+    // ! overlaps_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -835,7 +854,10 @@ same_tbox_tbox(const TBOX *box1, const TBOX *box2)
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax))
     return false;
-  if (hast && (box1->tmin != box2->tmin || box1->tmax != box2->tmax))
+  /* Testing equality does not require to use DatumGetTimestampTz */
+  if (hast && (box1->period.lower != box2->period.lower ||
+               box1->period.upper != box2->period.upper))
+    // ! span_eq(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -857,11 +879,12 @@ adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
    * at most of n-1 dimensions */
   bool result;
   if (!hasx && hast)
-    result = (inter.tmin == inter.tmax);
+    result = (inter.period.lower == inter.period.upper);
   else if (hasx && !hast)
     result = (inter.xmin == inter.xmax);
   else
-    result = (inter.xmin == inter.xmax || inter.tmin == inter.tmax);
+    result = (inter.xmin == inter.xmax ||
+      inter.period.lower == inter.period.upper);
   return result;
 }
 
@@ -937,6 +960,7 @@ before_tbox_tbox(const TBOX *box1, const TBOX *box2)
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmax < box2->tmin);
+    // left_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -951,6 +975,7 @@ overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmax <= box2->tmax);
+    // overleft_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -965,6 +990,7 @@ after_tbox_tbox(const TBOX *box1, const TBOX *box2)
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmin > box2->tmax);
+    // right_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -979,6 +1005,7 @@ overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmin >= box2->tmin);
+    // overright_span_span(&box1->period, &box2->period);
 }
 
 /*****************************************************************************
@@ -1009,8 +1036,10 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
   }
   if (hast)
   {
-    tmin = Min(box1->tmin, box2->tmin);
-    tmax = Max(box1->tmax, box2->tmax);
+    tmin = Min(DatumGetTimestampTz(box1->period.lower),
+      DatumGetTimestampTz(box2->period.lower));
+    tmax = Max(DatumGetTimestampTz(box1->period.upper),
+      DatumGetTimestampTz(box2->period.upper));
   }
   TBOX *result = tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
   return result;
@@ -1032,7 +1061,7 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
     (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
-    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+    (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
   double xmin = 0, xmax = 0;
@@ -1044,8 +1073,10 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
   }
   if (hast)
   {
-    tmin = Max(box1->tmin, box2->tmin);
-    tmax = Min(box1->tmax, box2->tmax);
+    tmin = Max(DatumGetTimestampTz(box1->period.lower),
+      DatumGetTimestampTz(box2->period.lower));
+    tmax = Min(DatumGetTimestampTz(box1->period.upper),
+      DatumGetTimestampTz(box2->period.upper));
   }
   tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
   return true;
@@ -1085,8 +1116,8 @@ tbox_eq(const TBOX *box1, const TBOX *box2)
   if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
       return false;
-  if (box1->xmin != box2->xmin || box1->tmin != box2->tmin ||
-    box1->xmax != box2->xmax || box1->tmax != box2->tmax)
+  if (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
+      ! span_eq(&box1->period, &box2->period))
     return false;
   /* The two boxes are equal */
   return true;
@@ -1119,16 +1150,10 @@ tbox_cmp(const TBOX *box1, const TBOX *box2)
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   if (hast)
   {
+    int cmp = span_cmp(&box1->period, &box2->period);
     /* Compare the box minima */
-    if (box1->tmin < box2->tmin)
-      return -1;
-    if (box1->tmin > box2->tmin)
-      return 1;
-    /* Compare the box maxima */
-    if (box1->tmax < box2->tmax)
-      return -1;
-    if (box1->tmax > box2->tmax)
-      return 1;
+    if (cmp != 0)
+      return cmp;
   }
   if (hasx)
   {
