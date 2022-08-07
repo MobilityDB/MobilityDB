@@ -46,6 +46,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <general/temporal_boxops.h>
+#include <general/temporal_util.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_catalog.h"
@@ -110,14 +111,14 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
       break;
     case RTBeforeStrategyNumber:
       retval = /* before_tbox_tbox(key, query) */
-        (key->tmax <= query->tmin);
+        datum_le(key->period.upper, query->period.lower, T_TIMESTAMPTZ);
       break;
     case RTOverBeforeStrategyNumber:
       retval = overbefore_tbox_tbox(key, query);
       break;
     case RTAfterStrategyNumber:
       retval = /* after_tbox_tbox(key, query) */
-        (key->tmin >= query->tmax);
+        datum_ge(key->period.lower, query->period.upper, T_TIMESTAMPTZ);
       break;
     case RTOverAfterStrategyNumber:
       retval = overafter_tbox_tbox(key, query);
@@ -306,10 +307,12 @@ tbox_adjust(void *bbox1, void *bbox2)
   TBOX *box2 = (TBOX *) bbox2;
   box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
   box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
-  box1->tmin = Min(box1->tmin, box2->tmin);
-  box1->tmax = Max(box1->tmax, box2->tmax);
-  box1->period.lower = TimestampTzGetDatum(box1->tmin);
-  box1->period.upper = TimestampTzGetDatum(box1->tmax);
+  TimestampTz tmin = Min(DatumGetTimestampTz(box1->period.lower),
+    DatumGetTimestampTz(box2->period.lower));
+  TimestampTz tmax = Max(DatumGetTimestampTz(box1->period.upper),
+    DatumGetTimestampTz(box2->period.upper));
+  box1->period.lower = TimestampTzGetDatum(tmin);
+  box1->period.upper = TimestampTzGetDatum(tmax);
   return;
 }
 
@@ -326,7 +329,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_adjust((void *) result, DatumGetPointer(ent[i].key));
+    tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
   PG_RETURN_POINTER(result);
 }
 
@@ -371,10 +374,12 @@ tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
   memset(new, 0, sizeof(TBOX));
   new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
   new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  new->tmin = Min(a->tmin, b->tmin);
-  new->tmax = Max(a->tmax, b->tmax);
-  new->period.lower = TimestampTzGetDatum(new->tmin);
-  new->period.upper = TimestampTzGetDatum(new->tmax);
+  TimestampTz tmin = Min(DatumGetTimestampTz(a->period.lower),
+    DatumGetTimestampTz(b->period.lower));
+  TimestampTz tmax = Max(DatumGetTimestampTz(a->period.upper),
+    DatumGetTimestampTz(b->period.upper));
+  new->period.lower = TimestampTzGetDatum(tmin);
+  new->period.upper = TimestampTzGetDatum(tmax);
   return;
 }
 
@@ -393,7 +398,7 @@ tbox_size(const TBOX *box)
    * The less-than cases should not happen, but if they do, say "zero".
    */
   if (FLOAT8_LE(box->xmax, box->xmin) ||
-    (box->tmax <= box->tmin))
+    datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
     return 0.0;
 
   /*
@@ -403,7 +408,8 @@ tbox_size(const TBOX *box)
    */
   if (isnan(box->xmax))
     return get_float8_infinity();
-  return (box->xmax - box->xmin) * (box->tmax - box->tmin);
+  return (box->xmax - box->xmin) * (DatumGetTimestampTz(box->period.upper) -
+    DatumGetTimestampTz(box->period.lower));
 }
 
 /**
@@ -530,7 +536,8 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       if (dimNum == 0)
         range = bbox->xmax - bbox->xmin;
       else
-        range = (double) (bbox->tmax - bbox->tmin);
+        range = (double) (DatumGetTimestampTz(bbox->period.upper) -
+          DatumGetTimestampTz(bbox->period.lower));
     }
     else /* bboxtype == T_STBOX */
     {
@@ -543,6 +550,8 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
         range = bbox->zmax - bbox->zmin;
       else
         range = (double) (bbox->tmax - bbox->tmin);
+        // range = (double) (DatumGetTimestampTz(bbox->period.upper) -
+          // DatumGetTimestampTz(bbox->period.lower));
     }
 
     overlap = (float4) ((leftUpper - rightLower) / range);
@@ -750,8 +759,10 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
         }
         else
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((TBOX *) box)->tmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((TBOX *) box)->tmax;
+          intervalsLower[i - FirstOffsetNumber].lower =
+            DatumGetTimestampTz(((TBOX *) box)->period.lower);
+          intervalsLower[i - FirstOffsetNumber].upper =
+            DatumGetTimestampTz(((TBOX *) box)->period.upper);
         }
       }
       else /* bboxtype == T_STBOX */
@@ -775,6 +786,10 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
         {
           intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->tmin;
           intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->tmax;
+          // intervalsLower[i - FirstOffsetNumber].lower =
+            // DatumGetTimestampTz(((STBOX *) box)->period.lower);
+          // intervalsLower[i - FirstOffsetNumber].upper =
+            // DatumGetTimestampTz(((STBOX *) box)->period.upper);
         }
       }
     }
@@ -949,8 +964,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
       }
       else
       {
-        lower = ((TBOX *) box)->tmin;
-        upper = ((TBOX *) box)->tmax;
+        lower = (double) DatumGetTimestampTz(((TBOX *) box)->period.lower);
+        upper = (double) DatumGetTimestampTz(((TBOX *) box)->period.upper);
       }
     }
     else /* bboxtype == T_STBOX */
@@ -1092,8 +1107,10 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
   TBOX *b2 = PG_GETARG_TBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && b1->tmin == b2->tmin &&
-      FLOAT8_EQ(b1->xmax, b2->xmax) && b1->tmax == b2->tmax);
+    /* Equality test does not requite to use DatumGetTimestampTz */
+    *result = FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
+      (b1->period.lower == b2->period.lower) &&
+      (b1->period.upper == b2->period.upper);
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);

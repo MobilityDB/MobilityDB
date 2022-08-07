@@ -92,11 +92,11 @@ typedef struct
  */
 typedef struct
 {
-  Period      period;
+  Period      period; /**< timespan */
   double      xmin;   /**< minimum number value */
   double      xmax;   /**< maximum number value */
-  TimestampTz tmin;   /**< minimum timestamp */
-  TimestampTz tmax;   /**< maximum timestamp */
+  // TimestampTz tmin;   /**< minimum timestamp */
+  // TimestampTz tmax;   /**< maximum timestamp */
   int16       flags;  /**< flags */
 } TBOX;
 

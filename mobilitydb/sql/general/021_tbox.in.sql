@@ -56,7 +56,7 @@ CREATE FUNCTION tbox_send(tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tbox (
-  internallength = 64,
+  internallength = 48,
   input = tbox_in,
   output = tbox_out,
   receive = tbox_recv,

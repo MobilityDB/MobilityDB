@@ -105,6 +105,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <general/temporal_util.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_catalog.h"
@@ -142,8 +143,10 @@ tboxnode_init(TboxNode *nodebox)
   memset(nodebox, 0, sizeof(TboxNode));
   nodebox->left.xmin = nodebox->right.xmin = -infinity;
   nodebox->left.xmax = nodebox->right.xmax = infinity;
-  nodebox->left.tmin = nodebox->right.tmin = DT_NOBEGIN;
-  nodebox->left.tmax = nodebox->right.tmax = DT_NOEND;
+  nodebox->left.period.lower = nodebox->right.period.lower =
+    TimestampTzGetDatum(DT_NOBEGIN);
+  nodebox->left.period.upper = nodebox->right.period.upper =
+    TimestampTzGetDatum(DT_NOEND);
   return;
 }
 
@@ -193,10 +196,10 @@ get_quadrant4D(const TBOX *centroid, const TBOX *inBox)
   if (inBox->xmax > centroid->xmax)
     quadrant |= 0x4;
 
-  if (inBox->tmin > centroid->tmin)
+  if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
     quadrant |= 0x2;
 
-  if (inBox->tmax > centroid->tmax)
+  if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
     quadrant |= 0x1;
 
   return quadrant;
@@ -226,14 +229,14 @@ tboxnode_quadtree_next(const TboxNode *nodebox, const TBOX *centroid,
     next_nodebox->right.xmax = centroid->xmax;
 
   if (quadrant & 0x2)
-    next_nodebox->left.tmin = centroid->tmin;
+    next_nodebox->left.period.lower = centroid->period.lower;
   else
-    next_nodebox->left.tmax = centroid->tmin;
+    next_nodebox->left.period.upper = centroid->period.lower;
 
   if (quadrant & 0x1)
-    next_nodebox->right.tmin = centroid->tmax;
+    next_nodebox->right.period.lower = centroid->period.upper;
   else
-    next_nodebox->right.tmax = centroid->tmax;
+    next_nodebox->right.period.upper = centroid->period.upper;
 
   return;
 }
@@ -251,8 +254,9 @@ overlap4D(const TboxNode *nodebox, const TBOX *query)
       nodebox->right.xmax >= query->xmin;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= nodebox->left.tmin <= query->tmax &&
-      nodebox->right.tmax >= query->tmin;
+    result &=
+      datum_le(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ) &&
+      datum_ge(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -269,8 +273,9 @@ contain4D(const TboxNode *nodebox, const TBOX *query)
       nodebox->left.xmin <= query->xmin;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= nodebox->right.tmax >= query->tmax &&
-      nodebox->left.tmin <= query->tmin;
+    result &=
+      datum_ge(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ) &&
+      datum_le(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -316,7 +321,7 @@ overRight4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 before4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->right.tmax < query->tmin);
+  return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
 }
 
 /**
@@ -325,7 +330,7 @@ before4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 overBefore4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->right.tmax <= query->tmax);
+  return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
 }
 
 /**
@@ -334,7 +339,7 @@ overBefore4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 after4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->left.tmin > query->tmax);
+  return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
 }
 
 /**
@@ -343,7 +348,7 @@ after4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 overAfter4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->left.tmin >= query->tmin);
+  return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
 }
 
 /**
@@ -357,8 +362,9 @@ distance_tbox_nodebox(const TBOX *query, const TboxNode *nodebox)
 {
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(query->flags);
-  if (hast && (query->tmin > nodebox->right.tmax ||
-      nodebox->left.tmin > query->tmax))
+  if (hast && (
+      datum_gt(query->period.lower, nodebox->right.period.upper, T_TIMESTAMPTZ) ||
+      datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
     return DBL_MAX;
 
   double dx;
@@ -494,8 +500,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     TBOX *box = DatumGetTboxP(in->datums[i]);
     lowXs[i] = box->xmin;
     highXs[i] = box->xmax;
-    lowTs[i] = (double) box->tmin;
-    highTs[i] = (double) box->tmax;
+    lowTs[i] = (double) DatumGetTimestampTz(box->period.lower);
+    highTs[i] = (double) DatumGetTimestampTz(box->period.upper);
   }
 
   qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
@@ -508,8 +514,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   centroid = palloc0(sizeof(TBOX));
   centroid->xmin = lowXs[median];
   centroid->xmax = highXs[median];
-  centroid->tmin = (TimestampTz) lowTs[median];
-  centroid->tmax = (TimestampTz) highTs[median];
+  centroid->period.lower = TimestampTzGetDatum((TimestampTz) lowTs[median]);
+  centroid->period.upper = TimestampTzGetDatum((TimestampTz) highTs[median]);
 
   /* Fill the output */
   out->hasPrefix = true;

@@ -43,8 +43,8 @@
  *
  *----------------------------------------------------------------
  */
-#ifndef C_H
-#define C_H
+#ifndef PG_C_H
+#define PG_C_H
 
 #include "postgres_ext.h"
 
@@ -1369,4 +1369,4 @@ typedef intptr_t sigjmp_buf[5];
 
 #include "port.h"
 
-#endif							/* C_H */
+#endif							/* PG_C_H */

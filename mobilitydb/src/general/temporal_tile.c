@@ -364,13 +364,13 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   }
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket(
-      DatumGetTimestampTz(box->period.lower), tunits, torigin);
-    state->box.tmax = timestamptz_bucket(
-      DatumGetTimestampTz(box->period.upper), tunits, torigin);
+    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.lower), tunits, torigin));
+    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.upper), tunits, torigin));
   }
   state->value = state->box.xmin;
-  state->t = state->box.tmin;
+  state->t = DatumGetTimestampTz(state->box.period.lower);
   return state;
 }
 
@@ -391,7 +391,7 @@ tbox_tile_state_next(TboxGridState *state)
   {
     state->value = state->box.xmin;
     state->t += state->tunits;
-    if (state->t > state->box.tmax)
+    if (state->t > DatumGetTimestampTz(state->box.period.upper))
     {
       state->done = true;
       return;

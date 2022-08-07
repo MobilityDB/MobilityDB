@@ -2658,19 +2658,19 @@ SELECT memSize(tint '1@2000-01-01');
 SELECT memSize(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
  memsize 
 ---------
-     152
+     160
 (1 row)
 
 SELECT memSize(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
  memsize 
 ---------
-     176
+     184
 (1 row)
 
 SELECT memSize(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
  memsize 
 ---------
-     400
+     424
 (1 row)
 
 SELECT memSize(tfloat '1.5@2000-01-01');
@@ -2682,31 +2682,31 @@ SELECT memSize(tfloat '1.5@2000-01-01');
 SELECT memSize(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
  memsize 
 ---------
-     152
+     160
 (1 row)
 
 SELECT memSize(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
  memsize 
 ---------
-     176
+     184
 (1 row)
 
 SELECT memSize(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
  memsize 
 ---------
-     176
+     184
 (1 row)
 
 SELECT memSize(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
  memsize 
 ---------
-     400
+     424
 (1 row)
 
 SELECT memSize(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
  memsize 
 ---------
-     400
+     424
 (1 row)
 
 SELECT memSize(ttext 'AAA@2000-01-01');

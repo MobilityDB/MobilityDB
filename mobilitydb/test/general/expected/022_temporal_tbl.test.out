@@ -647,13 +647,13 @@ SELECT MAX(memSize(temp)) FROM tbl_tbool;
 SELECT MAX(memSize(temp)) FROM tbl_tint;
  max  
 ------
- 1832
+ 1896
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tfloat;
  max  
 ------
- 1864
+ 1928
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_ttext;
