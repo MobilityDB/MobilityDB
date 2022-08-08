@@ -97,14 +97,14 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
       break;
     case RTLeftStrategyNumber:
       retval = /* left_tbox_tbox(key, query) */
-        (key->xmax <= query->xmin);
+        datum_le(key->span.upper, query->span.lower, T_FLOAT8);
       break;
     case RTOverLeftStrategyNumber:
       retval = overleft_tbox_tbox(key, query);
       break;
     case RTRightStrategyNumber:
       retval = /* right_tbox_tbox(key, query) */
-        (key->xmin >= query->xmax);
+        datum_ge(key->span.lower, query->span.upper, T_FLOAT8);
       break;
     case RTOverRightStrategyNumber:
       retval = overright_tbox_tbox(key, query);
@@ -305,8 +305,12 @@ tbox_adjust(void *bbox1, void *bbox2)
 {
   TBOX *box1 = (TBOX *) bbox1;
   TBOX *box2 = (TBOX *) bbox2;
-  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
-  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
+  double xmin = FLOAT8_MIN(DatumGetFloat8(box1->span.lower),
+    DatumGetFloat8(box2->span.lower));
+  double xmax = FLOAT8_MAX(DatumGetFloat8(box1->span.upper),
+    DatumGetFloat8(box2->span.upper));
+  box1->span.lower = Float8GetDatum(xmin);
+  box1->span.upper = Float8GetDatum(xmax);
   TimestampTz tmin = Min(DatumGetTimestampTz(box1->period.lower),
     DatumGetTimestampTz(box2->period.lower));
   TimestampTz tmax = Max(DatumGetTimestampTz(box1->period.upper),
@@ -372,8 +376,12 @@ static void
 tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
 {
   memset(new, 0, sizeof(TBOX));
-  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
+  double xmin = FLOAT8_MIN(DatumGetFloat8(a->span.lower),
+    DatumGetFloat8(b->span.lower));
+  double xmax = FLOAT8_MAX(DatumGetFloat8(a->span.upper),
+    DatumGetFloat8(b->span.upper));
+  new->span.lower = Float8GetDatum(xmin);
+  new->span.upper = Float8GetDatum(xmax);
   TimestampTz tmin = Min(DatumGetTimestampTz(a->period.lower),
     DatumGetTimestampTz(b->period.lower));
   TimestampTz tmax = Max(DatumGetTimestampTz(a->period.upper),
@@ -397,7 +405,7 @@ tbox_size(const TBOX *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if (FLOAT8_LE(box->xmax, box->xmin) ||
+  if (FLOAT8_LE(DatumGetFloat8(box->span.upper), DatumGetFloat8(box->span.lower)) ||
     datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
     return 0.0;
 
@@ -406,10 +414,11 @@ tbox_size(const TBOX *box)
    * and a non-NaN is infinite.  Note the previous check eliminated the
    * possibility that the low fields are NaNs.
    */
-  if (isnan(box->xmax))
+  if (isnan(DatumGetFloat8(box->span.upper)))
     return get_float8_infinity();
-  return (box->xmax - box->xmin) * (DatumGetTimestampTz(box->period.upper) -
-    DatumGetTimestampTz(box->period.lower));
+  return (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)) * 
+    (DatumGetTimestampTz(box->period.upper) -
+      DatumGetTimestampTz(box->period.lower));
 }
 
 /**
@@ -534,7 +543,8 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
     {
       TBOX *bbox = (TBOX *) &context->boundingBox;
       if (dimNum == 0)
-        range = bbox->xmax - bbox->xmin;
+        range = DatumGetFloat8(bbox->span.upper) -
+          DatumGetFloat8(bbox->span.lower);
       else
         range = (double) (DatumGetTimestampTz(bbox->period.upper) -
           DatumGetTimestampTz(bbox->period.lower));
@@ -754,8 +764,10 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
       {
         if (dim == 0)
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((TBOX *) box)->xmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((TBOX *) box)->xmax;
+          intervalsLower[i - FirstOffsetNumber].lower =
+            DatumGetFloat8(((TBOX *) box)->span.lower);
+          intervalsLower[i - FirstOffsetNumber].upper =
+            DatumGetFloat8(((TBOX *) box)->span.upper);
         }
         else
         {
@@ -959,8 +971,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
     {
       if (context.dim == 0)
       {
-        lower = ((TBOX *) box)->xmin;
-        upper = ((TBOX *) box)->xmax;
+        lower = DatumGetFloat8(((TBOX *) box)->span.lower);
+        upper = DatumGetFloat8(((TBOX *) box)->span.upper);
       }
       else
       {
@@ -1107,8 +1119,11 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
   TBOX *b2 = PG_GETARG_TBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    /* Equality test does not requite to use DatumGetTimestampTz */
-    *result = FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
+    *result = FLOAT8_EQ(DatumGetFloat8(b1->span.lower),
+        DatumGetFloat8(b2->span.lower)) &&
+      FLOAT8_EQ(DatumGetFloat8(b1->span.upper),
+        DatumGetFloat8(b2->span.upper)) &&
+      /* Equality test does not requite to use DatumGetTimestampTz */
       (b1->period.lower == b2->period.lower) &&
       (b1->period.upper == b2->period.upper);
   else

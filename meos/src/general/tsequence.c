@@ -1940,21 +1940,21 @@ Span *
 tfloatseq_span(const TSequence *seq)
 {
   TBOX *box = tsequence_bbox_ptr(seq);
-  Datum min = Float8GetDatum(box->xmin);
-  Datum max = Float8GetDatum(box->xmax);
+  Datum min = box->span.lower;
+  Datum max = box->span.upper;
   /* It step interpolation or equal bounding box bounds */
-  if(! MOBDB_FLAGS_GET_LINEAR(seq->flags) || box->xmin == box->xmax)
+  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) ||
+      box->span.lower == box->span.upper)
     return span_make(min, max, true, true, T_FLOAT8);
 
   /* For sequences with linear interpolation the bounds of the span are
    * those in the bounding box but we need to determine whether the bounds
    * are inclusive or not */
-  double start = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, 0)));
-  double end = DatumGetFloat8(tinstant_value(
-    tsequence_inst_n(seq, seq->count - 1)));
-  double lower, upper;
+  Datum start = tinstant_value(tsequence_inst_n(seq, 0));
+  Datum end = tinstant_value(tsequence_inst_n(seq, seq->count - 1));
+  Datum lower, upper;
   bool lower_inc, upper_inc;
-  if (start < end)
+  if (datum_lt(start, end, T_FLOAT8))
   {
     lower = start; lower_inc = seq->period.lower_inc;
     upper = end; upper_inc = seq->period.upper_inc;
@@ -1964,16 +1964,18 @@ tfloatseq_span(const TSequence *seq)
     lower = end; lower_inc = seq->period.upper_inc;
     upper = start; upper_inc = seq->period.lower_inc;
   }
-  bool min_inc = box->xmin < lower || (box->xmin == lower && lower_inc);
-  bool max_inc = box->xmax > upper || (box->xmax == upper && upper_inc);
+  bool min_inc = datum_lt(box->span.lower, lower, T_FLOAT8) || 
+    (box->span.lower == lower && lower_inc);
+  bool max_inc = datum_gt(box->span.upper, upper, T_FLOAT8) ||
+    (box->span.upper == upper && upper_inc);
   /* Determine whether the minimum and/or maximum appear inside the sequence */
   if (! min_inc || ! max_inc)
   {
     for (int i = 1; i < seq->count - 1; i++)
     {
-      double value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, i)));
-      min_inc |= (box->xmin == value);
-      max_inc |= (box->xmax == value);
+      Datum value = tinstant_value(tsequence_inst_n(seq, i));
+      min_inc |= (box->span.lower == value);
+      max_inc |= (box->span.upper == value);
       if (min_inc && max_inc)
         break;
     }
@@ -2101,18 +2103,17 @@ tsequence_max_instant(const TSequence *seq)
 Datum
 tsequence_min_value(const TSequence *seq)
 {
-  if (seq->temptype == T_TINT)
+  if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
-    return Int32GetDatum((int)(box->xmin));
+    if (seq->temptype == T_TINT)
+      return Int32GetDatum((int) DatumGetFloat8(box->span.lower));
+    /* seq->temptype == T_TFLOAT */
+    return box->span.lower;
   }
-  if (seq->temptype == T_TFLOAT)
-  {
-    TBOX *box = tsequence_bbox_ptr(seq);
-    return Float8GetDatum(box->xmin);
-  }
-  Datum result = tinstant_value(tsequence_inst_n(seq, 0));
+
   mobdbType basetype = temptype_basetype(seq->temptype);
+  Datum result = tinstant_value(tsequence_inst_n(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -2130,18 +2131,17 @@ tsequence_min_value(const TSequence *seq)
 Datum
 tsequence_max_value(const TSequence *seq)
 {
-  if (seq->temptype == T_TINT)
+  if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
-    return Int32GetDatum((int)(box->xmax));
+    if (seq->temptype == T_TINT)
+      return Int32GetDatum((int) DatumGetFloat8(box->span.upper));
+    /* seq->temptype == T_TFLOAT */
+    return box->span.upper;
   }
-  if (seq->temptype == T_TFLOAT)
-  {
-    TBOX *box = tsequence_bbox_ptr(seq);
-    return Float8GetDatum(box->xmax);
-  }
-  Datum result = tinstant_value(tsequence_inst_n(seq, 0));
+
   mobdbType basetype = temptype_basetype(seq->temptype);
+  Datum result = tinstant_value(tsequence_inst_n(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));

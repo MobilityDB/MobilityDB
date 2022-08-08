@@ -92,11 +92,8 @@ typedef struct
  */
 typedef struct
 {
-  Period      period; /**< timespan */
-  double      xmin;   /**< minimum number value */
-  double      xmax;   /**< maximum number value */
-  // TimestampTz tmin;   /**< minimum timestamp */
-  // TimestampTz tmax;   /**< maximum timestamp */
+  Period      period; /**< time span */
+  Span        span;   /**< value span */
   int16       flags;  /**< flags */
 } TBOX;
 
@@ -1488,6 +1485,15 @@ extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *t
 extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
 extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
+
+/*****************************************************************************/
+
+/* Analytics functions for temporal types */
+
+Temporal *geo_to_tpoint(const GSERIALIZED *geo);
+Temporal *temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist);
+bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
+bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/
 

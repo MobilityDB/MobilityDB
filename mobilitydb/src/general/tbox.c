@@ -617,10 +617,8 @@ tbox_round(const TBOX *box, int size)
 {
   ensure_has_X_tbox(box);
   TBOX *result = tbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
-    size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
-    size));
+  result->span.upper = datum_round_float(box->span.lower, size);
+  result->span.upper = datum_round_float(box->span.upper, size);
   return result;
 }
 

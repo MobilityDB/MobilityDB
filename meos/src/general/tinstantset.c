@@ -681,32 +681,24 @@ tinstantset_time(const TInstantSet *is)
 Datum
 tinstantset_min_value(const TInstantSet *is)
 {
-  if (is->temptype == T_TINT)
+  if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
     TBOX *box = tinstantset_bbox_ptr(is);
-    return Int32GetDatum((int)(box->xmin));
+    if (is->temptype == T_TINT)
+      return Int32GetDatum((int) DatumGetFloat8(box->span.lower));
+    /* is->temptype == T_TFLOAT */
+    return box->span.lower;
   }
-  else if (is->temptype == T_TFLOAT)
+
+  mobdbType basetype = temptype_basetype(is->temptype);
+  Datum result = tinstant_value(tinstantset_inst_n(is, 0));
+  for (int i = 1; i < is->count; i++)
   {
-    TBOX *box = tinstantset_bbox_ptr(is);
-    return Float8GetDatum(box->xmin);
+    Datum value = tinstant_value(tinstantset_inst_n(is, i));
+    if (datum_lt(value, result, basetype))
+      result = value;
   }
-  else
-  {
-    mobdbType basetype = temptype_basetype(is->temptype);
-    Datum min = tinstant_value(tinstantset_inst_n(is, 0));
-    int idx = 0;
-    for (int i = 1; i < is->count; i++)
-    {
-      Datum value = tinstant_value(tinstantset_inst_n(is, i));
-      if (datum_lt(value, min, basetype))
-      {
-        min = value;
-        idx = i;
-      }
-    }
-    return tinstant_value(tinstantset_inst_n(is, idx));
-  }
+  return result;
 }
 
 /**
@@ -717,32 +709,24 @@ tinstantset_min_value(const TInstantSet *is)
 Datum
 tinstantset_max_value(const TInstantSet *is)
 {
-  if (is->temptype == T_TINT)
+  if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
     TBOX *box = tinstantset_bbox_ptr(is);
-    return Int32GetDatum((int)(box->xmax));
+    if (is->temptype == T_TINT)
+      return Int32GetDatum((int) DatumGetFloat8(box->span.upper));
+    /* is->temptype == T_TFLOAT */
+    return box->span.upper;
   }
-  else if (is->temptype == T_TFLOAT)
+
+  mobdbType basetype = temptype_basetype(is->temptype);
+  Datum result = tinstant_value(tinstantset_inst_n(is, 0));
+  for (int i = 1; i < is->count; i++)
   {
-    TBOX *box = tinstantset_bbox_ptr(is);
-    return Float8GetDatum(box->xmax);
+    Datum value = tinstant_value(tinstantset_inst_n(is, i));
+    if (datum_gt(value, result, basetype))
+      result = value;
   }
-  else
-  {
-    mobdbType basetype = temptype_basetype(is->temptype);
-    Datum max = tinstant_value(tinstantset_inst_n(is, 0));
-    int idx = 0;
-    for (int i = 1; i < is->count; i++)
-    {
-      Datum value = tinstant_value(tinstantset_inst_n(is, i));
-      if (datum_gt(value, max, basetype))
-      {
-        max = value;
-        idx = i;
-      }
-    }
-    return tinstant_value(tinstantset_inst_n(is, idx));
-  }
+  return result;
 }
 
 /**

@@ -37,14 +37,12 @@
 #include <assert.h>
 #include <float.h>
 #include <math.h>
-/* PostgreSQL */
-// #include <utils/float.h>
-// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/lifting.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -264,15 +262,18 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
     return DBL_MAX;
 
   /* If the boxes intersect in the value dimension return 0 */
-  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
+  if (datum_le(box1->span.lower, box2->span.upper, T_FLOAT8) &&
+      datum_le(box2->span.lower, box1->span.upper, T_FLOAT8))
     return 0.0;
 
-  if (box1->xmax < box2->xmin)
+  if (datum_lt(box1->span.upper, box2->span.lower, T_FLOAT8))
     /* box1 is to the left of box2 */
-    return box2->xmin - box1->xmax;
+    return DatumGetFloat8(box2->span.lower) -
+      DatumGetFloat8(box1->span.upper);
   else
     /* box1 is to the right of box2 */
-    return box1->xmin - box2->xmax;
+    return DatumGetFloat8(box1->span.lower) -
+      DatumGetFloat8(box2->span.upper);
 }
 
 /**
@@ -305,8 +306,9 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
     return 0.0;
 
   /* Get the minimum distance between the values of the boxes */
-  double result = (box->xmin > box1.xmax) ?
-    fabs(box->xmin - box1.xmax) : fabs(box1.xmin - box->xmax);
+  double result = datum_gt(box->span.lower, box1.span.upper, T_FLOAT8) ?
+    fabs(DatumGetFloat8(box->span.lower) - DatumGetFloat8(box1.span.upper)) :
+    fabs(DatumGetFloat8(box1.span.lower) - DatumGetFloat8(box->span.upper));
 
   if (hast)
     pfree(temp1);

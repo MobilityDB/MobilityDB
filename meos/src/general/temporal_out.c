@@ -315,9 +315,9 @@ tbox_mfjson_buf(char *output, const TBOX *bbox, int precision)
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "\"stBoundedBy\":{\"bbox\":[");
-  ptr += lwprint_double(bbox->xmin, precision, ptr);
+  ptr += lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
   ptr += sprintf(ptr, ",");
-  ptr += lwprint_double(bbox->xmax, precision, ptr);
+  ptr += lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
   ptr += sprintf(ptr, "],\"period\":{\"begin\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
@@ -1984,8 +1984,8 @@ tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
   /* Write the value dimension if any */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
-    buf = double_to_wkb_buf(box->xmin, buf, variant);
-    buf = double_to_wkb_buf(box->xmax, buf, variant);
+    buf = double_to_wkb_buf(DatumGetFloat8(box->span.lower), buf, variant);
+    buf = double_to_wkb_buf(DatumGetFloat8(box->span.upper), buf, variant);
   }
   /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))

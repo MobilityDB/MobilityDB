@@ -1201,17 +1201,16 @@ tsequenceset_max_instant(const TSequenceSet *ss)
 Datum
 tsequenceset_min_value(const TSequenceSet *ss)
 {
+  if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
+  {
+    TBOX *box = tsequenceset_bbox_ptr(ss);
+    if (ss->temptype == T_TINT)
+      return Int32GetDatum((int) DatumGetFloat8(box->span.lower));
+    /* s->temptype == T_TFLOAT */
+    return box->span.lower;
+  }
+
   mobdbType basetype = temptype_basetype(ss->temptype);
-  if (basetype == T_INT4)
-  {
-    TBOX *box = tsequenceset_bbox_ptr(ss);
-    return Int32GetDatum((int)(box->xmin));
-  }
-  if (basetype == T_FLOAT8)
-  {
-    TBOX *box = tsequenceset_bbox_ptr(ss);
-    return Float8GetDatum(box->xmin);
-  }
   Datum result = tsequence_min_value(tsequenceset_seq_n(ss, 0));
   for (int i = 1; i < ss->count; i++)
   {
@@ -1234,12 +1233,12 @@ tsequenceset_max_value(const TSequenceSet *ss)
   if (basetype == T_INT4)
   {
     TBOX *box = tsequenceset_bbox_ptr(ss);
-    return Int32GetDatum((int)(box->xmax));
+    return Int32GetDatum((int) DatumGetFloat8(box->span.upper));
   }
   if (basetype == T_FLOAT8)
   {
     TBOX *box = tsequenceset_bbox_ptr(ss);
-    return Float8GetDatum(box->xmax);
+    return box->span.upper;
   }
   Datum result = tsequence_max_value(tsequenceset_seq_n(ss, 0));
   for (int i = 1; i < ss->count; i++)
@@ -1655,8 +1654,8 @@ tfloatseqset_span(const TSequenceSet *ss)
 
   /* General case */
   TBOX *box = tsequenceset_bbox_ptr(ss);
-  Datum min = Float8GetDatum(box->xmin);
-  Datum max = Float8GetDatum(box->xmax);
+  Datum min = box->span.lower;
+  Datum max = box->span.upper;
   /* Step interpolation */
   if(! MOBDB_FLAGS_GET_LINEAR(ss->flags))
     return span_make(min, max, true, true, T_FLOAT8);

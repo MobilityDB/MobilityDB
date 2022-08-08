@@ -1189,15 +1189,12 @@ tnumber_to_span(const Temporal *temp)
     ensure_tnumber_type(temp->temptype);
     if (temp->temptype == T_TINT)
     {
-      min = Int32GetDatum((int)(box->xmin));
-      max = Int32GetDatum((int)(box->xmax));
+      min = Int32GetDatum((int) DatumGetFloat8(box->span.lower));
+      max = Int32GetDatum((int) DatumGetFloat8(box->span.upper));
+      result = span_make(min, max, true, true, basetype);
     }
     else /* temp->temptype == T_TFLOAT */
-    {
-      min = Float8GetDatum(box->xmin);
-      max = Float8GetDatum(box->xmax);
-    }
-    result = span_make(min, max, true, true, basetype);
+      result = span_copy(&box->span);
   }
   else if (temp->subtype == TSEQUENCE)
   {
@@ -2401,9 +2398,10 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   {
     TBOX box;
     temporal_set_bbox(temp, &box);
-    double d = datum_double(value, temptype_basetype(temp->temptype));
-    return (ever && box.xmin <= d && d <= box.xmax) ||
-      (!ever && box.xmin == d && d == box.xmax);
+    return (ever && datum_le(box.span.lower, value, T_FLOAT8) &&
+        datum_le(value, box.span.upper, T_FLOAT8)) ||
+      (!ever && box.span.lower == value &&
+        value == box.span.upper);
   }
   else if (tspatial_type(temp->temptype))
   {
@@ -2441,8 +2439,8 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   {
     TBOX box;
     temporal_set_bbox(temp, &box);
-    double d = datum_double(value, temptype_basetype(temp->temptype));
-    if ((ever && d < box.xmin) || (!ever && d < box.xmax))
+    if ((ever && datum_lt(value, box.span.lower, T_FLOAT8)) ||
+      (!ever && datum_lt(value, box.span.upper, T_FLOAT8)))
       return false;
   }
   return true;
@@ -3324,11 +3322,11 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
      * argument box is converted into an intspan or a floatspan */
     Span *span;
     if (temp->temptype == T_TINT)
-      span = span_make(Int32GetDatum((int) box->xmin),
-        Int32GetDatum((int) box->xmax), true, true, T_INT4);
+      span = span_make(Int32GetDatum((int) DatumGetFloat8(box->span.lower)),
+        Int32GetDatum((int) DatumGetFloat8(box->span.upper)), true, true,
+        T_INT4);
     else /* temp->temptype == T_TFLOAT */
-      span = span_make(Float8GetDatum(box->xmin),
-        Float8GetDatum(box->xmax), true, true, T_FLOAT8);
+      span = span_copy(&box->span);
     result = tnumber_restrict_span(temp1, span, true);
     pfree(span);
   }

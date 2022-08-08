@@ -141,8 +141,10 @@ tboxnode_init(TboxNode *nodebox)
 {
   double infinity = get_float8_infinity();
   memset(nodebox, 0, sizeof(TboxNode));
-  nodebox->left.xmin = nodebox->right.xmin = -infinity;
-  nodebox->left.xmax = nodebox->right.xmax = infinity;
+  nodebox->left.span.lower = nodebox->right.span.lower =
+    Float8GetDatum(-infinity);
+  nodebox->left.span.upper = nodebox->right.span.upper =
+    Float8GetDatum(infinity);
   nodebox->left.period.lower = nodebox->right.period.lower =
     TimestampTzGetDatum(DT_NOBEGIN);
   nodebox->left.period.upper = nodebox->right.period.upper =
@@ -190,10 +192,10 @@ get_quadrant4D(const TBOX *centroid, const TBOX *inBox)
 {
   uint8 quadrant = 0;
 
-  if (inBox->xmin > centroid->xmin)
+  if (datum_gt(inBox->span.lower, centroid->span.lower, T_FLOAT8))
     quadrant |= 0x8;
 
-  if (inBox->xmax > centroid->xmax)
+  if (datum_gt(inBox->span.upper, centroid->span.upper, T_FLOAT8))
     quadrant |= 0x4;
 
   if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
@@ -219,14 +221,14 @@ tboxnode_quadtree_next(const TboxNode *nodebox, const TBOX *centroid,
   memcpy(next_nodebox, nodebox, sizeof(TboxNode));
 
   if (quadrant & 0x8)
-    next_nodebox->left.xmin = centroid->xmin;
+    next_nodebox->left.span.lower = centroid->span.lower;
   else
-    next_nodebox->left.xmax = centroid->xmin;
+    next_nodebox->left.span.upper = centroid->span.lower;
 
   if (quadrant & 0x4)
-    next_nodebox->right.xmin = centroid->xmax;
+    next_nodebox->right.span.lower = centroid->span.upper;
   else
-    next_nodebox->right.xmax = centroid->xmax;
+    next_nodebox->right.span.upper = centroid->span.upper;
 
   if (quadrant & 0x2)
     next_nodebox->left.period.lower = centroid->period.lower;
@@ -250,8 +252,9 @@ overlap4D(const TboxNode *nodebox, const TBOX *query)
   bool result = true;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= nodebox->left.xmin <= query->xmax &&
-      nodebox->right.xmax >= query->xmin;
+    result &=
+      datum_le(nodebox->left.span.lower, query->span.upper, T_FLOAT8) &&
+      datum_ge(nodebox->right.span.upper, query->span.lower, T_FLOAT8);
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
     result &=
@@ -269,8 +272,9 @@ contain4D(const TboxNode *nodebox, const TBOX *query)
   bool result = true;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= nodebox->right.xmax >= query->xmax &&
-      nodebox->left.xmin <= query->xmin;
+    result &=
+      datum_ge(nodebox->right.span.upper, query->span.upper, T_FLOAT8) &&
+      datum_le(nodebox->left.span.lower, query->span.lower, T_FLOAT8);
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
     result &=
@@ -285,7 +289,7 @@ contain4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 left4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->right.xmax < query->xmin);
+  return datum_lt(nodebox->right.span.upper, query->span.lower, T_FLOAT8);
 }
 
 /**
@@ -294,7 +298,7 @@ left4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 overLeft4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->right.xmax <= query->xmax);
+  return datum_le(nodebox->right.span.upper, query->span.upper, T_FLOAT8);
 }
 
 /**
@@ -303,7 +307,7 @@ overLeft4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 right4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->left.xmin > query->xmax);
+  return datum_gt(nodebox->left.span.lower, query->span.upper, T_FLOAT8);
 }
 
 /**
@@ -312,7 +316,7 @@ right4D(const TboxNode *nodebox, const TBOX *query)
 static bool
 overRight4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (nodebox->left.xmin >= query->xmin);
+  return datum_ge(nodebox->left.span.lower, query->span.lower, T_FLOAT8);
 }
 
 /**
@@ -368,10 +372,12 @@ distance_tbox_nodebox(const TBOX *query, const TboxNode *nodebox)
     return DBL_MAX;
 
   double dx;
-  if (query->xmax < nodebox->left.xmin)
-    dx = nodebox->left.xmin - query->xmax;
-  else if (query->xmin > nodebox->right.xmax)
-    dx = query->xmin - nodebox->right.xmax;
+  if (datum_lt(query->span.upper, nodebox->left.span.lower, T_FLOAT8))
+    dx = DatumGetFloat8(nodebox->left.span.lower) -
+      DatumGetFloat8(query->span.upper);
+  else if (datum_gt(query->span.lower, nodebox->right.span.upper, T_FLOAT8))
+    dx = DatumGetFloat8(query->span.lower) -
+      DatumGetFloat8(nodebox->right.span.upper);
   else
     dx = 0;
   return dx;
@@ -498,8 +504,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     TBOX *box = DatumGetTboxP(in->datums[i]);
-    lowXs[i] = box->xmin;
-    highXs[i] = box->xmax;
+    lowXs[i] = DatumGetFloat8(box->span.lower);
+    highXs[i] = DatumGetFloat8(box->span.upper);
     lowTs[i] = (double) DatumGetTimestampTz(box->period.lower);
     highTs[i] = (double) DatumGetTimestampTz(box->period.upper);
   }
@@ -512,8 +518,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   median = in->nTuples / 2;
 
   centroid = palloc0(sizeof(TBOX));
-  centroid->xmin = lowXs[median];
-  centroid->xmax = highXs[median];
+  centroid->span.lower = Float8GetDatum(lowXs[median]);
+  centroid->span.upper = Float8GetDatum(highXs[median]);
   centroid->period.lower = TimestampTzGetDatum((TimestampTz) lowTs[median]);
   centroid->period.upper = TimestampTzGetDatum((TimestampTz) highTs[median]);
 
