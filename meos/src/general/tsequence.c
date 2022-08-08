@@ -215,7 +215,7 @@ datum_collinear(mobdbType basetype, Datum value1, Datum value2, Datum value3,
 void *
 tsequence_bbox_ptr(const TSequence *seq)
 {
-  return (void *)(((char *)seq) + double_pad(sizeof(TSequence)));
+  return (void *)(&seq->period);
 }
 
 /**
@@ -239,7 +239,7 @@ static size_t *
 tsequence_offsets_ptr(const TSequence *seq)
 {
   return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
-    double_pad(seq->bboxsize));
+    double_pad(seq->bboxsize - sizeof(Period)));
 }
 
 /**
@@ -253,8 +253,8 @@ tsequence_inst_n(const TSequence *seq, int index)
 {
   return (TInstant *)(
     /* start of data */
-    ((char *)seq) + double_pad(sizeof(TSequence)) + seq->bboxsize +
-      seq->count * sizeof(size_t) +
+    ((char *)seq) + double_pad(sizeof(TSequence)) +
+      (seq->bboxsize - sizeof(Period)) + seq->count * sizeof(size_t) +
       /* offset */
       (tsequence_offsets_ptr(seq))[index]);
 }
@@ -386,8 +386,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->temptype));
 
   /* Compute the size of the temporal sequence */
-  /* Bounding box size */
-  size_t memsize = bboxsize;
+  /* The period component of the bbox is already declared in the struct */
+  size_t memsize = bboxsize - sizeof(Period);
   /* Size of composing instants */
   for (int i = 0; i < newcount; i++)
     memsize += double_pad(VARSIZE(norminsts[i]));
@@ -426,8 +426,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
       upper_inc, linear, tsequence_bbox_ptr(result));
   }
   /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TSequence)) + double_pad(bboxsize) +
-    newcount * sizeof(size_t);
+  size_t pdata = double_pad(sizeof(TSequence)) +
+    double_pad(bboxsize - sizeof(Period)) + newcount * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
@@ -1964,7 +1964,7 @@ tfloatseq_span(const TSequence *seq)
     lower = end; lower_inc = seq->period.upper_inc;
     upper = start; upper_inc = seq->period.lower_inc;
   }
-  bool min_inc = datum_lt(box->span.lower, lower, T_FLOAT8) || 
+  bool min_inc = datum_lt(box->span.lower, lower, T_FLOAT8) ||
     (box->span.lower == lower && lower_inc);
   bool max_inc = datum_gt(box->span.upper, upper, T_FLOAT8) ||
     (box->span.upper == upper && upper_inc);
@@ -2106,9 +2106,6 @@ tsequence_min_value(const TSequence *seq)
   if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
-    if (seq->temptype == T_TINT)
-      return Int32GetDatum((int) DatumGetFloat8(box->span.lower));
-    /* seq->temptype == T_TFLOAT */
     return box->span.lower;
   }
 
@@ -2134,9 +2131,6 @@ tsequence_max_value(const TSequence *seq)
   if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
-    if (seq->temptype == T_TINT)
-      return Int32GetDatum((int) DatumGetFloat8(box->span.upper));
-    /* seq->temptype == T_TFLOAT */
     return box->span.upper;
   }
 

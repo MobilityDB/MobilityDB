@@ -60,7 +60,7 @@
 void *
 tinstantset_bbox_ptr(const TInstantSet *is)
 {
-  return (void *)(((char *) is) + double_pad(sizeof(TInstantSet)));
+  return (void *)(&is->period);
 }
 
 /**
@@ -84,7 +84,8 @@ static size_t *
 tinstantset_offsets_ptr(const TInstantSet *is)
 {
   return (size_t *)(((char *) is) + double_pad(sizeof(TInstantSet)) +
-    double_pad(is->bboxsize));
+    /* The period component of the bbox is already declared in the struct */
+    double_pad(is->bboxsize - sizeof(Period)));
 }
 
 /**
@@ -98,8 +99,9 @@ tinstantset_inst_n(const TInstantSet *is, int index)
 {
   return (TInstant *)(
     /* start of data */
-    ((char *) is) + double_pad(sizeof(TInstantSet)) + is->bboxsize +
-      is->count * sizeof(size_t) +
+    ((char *) is) + double_pad(sizeof(TInstantSet)) +
+      /* The period component of the bbox is already declared in the struct */
+      (is->bboxsize - sizeof(Period)) + is->count * sizeof(size_t) +
       /* offset */
       (tinstantset_offsets_ptr(is))[index]);
 }
@@ -124,9 +126,9 @@ tinstantset_make_valid(const TInstant **instants, int count, bool merge)
  * For example, the memory structure of a temporal instant set with two
  * instants is as follows
  * @code
- *  -----------------------------------------------------------
- *  ( TInstantSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
- *  -----------------------------------------------------------
+ *  -----------------------------------------------------------------
+ *  ( TInstantSet )_X | (end of bbox )_X | offset_0 | offset_1 | ...
+ *  -----------------------------------------------------------------
  *  -------------------------------------
  *  ( TInstant_0 )_X | ( TInstant_1 )_X |
  *  -------------------------------------
@@ -141,13 +143,13 @@ tinstantset_make1(const TInstant **instants, int count)
   size_t bboxsize = temporal_bbox_size(instants[0]->temptype);
 
   /* Compute the size of the temporal instant set */
-  /* Bounding box size */
-  size_t memsize = bboxsize;
+  /* The period component of the bbox is already declared in the struct */
+  size_t memsize = bboxsize - sizeof(Period);
   /* Size of composing instants */
   for (int i = 0; i < count; i++)
     memsize += double_pad(VARSIZE(instants[i]));
   /* Size of the struct and the offset array */
-  memsize +=  double_pad(sizeof(TInstantSet)) + count * sizeof(size_t);
+  memsize += double_pad(sizeof(TInstantSet)) + count * sizeof(size_t);
   /* Create the TInstantSet */
   TInstantSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
@@ -163,7 +165,8 @@ tinstantset_make1(const TInstant **instants, int count)
   if (tgeo_type(instants[0]->temptype))
   {
     MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
+    MOBDB_FLAGS_SET_GEODETIC(result->flags,
+      MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
   /* Initialization of the variable-length part */
   /*
@@ -176,8 +179,8 @@ tinstantset_make1(const TInstant **instants, int count)
     tinstantset_compute_bbox(instants, count, tinstantset_bbox_ptr(result));
   }
   /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TInstantSet)) + double_pad(bboxsize) +
-    count * sizeof(size_t);
+  size_t pdata = double_pad(sizeof(TInstantSet)) +
+    double_pad(bboxsize - sizeof(Period)) + count * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < count; i++)
   {
@@ -684,9 +687,6 @@ tinstantset_min_value(const TInstantSet *is)
   if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
     TBOX *box = tinstantset_bbox_ptr(is);
-    if (is->temptype == T_TINT)
-      return Int32GetDatum((int) DatumGetFloat8(box->span.lower));
-    /* is->temptype == T_TFLOAT */
     return box->span.lower;
   }
 
@@ -712,9 +712,6 @@ tinstantset_max_value(const TInstantSet *is)
   if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
     TBOX *box = tinstantset_bbox_ptr(is);
-    if (is->temptype == T_TINT)
-      return Int32GetDatum((int) DatumGetFloat8(box->span.upper));
-    /* is->temptype == T_TFLOAT */
     return box->span.upper;
   }
 

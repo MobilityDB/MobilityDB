@@ -4656,10 +4656,7 @@ tpoint_at_stbox1(const Temporal *temp, const STBOX *box, bool upper_inc)
   Temporal *temp1;
   if (hast)
   {
-    Period p;
-    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
-      true, upper_inc, T_TIMESTAMPTZ, &p);
-    temp1 = temporal_restrict_period(temp, &p, REST_AT);
+    temp1 = temporal_restrict_period(temp, &box->period, REST_AT);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */
     if (temp1 == NULL)

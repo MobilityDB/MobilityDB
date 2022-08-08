@@ -181,7 +181,6 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
     /* Process X min/max */
     span_set(Float8GetDatum(Min(xmin, xmax)), Float8GetDatum(Max(xmin, xmax)),
       true, true, T_FLOAT8, &box->span);
-
   }
   if (hast)
   {
@@ -370,8 +369,6 @@ timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
   memset(box, 0, sizeof(TBOX));
   const Period *p = timestampset_period_ptr(ts);
   memcpy(&box->period, p, sizeof(Span));
-  // box->tmin = DatumGetTimestampTz(p->lower);
-  // box->tmax = DatumGetTimestampTz(p->upper);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -403,8 +400,6 @@ period_set_tbox(const Period *p, TBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   memcpy(&box->period, p, sizeof(Span));
-  // box->tmin = DatumGetTimestampTz(p->lower);
-  // box->tmax = DatumGetTimestampTz(p->upper);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -561,11 +556,11 @@ tbox_to_intspan(const TBOX *box)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a temporal box as a float span.
+ * @brief Cast a temporal box as a span.
  * @sqlop @p ::
  */
 Span *
-tbox_to_floatspan(const TBOX *box)
+tbox_to_span(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -878,15 +873,13 @@ adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
     return false;
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
-  bool result;
   if (! hasx && hast)
-    result = (inter.period.lower == inter.period.upper);
-  else if (hasx && ! hast)
-    result = (inter.span.lower == inter.span.upper);
-  else
-    result = (inter.span.lower == inter.span.upper ||
+    return (inter.period.lower == inter.period.upper);
+  if (hasx && ! hast)
+    return (inter.span.lower == inter.span.upper);
+  /* (hasx && hast) */
+  return (inter.span.lower == inter.span.upper ||
       inter.period.lower == inter.period.upper);
-  return result;
 }
 
 /*****************************************************************************

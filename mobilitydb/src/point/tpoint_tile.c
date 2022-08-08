@@ -458,16 +458,19 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
   state->box.zmax = float_bucket(box->zmax, size, sorigin.z);
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket(box->tmin, tunits, torigin);
-    state->box.tmax = timestamptz_bucket(box->tmax, tunits, torigin);
+    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.lower), tunits, torigin));
+    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.upper), tunits, torigin));
   }
   state->box.srid = box->srid;
   state->box.flags = box->flags;
-  MOBDB_FLAGS_SET_T(state->box.flags, MOBDB_FLAGS_GET_T(box->flags) && tunits > 0);
+  MOBDB_FLAGS_SET_T(state->box.flags,
+    MOBDB_FLAGS_GET_T(box->flags) && tunits > 0);
   state->x = state->box.xmin;
   state->y = state->box.ymin;
   state->z = state->box.zmin;
-  state->t = state->box.tmin;
+  state->t = DatumGetTimestampTz(state->box.period.lower);
   state->temp = temp;
   return state;
 }
@@ -514,7 +517,7 @@ stbox_tile_state_next(STboxGridState *state)
             state->coords[0] = state->coords[1] = state->coords[2] = 0;
             state->t += state->tunits;
             state->coords[3]++;
-            if (state->t > state->box.tmax)
+            if (state->t > DatumGetTimestampTz(state->box.period.upper))
             {
               state->done = true;
               return;
@@ -538,7 +541,7 @@ stbox_tile_state_next(STboxGridState *state)
           state->coords[0] = state->coords[1] = 0;
           state->t += state->tunits;
           state->coords[2]++;
-          if (state->t > state->box.tmax)
+          if (state->t > DatumGetTimestampTz(state->box.period.upper))
           {
             state->done = true;
             return;
@@ -790,7 +793,8 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
   if (MOBDB_FLAGS_GET_Z(state->box.flags))
     coords[k++] = (z - state->box.zmin) / state->size;
   if (MOBDB_FLAGS_GET_T(state->box.flags))
-    coords[k++] = (t - state->box.tmin) / state->tunits;
+    coords[k++] = (t - DatumGetTimestampTz(state->box.period.lower)) /
+      state->tunits;
   return;
 }
 
@@ -1036,7 +1040,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       if (MOBDB_FLAGS_GET_Z(state->box.flags))
         count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
       if (state->tunits)
-        count[numdims++] = ( (state->box.tmax - state->box.tmin) / state->tunits ) + 1;
+        count[numdims++] = ( (DatumGetTimestampTz(state->box.period.upper) -
+          DatumGetTimestampTz(state->box.period.lower)) / state->tunits ) + 1;
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(state->bm, temp, state);
     }
@@ -1093,7 +1098,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
       hasz, false, box.srid));
     if (timesplit)
-      tuple_arr[i++] = TimestampTzGetDatum(box.tmin);
+      tuple_arr[i++] = box.period.lower;
     tuple_arr[i++] = PointerGetDatum(atstbox);
     tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
     result = HeapTupleGetDatum(tuple);

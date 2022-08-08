@@ -416,7 +416,7 @@ tbox_size(const TBOX *box)
    */
   if (isnan(DatumGetFloat8(box->span.upper)))
     return get_float8_infinity();
-  return (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)) * 
+  return (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)) *
     (DatumGetTimestampTz(box->period.upper) -
       DatumGetTimestampTz(box->period.lower));
 }
@@ -559,9 +559,8 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       else if (dimNum == 2)
         range = bbox->zmax - bbox->zmin;
       else
-        range = (double) (bbox->tmax - bbox->tmin);
-        // range = (double) (DatumGetTimestampTz(bbox->period.upper) -
-          // DatumGetTimestampTz(bbox->period.lower));
+        range = (double) (DatumGetTimestampTz(bbox->period.upper) -
+          DatumGetTimestampTz(bbox->period.lower));
     }
 
     overlap = (float4) ((leftUpper - rightLower) / range);
@@ -796,12 +795,10 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
         }
         else
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->tmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->tmax;
-          // intervalsLower[i - FirstOffsetNumber].lower =
-            // DatumGetTimestampTz(((STBOX *) box)->period.lower);
-          // intervalsLower[i - FirstOffsetNumber].upper =
-            // DatumGetTimestampTz(((STBOX *) box)->period.upper);
+          intervalsLower[i - FirstOffsetNumber].lower =
+            DatumGetTimestampTz(((STBOX *) box)->period.lower);
+          intervalsLower[i - FirstOffsetNumber].upper =
+            DatumGetTimestampTz(((STBOX *) box)->period.upper);
         }
       }
     }
@@ -999,8 +996,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
       }
       else
       {
-        lower = ((STBOX *) box)->tmin;
-        upper = ((STBOX *) box)->tmax;
+        lower = (double) DatumGetTimestampTz(((TBOX *) box)->period.lower);
+        upper = (double) DatumGetTimestampTz(((TBOX *) box)->period.upper);
       }
     }
 
@@ -1123,7 +1120,7 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
         DatumGetFloat8(b2->span.lower)) &&
       FLOAT8_EQ(DatumGetFloat8(b1->span.upper),
         DatumGetFloat8(b2->span.upper)) &&
-      /* Equality test does not requite to use DatumGetTimestampTz */
+      /* Equality test does not require to use DatumGetTimestampTz */
       (b1->period.lower == b2->period.lower) &&
       (b1->period.upper == b2->period.upper);
   else

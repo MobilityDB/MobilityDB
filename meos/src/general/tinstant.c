@@ -285,7 +285,6 @@ tinstant_out(const TInstant *inst, Datum arg)
 TInstant *
 tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
 {
-  // size_t value_offset = double_pad(sizeof(TInstant));
   size_t value_offset = sizeof(TInstant) - sizeof(Datum);
   size_t size = value_offset;
   /* Create the temporal instant */

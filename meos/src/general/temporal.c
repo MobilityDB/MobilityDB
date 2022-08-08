@@ -1174,35 +1174,19 @@ temporal_to_period(const Temporal *temp)
 Span *
 tnumber_to_span(const Temporal *temp)
 {
+  ensure_tnumber_type(temp->temptype);
   Span *result = NULL;
-  mobdbType basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
+    mobdbType basetype = temptype_basetype(temp->temptype);
     result = span_make(value, value, true, true, basetype);
   }
-  else if (temp->subtype == TINSTANTSET || temp->temptype == T_TINT)
+  else
   {
     TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
-    Datum min = 0, max = 0;
-    ensure_tnumber_type(temp->temptype);
-    if (temp->temptype == T_TINT)
-    {
-      min = Int32GetDatum((int) DatumGetFloat8(box->span.lower));
-      max = Int32GetDatum((int) DatumGetFloat8(box->span.upper));
-      result = span_make(min, max, true, true, basetype);
-    }
-    else /* temp->temptype == T_TFLOAT */
-      result = span_copy(&box->span);
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    result = tfloatseq_span((TSequence *) temp);
-  }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    result = tfloatseqset_span((TSequenceSet *) temp);
+    result = span_copy(&box->span);
   }
   return result;
 }
@@ -1477,12 +1461,11 @@ temporal_values(const Temporal *temp, int *count)
  * @pymeosfunc getValues()
  */
 bool *
-tbool_values(const Temporal *temp)
+tbool_values(const Temporal *temp, int *count)
 {
-  int count;
-  Datum *datumarr = temporal_values(temp, &count);
-  bool *result = palloc(sizeof(bool) * count);
-  for (int i = 0; i < count; i++)
+  Datum *datumarr = temporal_values(temp, count);
+  bool *result = palloc(sizeof(bool) * *count);
+  for (int i = 0; i < *count; i++)
     result[i] = DatumGetBool(datumarr[i]);
   pfree(datumarr);
   return result;
@@ -1495,12 +1478,11 @@ tbool_values(const Temporal *temp)
  * @pymeosfunc getValues()
  */
 int *
-tint_values(const Temporal *temp)
+tint_values(const Temporal *temp, int *count)
 {
-  int count;
-  Datum *datumarr = temporal_values(temp, &count);
-  int *result = palloc(sizeof(int) * count);
-  for (int i = 0; i < count; i++)
+  Datum *datumarr = temporal_values(temp, count);
+  int *result = palloc(sizeof(int) * *count);
+  for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
   pfree(datumarr);
   return result;
@@ -1513,12 +1495,11 @@ tint_values(const Temporal *temp)
  * @pymeosfunc getValues()
  */
 double *
-tfloat_values(const Temporal *temp)
+tfloat_values(const Temporal *temp, int *count)
 {
-  int count;
-  Datum *datumarr = temporal_values(temp, &count);
-  double *result = palloc(sizeof(double) * count);
-  for (int i = 0; i < count; i++)
+  Datum *datumarr = temporal_values(temp, count);
+  double *result = palloc(sizeof(double) * *count);
+  for (int i = 0; i < *count; i++)
     result[i] = DatumGetFloat8(datumarr[i]);
   pfree(datumarr);
   return result;
@@ -1531,12 +1512,11 @@ tfloat_values(const Temporal *temp)
  * @pymeosfunc getValues()
  */
 text **
-ttext_values(const Temporal *temp)
+ttext_values(const Temporal *temp, int *count)
 {
-  int count;
-  Datum *datumarr = temporal_values(temp, &count);
-  text **result = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
+  Datum *datumarr = temporal_values(temp, count);
+  text **result = palloc(sizeof(text *) * *count);
+  for (int i = 0; i < *count; i++)
     result[i] = DatumGetTextP(datumarr[i]);
   pfree(datumarr);
   return result;
@@ -1549,12 +1529,11 @@ ttext_values(const Temporal *temp)
  * @pymeosfunc getValues()
  */
 GSERIALIZED **
-tpoint_values(const Temporal *temp)
+tpoint_values(const Temporal *temp, int *count)
 {
-  int count;
-  Datum *datumarr = temporal_values(temp, &count);
-  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * count);
-  for (int i = 0; i < count; i++)
+  Datum *datumarr = temporal_values(temp, count);
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
+  for (int i = 0; i < *count; i++)
     result[i] = DatumGetGserializedP(datumarr[i]);
   pfree(datumarr);
   return result;
@@ -3040,7 +3019,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
  * @sqlfunc atSpan(), minusSpan()
  */
 Temporal *
-tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc)
+tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
 {
   /* Bounding box test */
   if (! tnumber_bbox_restrict_span(temp, span))
@@ -3318,17 +3297,7 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
   {
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_type(temp->temptype);
-    /* The basetype of a temporal value determines wheter the
-     * argument box is converted into an intspan or a floatspan */
-    Span *span;
-    if (temp->temptype == T_TINT)
-      span = span_make(Int32GetDatum((int) DatumGetFloat8(box->span.lower)),
-        Int32GetDatum((int) DatumGetFloat8(box->span.upper)), true, true,
-        T_INT4);
-    else /* temp->temptype == T_TFLOAT */
-      span = span_copy(&box->span);
-    result = tnumber_restrict_span(temp1, span, true);
-    pfree(span);
+    result = tnumber_restrict_span(temp1, &box->span, REST_AT);
   }
   else
     result = temp1;

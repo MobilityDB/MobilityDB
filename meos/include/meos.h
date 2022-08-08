@@ -102,14 +102,13 @@ typedef struct
  */
 typedef struct
 {
+  Period      period; /**< time span */
   double      xmin;   /**< minimum x value */
   double      xmax;   /**< maximum x value */
   double      ymin;   /**< minimum y value */
   double      ymax;   /**< maximum y value */
   double      zmin;   /**< minimum z value */
   double      zmax;   /**< maximum z value */
-  TimestampTz tmin;   /**< minimum timestamp */
-  TimestampTz tmax;   /**< maximum timestamp */
   int32       srid;   /**< SRID */
   int16       flags;  /**< flags */
 } STBOX;
@@ -139,7 +138,8 @@ typedef struct
   TimestampTz   t;            /**< Timestamp (8 bytes) */
   Datum         value;        /**< Base value for types passed by value,
                                    first 8 bytes of the base value for values
-                                   passed by reference */
+                                   passed by reference. The extra bytes
+                                   needed are added upon creation. */
   /* variable-length data follows */
 } TInstant;
 
@@ -154,7 +154,11 @@ typedef struct
   int16         flags;        /**< Flags */
   int32         count;        /**< Number of TInstant elements */
   int16         bboxsize;     /**< Size of the bounding box */
-  /**< beginning of variable-length data */
+  Period        period;       /**< Time span (24 bytes). All bounding boxes
+                                   start with a period so actually it is also
+                                   the begining of the bounding box. The extra
+                                   bytes needed are added upon creation. */
+  /* variable-length data follows */
 } TInstantSet;
 
 /**
@@ -168,8 +172,11 @@ typedef struct
   int16         flags;        /**< Flags */
   int32         count;        /**< Number of TInstant elements */
   int16         bboxsize;     /**< Size of the bounding box */
-  Period        period;       /**< Time span (24 bytes) */
-  /**< beginning of variable-length data */
+  Period        period;       /**< Time span (24 bytes). All bounding boxes
+                                   start with a period so actually it is also
+                                   the begining of the bounding box. The extra
+                                   bytes needed are added upon creation. */
+  /* variable-length data follows */
 } TSequence;
 
 /**
@@ -182,9 +189,14 @@ typedef struct
   uint8         subtype;      /**< Temporal subtype */
   int16         flags;        /**< Flags */
   int32         count;        /**< Number of TSequence elements */
-  int32         totalcount;   /**< Total number of TInstant elements in all TSequence elements */
+  int32         totalcount;   /**< Total number of TInstant elements in all
+                                   composing TSequence elements */
   int16         bboxsize;     /**< Size of the bounding box */
-  /**< beginning of variable-length data */
+  Period        period;       /**< Time span (24 bytes). All bounding boxes
+                                   start with a period so actually it is also
+                                   the begining of the bounding box. The extra
+                                   bytes needed are added upon creation. */
+  /* variable-length data follows */
 } TSequenceSet;
 
 /**
@@ -604,8 +616,7 @@ extern TBOX *int_period_to_tbox(int i, const Period *p);
 extern TBOX *float_period_to_tbox(double d, const Period *p);
 extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
 extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
-extern Span *tbox_to_intspan(const TBOX *box);
-extern Span *tbox_to_floatspan(const TBOX *box);
+extern Span *tbox_to_span(const TBOX *box);
 extern Period *tbox_to_period(const TBOX *box);
 extern Period *stbox_to_period(const STBOX *box);
 extern TBOX *tnumber_to_tbox(const Temporal *temp);
@@ -832,7 +843,7 @@ extern Span *tnumber_to_span(const Temporal *temp);
 
 extern bool tbool_end_value(const Temporal *temp);
 extern bool tbool_start_value(const Temporal *temp);
-extern bool *tbool_values(const Temporal *temp);
+extern bool *tbool_values(const Temporal *temp, int *count);
 extern Interval *temporal_duration(const Temporal *temp);
 extern const TInstant *temporal_end_instant(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
@@ -862,20 +873,20 @@ extern double tfloat_max_value(const Temporal *temp);
 extern double tfloat_min_value(const Temporal *temp);
 extern Span **tfloat_spans(const Temporal *temp, int *count);
 extern double tfloat_start_value(const Temporal *temp);
-extern double *tfloat_values(const Temporal *temp);
+extern double *tfloat_values(const Temporal *temp, int *count);
 extern int tint_end_value(const Temporal *temp);
 extern int tint_max_value(const Temporal *temp);
 extern int tint_min_value(const Temporal *temp);
 extern int tint_start_value(const Temporal *temp);
-extern int *tint_values(const Temporal *temp);
+extern int *tint_values(const Temporal *temp, int *count);
 extern GSERIALIZED *tpoint_end_value(const Temporal *temp);
 extern GSERIALIZED *tpoint_start_value(const Temporal *temp);
-extern GSERIALIZED **tpoint_values(const Temporal *temp);
+extern GSERIALIZED **tpoint_values(const Temporal *temp, int *count);
 extern text *ttext_end_value(const Temporal *temp);
 extern text *ttext_max_value(const Temporal *temp);
 extern text *ttext_min_value(const Temporal *temp);
 extern text *ttext_start_value(const Temporal *temp);
-extern text **ttext_values(const Temporal *temp);
+extern text **ttext_values(const Temporal *temp, int *count);
 
 /*****************************************************************************/
 

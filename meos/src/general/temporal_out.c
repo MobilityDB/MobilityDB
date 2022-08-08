@@ -378,9 +378,9 @@ stbox_mfjson_buf(char *output, const STBOX *bbox, bool hasz, int precision)
     ptr += lwprint_double(bbox->zmax, precision, ptr);
   }
   ptr += sprintf(ptr, "]],\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, bbox->tmin);
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, bbox->tmax);
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
   ptr += sprintf(ptr, "}},");
   return (ptr - output);
 }
@@ -2071,8 +2071,10 @@ stbox_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
   /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))
   {
-    buf = timestamp_to_wkb_buf(box->tmin, buf, variant);
-    buf = timestamp_to_wkb_buf(box->tmax, buf, variant);
+    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.lower), buf,
+      variant);
+    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.upper), buf,
+      variant);
   }
   return buf;
 }

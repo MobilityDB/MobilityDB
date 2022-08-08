@@ -44,6 +44,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_catalog.h"
@@ -130,14 +131,14 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
       break;
     case RTBeforeStrategyNumber:
       retval = /* before_stbox_stbox(key, query) */
-        (key->tmax <= query->tmin);
+        datum_le(key->period.upper, query->period.lower, T_TIMESTAMPTZ);
       break;
     case RTOverBeforeStrategyNumber:
       retval = overbefore_stbox_stbox(key, query);
       break;
     case RTAfterStrategyNumber:
       retval = /* after_stbox_stbox(key, query)*/
-        (key->tmin >= query->tmax);
+        datum_ge(key->period.lower, query->period.upper, T_TIMESTAMPTZ);
       break;
     case RTOverAfterStrategyNumber:
       retval = overafter_stbox_stbox(key, query);
@@ -370,8 +371,12 @@ stbox_adjust(void *bbox1, void *bbox2)
   box1->ymax = FLOAT8_MAX(box1->ymax, box2->ymax);
   box1->zmin = FLOAT8_MIN(box1->zmin, box2->zmin);
   box1->zmax = FLOAT8_MAX(box1->zmax, box2->zmax);
-  box1->tmin = Min(box1->tmin, box2->tmin);
-  box1->tmax = Max(box1->tmax, box2->tmax);
+  TimestampTz tmin = Min(DatumGetTimestampTz(box1->period.lower),
+    DatumGetTimestampTz(box2->period.lower));
+  TimestampTz tmax = Max(DatumGetTimestampTz(box1->period.upper),
+    DatumGetTimestampTz(box2->period.upper));
+  box1->period.lower = TimestampTzGetDatum(tmin);
+  box1->period.upper = TimestampTzGetDatum(tmax);
   return;
 }
 
@@ -430,14 +435,18 @@ static void
 stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
 {
   memset(new, 0, sizeof(STBOX));
-  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  new->ymax = FLOAT8_MAX(a->ymax, b->ymax);
-  new->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-  new->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
   new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
   new->ymin = FLOAT8_MIN(a->ymin, b->ymin);
+  new->ymax = FLOAT8_MAX(a->ymax, b->ymax);
   new->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-  new->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
+  new->zmax = FLOAT8_MAX(a->zmax, b->zmax);
+  TimestampTz tmin = Min(DatumGetTimestampTz(a->period.lower),
+    DatumGetTimestampTz(b->period.lower));
+  TimestampTz tmax = Max(DatumGetTimestampTz(a->period.upper),
+    DatumGetTimestampTz(b->period.upper));
+  new->period.lower = TimestampTzGetDatum(tmin);
+  new->period.upper = TimestampTzGetDatum(tmax);
   return;
 }
 
@@ -456,7 +465,8 @@ stbox_size(const STBOX *box)
    * The less-than cases should not happen, but if they do, say "zero".
    */
   if (FLOAT8_LE(box->xmax, box->xmin) || FLOAT8_LE(box->ymax, box->ymin) ||
-    FLOAT8_LE(box->zmax, box->zmin) || box->tmax <= box->tmin)
+    FLOAT8_LE(box->zmax, box->zmin) ||
+    datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
     return 0.0;
 
   /*
@@ -467,7 +477,8 @@ stbox_size(const STBOX *box)
   if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
     return get_float8_infinity();
   return (box->xmax - box->xmin) * (box->ymax - box->ymin) *
-    (box->zmax - box->zmin) * (box->tmax - box->tmin);
+    (box->zmax - box->zmin) * (DatumGetTimestampTz(box->period.upper) -
+      DatumGetTimestampTz(box->period.lower));
 }
 
 /**
@@ -555,9 +566,11 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
     *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
-      FLOAT8_EQ(b1->zmin, b2->zmin) && b1->tmin == b2->tmin &&
-      FLOAT8_EQ(b1->xmax, b2->xmax) && FLOAT8_EQ(b1->ymax, b2->ymax) &&
-      FLOAT8_EQ(b1->zmax, b2->zmax) && b1->tmax == b2->tmax);
+      FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
+      FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
+      /* Equality test does not require to use DatumGetTimestampTz */
+      (b1->period.lower == b2->period.lower) &&
+      (b1->period.upper == b2->period.upper));
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);

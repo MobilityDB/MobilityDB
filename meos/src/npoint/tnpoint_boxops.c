@@ -83,7 +83,8 @@ void
 tnpointinst_set_stbox(const TInstant *inst, STBOX *box)
 {
   npoint_set_stbox(DatumGetNpointP(tinstant_value(inst)), box);
-  box->tmin = box->tmax = inst->t;
+  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+    true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -134,8 +135,8 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
   GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
     PGIS_LWGEOM_line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
-  box->tmin = tmin;
-  box->tmax = tmax;
+  span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
+    true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
   pfree(DatumGetPointer(line));
   if (posmin != 0 || posmax != 1)
@@ -181,7 +182,8 @@ bool
 npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBOX *box)
 {
   npoint_set_stbox(np, box);
-  box->tmin = box->tmax = t;
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
+    true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
 }
@@ -193,8 +195,7 @@ bool
 npoint_period_set_stbox(const Npoint *np, const Period *p, STBOX *box)
 {
   npoint_set_stbox(np, box);
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  memcpy(&box->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
 }
