@@ -617,7 +617,7 @@ tbox_round(const TBOX *box, int size)
 {
   ensure_has_X_tbox(box);
   TBOX *result = tbox_copy(box);
-  result->span.upper = datum_round_float(box->span.lower, size);
+  result->span.lower = datum_round_float(box->span.lower, size);
   result->span.upper = datum_round_float(box->span.upper, size);
   return result;
 }
