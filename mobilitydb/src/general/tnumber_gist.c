@@ -96,29 +96,25 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
       retval = adjacent_tbox_tbox(key, query);
       break;
     case RTLeftStrategyNumber:
-      retval = /* left_tbox_tbox(key, query) */
-        datum_le(key->span.upper, query->span.lower, T_FLOAT8);
+      retval = left_tbox_tbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
       retval = overleft_tbox_tbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = /* right_tbox_tbox(key, query) */
-        datum_ge(key->span.lower, query->span.upper, T_FLOAT8);
+      retval = right_tbox_tbox(key, query);
       break;
     case RTOverRightStrategyNumber:
       retval = overright_tbox_tbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = /* before_tbox_tbox(key, query) */
-        datum_le(key->period.upper, query->period.lower, T_TIMESTAMPTZ);
+      retval = before_tbox_tbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
       retval = overbefore_tbox_tbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = /* after_tbox_tbox(key, query) */
-        datum_ge(key->period.lower, query->period.upper, T_TIMESTAMPTZ);
+      retval = after_tbox_tbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
       retval = overafter_tbox_tbox(key, query);

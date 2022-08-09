@@ -949,7 +949,7 @@ left_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
-  return datum_lt(box1->span.upper, box2->span.lower, T_FLOAT8);
+  return left_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -963,7 +963,7 @@ overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
-  return datum_le(box1->span.upper, box2->span.upper, T_FLOAT8);
+  return overleft_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -977,7 +977,7 @@ right_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
-  return datum_gt(box1->span.lower, box2->span.upper, T_FLOAT8);
+  return right_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -991,7 +991,7 @@ overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
-  return datum_ge(box1->span.lower, box2->span.lower, T_FLOAT8);
+  return overright_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -1005,8 +1005,7 @@ before_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
-  return datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ);
-    // left_span_span(&box1->period, &box2->period);
+  return left_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1020,8 +1019,7 @@ overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
-  return datum_le(box1->period.upper, box2->period.upper, T_TIMESTAMPTZ);
-    // overleft_span_span(&box1->period, &box2->period);
+  return overleft_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1035,8 +1033,7 @@ after_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
-  return datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ);
-    // right_span_span(&box1->period, &box2->period);
+  return right_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1050,8 +1047,7 @@ overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
-  return datum_ge(box1->period.lower, box2->period.lower, T_TIMESTAMPTZ);
-    // overright_span_span(&box1->period, &box2->period);
+  return overright_span_span(&box1->period, &box2->period);
 }
 
 /*****************************************************************************

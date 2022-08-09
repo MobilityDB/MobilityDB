@@ -1384,7 +1384,8 @@ before_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ);
+  return left_span_span(&box1->period, &box2->period);
+
 }
 
 /**
@@ -1398,7 +1399,7 @@ overbefore_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return datum_le(box1->period.upper, box2->period.upper, T_TIMESTAMPTZ);
+  return overleft_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1412,7 +1413,7 @@ after_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ);
+  return right_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1426,7 +1427,7 @@ overafter_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return datum_ge(box1->period.lower, box2->period.lower, T_TIMESTAMPTZ);
+  return overright_span_span(&box1->period, &box2->period);
 }
 
 /*****************************************************************************

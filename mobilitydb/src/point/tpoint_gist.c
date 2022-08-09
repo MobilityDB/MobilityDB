@@ -130,15 +130,13 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
       retval = overback_stbox_stbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = /* before_stbox_stbox(key, query) */
-        datum_le(key->period.upper, query->period.lower, T_TIMESTAMPTZ);
+      retval = before_stbox_stbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
       retval = overbefore_stbox_stbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = /* after_stbox_stbox(key, query)*/
-        datum_ge(key->period.lower, query->period.upper, T_TIMESTAMPTZ);
+      retval = after_stbox_stbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
       retval = overafter_stbox_stbox(key, query);
