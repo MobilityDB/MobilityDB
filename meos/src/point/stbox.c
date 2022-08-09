@@ -332,6 +332,65 @@ stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 
 /**
  * @ingroup libmeos_box_constructor
+ * @brief Construct a spatiotemporal box from the arguments.
+ * @sqlfunc stbox()
+ */
+STBOX *
+stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax)
+{
+  /* Note: zero-fill is done in function stbox_set */
+  STBOX *result = palloc(sizeof(STBOX));
+  stbox_set2(p, hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+    result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Set a spatiotemporal box from the arguments.
+ * @note This function is equivalent to @ref stbox_make without memory
+ * allocation
+ */
+void
+stbox_set2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, STBOX *box)
+{
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
+  MOBDB_FLAGS_SET_X(box->flags, hasx);
+  MOBDB_FLAGS_SET_Z(box->flags, hasz);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  box->srid = srid;
+
+  if (p)
+  {
+    /* Process T min/max */
+    memcpy(&box->period, p, sizeof(Span));
+    MOBDB_FLAGS_SET_T(box->flags, true);
+  }
+  if (hasx)
+  {
+    /* Process X min/max */
+    box->xmin = Min(xmin, xmax);
+    box->xmax = Max(xmin, xmax);
+    /* Process Y min/max */
+    box->ymin = Min(ymin, ymax);
+    box->ymax = Max(ymin, ymax);
+    if (hasz || geodetic)
+    {
+      /* Process Z min/max */
+      box->zmin = Min(zmin, zmax);
+      box->zmax = Max(zmin, zmax);
+    }
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
  * @brief Return a copy of a spatiotemporal box.
  */
 STBOX *

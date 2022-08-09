@@ -1186,7 +1186,14 @@ tnumber_to_span(const Temporal *temp)
   else
   {
     TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
-    result = span_copy(&box->span);
+    if (temp->temptype == T_TINT)
+    {
+      Span s;
+      floatspan_set_intspan(&box->span, &s);      
+      result = span_copy(&s);
+    }
+    else
+      result = span_copy(&box->span);
   }
   return result;
 }
@@ -2377,10 +2384,13 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   {
     TBOX box;
     temporal_set_bbox(temp, &box);
-    return (ever && datum_le(box.span.lower, value, T_FLOAT8) &&
-        datum_le(value, box.span.upper, T_FLOAT8)) ||
-      (!ever && box.span.lower == value &&
-        value == box.span.upper);
+    Datum dvalue = (temp->temptype == T_TINT) ?
+      Float8GetDatum(DatumGetInt32(value)) : value;
+    return (ever && 
+        datum_le(box.span.lower, dvalue, box.span.basetype) &&
+        datum_le(dvalue, box.span.upper, box.span.basetype)) ||
+      (!ever && box.span.lower == dvalue &&
+        dvalue == box.span.upper);
   }
   else if (tspatial_type(temp->temptype))
   {
@@ -2418,8 +2428,10 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   {
     TBOX box;
     temporal_set_bbox(temp, &box);
-    if ((ever && datum_lt(value, box.span.lower, T_FLOAT8)) ||
-      (!ever && datum_lt(value, box.span.upper, T_FLOAT8)))
+    Datum dvalue = (temp->temptype == T_TINT) ?
+      Float8GetDatum(DatumGetInt32(value)) : value;
+    if ((ever && datum_lt(dvalue, box.span.lower, box.span.basetype)) ||
+      (! ever && datum_lt(dvalue, box.span.upper, box.span.basetype)))
       return false;
   }
   return true;

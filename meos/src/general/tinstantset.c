@@ -687,7 +687,10 @@ tinstantset_min_value(const TInstantSet *is)
   if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
     TBOX *box = tinstantset_bbox_ptr(is);
-    return box->span.lower;
+    Datum min = box->span.lower;
+    if (is->temptype == T_TINT)
+      min = Int32GetDatum((int) DatumGetFloat8(min));
+    return min;
   }
 
   mobdbType basetype = temptype_basetype(is->temptype);
@@ -712,7 +715,10 @@ tinstantset_max_value(const TInstantSet *is)
   if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
     TBOX *box = tinstantset_bbox_ptr(is);
-    return box->span.upper;
+    Datum max = box->span.upper;
+    if (is->temptype == T_TINT)
+      max = Int32GetDatum((int) DatumGetFloat8(max));
+    return max;
   }
 
   mobdbType basetype = temptype_basetype(is->temptype);

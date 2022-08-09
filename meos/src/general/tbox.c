@@ -113,8 +113,16 @@ tbox_out(const TBOX *box, int maxdd)
   assert(hasx || hast);
   if (hasx)
   {
-    xmin = float8_out(DatumGetFloat8(box->span.lower), maxdd);
-    xmax = float8_out(DatumGetFloat8(box->span.upper), maxdd);
+    if (box->span.basetype == T_INT4)
+    {
+      xmin = int4_out(DatumGetInt32(box->span.lower));
+      xmax = int4_out(DatumGetInt32(box->span.upper));
+    }    
+    else /* box->span.basetype == T_FLOAT8 */
+    {
+      xmin = float8_out(DatumGetFloat8(box->span.lower), maxdd);
+      xmax = float8_out(DatumGetFloat8(box->span.upper), maxdd);
+    }
   }
   if (hast)
   {
@@ -194,6 +202,46 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
 
 /**
  * @ingroup libmeos_box_constructor
+ * @brief Construct a temporal box from the arguments.
+ * @sqlfunc tbox()
+ */
+TBOX *
+tbox_make2(const Period *p, const Span *s)
+{
+  /* Note: zero-fill is done in function tbox_set */
+  TBOX *result = palloc(sizeof(TBOX));
+  tbox_set2(p, s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Set a temporal box from the arguments
+ * @note This function is equivalent to @ref tbox_make without memory
+ * allocation
+ */
+void
+tbox_set2(const Period *p, const Span *s, TBOX *box)
+{
+  /* At least on of the X or T dimensions should be given */
+  assert(p || s);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
+  if (p)
+  {
+    memcpy(&box->period, p, sizeof(Span));
+    MOBDB_FLAGS_SET_T(box->flags, true);
+  }
+  if (s)
+  {
+    memcpy(&box->span, s, sizeof(Span));
+    MOBDB_FLAGS_SET_X(box->flags, true);
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
  * @brief Return a copy of a temporal box.
  */
 TBOX *
@@ -219,12 +267,12 @@ number_set_tbox(Datum value, mobdbType basetype, TBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   ensure_tnumber_basetype(basetype);
-  Datum d;
+  Datum dvalue;
   if (basetype == T_INT4)
-    d = Float8GetDatum((double) (DatumGetInt32(value)));
+    dvalue = Float8GetDatum((double) DatumGetInt32(value));
   else /* basetype == T_FLOAT8 */
-    d = value;
-  span_set(d, d, true, true, T_FLOAT8, &box->span);
+    dvalue = value;
+  span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -304,7 +352,10 @@ span_set_tbox(const Span *span, TBOX *box)
   ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  memcpy(&box->span, span, sizeof(Span));
+  if (span->basetype == T_INT4)
+    intspan_set_floatspan(span, &box->span);
+  else
+    memcpy(&box->span, span, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -461,7 +512,10 @@ periodset_to_tbox(const PeriodSet *ps)
 TBOX *
 int_timestamp_to_tbox(int i, TimestampTz t)
 {
-  TBOX *result = tbox_make(true, true, (double) i, (double) i, t, t);
+  TBOX *result = palloc(sizeof(TBOX));
+  int_set_tbox(i, result);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
   return result;
 }
 
@@ -473,7 +527,10 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 TBOX *
 float_timestamp_to_tbox(double d, TimestampTz t)
 {
-  TBOX *result = tbox_make(true, true, d, d, t, t);
+  TBOX *result = palloc(sizeof(TBOX));
+  float_set_tbox(d, result);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
   return result;
 }
 
@@ -485,8 +542,9 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 TBOX *
 int_period_to_tbox(int i, const Period *p)
 {
-  TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
-    p->upper);
+  TBOX *result = palloc(sizeof(TBOX));
+  int_set_tbox(i, result);
+  memcpy(&result->period, p, sizeof(Span));
   return result;
 }
 
@@ -498,7 +556,9 @@ int_period_to_tbox(int i, const Period *p)
 TBOX *
 float_period_to_tbox(double d, const Period *p)
 {
-  TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
+  TBOX *result = palloc(sizeof(TBOX));
+  float_set_tbox(d, result);
+  memcpy(&result->period, p, sizeof(Span));
   return result;
 }
 
@@ -512,7 +572,10 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
   ensure_tnumber_spantype(span->spantype);
   TBOX *result = palloc(sizeof(TBOX));
-  memcpy(&result->span, span, sizeof(Span));
+  if (span->basetype == T_INT4)
+    intspan_set_floatspan(span, &result->span);
+  else
+    memcpy(&result->span, span, sizeof(Span));
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
   return result;
@@ -529,7 +592,10 @@ span_period_to_tbox(const Span *span, const Period *p)
   ensure_tnumber_spantype(span->spantype);
   assert(p->basetype == T_TIMESTAMPTZ);
   TBOX *result = palloc(sizeof(TBOX));
-  memcpy(&result->span, span, sizeof(Span));
+  if (span->basetype == T_INT4)
+    intspan_set_floatspan(span, &result->span);
+  else
+    memcpy(&result->span, span, sizeof(Span));
   memcpy(&result->period, p, sizeof(Span));
   return result;
 }
@@ -792,14 +858,9 @@ contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  if (hasx && (
-    datum_lt(box2->span.lower, box1->span.lower, T_FLOAT8) ||
-    datum_gt(box2->span.upper, box1->span.upper, T_FLOAT8)))
+  if (hasx && ! contains_span_span(&box1->span, &box2->span))
     return false;
-  if (hast && (
-    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
-    // ! contains_span_span(&box1->period, &box2->period))
+  if (hast && ! contains_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -825,14 +886,9 @@ overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  if (hasx && (
-    datum_lt(box1->span.upper, box2->span.lower, T_FLOAT8) ||
-    datum_gt(box1->span.lower, box2->span.upper, T_FLOAT8)))
+  if (hasx && ! overlaps_span_span(&box1->span, &box2->span))
     return false;
-  if (hast && (
-    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
-    // ! overlaps_span_span(&box1->period, &box2->period))
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -847,13 +903,9 @@ same_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  /* Testing equality does not require to use DatumGetTimestampTz */
-  if (hasx && (box1->span.lower != box2->span.lower ||
-               box1->span.upper != box2->span.upper))
+  if (hasx && ! span_eq(&box1->span, &box2->span))
     return false;
-  if (hast && (box1->period.lower != box2->period.lower ||
-               box1->period.upper != box2->period.upper))
-    // ! span_eq(&box1->period, &box2->period))
+  if (hast && ! span_eq(&box1->period, &box2->period))
     return false;
   return true;
 }

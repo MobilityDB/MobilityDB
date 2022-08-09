@@ -755,7 +755,10 @@ tsequenceset_min_value(const TSequenceSet *ss)
   if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
   {
     TBOX *box = tsequenceset_bbox_ptr(ss);
-    return box->span.lower;
+    Datum min = box->span.lower;
+    if (ss->temptype == T_TINT)
+      min = Int32GetDatum((int) DatumGetFloat8(min));
+    return min;
   }
 
   mobdbType basetype = temptype_basetype(ss->temptype);
@@ -780,7 +783,11 @@ tsequenceset_max_value(const TSequenceSet *ss)
   if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
   {
     TBOX *box = tsequenceset_bbox_ptr(ss);
-    return box->span.upper;
+    Datum max = box->span.upper;
+    /* The upper bound for integer spans is exclusive due to cananicalization */
+    if (ss->temptype == T_TINT)
+      max = Int32GetDatum((int) DatumGetFloat8(max));
+    return max;
   }
 
   mobdbType basetype = temptype_basetype(ss->temptype);

@@ -294,11 +294,19 @@ SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::period;
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
 
-/* Errors */
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::period;
-ERROR:  The box must have time dimension
+ period 
+--------
+ 
+(1 row)
+
+/* Errors */
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::period;
-ERROR:  The box must have time dimension
+ period 
+--------
+ 
+(1 row)
+
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box2d;
     box2d     
 --------------

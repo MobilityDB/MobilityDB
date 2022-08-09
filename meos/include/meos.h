@@ -592,11 +592,17 @@ extern char *stbox_out(const STBOX *box, int maxdd);
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax, TimestampTz tmin, TimestampTz tmax);
 extern void tbox_set(bool hasx, bool hast, double xmin, double xmax, TimestampTz tmin, TimestampTz tmax, TBOX *box);
+extern TBOX *tbox_make2(const Period *p, const Span *s);
+extern void tbox_set2(const Period *p, const Span *s, TBOX *box);
 extern TBOX *tbox_copy(const TBOX *box);
 extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax);
 extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
+extern STBOX * stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
+extern void stbox_set2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax,
+  double ymin, double ymax, double zmin, double zmax, STBOX *box);
 extern STBOX *stbox_copy(const STBOX *box);
 
 /*****************************************************************************/

@@ -401,8 +401,8 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
  * @param[in] srid SRID of the spatial coordinates
  */
 static void
-stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
-  double size, int64 tunits, bool hasz, bool hast, int32 srid)
+stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
+  int64 tunits, bool hasz, bool hast, int32 srid, STBOX *result)
 {
   double xmin = x;
   double xmax = xmin + size;
@@ -420,8 +420,11 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
     tmin = t;
     tmax = tmin + tunits;
   }
-  return stbox_set(true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax, result);
+  Period p;
+  span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax), true, false,
+    T_TIMESTAMPTZ, &p);
+  return stbox_set2(&p, true, hasz, false, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, result);
 }
 
 /**
@@ -584,8 +587,8 @@ stbox_tile_state_get(STboxGridState *state, STBOX *box)
   }
   bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
   bool hast = MOBDB_FLAGS_GET_T(state->box.flags);
-  stbox_tile_set(box, state->x, state->y, state->z, state->t, state->size,
-    state->tunits, hasz, hast, state->box.srid);
+  stbox_tile_set(state->x, state->y, state->z, state->t, state->size,
+    state->tunits, hasz, hast, state->box.srid, box);
   return true;
 }
 
@@ -766,8 +769,8 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (hast)
     tmin = timestamptz_bucket(t, tunits, torigin);
   STBOX *result = palloc0(sizeof(STBOX));
-  stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz, hast,
-    srid);
+  stbox_tile_set(xmin, ymin, zmin, tmin, size, tunits, hasz, hast, srid,
+    result);
   PG_RETURN_POINTER(result);
 }
 

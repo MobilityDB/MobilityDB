@@ -239,7 +239,7 @@ static size_t *
 tsequence_offsets_ptr(const TSequence *seq)
 {
   return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
-    double_pad(seq->bboxsize - sizeof(Period)));
+    ((seq->bboxsize == 0) ? 0 : double_pad(seq->bboxsize - sizeof(Period))));
 }
 
 /**
@@ -254,7 +254,8 @@ tsequence_inst_n(const TSequence *seq, int index)
   return (TInstant *)(
     /* start of data */
     ((char *)seq) + double_pad(sizeof(TSequence)) +
-      (seq->bboxsize - sizeof(Period)) + seq->count * sizeof(size_t) +
+      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Period))) + 
+      seq->count * sizeof(size_t) +
       /* offset */
       (tsequence_offsets_ptr(seq))[index]);
 }
@@ -384,10 +385,11 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
 
   /* Get the bounding box size */
   size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->temptype));
+  /* The period component of the bbox is already declared in the struct */
+  size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
 
   /* Compute the size of the temporal sequence */
-  /* The period component of the bbox is already declared in the struct */
-  size_t memsize = bboxsize - sizeof(Period);
+  size_t memsize = bboxsize_extra;
   /* Size of composing instants */
   for (int i = 0; i < newcount; i++)
     memsize += double_pad(VARSIZE(norminsts[i]));
@@ -400,9 +402,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   result->temptype = instants[0]->temptype;
   result->subtype = TSEQUENCE;
   result->bboxsize = bboxsize;
-  span_set(TimestampTzGetDatum(norminsts[0]->t),
-    TimestampTzGetDatum(norminsts[newcount - 1]->t), lower_inc, upper_inc,
-    T_TIMESTAMPTZ, &result->period);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
@@ -418,16 +417,23 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   /*
    * Compute the bounding box
    * Only external types have bounding box, internal types such
-   * as double2, double3, or double4 do not have bounding box
+   * as double2, double3, or double4 do not have bounding box but
+   * require to set the period attribute
    */
   if (bboxsize != 0)
   {
     tsequence_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
       upper_inc, linear, tsequence_bbox_ptr(result));
   }
+  else
+  {
+    span_set(TimestampTzGetDatum(norminsts[0]->t),
+      TimestampTzGetDatum(norminsts[newcount - 1]->t), lower_inc, upper_inc,
+      T_TIMESTAMPTZ, &result->period);
+  }
   /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TSequence)) +
-    double_pad(bboxsize - sizeof(Period)) + newcount * sizeof(size_t);
+  size_t pdata = double_pad(sizeof(TSequence)) + bboxsize_extra +
+    newcount * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
@@ -2106,7 +2112,10 @@ tsequence_min_value(const TSequence *seq)
   if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
-    return box->span.lower;
+    Datum min = box->span.lower;
+    if (seq->temptype == T_TINT)
+      min = Int32GetDatum((int) DatumGetFloat8(min));
+    return min;
   }
 
   mobdbType basetype = temptype_basetype(seq->temptype);
@@ -2131,7 +2140,11 @@ tsequence_max_value(const TSequence *seq)
   if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
-    return box->span.upper;
+    Datum max = box->span.upper;
+    /* The upper bound for integer spans is exclusive due to cananicalization */
+    if (seq->temptype == T_TINT)
+      max = Int32GetDatum((int) DatumGetFloat8(max));
+    return max;
   }
 
   mobdbType basetype = temptype_basetype(seq->temptype);

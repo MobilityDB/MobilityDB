@@ -237,12 +237,17 @@ tinstant_set_bbox(const TInstant *inst, void *box)
       true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
-    Datum value = tinstant_value(inst);
+    Datum value;
+    if (inst->temptype == T_TINT)
+      value = Float8GetDatum(tnumberinst_double(inst));
+    else /* inst->temptype == T_TFLOAT */
+      value = tinstant_value(inst);
     TBOX *tbox = (TBOX *) box;
-    mobdbType basetype = temptype_basetype(inst->temptype);
+    memset(tbox, 0, sizeof(TBOX));
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, &tbox->period);
-    span_set(value, value, true, true, basetype, &tbox->span);
+    /* TBOX always has a float span */
+    span_set(value, value, true, true, T_FLOAT8, &tbox->span);
     MOBDB_FLAGS_SET_X(tbox->flags, true);
     MOBDB_FLAGS_SET_T(tbox->flags, true);
   }
