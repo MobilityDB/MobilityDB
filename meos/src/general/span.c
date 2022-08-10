@@ -734,6 +734,34 @@ period_duration(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_transf
+ * @brief Set the second span with the first one transformed to floatspan
+ */
+void
+intspan_set_floatspan(const Span *s1, Span *s2)
+{
+  memset(s2, 0, sizeof(Span));
+  Datum lower = Float8GetDatum((double) DatumGetInt32(s1->lower));
+  Datum upper = Float8GetDatum((double) (DatumGetInt32(s1->upper) - 1));
+  span_set(lower, upper, true, true, T_FLOAT8, s2);
+  return;
+}
+
+/**
+ * @ingroup libmeos_spantime_transf
+ * @brief Set the second span with the first one transformed to intspan
+ */
+void
+floatspan_set_intspan(const Span *s1, Span *s2)
+{
+  memset(s2, 0, sizeof(Span));
+  Datum lower = Int32GetDatum((int) DatumGetFloat8(s1->lower));
+  Datum upper = Int32GetDatum((int) (DatumGetFloat8(s1->upper)) + 1);
+  span_set(lower, upper, true, false, T_INT4, s2);
+  return;
+}
+
+/**
+ * @ingroup libmeos_spantime_transf
  * @brief Expand the second span with the first one
  */
 void

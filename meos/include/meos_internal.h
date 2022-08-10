@@ -453,7 +453,7 @@ extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
 
 extern Temporal *temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values, int count, bool atfunc);
-extern Temporal *tnumber_restrict_span(const Temporal *temp, Span *span, bool atfunc);
+extern Temporal *tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc);
 extern Temporal *tnumber_restrict_spans(const Temporal *temp, Span **spans, int count, bool atfunc);
 extern Temporal *temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc);
 extern Temporal *temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ss, bool atfunc);

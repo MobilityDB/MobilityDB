@@ -460,7 +460,7 @@ PGDLLEXPORT Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Span *result = tbox_to_floatspan(box);
+  Span *result = tbox_to_span(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -617,10 +617,8 @@ tbox_round(const TBOX *box, int size)
 {
   ensure_has_X_tbox(box);
   TBOX *result = tbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
-    size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
-    size));
+  result->span.lower = datum_round_float(box->span.lower, size);
+  result->span.upper = datum_round_float(box->span.upper, size);
   return result;
 }
 

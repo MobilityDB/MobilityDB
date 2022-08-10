@@ -156,10 +156,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   {
     const TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
     ensure_span_basetype(basetype);
-    if (basetype == T_INT4)
-      *s = tbox_to_intspan(box);
-    else /* basetype == T_FLOAT8 */
-      *s = tbox_to_floatspan(box);
+    *s = tbox_to_span(box);
     *p = tbox_to_period(box);
   }
   else if (tnumber_type(type))
@@ -167,10 +164,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBOX box;
     temporal_set_bbox(temp, &box);
-    if (basetype == T_INT4)
-      *s = tbox_to_intspan(&box);
-    else /* basetype == T_FLOAT8 */
-      *s = tbox_to_floatspan(&box);
+    *s = tbox_to_span(&box);
     *p = tbox_to_period(&box);
   }
   else

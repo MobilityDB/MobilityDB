@@ -116,7 +116,6 @@ datum_gt(Datum l, Datum r, mobdbType type)
   return datum_lt2(r, l, type, type);
 }
 
-#if 0 /* Not used */
 /**
  * Return true if the first value is greater than or equal to the second one
  */
@@ -125,7 +124,6 @@ datum_ge(Datum l, Datum r, mobdbType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
 }
-#endif
 
 /*****************************************************************************/
 

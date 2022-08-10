@@ -45,7 +45,6 @@
 
 /* General functions */
 
-extern Datum *tinstant_value_ptr(const TInstant *inst);
 extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
 extern double tnumberinst_double(const TInstant *inst);
 

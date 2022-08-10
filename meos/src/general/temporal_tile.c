@@ -1053,6 +1053,13 @@ tnumber_value_split(const Temporal *temp, Datum start_bucket, Datum size,
  * @ingroup libmeos_temporal_tile
  * @brief Split a temporal integer into an array of fragments according to
  * value buckets.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] start_bucket Start value of the first bucket
+ * @param[in] size Size of the value buckets
+ * @param[in] count Number of buckets
+ * @param[out] buckets Start value of the buckets containing the fragments
+ * @param[out] newcount Number of values in the output arrays
  */
 Temporal **
 tint_value_split(const Temporal *temp, int start_bucket, int size,
@@ -1069,6 +1076,13 @@ tint_value_split(const Temporal *temp, int start_bucket, int size,
  * @ingroup libmeos_temporal_tile
  * @brief Split a temporal float into an array of fragments according to value
  * buckets.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] start_bucket Start value of the first bucket
+ * @param[in] size Size of the value buckets
+ * @param[in] count Number of buckets
+ * @param[out] buckets Start value of the buckets containing the fragments
+ * @param[out] newcount Number of values in the output arrays
  */
 Temporal **
 tfloat_value_split(const Temporal *temp, double start_bucket, double size,

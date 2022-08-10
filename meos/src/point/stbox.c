@@ -82,10 +82,7 @@ stbox_expand(const STBOX *box1, STBOX *box2)
     }
   }
   if (MOBDB_FLAGS_GET_T(box2->flags))
-  {
-    box2->tmin = Min(box1->tmin, box2->tmin);
-    box2->tmax = Max(box1->tmax, box2->tmax);
-  }
+    span_expand(&box1->period, &box2->period);
   return;
 }
 
@@ -97,7 +94,7 @@ stbox_expand(const STBOX *box1, STBOX *box2)
 void
 stbox_shift_tscale(const Interval *shift, const Interval *duration, STBOX *box)
 {
-  lower_upper_shift_tscale(shift, duration, &box->tmin, &box->tmax);
+  period_shift_tscale(shift, duration, &box->period);
   return;
 }
 
@@ -215,8 +212,8 @@ stbox_out(const STBOX *box, int maxdd)
   }
   if (hast)
   {
-    tmin = pg_timestamptz_out(box->tmin);
-    tmax = pg_timestamptz_out(box->tmax);
+    tmin = pg_timestamptz_out(DatumGetTimestampTz(box->period.lower));
+    tmax = pg_timestamptz_out(DatumGetTimestampTz(box->period.upper));
   }
   if (hasx)
   {
@@ -326,8 +323,68 @@ stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
   if (hast)
   {
     /* Process T min/max */
-    box->tmin = Min(tmin, tmax);
-    box->tmax = Max(tmin, tmax);
+    span_set(TimestampTzGetDatum(Min(tmin, tmax)),
+      TimestampTzGetDatum(Max(tmin, tmax)), true, true, T_TIMESTAMPTZ,
+      &box->period);
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Construct a spatiotemporal box from the arguments.
+ * @sqlfunc stbox()
+ */
+STBOX *
+stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax)
+{
+  /* Note: zero-fill is done in function stbox_set */
+  STBOX *result = palloc(sizeof(STBOX));
+  stbox_set2(p, hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+    result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Set a spatiotemporal box from the arguments.
+ * @note This function is equivalent to @ref stbox_make without memory
+ * allocation
+ */
+void
+stbox_set2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, STBOX *box)
+{
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
+  MOBDB_FLAGS_SET_X(box->flags, hasx);
+  MOBDB_FLAGS_SET_Z(box->flags, hasz);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  box->srid = srid;
+
+  if (p)
+  {
+    /* Process T min/max */
+    memcpy(&box->period, p, sizeof(Span));
+    MOBDB_FLAGS_SET_T(box->flags, true);
+  }
+  if (hasx)
+  {
+    /* Process X min/max */
+    box->xmin = Min(xmin, xmax);
+    box->xmax = Max(xmin, xmax);
+    /* Process Y min/max */
+    box->ymin = Min(ymin, ymax);
+    box->ymax = Max(ymin, ymax);
+    if (hasz || geodetic)
+    {
+      /* Process Z min/max */
+      box->zmin = Min(zmin, zmax);
+      box->zmax = Max(zmin, zmax);
+    }
   }
   return;
 }
@@ -414,7 +471,6 @@ stbox_to_geometry(const STBOX *box)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a temporal box as a period
@@ -425,10 +481,8 @@ stbox_to_period(const STBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
-  Period *result = span_make(box->tmin, box->tmax, true, true, T_TIMESTAMPTZ);
-  return result;
+  return span_copy(&box->period);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX
@@ -530,7 +584,8 @@ timestamp_set_stbox(TimestampTz t, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  box->tmin = box->tmax = t;
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_Z(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -560,11 +615,10 @@ timestamp_to_stbox(TimestampTz t)
 void
 timestampset_set_stbox(const TimestampSet *ts, STBOX *box)
 {
-  const Period *p = timestampset_period_ptr(ts);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  const Period *p = timestampset_period_ptr(ts);
+  memcpy(&box->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -594,8 +648,7 @@ period_set_stbox(const Period *p, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  memcpy(&box->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -626,8 +679,7 @@ periodset_set_stbox(const PeriodSet *ps, STBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
   const Period *p = periodset_period_ptr(ps);
-  box->tmin = p->lower;
-  box->tmax = p->upper;
+  memcpy(&box->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -660,7 +712,8 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
     return NULL;
   STBOX *result = palloc(sizeof(STBOX));
   geo_set_stbox(gs, result);
-  result->tmin = result->tmax = t;
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &result->period);
   MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
@@ -677,8 +730,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
     return NULL;
   STBOX *result = palloc(sizeof(STBOX));
   geo_set_stbox(gs, result);
-  result->tmin = p->lower;
-  result->tmax = p->upper;
+  memcpy(&result->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
@@ -865,7 +917,7 @@ stbox_tmin(const STBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
-  *result = box->tmin;
+  *result = DatumGetTimestampTz(box->period.lower);
   return true;
 }
 
@@ -884,7 +936,7 @@ stbox_tmax(const STBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
-  *result = box->tmax;
+  *result = DatumGetTimestampTz(box->period.upper);
   return true;
 }
 
@@ -955,8 +1007,12 @@ stbox_expand_temporal(const STBOX *box, const Interval *interval)
 {
   ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
-  result->tmin = pg_timestamp_mi_interval(box->tmin, interval);
-  result->tmax = pg_timestamp_pl_interval(box->tmax, interval);
+  TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
+    box->period.lower), interval);
+  TimestampTz tmax = pg_timestamp_pl_interval(DatumGetTimestampTz(
+    box->period.upper), interval);
+  result->period.lower = TimestampTzGetDatum(tmin);
+  result->period.upper = TimestampTzGetDatum(tmax);
   return result;
 }
 
@@ -1019,7 +1075,9 @@ contains_stbox_stbox(const STBOX *box1, const STBOX *box2)
       return false;
   if ((hasz || geodetic) && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
       return false;
-  if (hast && (box2->tmin < box1->tmin || box2->tmax > box1->tmax))
+  if (hast && (
+    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
       return false;
   return true;
 }
@@ -1051,7 +1109,9 @@ overlaps_stbox_stbox(const STBOX *box1, const STBOX *box2)
     return false;
   if ((hasz || geodetic) && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
     return false;
-  if (hast && (box1->tmax < box2->tmin || box1->tmin > box2->tmax))
+  if (hast && (
+    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
     return false;
   return true;
 }
@@ -1072,7 +1132,8 @@ same_stbox_stbox(const STBOX *box1, const STBOX *box2)
     return false;
   if ((hasz || geodetic) && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
     return false;
-  if (hast && (box1->tmin != box2->tmin || box1->tmax != box2->tmax))
+  if (hast && (box1->period.lower != box2->period.lower ||
+               box1->period.upper != box2->period.upper))
     return false;
   return true;
 }
@@ -1094,8 +1155,8 @@ adjacent_stbox_stbox(const STBOX *box1, const STBOX *box2)
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
   if (! hasx && hast)
-    return (inter.tmin == inter.tmax);
-  else if (hasx && !hast)
+    return (inter.period.lower == inter.period.upper);
+  if (hasx && !hast)
   {
     if (hasz || geodetic)
       return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
@@ -1107,10 +1168,11 @@ adjacent_stbox_stbox(const STBOX *box1, const STBOX *box2)
   {
     if (hasz || geodetic)
       return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax || inter.tmin == inter.tmax);
+           inter.zmin == inter.zmax ||
+           inter.period.lower == inter.period.upper);
     else
       return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.tmin == inter.tmax);
+           inter.period.lower == inter.period.upper);
   }
 }
 
@@ -1322,7 +1384,8 @@ before_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return (box1->tmax < box2->tmin);
+  return left_span_span(&box1->period, &box2->period);
+
 }
 
 /**
@@ -1336,7 +1399,7 @@ overbefore_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return (box1->tmax <= box2->tmax);
+  return overleft_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1350,7 +1413,7 @@ after_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return (box1->tmin > box2->tmax);
+  return right_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1364,7 +1427,7 @@ overafter_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
-  return (box1->tmin >= box2->tmin);
+  return overright_span_span(&box1->period, &box2->period);
 }
 
 /*****************************************************************************
@@ -1415,8 +1478,8 @@ inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
     (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
       box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
     ((hasz || geodetic) && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
-    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-    return NULL;
+    (hast && ! overlaps_span_span(&box1->period, &box2->period)))
+    return false;
 
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
@@ -1434,8 +1497,10 @@ inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
   }
   if (hast)
   {
-    tmin = Max(box1->tmin, box2->tmin);
-    tmax = Min(box1->tmax, box2->tmax);
+    tmin = Max(DatumGetTimestampTz(box1->period.lower),
+      DatumGetTimestampTz(box2->period.lower));
+    tmax = Min(DatumGetTimestampTz(box1->period.upper),
+      DatumGetTimestampTz(box2->period.upper));
   }
   stbox_set(hasx, hasz, hast, geodetic, box1->srid, xmin, xmax, ymin,
     ymax, zmin, zmax, tmin, tmax, result);
@@ -1477,10 +1542,9 @@ bool
 stbox_eq(const STBOX *box1, const STBOX *box2)
 {
   if (box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
-      box1->zmin != box2->zmin || box1->tmin != box2->tmin ||
-      box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
-      box1->zmax != box2->zmax || box1->tmax != box2->tmax ||
-      box1->flags != box2->flags || box1->srid != box2->srid)
+      box1->zmin != box2->zmin || box1->xmax != box2->xmax ||
+      box1->ymax != box2->ymax || box1->zmax != box2->zmax ||
+      box1->srid != box2->srid || ! span_eq(&box1->period, &box2->period))
     return false;
   /* The two boxes are equal */
   return true;
@@ -1516,16 +1580,10 @@ stbox_cmp(const STBOX *box1, const STBOX *box2)
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hast)
   {
+    int cmp = span_cmp(&box1->period, &box2->period);
     /* Compare the box minima */
-    if (box1->tmin < box2->tmin)
-      return -1;
-    if (box1->tmin > box2->tmin)
-      return 1;
-    /* Compare the box maxima */
-    if (box1->tmax < box2->tmax)
-      return -1;
-    if (box1->tmax > box2->tmax)
-      return 1;
+    if (cmp != 0)
+      return cmp;
   }
   if (hasx)
   {

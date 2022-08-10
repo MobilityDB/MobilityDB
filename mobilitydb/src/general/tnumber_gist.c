@@ -46,6 +46,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <general/temporal_boxops.h>
+#include <general/temporal_util.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_catalog.h"
@@ -95,29 +96,25 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
       retval = adjacent_tbox_tbox(key, query);
       break;
     case RTLeftStrategyNumber:
-      retval = /* left_tbox_tbox(key, query) */
-        (key->xmax <= query->xmin);
+      retval = left_tbox_tbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
       retval = overleft_tbox_tbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = /* right_tbox_tbox(key, query) */
-        (key->xmin >= query->xmax);
+      retval = right_tbox_tbox(key, query);
       break;
     case RTOverRightStrategyNumber:
       retval = overright_tbox_tbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = /* before_tbox_tbox(key, query) */
-        (key->tmax <= query->tmin);
+      retval = before_tbox_tbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
       retval = overbefore_tbox_tbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = /* after_tbox_tbox(key, query) */
-        (key->tmin >= query->tmax);
+      retval = after_tbox_tbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
       retval = overafter_tbox_tbox(key, query);
@@ -304,10 +301,18 @@ tbox_adjust(void *bbox1, void *bbox2)
 {
   TBOX *box1 = (TBOX *) bbox1;
   TBOX *box2 = (TBOX *) bbox2;
-  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
-  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
-  box1->tmin = Min(box1->tmin, box2->tmin);
-  box1->tmax = Max(box1->tmax, box2->tmax);
+  double xmin = FLOAT8_MIN(DatumGetFloat8(box1->span.lower),
+    DatumGetFloat8(box2->span.lower));
+  double xmax = FLOAT8_MAX(DatumGetFloat8(box1->span.upper),
+    DatumGetFloat8(box2->span.upper));
+  box1->span.lower = Float8GetDatum(xmin);
+  box1->span.upper = Float8GetDatum(xmax);
+  TimestampTz tmin = Min(DatumGetTimestampTz(box1->period.lower),
+    DatumGetTimestampTz(box2->period.lower));
+  TimestampTz tmax = Max(DatumGetTimestampTz(box1->period.upper),
+    DatumGetTimestampTz(box2->period.upper));
+  box1->period.lower = TimestampTzGetDatum(tmin);
+  box1->period.upper = TimestampTzGetDatum(tmax);
   return;
 }
 
@@ -324,7 +329,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_adjust((void *) result, DatumGetPointer(ent[i].key));
+    tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
   PG_RETURN_POINTER(result);
 }
 
@@ -367,10 +372,18 @@ static void
 tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
 {
   memset(new, 0, sizeof(TBOX));
-  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  new->tmin = FLOAT8_MIN(a->tmin, b->tmin);
-  new->tmax = FLOAT8_MAX(a->tmax, b->tmax);
+  double xmin = FLOAT8_MIN(DatumGetFloat8(a->span.lower),
+    DatumGetFloat8(b->span.lower));
+  double xmax = FLOAT8_MAX(DatumGetFloat8(a->span.upper),
+    DatumGetFloat8(b->span.upper));
+  new->span.lower = Float8GetDatum(xmin);
+  new->span.upper = Float8GetDatum(xmax);
+  TimestampTz tmin = Min(DatumGetTimestampTz(a->period.lower),
+    DatumGetTimestampTz(b->period.lower));
+  TimestampTz tmax = Max(DatumGetTimestampTz(a->period.upper),
+    DatumGetTimestampTz(b->period.upper));
+  new->period.lower = TimestampTzGetDatum(tmin);
+  new->period.upper = TimestampTzGetDatum(tmax);
   return;
 }
 
@@ -388,8 +401,8 @@ tbox_size(const TBOX *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if (FLOAT8_LE(box->xmax, box->xmin) ||
-    FLOAT8_LE(box->tmax, box->tmin))
+  if (FLOAT8_LE(DatumGetFloat8(box->span.upper), DatumGetFloat8(box->span.lower)) ||
+    datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
     return 0.0;
 
   /*
@@ -397,9 +410,11 @@ tbox_size(const TBOX *box)
    * and a non-NaN is infinite.  Note the previous check eliminated the
    * possibility that the low fields are NaNs.
    */
-  if (isnan(box->xmax))
+  if (isnan(DatumGetFloat8(box->span.upper)))
     return get_float8_infinity();
-  return (box->xmax - box->xmin) * (box->tmax - box->tmin);
+  return (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)) *
+    (DatumGetTimestampTz(box->period.upper) -
+      DatumGetTimestampTz(box->period.lower));
 }
 
 /**
@@ -524,9 +539,11 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
     {
       TBOX *bbox = (TBOX *) &context->boundingBox;
       if (dimNum == 0)
-        range = bbox->xmax - bbox->xmin;
+        range = DatumGetFloat8(bbox->span.upper) -
+          DatumGetFloat8(bbox->span.lower);
       else
-        range = (double) (bbox->tmax - bbox->tmin);
+        range = (double) (DatumGetTimestampTz(bbox->period.upper) -
+          DatumGetTimestampTz(bbox->period.lower));
     }
     else /* bboxtype == T_STBOX */
     {
@@ -538,7 +555,8 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       else if (dimNum == 2)
         range = bbox->zmax - bbox->zmin;
       else
-        range = (double) (bbox->tmax - bbox->tmin);
+        range = (double) (DatumGetTimestampTz(bbox->period.upper) -
+          DatumGetTimestampTz(bbox->period.lower));
     }
 
     overlap = (float4) ((leftUpper - rightLower) / range);
@@ -741,13 +759,17 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
       {
         if (dim == 0)
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((TBOX *) box)->xmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((TBOX *) box)->xmax;
+          intervalsLower[i - FirstOffsetNumber].lower =
+            DatumGetFloat8(((TBOX *) box)->span.lower);
+          intervalsLower[i - FirstOffsetNumber].upper =
+            DatumGetFloat8(((TBOX *) box)->span.upper);
         }
         else
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((TBOX *) box)->tmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((TBOX *) box)->tmax;
+          intervalsLower[i - FirstOffsetNumber].lower =
+            DatumGetTimestampTz(((TBOX *) box)->period.lower);
+          intervalsLower[i - FirstOffsetNumber].upper =
+            DatumGetTimestampTz(((TBOX *) box)->period.upper);
         }
       }
       else /* bboxtype == T_STBOX */
@@ -769,8 +791,10 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
         }
         else
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->tmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->tmax;
+          intervalsLower[i - FirstOffsetNumber].lower =
+            DatumGetTimestampTz(((STBOX *) box)->period.lower);
+          intervalsLower[i - FirstOffsetNumber].upper =
+            DatumGetTimestampTz(((STBOX *) box)->period.upper);
         }
       }
     }
@@ -940,13 +964,13 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
     {
       if (context.dim == 0)
       {
-        lower = ((TBOX *) box)->xmin;
-        upper = ((TBOX *) box)->xmax;
+        lower = DatumGetFloat8(((TBOX *) box)->span.lower);
+        upper = DatumGetFloat8(((TBOX *) box)->span.upper);
       }
       else
       {
-        lower = ((TBOX *) box)->tmin;
-        upper = ((TBOX *) box)->tmax;
+        lower = (double) DatumGetTimestampTz(((TBOX *) box)->period.lower);
+        upper = (double) DatumGetTimestampTz(((TBOX *) box)->period.upper);
       }
     }
     else /* bboxtype == T_STBOX */
@@ -968,8 +992,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
       }
       else
       {
-        lower = ((STBOX *) box)->tmin;
-        upper = ((STBOX *) box)->tmax;
+        lower = (double) DatumGetTimestampTz(((TBOX *) box)->period.lower);
+        upper = (double) DatumGetTimestampTz(((TBOX *) box)->period.upper);
       }
     }
 
@@ -1088,8 +1112,13 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
   TBOX *b2 = PG_GETARG_TBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && b1->tmin == b2->tmin &&
-      FLOAT8_EQ(b1->xmax, b2->xmax) && b1->tmax == b2->tmax);
+    *result = FLOAT8_EQ(DatumGetFloat8(b1->span.lower),
+        DatumGetFloat8(b2->span.lower)) &&
+      FLOAT8_EQ(DatumGetFloat8(b1->span.upper),
+        DatumGetFloat8(b2->span.upper)) &&
+      /* Equality test does not require to use DatumGetTimestampTz */
+      (b1->period.lower == b2->period.lower) &&
+      (b1->period.upper == b2->period.upper);
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);

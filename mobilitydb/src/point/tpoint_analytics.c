@@ -69,10 +69,10 @@ Tpoint_to_geo(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
-  Datum result;
+  GSERIALIZED *result;
   tpoint_to_geo_measure(tpoint, NULL, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Geo_to_tpoint);
@@ -100,13 +100,13 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
   bool segmentize = (PG_NARGS() == 3) ? PG_GETARG_BOOL(2) : false;
-  Datum result;
+  GSERIALIZED *result;
   bool found = tpoint_to_geo_measure(tpoint, measure, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_FREE_IF_COPY(measure, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_simplify);
@@ -158,7 +158,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);
 
-  Datum geom;
+  GSERIALIZED *geom;
   int64 *times; /* Timestamps are returned in Unix time */
   int count;
   bool found = tpoint_AsMVTGeom(temp, bounds, extent, buffer, clip_geom,
@@ -182,7 +182,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   Datum result_values[2]; /* used to construct the composite return value */
   Datum result; /* the actual composite return value */
   /* Store geometry */
-  result_values[0] = geom;
+  result_values[0] = PointerGetDatum(geom);
   /* Store timestamp array */
   result_values[1] = PointerGetDatum(timesarr);
   /* Form tuple and return */

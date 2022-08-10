@@ -41,12 +41,6 @@
 
 /*****************************************************************************/
 
-// typedef struct
-// {
-  // Span      xspan;   /**< span for the values */
-  // Period    tspan;   /**< period for the timestamps */
-// } TBOXNew;
-
 /* fmgr macros temporal types */
 
 #define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
