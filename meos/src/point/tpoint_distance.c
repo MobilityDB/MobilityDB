@@ -185,7 +185,7 @@ point2d_min_dist(const POINT2D *p1, const POINT2D *p2,
   const POINT2D *p3, const POINT2D *p4, double *fraction)
 {
   long double denum, dx1, dy1, dx2, dy2, f1, f2, f3, f4;
-  
+
     dx1 = p2->x - p1->x;
     dy1 = p2->y - p1->y;
     dx2 = p4->x - p3->x;
@@ -212,7 +212,7 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
   const POINT3DZ *p3, const POINT3DZ *p4, double *fraction)
 {
   long double denum, dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
-  
+
   dx1 = p2->x - p1->x;
   dy1 = p2->y - p1->y;
   dz1 = p2->z - p1->z;
@@ -811,7 +811,7 @@ nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
       return DBL_MAX;
 
   /* If the boxes intersect in the value dimension return 0 */
@@ -845,13 +845,11 @@ nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
   ensure_same_srid_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2, inter;
+  Period p, inter;
   if (hast)
   {
-    temporal_set_period(temp, &p1);
-    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
-      true, true, T_TIMESTAMPTZ, &p2);
-    if (! inter_span_span(&p1, &p2, &inter))
+    temporal_set_period(temp, &p);
+    if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
   }
 

@@ -641,25 +641,25 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
 SELECT MAX(memSize(temp)) FROM tbl_tbool;
  max  
 ------
- 1976
+ 1760
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tint;
  max  
 ------
- 1832
+ 1792
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tfloat;
  max  
 ------
- 1864
+ 1824
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_ttext;
  max  
 ------
- 1920
+ 1928
 (1 row)
 
 /*

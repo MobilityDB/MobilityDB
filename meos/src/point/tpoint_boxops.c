@@ -73,7 +73,8 @@ tpointinst_set_stbox(const TInstant *inst, STBOX *box)
   /* Non-empty geometries have a bounding box
    * The argument box is set to 0 on the next call */
   geo_set_stbox(gs, box);
-  box->tmin = box->tmax = inst->t;
+  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+    true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
 }
 

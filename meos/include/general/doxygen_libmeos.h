@@ -242,6 +242,10 @@
  * @defgroup libmeos_temporal_similarity Similarity functions
  * @ingroup libmeos_temporal
  * @brief Similarity functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_analytics Analytics functions
+ * @ingroup libmeos_temporal
+ * @brief Analytics functions for temporal types.
  */
 
 /*****************************************************************************

@@ -56,7 +56,7 @@ CREATE FUNCTION stbox_send(stbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE stbox (
-  internallength = 72,
+  internallength = 80,
   input = stbox_in,
   output = stbox_out,
   receive = stbox_recv,
@@ -80,7 +80,7 @@ CREATE FUNCTION asText(stbox, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Stbox_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
+
 CREATE FUNCTION asBinary(stbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Stbox_as_wkb'

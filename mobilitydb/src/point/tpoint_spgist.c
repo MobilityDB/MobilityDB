@@ -173,10 +173,10 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
   if (inBox->xmax > centroid->xmax)
     quadrant |= 0x04;
 
-  if (inBox->tmin > centroid->tmin)
+  if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
     quadrant |= 0x02;
 
-  if (inBox->tmax > centroid->tmax)
+  if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
     quadrant |= 0x01;
 
   return quadrant;
@@ -203,8 +203,10 @@ stboxnode_init(const STBOX *centroid, STboxNode *nodebox)
   nodebox->left.zmin = nodebox->right.zmin = -infinity;
   nodebox->left.zmax = nodebox->right.zmax = infinity;
 
-  nodebox->left.tmin = nodebox->right.tmin = DT_NOBEGIN;
-  nodebox->left.tmax = nodebox->right.tmax = DT_NOEND;
+  nodebox->left.period.lower = nodebox->right.period.lower =
+    TimestampTzGetDatum(DT_NOBEGIN);
+  nodebox->left.period.upper = nodebox->right.period.upper =
+    TimestampTzGetDatum(DT_NOEND);
 
   nodebox->left.srid = nodebox->right.srid = centroid->srid;
   nodebox->left.flags = nodebox->right.flags = centroid->flags;
@@ -259,14 +261,14 @@ stboxnode_quadtree_next(const STboxNode *nodebox, const STBOX *centroid,
     next_nodebox->right.xmax = centroid->xmax;
 
   if (quadrant & 0x02)
-    next_nodebox->left.tmin = centroid->tmin;
+    next_nodebox->left.period.lower = centroid->period.lower;
   else
-    next_nodebox->left.tmax = centroid->tmin;
+    next_nodebox->left.period.upper = centroid->period.lower;
 
   if (quadrant & 0x01)
-    next_nodebox->right.tmin = centroid->tmax;
+    next_nodebox->right.period.lower = centroid->period.upper;
   else
-    next_nodebox->right.tmax = centroid->tmax;
+    next_nodebox->right.period.upper = centroid->period.upper;
 
   return;
 }
@@ -288,8 +290,9 @@ overlap8D(const STboxNode *nodebox, const STBOX *query)
     result &= nodebox->left.zmin <= query->zmax &&
       nodebox->right.zmax >= query->zmin;
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= nodebox->left.tmin <= query->tmax &&
-      nodebox->right.tmax >= query->tmin;
+    result &=
+      datum_le(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ) &&
+      datum_ge(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -310,8 +313,9 @@ contain8D(const STboxNode *nodebox, const STBOX *query)
     result &= nodebox->right.zmax >= query->zmax &&
       nodebox->left.zmin <= query->zmin;
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= nodebox->right.tmax >= query->tmax &&
-      nodebox->left.tmin <= query->tmin;
+    result &=
+      datum_ge(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ) &&
+      datum_le(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -429,7 +433,7 @@ overBack8D(const STboxNode *nodebox, const STBOX *query)
 static bool
 before8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (nodebox->right.tmax < query->tmin);
+  return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
 }
 
 /**
@@ -438,7 +442,7 @@ before8D(const STboxNode *nodebox, const STBOX *query)
 static bool
 overBefore8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (nodebox->right.tmax <= query->tmax);
+  return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
 }
 
 /**
@@ -447,7 +451,7 @@ overBefore8D(const STboxNode *nodebox, const STBOX *query)
 static bool
 after8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (nodebox->left.tmin > query->tmax);
+  return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
 }
 
 /**
@@ -456,7 +460,7 @@ after8D(const STboxNode *nodebox, const STBOX *query)
 static bool
 overAfter8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (nodebox->left.tmin >= query->tmin);
+  return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
 }
 
 /**
@@ -476,8 +480,9 @@ distance_stbox_nodebox(const STBOX *query, const STboxNode *nodebox)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(query->flags);
-  if (hast && (query->tmin > nodebox->right.tmax ||
-      nodebox->left.tmin > query->tmax))
+  if (hast && (
+      datum_gt(query->period.lower, nodebox->right.period.upper, T_TIMESTAMPTZ) ||
+      datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
     return DBL_MAX;
 
   double dx, dy, dz;
@@ -650,8 +655,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
       lowZs[i] = box->zmin;
       highZs[i] = box->zmax;
     }
-    lowTs[i] = (double) box->tmin;
-    highTs[i] = (double) box->tmax;
+    lowTs[i] = (double) DatumGetTimestampTz(box->period.lower);
+    highTs[i] = (double) DatumGetTimestampTz(box->period.upper);
   }
 
   qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
@@ -677,8 +682,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     centroid->zmin = lowZs[median];
     centroid->zmax = highZs[median];
   }
-  centroid->tmin = (TimestampTz) lowTs[median];
-  centroid->tmax = (TimestampTz) highTs[median];
+  centroid->period.lower = TimestampTzGetDatum((TimestampTz) lowTs[median]);
+  centroid->period.upper = TimestampTzGetDatum((TimestampTz) highTs[median]);
 
   /* Fill the output */
   out->hasPrefix = true;

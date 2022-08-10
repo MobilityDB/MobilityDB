@@ -187,7 +187,7 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
 SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
  max  
 ------
- 1936
+ 1968
 (1 row)
 
 /*

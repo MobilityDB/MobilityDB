@@ -1314,6 +1314,7 @@ periodset_from_wkb_state(wkb_parse_state *s)
 static void
 tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
+  assert(wkb_flags & MOBDB_WKB_XFLAG || wkb_flags & MOBDB_WKB_TFLAG);
   s->hasx = false;
   s->hast = false;
   if (wkb_flags & MOBDB_WKB_XFLAG)
@@ -1358,6 +1359,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
 static void
 stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
+  assert(wkb_flags & MOBDB_WKB_XFLAG || wkb_flags & MOBDB_WKB_TFLAG);
   s->hasx = false;
   s->hasz = false;
   s->hast = false;

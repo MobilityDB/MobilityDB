@@ -32,15 +32,11 @@
  * version 14.2 source code.
  */
 
-// #include "general/basetype_inout.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
 /* PostgreSQL */
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
-/* MobilityDB */
-// #include <meos.h>
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   extern int64 pg_strtoint64(const char *s);

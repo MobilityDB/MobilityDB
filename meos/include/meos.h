@@ -92,10 +92,8 @@ typedef struct
  */
 typedef struct
 {
-  double      xmin;   /**< minimum number value */
-  double      xmax;   /**< maximum number value */
-  TimestampTz tmin;   /**< minimum timestamp */
-  TimestampTz tmax;   /**< maximum timestamp */
+  Period      period; /**< time span */
+  Span        span;   /**< value span */
   int16       flags;  /**< flags */
 } TBOX;
 
@@ -104,14 +102,13 @@ typedef struct
  */
 typedef struct
 {
+  Period      period; /**< time span */
   double      xmin;   /**< minimum x value */
   double      xmax;   /**< maximum x value */
   double      ymin;   /**< minimum y value */
   double      ymax;   /**< maximum y value */
   double      zmin;   /**< minimum z value */
   double      zmax;   /**< maximum z value */
-  TimestampTz tmin;   /**< minimum timestamp */
-  TimestampTz tmax;   /**< maximum timestamp */
   int32       srid;   /**< SRID */
   int16       flags;  /**< flags */
 } STBOX;
@@ -139,6 +136,10 @@ typedef struct
   uint8         subtype;      /**< Temporal subtype */
   int16         flags;        /**< Flags */
   TimestampTz   t;            /**< Timestamp (8 bytes) */
+  Datum         value;        /**< Base value for types passed by value,
+                                   first 8 bytes of the base value for values
+                                   passed by reference. The extra bytes
+                                   needed are added upon creation. */
   /* variable-length data follows */
 } TInstant;
 
@@ -153,7 +154,11 @@ typedef struct
   int16         flags;        /**< Flags */
   int32         count;        /**< Number of TInstant elements */
   int16         bboxsize;     /**< Size of the bounding box */
-  /**< beginning of variable-length data */
+  Period        period;       /**< Time span (24 bytes). All bounding boxes
+                                   start with a period so actually it is also
+                                   the begining of the bounding box. The extra
+                                   bytes needed are added upon creation. */
+  /* variable-length data follows */
 } TInstantSet;
 
 /**
@@ -167,8 +172,11 @@ typedef struct
   int16         flags;        /**< Flags */
   int32         count;        /**< Number of TInstant elements */
   int16         bboxsize;     /**< Size of the bounding box */
-  Period        period;       /**< Time span (24 bytes) */
-  /**< beginning of variable-length data */
+  Period        period;       /**< Time span (24 bytes). All bounding boxes
+                                   start with a period so actually it is also
+                                   the begining of the bounding box. The extra
+                                   bytes needed are added upon creation. */
+  /* variable-length data follows */
 } TSequence;
 
 /**
@@ -181,9 +189,14 @@ typedef struct
   uint8         subtype;      /**< Temporal subtype */
   int16         flags;        /**< Flags */
   int32         count;        /**< Number of TSequence elements */
-  int32         totalcount;   /**< Total number of TInstant elements in all TSequence elements */
+  int32         totalcount;   /**< Total number of TInstant elements in all
+                                   composing TSequence elements */
   int16         bboxsize;     /**< Size of the bounding box */
-  /**< beginning of variable-length data */
+  Period        period;       /**< Time span (24 bytes). All bounding boxes
+                                   start with a period so actually it is also
+                                   the begining of the bounding box. The extra
+                                   bytes needed are added upon creation. */
+  /* variable-length data follows */
 } TSequenceSet;
 
 /**
@@ -579,11 +592,17 @@ extern char *stbox_out(const STBOX *box, int maxdd);
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax, TimestampTz tmin, TimestampTz tmax);
 extern void tbox_set(bool hasx, bool hast, double xmin, double xmax, TimestampTz tmin, TimestampTz tmax, TBOX *box);
+extern TBOX *tbox_make2(const Period *p, const Span *s);
+extern void tbox_set2(const Period *p, const Span *s, TBOX *box);
 extern TBOX *tbox_copy(const TBOX *box);
 extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax);
 extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
+extern STBOX * stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
+extern void stbox_set2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax,
+  double ymin, double ymax, double zmin, double zmax, STBOX *box);
 extern STBOX *stbox_copy(const STBOX *box);
 
 /*****************************************************************************/
@@ -603,8 +622,7 @@ extern TBOX *int_period_to_tbox(int i, const Period *p);
 extern TBOX *float_period_to_tbox(double d, const Period *p);
 extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
 extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
-extern Span *tbox_to_intspan(const TBOX *box);
-extern Span *tbox_to_floatspan(const TBOX *box);
+extern Span *tbox_to_span(const TBOX *box);
 extern Period *tbox_to_period(const TBOX *box);
 extern Period *stbox_to_period(const STBOX *box);
 extern TBOX *tnumber_to_tbox(const Temporal *temp);
@@ -831,7 +849,7 @@ extern Span *tnumber_to_span(const Temporal *temp);
 
 extern bool tbool_end_value(const Temporal *temp);
 extern bool tbool_start_value(const Temporal *temp);
-extern bool *tbool_values(const Temporal *temp);
+extern bool *tbool_values(const Temporal *temp, int *count);
 extern Interval *temporal_duration(const Temporal *temp);
 extern const TInstant *temporal_end_instant(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
@@ -861,20 +879,20 @@ extern double tfloat_max_value(const Temporal *temp);
 extern double tfloat_min_value(const Temporal *temp);
 extern Span **tfloat_spans(const Temporal *temp, int *count);
 extern double tfloat_start_value(const Temporal *temp);
-extern double *tfloat_values(const Temporal *temp);
+extern double *tfloat_values(const Temporal *temp, int *count);
 extern int tint_end_value(const Temporal *temp);
 extern int tint_max_value(const Temporal *temp);
 extern int tint_min_value(const Temporal *temp);
 extern int tint_start_value(const Temporal *temp);
-extern int *tint_values(const Temporal *temp);
+extern int *tint_values(const Temporal *temp, int *count);
 extern GSERIALIZED *tpoint_end_value(const Temporal *temp);
 extern GSERIALIZED *tpoint_start_value(const Temporal *temp);
-extern GSERIALIZED **tpoint_values(const Temporal *temp);
+extern GSERIALIZED **tpoint_values(const Temporal *temp, int *count);
 extern text *ttext_end_value(const Temporal *temp);
 extern text *ttext_max_value(const Temporal *temp);
 extern text *ttext_min_value(const Temporal *temp);
 extern text *ttext_start_value(const Temporal *temp);
-extern text **ttext_values(const Temporal *temp);
+extern text **ttext_values(const Temporal *temp, int *count);
 
 /*****************************************************************************/
 
@@ -1484,6 +1502,15 @@ extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *t
 extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
 extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
+
+/*****************************************************************************/
+
+/* Analytics functions for temporal types */
+
+Temporal *geo_to_tpoint(const GSERIALIZED *geo);
+Temporal *temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist);
+bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
+bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/
 

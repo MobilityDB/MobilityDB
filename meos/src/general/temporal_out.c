@@ -315,13 +315,13 @@ tbox_mfjson_buf(char *output, const TBOX *bbox, int precision)
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "\"stBoundedBy\":{\"bbox\":[");
-  ptr += lwprint_double(bbox->xmin, precision, ptr);
+  ptr += lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
   ptr += sprintf(ptr, ",");
-  ptr += lwprint_double(bbox->xmax, precision, ptr);
+  ptr += lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
   ptr += sprintf(ptr, "],\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, bbox->tmin);
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, bbox->tmax);
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
   ptr += sprintf(ptr, "}},");
   return (ptr - output);
 }
@@ -378,9 +378,9 @@ stbox_mfjson_buf(char *output, const STBOX *bbox, bool hasz, int precision)
     ptr += lwprint_double(bbox->zmax, precision, ptr);
   }
   ptr += sprintf(ptr, "]],\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, bbox->tmin);
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, bbox->tmax);
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
   ptr += sprintf(ptr, "}},");
   return (ptr - output);
 }
@@ -1984,14 +1984,16 @@ tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
   /* Write the value dimension if any */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
-    buf = double_to_wkb_buf(box->xmin, buf, variant);
-    buf = double_to_wkb_buf(box->xmax, buf, variant);
+    buf = double_to_wkb_buf(DatumGetFloat8(box->span.lower), buf, variant);
+    buf = double_to_wkb_buf(DatumGetFloat8(box->span.upper), buf, variant);
   }
   /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))
   {
-    buf = timestamp_to_wkb_buf(box->tmin, buf, variant);
-    buf = timestamp_to_wkb_buf(box->tmax, buf, variant);
+    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.lower), buf,
+      variant);
+    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.upper), buf,
+      variant);
   }
   return buf;
 }
@@ -2069,8 +2071,10 @@ stbox_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
   /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))
   {
-    buf = timestamp_to_wkb_buf(box->tmin, buf, variant);
-    buf = timestamp_to_wkb_buf(box->tmax, buf, variant);
+    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.lower), buf,
+      variant);
+    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.upper), buf,
+      variant);
   }
   return buf;
 }

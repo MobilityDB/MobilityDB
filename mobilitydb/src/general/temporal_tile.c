@@ -359,16 +359,20 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   state->tunits = tunits;
   if (xsize)
   {
-    state->box.xmin = float_bucket(box->xmin, xsize, xorigin);
-    state->box.xmax = float_bucket(box->xmax, xsize, xorigin);
+    state->box.span.lower = Float8GetDatum(float_bucket(
+      DatumGetFloat8(box->span.lower), xsize, xorigin));
+    state->box.span.upper = Float8GetDatum(float_bucket(
+      DatumGetFloat8(box->span.upper), xsize, xorigin));
   }
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket(box->tmin, tunits, torigin);
-    state->box.tmax = timestamptz_bucket(box->tmax, tunits, torigin);
+    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.lower), tunits, torigin));
+    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.upper), tunits, torigin));
   }
-  state->value = state->box.xmin;
-  state->t = state->box.tmin;
+  state->value = DatumGetFloat8(state->box.span.lower);
+  state->t = DatumGetTimestampTz(state->box.period.lower);
   return state;
 }
 
@@ -385,11 +389,11 @@ tbox_tile_state_next(TboxGridState *state)
   /* Move to the next tile */
   state->i++;
   state->value += state->xsize;
-  if (state->value > state->box.xmax)
+  if (state->value > DatumGetFloat8(state->box.span.upper))
   {
-    state->value = state->box.xmin;
+    state->value = DatumGetFloat8(state->box.span.lower);
     state->t += state->tunits;
-    if (state->t > state->box.tmax)
+    if (state->t > DatumGetTimestampTz(state->box.period.upper))
     {
       state->done = true;
       return;

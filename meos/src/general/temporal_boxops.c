@@ -232,14 +232,24 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(inst->temptype);
-  memset(box, 0, temporal_bbox_size(inst->temptype));
   if (talpha_type(inst->temptype))
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-    true, true, T_TIMESTAMPTZ, (Span *) box);
+      true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
-    double dvalue = tnumberinst_double(inst);
-    tbox_set(true, true, dvalue, dvalue, inst->t, inst->t, (TBOX *) box);
+    Datum value;
+    if (inst->temptype == T_TINT)
+      value = Float8GetDatum(tnumberinst_double(inst));
+    else /* inst->temptype == T_TFLOAT */
+      value = tinstant_value(inst);
+    TBOX *tbox = (TBOX *) box;
+    memset(tbox, 0, sizeof(TBOX));
+    span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+      true, true, T_TIMESTAMPTZ, &tbox->period);
+    /* TBOX always has a float span */
+    span_set(value, value, true, true, T_FLOAT8, &tbox->span);
+    MOBDB_FLAGS_SET_X(tbox->flags, true);
+    MOBDB_FLAGS_SET_T(tbox->flags, true);
   }
   else if (tgeo_type(inst->temptype))
     tpointinst_set_stbox(inst, (STBOX *) box);
@@ -286,7 +296,7 @@ tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
   if (talpha_type(instants[0]->temptype))
-    span_set(TimestampTzGetDatum(instants[0]->t), 
+    span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), true, true, T_TIMESTAMPTZ,
       (Span *) box);
   else if (tnumber_type(instants[0]->temptype))
@@ -339,6 +349,11 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       instants[0]->temptype);
+  /* Set the lower_inc and upper_inc bounds of the period at the beginning
+   * of the bounding box */
+  Period *p = (Period *) box;
+  p->lower_inc = lower_inc;
+  p->upper_inc = upper_inc;
   return;
 }
 

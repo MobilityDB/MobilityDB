@@ -37,14 +37,12 @@
 #include <assert.h>
 #include <float.h>
 #include <math.h>
-/* PostgreSQL */
-// #include <utils/float.h>
-// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/lifting.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -260,19 +258,22 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
   /* If the boxes intersect in the value dimension return 0 */
-  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
+  if (datum_le(box1->span.lower, box2->span.upper, T_FLOAT8) &&
+      datum_le(box2->span.lower, box1->span.upper, T_FLOAT8))
     return 0.0;
 
-  if (box1->xmax < box2->xmin)
+  if (datum_lt(box1->span.upper, box2->span.lower, T_FLOAT8))
     /* box1 is to the left of box2 */
-    return box2->xmin - box1->xmax;
+    return DatumGetFloat8(box2->span.lower) -
+      DatumGetFloat8(box1->span.upper);
   else
     /* box1 is to the right of box2 */
-    return box1->xmin - box2->xmax;
+    return DatumGetFloat8(box1->span.lower) -
+      DatumGetFloat8(box2->span.upper);
 }
 
 /**
@@ -287,13 +288,11 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2, inter;
+  Period p, inter;
   if (hast)
   {
-    temporal_set_period(temp, &p1);
-    span_set(TimestampTzGetDatum(box->tmin), TimestampTzGetDatum(box->tmax),
-      true, true, T_TIMESTAMPTZ, &p2);
-    if (! inter_span_span(&p1, &p2, &inter))
+    temporal_set_period(temp, &p);
+    if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
   }
 
@@ -307,8 +306,9 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
     return 0.0;
 
   /* Get the minimum distance between the values of the boxes */
-  double result = (box->xmin > box1.xmax) ?
-    fabs(box->xmin - box1.xmax) : fabs(box1.xmin - box->xmax);
+  double result = datum_gt(box->span.lower, box1.span.upper, T_FLOAT8) ?
+    fabs(DatumGetFloat8(box->span.lower) - DatumGetFloat8(box1.span.upper)) :
+    fabs(DatumGetFloat8(box1.span.lower) - DatumGetFloat8(box->span.upper));
 
   if (hast)
     pfree(temp1);
