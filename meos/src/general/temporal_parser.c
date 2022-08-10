@@ -304,6 +304,72 @@ tbox_parse(char **str)
   return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
 }
 
+/**
+ * @brief Parse a temporal box value from the buffer.
+ */
+TBOX *
+tbox_parse_new(char **str)
+{
+  bool hasx = false, hast = false;
+  Span *span = NULL;
+  Period *period = NULL;
+  
+  p_whitespace(str);
+  if (strncasecmp(*str, "TBOX", 4) == 0)
+  {
+    *str += 4;
+    p_whitespace(str);
+  }
+  else
+    elog(ERROR, "Could not parse temporal box");
+
+  if (strncasecmp(*str, "T", 1) == 0)
+  {
+    hast = true;
+    *str += 1;
+    p_whitespace(str);
+  }
+
+  /* Parse opening parenthesis */
+  if (! p_oparen(str))
+    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
+  
+  if (hast)
+  {
+    period = span_parse(str, T_PERIOD, false, true);
+    /* Determine whether there is an X dimension */
+    p_whitespace(str);
+    if (((*str)[0]) == ',')
+    {
+      hasx = true;
+      *str += 1;
+      p_whitespace(str);
+    }
+  }
+  else
+    hasx = true;
+
+  if (hasx)
+    span = span_parse(str, T_FLOATSPAN, false, true);
+
+  p_whitespace(str);
+  if (!p_cparen(str))
+    elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
+  p_whitespace(str);
+  p_comma(str);
+  p_whitespace(str);
+
+  /* Ensure there is no more input */
+  ensure_end_input(str, true, "temporal box");
+
+  TBOX *result = tbox_make2(period, span);
+  if (hast)
+    pfree(period);
+  if (hasx)
+    pfree(span);
+  return result;
+}
+
 /*****************************************************************************/
 /* Time Types */
 

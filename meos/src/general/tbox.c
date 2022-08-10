@@ -103,7 +103,7 @@ tbox_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
  */
 char *
-tbox_out(const TBOX *box, int maxdd)
+tbox_out_old(const TBOX *box, int maxdd)
 {
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
@@ -148,6 +148,37 @@ tbox_out(const TBOX *box, int maxdd)
   {
     pfree(tmin); pfree(tmax);
   }
+  return result;
+}
+
+char *
+tbox_out(const TBOX *box, int maxdd)
+{
+  static size_t size = MAXTBOXLEN + 1;
+  char *result = palloc(size);
+  char *period = NULL, *span = NULL;
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  assert(hasx || hast);
+  if (hast)
+    /* The second argument is not used for periods */
+    period = span_out(&box->period, Int32GetDatum(maxdd));
+  if (hasx)
+    span = span_out(&box->span, Int32GetDatum(maxdd));
+  if (hast)
+  {
+    if (hasx)
+      snprintf(result, size, "TBOX T(%s,%s)", period, span);
+    else
+      snprintf(result, size, "TBOX T(%s)", period);
+  }
+  else
+    /* Missing T dimension */
+    snprintf(result, size, "TBOX(%s)", span);
+  if (hast)
+    pfree(period);
+  if (hasx)
+    pfree(span);
   return result;
 }
 
