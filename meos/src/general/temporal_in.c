@@ -1347,7 +1347,14 @@ tbox_from_wkb_state(wkb_parse_state *s)
     tmin = timestamp_from_wkb_state(s);
     tmax = timestamp_from_wkb_state(s);
   }
-  TBOX *result = tbox_make(s->hasx, s->hast, xmin, xmax, tmin, tmax);
+  /* Create the temporal box */
+  Period period;
+  Span span;
+  if (s->hast)
+    span_set(tmin, tmax, true, true, T_TIMESTAMPTZ, &period);
+  if (s->hasx)
+    span_set(xmin, xmax, true, true, T_FLOAT8, &span);
+  TBOX *result = tbox_make(s->hast ? &period : NULL, s->hasx ? &span : NULL);
   return result;
 }
 

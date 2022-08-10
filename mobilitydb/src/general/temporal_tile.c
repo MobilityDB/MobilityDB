@@ -331,7 +331,11 @@ tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits)
   double xmax = value + xsize;
   TimestampTz tmin = t;
   TimestampTz tmax = t + tunits;
-  return (TBOX *) tbox_make(true, true, xmin, xmax, tmin, tmax);
+  Period period;
+  Span span;
+  span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, &period);
+  span_set(xmin, xmax, true, false, T_FLOAT8, &span);
+  return (TBOX *) tbox_make(&period, &span);
 }
 
 /**

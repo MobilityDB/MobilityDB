@@ -103,55 +103,6 @@ tbox_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
  */
 char *
-tbox_out_old(const TBOX *box, int maxdd)
-{
-  static size_t size = MAXTBOXLEN + 1;
-  char *result = palloc(size);
-  char *xmin = NULL, *xmax = NULL, *tmin = NULL, *tmax = NULL;
-  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  assert(hasx || hast);
-  if (hasx)
-  {
-    if (box->span.basetype == T_INT4)
-    {
-      xmin = int4_out(DatumGetInt32(box->span.lower));
-      xmax = int4_out(DatumGetInt32(box->span.upper));
-    }    
-    else /* box->span.basetype == T_FLOAT8 */
-    {
-      xmin = float8_out(DatumGetFloat8(box->span.lower), maxdd);
-      xmax = float8_out(DatumGetFloat8(box->span.upper), maxdd);
-    }
-  }
-  if (hast)
-  {
-    tmin = pg_timestamptz_out(DatumGetTimestampTz(box->period.lower));
-    tmax = pg_timestamptz_out(DatumGetTimestampTz(box->period.upper));
-  }
-  if (hasx)
-  {
-    if (hast)
-      snprintf(result, size, "TBOX((%s,%s),(%s,%s))", xmin, tmin,
-        xmax, tmax);
-    else
-      snprintf(result, size, "TBOX((%s,),(%s,))", xmin, xmax);
-  }
-  else
-    /* Missing X dimension */
-    snprintf(result, size, "TBOX((,%s),(,%s))", tmin, tmax);
-  if (hasx)
-  {
-    pfree(xmin); pfree(xmax);
-  }
-  if (hast)
-  {
-    pfree(tmin); pfree(tmax);
-  }
-  return result;
-}
-
-char *
 tbox_out(const TBOX *box, int maxdd)
 {
   static size_t size = MAXTBOXLEN + 1;
@@ -185,19 +136,17 @@ tbox_out(const TBOX *box, int maxdd)
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
-
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from the arguments.
  * @sqlfunc tbox()
  */
 TBOX *
-tbox_make(bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax)
+tbox_make(const Period *p, const Span *s)
 {
   /* Note: zero-fill is done in function tbox_set */
   TBOX *result = palloc(sizeof(TBOX));
-  tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
+  tbox_set(p, s, result);
   return result;
 }
 
@@ -208,51 +157,7 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
  * allocation
  */
 void
-tbox_set(bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax, TBOX *box)
-{
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
-  MOBDB_FLAGS_SET_X(box->flags, hasx);
-  MOBDB_FLAGS_SET_T(box->flags, hast);
-  if (hasx)
-  {
-    /* Process X min/max */
-    span_set(Float8GetDatum(Min(xmin, xmax)), Float8GetDatum(Max(xmin, xmax)),
-      true, true, T_FLOAT8, &box->span);
-  }
-  if (hast)
-  {
-    /* Process T min/max */
-    span_set(TimestampTzGetDatum(Min(tmin, tmax)),
-      TimestampTzGetDatum(Max(tmin, tmax)), true, true, T_TIMESTAMPTZ,
-      &box->period);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_box_constructor
- * @brief Construct a temporal box from the arguments.
- * @sqlfunc tbox()
- */
-TBOX *
-tbox_make2(const Period *p, const Span *s)
-{
-  /* Note: zero-fill is done in function tbox_set */
-  TBOX *result = palloc(sizeof(TBOX));
-  tbox_set2(p, s, result);
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_constructor
- * @brief Set a temporal box from the arguments
- * @note This function is equivalent to @ref tbox_make without memory
- * allocation
- */
-void
-tbox_set2(const Period *p, const Span *s, TBOX *box)
+tbox_set(const Period *p, const Span *s, TBOX *box)
 {
   /* At least on of the X or T dimensions should be given */
   assert(p || s);
@@ -1100,23 +1005,12 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
-  double xmin = 0, xmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
-  if (hasx)
-  {
-    xmin = Min(DatumGetFloat8(box1->span.lower),
-      DatumGetFloat8(box2->span.lower));
-    xmax = Max(DatumGetFloat8(box1->span.upper),
-      DatumGetFloat8(box2->span.upper));
-  }
+  Span *period = NULL, *span = NULL;
   if (hast)
-  {
-    tmin = Min(DatumGetTimestampTz(box1->period.lower),
-      DatumGetTimestampTz(box2->period.lower));
-    tmax = Max(DatumGetTimestampTz(box1->period.upper),
-      DatumGetTimestampTz(box2->period.upper));
-  }
-  TBOX *result = tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
+    period = union_span_span(&box1->period, &box1->period, true);
+  if (hasx)
+    span = union_span_span(&box1->span, &box1->span, true);
+  TBOX *result = tbox_make(period, span);
   return result;
 }
 
@@ -1139,23 +1033,12 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
     (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
-  double xmin = 0, xmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
-  if (hasx)
-  {
-    xmin = Max(DatumGetFloat8(box1->span.lower),
-      DatumGetFloat8(box2->span.lower));
-    xmax = Min(DatumGetFloat8(box1->span.upper),
-      DatumGetFloat8(box2->span.upper));
-  }
+  Span *period = NULL, *span = NULL;
   if (hast)
-  {
-    tmin = Max(DatumGetTimestampTz(box1->period.lower),
-      DatumGetTimestampTz(box2->period.lower));
-    tmax = Min(DatumGetTimestampTz(box1->period.upper),
-      DatumGetTimestampTz(box2->period.upper));
-  }
-  tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
+    period = intersection_span_span(&box1->period, &box2->period);
+  if (hasx)
+    span = intersection_span_span(&box1->span, &box2->span);
+  tbox_set(period, span, result);
   return true;
 }
 

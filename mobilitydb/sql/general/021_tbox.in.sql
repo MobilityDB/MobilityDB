@@ -103,17 +103,17 @@ CREATE FUNCTION asHexWKB(tbox, endianenconding text)
  * Constructors
  ******************************************************************************/
 
- CREATE FUNCTION tbox(float8, float8)
+ CREATE FUNCTION tbox(period, floatspan)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_constructor'
+  AS 'MODULE_PATHNAME', 'Tbox_constructor_period_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- CREATE FUNCTION tboxt(timestamptz, timestamptz)
+ CREATE FUNCTION tbox_t(period)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_constructor_t'
+  AS 'MODULE_PATHNAME', 'Tbox_constructor_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- CREATE FUNCTION tbox(float8, timestamptz, float8, timestamptz)
+ CREATE FUNCTION tbox_x(floatspan)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_constructor'
+  AS 'MODULE_PATHNAME', 'Tbox_constructor_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

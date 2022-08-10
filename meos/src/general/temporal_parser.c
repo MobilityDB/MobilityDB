@@ -237,79 +237,6 @@ basetype_parse(char **str, mobdbType basetype)
 TBOX *
 tbox_parse(char **str)
 {
-  double xmin = 0, xmax = 0; /* keep compiler quiet */
-  TimestampTz tmin = 0, tmax = 0; /* keep compiler quiet */
-  bool hasx = false, hast = false;
-
-  p_whitespace(str);
-  if (strncasecmp(*str, "TBOX", 4) == 0)
-  {
-    *str += 4;
-    p_whitespace(str);
-  }
-  else
-    elog(ERROR, "Could not parse temporal box");
-
-  /* Parse double opening parenthesis */
-  if (! p_oparen(str) || ! p_oparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
-
-  /* Determine whether there is an X dimension */
-  p_whitespace(str);
-  if (((*str)[0]) != ',')
-  {
-    xmin = double_parse(str);
-    hasx = true;
-  }
-
-  p_whitespace(str);
-  p_comma(str);
-  p_whitespace(str);
-
-  /* Determine whether there is a T dimension */
-  if (((*str)[0]) != ')')
-  {
-    tmin = timestamp_parse(str);
-    hast = true;
-  }
-
-  if (! hasx && ! hast)
-    elog(ERROR, "Could not parse temporal box: Both value and time dimensions are empty");
-
-  p_whitespace(str);
-  if (!p_cparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
-  p_whitespace(str);
-  p_comma(str);
-  p_whitespace(str);
-
-  /* Parse upper bounds */
-  if (!p_oparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
-
-  if (hasx)
-    xmax = double_parse(str);
-  p_whitespace(str);
-  p_comma(str);
-  p_whitespace(str);
-  if (hast)
-    tmax = timestamp_parse(str);
-  p_whitespace(str);
-  if (!p_cparen(str) || !p_cparen(str) )
-  elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
-
-  /* Ensure there is no more input */
-  ensure_end_input(str, true, "temporal box");
-
-  return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
-}
-
-/**
- * @brief Parse a temporal box value from the buffer.
- */
-TBOX *
-tbox_parse_new(char **str)
-{
   bool hasx = false, hast = false;
   Span *span = NULL;
   Period *period = NULL;
@@ -362,7 +289,7 @@ tbox_parse_new(char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");
 
-  TBOX *result = tbox_make2(period, span);
+  TBOX *result = tbox_make(period, span);
   if (hast)
     pfree(period);
   if (hasx)
