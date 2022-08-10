@@ -148,50 +148,46 @@ Tbox_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tbox_constructor);
+PG_FUNCTION_INFO_V1(Tbox_constructor_period_span);
 /**
  * @ingroup mobilitydb_box_in_out
  * @brief Construct a temporal box from the arguments
  * @sqlfunc tbox()
  */
 PGDLLEXPORT Datum
-Tbox_constructor(PG_FUNCTION_ARGS)
+Tbox_constructor_period_span(PG_FUNCTION_ARGS)
 {
-  double xmin = 0, xmax = 0; /* keep compiler quiet */
-  TimestampTz tmin = 0, tmax = 0;
-  bool hast = false;
-
-  assert (PG_NARGS() == 2 || PG_NARGS() == 4);
-  if (PG_NARGS() == 2)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    xmax = PG_GETARG_FLOAT8(1);
-  }
-  else if (PG_NARGS() == 4)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    tmin = PG_GETARG_TIMESTAMPTZ(1);
-    xmax = PG_GETARG_FLOAT8(2);
-    tmax = PG_GETARG_TIMESTAMPTZ(3);
-    hast = true;
-  }
-
-  TBOX *result = tbox_make(true, hast, xmin, xmax, tmin, tmax);
+  Span *period = PG_GETARG_SPAN_P(0);
+  Span *span = PG_GETARG_SPAN_P(1);
+  TBOX *result = tbox_make(period, span);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tbox_constructor_t);
+PG_FUNCTION_INFO_V1(Tbox_constructor_period);
+/**
+ * @ingroup mobilitydb_box_in_out
+ * @brief Construct a temporal box from the period
+ * @sqlfunc tbox()
+ */
+PGDLLEXPORT Datum
+Tbox_constructor_period(PG_FUNCTION_ARGS)
+{
+  Span *period = PG_GETARG_SPAN_P(0);
+  TBOX *result = tbox_make(period, NULL);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tbox_constructor_span);
 /**
  * @ingroup mobilitydb_box_in_out
  * @brief Construct a temporal box from the timestamps
  * @sqlfunc tbox()
  */
 PGDLLEXPORT Datum
-Tbox_constructor_t(PG_FUNCTION_ARGS)
+Tbox_constructor_span(PG_FUNCTION_ARGS)
 {
-  TimestampTz tmin = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz tmax = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = tbox_make(false, true, 0.0, 0.0, tmin, tmax);
+  Span *span = PG_GETARG_SPAN_P(0);
+  TBOX *result = tbox_make(NULL, span);
   PG_RETURN_POINTER(result);
 }
 

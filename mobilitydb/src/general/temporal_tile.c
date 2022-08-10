@@ -327,11 +327,15 @@ Period_bucket(PG_FUNCTION_ARGS)
 static TBOX *
 tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits)
 {
-  double xmin = value;
-  double xmax = value + xsize;
-  TimestampTz tmin = t;
-  TimestampTz tmax = t + tunits;
-  return (TBOX *) tbox_make(true, true, xmin, xmax, tmin, tmax);
+  Datum xmin = Float8GetDatum(value);
+  Datum xmax = Float8GetDatum(value + xsize);
+  Datum tmin = TimestampTzGetDatum(t);
+  Datum tmax = TimestampTzGetDatum(t + tunits);
+  Period period;
+  Span span;
+  span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, &period);
+  span_set(xmin, xmax, true, false, T_FLOAT8, &span);
+  return (TBOX *) tbox_make(&period, &span);
 }
 
 /**

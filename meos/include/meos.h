@@ -229,8 +229,11 @@ extern char *pg_timestamp_out(Timestamp dt);
 /* Input/output functions for span and time types */
 
 extern Span *floatspan_in(char *str);
+extern char *floatspan_out(const Span *s, int maxdd);
 extern Span *intspan_in(char *str);
+extern char *intspan_out(const Span *s);
 extern Period *period_in(char *str);
+extern char *period_out(const Span *s);
 extern char *periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
 extern uint8_t *periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
 extern PeriodSet *periodset_from_hexwkb(const char *hexwkb);
@@ -590,10 +593,8 @@ extern char *stbox_out(const STBOX *box, int maxdd);
 
 /* Constructor functions for box types */
 
-extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax, TimestampTz tmin, TimestampTz tmax);
-extern void tbox_set(bool hasx, bool hast, double xmin, double xmax, TimestampTz tmin, TimestampTz tmax, TBOX *box);
-extern TBOX *tbox_make2(const Period *p, const Span *s);
-extern void tbox_set2(const Period *p, const Span *s, TBOX *box);
+extern TBOX *tbox_make(const Period *p, const Span *s);
+extern void tbox_set(const Period *p, const Span *s, TBOX *box);
 extern TBOX *tbox_copy(const TBOX *box);
 extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax);

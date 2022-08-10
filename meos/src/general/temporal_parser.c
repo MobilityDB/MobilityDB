@@ -237,10 +237,10 @@ basetype_parse(char **str, mobdbType basetype)
 TBOX *
 tbox_parse(char **str)
 {
-  double xmin = 0, xmax = 0; /* keep compiler quiet */
-  TimestampTz tmin = 0, tmax = 0; /* keep compiler quiet */
   bool hasx = false, hast = false;
-
+  Span *span = NULL;
+  Period *period = NULL;
+  
   p_whitespace(str);
   if (strncasecmp(*str, "TBOX", 4) == 0)
   {
@@ -250,31 +250,34 @@ tbox_parse(char **str)
   else
     elog(ERROR, "Could not parse temporal box");
 
-  /* Parse double opening parenthesis */
-  if (! p_oparen(str) || ! p_oparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
-
-  /* Determine whether there is an X dimension */
-  p_whitespace(str);
-  if (((*str)[0]) != ',')
+  if (strncasecmp(*str, "T", 1) == 0)
   {
-    xmin = double_parse(str);
-    hasx = true;
-  }
-
-  p_whitespace(str);
-  p_comma(str);
-  p_whitespace(str);
-
-  /* Determine whether there is a T dimension */
-  if (((*str)[0]) != ')')
-  {
-    tmin = timestamp_parse(str);
     hast = true;
+    *str += 1;
+    p_whitespace(str);
   }
 
-  if (! hasx && ! hast)
-    elog(ERROR, "Could not parse temporal box: Both value and time dimensions are empty");
+  /* Parse opening parenthesis */
+  if (! p_oparen(str))
+    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
+  
+  if (hast)
+  {
+    period = span_parse(str, T_PERIOD, false, true);
+    /* Determine whether there is an X dimension */
+    p_whitespace(str);
+    if (((*str)[0]) == ',')
+    {
+      hasx = true;
+      *str += 1;
+      p_whitespace(str);
+    }
+  }
+  else
+    hasx = true;
+
+  if (hasx)
+    span = span_parse(str, T_FLOATSPAN, false, true);
 
   p_whitespace(str);
   if (!p_cparen(str))
@@ -283,25 +286,15 @@ tbox_parse(char **str)
   p_comma(str);
   p_whitespace(str);
 
-  /* Parse upper bounds */
-  if (!p_oparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
-
-  if (hasx)
-    xmax = double_parse(str);
-  p_whitespace(str);
-  p_comma(str);
-  p_whitespace(str);
-  if (hast)
-    tmax = timestamp_parse(str);
-  p_whitespace(str);
-  if (!p_cparen(str) || !p_cparen(str) )
-  elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
-
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");
 
-  return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
+  TBOX *result = tbox_make(period, span);
+  if (hast)
+    pfree(period);
+  if (hasx)
+    pfree(span);
+  return result;
 }
 
 /*****************************************************************************/
