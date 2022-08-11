@@ -1292,10 +1292,10 @@ tbox_to_wkb_size(const TBOX *box)
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* If there is a value dimension */
   if (MOBDB_FLAGS_GET_X(box->flags))
-    size += MOBDB_WKB_DOUBLE_SIZE * 2;
+    size += span_to_wkb_size(&box->span);
   /* If there is a time dimension */
   if (MOBDB_FLAGS_GET_T(box->flags))
-    size += MOBDB_WKB_DOUBLE_SIZE * 2;
+    size += span_to_wkb_size(&box->period);
   return size;
 }
 
@@ -1856,6 +1856,26 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 }
 
 /**
+ * Write into the buffer a span that is a component of another type
+ * represented in Well-Known Binary (WKB) format as follows
+ * - Endian byte
+ * - Basetype int16
+ * - Bounds byte stating whether the bounds are inclusive
+ * - Two base type values
+ */
+uint8_t *
+span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
+{
+  /* Write the span type */
+  buf = span_spantype_to_wkb_buf(s, buf, variant);
+  /* Write the span bounds */
+  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
+  /* Write the base values */
+  buf = lower_upper_to_wkb_buf(s, buf, variant);
+  return buf;
+}
+
+/**
  * Write into the buffer a span represented in Well-Known Binary (WKB) format
  * as follows
  * - Endian byte
@@ -1868,12 +1888,8 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Write the span type */
-  buf = span_spantype_to_wkb_buf(s, buf, variant);
-  /* Write the span bounds */
-  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
-  /* Write the base values */
-  buf = lower_upper_to_wkb_buf(s, buf, variant);
+  /* Write the span  */
+  buf = span_to_wkb_buf_int(s, buf, variant);
   return buf;
 }
 
@@ -1981,20 +1997,12 @@ tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal flags */
   buf = tbox_to_wkb_flags_buf(box, buf, variant);
-  /* Write the value dimension if any */
-  if (MOBDB_FLAGS_GET_X(box->flags))
-  {
-    buf = double_to_wkb_buf(DatumGetFloat8(box->span.lower), buf, variant);
-    buf = double_to_wkb_buf(DatumGetFloat8(box->span.upper), buf, variant);
-  }
   /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))
-  {
-    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.lower), buf,
-      variant);
-    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.upper), buf,
-      variant);
-  }
+    buf = span_to_wkb_buf_int(&box->period, buf, variant);
+  /* Write the value dimension if any */
+  if (MOBDB_FLAGS_GET_X(box->flags))
+    buf = span_to_wkb_buf_int(&box->span, buf, variant);
   return buf;
 }
 

@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include "../postgres/postgres.h"
 #include "../postgres/utils/timestamp_def.h"
+#include "../postgres/utils/date.h"
 /* PostGIS */
 #include <liblwgeom.h>
 
@@ -221,6 +222,8 @@ extern void meos_finish(void);
 
 /* Input/output functions for PostgreSQL base types */
 
+extern DateADT pg_date_in(char *str);
+extern char *pg_date_out(DateADT date);
 extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern Timestamp pg_timestamp_in(char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);

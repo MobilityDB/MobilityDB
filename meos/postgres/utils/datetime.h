@@ -22,6 +22,9 @@
 /* this struct is declared in utils/tzparser.h: */
 struct tzEntry;
 
+/* Definitions of the global variables taken from miscadmin.h */
+extern int DateStyle;
+extern int DateOrder;
 
 /* ----------------------------------------------------------------
  *				time types + support macros
@@ -270,7 +273,6 @@ extern const int day_tab[2][13];
  */
 #define isleap(y) (((y) % 4) == 0 && (((y) % 100) != 0 || ((y) % 400) == 0))
 
-
 /*
  * Datetime input parsing routines (ParseDateTime, DecodeDateTime, etc)
  * return zero or a positive value on success.  On failure, they return
@@ -282,7 +284,6 @@ extern const int day_tab[2][13];
 #define DTERR_MD_FIELD_OVERFLOW (-3)	/* triggers hint about DateStyle */
 #define DTERR_INTERVAL_OVERFLOW (-4)
 #define DTERR_TZDISP_OVERFLOW	(-5)
-
 
 extern void GetCurrentDateTime(struct pg_tm *tm);
 extern void GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp);

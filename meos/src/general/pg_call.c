@@ -168,29 +168,122 @@ pg_datan2(float8 arg1, float8 arg2)
 }
 
 /*****************************************************************************
+ * Functions adapted from date.c
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_base
+ * @brief Convert a string to a date in internal date format.
+ * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
+ */
+DateADT
+pg_date_in(char *str)
+{
+  DateADT date;
+  fsec_t fsec;
+  struct pg_tm tt, *tm = &tt;
+  int tzp;
+  int dtype;
+  int nf;
+  int dterr;
+  char *field[MAXDATEFIELDS];
+  int ftype[MAXDATEFIELDS];
+  char workbuf[MAXDATELEN + 1];
+
+  dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
+              field, ftype, MAXDATEFIELDS, &nf);
+  if (dterr == 0)
+    dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tzp);
+  if (dterr != 0)
+    DateTimeParseError(dterr, str, "date");
+
+  switch (dtype)
+  {
+    case DTK_DATE:
+      break;
+
+    case DTK_EPOCH:
+      GetEpochTime(tm);
+      break;
+
+    case DTK_LATE:
+      DATE_NOEND(date);
+      PG_RETURN_DATEADT(date);
+
+    case DTK_EARLY:
+      DATE_NOBEGIN(date);
+      PG_RETURN_DATEADT(date);
+
+    default:
+      DateTimeParseError(DTERR_BAD_FORMAT, str, "date");
+      break;
+  }
+
+  /* Prevent overflow in Julian-day routines */
+  if (!IS_VALID_JULIAN(tm->tm_year, tm->tm_mon, tm->tm_mday))
+    elog(ERROR, "date out of range: \"%s\"", str);
+
+  date = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
+
+  /* Now check for just-out-of-range dates */
+  if (!IS_VALID_DATE(date))
+    elog(ERROR, "date out of range: \"%s\"", str);
+
+  return date;
+}
+
+/* date_out()
+ * Given internal format date, convert to text string.
+ */
+/**
+ * @ingroup libmeos_base
+ * @brief Convert a date in internal date format to a string.
+ * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
+ */
+char *
+pg_date_out(DateADT date)
+{
+  char *result;
+  struct pg_tm tt, *tm = &tt;
+  char buf[MAXDATELEN + 1];
+
+  if (DATE_NOT_FINITE(date))
+    EncodeSpecialDate(date, buf);
+  else
+  {
+    j2date(date + POSTGRES_EPOCH_JDATE,
+         &(tm->tm_year), &(tm->tm_mon), &(tm->tm_mday));
+    EncodeDateOnly(tm, DateStyle, buf);
+  }
+
+  result = pstrdup(buf);
+  return result;
+}
+
+/*****************************************************************************
  * Functions adapted from timestamp.c
  *****************************************************************************/
 
-// /* Definitions taken from miscadmin.h */
+/* Definitions taken from miscadmin.h */
 
-// /* valid DateStyle values */
-// #define USE_POSTGRES_DATES 0
+/* valid DateStyle values */
+#define USE_POSTGRES_DATES 0
 #define USE_ISO_DATES      1
-// #define USE_SQL_DATES      2
-// #define USE_GERMAN_DATES   3
-// #define USE_XSD_DATES      4
+#define USE_SQL_DATES      2
+#define USE_GERMAN_DATES   3
+#define USE_XSD_DATES      4
 
-// #define MAXTZLEN           0  /* max TZ name len, not counting tr. null */
+#define MAXTZLEN           0  /* max TZ name len, not counting tr. null */
 
-// /* valid DateOrder values taken */
-// #define DATEORDER_YMD      0
-// #define DATEORDER_DMY      1
-// #define DATEORDER_MDY      2
+/* valid DateOrder values taken */
+#define DATEORDER_YMD      0
+#define DATEORDER_DMY      1
+#define DATEORDER_MDY      2
 
-// /* Definitions from globals.c */
+/* Definitions from globals.c */
 
 int DateStyle = USE_ISO_DATES;
-// int DateOrder = DATEORDER_MDY;
+int DateOrder = DATEORDER_MDY;
 
 /*
  * Report an error detected by one of the datetime input processing routines.
