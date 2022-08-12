@@ -115,7 +115,6 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))
 SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::period;
 -- NULL
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::period;
-/* Errors */
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::period;
 
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box2d;
