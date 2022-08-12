@@ -918,8 +918,8 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   else
   {
     *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      PGIS_LWGEOM_shortestline3d(traj, gs) :
-      PGIS_LWGEOM_shortestline2d(traj, gs);
+      gserialized_shortestline3d(traj, gs) :
+      gserialized_shortestline2d(traj, gs);
   }
   pfree(DatumGetPointer(traj));
   return true;

@@ -362,7 +362,7 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
   else /* np1->pos >= np2->pos */
   {
     GSERIALIZED *traj2 = PGIS_LWGEOM_line_substring(line, np2->pos, np1->pos);
-    traj = PGIS_LWGEOM_reverse(traj2);
+    traj = gserialized_reverse(traj2);
     pfree(traj2);
   }
   pfree(line);
@@ -692,7 +692,7 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2, int *count)
       DatumGetGserializedP(traj), i + 2); /* 1-based */
     double fraction = PGIS_LWGEOM_line_locate_point(DatumGetGserializedP(traj),
       vertex2);
-    bool found = PGIS_LWGEOM_azimuth(vertex1, vertex2, &azimuth);
+    bool found = gserialized_azimuth(vertex1, vertex2, &azimuth);
     assert(found);
     result[i] = tinstant_make(Float8GetDatum(azimuth), T_TFLOAT, time);
     pfree(DatumGetPointer(vertex1));

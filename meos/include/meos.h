@@ -217,10 +217,18 @@ extern void meos_initialize(void);
 extern void meos_finish(void);
 
 /*****************************************************************************
- * Functions for span and time types
+ * Functions for input/output base types
  *****************************************************************************/
 
-/* Input/output functions for PostgreSQL base types */
+extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod);
+extern char *gserialized_out(const GSERIALIZED *geom);
+extern char *gserialized_as_hexwkb(const GSERIALIZED *geom, const char *type);
+
+extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
+
+/*****************************************************************************
+ * Functions for input/output PostgreSQL time types
+ *****************************************************************************/
 
 extern DateADT pg_date_in(char *str);
 extern char *pg_date_out(DateADT date);
@@ -228,6 +236,10 @@ extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern Timestamp pg_timestamp_in(char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
 extern char *pg_timestamp_out(Timestamp dt);
+
+/*****************************************************************************
+ * Functions for span and time types
+ *****************************************************************************/
 
 /* Input/output functions for span and time types */
 

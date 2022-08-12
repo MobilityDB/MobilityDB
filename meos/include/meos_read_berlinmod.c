@@ -56,21 +56,21 @@
 #include <stdio.h>
 #include "meos.h"
 
+#define MAX_LENGTH_NAME 50
+#define MAX_VEHICLES 5
+#define MAX_COMMUNES 19
+
 typedef struct
 {
   int id;
-  text name;
+  char name[MAX_LENGTH_NAME];
   int population;
-  double percpop;
-  int popdensitykm2;
-  int noenterp;
-  double percenterp;
-  GSERIALIZED geom;
+  GSERIALIZED *geom;
 } commune_record;
 
 typedef struct
 {
-  text name;
+  char name[MAX_LENGTH_NAME];
   GSERIALIZED *geom;
 } region_record;
 
@@ -83,8 +83,110 @@ typedef struct
   GSERIALIZED *trajectory;
 } trip_record;
 
-extern GSERIALIZED *PGIS_LWGEOM_in(char *input, int32 geom_typmod);
-extern char *PGIS_LWGEOM_out(GSERIALIZED *geom);
+/* Arrays to compute the results */
+commune_record communes[19];
+region_record brussels_region;
+double length[MAX_VEHICLES + 2][MAX_COMMUNES + 2] = {0};
+
+/* Maximum length in characters of a trip in the input data */
+char trip_buffer[160000]; 
+/* Maximum length in characters of a geometry in the input data */
+char geo_buffer[100000]; 
+/* Maximum length in characters of a date in the input data */
+char date_buffer[12]; 
+
+/* Read communes from file */
+int read_communes(void)
+{
+  /* You may substitute the full file path in the first argument of fopen */
+  FILE *file = fopen("communes.csv", "r");
+
+  if (! file)
+  {
+    printf("Error opening file\n");
+    return 1;
+  }
+
+  int read = 0;
+  int records = 0;
+
+  /* Read the first line of the file with the headers */
+  fscanf(file, "%1024s\n", geo_buffer);
+
+  /* Continue reading the file */
+  do
+  {
+    // id, name, population, geom
+    read = fscanf(file, "%d,%50[^,],%d,%100000[^\n]\n",
+      &communes[records].id, communes[records].name,
+      &communes[records].population, geo_buffer);
+    /* Transform the string representing the geometry into a geometry value */
+    communes[records++].geom = gserialized_in(geo_buffer, -1);
+
+    if (read != 4 && !feof(file))
+    {
+      printf("Commune record with missing values\n");
+      return 1;
+    }
+
+    if (ferror(file))
+    {
+      printf("Error reading file\n");
+      return 1;
+    }
+  } while (!feof(file));
+
+  printf("\n%d commune records read.", records);
+
+  /* Close the file */
+  fclose(file);
+
+  return 0;
+}
+
+/* Read Brussels region from file */
+int read_brussels_region(void)
+{
+  /* You may substitute the full file path in the first argument of fopen */
+  FILE *file = fopen("brussels_region.csv", "r");
+
+  if (! file)
+  {
+    printf("Error opening file\n");
+    return 1;
+  }
+
+  int read = 0;
+
+  /* Read the first line of the file with the headers */
+  fscanf(file, "%1024s\n", geo_buffer);
+
+  /* Continue reading the file */
+  // id, geom
+  read = fscanf(file, "%50[^,],%100000[^\n]\n",
+    brussels_region.name, geo_buffer);
+  /* Transform the string representing the geometry into a geometry value */
+  brussels_region.geom = gserialized_in(geo_buffer, -1);
+
+  if (read != 2 && !feof(file))
+  {
+    printf("Region record with missing values\n");
+    return 1;
+  }
+
+  if (ferror(file))
+  {
+    printf("Error reading file\n");
+    return 1;
+  }
+
+  printf("\nBrussels region record read.\n");
+
+  /* Close the file */
+  fclose(file);
+
+  return 0;
+}
 
 /* Main program */
 int main(void)
@@ -92,6 +194,12 @@ int main(void)
   /* Initialize MEOS */
   meos_initialize();
 
+  /* Read communes file */
+  read_communes();
+  
+  /* Read communes file */
+  // read_brussels_region();
+  
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");
 
@@ -104,13 +212,6 @@ int main(void)
   trip_record trip_rec;
   int read = 0;
   int records = 0;
-  int nulls = 0;
-  /* Maximum length in characters of a trip in the input data */
-  char trip_buffer[160000]; 
-  /* Maximum length in characters of a geometry in the input data */
-  char geo_buffer[100000]; 
-  /* Maximum length in characters of a date in the input data */
-  char date_buffer[12]; 
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1024s\n", geo_buffer);
@@ -126,15 +227,15 @@ int main(void)
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
     /* Transform the string representing the trajectory into a geometry value */
-    trip_rec.trajectory = PGIS_LWGEOM_in(geo_buffer, -1);
+    trip_rec.trajectory = gserialized_in(geo_buffer, -1);
 
     if (read == 5)
       records++;
 
     if (read != 5 && !feof(file))
     {
-      printf("Record with missing values ignored\n");
-      nulls++;
+      printf("Trip record with missing values\n");
+      return 1;
     }
 
     if (ferror(file))
@@ -143,29 +244,19 @@ int main(void)
       return 1;
     }
 
-    // /* Print only 1 out of 1000 records */
-    // if (records % 1000 == 0)
-    // {
-      // char *t_out = pg_timestamp_out(rec.T);
-      // /* See above the assumptions made wrt the input data in the file */
-      // sprintf(buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-        // rec.Latitude, t_out);
-      // Temporal *inst1 = tgeogpoint_in(buffer);
-      // char *inst1_out = tpoint_as_text(inst1, 2);
-
-      // TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
-      // char *inst2_out = tfloat_out((Temporal *) inst2, 2);
-      // printf("MMSI: %ld, Location: %s SOG : %s\n",
-        // rec.MMSI, inst1_out, inst2_out);
-
-      // free(inst1); free(t_out); free(inst1_out);
-      // free(inst2); free(inst2_out);
-    // }
+    /* Compute the total length */
+    length[trip_rec.vehicle - 1][0] = tpoint_length(trip_rec.trip) / 1000;
+    /* Compute the length in each commune */
+    for (int i = 0; i < 19; i ++)
+    {
+      Temporal *atgeom = tpoint_at_geometry(trip_rec.trip, communes[i].geom);
+      if (atgeom)
+        length[trip_rec.vehicle - 1][i + 1] += tpoint_length(atgeom) / 1000;
+    }
 
   } while (!feof(file));
 
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
-    records, nulls);
+  printf("\n%d trip records read.\n", records);
 
   /* Close the file */
   fclose(file);

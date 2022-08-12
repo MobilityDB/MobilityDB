@@ -470,7 +470,7 @@ PGIS_boundary(const GSERIALIZED *geom1)
  * @note PostGIS function: LWGEOM_shortestline2d(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+gserialized_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
@@ -491,7 +491,7 @@ PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
  * @note PostGIS function: LWGEOM_shortestline3d(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+gserialized_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
@@ -569,7 +569,7 @@ PGIS_ST_3DIntersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
  * @note PostGIS function: LWGEOM_dwithin(PG_FUNCTION_ARGS)
  */
 bool
-PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+gserialized_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   double tolerance)
 {
   if (tolerance < 0)
@@ -592,7 +592,7 @@ PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
  * @note PostGIS function: LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
  */
 bool
-PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+gserialized_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   double tolerance)
 {
   if (tolerance < 0)
@@ -614,7 +614,7 @@ PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
  * @note PostGIS function: LWGEOM_reverse(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-PGIS_LWGEOM_reverse(const GSERIALIZED *geom)
+gserialized_reverse(const GSERIALIZED *geom)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   lwgeom_reverse_in_place(lwgeom);
@@ -629,7 +629,7 @@ PGIS_LWGEOM_reverse(const GSERIALIZED *geom)
  *     Return radians otherwise.
  */
 bool
-PGIS_LWGEOM_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2, double *result)
+gserialized_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2, double *result)
 {
   LWPOINT *lwpoint;
   POINT2D p1, p2;
@@ -1339,11 +1339,11 @@ postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
  *  LWGEOM_in( '0101000000000000000000F03F000000000000004')
  *  LWGEOM_in( '{"type":"Point","coordinates":[1,1]}')
  *  returns a GSERIALIZED object
-
+ *
  * @note PostGIS function: LWGEOM_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-PGIS_LWGEOM_in(char *input, int32 geom_typmod)
+gserialized_in(char *input, int32 geom_typmod)
 {
   char *str = input;
   LWGEOM_PARSER_RESULT lwg_parser_result;
@@ -1444,10 +1444,114 @@ PGIS_LWGEOM_in(char *input, int32 geom_typmod)
  * @note PostGIS function: LWGEOM_out(PG_FUNCTION_ARGS)
  */
 char *
-PGIS_LWGEOM_out(GSERIALIZED *geom)
+gserialized_out(const GSERIALIZED *geom)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
+}
+
+/**
+ * @brief Returns a geometry Given an OGC WKT (and optionally a SRID)
+ * @return a geometry.
+ * @note Note that this is a a stricter version
+ *     of geometry_in, where we refuse to
+ *     accept (HEX)WKB or EWKT.
+ * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+PGIS_LWGEOM_from_text(const char *wkt, int srid)
+{
+  LWGEOM_PARSER_RESULT lwg_parser_result;
+  GSERIALIZED *geom_result = NULL;
+  LWGEOM *lwgeom;
+
+  if (lwgeom_parse_wkt(&lwg_parser_result, (char *) wkt, LW_PARSER_CHECK_ALL) == LW_FAILURE )
+    PG_PARSER_ERROR(lwg_parser_result);
+
+  lwgeom = lwg_parser_result.geom;
+
+  if ( lwgeom->srid != SRID_UNKNOWN )
+  {
+    elog(WARNING, "OGC WKT expected, EWKT provided - use GeomFromEWKT() for this");
+  }
+
+  /* read user-requested SRID if any */
+  if ( srid > 0 )
+    lwgeom_set_srid(lwgeom, srid);
+
+  geom_result = geo_serialize(lwgeom);
+  lwgeom_parser_result_free(&lwg_parser_result);
+
+  return geom_result;
+}
+
+/*
+ * LWGEOM_to_text(lwgeom) --> text
+ * output is 'SRID=#;<wkb in hex form>'
+ * ie. 'SRID=-99;0101000000000000000000F03F0000000000000040'
+ * WKB is machine endian
+ * if SRID=-1, the 'SRID=-1;' will probably not be present.
+ */
+char *
+gserialized_to_text(const GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  lwvarlena_t *hexwkb = lwgeom_to_hexwkb_varlena(lwgeom, WKB_EXTENDED);
+  char *result = strdup(VARDATA(hexwkb));
+  pfree(hexwkb);
+  return result;
+}
+
+/**
+ * @brief Return the WKB representation in hex-encoded ASCII of a geometry.
+ * @note PostGIS function: LWGEOM_asHEXEWKB
+ * AsHEXEWKB(geom, string)
+ */
+char *
+gserialized_as_hexwkb(const GSERIALIZED *geom, const char *type)
+{
+  uint8_t variant = 0;
+  /* If user specified endianness, respect it */
+  if (type != NULL)
+  {
+    if  ( ! strncmp(type, "xdr", 3) || ! strncmp(type, "XDR", 3) )
+      variant = variant | WKB_XDR;
+    else
+      variant = variant | WKB_NDR;
+  }
+  /* Create WKB hex string */
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  lwvarlena_t *hexwkb = lwgeom_to_hexwkb_varlena(lwgeom, variant | WKB_EXTENDED);
+  char *result = strdup(VARDATA(hexwkb));
+  pfree(hexwkb);
+  return result;
+}
+
+/*
+ * LWGEOMFromEWKB(wkb,  [SRID] )
+ * NOTE: wkb is in *binary* not hex form.
+ *
+ * NOTE: this function parses EWKB (extended form)
+ *       which also contains SRID info.
+ */
+GSERIALIZED *
+gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
+{
+  uint8_t *wkb = (uint8_t*) VARDATA(bytea_wkb);
+  LWGEOM *lwgeom = lwgeom_from_wkb(wkb, VARSIZE_ANY_EXHDR(bytea_wkb),
+    LW_PARSER_CHECK_ALL);
+  if (!lwgeom)
+    elog(ERROR, "Unable to parse WKB");
+
+  if (srid > 0)
+    lwgeom_set_srid(lwgeom, srid);
+
+  if ( lwgeom_needs_bbox(lwgeom) )
+    lwgeom_add_bbox(lwgeom);
+
+  GSERIALIZED *geom = geo_serialize(lwgeom);
+  lwgeom_free(lwgeom);
+  return geom;
 }
 
 /*****************************************************************************
@@ -1571,6 +1675,28 @@ PGIS_geography_out(GSERIALIZED *g)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(g);
   return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
+}
+
+/*
+** geography_from_binary(*char) returns *GSERIALIZED
+*/
+GSERIALIZED *
+PGIS_geography_from_binary(const char *wkb_bytea)
+{
+  GSERIALIZED *gser = NULL;
+  size_t wkb_size = VARSIZE(wkb_bytea);
+  uint8_t *wkb = (uint8_t *) VARDATA(wkb_bytea);
+  LWGEOM *lwgeom = lwgeom_from_wkb(wkb, wkb_size, LW_PARSER_CHECK_NONE);
+
+  if ( ! lwgeom )
+    elog(ERROR, "Unable to parse WKB");
+
+  /* Error on any SRID != default */
+  // srid_check_latlong(lwgeom->srid);
+
+  gser = gserialized_geography_from_lwgeom(lwgeom, -1);
+  lwgeom_free(lwgeom);
+  return gser;
 }
 
 /*****************************************************************************/

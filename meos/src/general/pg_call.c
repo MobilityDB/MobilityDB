@@ -52,6 +52,29 @@
 #include <meos_internal.h>
 #include "general/temporal_util.h"
 
+/*****************************************************************************/
+ 
+/* Definitions taken from miscadmin.h */
+
+/* valid DateStyle values */
+#define USE_POSTGRES_DATES 0
+#define USE_ISO_DATES      1
+#define USE_SQL_DATES      2
+#define USE_GERMAN_DATES   3
+#define USE_XSD_DATES      4
+
+#define MAXTZLEN           0  /* max TZ name len, not counting tr. null */
+
+/* valid DateOrder values taken */
+#define DATEORDER_YMD      0
+#define DATEORDER_DMY      1
+#define DATEORDER_MDY      2
+
+/* Definitions from globals.c */
+
+int DateStyle = USE_ISO_DATES;
+int DateOrder = DATEORDER_MDY;
+
 /*****************************************************************************
  * Functions adapted from float.c
  *****************************************************************************/
@@ -263,27 +286,6 @@ pg_date_out(DateADT date)
 /*****************************************************************************
  * Functions adapted from timestamp.c
  *****************************************************************************/
-
-/* Definitions taken from miscadmin.h */
-
-/* valid DateStyle values */
-#define USE_POSTGRES_DATES 0
-#define USE_ISO_DATES      1
-#define USE_SQL_DATES      2
-#define USE_GERMAN_DATES   3
-#define USE_XSD_DATES      4
-
-#define MAXTZLEN           0  /* max TZ name len, not counting tr. null */
-
-/* valid DateOrder values taken */
-#define DATEORDER_YMD      0
-#define DATEORDER_DMY      1
-#define DATEORDER_MDY      2
-
-/* Definitions from globals.c */
-
-int DateStyle = USE_ISO_DATES;
-int DateOrder = DATEORDER_MDY;
 
 /*
  * Report an error detected by one of the datetime input processing routines.

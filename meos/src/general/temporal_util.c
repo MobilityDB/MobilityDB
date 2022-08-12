@@ -944,7 +944,7 @@ basetype_input(mobdbType basetype, char *str, bool end __attribute__((unused)))
     case T_TEXT:
       return PointerGetDatum(cstring2text(str));
     case T_GEOMETRY:
-      return PointerGetDatum(PGIS_LWGEOM_in(str, -1));
+      return PointerGetDatum(gserialized_in(str, -1));
     case T_GEOGRAPHY:
       return PointerGetDatum(PGIS_geography_in(str, -1));
 #if NPOINT
@@ -981,7 +981,7 @@ basetype_output(mobdbType basetype, Datum value, Datum arg)
     case T_TEXT:
       return text2cstring(DatumGetTextP(value));
     case T_GEOMETRY:
-    return PGIS_LWGEOM_out(DatumGetGserializedP(value));
+    return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
       return PGIS_geography_out(DatumGetGserializedP(value));
 #if NPOINT
