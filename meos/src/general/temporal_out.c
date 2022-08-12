@@ -1235,6 +1235,19 @@ span_basevalue_to_wkb_size(const Span *s)
 }
 
 /**
+ * Return the size in bytes of a component span represented in Well-Known
+ * Binary (WKB) format
+ */
+size_t
+span_to_wkb_size_int(const Span *s)
+{
+  /* bounds flag + spantype + basetype values */
+  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+    span_basevalue_to_wkb_size(s) * 2;
+  return size;
+}
+
+/**
  * Return the size in bytes of a span represented in Well-Known Binary
  * (WKB) format
  */
@@ -1242,8 +1255,7 @@ size_t
 span_to_wkb_size(const Span *s)
 {
   /* Endian flag + bounds flag + spantype + basetype values */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE +
-    span_basevalue_to_wkb_size(s) * 2;
+  size_t size = MOBDB_WKB_BYTE_SIZE + span_to_wkb_size_int(s);
   return size;
 }
 
@@ -1292,10 +1304,10 @@ tbox_to_wkb_size(const TBOX *box)
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
   /* If there is a value dimension */
   if (MOBDB_FLAGS_GET_X(box->flags))
-    size += span_to_wkb_size(&box->span);
+    size += span_to_wkb_size_int(&box->span);
   /* If there is a time dimension */
   if (MOBDB_FLAGS_GET_T(box->flags))
-    size += span_to_wkb_size(&box->period);
+    size += span_to_wkb_size_int(&box->period);
   return size;
 }
 

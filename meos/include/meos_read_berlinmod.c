@@ -116,7 +116,6 @@ int read_communes(void)
   /* Continue reading the file */
   do
   {
-    // id, name, population, geom
     read = fscanf(file, "%d,%100[^,],%d,%100000[^\n]\n",
       &communes[records].id, communes[records].name,
       &communes[records].population, geo_buffer);
@@ -162,9 +161,8 @@ int read_brussels_region(void)
   fscanf(file, "%1024s\n", geo_buffer);
 
   /* Continue reading the file */
-  // id, geom
-  read = fscanf(file, "%100[^,],%100000[^\n]\n",
-    brussels_region.name, geo_buffer);
+  read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
+    geo_buffer);
   /* Transform the string representing the geometry into a geometry value */
   brussels_region.geom = gserialized_in(geo_buffer, -1);
 
@@ -214,15 +212,15 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3])
     len += sprintf(buf+len, "---------");
   len += sprintf(buf+len, "\n");
 
-  /* Loop for each vehicle */
+  /* Print for each vehicle */
   for (i = 0; i < NO_VEHICLES; i++)
   {
-    /* Print the vehicle number and the total for the vehicle */
+    /* Print the vehicle number and the total distance for the vehicle */
     len += sprintf(buf+len, " %2d | %8.3f |", i + 1, distance[i][0]);
+    /* Print the total distance per commune for the vehicle */
     for (j = 1; j <= NO_COMMUNES; j++)
       len += sprintf(buf+len, " %7.3f", distance[i][j]);
-    /* Print the value outside Brussels and the sum of the values of the
-     * vehicle per commune */
+    /* Print the total distance outside and inside Brussels for the vehicle */
     for (j = NO_COMMUNES + 1; j < NO_COMMUNES + 3; j++)
       len += sprintf(buf+len, " | %7.3f", distance[i][j]);
     len += sprintf(buf+len, "\n");
@@ -232,9 +230,10 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3])
   for (j = 0; j < NO_COMMUNES + 3; j++)
     len += sprintf(buf+len, "---------");
   len += sprintf(buf+len, "\n    | %8.3f |", distance[NO_VEHICLES][0]);
+  /* Print the total distance per commune */
   for (j = 1; j <= NO_COMMUNES; j++)
-      len += sprintf(buf+len, " %7.3f", distance[NO_VEHICLES][j]);
-  /* Print the sum of the values outside and inside Brussels */
+    len += sprintf(buf+len, " %7.3f", distance[NO_VEHICLES][j]);
+  /* Print the total distance outside and inside Brussels */
   for (j = NO_COMMUNES + 1; j < NO_COMMUNES + 3; j++)
     len += sprintf(buf+len, " | %7.3f", distance[NO_VEHICLES][j]);
   len += sprintf(buf+len, "\n");
@@ -242,6 +241,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3])
     len += sprintf(buf+len, "---------");
   len += sprintf(buf+len, "\n\n");
   printf("%s", buf);
+
   return;
 }
 
@@ -276,7 +276,6 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    // vehicle,day,seq,trip,trajectory
     read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
       &trip_rec.vehicle, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
     /* Transform the string representing the date into a date value */
