@@ -33,18 +33,16 @@
 
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02], ((1.0, 2.0), (3.0, 4.0)))';
+SELECT stbox 'STBOX ZT([2001-01-01, 2001-01-02], ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)))';
+SELECT stbox 'STBOX T([2001-01-01, 2001-01-02])';
 SELECT stbox 'GEODSTBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
-SELECT stbox 'GEODSTBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
-SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
-
-SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
-SELECT stbox 'SRID=4326;STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
-SELECT stbox 'SRID=4326;GEODSTBOX T((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
+SELECT stbox 'GEODSTBOX T([2001-01-01, 2001-01-02])';
+SELECT stbox 'GEODSTBOX ZT([2001-01-01, 2001-01-02], ((1.0, 2.0, 3.0), (1.0, 2.0, 3.0)))';
+-- Inverted spatial coordinates
+SELECT stbox 'STBOX ZT([2001-01-01, 2001-01-02], ((5,6,7), (1,2,3)))';
+SELECT stbox 'SRID=4326;STBOX ZT([2001-01-01, 2001-01-02], ((4,5,6), (1,2,3)))';
+SELECT stbox 'SRID=4326;GEODSTBOX ZT([2001-01-01, 2001-01-02], ((4,5,6), (1,2,3)))';
 
 /* Errors */
 SELECT stbox 'AAA(1, 2, 3)';

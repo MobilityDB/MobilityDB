@@ -1033,12 +1033,12 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
     (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
-  Span *period = NULL, *span = NULL;
+  Span period, span;
   if (hast)
-    period = intersection_span_span(&box1->period, &box2->period);
+    inter_span_span(&box1->period, &box2->period, &period);
   if (hasx)
-    span = intersection_span_span(&box1->span, &box2->span);
-  tbox_set(period, span, result);
+    inter_span_span(&box1->span, &box2->span, &span);
+  tbox_set(&period, &span, result);
   return true;
 }
 

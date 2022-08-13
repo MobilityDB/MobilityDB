@@ -1393,7 +1393,9 @@ stbox_from_wkb_state(wkb_parse_state *s)
 
   /* Read and create the box */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0; /* make compiler quiet */
+  Span *period = NULL;
+  if (s->hast)
+    period = span_from_wkb_state(s);
   if (s->hasx)
   {
     xmin = double_from_wkb_state(s);
@@ -1406,13 +1408,10 @@ stbox_from_wkb_state(wkb_parse_state *s)
       zmax = double_from_wkb_state(s);
     }
   }
+  STBOX *result = stbox_make(period, s->hasx, s->hasz, s->geodetic, s->srid,
+    xmin, xmax, ymin, ymax, zmin, zmax);
   if (s->hast)
-  {
-    tmin = timestamp_from_wkb_state(s);
-    tmax = timestamp_from_wkb_state(s);
-  }
-  STBOX *result = stbox_make(s->hasx, s->hasz, s->hast, s->geodetic, s->srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
+    pfree(period);
   return result;
 }
 

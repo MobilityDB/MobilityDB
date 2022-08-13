@@ -1334,6 +1334,9 @@ stbox_to_wkb_size(const STBOX *box)
 {
   /* Endian flag + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  /* If there is a time dimension */
+  if (MOBDB_FLAGS_GET_T(box->flags))
+    size += span_to_wkb_size_int(&box->period);
   /* If there is a value dimension */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
@@ -1343,9 +1346,6 @@ stbox_to_wkb_size(const STBOX *box)
     if (MOBDB_FLAGS_GET_Z(box->flags))
       size += MOBDB_WKB_DOUBLE_SIZE * 2;
   }
-  /* If there is a time dimension */
-  if (MOBDB_FLAGS_GET_T(box->flags))
-    size += MOBDB_WKB_DOUBLE_SIZE * 2;
   return size;
 }
 
@@ -2071,6 +2071,9 @@ stbox_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal flags */
   buf = stbox_flags_to_wkb_buf(box, buf, variant);
+  /* Write the temporal dimension if any */
+  if (MOBDB_FLAGS_GET_T(box->flags))
+    buf = span_to_wkb_buf_int(&box->period, buf, variant);
   /* Write the value dimension if any */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
@@ -2087,14 +2090,6 @@ stbox_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
       buf = double_to_wkb_buf(box->zmin, buf, variant);
       buf = double_to_wkb_buf(box->zmax, buf, variant);
     }
-  }
-  /* Write the temporal dimension if any */
-  if (MOBDB_FLAGS_GET_T(box->flags))
-  {
-    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.lower), buf,
-      variant);
-    buf = timestamp_to_wkb_buf(DatumGetTimestampTz(box->period.upper), buf,
-      variant);
   }
   return buf;
 }

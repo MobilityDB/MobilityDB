@@ -161,9 +161,11 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
   tpointinstarr_set_gbox(instants, count, &gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   int32 srid = tpointinst_srid(instants[0]);
-  stbox_set(true, hasz, true, true, srid, gbox.xmin, gbox.xmax,
-    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax,
-    instants[0]->t, instants[count - 1]->t, box);
+  Period period;
+  span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
+    &period);
+  stbox_set(&period, true, hasz, true, srid, gbox.xmin, gbox.xmax,
+    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, box);
   return;
 }
 
