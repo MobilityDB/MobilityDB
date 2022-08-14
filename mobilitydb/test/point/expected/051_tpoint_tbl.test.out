@@ -491,25 +491,25 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
  max 
 -----
- 126
+ 129
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
  max 
 -----
- 170
+ 176
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
  max 
 -----
- 161
+ 166
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
  max 
 -----
- 171
+ 176
 (1 row)
 
 /* There is no st_memSize neither MAX for geography. */

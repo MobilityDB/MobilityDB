@@ -202,7 +202,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
   int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
-  int cmp2 = datum_cmp(s2->lower, s1->upper, s2->basetype);
+  int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
   if (
     (cmp1 < 0 || (cmp1 == 0 && s1->lower_inc && s2->upper_inc)) &&
     (cmp2 < 0 || (cmp2 == 0 && s2->lower_inc && s1->upper_inc))

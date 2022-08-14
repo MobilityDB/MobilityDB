@@ -1007,9 +1007,9 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Span *period = NULL, *span = NULL;
   if (hast)
-    period = union_span_span(&box1->period, &box1->period, true);
+    period = union_span_span(&box1->period, &box2->period, true);
   if (hasx)
-    span = union_span_span(&box1->span, &box1->span, true);
+    span = union_span_span(&box1->span, &box2->span, true);
   TBOX *result = tbox_make(period, span);
   return result;
 }
@@ -1038,7 +1038,7 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
     inter_span_span(&box1->period, &box2->period, &period);
   if (hasx)
     inter_span_span(&box1->span, &box2->span, &span);
-  tbox_set(&period, &span, result);
+  tbox_set(hast ? &period : NULL, hasx ? &span : NULL, result);
   return true;
 }
 

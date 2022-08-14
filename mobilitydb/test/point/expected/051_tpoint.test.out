@@ -42,11 +42,11 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
                           ^
 SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
 SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
 SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
@@ -87,27 +87,27 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value: Missing closing brace
 LINE 1: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value: Missing closing brace
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT asText(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
@@ -150,27 +150,27 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT asText(tgeompoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ],
@@ -213,27 +213,27 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value: Missing closing brace
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value: Missing closing brace
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal point value
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT asewkt(tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, Point(0 1)@2000-01-02]');
@@ -1149,7 +1149,7 @@ tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 SELECT tgeompoint_instset(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
 ERROR:  Operation on mixed SRID
 SELECT tgeompoint_instset(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asewkt(tgeompoint_seq(ARRAY[
 tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
 tgeompoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
@@ -1174,7 +1174,7 @@ tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 SELECT tgeompoint_seq(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
 ERROR:  Operation on mixed SRID
 SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asewkt(tgeompoint_seqset(ARRAY[
 tgeompoint_seq(ARRAY[
 tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
@@ -1211,7 +1211,7 @@ tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 09:20:00')
 SELECT tgeompoint_seqset(ARRAY[tgeompoint '[SRID=5676;Point(1 1)@2001-01-01]', '[SRID=4326;Point(2 2)@2001-01-02]']);
 ERROR:  Operation on mixed SRID
 SELECT tgeompoint_seqset(ARRAY[tgeompoint '[Point(1 1)@2001-01-01]', '[Point(2 2 2)@2001-01-02]']);
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asewkt(tgeogpoint(tgeompoint 'Point(1 1)@2001-01-01'));
                    asewkt                    
 ---------------------------------------------
@@ -1516,13 +1516,13 @@ SELECT asText(appendInstant(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, 
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  The temporal values have different value at their overlapping instant 2000-01-02 00:00:00+00
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
 ERROR:  Operation on mixed SRID
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  The temporal values have different value at their common instant 2000-01-02 00:00:00+00
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
 ERROR:  Operation on mixed SRID
 SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02'));
@@ -1637,7 +1637,7 @@ SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2
 SELECT merge(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
 ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02');
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}');
 ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
@@ -1727,7 +1727,7 @@ SELECT asText(merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']);
 ERROR:  Operation on mixed SRID
 SELECT merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1 1)@2000-01-02']);
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}']);
 ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
@@ -1849,15 +1849,15 @@ SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
 (1 row)
 
 SELECT stbox(tgeompoint 'Point(1 1)@2000-01-01');
-                               stbox                                
---------------------------------------------------------------------
- STBOX T((1,1,2000-01-01 00:00:00+00),(1,1,2000-01-01 00:00:00+00))
+                                 stbox                                 
+-----------------------------------------------------------------------
+ STBOX T([2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00],(1,1),(1,1))
 (1 row)
 
 SELECT round(stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 13);
-                                                                                  round                                                                                   
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX T((0.9993147673773,0.0261679781215,0.0261769483079,2000-01-01 00:00:00+00),(0.9993147673773,0.0261679781215,0.0261769483079,2000-01-01 00:00:00+00))
+                                                                                     round                                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT([2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00],((0.9993147673773,0.0261679781215,0.0261769483079),(0.9993147673773,0.0261679781215,0.0261769483079)))
 (1 row)
 
 SELECT st_asewkt(getValue(tgeompoint 'Point(1 1)@2000-01-01'));
@@ -3064,9 +3064,9 @@ SELECT asewkt(shiftTscale(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5
 
 /* Errors */
 SELECT asewkt(tscale(tgeompoint 'Point(1 1)@2000-01-01', '0'));
-ERROR:  The interval must be positive: 00:00:00
+ERROR:  The interval must be positive
 SELECT asewkt(tscale(tgeompoint 'Point(1 1)@2000-01-01', '-1 day'));
-ERROR:  The interval must be positive: -1 days
+ERROR:  The interval must be positive
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= ST_Point(1,1);
  ?column? 
 ----------
