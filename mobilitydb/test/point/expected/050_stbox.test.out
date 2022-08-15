@@ -264,60 +264,6 @@ SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::period;
  
 (1 row)
 
-SELECT stbox 'STBOX((1.0,2.0),(3.0,4.0))'::box2d;
-    box2d     
---------------
- BOX(1 2,3 4)
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::box2d;
-    box2d     
---------------
- BOX(1 2,4 5)
-(1 row)
-
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02],((1.0,2.0),(3.0,4.0)))'::box2d;
-    box2d     
---------------
- BOX(1 2,3 4)
-(1 row)
-
-SELECT stbox 'STBOX ZT([2000-01-01,2000-01-02],((1.0,2.0,3.0),(4.0,5.0,6.0)))'::box2d;
-    box2d     
---------------
- BOX(1 2,4 5)
-(1 row)
-
-/* Errors */
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box2d;
-ERROR:  The box must have XY(Z) dimension
-SELECT stbox 'STBOX((1.0,2.0),(3.0,4.0))'::box3d;
-       box3d        
---------------------
- BOX3D(1 2 0,3 4 0)
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::box3d;
-       box3d        
---------------------
- BOX3D(1 2 3,4 5 6)
-(1 row)
-
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02],((1.0,2.0),(3.0,4.0)))'::box3d;
-       box3d        
---------------------
- BOX3D(1 2 0,3 4 0)
-(1 row)
-
-SELECT stbox 'STBOX ZT([2000-01-01,2000-01-02],((1.0,2.0,3.0),(4.0,5.0,6.0)))'::box3d;
-       box3d        
---------------------
- BOX3D(1 2 3,4 5 6)
-(1 row)
-
-/* Errors */
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box3d;
-ERROR:  The box must have XY(Z) dimension
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T([2000-01-01,2000-01-05],((1,1),(5,5)))'::geometry);
                 st_asewkt                 
 ------------------------------------------
@@ -393,34 +339,10 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT([2000-01-01,2000-01-05],((1,1,1),(1,1
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 ERROR:  The box must have XY(Z) dimension
-SELECT (geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'::box2d)::stbox;
-       stbox        
---------------------
- STBOX((1,1),(2,2))
-(1 row)
-
-SELECT (geometry 'Polygon((1 1 1,1 2 2,2 2 2,2 1 1,1 1 1))'::box3d)::stbox;
-          stbox           
---------------------------
- STBOX Z((1,1,1),(2,2,2))
-(1 row)
-
 SELECT MAX(duration(b::period)) FROM tbl_stbox;
    max    
 ----------
  00:10:00
-(1 row)
-
-SELECT MAX(ST_XMax(b::box2d)) FROM tbl_stbox;
-    max     
-------------
- 105.675734
-(1 row)
-
-SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
-    max     
-------------
- 105.675734
 (1 row)
 
 SELECT hasx(stbox 'STBOX((1.0,2.0),(3.0,4.0))');

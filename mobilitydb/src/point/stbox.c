@@ -356,37 +356,37 @@ Stbox_to_period(PG_FUNCTION_ARGS)
  * Transform a <Type> to a STBOX
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Box2d_to_stbox);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Transform a box2d to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Box2d_to_stbox(PG_FUNCTION_ARGS)
-{
-  GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(NULL, true, false, false, 0, box->xmin, box->xmax,
-    box->ymin, box->ymax, 0, 0);
-  PG_RETURN_POINTER(result);
-}
+// PG_FUNCTION_INFO_V1(Box2d_to_stbox);
+// /**
+ // * @ingroup mobilitydb_box_cast
+ // * @brief Transform a box2d to a spatiotemporal box
+ // * @sqlfunc stbox()
+ // * @sqlfunc @p ::
+ // */
+// PGDLLEXPORT Datum
+// Box2d_to_stbox(PG_FUNCTION_ARGS)
+// {
+  // GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
+  // STBOX *result = stbox_make(NULL, true, false, false, 0, box->xmin, box->xmax,
+    // box->ymin, box->ymax, 0, 0);
+  // PG_RETURN_POINTER(result);
+// }
 
-PG_FUNCTION_INFO_V1(Box3d_to_stbox);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Transform a box3d to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Box3d_to_stbox(PG_FUNCTION_ARGS)
-{
-  BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(NULL, true, true, false, box->srid, box->xmin,
-    box->xmax, box->ymin, box->ymax, box->zmin, box->zmax);
-  PG_RETURN_POINTER(result);
-}
+// PG_FUNCTION_INFO_V1(Box3d_to_stbox);
+// /**
+ // * @ingroup mobilitydb_box_cast
+ // * @brief Transform a box3d to a spatiotemporal box
+ // * @sqlfunc stbox()
+ // * @sqlfunc @p ::
+ // */
+// PGDLLEXPORT Datum
+// Box3d_to_stbox(PG_FUNCTION_ARGS)
+// {
+  // BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
+  // STBOX *result = stbox_make(NULL, true, true, false, box->srid, box->xmin,
+    // box->xmax, box->ymin, box->ymax, box->zmin, box->zmax);
+  // PG_RETURN_POINTER(result);
+// }
 
 PG_FUNCTION_INFO_V1(Geo_to_stbox);
 /**

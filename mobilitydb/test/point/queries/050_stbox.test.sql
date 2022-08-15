@@ -109,20 +109,6 @@ SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::period;
 SELECT stbox 'STBOX((1.0,2.0),(3.0,4.0))'::period;
 SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::period;
 
-SELECT stbox 'STBOX((1.0,2.0),(3.0,4.0))'::box2d;
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::box2d;
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02],((1.0,2.0),(3.0,4.0)))'::box2d;
-SELECT stbox 'STBOX ZT([2000-01-01,2000-01-02],((1.0,2.0,3.0),(4.0,5.0,6.0)))'::box2d;
-/* Errors */
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box2d;
-
-SELECT stbox 'STBOX((1.0,2.0),(3.0,4.0))'::box3d;
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::box3d;
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02],((1.0,2.0),(3.0,4.0)))'::box3d;
-SELECT stbox 'STBOX ZT([2000-01-01,2000-01-02],((1.0,2.0,3.0),(4.0,5.0,6.0)))'::box3d;
-/* Errors */
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box3d;
-
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T([2000-01-01,2000-01-05],((1,1),(5,5)))'::geometry);
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T([2000-01-01,2000-01-05],((1,1),(1,5)))'::geometry);
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T([2000-01-01,2000-01-05],((1,1),(5,1)))'::geometry);
@@ -140,14 +126,7 @@ SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 
 -------------------------------------------------------------------------------
 
-SELECT (geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'::box2d)::stbox;
-SELECT (geometry 'Polygon((1 1 1,1 2 2,2 2 2,2 1 1,1 1 1))'::box3d)::stbox;
-
--------------------------------------------------------------------------------
-
 SELECT MAX(duration(b::period)) FROM tbl_stbox;
-SELECT MAX(ST_XMax(b::box2d)) FROM tbl_stbox;
-SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
 -- Accessor functions

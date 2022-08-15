@@ -148,53 +148,6 @@ Tbox_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tbox_constructor_period_span);
-/**
- * @ingroup mobilitydb_box_in_out
- * @brief Construct a temporal box from the arguments
- * @sqlfunc tbox()
- */
-PGDLLEXPORT Datum
-Tbox_constructor_period_span(PG_FUNCTION_ARGS)
-{
-  Span *period = PG_GETARG_SPAN_P(0);
-  Span *span = PG_GETARG_SPAN_P(1);
-  TBOX *result = tbox_make(period, span);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tbox_constructor_period);
-/**
- * @ingroup mobilitydb_box_in_out
- * @brief Construct a temporal box from the period
- * @sqlfunc tbox()
- */
-PGDLLEXPORT Datum
-Tbox_constructor_period(PG_FUNCTION_ARGS)
-{
-  Span *period = PG_GETARG_SPAN_P(0);
-  TBOX *result = tbox_make(period, NULL);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tbox_constructor_span);
-/**
- * @ingroup mobilitydb_box_in_out
- * @brief Construct a temporal box from the timestamps
- * @sqlfunc tbox()
- */
-PGDLLEXPORT Datum
-Tbox_constructor_span(PG_FUNCTION_ARGS)
-{
-  Span *span = PG_GETARG_SPAN_P(0);
-  TBOX *result = tbox_make(NULL, span);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Casting
- *****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Int_to_tbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -271,39 +224,6 @@ Timestamp_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/**
- * @brief Peak into a timestamp set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-timestampset_tbox_slice(Datum tsdatum, TBOX *box)
-{
-  TimestampSet *ts = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
-    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
-      time_max_header_size());
-  else
-    ts = (TimestampSet *) tsdatum;
-  timestampset_set_tbox(ts, box);
-  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
-  return;
-}
-
-PG_FUNCTION_INFO_V1(Timestampset_to_tbox);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Transform the period set to a temporal box
- * @sqlfunc tbox()
- */
-PGDLLEXPORT Datum
-Timestampset_to_tbox(PG_FUNCTION_ARGS)
-{
-  Datum tsdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
-  timestampset_tbox_slice(tsdatum, result);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Period_to_tbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -316,39 +236,6 @@ Period_to_tbox(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_SPAN_P(0);
   TBOX *result = palloc(sizeof(TBOX));
   period_set_tbox(p, result);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * @brief Peak into a period set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-periodset_tbox_slice(Datum psdatum, TBOX *box)
-{
-  PeriodSet *ps = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
-    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
-      time_max_header_size());
-  else
-    ps = (PeriodSet *) psdatum;
-  periodset_set_tbox(ps, box);
-  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
-  return;
-}
-
-PG_FUNCTION_INFO_V1(Periodset_to_tbox);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Transform the period set to a temporal box
- * @sqlfunc tbox()
- */
-PGDLLEXPORT Datum
-Periodset_to_tbox(PG_FUNCTION_ARGS)
-{
-  Datum psdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
-  periodset_tbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -441,6 +328,76 @@ Span_period_to_tbox(PG_FUNCTION_ARGS)
   Span *span = PG_GETARG_SPAN_P(0);
   Period *p = PG_GETARG_SPAN_P(1);
   TBOX *result = span_period_to_tbox(span, p);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+/**
+ * @brief Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_tbox_slice(Datum tsdatum, TBOX *box)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_set_tbox(ts, box);
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_to_tbox);
+/**
+ * @ingroup mobilitydb_box_cast
+ * @brief Transform the period set to a temporal box
+ * @sqlfunc tbox()
+ */
+PGDLLEXPORT Datum
+Timestampset_to_tbox(PG_FUNCTION_ARGS)
+{
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  timestampset_tbox_slice(tsdatum, result);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Peak into a period set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+periodset_tbox_slice(Datum psdatum, TBOX *box)
+{
+  PeriodSet *ps = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
+    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+      time_max_header_size());
+  else
+    ps = (PeriodSet *) psdatum;
+  periodset_set_tbox(ps, box);
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  return;
+}
+
+PG_FUNCTION_INFO_V1(Periodset_to_tbox);
+/**
+ * @ingroup mobilitydb_box_cast
+ * @brief Transform the period set to a temporal box
+ * @sqlfunc tbox()
+ */
+PGDLLEXPORT Datum
+Periodset_to_tbox(PG_FUNCTION_ARGS)
+{
+  Datum psdatum = PG_GETARG_DATUM(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  periodset_tbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -452,6 +452,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
   int_set_tbox(i, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -467,6 +468,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
   float_set_tbox(d, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -481,6 +483,7 @@ int_period_to_tbox(int i, const Period *p)
   TBOX *result = palloc(sizeof(TBOX));
   int_set_tbox(i, result);
   memcpy(&result->period, p, sizeof(Span));
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -495,6 +498,7 @@ float_period_to_tbox(double d, const Period *p)
   TBOX *result = palloc(sizeof(TBOX));
   float_set_tbox(d, result);
   memcpy(&result->period, p, sizeof(Span));
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -514,6 +518,8 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
     memcpy(&result->span, span, sizeof(Span));
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -533,6 +539,8 @@ span_period_to_tbox(const Span *span, const Period *p)
   else
     memcpy(&result->span, span, sizeof(Span));
   memcpy(&result->period, p, sizeof(Span));
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 

@@ -4759,7 +4759,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
     PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
     if (ps != NULL)
     {
-      result = temporal_restrict_periodset(temp, ps, REST_AT);
+      result = temporal_restrict_periodset(temp, ps, REST_MINUS);
       pfree(ps);
     }
     pfree(temp1); pfree(ps1); pfree(ps2);

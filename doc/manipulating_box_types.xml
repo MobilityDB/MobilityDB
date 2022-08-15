@@ -147,29 +147,30 @@ SELECT stboxFromHexWKB(
 		<title>Constructor Functions</title>
 
 		<para>
-			Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have one and/or two arguments for the <varname>period</varname> and/or the <varname>floatspan</varname> values.
+			Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time extent are given. The value extent can be specified by a number or a span, while the time extent can be specified by a time type.
 		</para>
 
 		<itemizedlist>
 			<listitem id="tbox">
 				<indexterm><primary><varname>tbox</varname></primary></indexterm>
 				<para>Constructor for <varname>tbox</varname></para>
-				<para><varname>tbox(period, floatspan): tbox</varname></para>
-				<para><varname>tbox_x(floatspan): tbox</varname></para>
-				<para><varname>tbox_t(period): tbox</varname></para>
+				<para><varname>tbox(time):tbox</varname></para>
+				<para><varname>tbox({number,numspan}):tbox</varname></para>
+				<para><varname>tbox({number,numspan},time):tbox</varname></para>
 				<programlisting xml:space="preserve">
 -- Both value and time dimensions
-SELECT tbox(1.0,'2001-01-01', 2.0,'2001-01-02');
+SELECT tbox(1.0, timestamptz '2001-01-01');
+SELECT tbox(floatspan '[1.0, 2.0)', period '[2001-01-01,2001-01-02)');
 -- Only value dimension
-SELECT tbox(1.0,2.0);
+SELECT tbox(floatspan '[1.0,2.0)');
 -- Only time dimension
-SELECT tboxt('2001-01-01', '2001-01-02');
+SELECT tbox(period '[2001-01-01,2001-01-02)');
 </programlisting>
 			</listitem>
 		</itemizedlist>
 
 		<para>
-			Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes.
+			Type <varname>stbox</varname> has several constructor functions depending on whether the space and/or the time extent are given. The coordinates for the spatial extent can be 2D or 3D and can be either Cartesian or geodetic. The spatial extent can be specified by the minimum and maximum coordinate values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes. The spatial extent can also be specified by a geometry or a geography. The temporal extent can be specified by a time type.
 		</para>
 
 		<itemizedlist>
@@ -177,11 +178,15 @@ SELECT tboxt('2001-01-01', '2001-01-02');
 				<indexterm><primary><varname>stbox</varname></primary></indexterm>
 				<para>Constructor for <varname>stbox</varname></para>
 				<para><varname>stbox(float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox(float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox(float,float,float,timestamptz,float,float,float,timestamptz,integer): stbox</varname></para>
-				<para><varname>stboxt(timestamptz,timestamptz,integer): stbox</varname></para>
-				<para><varname>stbox(float,float,timestamptz,float,float,timestamptz,integer): stbox</varname></para>
-				<para><varname>stbox(geo,{timestamp,period}): stbox</varname></para>
+				<para><varname>stbox_z(float,float,float,float,float,float,integer): stbox</varname></para>
+				<para><varname>stbox_t({timestamptz,period},float,float,float,float,integer): stbox</varname></para>
+				<para><varname>stbox_zt({timestamptz,period},float,float,float,float,float,float,integer): stbox</varname></para>
+				<para><varname>geodstbox_t(time): stbox</varname></para>
+				<para><varname>geodstbox_z(float,float,float,float,float,float,integer): stbox</varname></para>
+				<para><varname>geodstbox_zt({timestamptz,period},float,float,float,float,float,float,integer): stbox</varname></para>
+				<para><varname>stbox(geo): stbox</varname></para>
+				<para><varname>stbox_t(time): stbox</varname></para>
+				<para><varname>stbox(geo,time): stbox</varname></para>
 				<programlisting xml:space="preserve">
 -- Only value dimension with X and Y coordinates
 SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0,5676);
@@ -229,8 +234,7 @@ SELECT tbox 'TBOX T([2000-01-01,2000-01-02),(1,2))'::period;
 			<listitem id="tbox_cast_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast another type to a <varname>tbox</varname></para>
-				<para><varname>{integer,float,numeric,intspan,floatspan}::tbox</varname>,</para>
-				<para><varname>{timestamptz,timestampset,period,periodset,tint,tfloat}::tbox</varname></para>
+				<para><varname>{number,span,time,tnumber}::tbox</varname></para>
 				<programlisting xml:space="preserve">
 SELECT floatspan '(1.0,2.0)'::tbox;
 -- TBOX((1, 2))
@@ -242,14 +246,10 @@ SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 			<listitem id="stbox_cast_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast an <varname>stbox</varname> to a another type</para>
-				<para><varname>stbox::{period,box2d,box3d,geometry}</varname></para>
+				<para><varname>stbox::{period,geometry}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT stbox 'STBOX T([2001-01-01,2001-01-03],((1.0,2.0),(3.0,4.0)))'::period;
 -- [2000-01-01, 2000-01-03]
-SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box2d;
--- BOX(1 1,3 3)
-SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;
--- BOX3D(1 1 1,3 3 3)
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T([2000-01-01,2000-01-05],((1,1),(5,5)))'::geometry);
 -- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T([2000-01-01,2000-01-05],((1,1),(1,5)))'::geometry);
@@ -268,8 +268,7 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT([2000-01-01,2000-01-05],((1,1,1),(5,5
 			<listitem id="stbox_cast_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast another type to an <varname>stbox</varname></para>
-				<para><varname>{geometry,geography,box2d,box3d}::stbox</varname></para>
-				<para><varname>{timestamptz,timestampset,period,periodset,tgeompoint,tgeogpoint}::stbox</varname></para>
+				<para><varname>{geo,time,tpoint}::stbox</varname></para>
 				<programlisting xml:space="preserve">
 SELECT geometry 'Linestring(1 1,2 2)'::stbox;
 -- "STBOX((1,1),(2,2))"
