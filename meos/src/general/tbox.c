@@ -540,29 +540,11 @@ span_period_to_tbox(const Span *span, const Period *p)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a temporal box to an integer span.
- * @sqlop @p ::
- */
-Span *
-tbox_to_intspan(const TBOX *box)
-{
-  if (! MOBDB_FLAGS_GET_X(box->flags))
-    return NULL;
-  Span *result = span_copy(&box->span);
-  result->lower = Int32GetDatum((int) DatumGetFloat8(box->span.lower));
-  result->upper = Int32GetDatum((int) DatumGetFloat8(box->span.upper));
-  result->basetype = T_INT4;
-  result->spantype = T_INTSPAN;
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_cast
  * @brief Cast a temporal box as a span.
  * @sqlop @p ::
  */
 Span *
-tbox_to_span(const TBOX *box)
+tbox_to_floatspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;

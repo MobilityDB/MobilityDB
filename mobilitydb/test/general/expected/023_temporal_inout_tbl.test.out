@@ -88,6 +88,30 @@ SELECT tfloatFromMFJSON(asMFJSON(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-
  {[1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00], [3@2000-01-03 00:00:00+00, 3@2000-01-04 00:00:00+00]}
 (1 row)
 
+SELECT ttextFromMFJSON(asMFJSON(ttext 'AAA@2000-01-01', 1, 5));
+       ttextfrommfjson        
+------------------------------
+ "AAA"@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext '{AAA@2000-01-01, BBB@2000-01-02}', 1, 5));
+                       ttextfrommfjson                        
+--------------------------------------------------------------
+ {"AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1, 5));
+                       ttextfrommfjson                        
+--------------------------------------------------------------
+ ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00]
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext '{[AAA@2000-01-01, BBB@2000-01-02], [CCC@2000-01-03, CCC@2000-01-04]}', 1, 5));
+                                                       ttextfrommfjson                                                        
+------------------------------------------------------------------------------------------------------------------------------
+ {["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00], ["CCC"@2000-01-03 00:00:00+00, "CCC"@2000-01-04 00:00:00+00]}
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
  count 
 -------

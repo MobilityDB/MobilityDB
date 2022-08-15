@@ -456,7 +456,7 @@ PGDLLEXPORT Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Span *result = tbox_to_span(box);
+  Span *result = tbox_to_floatspan(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

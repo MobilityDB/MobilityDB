@@ -281,9 +281,9 @@ static size_t
 period_mfjson_buf(char *output, const Period *p)
 {
   char *ptr = output;
-  ptr += sprintf(ptr, "\"stBoundedBy\":{\"period\":{\"begin\":\"");
+  ptr += sprintf(ptr, "\"stBoundedBy\":{\"period\":{\"begin\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->lower));
-  ptr += sprintf(ptr, ",\"end\":\"");
+  ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->upper));
   ptr += sprintf(ptr, ",\"lower_inc\":%s,'upper_inc':%s}},",
     p->lower_inc ? "true" : "false", p->upper_inc ? "true" : "false");

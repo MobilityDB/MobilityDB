@@ -634,7 +634,7 @@ extern TBOX *int_period_to_tbox(int i, const Period *p);
 extern TBOX *float_period_to_tbox(double d, const Period *p);
 extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
 extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
-extern Span *tbox_to_span(const TBOX *box);
+extern Span *tbox_to_floatspan(const TBOX *box);
 extern Period *tbox_to_period(const TBOX *box);
 extern Period *stbox_to_period(const STBOX *box);
 extern TBOX *tnumber_to_tbox(const Temporal *temp);
