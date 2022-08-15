@@ -245,7 +245,7 @@ stbox_out(const STBOX *box, int maxdd)
         snprintf(str, size, "%s%s ZT(%s,((%s,%s,%s),(%s,%s,%s)))",
           srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
       else
-        snprintf(str, size, "%s%s T(%s,(%s,%s),(%s,%s))",
+        snprintf(str, size, "%s%s T(%s,((%s,%s),(%s,%s)))",
           srid, boxtype, period, xmin, ymin, xmax, ymax);
     }
     else
@@ -420,22 +420,26 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
  * @sqlop @p ::
  */
 GSERIALIZED *
-stbox_to_geometry(const STBOX *box)
+stbox_to_geo(const STBOX *box)
 {
   ensure_has_X_stbox(box);
+  LWGEOM *geo;
   GSERIALIZED *result;
-  if (MOBDB_FLAGS_GET_Z(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
     BOX3D box3d;
     stbox_set_box3d(box, &box3d);
-    result = PGIS_BOX3D_to_LWGEOM(&box3d);
+    geo = PGIS_BOX3D_to_LWGEOM(&box3d);
   }
   else
   {
     GBOX box2d;
     stbox_set_gbox(box, &box2d);
-    result = PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
+    geo = PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
   }
+  FLAGS_SET_GEODETIC(geo->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
+  result = geo_serialize(geo);
+  lwgeom_free(geo);
   return result;
 }
 

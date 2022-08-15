@@ -79,12 +79,12 @@ void srid_check_latlong(int32_t srid);
  * @note With respect to the original PostGIS function we also set the SRID
  * which is passed as an additional argument
  */
-GSERIALIZED *
+LWGEOM *
 PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
 {
   POINTARRAY *pa = ptarray_construct_empty(0, 0, 5);
   POINT4D pt;
-  GSERIALIZED *result;
+  LWGEOM *result;
 
   /*
    * Alter BOX2D cast so that a valid geometry is always
@@ -103,8 +103,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     LWPOINT *point = lwpoint_make2d(srid, box->xmin, box->ymin);
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(point->flags, FLAGS_GET_GEODETIC(box->flags));
-    result = geo_serialize(lwpoint_as_lwgeom(point));
-    lwpoint_free(point);
+    result = lwpoint_as_lwgeom(point);
   }
   else if ( (box->xmin == box->xmax) || (box->ymin == box->ymax) )
   {
@@ -122,8 +121,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     line = lwline_construct(srid, NULL, pa);
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(line->flags, FLAGS_GET_GEODETIC(box->flags));
-    result = geo_serialize(lwline_as_lwgeom(line));
-    lwline_free(line);
+    result = lwline_as_lwgeom(line);
   }
   else
   {
@@ -142,8 +140,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     lwgeom_set_srid(lwpoly_as_lwgeom(poly), srid);
     /* MobilityDB: The above function does not set the geodetic flag */
     FLAGS_SET_GEODETIC(poly->flags, FLAGS_GET_GEODETIC(box->flags));
-    result = geo_serialize(lwpoly_as_lwgeom(poly));
-    lwpoly_free(poly);
+    result = lwpoly_as_lwgeom(poly);
   }
 
   return result;
@@ -157,11 +154,11 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
  * @brief Create a geometry from a BOX3D
  * @note PostGIS function: BOX3D_to_LWGEOM(PG_FUNCTION_ARGS)
  */
-GSERIALIZED *
+LWGEOM *
 PGIS_BOX3D_to_LWGEOM(BOX3D *box)
 {
   POINTARRAY *pa;
-  GSERIALIZED *result;
+  LWGEOM *result;
   POINT4D pt;
 
   /**
@@ -187,9 +184,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     pt.y = box->ymin;
     pt.z = box->zmin;
     ptarray_append_point(pa, &pt, LW_TRUE);
-
-    result = geo_serialize(lwpoint_as_lwgeom(lwpt));
-    lwpoint_free(lwpt);
+    result = lwpoint_as_lwgeom(lwpt);
   }
   /* BOX3D is a line */
   else if (((box->xmin == box->xmax || box->ymin == box->ymax) && box->zmin == box->zmax) ||
@@ -206,9 +201,7 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     pt.y = box->ymax;
     pt.z = box->zmax;
     ptarray_append_point(pa, &pt, LW_TRUE);
-
-    result = geo_serialize(lwline_as_lwgeom(lwline));
-    lwline_free(lwline);
+    result = lwline_as_lwgeom(lwline);
   }
   /* BOX3D is a polygon in the X plane */
   else if (box->xmin == box->xmax)
@@ -221,10 +214,8 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     points[1] = (POINT4D){box->xmin, box->ymax, box->zmin, 0.0};
     points[2] = (POINT4D){box->xmin, box->ymax, box->zmax, 0.0};
     points[3] = (POINT4D){box->xmin, box->ymin, box->zmax, 0.0};
-
     lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
-    result = geo_serialize(lwpoly_as_lwgeom(lwpoly));
-    lwpoly_free(lwpoly);
+    result = lwpoly_as_lwgeom(lwpoly);
   }
   /* BOX3D is a polygon in the Y plane */
   else if (box->ymin == box->ymax)
@@ -237,10 +228,8 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     points[1] = (POINT4D){box->xmax, box->ymin, box->zmin, 0.0};
     points[2] = (POINT4D){box->xmax, box->ymin, box->zmax, 0.0};
     points[3] = (POINT4D){box->xmin, box->ymin, box->zmax, 0.0};
-
     lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
-    result = geo_serialize(lwpoly_as_lwgeom(lwpoly));
-    lwpoly_free(lwpoly);
+    result = lwpoly_as_lwgeom(lwpoly);
   }
   /* BOX3D is a polygon in the Z plane */
   else if (box->zmin == box->zmax)
@@ -253,10 +242,8 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     points[1] = (POINT4D){box->xmin, box->ymax, box->zmin, 0.0};
     points[2] = (POINT4D){box->xmax, box->ymax, box->zmin, 0.0};
     points[3] = (POINT4D){box->xmax, box->ymin, box->zmin, 0.0};
-
     lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
-    result = geo_serialize(lwpoly_as_lwgeom(lwpoly));
-    lwpoly_free(lwpoly);
+    result = lwpoly_as_lwgeom(lwpoly);
   }
   /* BOX3D is a polyhedron */
   else
@@ -264,7 +251,6 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     POINT4D points[8];
     static const int ngeoms = 6;
     LWGEOM **geoms = (LWGEOM **)lwalloc(sizeof(LWGEOM *) * ngeoms);
-    LWGEOM *geom = NULL;
 
     /* Initialize the 8 vertices of the box */
     points[0] = (POINT4D){box->xmin, box->ymin, box->zmin, 0.0};
@@ -295,15 +281,11 @@ PGIS_BOX3D_to_LWGEOM(BOX3D *box)
     geoms[5] = lwpoly_as_lwgeom(
         lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[1], &points[5], &points[6], &points[2]));
 
-    geom = (LWGEOM *)lwcollection_construct(POLYHEDRALSURFACETYPE, SRID_UNKNOWN, NULL, ngeoms, geoms);
-
-    FLAGS_SET_SOLID(geom->flags, 1);
-
-    result = geo_serialize(geom);
-    lwcollection_free((LWCOLLECTION *)geom);
+    result = (LWGEOM *) lwcollection_construct(POLYHEDRALSURFACETYPE, SRID_UNKNOWN, NULL, ngeoms, geoms);
+    FLAGS_SET_SOLID(result->flags, 1);
   }
 
-  gserialized_set_srid(result, box->srid);
+  lwgeom_set_srid(result, box->srid);
 
   return result;
 }

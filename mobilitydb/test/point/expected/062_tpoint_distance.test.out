@@ -38,7 +38,7 @@ ERROR:  Operation on mixed 2D/3D dimensions
 SELECT round(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
 ERROR:  Operation on mixed SRID
 SELECT round(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The arguments must be of the same dimensionality
 SELECT round(geometry 'Point(1 1)' <-> tgeompoint 'Point(2 2)@2000-01-01', 6);
               round              
 ---------------------------------
@@ -1473,7 +1473,7 @@ ERROR:  Operation on mixed 2D/3D dimensions
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The arguments must be of the same dimensionality
 SELECT round(NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)')::numeric, 6);
   round   
 ----------
@@ -2288,105 +2288,105 @@ SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01
  0.000000
 (1 row)
 
-SELECT round((stbox 'STBOX T((0,0,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,3,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((0,0),(1,1)))' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,3)))')::numeric, 6);
   round   
 ----------
  1.414214
 (1 row)
 
-SELECT round((stbox 'STBOX T((0,0,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX T((2,2,2000-01-03 00:00:00+01),(3,3,2000-01-04 00:00:00+01))')::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((0,0),(1,1)))' |=| stbox 'STBOX T([2000-01-03,2000-01-04],((2,2),(3,3)))')::numeric, 6);
  round 
 -------
       
 (1 row)
 
-SELECT round((stbox 'GEODSTBOX T((0,0,0,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(3,3,3,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((stbox 'GEODSTBOX ZT([2000-01-01,2000-01-02],((0,0,0),(1,1,1)))' |=| stbox 'GEODSTBOX ZT([2000-01-01,2000-01-02],((2,2,2),(3,3,3)))')::numeric, 6);
      round     
 ---------------
  156876.149402
 (1 row)
 
-SELECT round((stbox 'STBOX ZT((0,0,0,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX ZT((2,2,2,2000-01-01 00:00:00+01),(3,3,3,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((stbox 'STBOX ZT([2000-01-01,2000-01-02],((0,0,0),(1,1,1)))' |=| stbox 'STBOX ZT([2000-01-01,2000-01-02],((2,2,2),(3,3,3)))')::numeric, 6);
   round   
 ----------
  1.732051
 (1 row)
 
-SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point empty')::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'Point empty')::numeric, 6);
  round 
 -------
       
 (1 row)
 
-SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'Point(0 0)')::numeric, 6);
   round   
 ----------
  1.414214
 (1 row)
 
-SELECT round((stbox 'STBOX ZT((1,1,1,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point (0 0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX ZT([2000-01-01,2000-01-02],((1,1,1),(1,1,1)))' |=| geometry 'Point (0 0 0)')::numeric, 6);
   round   
 ----------
  1.732051
 (1 row)
 
-SELECT round((stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' |=| geography 'Point(0 0)')::numeric, 6);
+SELECT round((stbox 'GEODSTBOX ZT([2001-01-03,2001-01-04],((1.0,2.0,3.0),(1.0,2.0,3.0)))' |=| geography 'Point(0 0)')::numeric, 6);
      round     
 ---------------
  247576.472648
 (1 row)
 
-SELECT round((geometry 'Point empty' |=| stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((geometry 'Point empty' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))')::numeric, 6);
  round 
 -------
       
 (1 row)
 
-SELECT round((geometry 'Point(0 0)' |=| stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((geometry 'Point(0 0)' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))')::numeric, 6);
   round   
 ----------
  1.414214
 (1 row)
 
-SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT((1,1,1,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT([2000-01-01,2000-01-02],((1,1,1),(1,1,1)))')::numeric, 6);
   round   
 ----------
  1.732051
 (1 row)
 
 /* Errors */
-SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
 ERROR:  Operation on mixed SRID
-SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'Point(0 0 0)')::numeric, 6);
 ERROR:  The spatiotemporal box and the geometry must be of the same dimensionality
-SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,2)))')::numeric, 6);
   round   
 ----------
  1.414214
 (1 row)
 
-SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-02 00:00:00+01),(2,2,2000-01-03 00:00:00+01))')::numeric, 6);
+SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T([2000-01-02,2000-01-03],((2,2),(2,2)))')::numeric, 6);
  round 
 -------
       
 (1 row)
 
-SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(2,2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX ZT([2000-01-01,2000-01-02],((2,2,2),(2,2,2)))')::numeric, 6);
      round     
 ---------------
  156876.149402
 (1 row)
 
 /* Errors */
-SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,2)))')::numeric, 6);
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT round((stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,2)))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
   round   
 ----------
  1.414214
 (1 row)
 
-SELECT round((stbox 'STBOX T((2,2,2000-01-02 00:00:00+01),(2,2,2000-01-03 00:00:00+01))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
+SELECT round((stbox 'STBOX T([2000-01-02,2000-01-03],((2,2),(2,2)))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
  round 
 -------
       
@@ -3172,7 +3172,7 @@ ERROR:  Operation on mixed 2D/3D dimensions
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The arguments must be of the same dimensionality
 SELECT ST_AsTexT(shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
@@ -3911,7 +3911,7 @@ ERROR:  Operation on mixed 2D/3D dimensions
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal values must be of the same dimensionality
+ERROR:  The arguments must be of the same dimensionality
 SELECT shortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');

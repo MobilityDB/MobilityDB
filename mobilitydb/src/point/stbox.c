@@ -320,7 +320,7 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Stbox_to_geometry);
+PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
  * @ingroup mobilitydb_box_cast
  * @brief Cast the spatiotemporal box as a PostGIS GBOX
@@ -328,10 +328,10 @@ PG_FUNCTION_INFO_V1(Stbox_to_geometry);
  * @sqlfunc @p ::
  */
 PGDLLEXPORT Datum
-Stbox_to_geometry(PG_FUNCTION_ARGS)
+Stbox_to_geo(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum result = PointerGetDatum(stbox_to_geometry(box));
+  Datum result = PointerGetDatum(stbox_to_geo(box));
   PG_RETURN_DATUM(result);
 }
 

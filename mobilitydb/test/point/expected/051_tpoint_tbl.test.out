@@ -491,7 +491,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
  max 
 -----
- 129
+ 131
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;

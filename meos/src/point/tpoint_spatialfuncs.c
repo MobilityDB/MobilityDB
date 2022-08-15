@@ -442,6 +442,21 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 }
 
 /**
+ * Ensure that a temporal point and a spatiotemporal box have the same spatial
+ * dimensionality as given by their flags
+ */
+void
+ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
+{
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) || 
+      /* Geodetic boxes are always in 3D */
+      (! MOBDB_FLAGS_GET_GEODETIC(flags2) &&
+      MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2)))
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
+  return;
+}
+
+/**
  * Ensure that two geometries/geographies have the same dimensionality
  */
 void
@@ -470,7 +485,9 @@ void
 ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags) ||
-      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags))
+      /* Geodetic boxes are always in 3D */
+     (! MOBDB_FLAGS_GET_GEODETIC(box->flags) &&
+        MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags)))
     elog(ERROR, "The spatiotemporal box and the geometry must be of the same dimensionality");
   return;
 }
@@ -4742,7 +4759,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
     PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
     if (ps != NULL)
     {
-      result = temporal_restrict_periodset(temp, ps, true);
+      result = temporal_restrict_periodset(temp, ps, REST_AT);
       pfree(ps);
     }
     pfree(temp1); pfree(ps1); pfree(ps2);
@@ -4769,7 +4786,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
   {
     ensure_same_geodetic(temp->flags, box->flags);
     ensure_same_srid_tpoint_stbox(temp, box);
-    ensure_same_spatial_dimensionality(temp->flags, box->flags);
+    ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
   }
   Temporal *result = atfunc ? tpoint_at_stbox1(temp, box, UPPER_INC) :
     tpoint_minus_stbox1(temp, box);

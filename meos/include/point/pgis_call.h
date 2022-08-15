@@ -49,11 +49,11 @@
 
 /* Functions adapted from lwgeom_box.c */
 
-extern GSERIALIZED *PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid);
+extern LWGEOM *PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid);
 
 /* Functions adapted from lwgeom_box3d.c */
 
-extern GSERIALIZED *PGIS_BOX3D_to_LWGEOM(BOX3D *box);
+extern LWGEOM *PGIS_BOX3D_to_LWGEOM(BOX3D *box);
 
 /* Functions adapted from lwgeom_functions_basic.c */
 

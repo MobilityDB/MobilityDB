@@ -90,6 +90,7 @@ extern void ensure_same_srid_tpoint_stbox(const Temporal *temp,
 extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern void ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2);
 extern void ensure_same_dimensionality_gs(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp,

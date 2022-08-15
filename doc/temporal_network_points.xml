@@ -494,8 +494,8 @@ SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 				<para>Round the fraction of the temporal network point to the number of decimal places</para>
 				<para><varname>round(tnpoint,integer): tnpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
--- {[NPoint(1,0.123457)@2012-01-01 00:00:00+01, NPoint(1,0.5)@2012-01-02 00:00:00+01)}
+SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}', 6);
+-- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}
 </programlisting>
 			</listitem>
 
@@ -504,9 +504,9 @@ SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-0
 				<para>Get the values</para>
 				<para><varname>getValues(tnpoint): npoint[]</varname></para>
 				<programlisting xml:space="preserve">
-SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}');
+SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}');
 -- {"NPoint(1,0.3)","NPoint(1,0.5)"}
-SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.3)@2012-01-02)}');
+SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02)}');
 -- {"NPoint(1,0.3)"}
 </programlisting>
 			</listitem>
@@ -516,8 +516,8 @@ SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.3)@2012-01-02
 				<para>Get the value at a timestamp</para>
 				<para><varname>valueAtTimestamp(tnpoint,timestamptz): npoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)',
-  '2012-01-02');
+SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
+  '2001-01-02');
 -- NPoint(1,0.4)
 </programlisting>
 			</listitem>
@@ -576,8 +576,8 @@ SELECT stbox(npoint 'NPoint(1,0.3)', period '[2000-01-01,2000-01-02]');
 				<para>Get the time-weighted centroid</para>
 				<para><varname>twCentroid(tnpoint): geometry(Point)</varname></para>
 				<programlisting xml:space="preserve">
-SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2012-01-01,
-  NPoint(1, 0.5)@2012-01-02, NPoint(1, 0.5)@2012-01-03, NPoint(1, 0.7)@2012-01-04)}'));
+SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
+  NPoint(1, 0.5)@2001-01-02, NPoint(1, 0.5)@2001-01-03, NPoint(1, 0.7)@2001-01-04)}'));
 -- POINT(79.9787466444847 46.2385558051041)
 </programlisting>
 			</listitem>
@@ -587,11 +587,11 @@ SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2012-01-01,
 				<para>Get the temporal azimuth</para>
 				<para><varname>azimuth(tnpoint): tfloat</varname></para>
 				<programlisting xml:space="preserve">
-SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-02]');
--- {[0.974681063778863@2012-01-01 00:00:00+01,
-  0.974681063778863@2012-01-01 23:54:36.721091+01),
-  [3.68970843029227@2012-01-01 23:54:36.721091+01,
-  3.68970843029227@2012-01-02 00:00:00+01)}
+SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]');
+-- {[0.974681063778863@2001-01-01 00:00:00+01,
+  0.974681063778863@2001-01-01 23:54:36.721091+01),
+  [3.68970843029227@2001-01-01 23:54:36.721091+01,
+  3.68970843029227@2001-01-02 00:00:00+01)}
 </programlisting>
 				<para>Since the underlying geometry associated to a route may have several vertices, the azimuth value may change between instants of the input temporal network point, as shown in the example above.</para>
 			</listitem>
@@ -601,12 +601,12 @@ SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-02]')
 				<para>Get the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
 				<para><varname>nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}): tpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,
-  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');
--- NPoint(2,0.349928)@2012-01-01 02:59:44.402905+01
-SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,
-  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');
--- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01
+SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
+-- NPoint(2,0.349928)@2001-01-01 02:59:44.402905+01
+SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
+-- NPoint(2,0.592181)@2001-01-01 17:31:51.080405+01
 </programlisting>
 			</listitem>
 
@@ -615,12 +615,12 @@ SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,
 				<para>Get the smallest distance ever between the two arguments</para>
 				<para><varname>nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}): float</varname></para>
 				<programlisting xml:space="preserve">
-SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,
-  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');
+SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
 -- 1.41793220500979
-SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,
-  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');
--- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01
+SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
+-- NPoint(2,0.592181)@2001-01-01 17:31:51.080405+01
 </programlisting>
 				<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />).</para>
 			</listitem>
@@ -631,11 +631,11 @@ SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,
 				<para><varname>shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}): geometry</varname></para>
 				<para>The function will only return the first line that it finds if there are more than one</para>
 				<programlisting xml:space="preserve">
-SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,
-  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)'));
+SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
 -- LINESTRING(50.7960725266492 48.8266286733015,50 50)
-SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,
-  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)'));
+SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
+  NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)'));
 -- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 46.4385792121146)
 </programlisting>
 			</listitem>
@@ -645,9 +645,9 @@ SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,
 				<para>Restrict to a value</para>
 				<para><varname>atValue(tnpoint,base): tnpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT atValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+SELECT atValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'NPoint(2, 0.5)');
--- {[NPoint(2,0.5)@2012-01-02]}
+-- {[NPoint(2,0.5)@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -656,7 +656,7 @@ SELECT atValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
 				<para>Restrict to a geometry</para>
 				<para><varname>atGeometry(tnpoint,geometry): tnpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
 </programlisting>
 			</listitem>
@@ -666,10 +666,10 @@ SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03
 				<para>Difference with a value</para>
 				<para><varname>minusValue(tnpoint,base): tnpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'NPoint(2, 0.5)');
--- {[NPoint(2,0.3)@2012-01-01, NPoint(2,0.5)@2012-01-02),
-  (NPoint(2,0.5)@2012-01-02, NPoint(2,0.7)@2012-01-03]}
+-- {[NPoint(2,0.3)@2001-01-01, NPoint(2,0.5)@2001-01-02),
+  (NPoint(2,0.5)@2001-01-02, NPoint(2,0.7)@2001-01-03]}
 </programlisting>
 			</listitem>
 
@@ -678,10 +678,10 @@ SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03
 				<para>Difference with a geometry</para>
 				<para><varname>minusGeometry(tnpoint,geometry): tnpoint</varname></para>
 				<programlisting xml:space="preserve">
-SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
--- {(NPoint(2,0.342593)@2012-01-01 05:06:40.364673+01,
-  NPoint(2,0.7)@2012-01-03 00:00:00+01]}
+-- {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673+01,
+  NPoint(2,0.7)@2001-01-03 00:00:00+01]}
 </programlisting>
 			</listitem>
 
@@ -714,12 +714,12 @@ SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;
 				<para><varname>tnpoint #= tnpoint: tbool</varname></para>
 				<para><varname>tnpoint #&lt;&gt; tnpoint: tbool</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' #=
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' #=
   npoint 'NPoint(1, 0.3)';
--- {[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03)}
-SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.8)@2012-01-03)' #&lt;&gt;
-  tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.7)@2012-01-03)';
--- {[t@2012-01-01, f@2012-01-02], (t@2012-01-02, t@2012-01-03)}
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.8)@2001-01-03)' #&lt;&gt;
+  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.7)@2001-01-03)';
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
 </programlisting>
 			</listitem>
 
@@ -730,9 +730,9 @@ SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.8)@2012-01-03)' #&lt;&gt
 				<para><varname>tnpoint ?= tnpoint: boolean</varname></para>
 				<para><varname>tnpoint &amp;= tnpoint: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.4)@2012-01-04)' ?= Npoint(1, 0.3);
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-04)' ?= Npoint(1, 0.3);
 -- true
-SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.2)@2012-01-04)' &amp;= Npoint(1, 0.2);
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= Npoint(1, 0.2);
 -- true
 </programlisting>
 			</listitem>
@@ -842,13 +842,13 @@ SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt
 				<para><varname>dwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean</varname></para>
 				<programlisting xml:space="preserve">
 SELECT contains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');
+  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- false
 SELECT disjoint(npoint 'NPoint(2, 0.0)',
-  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');
+  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- true
-SELECT intersects(tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)',
-  tnpoint '[NPoint(2, 0.0)@2012-01-01, NPoint(2, 1)@2012-01-03)');
+SELECT intersects(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)',
+  tnpoint '[NPoint(2, 0.0)@2001-01-01, NPoint(2, 1)@2001-01-03)');
 -- false
 </programlisting>
 			</listitem>
@@ -867,13 +867,13 @@ SELECT intersects(tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03
 				<para><varname>tdwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tdisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');
--- {[t@2012-01-01 00:00:00+01, t@2012-01-03 00:00:00+01)}
-SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)',
-  tnpoint '[NPoint(1, 0.5)@2012-01-01, NPoint(1, 0.3)@2012-01-03)', 1);
--- {[t@2012-01-01 00:00:00+01, t@2012-01-01 22:35:55.379053+01],
-  (f@2012-01-01 22:35:55.379053+01, t@2012-01-02 01:24:04.620946+01,
-  t@2012-01-03 00:00:00+01)}
+  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
+-- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
+  tnpoint '[NPoint(1, 0.5)@2001-01-01, NPoint(1, 0.3)@2001-01-03)', 1);
+-- {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
+  (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,
+  t@2001-01-03 00:00:00+01)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -891,12 +891,12 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)'
 				<para><varname>tcount(tnpoint): {tint_instset,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 WITH Temp(temp) AS (
-SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
-SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' UNION
-SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )
+SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-02, NPoint(1, 0.4)@2001-01-04)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05)' )
 SELECT tcount(Temp)
 FROM Temp
--- {[1@2012-01-01, 2@2012-01-02, 1@2012-01-04, 1@2012-01-05)}
+-- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
 </programlisting>
 			</listitem>
 
@@ -906,13 +906,13 @@ FROM Temp
 				<para><varname>wcount(tnpoint): {tint_instset,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 WITH Temp(temp) AS (
-SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
-SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' UNION
-SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )
+SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-02, NPoint(1, 0.4)@2001-01-04)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05)' )
 SELECT wcount(Temp, '1 day')
 FROM Temp
--- {[1@2012-01-01, 2@2012-01-02, 3@2012-01-03, 2@2012-01-04, 1@2012-01-05,
-  1@2012-01-06)}
+-- {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
+  1@2001-01-06)}
 </programlisting>
 			</listitem>
 
@@ -922,13 +922,13 @@ FROM Temp
 				<para><varname>tcentroid(tnpoint): tgeompoint</varname></para>
 				<programlisting xml:space="preserve">
 WITH Temp(temp) AS (
-SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
-SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' UNION
-SELECT tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)' )
+SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)' )
 SELECT astext(tcentroid(Temp))
 FROM Temp
--- {[POINT(72.451531682218 76.5231414472853)@2012-01-01,
-  POINT(55.7001249027598 72.9552602410653)@2012-01-03)}
+-- {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
+  POINT(55.7001249027598 72.9552602410653)@2001-01-03)}
 </programlisting>
 			</listitem>
 		</itemizedlist>

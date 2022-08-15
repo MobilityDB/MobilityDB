@@ -202,9 +202,9 @@ SELECT geodstbox_zt('[2001-01-03,2001-01-04]', 1.0,2.0,3.0, 1.0,2.0,3.0);
 -- Only time dimension for geodetic box
 SELECT geodstbox_t('[2001-01-03,2001-01-03]');
 -- Geometry and time dimension
-SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
+SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2001-01-03, 2001-01-05]');
 -- Geography and time dimension
-SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
+SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2001-01-03, 2001-01-05]');
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -428,9 +428,9 @@ SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 					<para>Expand the numeric dimension of the bounding box by a float value</para>
 					<para><varname>expandValue(tbox,float): tbox</varname></para>
 					<programlisting xml:space="preserve">
-SELECT expandValue(tbox 'TBOX T([2012-01-01,2012-01-03],(1,2))', 1);
--- TBOX T([2012-01-01, 2012-01-03],(0, 3))
-SELECT expandValue(tbox 'TBOX T([2012-01-01,2012-01-03))', 1);
+SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03],(1,2))', 1);
+-- TBOX T([2001-01-01, 2001-01-03],(0, 3))
+SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have value dimension
 </programlisting>
 				</listitem>
@@ -440,9 +440,9 @@ SELECT expandValue(tbox 'TBOX T([2012-01-01,2012-01-03))', 1);
 					<para>Expand the spatial dimension of the bounding box by a float value</para>
 					<para><varname>expandSpatial(stbox,float): stbox</varname></para>
 					<programlisting xml:space="preserve">
-SELECT expandSpatial(stbox 'STBOX ZT([2012-01-01,2012-01-03],((1,1,1),(2,2,2)))', 1);
--- STBOX ZT([2012-01-01, 2012-01-03],((0,0,0),(3,3,3)))
-SELECT expandSpatial(stbox 'STBOX T([2012-01-01,2012-01-03))', 1);
+SELECT expandSpatial(stbox 'STBOX ZT([2001-01-01,2001-01-03],((1,1,1),(2,2,2)))', 1);
+-- STBOX ZT([2001-01-01, 2001-01-03],((0,0,0),(3,3,3)))
+SELECT expandSpatial(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have XY(Z) dimension
 </programlisting>
 				</listitem>
@@ -452,11 +452,11 @@ SELECT expandSpatial(stbox 'STBOX T([2012-01-01,2012-01-03))', 1);
 					<para>Expand the temporal dimension of the bounding box by a time interval</para>
 					<para><varname>expandTemporal(box,interval): box</varname></para>
 					<programlisting xml:space="preserve">
-SELECT expandTemporal(tbox 'TBOX T([2012-01-01,2012-01-03],(1,2))', interval '1 day');
--- TBOX T([2011-12-31, 2012-01-04],(1, 2))
-SELECT expandTemporal(stbox 'STBOX ZT([2012-01-01,2012-01-03],((1,1,1),(2,2,2)))',
+SELECT expandTemporal(tbox 'TBOX T([2001-01-01,2001-01-03],(1,2))', interval '1 day');
+-- TBOX T([2011-12-31, 2001-01-04],(1, 2))
+SELECT expandTemporal(stbox 'STBOX ZT([2001-01-01,2001-01-03],((1,1,1),(2,2,2)))',
   interval '1 day');
--- STBOX ZT([2011-12-31, 2012-01-04],((1,1,1),(2,2,2)))
+-- STBOX ZT([2011-12-31, 2001-01-04],((1,1,1),(2,2,2)))
 </programlisting>
 				</listitem>
 
@@ -558,8 +558,8 @@ SELECT extent(b) FROM boxes;
 				<para>Are the bounding boxes equal?</para>
 				<para><varname>box = box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' =
-  tbox 'TBOX T([2012-01-03,2012-01-05],[2,2])';
+SELECT tbox 'TBOX T([2001-01-01,2001-01-04],[1,1])' =
+  tbox 'TBOX T([2001-01-03,2001-01-05],[2,2])';
 -- false
 </programlisting>
 			</listitem>
@@ -569,8 +569,8 @@ SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' =
 				<para>Are the bounding boxes different?</para>
 				<para><varname>box &lt;&gt; box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &lt;&gt;
-  tbox 'TBOX T([2012-01-03,2012-01-05],[2,2])';
+SELECT tbox 'TBOX T([2001-01-01,2001-01-04],[1,1])' &lt;&gt;
+  tbox 'TBOX T([2001-01-03,2001-01-05],[2,2])';
 -- true
 </programlisting>
 			</listitem>
@@ -580,8 +580,8 @@ SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &lt;&gt;
 				<para>Is the first bounding box less than the second one?</para>
 				<para><varname>box &lt; box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &lt;
-  tbox 'TBOX T([2012-01-03,2012-01-05],[1,2])';
+SELECT tbox 'TBOX T([2001-01-01,2001-01-04],[1,1])' &lt;
+  tbox 'TBOX T([2001-01-03,2001-01-05],[1,2])';
 -- true
 </programlisting>
 			</listitem>
@@ -591,8 +591,8 @@ SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &lt;
 				<para>Is the first bounding box greater than the second one?</para>
 				<para><varname>box &gt; box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([2012-01-03,2012-01-04],[1,1])' &gt;
-  tbox 'TBOX T([2012-01-01,2012-01-05],(1,2))';
+SELECT tbox 'TBOX T([2001-01-03,2001-01-04],[1,1])' &gt;
+  tbox 'TBOX T([2001-01-01,2001-01-05],(1,2))';
 -- true
 </programlisting>
 			</listitem>
@@ -602,8 +602,8 @@ SELECT tbox 'TBOX T([2012-01-03,2012-01-04],[1,1])' &gt;
 				<para>Is the first bounding box less than or equal to the second one?</para>
 				<para><varname>box &lt;= box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &lt;=
-  tbox 'TBOX T([2012-01-03,2012-01-05],[2,2])';
+SELECT tbox 'TBOX T([2001-01-01,2001-01-04],[1,1])' &lt;=
+  tbox 'TBOX T([2001-01-03,2001-01-05],[2,2])';
 -- true
 </programlisting>
 			</listitem>
@@ -613,8 +613,8 @@ SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &lt;=
 				<para>Is the first bounding box greater than or equal to the second one?</para>
 				<para><varname>box &gt;= box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([2012-01-01,2012-01-04],[1,1])' &gt;=
-  tbox 'TBOX T([2012-01-03,2012-01-05],[2,2])';
+SELECT tbox 'TBOX T([2001-01-01,2001-01-04],[1,1])' &gt;=
+  tbox 'TBOX T([2001-01-03,2001-01-05],[2,2])';
 -- false
 </programlisting>
 			</listitem>

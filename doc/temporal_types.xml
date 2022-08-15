@@ -95,23 +95,23 @@ SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:
 		Similary, temporal sequence set values are converted into normal form. For this, consecutive sequence values are merged when possible. Examples of transformation into a normal form are as follows.
 	</para>
 	<programlisting xml:space="preserve">
-SELECT tints(ARRAY[tint '[1@2001-01-01, 1@2001-01-03)', '[2@2001-01-03, 2@2001-01-05)']);
+SELECT tint_seqset(ARRAY[tint '[1@2001-01-01, 1@2001-01-03)', '[2@2001-01-03, 2@2001-01-05)']);
 -- '{[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)}'
-SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03)',
+SELECT tfloat_seqset(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03)',
   '[2@2001-01-03, 3@2001-01-05]']);
 -- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
-SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 3@2001-01-05)', '[3@2001-01-05]']);
+SELECT tfloat_seqset(ARRAY[tfloat '[1@2001-01-01, 3@2001-01-05)', '[3@2001-01-05]']);
 -- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
-SELECT tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
+SELECT asText(tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
   Point(1 1)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00),
-  [Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)}';
+  [Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)}');
 -- "{[[Point(0 0)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:15:00)}"
-SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00),
-  [Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}';
+SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00),
+  [Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}');
 -- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
-SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00),
-  [Point(3 3)@2001-01-01 08:10:00]}';
+SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00),
+  [Point(3 3)@2001-01-01 08:10:00]}');
 -- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
 </programlisting>
 
@@ -162,67 +162,67 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 		<programlisting xml:space="preserve">
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint);
 INSERT INTO Department VALUES
-  (10, 'Research', tint '[10@2012-01-01, 12@2012-04-01, 12@2012-08-01)'),
-  (20, 'Human Resources', tint '[4@2012-02-01, 6@2012-06-01, 6@2012-10-01)');
+  (10, 'Research', tint '[10@2001-01-01, 12@2001-04-01, 12@2001-08-01)'),
+  (20, 'Human Resources', tint '[4@2001-02-01, 6@2001-06-01, 6@2001-10-01)');
 CREATE TABLE Temperature(RoomNo integer, Temp tfloat);
 INSERT INTO Temperature VALUES
-  (1001, tfloat '{18.5@2012-01-01 08:00:00, 20.0@2012-01-01 08:10:00}'),
-  (2001, tfloat '{19.0@2012-01-01 08:00:00, 22.5@2012-01-01 08:10:00}');
+  (1001, tfloat '{18.5@2001-01-01 08:00:00, 20.0@2001-01-01 08:10:00}'),
+  (2001, tfloat '{19.0@2001-01-01 08:00:00, 22.5@2001-01-01 08:10:00}');
 -- Value at a timestamp
-SELECT RoomNo, valueAtTimestamp(Temp, '2012-01-01 08:10:00')
+SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00')
 FROM temperature;
 -- 1001;
    2001;22.5
 -- Restriction to a value
 SELECT DeptNo, atValue(NoEmps, 10)
 FROM Department;
--- 10;"[10@2012-01-01 00:00:00+00, 10@2012-04-01 00:00:00+00)"
+-- 10;"[10@2001-01-01 00:00:00+00, 10@2001-04-01 00:00:00+00)"
    20; NULL
 -- Restriction to a period
-SELECT DeptNo, atPeriod(NoEmps, '[2012-01-01, 2012-04-01]')
+SELECT DeptNo, atPeriod(NoEmps, '[2001-01-01, 2001-04-01]')
 FROM Department;
--- 10;"[10@2012-01-01 00:00:00+00, 12@2012-04-01 00:00:00+00]"
-   20;"[4@2012-02-01 00:00:00+00, 4@2012-04-01 00:00:00+00]"
+-- 10;"[10@2001-01-01 00:00:00+00, 12@2001-04-01 00:00:00+00]"
+   20;"[4@2001-02-01 00:00:00+00, 4@2001-04-01 00:00:00+00]"
 -- Temporal comparison
 SELECT DeptNo, NoEmps #&lt;= 10
 FROM Department;
--- 10;"[t@2012-01-01 00:00:00+00, f@2012-04-01 00:00:00+00, f@2012-08-01 00:00:00+00)"
-   20;"[t@2012-04-02 00:00:00+00, t@2012-10-01 00:00:00+00)"
+-- 10;"[t@2001-01-01 00:00:00+00, f@2001-04-01 00:00:00+00, f@2001-08-01 00:00:00+00)"
+   20;"[t@2001-04-02 00:00:00+00, t@2001-10-01 00:00:00+00)"
 -- Temporal aggregation
 SELECT tsum(NoEmps)
 FROM Department;
--- "{[10@2012-01-01 00:00:00+00, 14@2012-02-01 00:00:00+00, 16@2012-04-01 00:00:00+00,
-  18@2012-06-01 00:00:00+00, 6@2012-08-01 00:00:00+00, 6@2012-10-01 00:00:00+00)}"
+-- "{[10@2001-01-01 00:00:00+00, 14@2001-02-01 00:00:00+00, 16@2001-04-01 00:00:00+00,
+  18@2001-06-01 00:00:00+00, 6@2001-08-01 00:00:00+00, 6@2001-10-01 00:00:00+00)}"
 </programlisting>
 		<para>Examples of usage of temporal point types are given next.</para>
 		<programlisting xml:space="preserve">
 CREATE TABLE Trips(CarId integer, TripId integer, Trip tgeompoint);
 INSERT INTO Trips VALUES
-  (10, 1, tgeompoint '{[Point(0 0)@2012-01-01 08:00:00, Point(2 0)@2012-01-01 08:10:00,
-Point(2 1)@2012-01-01 08:15:00)}'),
-  (20, 1, tgeompoint '{[Point(0 0)@2012-01-01 08:05:00, Point(1 1)@2012-01-01 08:10:00,
-  Point(3 3)@2012-01-01 08:20:00)}');
+  (10, 1, tgeompoint '{[Point(0 0)@2001-01-01 08:00:00, Point(2 0)@2001-01-01 08:10:00,
+Point(2 1)@2001-01-01 08:15:00)}'),
+  (20, 1, tgeompoint '{[Point(0 0)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00,
+  Point(3 3)@2001-01-01 08:20:00)}');
 -- Value at a given timestamp
-SELECT CarId, ST_AsText(valueAtTimestamp(Trip, timestamptz '2012-01-01 08:10:00'))
+SELECT CarId, ST_AsText(valueAtTimestamp(Trip, timestamptz '2001-01-01 08:10:00'))
 FROM Trips;
 -- 10;"POINT(2 0)"
    20;"POINT(1 1)"
 -- Restriction to a given value
 SELECT CarId, asText(atValue(Trip, 'Point(2 0)'))
 FROM Trips;
--- 10;"{"[POINT(2 0)@2012-01-01 08:10:00+00]"}"
+-- 10;"{"[POINT(2 0)@2001-01-01 08:10:00+00]"}"
    20; NULL
 -- Restriction to a period
-SELECT CarId, asText(atPeriod(Trip, '[2012-01-01 08:05:00,2012-01-01 08:10:00]'))
+SELECT CarId, asText(atPeriod(Trip, '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
 FROM Trips;
--- 10;"{[POINT(1 0)@2012-01-01 08:05:00+00, POINT(2 0)@2012-01-01 08:10:00+00]}"
-   20;"{[POINT(0 0)@2012-01-01 08:05:00+00, POINT(1 1)@2012-01-01 08:10:00+00]}"
+-- 10;"{[POINT(1 0)@2001-01-01 08:05:00+00, POINT(2 0)@2001-01-01 08:10:00+00]}"
+   20;"{[POINT(0 0)@2001-01-01 08:05:00+00, POINT(1 1)@2001-01-01 08:10:00+00]}"
 -- Temporal distance
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip
 FROM Trips T1, Trips T2
 WHERE T1.CarId &lt; T2.CarId;
--- 10;20;"{[1@2012-01-01 08:05:00+00, 1.4142135623731@2012-01-01 08:10:00+00,
-  1@2012-01-01 08:15:00+00)}"
+-- 10;20;"{[1@2001-01-01 08:05:00+00, 1.4142135623731@2001-01-01 08:10:00+00,
+  1@2001-01-01 08:15:00+00)}"
 </programlisting>
 	</sect1>
 
