@@ -103,7 +103,6 @@ main(int argc, char **argv)
   const char *conninfo;
   PGconn *conn;
   AIS_record rec;
-  int read = 0;
   int records = 0;
   int nulls = 0;
   char buffer[1024];
@@ -171,7 +170,7 @@ main(int argc, char **argv)
   /* Continue reading the file */
   do
   {
-    read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
+    int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
       buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
     rec.T = pg_timestamp_in(buffer, -1);
@@ -188,6 +187,7 @@ main(int argc, char **argv)
     if (ferror(file))
     {
       printf("Error reading file\n");
+      fclose(file);
       exit_nicely(conn);
     }
 
@@ -203,6 +203,18 @@ main(int argc, char **argv)
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     records, nulls);
+
+  sprintf(buffer, "SELECT COUNT(*) FROM public.MEOS_demo;");
+  PGresult *res = PQexec(conn, buffer);
+  if (PQresultStatus(res) != PGRES_TUPLES_OK)
+  {
+    fprintf(stderr, "SQL command failed:\n%s %s", buffer, PQerrorMessage(conn));
+    PQclear(res);
+    exit_nicely(conn);
+  }
+
+  printf("Query 'SELECT COUNT(*) FROM public.MEOS_demo' returned %s\n",
+    PQgetvalue(res, 0, 0));
 
   /* End the transaction */
   exec_sql(conn, "END", PGRES_COMMAND_OK);

@@ -107,7 +107,6 @@ int read_communes(void)
     return 1;
   }
 
-  int read = 0;
   int records = 0;
 
   /* Read the first line of the file with the headers */
@@ -116,7 +115,7 @@ int read_communes(void)
   /* Continue reading the file */
   do
   {
-    read = fscanf(file, "%d,%100[^,],%d,%100000[^\n]\n",
+    int read = fscanf(file, "%d,%100[^,],%d,%100000[^\n]\n",
       &communes[records].id, communes[records].name,
       &communes[records].population, geo_buffer);
     /* Transform the string representing the geometry into a geometry value */
@@ -155,13 +154,11 @@ int read_brussels_region(void)
     return 1;
   }
 
-  int read = 0;
-
   /* Read the first line of the file with the headers */
   fscanf(file, "%1024s\n", geo_buffer);
 
   /* Continue reading the file */
-  read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
+  int read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
     geo_buffer);
   /* Transform the string representing the geometry into a geometry value */
   brussels_region.geom = gserialized_in(geo_buffer, -1);
@@ -169,12 +166,14 @@ int read_brussels_region(void)
   if (read != 2 && !feof(file))
   {
     printf("Region record with missing values\n");
+    fclose(file);
     return 1;
   }
 
   if (ferror(file))
   {
     printf("Error reading file\n");
+    fclose(file);
     return 1;
   }
 
@@ -239,7 +238,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3])
   len += sprintf(buf+len, "\n");
   for (j = 0; j < NO_COMMUNES + 3; j++)
     len += sprintf(buf+len, "---------");
-  len += sprintf(buf+len, "\n\n");
+  sprintf(buf+len, "\n\n");
   printf("%s", buf);
 
   return;
@@ -291,12 +290,14 @@ int main(void)
     if (read != 5 && !feof(file))
     {
       printf("Trip record with missing values\n");
+      fclose(file);
       return 1;
     }
 
     if (ferror(file))
     {
       printf("Error reading file\n");
+      fclose(file);
       return 1;
     }
 
