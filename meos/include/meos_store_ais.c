@@ -68,6 +68,8 @@
 
 #include "meos.h"
 
+#define NO_BULK_INSERT 5 // 20
+
 typedef struct
 {
   Timestamp T;
@@ -105,7 +107,10 @@ main(int argc, char **argv)
   AIS_record rec;
   int records = 0;
   int nulls = 0;
+  /* Maximum length in characters of a line in the input data */
   char buffer[1024];
+  /* Maximum length in characters of the string for the bulk insert */
+  char insert_buffer[16384];
 
   /***************************************************************************
    * Section 1: Connexion to the database
@@ -157,6 +162,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Create the table that will hold the data */
+  printf("Creating the table in the database\n");
   exec_sql(conn, "DROP TABLE IF EXISTS public.MEOS_demo;", PGRES_COMMAND_OK);
   exec_sql(conn, "CREATE TABLE public.MEOS_demo(MMSI integer, "
     "location public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
@@ -164,10 +170,13 @@ main(int argc, char **argv)
   /* Start a transaction block */
   exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
 
+  printf("Start processing the file\n");
+
   /* Read the first line of the file with the headers */
   fscanf(file, "%1024s\n", buffer);
 
   /* Continue reading the file */
+  int len;
   do
   {
     int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
@@ -192,16 +201,33 @@ main(int argc, char **argv)
     }
 
     /* Create the INSERT command with the values read */
+    if ((records - 1) % NO_BULK_INSERT == 0)
+      len = sprintf(insert_buffer,
+        "INSERT INTO public.MEOS_demo(MMSI, location, SOG) VALUES ");
+
     char *t_out = pg_timestamp_out(rec.T);
-    sprintf(buffer, "INSERT INTO public.MEOS_demo(MMSI, location, SOG) "
-      "VALUES (%ld, 'SRID=4326;Point(%lf %lf)@%s+00', '%lf@%s+00');",
+    len += sprintf(insert_buffer + len,
+      "(%ld, 'SRID=4326;Point(%lf %lf)@%s+00', '%lf@%s+00'),",
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);
-    exec_sql(conn, buffer, PGRES_COMMAND_OK);
     free(t_out);
 
+    if ((records - 1) % NO_BULK_INSERT == NO_BULK_INSERT - 1)
+    {
+      /* Replace the last comma with a semicolon */
+      insert_buffer[len - 1] = ';';
+      exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
+      len = 0;
+    }
   } while (!feof(file));
 
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
+  if (len > 0)
+  {
+    /* Replace the last comma with a semicolon */
+    insert_buffer[len - 1] = ';';
+    exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
+  }
+
+  printf("%d records read.\n%d incomplete records ignored.\n",
     records, nulls);
 
   sprintf(buffer, "SELECT COUNT(*) FROM public.MEOS_demo;");
