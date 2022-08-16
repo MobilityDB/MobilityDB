@@ -43,7 +43,6 @@
 
 /* General functions */
 
-extern const Period *periodset_period_ptr(const PeriodSet *ps);
 extern void periodset_period_slice(Datum psdatum, Period *p);
 extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
   int *loc);

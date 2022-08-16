@@ -286,40 +286,6 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_to_box2d);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Cast the spatiotemporal box as a PostGIS GBOX
- * @sqlfunc box2d()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Stbox_to_box2d(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_X_stbox(box);
-  GBOX *result = palloc(sizeof(GBOX));
-  stbox_set_gbox(box, result);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_to_box3d);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Cast the spatiotemporal box as a PostGIS BOX3D
- * @sqlfunc box3d()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Stbox_to_box3d(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_X_stbox(box);
-  BOX3D *result = palloc(sizeof(BOX3D));
-  stbox_set_box3d(box, result);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
  * @ingroup mobilitydb_box_cast

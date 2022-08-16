@@ -401,11 +401,11 @@ temporal_bbox_ptr(const Temporal *temp)
   void *result = NULL;
   /* Values of TINSTANT subtype have not bounding box */
   if (temp->subtype == TINSTANTSET)
-    result = tinstantset_bbox_ptr((TInstantSet *) temp);
+    result = TINSTANTSET_BBOX_PTR((TInstantSet *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_bbox_ptr((TSequence *) temp);
+    result = TSEQUENCE_BBOX_PTR((TSequence *) temp);
   else if (temp->subtype == TSEQUENCESET)
-    result = tsequenceset_bbox_ptr((TSequenceSet *) temp);
+    result = TSEQUENCESET_BBOX_PTR((TSequenceSet *) temp);
   return result;
 }
 

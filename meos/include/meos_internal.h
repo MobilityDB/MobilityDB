@@ -68,8 +68,6 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 /* Cast functions for span and time types */
 
 extern Span *elem_to_span(Datum d, mobdbType basetype);
-extern void timestampset_set_period(const TimestampSet *ss, Period *p);
-extern void periodset_set_period(const PeriodSet *ps, Period *p);
 
 /*****************************************************************************/
 

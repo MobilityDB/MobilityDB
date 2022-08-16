@@ -841,9 +841,8 @@ time_const_to_period(Node *other, Period *period)
   {
     /* The right argument is a TimestampSet constant. We convert it into
      * its bounding period. */
-    p = timestampset_period_ptr(
-      DatumGetTimestampSetP(((Const *) other)->constvalue));
-    memcpy(period, p, sizeof(Period));
+    const TimestampSet *ts = DatumGetTimestampSetP(((Const *) other)->constvalue);
+    memcpy(period, &ts->period, sizeof(Period));
   }
   else if (timetype == T_PERIOD)
   {
@@ -855,9 +854,8 @@ time_const_to_period(Node *other, Period *period)
   {
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
-    p = periodset_period_ptr(
-      DatumGetPeriodSetP(((Const *) other)->constvalue));
-    memcpy(period, p, sizeof(Period));
+    const PeriodSet *ps = DatumGetPeriodSetP(((Const *) other)->constvalue);
+    memcpy(period, &ps->period, sizeof(Period));
   }
   return;
 }

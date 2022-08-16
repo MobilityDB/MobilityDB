@@ -52,15 +52,6 @@
  *****************************************************************************/
 
 /**
- * Return a pointer to the precomputed bounding box of a period set
- */
-const Period *
-periodset_period_ptr(const PeriodSet *ps)
-{
-  return (Period *) &ps->period;
-}
-
-/**
  * Return the location of the timestamp in the temporal sequence set
  * value using binary search
  *
@@ -332,17 +323,6 @@ periodset_timespan(const PeriodSet *ps)
   return result;
 }
 
-/**
- * @ingroup libmeos_int_spantime_accessor
- * @brief Set a period to the bounding period of a period set
- */
-void
-periodset_set_period(const PeriodSet *ps, Period *p)
-{
-  memcpy(p, &ps->period, sizeof(Span));
-  return;
-}
-
 #if MEOS
 /**
  * @ingroup libmeos_temporal_cast
@@ -355,7 +335,7 @@ Period *
 periodset_to_period(const PeriodSet *ps)
 {
   Period *result = palloc(sizeof(Period));
-  periodset_set_period(ps, result);
+  memcpy(p, &ps->period, sizeof(Span));
   return result;
 }
 #endif /* MEOS */

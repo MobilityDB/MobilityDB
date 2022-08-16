@@ -162,6 +162,8 @@ typedef struct
   /* variable-length data follows */
 } TInstantSet;
 
+#define TINSTANTSET_BBOX_PTR(is)      ((void *)(&(is)->period))
+
 /**
  * Structure to represent temporal values of sequence subtype
  */
@@ -179,6 +181,8 @@ typedef struct
                                    bytes needed are added upon creation. */
   /* variable-length data follows */
 } TSequence;
+
+#define TSEQUENCE_BBOX_PTR(seq)      ((void *)(&(seq)->period))
 
 /**
  * Structure to represent temporal values of sequence set subtype
@@ -199,6 +203,8 @@ typedef struct
                                    bytes needed are added upon creation. */
   /* variable-length data follows */
 } TSequenceSet;
+
+#define TSEQUENCESET_BBOX_PTR(ss)      ((void *)(&(ss)->period))
 
 /**
  * Struct for storing a similarity match

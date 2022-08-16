@@ -589,8 +589,7 @@ timestampset_set_stbox(const TimestampSet *ts, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  const Period *p = timestampset_period_ptr(ts);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, &ts->period, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -650,8 +649,7 @@ periodset_set_stbox(const PeriodSet *ps, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  const Period *p = periodset_period_ptr(ps);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, &ps->period, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
