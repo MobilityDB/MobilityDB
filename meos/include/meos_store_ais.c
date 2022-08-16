@@ -68,7 +68,7 @@
 
 #include "meos.h"
 
-#define NO_BULK_INSERT 5 // 20
+#define NO_BULK_INSERT 20
 
 typedef struct
 {
