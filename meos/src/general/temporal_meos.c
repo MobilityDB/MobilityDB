@@ -481,7 +481,7 @@ temporal_minus_max(const Temporal *temp)
  * @sqlfunc atSpan()
  */
 Temporal *
-tnumber_at_span(const Temporal *temp, Span *span)
+tnumber_at_span(const Temporal *temp, const Span *span)
 {
   Temporal *result = tnumber_restrict_span(temp, span, REST_AT);
   return result;
@@ -493,7 +493,7 @@ tnumber_at_span(const Temporal *temp, Span *span)
  * @sqlfunc minusSpan()
  */
 Temporal *
-tnumber_minus_span(const Temporal *temp, Span *span)
+tnumber_minus_span(const Temporal *temp, const Span *span)
 {
   Temporal *result = tnumber_restrict_span(temp, span, REST_AT);
   return result;

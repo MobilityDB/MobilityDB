@@ -49,7 +49,7 @@ stbox_parse(char **str)
 {
   /* make compiler quiet */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
+  Period *period = NULL;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
   int srid = 0;
   bool hassrid = false;
@@ -104,22 +104,40 @@ stbox_parse(char **str)
   }
   p_whitespace(str);
 
-  /* Parse double opening parenthesis */
-  if (!p_oparen(str) || !p_oparen(str))
-    elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
-
-  /* Determine whether there is an XY(Z) dimension */
-  p_whitespace(str);
-  if (((*str)[0]) != ',')
+  if (hast)
+  {
+    /* Parse opening parenthesis */
+    if (! p_oparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+    
+    period = span_parse(str, T_PERIOD, false, true);
+    /* Determine whether there is an X dimension */
+    p_whitespace(str);
+    if (((*str)[0]) == ',')
+    {
+      hasx = true;
+      *str += 1;
+      p_whitespace(str);
+    }
+    else
+    {
+      /* Parse closing parenthesis */
+      p_whitespace(str);
+      if (!p_cparen(str))
+        elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+    }
+  }
+  else
     hasx = true;
-
-  if (! hasx && ! hast)
-    elog(ERROR, "Could not parse spatiotemporal box");
-  if (! hasx && hassrid)
-    elog(ERROR, "An SRID is specified but not coordinates are given");
 
   if (hasx)
   {
+    /* Parse double opening parenthesis */
+    if (!p_oparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+    if (!p_oparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+
     /* xmin */
     xmin = double_parse(str);
     /* ymin */
@@ -129,78 +147,64 @@ stbox_parse(char **str)
     ymin = double_parse(str);
     if (hasz || geodetic)
     {
+      /* zmin */
       p_whitespace(str);
       p_comma(str);
       p_whitespace(str);
       zmin = double_parse(str);
     }
-  }
-  else
-  {
-    /* Empty XY(Z) dimension */
-    p_whitespace(str);
-    p_comma(str);
-    p_whitespace(str);
-    p_comma(str);
-  }
-  if (hast)
-  {
-    p_whitespace(str);
-    p_comma(str);
-    p_whitespace(str);
-    /* The next instruction will throw an exception if it fails */
-    tmin = timestamp_parse(str);
-  }
-  p_whitespace(str);
-  if (!p_cparen(str))
-    elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
-  p_whitespace(str);
-  p_comma(str);
-  p_whitespace(str);
 
-  /* Parse upper bounds */
-  if (!p_oparen(str))
-    elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+    p_whitespace(str);
+    if (!p_cparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+    p_whitespace(str);
+    p_comma(str);
+    p_whitespace(str);
 
-  if (hasx)
-  {
+    /* Parse upper bounds */
+    if (!p_oparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+
+    /* xmax */
     xmax = double_parse(str);
+    /* ymax */
     p_whitespace(str);
     p_comma(str);
     p_whitespace(str);
     ymax = double_parse(str);
     if (hasz || geodetic)
     {
+      /* zmax */
       p_whitespace(str);
       p_comma(str);
       p_whitespace(str);
       zmax = double_parse(str);
     }
-  }
-  else
-  {
-    /* Empty XY dimensions */
+
+    /* Parse double closing parenthesis */
     p_whitespace(str);
-    p_comma(str);
-    p_whitespace(str);
-    p_comma(str);
+    if (!p_cparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+    if (!p_cparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+
+    if (hast)
+    {
+      /* Parse final closing parenthesis */
+      p_whitespace(str);
+      if (!p_cparen(str))
+        elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+    }
   }
-  if (hast)
-  {
-    p_whitespace(str);
-    p_comma(str);
-    /* The next instruction will throw an exception if it fails */
-    tmax = timestamp_parse(str);
-  }
-  p_whitespace(str);
-  if (!p_cparen(str) || !p_cparen(str) )
-    elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
 
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");
 
-  return stbox_make(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax);
+  STBOX *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
+    ymin, ymax, zmin, zmax);
+  if (period)
+    pfree(period);
+  return result;
 }
 
 /*****************************************************************************/

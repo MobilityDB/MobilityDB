@@ -234,7 +234,7 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
   if (gserialized_is_empty(geo))
     return false;
   GSERIALIZED *traj = tnpoint_geom(temp);
-  *result = PGIS_LWGEOM_shortestline2d(traj, geo);
+  *result = gserialized_shortestline2d(traj, geo);
   pfree(traj);
   return true;
 }
@@ -248,7 +248,7 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   GSERIALIZED *traj = tnpoint_geom(temp);
-  GSERIALIZED *result = PGIS_LWGEOM_shortestline2d(traj, geom);
+  GSERIALIZED *result = gserialized_shortestline2d(traj, geom);
   pfree(traj);
   pfree(geom);
   return result;

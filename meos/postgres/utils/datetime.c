@@ -38,10 +38,6 @@ static const datetkn *datebsearch(const char *key, const datetkn *base, int nel)
 
 #define MAXTZLEN		10		/* max TZ name len, not counting tr. null */
 
-/* Definitions from globals.h */
-
-int			DateOrder = DATEORDER_MDY;
-
 /* Defined below */
 
 extern char *pg_ultostr_zeropad(char *str, uint32 value, int32 minwidth);
@@ -2357,6 +2353,99 @@ EncodeTimezone(char *str, int tz, int style)
 	else
 		str = pg_ultostr_zeropad(str, hour, 2);
 	return str;
+}
+
+/*
+ * Convert reserved date values to string.
+ */
+void
+EncodeSpecialDate(DateADT dt, char *str)
+{
+	if (DATE_IS_NOBEGIN(dt))
+		strcpy(str, EARLY);
+	else if (DATE_IS_NOEND(dt))
+		strcpy(str, LATE);
+	else						/* shouldn't happen */
+		elog(ERROR, "invalid argument for EncodeSpecialDate");
+}
+
+/* EncodeDateOnly()
+ * Encode date as local time.
+ */
+void
+EncodeDateOnly(struct pg_tm *tm, int style, char *str)
+{
+	Assert(tm->tm_mon >= 1 && tm->tm_mon <= MONTHS_PER_YEAR);
+
+	switch (style)
+	{
+		case USE_ISO_DATES:
+		case USE_XSD_DATES:
+			/* compatible with ISO date formats */
+			str = pg_ultostr_zeropad(str,
+									 (tm->tm_year > 0) ? tm->tm_year : -(tm->tm_year - 1), 4);
+			*str++ = '-';
+			str = pg_ultostr_zeropad(str, tm->tm_mon, 2);
+			*str++ = '-';
+			str = pg_ultostr_zeropad(str, tm->tm_mday, 2);
+			break;
+
+		case USE_SQL_DATES:
+			/* compatible with Oracle/Ingres date formats */
+			if (DateOrder == DATEORDER_DMY)
+			{
+				str = pg_ultostr_zeropad(str, tm->tm_mday, 2);
+				*str++ = '/';
+				str = pg_ultostr_zeropad(str, tm->tm_mon, 2);
+			}
+			else
+			{
+				str = pg_ultostr_zeropad(str, tm->tm_mon, 2);
+				*str++ = '/';
+				str = pg_ultostr_zeropad(str, tm->tm_mday, 2);
+			}
+			*str++ = '/';
+			str = pg_ultostr_zeropad(str,
+									 (tm->tm_year > 0) ? tm->tm_year : -(tm->tm_year - 1), 4);
+			break;
+
+		case USE_GERMAN_DATES:
+			/* German-style date format */
+			str = pg_ultostr_zeropad(str, tm->tm_mday, 2);
+			*str++ = '.';
+			str = pg_ultostr_zeropad(str, tm->tm_mon, 2);
+			*str++ = '.';
+			str = pg_ultostr_zeropad(str,
+									 (tm->tm_year > 0) ? tm->tm_year : -(tm->tm_year - 1), 4);
+			break;
+
+		case USE_POSTGRES_DATES:
+		default:
+			/* traditional date-only style for Postgres */
+			if (DateOrder == DATEORDER_DMY)
+			{
+				str = pg_ultostr_zeropad(str, tm->tm_mday, 2);
+				*str++ = '-';
+				str = pg_ultostr_zeropad(str, tm->tm_mon, 2);
+			}
+			else
+			{
+				str = pg_ultostr_zeropad(str, tm->tm_mon, 2);
+				*str++ = '-';
+				str = pg_ultostr_zeropad(str, tm->tm_mday, 2);
+			}
+			*str++ = '-';
+			str = pg_ultostr_zeropad(str,
+									 (tm->tm_year > 0) ? tm->tm_year : -(tm->tm_year - 1), 4);
+			break;
+	}
+
+	if (tm->tm_year <= 0)
+	{
+		memcpy(str, " BC", 3);	/* Don't copy NUL */
+		str += 3;
+	}
+	*str = '\0';
 }
 
 /* EncodeDateTime()

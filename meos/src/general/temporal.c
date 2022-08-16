@@ -401,11 +401,11 @@ temporal_bbox_ptr(const Temporal *temp)
   void *result = NULL;
   /* Values of TINSTANT subtype have not bounding box */
   if (temp->subtype == TINSTANTSET)
-    result = tinstantset_bbox_ptr((TInstantSet *) temp);
+    result = TINSTANTSET_BBOX_PTR((TInstantSet *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_bbox_ptr((TSequence *) temp);
+    result = TSEQUENCE_BBOX_PTR((TSequence *) temp);
   else if (temp->subtype == TSEQUENCESET)
-    result = tsequenceset_bbox_ptr((TSequenceSet *) temp);
+    result = TSEQUENCESET_BBOX_PTR((TSequenceSet *) temp);
   return result;
 }
 
@@ -3340,15 +3340,9 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
   Temporal *temp1 = tnumber_at_tbox(temp, box);
   if (temp1 != NULL)
   {
-    PeriodSet *ps1 = temporal_time(temp);
-    PeriodSet *ps2 = temporal_time(temp1);
-    PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
-    if (ps != NULL)
-    {
-      result = temporal_restrict_periodset(temp, ps, true);
-      pfree(ps);
-    }
-    pfree(temp1); pfree(ps1); pfree(ps2);
+    PeriodSet *ps = temporal_time(temp1);
+    result = temporal_restrict_periodset(temp, ps, REST_MINUS);
+    pfree(temp1); pfree(ps);
   }
   return result;
 }

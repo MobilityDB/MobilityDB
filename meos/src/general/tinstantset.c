@@ -55,15 +55,6 @@
  *****************************************************************************/
 
 /**
- * Return a pointer to the bounding box of a temporal instant set
- */
-void *
-tinstantset_bbox_ptr(const TInstantSet *is)
-{
-  return (void *)(&is->period);
-}
-
-/**
  * @ingroup libmeos_int_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal instant set
  * @sqlfunc period(), tbox(), stbox()
@@ -73,7 +64,7 @@ void
 tinstantset_set_bbox(const TInstantSet *is, void *box)
 {
   memset(box, 0, is->bboxsize);
-  memcpy(box, tinstantset_bbox_ptr(is), is->bboxsize);
+  memcpy(box, TINSTANTSET_BBOX_PTR(is), is->bboxsize);
   return;
 }
 
@@ -176,7 +167,7 @@ tinstantset_make1(const TInstant **instants, int count)
    */
   if (bboxsize != 0)
   {
-    tinstantset_compute_bbox(instants, count, tinstantset_bbox_ptr(result));
+    tinstantset_compute_bbox(instants, count, TINSTANTSET_BBOX_PTR(result));
   }
   /* Store the composing instants */
   size_t pdata = double_pad(sizeof(TInstantSet)) +
@@ -686,7 +677,7 @@ tinstantset_min_value(const TInstantSet *is)
 {
   if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
-    TBOX *box = tinstantset_bbox_ptr(is);
+    TBOX *box = TINSTANTSET_BBOX_PTR(is);
     Datum min = box->span.lower;
     if (is->temptype == T_TINT)
       min = Int32GetDatum((int) DatumGetFloat8(min));
@@ -714,7 +705,7 @@ tinstantset_max_value(const TInstantSet *is)
 {
   if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
   {
-    TBOX *box = tinstantset_bbox_ptr(is);
+    TBOX *box = TINSTANTSET_BBOX_PTR(is);
     Datum max = box->span.upper;
     if (is->temptype == T_TINT)
       max = Int32GetDatum((int) DatumGetFloat8(max));
@@ -994,7 +985,7 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *shift,
     inst->t = p2.upper;
   }
   /* Shift and/or scale bounding box */
-  void *bbox = tinstantset_bbox_ptr(result);
+  void *bbox = TINSTANTSET_BBOX_PTR(result);
   temporal_bbox_shift_tscale(shift, duration, is->temptype, bbox);
   return result;
 }
@@ -1419,9 +1410,7 @@ Temporal *
 tinstantset_restrict_timestamp(const TInstantSet *is, TimestampTz t, bool atfunc)
 {
   /* Bounding box test */
-  Period p;
-  tinstantset_set_period(is, &p);
-  if (!contains_period_timestamp(&p, t))
+  if (!contains_period_timestamp(&is->period, t))
     return atfunc ? NULL : (Temporal *) tinstantset_copy(is);
 
   /* Singleton instant set */
@@ -1481,10 +1470,7 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
   }
 
   /* Bounding box test */
-  Period p1;
-  tinstantset_set_period(is, &p1);
-  const Period *p2 = timestampset_period_ptr(ts);
-  if (!overlaps_span_span(&p1, p2))
+  if (!overlaps_span_span(&is->period, &ts->period))
     return atfunc ? NULL : tinstantset_copy(is);
 
 
@@ -1542,9 +1528,7 @@ tinstantset_restrict_period(const TInstantSet *is, const Period *period,
   bool atfunc)
 {
   /* Bounding box test */
-  Period p;
-  tinstantset_set_period(is, &p);
-  if (!overlaps_span_span(&p, period))
+  if (!overlaps_span_span(&is->period, period))
     return atfunc ? NULL : tinstantset_copy(is);
 
   /* Singleton instant set */
@@ -1583,10 +1567,7 @@ tinstantset_restrict_periodset(const TInstantSet *is, const PeriodSet *ps,
     return tinstantset_restrict_period(is, periodset_per_n(ps, 0), atfunc);
 
   /* Bounding box test */
-  Period p1;
-  tinstantset_set_period(is, &p1);
-  const Period *p2 = periodset_period_ptr(ps);
-  if (!overlaps_span_span(&p1, p2))
+  if (!overlaps_span_span(&is->period, &ps->period))
     return atfunc ? NULL : tinstantset_copy(is);
 
   /* Singleton instant set */
@@ -1739,11 +1720,8 @@ bool
 intersection_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
   TInstantSet **inter1, TInstantSet **inter2)
 {
-  /* Test whether the bounding period of the two temporal values overlap */
-  Period p1, p2;
-  tinstantset_set_period(is1, &p1);
-  tinstantset_set_period(is2, &p2);
-  if (!overlaps_span_span(&p1, &p2))
+  /* Bounding period test */
+  if (!overlaps_span_span(&is1->period, &is2->period))
     return false;
 
   int count = Min(is1->count, is2->count);
@@ -1884,9 +1862,8 @@ tinstantset_eq(const TInstantSet *is1, const TInstantSet *is2)
     return false;
 
   /* If bounding boxes are not equal */
-  void *box1 = tinstantset_bbox_ptr(is1);
-  void *box2 = tinstantset_bbox_ptr(is2);
-  if (! temporal_bbox_eq(box1, box2, is1->temptype))
+  if (! temporal_bbox_eq(TINSTANTSET_BBOX_PTR(is1), TINSTANTSET_BBOX_PTR(is2),
+      is1->temptype))
     return false;
 
   /* Compare the composing instants */

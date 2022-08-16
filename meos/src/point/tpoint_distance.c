@@ -788,7 +788,7 @@ nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
   ensure_same_srid_stbox_gs(box, gs);
   ensure_same_spatial_dimensionality_stbox_gs(box, gs);
   datum_func2 func = distance_fn(box->flags);
-  Datum geo = PointerGetDatum(stbox_to_geometry(box));
+  Datum geo = PointerGetDatum(stbox_to_geo(box));
   double result = DatumGetFloat8(func(geo, PointerGetDatum(gs)));
   pfree(DatumGetPointer(geo));
   return result;
@@ -821,8 +821,8 @@ nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
   /* Select the distance function to be applied */
   datum_func2 func = distance_fn(box1->flags);
   /* Convert the boxes to geometries */
-  Datum geo1 = PointerGetDatum(stbox_to_geometry(box1));
-  Datum geo2 = PointerGetDatum(stbox_to_geometry(box2));
+  Datum geo1 = PointerGetDatum(stbox_to_geo(box1));
+  Datum geo2 = PointerGetDatum(stbox_to_geo(box2));
   /* Compute the result */
   double result = DatumGetFloat8(func(geo1, geo2));
   pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
@@ -841,7 +841,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
   /* Test the validity of the arguments */
   ensure_has_X_stbox(box);
   ensure_same_geodetic(temp->flags, box->flags);
-  ensure_same_spatial_dimensionality(temp->flags, box->flags);
+  ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
   ensure_same_srid_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
@@ -856,7 +856,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
   /* Select the distance function to be applied */
   datum_func2 func = distance_fn(box->flags);
   /* Convert the stbox to a geometry */
-  Datum geo = PointerGetDatum(stbox_to_geometry(box));
+  Datum geo = PointerGetDatum(stbox_to_geo(box));
   Temporal *temp1 = hast ?
     temporal_restrict_period(temp, &inter, REST_AT) :
     (Temporal *) temp;
@@ -918,8 +918,8 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   else
   {
     *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      PGIS_LWGEOM_shortestline3d(traj, gs) :
-      PGIS_LWGEOM_shortestline2d(traj, gs);
+      gserialized_shortestline3d(traj, gs) :
+      gserialized_shortestline2d(traj, gs);
   }
   pfree(DatumGetPointer(traj));
   return true;

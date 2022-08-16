@@ -44,7 +44,6 @@
 
 /* General functions */
 
-extern void *tsequenceset_bbox_ptr(const TSequenceSet *ss);
 extern bool tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t,
   int *loc);
 

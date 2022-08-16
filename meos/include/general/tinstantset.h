@@ -44,7 +44,6 @@
 
 /* General functions */
 
-extern void *tinstantset_bbox_ptr(const TInstantSet *is);
 extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern bool tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t,
   int *pos);

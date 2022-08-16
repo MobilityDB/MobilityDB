@@ -384,10 +384,10 @@ tseqarr_set_period(const TSequence **sequences, int count, Period *period)
 static void
 tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBOX *box)
 {
-  memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
+  memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(TBOX));
   for (int i = 1; i < count; i++)
   {
-    const TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
+    const TBOX *box1 = TSEQUENCE_BBOX_PTR(sequences[i]);
     tbox_expand(box1, box);
   }
   return;
@@ -452,10 +452,9 @@ Datum
 boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
   bool (*func)(const Period *, const Period *), bool invert)
 {
-  Period p1, p2;
-  temporal_set_period(temp, &p1);
-  timestampset_set_period(ts, &p2);
-  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  Period p;
+  temporal_set_period(temp, &p);
+  bool result = invert ? func(&ts->period, &p) : func(&p, &ts->period);
   return result;
 }
 
@@ -491,10 +490,9 @@ bool
 boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
   bool (*func)(const Period *, const Period *), bool invert)
 {
-  Period p1, p2;
-  temporal_set_period(temp, &p1);
-  periodset_set_period(ps, &p2);
-  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  Period p;
+  temporal_set_period(temp, &p);
+  bool result = invert ? func(&ps->period, &p) : func(&p, &ps->period);
   return result;
 }
 

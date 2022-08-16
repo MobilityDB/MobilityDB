@@ -146,7 +146,7 @@ geom_touches(Datum geom1, Datum geom2)
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(PGIS_LWGEOM_dwithin(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_dwithin(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
@@ -156,7 +156,7 @@ geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(PGIS_LWGEOM_dwithin3d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_dwithin3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 

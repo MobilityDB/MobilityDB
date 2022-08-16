@@ -287,7 +287,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   if (! p)
   {
     result = palloc0(sizeof(Period));
-    timestampset_set_period(ts, result);
+    memcpy(result, &ts->period, sizeof(Period));
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null timestampset, return the period */
@@ -298,9 +298,7 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
   }
 
-  Period p1;
-  timestampset_set_period(ts, &p1);
-  result = union_span_span(p, &p1, false);
+  result = union_span_span(p, &ts->period, false);
 
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -325,7 +323,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
   if (! p)
   {
     result = palloc0(sizeof(Period));
-    periodset_set_period(ps, result);
+    memcpy(result, &ps->period, sizeof(Period));
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -336,9 +334,7 @@ Periodset_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
   }
 
-  Period p1;
-  periodset_set_period(ps, &p1);
-  result = union_span_span(p, &p1, false);
+  result = union_span_span(p, &ps->period, false);
 
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);

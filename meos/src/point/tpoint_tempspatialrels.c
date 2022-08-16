@@ -249,7 +249,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBOX *box1 = tsequence_bbox_ptr(seq);
+  STBOX *box1 = TSEQUENCE_BBOX_PTR(seq);
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));

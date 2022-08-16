@@ -64,15 +64,6 @@ timestampset_time_n(const TimestampSet *ts, int index)
 }
 
 /**
- * Return a pointer to the precomputed bounding box of a timestamp set
- */
-const Period *
-timestampset_period_ptr(const TimestampSet *ts)
-{
-  return (Period *)&ts->period;
-}
-
-/**
  * Return the location of the timestamp in a timestamp set
  * using binary search
  *
@@ -286,19 +277,6 @@ timestampset_timespan(const TimestampSet *ts)
   return result;
 }
 
-/**
- * @ingroup libmeos_int_spantime_accessor
- * @brief Set a period to the bounding period of a timestamp set
- */
-void
-timestampset_set_period(const TimestampSet *ts, Period *p)
-{
-  const Period *p1 = &ts->period;
-  span_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc,
-    T_TIMESTAMPTZ, p);
-  return;
-}
-
 #if MEOS
 /**
  * @ingroup libmeos_temporal_cast
@@ -311,7 +289,7 @@ Period *
 timestampset_to_period(const TimestampSet *ts)
 {
   Period *result = palloc(sizeof(Period));
-  timestampset_set_period(ts, result);
+  memcpy(result, &ts->period, sizeof(Period));
   return result;
 }
 #endif /* MEOS */

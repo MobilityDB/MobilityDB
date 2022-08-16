@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include "../postgres/postgres.h"
 #include "../postgres/utils/timestamp_def.h"
+#include "../postgres/utils/date.h"
 /* PostGIS */
 #include <liblwgeom.h>
 
@@ -161,6 +162,8 @@ typedef struct
   /* variable-length data follows */
 } TInstantSet;
 
+#define TINSTANTSET_BBOX_PTR(is)      ((void *)(&(is)->period))
+
 /**
  * Structure to represent temporal values of sequence subtype
  */
@@ -178,6 +181,8 @@ typedef struct
                                    bytes needed are added upon creation. */
   /* variable-length data follows */
 } TSequence;
+
+#define TSEQUENCE_BBOX_PTR(seq)      ((void *)(&(seq)->period))
 
 /**
  * Structure to represent temporal values of sequence set subtype
@@ -199,6 +204,8 @@ typedef struct
   /* variable-length data follows */
 } TSequenceSet;
 
+#define TSEQUENCESET_BBOX_PTR(ss)      ((void *)(&(ss)->period))
+
 /**
  * Struct for storing a similarity match
  */
@@ -216,15 +223,29 @@ extern void meos_initialize(void);
 extern void meos_finish(void);
 
 /*****************************************************************************
- * Functions for span and time types
+ * Functions for input/output base types
  *****************************************************************************/
 
-/* Input/output functions for PostgreSQL base types */
+extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod);
+extern char *gserialized_out(const GSERIALIZED *geom);
+extern char *gserialized_as_hexwkb(const GSERIALIZED *geom, const char *type);
 
+extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
+
+/*****************************************************************************
+ * Functions for input/output PostgreSQL time types
+ *****************************************************************************/
+
+extern DateADT pg_date_in(char *str);
+extern char *pg_date_out(DateADT date);
 extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern Timestamp pg_timestamp_in(char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
 extern char *pg_timestamp_out(Timestamp dt);
+
+/*****************************************************************************
+ * Functions for span and time types
+ *****************************************************************************/
 
 /* Input/output functions for span and time types */
 
@@ -596,13 +617,9 @@ extern char *stbox_out(const STBOX *box, int maxdd);
 extern TBOX *tbox_make(const Period *p, const Span *s);
 extern void tbox_set(const Period *p, const Span *s, TBOX *box);
 extern TBOX *tbox_copy(const TBOX *box);
-extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
-  double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax);
-extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, double xmin, double xmax,
-  double ymin, double ymax, double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
-extern STBOX * stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+extern STBOX * stbox_make(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
   double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
-extern void stbox_set2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax,
+extern void stbox_set(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, STBOX *box);
 extern STBOX *stbox_copy(const STBOX *box);
 
@@ -623,11 +640,11 @@ extern TBOX *int_period_to_tbox(int i, const Period *p);
 extern TBOX *float_period_to_tbox(double d, const Period *p);
 extern TBOX *span_timestamp_to_tbox(const Span *span, TimestampTz t);
 extern TBOX *span_period_to_tbox(const Span *span, const Period *p);
-extern Span *tbox_to_span(const TBOX *box);
+extern Span *tbox_to_floatspan(const TBOX *box);
 extern Period *tbox_to_period(const TBOX *box);
 extern Period *stbox_to_period(const STBOX *box);
 extern TBOX *tnumber_to_tbox(const Temporal *temp);
-extern GSERIALIZED *stbox_to_geometry(const STBOX *box);
+extern GSERIALIZED *stbox_to_geo(const STBOX *box);
 extern STBOX *tpoint_to_stbox(const Temporal *temp);
 extern STBOX *geo_to_stbox(const GSERIALIZED *gs);
 extern STBOX *timestamp_to_stbox(TimestampTz t);
@@ -940,10 +957,10 @@ extern Temporal *tint_at_values(const Temporal *temp, int *values, int count);
 extern Temporal *tint_minus_value(const Temporal *temp, int i);
 extern Temporal *tint_minus_values(const Temporal *temp, int *values, int count);
 extern bool tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, int *value);
-extern Temporal *tnumber_at_span(const Temporal *temp, Span *span);
+extern Temporal *tnumber_at_span(const Temporal *temp, const Span *span);
 extern Temporal *tnumber_at_spans(const Temporal *temp, Span **spans, int count);
 extern Temporal *tnumber_at_tbox(const Temporal *temp, const TBOX *box);
-extern Temporal *tnumber_minus_span(const Temporal *temp, Span *span);
+extern Temporal *tnumber_minus_span(const Temporal *temp, const Span *span);
 extern Temporal *tnumber_minus_spans(const Temporal *temp, Span **spans, int count);
 extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBOX *box);
 extern Temporal *tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs);

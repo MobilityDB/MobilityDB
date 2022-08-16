@@ -49,19 +49,19 @@
 
 /* Functions adapted from lwgeom_box.c */
 
-extern GSERIALIZED *PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid);
+extern LWGEOM *PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid);
 
 /* Functions adapted from lwgeom_box3d.c */
 
-extern GSERIALIZED *PGIS_BOX3D_to_LWGEOM(BOX3D *box);
+extern LWGEOM *PGIS_BOX3D_to_LWGEOM(BOX3D *box);
 
 /* Functions adapted from lwgeom_functions_basic.c */
 
 /* The implementation of this function changed in PostGIS version 3.2 */
 extern GSERIALIZED *PGIS_boundary(const GSERIALIZED *geom1);
-extern GSERIALIZED *PGIS_LWGEOM_shortestline2d(const GSERIALIZED *geom1,
+extern GSERIALIZED *gserialized_shortestline2d(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
-extern GSERIALIZED *PGIS_LWGEOM_shortestline3d(const GSERIALIZED *geom1,
+extern GSERIALIZED *gserialized_shortestline3d(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern double PGIS_ST_Distance(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
@@ -69,14 +69,14 @@ extern double PGIS_ST_3DDistance(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern bool PGIS_ST_3DIntersects(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
-extern bool PGIS_LWGEOM_dwithin(const GSERIALIZED *geom1,
+extern bool gserialized_dwithin(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, double tolerance);
-extern bool PGIS_LWGEOM_dwithin3d(const GSERIALIZED *geom1,
+extern bool gserialized_dwithin3d(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, double tolerance);
 extern bool PGIS_relate_pattern(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, char *patt);
-extern GSERIALIZED *PGIS_LWGEOM_reverse(const GSERIALIZED *geom);
-extern bool PGIS_LWGEOM_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
+extern GSERIALIZED *gserialized_reverse(const GSERIALIZED *geom);
+extern bool gserialized_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
   double *result);
 
 /* Functions adapted from lwgeom_btree.c */
@@ -99,11 +99,6 @@ extern bool PGIS_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2,
   double tolerance, bool use_spheroid);
 extern double PGIS_geography_distance(const GSERIALIZED *g1,
   const GSERIALIZED *g2);
-
-/* Functions adapted from lwgeom_inout.c */
-
-extern GSERIALIZED *PGIS_LWGEOM_in(char *input, int32 geom_typmod);
-extern char *PGIS_LWGEOM_out(GSERIALIZED *geom);
 
 /* Functions adapted from geography_inout.c */
 

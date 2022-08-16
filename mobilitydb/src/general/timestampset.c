@@ -167,7 +167,7 @@ timestampset_period_slice(Datum tsdatum, Period *p)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  timestampset_set_period(ts, p);
+  memcpy(p, &ts->period, sizeof(Period));
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }

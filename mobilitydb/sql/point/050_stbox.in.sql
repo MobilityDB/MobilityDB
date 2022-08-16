@@ -105,7 +105,7 @@ CREATE FUNCTION asHexWKB(stbox, endianenconding text)
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to timestamptz is needed */
-CREATE FUNCTION stbox_t(timestamptz, timestamptz)
+CREATE FUNCTION stbox_t(period)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -116,50 +116,38 @@ CREATE FUNCTION stbox(float8, float8, float8, float8, srid int DEFAULT 0)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_z(float8, float8, float8, float8, float8, float8,
-  srid int DEFAULT 0)
+    srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(float8, float8, timestamptz, float8, float8, timestamptz,
-  srid int DEFAULT 0)
+CREATE FUNCTION stbox_t(period, float8, float8, float8, float8,
+    srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_zt(float8, float8, float8, timestamptz, float8, float8, float8,
-  timestamptz, srid int DEFAULT 0)
+CREATE FUNCTION stbox_zt(period, float8, float8, float8, float8, float8,
+    float8, srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
-CREATE FUNCTION geodstbox_t(timestamptz, timestamptz, srid int DEFAULT 4326)
+CREATE FUNCTION geodstbox_t(period)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox(float8, float8, float8, float8, float8, float8,
-  srid int DEFAULT 4326)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geodstbox_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION geodstbox_z(float8, float8, float8, float8, float8, float8,
-  srid int DEFAULT 4326)
+    srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_t(float8, float8, float8, timestamptz, float8,
-  float8, float8, timestamptz, srid int DEFAULT 4326)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION geodstbox_zt(float8, float8, float8, timestamptz, float8,
-  float8, float8, timestamptz, srid int DEFAULT 4326)
+CREATE FUNCTION geodstbox_zt(period, float8, float8, float8, float8,
+    float8, float8, srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -168,14 +156,6 @@ CREATE FUNCTION geodstbox_zt(float8, float8, float8, timestamptz, float8,
  * Casting
  *****************************************************************************/
 
-CREATE FUNCTION stbox(box2d)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Box2d_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(box3d)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Box3d_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geometry)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_to_stbox'
@@ -217,8 +197,6 @@ CREATE FUNCTION stbox(geography, period)
   AS 'MODULE_PATHNAME', 'Geo_period_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d);
-CREATE CAST (box3d AS stbox) WITH FUNCTION stbox(box3d);
 CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry);
 CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography);
 CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz);
@@ -234,26 +212,16 @@ CREATE FUNCTION period(stbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION geometry(stbox)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Stbox_to_geometry'
+  AS 'MODULE_PATHNAME', 'Stbox_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION geography(stbox)
-  -- RETURNS geography
-  -- AS 'MODULE_PATHNAME', 'Stbox_to_geography'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION box2d(stbox)
-  RETURNS box2d
-  AS 'MODULE_PATHNAME', 'Stbox_to_box2d'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION box3d(stbox)
-  RETURNS box3d
-  AS 'MODULE_PATHNAME', 'Stbox_to_box3d'
+CREATE FUNCTION geography(stbox)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Stbox_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
 CREATE CAST (stbox AS geometry) WITH FUNCTION geometry(stbox);
--- CREATE CAST (stbox AS geography) WITH FUNCTION geography(stbox);
-CREATE CAST (stbox AS box2d) WITH FUNCTION box2d(stbox);
-CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
+CREATE CAST (stbox AS geography) WITH FUNCTION geography(stbox);
 
 /*****************************************************************************
  * Accessor functions

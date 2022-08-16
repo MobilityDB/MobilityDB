@@ -274,16 +274,16 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     SpanBound lower, upper;
     if (type == T_TIMESTAMPSET)
     {
-      TimestampSet *ts= DatumGetTimestampSetP(value);
-      period = timestampset_period_ptr(ts);
+      const TimestampSet *ts= DatumGetTimestampSetP(value);
+      period = &ts->period;
       span_deserialize((Span *) period, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
     else if (type == T_PERIODSET)
     {
-      PeriodSet *ps= DatumGetPeriodSetP(value);
-      period = periodset_period_ptr(ps);
+      const PeriodSet *ps= DatumGetPeriodSetP(value);
+      period = &ps->period;
       span_deserialize((Period *) period, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ps);

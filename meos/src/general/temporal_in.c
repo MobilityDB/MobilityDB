@@ -1335,28 +1335,16 @@ tbox_from_wkb_state(wkb_parse_state *s)
   tbox_flags_from_wkb_state(s, wkb_flags);
 
   /* Read and create the box */
-  double xmin = 0, xmax = 0; /* make compiler quiet */
-  TimestampTz tmin = 0, tmax = 0; /* make compiler quiet */
-  if (s->hasx)
-  {
-    xmin = double_from_wkb_state(s);
-    xmax = double_from_wkb_state(s);
-  }
+  Span *span = NULL;
+  Span *period = NULL;
+  /* Read the temporal dimension if any */
   if (s->hast)
-  {
-    tmin = timestamp_from_wkb_state(s);
-    tmax = timestamp_from_wkb_state(s);
-  }
+    period = span_from_wkb_state(s);
+  /* Read the value dimension if any */
+  if (s->hasx)
+    span = span_from_wkb_state(s);
   /* Create the temporal box */
-  Period period;
-  Span span;
-  if (s->hast)
-    span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax), true, true,
-      T_TIMESTAMPTZ, &period);
-  if (s->hasx)
-    span_set(Float8GetDatum(xmin), Float8GetDatum(xmax), true, true, T_FLOAT8,
-      &span);
-  TBOX *result = tbox_make(s->hast ? &period : NULL, s->hasx ? &span : NULL);
+  TBOX *result = tbox_make(period, span);
   return result;
 }
 
@@ -1405,7 +1393,9 @@ stbox_from_wkb_state(wkb_parse_state *s)
 
   /* Read and create the box */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0; /* make compiler quiet */
+  Span *period = NULL;
+  if (s->hast)
+    period = span_from_wkb_state(s);
   if (s->hasx)
   {
     xmin = double_from_wkb_state(s);
@@ -1418,13 +1408,10 @@ stbox_from_wkb_state(wkb_parse_state *s)
       zmax = double_from_wkb_state(s);
     }
   }
+  STBOX *result = stbox_make(period, s->hasx, s->hasz, s->geodetic, s->srid,
+    xmin, xmax, ymin, ymax, zmin, zmax);
   if (s->hast)
-  {
-    tmin = timestamp_from_wkb_state(s);
-    tmax = timestamp_from_wkb_state(s);
-  }
-  STBOX *result = stbox_make(s->hasx, s->hasz, s->hast, s->geodetic, s->srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
+    pfree(period);
   return result;
 }
 

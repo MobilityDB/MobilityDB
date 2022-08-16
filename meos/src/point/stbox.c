@@ -50,6 +50,7 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /* Buffer size for input and output of STBOX */
+#define MAXGBOXLEN     256
 #define MAXSTBOXLEN    256
 
 /* PostGIS prototype */
@@ -145,9 +146,33 @@ ensure_has_T_stbox(const STBOX *box)
   return;
 }
 
+
 /*****************************************************************************
  * Input/ouput functions in string format
  *****************************************************************************/
+ 
+ /**
+ * @ingroup libmeos_box_in_out
+ * @brief Return a spatial box from its Well-Known Text (WKT) representation.
+ *
+ * Examples of input:
+ * @code
+ * GBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
+ * GBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * SRID=xxxx;GBOX... (any of the above)
+ * GEODGBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * SRID=xxxx;GEODGBOX... (any of the above)
+ * @endcode
+ * where the commas are optional and the SRID is optional. If the SRID is not
+ * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
+ */
+// GBOX *
+// GBOX_in(char *str)
+// {
+  // return GBOX_parse(&str);
+// }
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_box_in_out
@@ -157,13 +182,13 @@ ensure_has_T_stbox(const STBOX *box)
  * @code
  * STBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
  * STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02)) -> spatiotemporal
- * STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
- * STBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
+ * STBOX T([2001-01-01, 2001-01-02], ((1.0, 2.0), (3.0, 4.0))) -> spatiotemporal
+ * STBOX ZT([2001-01-01, 2001-01-02], ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))) -> spatiotemporal
+ * STBOX T([2001-01-01, 2001-01-02]) -> only temporal
  * SRID=xxxx;STBOX... (any of the above)
- * GEODSTBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
- * GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
+ * GEODSTBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * GEODSTBOX T([2001-01-01, 2001-01-02]) -> only temporal
+ * GEODSTBOX ZT([2001-01-01, 2001-01-02], ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> spatiotemporal
  * SRID=xxxx;GEODSTBOX... (any of the above)
  * @endcode
  * where the commas are optional and the SRID is optional. If the SRID is not
@@ -183,12 +208,13 @@ char *
 stbox_out(const STBOX *box, int maxdd)
 {
   static size_t size = MAXSTBOXLEN + 1;
-  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL,
-    *zmin = NULL, *zmax = NULL, *tmin = NULL, *tmax = NULL;
+  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
+    *zmax = NULL, *period = NULL;
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  assert(hasx || hast);
 
   char *str = palloc(size);
   char srid[20];
@@ -197,8 +223,11 @@ stbox_out(const STBOX *box, int maxdd)
   else
     srid[0] = '\0';
   char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
-  assert(hasx || hast);
-  if (hasx)
+  if (hast)
+    /* The second argument is not used for periods */
+    period = span_out(&box->period, Int32GetDatum(maxdd));
+
+  if (hasx && hast)
   {
     xmin = float8_out(box->xmin, maxdd);
     xmax = float8_out(box->xmax, maxdd);
@@ -208,47 +237,33 @@ stbox_out(const STBOX *box, int maxdd)
     {
       zmin = float8_out(box->zmin, maxdd);
       zmax = float8_out(box->zmax, maxdd);
+      snprintf(str, size, "%s%s ZT(%s,((%s,%s,%s),(%s,%s,%s)))",
+        srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
     }
+    else
+      snprintf(str, size, "%s%s T(%s,((%s,%s),(%s,%s)))",
+        srid, boxtype, period, xmin, ymin, xmax, ymax);
   }
-  if (hast)
+  else if (hasx)
   {
-    tmin = pg_timestamptz_out(DatumGetTimestampTz(box->period.lower));
-    tmax = pg_timestamptz_out(DatumGetTimestampTz(box->period.upper));
-  }
-  if (hasx)
-  {
-    if (geodetic)
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
+    ymin = float8_out(box->ymin, maxdd);
+    ymax = float8_out(box->ymax, maxdd);
+    if (geodetic || hasz)
     {
-      char *Z;
-      if (hast)
-      {
-        Z = hasz ? "Z" : "";
-        snprintf(str, size, "%s%s %sT((%s,%s,%s,%s),(%s,%s,%s,%s))",
-          srid, boxtype, Z, xmin, ymin, zmin, tmin, xmax, ymax, zmax, tmax);
-      }
-      else
-      {
-        Z = hasz ? " Z" : "";
-        snprintf(str, size, "%s%s%s((%s,%s,%s),(%s,%s,%s))",
-          srid, boxtype, Z, xmin, ymin, zmin, xmax, ymax, zmax);
-      }
-    }
-    else if (hasz && hast)
-      snprintf(str, size, "%s%s ZT((%s,%s,%s,%s),(%s,%s,%s,%s))",
-        srid, boxtype, xmin, ymin, zmin, tmin, xmax, ymax, zmax, tmax);
-    else if (hasz)
+      zmin = float8_out(box->zmin, maxdd);
+      zmax = float8_out(box->zmax, maxdd);
       snprintf(str, size, "%s%s Z((%s,%s,%s),(%s,%s,%s))",
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
-    else if (hast)
-      snprintf(str, size, "%s%s T((%s,%s,%s),(%s,%s,%s))",
-        srid, boxtype, xmin, ymin, tmin, xmax, ymax, tmax);
+    }
     else
       snprintf(str, size, "%s%s((%s,%s),(%s,%s))",
         srid, boxtype, xmin, ymin, xmax, ymax);
   }
-  else
-    /* Missing spatial dimension */
-    snprintf(str, size, "%s%s T((,,%s),(,,%s))", srid, boxtype, tmin, tmax);
+  else /* hast */
+    snprintf(str, size, "%s%s T(%s)", srid, boxtype, period);
+
   if (hasx)
   {
     pfree(xmin); pfree(xmax);
@@ -259,9 +274,7 @@ stbox_out(const STBOX *box, int maxdd)
     }
   }
   if (hast)
-  {
-    pfree(tmin); pfree(tmax);
-  }
+    pfree(period);
   return str;
 }
 
@@ -275,74 +288,13 @@ stbox_out(const STBOX *box, int maxdd)
  * @sqlfunc stbox()
  */
 STBOX *
-stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
-  double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, TimestampTz tmin, TimestampTz tmax)
-{
-  /* Note: zero-fill is done in function stbox_set */
-  STBOX *result = palloc(sizeof(STBOX));
-  stbox_set(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax, result);
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_constructor
- * @brief Set a spatiotemporal box from the arguments.
- * @note This function is equivalent to @ref stbox_make without memory
- * allocation
- */
-void
-stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
-  double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box)
-{
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBOX));
-  MOBDB_FLAGS_SET_X(box->flags, hasx);
-  MOBDB_FLAGS_SET_Z(box->flags, hasz);
-  MOBDB_FLAGS_SET_T(box->flags, hast);
-  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
-  box->srid = srid;
-
-  if (hasx)
-  {
-    /* Process X min/max */
-    box->xmin = Min(xmin, xmax);
-    box->xmax = Max(xmin, xmax);
-    /* Process Y min/max */
-    box->ymin = Min(ymin, ymax);
-    box->ymax = Max(ymin, ymax);
-    if (hasz || geodetic)
-    {
-      /* Process Z min/max */
-      box->zmin = Min(zmin, zmax);
-      box->zmax = Max(zmin, zmax);
-    }
-  }
-  if (hast)
-  {
-    /* Process T min/max */
-    span_set(TimestampTzGetDatum(Min(tmin, tmax)),
-      TimestampTzGetDatum(Max(tmin, tmax)), true, true, T_TIMESTAMPTZ,
-      &box->period);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_box_constructor
- * @brief Construct a spatiotemporal box from the arguments.
- * @sqlfunc stbox()
- */
-STBOX *
-stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+stbox_make(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
   double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax)
 {
   /* Note: zero-fill is done in function stbox_set */
   STBOX *result = palloc(sizeof(STBOX));
-  stbox_set2(p, hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+  stbox_set(p, hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax,
     result);
   return result;
 }
@@ -354,9 +306,9 @@ stbox_make2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
  * allocation
  */
 void
-stbox_set2(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
-  double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, STBOX *box)
+stbox_set(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax,
+  STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -452,22 +404,26 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
  * @sqlop @p ::
  */
 GSERIALIZED *
-stbox_to_geometry(const STBOX *box)
+stbox_to_geo(const STBOX *box)
 {
   ensure_has_X_stbox(box);
+  LWGEOM *geo;
   GSERIALIZED *result;
-  if (MOBDB_FLAGS_GET_Z(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
     BOX3D box3d;
     stbox_set_box3d(box, &box3d);
-    result = PGIS_BOX3D_to_LWGEOM(&box3d);
+    geo = PGIS_BOX3D_to_LWGEOM(&box3d);
   }
   else
   {
     GBOX box2d;
     stbox_set_gbox(box, &box2d);
-    result = PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
+    geo = PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
   }
+  FLAGS_SET_GEODETIC(geo->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
+  result = geo_serialize(geo);
+  lwgeom_free(geo);
   return result;
 }
 
@@ -617,8 +573,7 @@ timestampset_set_stbox(const TimestampSet *ts, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  const Period *p = timestampset_period_ptr(ts);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, &ts->period, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -678,8 +633,7 @@ periodset_set_stbox(const PeriodSet *ps, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  const Period *p = periodset_period_ptr(ps);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, &ps->period, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -1482,7 +1436,7 @@ inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
     return false;
 
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
+  Period period;
   if (hasx)
   {
     xmin = Max(box1->xmin, box2->xmin);
@@ -1495,15 +1449,12 @@ inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
       zmax = Min(box1->zmax, box2->zmax);
       }
   }
+  /* We are sure that the intersection is not NULL */
   if (hast)
-  {
-    tmin = Max(DatumGetTimestampTz(box1->period.lower),
-      DatumGetTimestampTz(box2->period.lower));
-    tmax = Min(DatumGetTimestampTz(box1->period.upper),
-      DatumGetTimestampTz(box2->period.upper));
-  }
-  stbox_set(hasx, hasz, hast, geodetic, box1->srid, xmin, xmax, ymin,
-    ymax, zmin, zmax, tmin, tmax, result);
+    inter_span_span(&box1->period, &box2->period, &period);
+
+  stbox_set(hast ? &period : NULL, hasx, hasz, geodetic, box1->srid, xmin,
+    xmax, ymin, ymax, zmin, zmax, result);
   return true;
 }
 

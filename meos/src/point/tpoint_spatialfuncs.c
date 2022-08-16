@@ -424,7 +424,7 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2) ||
     MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
-    elog(ERROR, "The temporal points must be of the same dimensionality");
+    elog(ERROR, "The arguments must be of the same dimensionality");
   return;
 }
 
@@ -437,6 +437,21 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2))
+    elog(ERROR, "Operation on mixed 2D/3D dimensions");
+  return;
+}
+
+/**
+ * Ensure that a temporal point and a spatiotemporal box have the same spatial
+ * dimensionality as given by their flags
+ */
+void
+ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
+{
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) || 
+      /* Geodetic boxes are always in 3D */
+      (! MOBDB_FLAGS_GET_GEODETIC(flags2) &&
+      MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2)))
     elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
@@ -470,7 +485,9 @@ void
 ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags) ||
-      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags))
+      /* Geodetic boxes are always in 3D */
+     (! MOBDB_FLAGS_GET_GEODETIC(box->flags) &&
+        MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags)))
     elog(ERROR, "The spatiotemporal box and the geometry must be of the same dimensionality");
   return;
 }
@@ -1882,7 +1899,7 @@ tpointinst_srid(const TInstant *inst)
 int
 tpointinstset_srid(const TInstantSet *is)
 {
-  STBOX *box = tinstantset_bbox_ptr(is);
+  STBOX *box = TINSTANTSET_BBOX_PTR(is);
   return box->srid;
 }
 
@@ -1894,7 +1911,7 @@ tpointinstset_srid(const TInstantSet *is)
 int
 tpointseq_srid(const TSequence *seq)
 {
-  STBOX *box = tsequence_bbox_ptr(seq);
+  STBOX *box = TSEQUENCE_BBOX_PTR(seq);
   return box->srid;
 }
 
@@ -1906,7 +1923,7 @@ tpointseq_srid(const TSequence *seq)
 int
 tpointseqset_srid(const TSequenceSet *ss)
 {
-  STBOX *box = tsequenceset_bbox_ptr(ss);
+  STBOX *box = TSEQUENCESET_BBOX_PTR(ss);
   return box->srid;
 }
 
@@ -1962,7 +1979,7 @@ tpointinstset_set_srid(const TInstantSet *is, int32 srid)
     GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
     gserialized_set_srid(gs, srid);
   }
-  STBOX *box = tinstantset_bbox_ptr(result);
+  STBOX *box = TINSTANTSET_BBOX_PTR(result);
   box->srid = srid;
   return result;
 }
@@ -1984,7 +2001,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
     gserialized_set_srid(gs, srid);
   }
   /* Set the SRID of the bounding box */
-  STBOX *box = tsequence_bbox_ptr(result);
+  STBOX *box = TSEQUENCE_BBOX_PTR(result);
   box->srid = srid;
   return result;
 }
@@ -2012,11 +2029,11 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
       gserialized_set_srid(gs, srid);
     }
     /* Set the SRID of the bounding box */
-    box = tsequence_bbox_ptr(seq);
+    box = TSEQUENCE_BBOX_PTR(seq);
     box->srid = srid;
   }
   /* Set the SRID of the bounding box */
-  box = tsequenceset_bbox_ptr(result);
+  box = TSEQUENCESET_BBOX_PTR(result);
   box->srid = srid;
   return result;
 }
@@ -4442,7 +4459,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     /* Bounding box test */
-    STBOX *box1 = tsequence_bbox_ptr(seq);
+    STBOX *box1 = TSEQUENCE_BBOX_PTR(seq);
     bool overlaps = overlaps_stbox_stbox(box1, box);
     if (atfunc)
     {
@@ -4742,7 +4759,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
     PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
     if (ps != NULL)
     {
-      result = temporal_restrict_periodset(temp, ps, true);
+      result = temporal_restrict_periodset(temp, ps, REST_MINUS);
       pfree(ps);
     }
     pfree(temp1); pfree(ps1); pfree(ps2);
@@ -4769,7 +4786,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
   {
     ensure_same_geodetic(temp->flags, box->flags);
     ensure_same_srid_tpoint_stbox(temp, box);
-    ensure_same_spatial_dimensionality(temp->flags, box->flags);
+    ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
   }
   Temporal *result = atfunc ? tpoint_at_stbox1(temp, box, UPPER_INC) :
     tpoint_minus_stbox1(temp, box);

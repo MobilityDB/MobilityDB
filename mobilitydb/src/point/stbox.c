@@ -151,59 +151,41 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   bool hast, bool geodetic)
 {
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
   int srid = 0; /* make Codacy quiet */
+  Span *period = NULL;
 
-  if (! hasx && hast)
+  int i = 0;
+  if (hast)
   {
-    tmin = PG_GETARG_TIMESTAMPTZ(0);
-    tmax = PG_GETARG_TIMESTAMPTZ(1);
-    srid = PG_GETARG_INT32(2);
+    period = PG_GETARG_SPAN_P(0);
+    i++;
   }
-  else if (hasx && !hasz && !geodetic && !hast)
+
+  if (hasx)
   {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    xmax = PG_GETARG_FLOAT8(2);
-    ymax = PG_GETARG_FLOAT8(3);
-    srid = PG_GETARG_INT32(4);
-  }
-  else if (hasx && (hasz || geodetic) && !hast)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    zmin = PG_GETARG_FLOAT8(2);
-    xmax = PG_GETARG_FLOAT8(3);
-    ymax = PG_GETARG_FLOAT8(4);
-    zmax = PG_GETARG_FLOAT8(5);
-    srid = PG_GETARG_INT32(6);
-  }
-  else if (hasx && !hasz && !geodetic && hast)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    tmin = PG_GETARG_TIMESTAMPTZ(2);
-    xmax = PG_GETARG_FLOAT8(3);
-    ymax = PG_GETARG_FLOAT8(4);
-    tmax = PG_GETARG_TIMESTAMPTZ(5);
-    srid = PG_GETARG_INT32(6);
-  }
-  else /* hasx && (hasz || geodetic) && hast) */
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    zmin = PG_GETARG_FLOAT8(2);
-    tmin = PG_GETARG_TIMESTAMPTZ(3);
-    xmax = PG_GETARG_FLOAT8(4);
-    ymax = PG_GETARG_FLOAT8(5);
-    zmax = PG_GETARG_FLOAT8(6);
-    tmax = PG_GETARG_TIMESTAMPTZ(7);
-    srid = PG_GETARG_INT32(8);
+    if (! hasz && ! geodetic)
+    {
+      xmin = PG_GETARG_FLOAT8(i++);
+      ymin = PG_GETARG_FLOAT8(i++);
+      xmax = PG_GETARG_FLOAT8(i++);
+      ymax = PG_GETARG_FLOAT8(i++);
+      srid = PG_GETARG_INT32(i++);
+    }
+    else /* hasz || geodetic */
+    {
+      xmin = PG_GETARG_FLOAT8(i++);
+      ymin = PG_GETARG_FLOAT8(i++);
+      zmin = PG_GETARG_FLOAT8(i++);
+      xmax = PG_GETARG_FLOAT8(i++);
+      ymax = PG_GETARG_FLOAT8(i++);
+      zmax = PG_GETARG_FLOAT8(i++);
+      srid = PG_GETARG_INT32(i++);
+    }
   }
 
   /* Construct the box */
-  STBOX *result = stbox_make(hasx, hasz, hast, geodetic, srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
+  STBOX *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
+    ymin, ymax, zmin, zmax);
   PG_RETURN_POINTER(result);
 }
 
@@ -218,7 +200,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 PGDLLEXPORT Datum
 Stbox_constructor_t(PG_FUNCTION_ARGS)
 {
-  if (PG_NARGS() > 3)
+  if (PG_NARGS() > 1)
     return stbox_constructor_ext(fcinfo, true, false, true, false);
   return stbox_constructor_ext(fcinfo, false, false, true, false);
 }
@@ -271,21 +253,9 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 PGDLLEXPORT Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
-  if (PG_NARGS() > 3)
+  if (PG_NARGS() > 1)
     return stbox_constructor_ext(fcinfo, true, false, true, true);
   return stbox_constructor_ext(fcinfo, false, false, true, true);
-}
-
-PG_FUNCTION_INFO_V1(Geodstbox_constructor);
-/**
- * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc geodstbox()
- */
-PGDLLEXPORT Datum
-Geodstbox_constructor(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor_ext(fcinfo, true, false, false, true);
 }
 
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
@@ -316,41 +286,7 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_to_box2d);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Cast the spatiotemporal box as a PostGIS GBOX
- * @sqlfunc box2d()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Stbox_to_box2d(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_X_stbox(box);
-  GBOX *result = palloc(sizeof(GBOX));
-  stbox_set_gbox(box, result);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_to_box3d);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Cast the spatiotemporal box as a PostGIS BOX3D
- * @sqlfunc box3d()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Stbox_to_box3d(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_X_stbox(box);
-  BOX3D *result = palloc(sizeof(BOX3D));
-  stbox_set_box3d(box, result);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_to_geometry);
+PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
  * @ingroup mobilitydb_box_cast
  * @brief Cast the spatiotemporal box as a PostGIS GBOX
@@ -358,10 +294,10 @@ PG_FUNCTION_INFO_V1(Stbox_to_geometry);
  * @sqlfunc @p ::
  */
 PGDLLEXPORT Datum
-Stbox_to_geometry(PG_FUNCTION_ARGS)
+Stbox_to_geo(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum result = PointerGetDatum(stbox_to_geometry(box));
+  Datum result = PointerGetDatum(stbox_to_geo(box));
   PG_RETURN_DATUM(result);
 }
 
@@ -386,37 +322,37 @@ Stbox_to_period(PG_FUNCTION_ARGS)
  * Transform a <Type> to a STBOX
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Box2d_to_stbox);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Transform a box2d to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Box2d_to_stbox(PG_FUNCTION_ARGS)
-{
-  GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(true, false, false, false, 0,
-    box->xmin, box->xmax, box->ymin, box->ymax, 0, 0, 0, 0);
-  PG_RETURN_POINTER(result);
-}
+// PG_FUNCTION_INFO_V1(Box2d_to_stbox);
+// /**
+ // * @ingroup mobilitydb_box_cast
+ // * @brief Transform a box2d to a spatiotemporal box
+ // * @sqlfunc stbox()
+ // * @sqlfunc @p ::
+ // */
+// PGDLLEXPORT Datum
+// Box2d_to_stbox(PG_FUNCTION_ARGS)
+// {
+  // GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
+  // STBOX *result = stbox_make(NULL, true, false, false, 0, box->xmin, box->xmax,
+    // box->ymin, box->ymax, 0, 0);
+  // PG_RETURN_POINTER(result);
+// }
 
-PG_FUNCTION_INFO_V1(Box3d_to_stbox);
-/**
- * @ingroup mobilitydb_box_cast
- * @brief Transform a box3d to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
- */
-PGDLLEXPORT Datum
-Box3d_to_stbox(PG_FUNCTION_ARGS)
-{
-  BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(true, true, false, false, box->srid, box->xmin,
-    box->xmax, box->ymin, box->ymax, box->zmin, box->zmax, 0, 0);
-  PG_RETURN_POINTER(result);
-}
+// PG_FUNCTION_INFO_V1(Box3d_to_stbox);
+// /**
+ // * @ingroup mobilitydb_box_cast
+ // * @brief Transform a box3d to a spatiotemporal box
+ // * @sqlfunc stbox()
+ // * @sqlfunc @p ::
+ // */
+// PGDLLEXPORT Datum
+// Box3d_to_stbox(PG_FUNCTION_ARGS)
+// {
+  // BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
+  // STBOX *result = stbox_make(NULL, true, true, false, box->srid, box->xmin,
+    // box->xmax, box->ymin, box->ymax, box->zmin, box->zmax);
+  // PG_RETURN_POINTER(result);
+// }
 
 PG_FUNCTION_INFO_V1(Geo_to_stbox);
 /**

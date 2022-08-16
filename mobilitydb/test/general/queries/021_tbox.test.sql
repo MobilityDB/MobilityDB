@@ -69,9 +69,9 @@ SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT tbox(period '[2000-01-01,2000-01-02]', floatspan '[1,2]');
-SELECT tbox_x('[1,2]');
-SELECT tbox_t('[2000-01-01,2000-01-02]');
+SELECT tbox(floatspan '[1,2]', period '[2000-01-01,2000-01-02]');
+SELECT tbox(floatspan '[1,2]');
+SELECT tbox(period '[2000-01-01,2000-01-02]');
 
 -------------------------------------------------------------------------------
 -- Casting

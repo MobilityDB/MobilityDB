@@ -50,6 +50,11 @@ SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2000-01-01, 2@2000-01-02}', 1, 3, 15
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '[1@2000-01-01, 2@2000-01-02]', 1, 3, 15));
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3, 15));
 
+SELECT ttextFromMFJSON(asMFJSON(ttext 'AAA@2000-01-01', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext '{AAA@2000-01-01, BBB@2000-01-02}', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1, 5));
+SELECT ttextFromMFJSON(asMFJSON(ttext '{[AAA@2000-01-01, BBB@2000-01-02], [CCC@2000-01-03, CCC@2000-01-04]}', 1, 5));
+
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
 -------------------------------------------------------------------------------

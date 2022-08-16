@@ -354,8 +354,7 @@ timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  const Period *p = timestampset_period_ptr(ts);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, &ts->period, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -417,8 +416,7 @@ periodset_set_tbox(const PeriodSet *ps, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  const Period *p = periodset_period_ptr(ps);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, &ps->period, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -452,6 +450,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
   int_set_tbox(i, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -467,6 +466,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
   float_set_tbox(d, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -481,6 +481,7 @@ int_period_to_tbox(int i, const Period *p)
   TBOX *result = palloc(sizeof(TBOX));
   int_set_tbox(i, result);
   memcpy(&result->period, p, sizeof(Span));
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -495,6 +496,7 @@ float_period_to_tbox(double d, const Period *p)
   TBOX *result = palloc(sizeof(TBOX));
   float_set_tbox(d, result);
   memcpy(&result->period, p, sizeof(Span));
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -514,6 +516,8 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
     memcpy(&result->span, span, sizeof(Span));
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -533,6 +537,8 @@ span_period_to_tbox(const Span *span, const Period *p)
   else
     memcpy(&result->span, span, sizeof(Span));
   memcpy(&result->period, p, sizeof(Span));
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -540,29 +546,11 @@ span_period_to_tbox(const Span *span, const Period *p)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a temporal box to an integer span.
- * @sqlop @p ::
- */
-Span *
-tbox_to_intspan(const TBOX *box)
-{
-  if (! MOBDB_FLAGS_GET_X(box->flags))
-    return NULL;
-  Span *result = span_copy(&box->span);
-  result->lower = Int32GetDatum((int) DatumGetFloat8(box->span.lower));
-  result->upper = Int32GetDatum((int) DatumGetFloat8(box->span.upper));
-  result->basetype = T_INT4;
-  result->spantype = T_INTSPAN;
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_cast
  * @brief Cast a temporal box as a span.
  * @sqlop @p ::
  */
 Span *
-tbox_to_span(const TBOX *box)
+tbox_to_floatspan(const TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -1007,9 +995,9 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Span *period = NULL, *span = NULL;
   if (hast)
-    period = union_span_span(&box1->period, &box1->period, true);
+    period = union_span_span(&box1->period, &box2->period, true);
   if (hasx)
-    span = union_span_span(&box1->span, &box1->span, true);
+    span = union_span_span(&box1->span, &box2->span, true);
   TBOX *result = tbox_make(period, span);
   return result;
 }
@@ -1033,12 +1021,12 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
     (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
-  Span *period = NULL, *span = NULL;
+  Span period, span;
   if (hast)
-    period = intersection_span_span(&box1->period, &box2->period);
+    inter_span_span(&box1->period, &box2->period, &period);
   if (hasx)
-    span = intersection_span_span(&box1->span, &box2->span);
-  tbox_set(period, span, result);
+    inter_span_span(&box1->span, &box2->span, &span);
+  tbox_set(hast ? &period : NULL, hasx ? &span : NULL, result);
   return true;
 }
 
