@@ -237,26 +237,12 @@ stbox_out(const STBOX *box, int maxdd)
     {
       zmin = float8_out(box->zmin, maxdd);
       zmax = float8_out(box->zmax, maxdd);
-    }
-
-    if (hast)
-    {
-      if (geodetic || hasz)
-        snprintf(str, size, "%s%s ZT(%s,((%s,%s,%s),(%s,%s,%s)))",
-          srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
-      else
-        snprintf(str, size, "%s%s T(%s,((%s,%s),(%s,%s)))",
-          srid, boxtype, period, xmin, ymin, xmax, ymax);
+      snprintf(str, size, "%s%s ZT(%s,((%s,%s,%s),(%s,%s,%s)))",
+        srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
     }
     else
-    {
-      if (geodetic || hasz)
-        snprintf(str, size, "%s%s Z(%s,((%s,%s,%s),(%s,%s,%s)))",
-          srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
-      else
-        snprintf(str, size, "%s%s((%s,%s),(%s,%s))",
-          srid, boxtype, xmin, ymin, xmax, ymax);
-    }
+      snprintf(str, size, "%s%s T(%s,((%s,%s),(%s,%s)))",
+        srid, boxtype, period, xmin, ymin, xmax, ymax);
   }
   else if (hasx)
   {
@@ -272,10 +258,8 @@ stbox_out(const STBOX *box, int maxdd)
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
     }
     else
-    {
       snprintf(str, size, "%s%s((%s,%s),(%s,%s))",
         srid, boxtype, xmin, ymin, xmax, ymax);
-    }
   }
   else /* hast */
     snprintf(str, size, "%s%s T(%s)", srid, boxtype, period);
