@@ -80,13 +80,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 
 SELECT expandSpatial(stbox 'STBOX((1.0,2.0),(1.0,2.0))', 0.5);
 SELECT expandSpatial(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', 0.5);
-SELECT expandSpatial(stbox 'STBOX T([2000-01-03,2000-01-03],((1.0,2.0),(1.0,2.0)))', 0.5);
-SELECT expandSpatial(stbox 'STBOX ZT([2000-01-03,2000-01-04],((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
+SELECT expandSpatial(stbox 'STBOX T(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', 0.5);
+SELECT expandSpatial(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-03,2000-01-04])', 0.5);
 SELECT expandSpatial(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', 0.5);
 
-SELECT expandTemporal(stbox 'STBOX T([2000-01-03,2000-01-03],((1.0,2.0),(1.0,2.0)))', '1 day');
+SELECT expandTemporal(stbox 'STBOX T(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
 SELECT expandTemporal(stbox 'STBOX ZT([2000-01-04,2000-01-04],((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
-SELECT expandTemporal(stbox 'GEODSTBOX T([2000-01-04,2000-01-04],((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
+SELECT expandTemporal(stbox 'GEODSTBOX T(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
 /* Errors */
 SELECT expandTemporal(stbox 'STBOX((1.0,2.0),(1.0,2.0))', '1 day');
 SELECT expandTemporal(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
@@ -402,9 +402,9 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01
 SELECT geometry 'SRID=5676;Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' && geometry 'SRID=5676;Point(1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
-SELECT stbox 'SRID=5676;STBOX T([2001-01-01,2001-01-02],((1,1),(2,2)))' && stbox 'STBOX T([2001-01-01,2001-01-02],((1,1),(2,2)))';
-SELECT stbox 'GEODSTBOX T([2001-01-01,2001-01-02],((1,1,1),(2,2,2)))' && stbox 'STBOX T([2001-01-01,2001-01-02],((1,1),(2,2)))';
-SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T([2001-01-01,2001-01-02],((1,1),(2,2)))';
+SELECT stbox 'SRID=5676;STBOX T(((1,1),(2,2)),[2001-01-01,2001-01-02])' && stbox 'STBOX T(((1,1),(2,2)),[2001-01-01,2001-01-02])';
+SELECT stbox 'GEODSTBOX T(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])' && stbox 'STBOX T(((1,1),(2,2)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T(((1,1),(2,2)),[2001-01-01,2001-01-02])';
 
 -------------------------------------------------------------------------------
 

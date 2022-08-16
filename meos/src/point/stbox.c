@@ -237,12 +237,12 @@ stbox_out(const STBOX *box, int maxdd)
     {
       zmin = float8_out(box->zmin, maxdd);
       zmax = float8_out(box->zmax, maxdd);
-      snprintf(str, size, "%s%s ZT(%s,((%s,%s,%s),(%s,%s,%s)))",
-        srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
+      snprintf(str, size, "%s%s ZT(((%s,%s,%s),(%s,%s,%s)),%s)",
+        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period);
     }
     else
-      snprintf(str, size, "%s%s T(%s,((%s,%s),(%s,%s)))",
-        srid, boxtype, period, xmin, ymin, xmax, ymax);
+      snprintf(str, size, "%s%s T(((%s,%s),(%s,%s)),%s)",
+        srid, boxtype, xmin, ymin, xmax, ymax, period);
   }
   else if (hasx)
   {

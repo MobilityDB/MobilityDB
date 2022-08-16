@@ -483,34 +483,34 @@ SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01,
 SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
 SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
 
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((0,0),(1,1)))' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,3)))')::numeric, 6);
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((0,0),(1,1)))' |=| stbox 'STBOX T([2000-01-03,2000-01-04],((2,2),(3,3)))')::numeric, 6);
+SELECT round((stbox 'STBOX T(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX T(((2,2),(2,3)),[2000-01-01,2000-01-02])')::numeric, 6);
+SELECT round((stbox 'STBOX T(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX T(((2,2),(3,3)),[2000-01-03,2000-01-04])')::numeric, 6);
 SELECT round((stbox 'GEODSTBOX ZT([2000-01-01,2000-01-02],((0,0,0),(1,1,1)))' |=| stbox 'GEODSTBOX ZT([2000-01-01,2000-01-02],((2,2,2),(3,3,3)))')::numeric, 6);
 -- 3D
 SELECT round((stbox 'STBOX ZT([2000-01-01,2000-01-02],((0,0,0),(1,1,1)))' |=| stbox 'STBOX ZT([2000-01-01,2000-01-02],((2,2,2),(3,3,3)))')::numeric, 6);
 
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'Point empty')::numeric, 6);
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'Point(0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX T(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point empty')::numeric, 6);
+SELECT round((stbox 'STBOX T(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point(0 0)')::numeric, 6);
 SELECT round((stbox 'STBOX ZT([2000-01-01,2000-01-02],((1,1,1),(1,1,1)))' |=| geometry 'Point (0 0 0)')::numeric, 6);
 SELECT round((stbox 'GEODSTBOX ZT([2001-01-03,2001-01-04],((1.0,2.0,3.0),(1.0,2.0,3.0)))' |=| geography 'Point(0 0)')::numeric, 6);
 
-SELECT round((geometry 'Point empty' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))')::numeric, 6);
-SELECT round((geometry 'Point(0 0)' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))')::numeric, 6);
+SELECT round((geometry 'Point empty' |=| stbox 'STBOX T(((1,1),(1,1)),[2000-01-01,2000-01-02])')::numeric, 6);
+SELECT round((geometry 'Point(0 0)' |=| stbox 'STBOX T(((1,1),(1,1)),[2000-01-01,2000-01-02])')::numeric, 6);
 SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT([2000-01-01,2000-01-02],((1,1,1),(1,1,1)))')::numeric, 6);
 
 /* Errors */
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((1,1),(1,1)))' |=| geometry 'Point(0 0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX T(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX T(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point(0 0 0)')::numeric, 6);
 
-SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,2)))')::numeric, 6);
-SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T([2000-01-02,2000-01-03],((2,2),(2,2)))')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX ZT([2000-01-01,2000-01-02],((2,2,2),(2,2,2)))')::numeric, 6);
+SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T(((2,2),(2,2)),[2000-01-01,2000-01-02])')::numeric, 6);
+SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T(((2,2),(2,2)),[2000-01-02,2000-01-03])')::numeric, 6);
+SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX ZT(((2,2,2),(2,2,2)),[2000-01-01,2000-01-02])')::numeric, 6);
 
 /* Errors */
-SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,2)))')::numeric, 6);
+SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX T(((2,2),(2,2)),[2000-01-01,2000-01-02])')::numeric, 6);
 
-SELECT round((stbox 'STBOX T([2000-01-01,2000-01-02],((2,2),(2,2)))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
-SELECT round((stbox 'STBOX T([2000-01-02,2000-01-03],((2,2),(2,2)))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
+SELECT round((stbox 'STBOX T(((2,2),(2,2)),[2000-01-01,2000-01-02])' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
+SELECT round((stbox 'STBOX T(((2,2),(2,2)),[2000-01-02,2000-01-03])' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
 
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| geometry 'Linestring(0 0,3 3)')::numeric, 6);
 SELECT round((tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| geometry 'Linestring(0 0,3 3)')::numeric, 6);

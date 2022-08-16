@@ -335,7 +335,7 @@ Period *
 periodset_to_period(const PeriodSet *ps)
 {
   Period *result = palloc(sizeof(Period));
-  memcpy(p, &ps->period, sizeof(Span));
+  memcpy(result, &ps->period, sizeof(Span));
   return result;
 }
 #endif /* MEOS */

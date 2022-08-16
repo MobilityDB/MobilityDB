@@ -111,15 +111,15 @@ tbox_out(const TBOX *box, int maxdd)
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
-  if (hast)
-    /* The second argument is not used for periods */
-    period = span_out(&box->period, Int32GetDatum(maxdd));
   if (hasx)
     span = span_out(&box->span, Int32GetDatum(maxdd));
   if (hast)
+    /* The second argument is not used for periods */
+    period = span_out(&box->period, Int32GetDatum(maxdd));
+  if (hast)
   {
     if (hasx)
-      snprintf(result, size, "TBOX T(%s,%s)", period, span);
+      snprintf(result, size, "TBOX T(%s,%s)", span, period);
     else
       snprintf(result, size, "TBOX T(%s)", period);
   }
