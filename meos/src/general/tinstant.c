@@ -346,7 +346,7 @@ tboolinst_make(bool b, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant boolean from the arguments.
+ * @brief Construct a temporal instant integer from the arguments.
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
@@ -357,7 +357,7 @@ tintinst_make(int i, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant boolean from the arguments.
+ * @brief Construct a temporal instant float from the arguments.
  * @sqlfunc tfloat_inst()
  */
 TInstant *
@@ -368,7 +368,7 @@ tfloatinst_make(double d, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant boolean from the arguments.
+ * @brief Construct a temporal instant text from the arguments.
  * @sqlfunc tint_inst()
  */
 TInstant *
@@ -379,21 +379,21 @@ ttextinst_make(const text *txt, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant boolean from the arguments.
+ * @brief Construct a temporal instant geometric point from the arguments.
  * @sqlfunc tgeompoint_inst()
  */
 TInstant *
-tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
+tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
 }
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant boolean from the arguments.
+ * @brief Construct a temporal instant geographic point from the arguments.
  * @sqlfunc tgeogpoint_inst().
  */
 TInstant *
-tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
+tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
 }

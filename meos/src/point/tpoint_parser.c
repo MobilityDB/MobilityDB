@@ -92,22 +92,25 @@ stbox_parse(char **str)
     hasx = hasz = hast = true;
     *str += 2;
   }
+  else if (strncasecmp(*str, "XT", 2) == 0)
+  {
+    hasx = hast = true;
+    *str += 2;
+  }
   else if (strncasecmp(*str, "Z", 1) == 0)
   {
     *str += 1;
     hasx = hasz = true;
   }
-  else if (strncasecmp(*str, "T", 1) == 0)
+  else if (strncasecmp(*str, "X", 1) == 0)
+  {
+    *str += 1;
+    hasx = true;
+  }
+  else /* strncasecmp(*str, "T", 1) == 0 */
   {
     *str += 1;
     hast = true;
-    p_whitespace(str);
-    if (strncasecmp(*str, "(((", 3) == 0)
-      hasx = true;
-  }
-  else
-  {
-    hasx = true;
   }
 
   /* Parse opening parenthesis */
@@ -117,12 +120,8 @@ stbox_parse(char **str)
 
   if (hasx)
   {
-    /* Parse double opening parenthesis only if hast */
-    if (hast)
-    {
-      if (!p_oparen(str))
-        elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
-    }
+    if (!p_oparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
     if (!p_oparen(str))
       elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
 
@@ -189,14 +188,12 @@ stbox_parse(char **str)
   }
 
   if (hast)
-  {
     period = span_parse(str, T_PERIOD, false, true);
 
-    /* Parse closing parenthesis */
-    p_whitespace(str);
-    if (!p_cparen(str))
-      elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
-  }
+  /* Parse closing parenthesis */
+  p_whitespace(str);
+  if (!p_cparen(str))
+    elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
 
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");

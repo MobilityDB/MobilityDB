@@ -111,21 +111,22 @@ tbox_out(const TBOX *box, int maxdd)
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
+
+  /* Generate the strings for the span and/or the period */
   if (hasx)
     span = span_out(&box->span, Int32GetDatum(maxdd));
   if (hast)
     /* The second argument is not used for periods */
     period = span_out(&box->period, Int32GetDatum(maxdd));
-  if (hast)
-  {
-    if (hasx)
-      snprintf(result, size, "TBOX T(%s,%s)", span, period);
-    else
-      snprintf(result, size, "TBOX T(%s)", period);
-  }
-  else
-    /* Missing T dimension */
-    snprintf(result, size, "TBOX(%s)", span);
+
+  /* Print the box */
+  if (hasx && hast)
+    snprintf(result, size, "TBOX XT(%s,%s)", span, period);
+  else if (hasx)
+    snprintf(result, size, "TBOX X(%s)", span);
+  else /* hast */
+    snprintf(result, size, "TBOX T(%s)", period);
+
   if (hast)
     pfree(period);
   if (hasx)

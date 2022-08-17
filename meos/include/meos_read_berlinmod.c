@@ -238,7 +238,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3])
   len += sprintf(buf+len, "\n");
   for (j = 0; j < NO_COMMUNES + 3; j++)
     len += sprintf(buf+len, "---------");
-  sprintf(buf+len, "\n\n");
+  sprintf(buf+len, "\n\n");
   printf("%s", buf);
 
   return;

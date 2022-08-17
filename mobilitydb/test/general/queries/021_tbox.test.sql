@@ -31,22 +31,25 @@
 -- Tbox
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX T([1.0, 1.0],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
-SELECT tbox 'TBOX([1.0, 1.0])'; -- Only X dimension
+SELECT tbox 'TBOX XT([1.0, 1.0],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
+SELECT tbox 'TBOX X([1.0, 1.0])'; -- Only X dimension
 SELECT tbox 'TBOX T([2000-01-01,2000-01-02])'; -- Only T dimension
 
 /* Errors */
 SELECT tbox 'XXX(1, 2000-01-02)';
 SELECT tbox 'TBOX(1, 2000-01-02)';
-SELECT tbox 'TBOX((,),(,2000-01-01))';
-SELECT tbox 'TBOX((AA, 2000-01-02))';
-SELECT tbox 'TBOX((1, AA))';
-SELECT tbox 'TBOX((1, 2000-01-01, 2))';
-SELECT tbox 'TBOX((1, 2000-01-01),2, 2000-01-02))';
-SELECT tbox 'TBOX((1, 2000-01-01),(AA, 2000-01-02))';
-SELECT tbox 'TBOX((1, 2000-01-01),(2, AA))';
-SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
-SELECT tbox 'TBOX((2,2000-01-02),(1,2000-01-01))XXXX';
+SELECT tbox 'TBOX A(1, 2000-01-02)';
+SELECT tbox 'TBOX X(1, 2000-01-02)';
+SELECT tbox 'TBOX XA(1, 2000-01-02)';
+SELECT tbox 'TBOX X((,))';
+SELECT tbox 'TBOX X((AA, 2))';
+SELECT tbox 'TBOX X((1, AA))';
+SELECT tbox 'TBOX X((1, 2000-01-01))';
+SELECT tbox 'TBOX X((1, 2), 2, 2))';
+SELECT tbox 'TBOX X((1, 2),(AA, 2))';
+SELECT tbox 'TBOX X((1, 2),(2000-01-01, AA))';
+SELECT tbox 'TBOX X((1, 2),(2000-01-01, 2000-01-02)';
+SELECT tbox 'TBOX X((2,2000-01-02),(1,2000-01-01))XXXX';
 
 -- Send/receive functions
 
@@ -60,7 +63,7 @@ DROP TABLE tbl_tbox_tmp;
 -- Input/output from/to WKT, WKB and HexWKB
 
 -- Maximum decimal digits
-SELECT asText(tbox 'TBOX T([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 6);
+SELECT asText(tbox 'TBOX XT([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 6);
 
 SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
@@ -77,10 +80,10 @@ SELECT tbox(period '[2000-01-01,2000-01-02]');
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])'::period;
-SELECT tbox 'TBOX([1.0, 2.0])'::floatspan;
-SELECT tbox 'TBOX([1.0, 2.0])'::period;
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::period;
+SELECT tbox 'TBOX X([1.0, 2.0])'::floatspan;
+SELECT tbox 'TBOX X([1.0, 2.0])'::period;
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::period;
 
@@ -97,23 +100,23 @@ SELECT MAX(duration(b::period)) FROM tbl_tbox;
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT hasX(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT hasX(tbox 'TBOX([1.0, 2.0])');
+SELECT hasX(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT hasX(tbox 'TBOX X([1.0, 2.0])');
 SELECT hasX(tbox 'TBOX T([2000-01-01,2000-01-02])');
 
-SELECT hasT(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT hasT(tbox 'TBOX([1.0, 2.0])');
+SELECT hasT(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT hasT(tbox 'TBOX X([1.0, 2.0])');
 SELECT hasT(tbox 'TBOX T([2000-01-01,2000-01-02])');
 
-SELECT Xmin(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT Xmax(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT Tmin(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT Tmax(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Xmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Xmax(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Tmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Tmax(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
 
-SELECT Xmin(tbox 'TBOX([1.0, 2.0])');
-SELECT Xmax(tbox 'TBOX([1.0, 2.0])');
-SELECT Tmin(tbox 'TBOX([1.0, 2.0])');
-SELECT Tmax(tbox 'TBOX([1.0, 2.0])');
+SELECT Xmin(tbox 'TBOX X([1.0, 2.0])');
+SELECT Xmax(tbox 'TBOX X([1.0, 2.0])');
+SELECT Tmin(tbox 'TBOX X([1.0, 2.0])');
+SELECT Tmax(tbox 'TBOX X([1.0, 2.0])');
 
 SELECT Xmin(tbox 'TBOX T([2000-01-01,2000-01-02])');
 SELECT Xmax(tbox 'TBOX T([2000-01-01,2000-01-02])');
@@ -131,32 +134,32 @@ SELECT MAX(tmax(b)) FROM tbl_tbox;
 -- Modification functions
 -------------------------------------------------------------------------------
 
-SELECT expandValue(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])', 2);
-SELECT expandTemporal(tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
-SELECT round(tbox 'TBOX T([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 2);
+SELECT expandValue(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
+SELECT expandTemporal(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
+SELECT round(tbox 'TBOX XT([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 2);
 /* Errors */
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
-SELECT expandTemporal(tbox 'TBOX([1,2])', interval '1 day');
+SELECT expandTemporal(tbox 'TBOX X([1,2])', interval '1 day');
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 
 -------------------------------------------------------------------------------
 -- Topological operators
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' && tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([2000-01-02, 2000-02-01], [1.0, 2.0])' @> tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([2000-01-02, 2000-02-01], [1.0, 2.0])' <@ tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([2000-01-02, 2000-02-01], [1.0, 2.0])' -|- tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([2000-01-02, 2000-02-01], [1.0, 2.0])' ~= tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' && tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' @> tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' <@ tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' -|- tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' ~= tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
 
 SELECT period '[2000-01-01,2000-01-02]'::tbox -|- period '[2000-01-02, 2000-01-03]'::tbox;
 
 /* Errors */
-SELECT tbox 'TBOX([1,2])' && tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' @> tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' <@ tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' -|- tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' ~= tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' && tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' @> tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' <@ tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' -|- tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' ~= tbox 'TBOX T([2000-01-01,2000-01-02])';
 
 -------------------------------------------------------------------------------
 
@@ -170,24 +173,24 @@ SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
 -- Position operators
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' << tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' &< tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' >> tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' &> tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' <<# tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' &<# tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' #>> tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' #&> tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' << tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' &< tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' >> tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' &> tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' <<# tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' &<# tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' #>> tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' #&> tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
 
 /* Errors */
-SELECT tbox 'TBOX([1,2])' << tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' &< tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' >> tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' &> tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' <<# tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' &<# tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' #>> tbox 'TBOX T([2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' #&> tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' << tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' &< tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' >> tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' &> tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' <<# tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' &<# tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' #>> tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' #&> tbox 'TBOX T([2000-01-01,2000-01-02])';
 
 -------------------------------------------------------------------------------
 
@@ -204,41 +207,41 @@ SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b #&> t2.b;
 -- Set operators
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX([1,2])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX X([1,2])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([2000-01-01,2000-01-02])';
 
-SELECT tbox 'TBOX([1,2])' + tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' + tbox 'TBOX([1,2])';
-SELECT tbox 'TBOX([1,2])' + tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' + tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' + tbox 'TBOX X([1,2])';
+SELECT tbox 'TBOX X([1,2])' + tbox 'TBOX T([2000-01-01,2000-01-02])';
 
-SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' + tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' + tbox 'TBOX([1,2])';
+SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' + tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' + tbox 'TBOX X([1,2])';
 SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' + tbox 'TBOX T([2000-01-01,2000-01-02])';
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([11.0,12.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([1.0, 2.0],[2000-02-01,2000-02-02]))';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX XT([11.0,12.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX XT([1.0, 2.0],[2000-02-01,2000-02-02])';
 
 /* Errors */
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([3.0,4.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX T([1.0,2.0],[2000-01-03, 2000-01-04])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX XT([3.0,4.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOX XT([1.0,2.0],[2000-01-03, 2000-01-04])';
 
 -------------------------------------------------------------------------------
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX([1,2])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX X([1,2])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX T([2000-01-01,2000-01-02])';
 
-SELECT tbox 'TBOX([1,2])' * tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX([1,2])' * tbox 'TBOX([1,2])';
-SELECT tbox 'TBOX([1,2])' * tbox 'TBOX T([2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' * tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX X([1,2])' * tbox 'TBOX X([1,2])';
+SELECT tbox 'TBOX X([1,2])' * tbox 'TBOX T([2000-01-01,2000-01-02])';
 
-SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' * tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' * tbox 'TBOX([1,2])';
+SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' * tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' * tbox 'TBOX X([1,2])';
 SELECT tbox 'TBOX T([2000-01-01,2000-01-02])' * tbox 'TBOX T([2000-01-01,2000-01-02])';
 
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX T([11.0,12.0],[2000-01-01,2000-01-02])';
-SELECT tbox 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX T([1.0,2.0],[2000-02-01,2000-02-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX XT([11.0,12.0],[2000-01-01,2000-01-02])';
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOX XT([1.0,2.0],[2000-02-01,2000-02-02])';
 
 -------------------------------------------------------------------------------
 
@@ -250,8 +253,8 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tbox t1, tbl_tbox t2;
 -------------------------------------------------------------------------------
 
 WITH test(box) AS (
-  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX T([1,2],[2000-01-01,2000-01-02])' UNION ALL
-  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX T([1,3],[2000-01-01,2000-01-03])' )
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX XT([1,2],[2000-01-01,2000-01-02])' UNION ALL
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX XT([1,3],[2000-01-01,2000-01-03])' )
 SELECT extent(box) FROM test;
 
 -- encourage use of parallel plans
@@ -272,20 +275,20 @@ reset max_parallel_workers_per_gather;
 -- Comparison functions
 -------------------------------------------------------------------------------
 
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX T([1.0,2.0],[2000-01-02, 2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-03])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX T([1.0,2.0],[2000-01-02, 2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-03])');
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX XT([1.0,2.0],[2000-01-02, 2000-01-02])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-03])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX XT([1.0,2.0],[2000-01-02, 2000-01-02])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-03])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])');
 
-SELECT tbox_cmp(tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp('TBOX([1,2])', 'TBOX T([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT tbox_cmp('TBOX T([1.0,2.0],[2000-01-01,2000-01-02])', 'TBOX([1,2])');
+SELECT tbox_cmp(tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT tbox_cmp('TBOX X([1,2])', 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT tbox_cmp('TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', 'TBOX X([1,2])');
 
-SELECT tbox 'TBOX T([1.0,1.0],[2000-01-02,2000-01-02])' = floatspan '[1, 2]'::tbox;
+SELECT tbox 'TBOX XT([1.0,1.0],[2000-01-02,2000-01-02])' = floatspan '[1, 2]'::tbox;
 
 -------------------------------------------------------------------------------
 
