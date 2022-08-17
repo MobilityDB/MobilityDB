@@ -175,15 +175,15 @@ INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= temp;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b && temp;
+SELECT '&&', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b @> temp;
+SELECT '@>', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b @> temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b <@ temp;
+SELECT '<@', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b <@ temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b -|- temp;
+SELECT '-|-', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b -|- temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b ~= temp;
+SELECT '~=', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b ~= temp;
 
 -------------------------------------------------------------------------------
 --  tgeompoint op <type>
@@ -324,15 +324,15 @@ INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp && b;
+SELECT '&&', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp @> b;
+SELECT '@>', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp @> b;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp <@ b;
+SELECT '<@', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp <@ b;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp -|- b;
+SELECT '-|-', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp -|- b;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp ~= b;
+SELECT '~=', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp ~= b;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tgeogpoint', 'tgeogpoint', COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp && t2.temp;
@@ -533,19 +533,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~=
 WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp )
 WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b @> temp )
 WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b <@ temp )
 WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b -|- temp )
 WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b ~= temp )
 WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 
 -------------------------------------------------------------------------------
@@ -747,19 +747,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp 
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
 
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp && b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b )
 WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp @> b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp @> b )
 WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp <@ b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp <@ b )
 WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp -|- b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp -|- b )
 WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp ~= b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp ~= b )
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 
 UPDATE test_geoboundboxops
@@ -971,19 +971,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps
 WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp )
 WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b @> temp )
 WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b <@ temp )
 WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b -|- temp )
 WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b ~= temp )
 WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
 
 -------------------------------------------------------------------------------
@@ -1185,19 +1185,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE te
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
 
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp && b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b )
 WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp @> b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp @> b )
 WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp <@ b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp <@ b )
 WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp -|- b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp -|- b )
 WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp ~= b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp ~= b )
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 
 UPDATE test_geoboundboxops

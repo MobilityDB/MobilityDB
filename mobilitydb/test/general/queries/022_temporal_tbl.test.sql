@@ -216,7 +216,7 @@ SELECT box(temp) FROM tbl_tfloat;
 SELECT period(temp) FROM tbl_ttext;
 */
 
-SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst;
+SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst ORDER BY 1;
 SELECT MAX(getValue(inst)) FROM tbl_tint_inst;
 SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
 SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;

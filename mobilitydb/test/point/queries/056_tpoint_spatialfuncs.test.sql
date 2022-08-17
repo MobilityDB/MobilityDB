@@ -785,6 +785,6 @@ SELECT asText(minusStbox(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Po
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT([2000-01-01,2000-01-02],((1,1,1),(2,2,2)))'));
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 
 -------------------------------------------------------------------------------

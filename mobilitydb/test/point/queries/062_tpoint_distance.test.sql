@@ -485,9 +485,9 @@ SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01
 
 SELECT round((stbox 'STBOX XT(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX XT(((2,2),(2,3)),[2000-01-01,2000-01-02])')::numeric, 6);
 SELECT round((stbox 'STBOX XT(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX XT(((2,2),(3,3)),[2000-01-03,2000-01-04])')::numeric, 6);
-SELECT round((stbox 'GEODSTBOX Z(((1.0,1.0),(2.0,2.0)))' |=| stbox 'GEODSTBOX ZT(((2,2,2),(3,3,3)),[2000-01-01,2000-01-02])')::numeric, 6);
+SELECT round((stbox 'GEODSTBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' |=| stbox 'GEODSTBOX ZT(((2,2,2),(3,3,3)),[2000-01-01,2000-01-02])')::numeric, 6);
 -- 3D
-SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX ZT([2000-01-01,2000-01-02],((2,2,2),(3,3,3)))')::numeric, 6);
+SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX ZT(((2,2,2),(3,3,3)),[2000-01-01,2000-01-02])')::numeric, 6);
 
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point empty')::numeric, 6);
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point(0 0)')::numeric, 6);

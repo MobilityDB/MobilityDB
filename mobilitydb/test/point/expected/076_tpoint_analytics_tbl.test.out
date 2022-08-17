@@ -479,7 +479,7 @@ SELECT MAX(numInstants(simplify(temp, true, 4))) FROM tbl_tgeompoint;
 (1 row)
 
 SELECT round(MAX(ST_Length((mvt).geom))::numeric, 6), MAX(array_length((mvt).times, 1))
-FROM (SELECT asMVTGeom(temp, stbox 'STBOX((0,0),(50,50))') AS mvt
+FROM (SELECT asMVTGeom(temp, stbox 'STBOX X(((0,0),(50,50)))') AS mvt
   FROM tbl_tgeompoint ) AS t;
     round     | max 
 --------------+-----
@@ -488,7 +488,7 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX((0,0),(50,50))') AS mvt
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10}',
-  stbox 'STBOX((0,0),(1000,1000))') AS mvt ) AS t;
+  stbox 'STBOX X(((0,0),(1000,1000)))') AS mvt ) AS t;
           st_astext          
 -----------------------------
  LINESTRING(0 4096,410 3686)
@@ -496,7 +496,7 @@ FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((40,40),(60,60))', clip := false) AS mvt ) AS t;
+  stbox 'STBOX X(((40,40),(60,60)))', clip := false) AS mvt ) AS t;
               st_astext              
 -------------------------------------
  LINESTRING(-8192 12288,12288 -8192)
@@ -504,7 +504,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
+  stbox 'STBOX X(((40,40),(60,60)))') AS mvt ) AS t;
             st_astext            
 ---------------------------------
  LINESTRING(-256 4352,4352 -256)
@@ -512,7 +512,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
-  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
+  stbox 'STBOX X(((40,40),(60,60)))') AS mvt ) AS t;
             st_astext            
 ---------------------------------
  LINESTRING(-256 4352,4352 -256)
@@ -520,7 +520,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2000-01-01], [Point(100 100)@2000-04-10]}',
-  stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
+  stbox 'STBOX X(((0,0),(60,60)))') AS mvt ) AS t;
  st_astext 
 -----------
  
@@ -528,7 +528,7 @@ FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2000-01-01], [Point(100 100)@200
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-02-10, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
+  stbox 'STBOX X(((0,0),(60,60)))') AS mvt ) AS t;
           st_astext           
 ------------------------------
  LINESTRING(0 4096,4352 -256)
@@ -536,7 +536,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-02-10
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-02-10, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
+  stbox 'STBOX X(((0,0),(60,60)))') AS mvt ) AS t;
           st_astext           
 ------------------------------
  LINESTRING(0 4096,4352 -256)
@@ -544,10 +544,10 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 
 /* Errors */
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((40,40),(40,40))');
+  stbox 'STBOX X(((40,40),(40,40)))');
 ERROR:  tpoint_AsMVTGeom: Geometric bounds are too small
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((40,40),(60,60))', 0);
+  stbox 'STBOX X(((40,40),(60,60)))', 0);
 ERROR:  tpoint_AsMVTGeom: Extent must be greater than 0
 set force_parallel_mode=off;
 SET
