@@ -104,7 +104,7 @@ SELECT asHexWKB(stbox 'STBOX X(((1,1),(2,2)))');
 					<programlisting xml:space="preserve">
 SELECT tboxFromBinary(
   '\x01030a0001005c6c29ffffffff00bc434713000000060001000000000000f03f0000000000000040');
--- TBOX XT([1,2),[2000-01-01, 2000-01-02))
+-- TBOX XT([1,2),[2000-01-01,2000-01-02))
 </programlisting>
 				</listitem>
 
@@ -126,7 +126,7 @@ SELECT stboxFromBinary(
 					<programlisting xml:space="preserve">
 SELECT tboxFromHexWKB(
   '01030A0001005C6C29FFFFFFFF00BC434713000000060001000000000000F03F0000000000000040');
--- TBOX XT([1 2),[2000-01-01, 2000-01-02))
+-- TBOX XT([1,2),[2000-01-01,2000-01-02))
 </programlisting>
 				</listitem>
 
@@ -160,7 +160,7 @@ SELECT stboxFromHexWKB(
 				<programlisting xml:space="preserve">
 -- Dimensiones de valores y de tiempo
 SELECT tbox(1.0, timestamptz '2001-01-01');
-SELECT tbox(floatspan '[1.0, 2.0)', period '[2001-01-01,2001-01-02)');
+SELECT tbox(floatspan '[1.0,2.0)', period '[2001-01-01,2001-01-02)');
 -- Sólo dimensión de valores
 SELECT tbox(floatspan '[1.0,2.0)');
 -- Sólo dimensión de tiempo
@@ -227,7 +227,7 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2001-01-03, 2001-01-0
 SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::floatspan;
 -- (1, 2)
 SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::period;
--- [2000-01-01, 2000-01-02)
+-- [2000-01-01,2000-01-02)
 </programlisting>
 			</listitem>
 
@@ -237,9 +237,9 @@ SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::period;
 				<para><varname>{number,span,time,tnumber}::tbox</varname></para>
 				<programlisting xml:space="preserve">
 SELECT floatspan '(1.0,2.0)'::tbox;
--- TBOX X((1, 2))
+-- TBOX X((1,2))
 SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
--- TBOX T((2001-01-01, 2001-01-04))
+-- TBOX T((2001-01-01,2001-01-04))
 </programlisting>
 			</listitem>
 
@@ -249,7 +249,7 @@ SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 				<para><varname>stbox::{period,geometry}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::period;
--- [2000-01-01, 2000-01-03]
+-- [2000-01-01,2000-01-03]
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
 -- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
@@ -465,10 +465,10 @@ SELECT expandTemporal(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])
 					<para><varname>round(box,integer): box</varname></para>
 					<programlisting xml:space="preserve">
 SELECT round(tbox 'TBOX XT((1.12345,2.12345),[2000-01-01,2000-01-02])', 2);
--- TBOX XT((1.12, 2.12),[2000-01-01, 2000-01-02])
+-- TBOX XT((1.12, 2.12),[2000-01-01,2000-01-02])
 SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),
 	[2000-01-01,2000-01-02])', 2);
--- STBOX XT(((1.12,1.12),(2.12,2.12)),[2000-01-01, 2000-01-02])
+-- STBOX XT(((1.12,1.12),(2.12,2.12)),[2000-01-01,2000-01-02])
 </programlisting>
 				</listitem>
 
@@ -512,7 +512,7 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
   (6.575317, 51.553167)),[2000-01-01,2000-01-02])', 3812);
 -- SRID=3812;STBOX XT((502773.4299808172,511805.1204015772),
-  (803028.9082648156,751590.7426289867),[2000-01-01, 2000-01-02])
+  (803028.9082648156,751590.7426289867),[2000-01-01,2000-01-02])
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -703,7 +703,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(3,3,3)))' @&gt;
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &lt;@
   tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])';
 -- true
-SELECT stbox 'STBOX T(,((1,1),(2,2)),[2001-01-01,2001-01-02)' &lt;@
+SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02)' &lt;@
   stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])';
 -- true
 </programlisting>
@@ -730,7 +730,7 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' ~=
 				<para>Dos cuadros delimitadores son adyacentes si comparten  <emphasis>n</emphasis> dimensiónes y si su intersección tiene como máximo <emphasis>n</emphasis>-1 dimensiónes.</para>
 				<programlisting xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2)[2001-01-01,2001-01-02])' -|-
-  tbox 'TBOX XT([2001-01-02,2001-01-03])';
+  tbox 'TBOX T([2001-01-02,2001-01-03])';
 -- true
 SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
   stbox 'STBOX XT(((2,2),(4,4)),[2001-01-03,2001-01-04])';

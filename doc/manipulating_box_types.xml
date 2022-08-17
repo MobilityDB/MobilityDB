@@ -72,9 +72,9 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
 					<para><varname>asBinary(box,endian text): bytea</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting xml:space="preserve">
-SELECT asBinary(tbox 'TBOX T([1,2),[2000-01-01,2000-01-02))');
+SELECT asBinary(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
 -- \x01030a0001005c6c29ffffffff00bc434713000000060001000000000000f03f0000000000000040
-SELECT asBinary(tbox 'TBOX T([1,2),[2000-01-01,2000-01-02))', 'XDR');
+SELECT asBinary(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))', 'XDR');
 -- \x0003000a01ffffffff296c5c00000000134743bc000006013ff00000000000004000000000000000
 SELECT asBinary(stbox 'STBOX X(((1,1),(2,2)))');
 -- \x0101000000000000f03f0000000000000040000000000000f03f0000000000000040
@@ -88,9 +88,9 @@ SELECT asBinary(stbox 'STBOX X(((1,1),(2,2)))');
 					<para><varname>asHexWKB(box,endian text): text</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
 					<programlisting xml:space="preserve">
-SELECT asHexWKB(tbox 'TBOX T([1,2),[2000-01-01,2000-01-02))');
+SELECT asHexWKB(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
 -- 01030A0001005C6C29FFFFFFFF00BC434713000000060001000000000000F03F0000000000000040
-SELECT asHexWKB(tbox 'TBOX T([1,2),[2000-01-01,2000-01-02))', 'XDR');
+SELECT asHexWKB(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))', 'XDR');
 -- 0003000A01FFFFFFFF296C5C00000000134743BC000006013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X(((1,1),(2,2)))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
@@ -104,7 +104,7 @@ SELECT asHexWKB(stbox 'STBOX X(((1,1),(2,2)))');
 					<programlisting xml:space="preserve">
 SELECT tboxFromBinary(
   '\x01030a0001005c6c29ffffffff00bc434713000000060001000000000000f03f0000000000000040');
--- TBOX T([1, 2),[2000-01-01, 2000-01-02))
+-- TBOX XT([1,2),[2000-01-01,2000-01-02))
 </programlisting>
 				</listitem>
 
@@ -126,7 +126,7 @@ SELECT stboxFromBinary(
 					<programlisting xml:space="preserve">
 SELECT tboxFromHexWKB(
   '01030A0001005C6C29FFFFFFFF00BC434713000000060001000000000000F03F0000000000000040');
--- TBOX T([1, 2,[2000-01-01, 2000-01-02)))
+-- TBOX XT([1,2],[2000-01-01,2000-01-02)))
 </programlisting>
 				</listitem>
 
@@ -195,21 +195,21 @@ SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Only value dimension with X, Y, and Z coordinates and SRID
 SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0,5676);
 -- Both value (with X and Y coordinates) and time dimensions
-SELECT stbox_t('[2001-01-03,2001-01-03]', 1.0,2.0, 1.0,2.0);
+SELECT stbox_xt(1.0,2.0, 1.0,2.0, '[2001-01-03,2001-01-03]');
 -- Both value (with X, Y, and Z coordinates) and time dimensions
-SELECT stbox_zt('[2001-01-03,2001-01-03]', 1.0,2.0,3.0, 1.0,2.0,3.0);
+SELECT stbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, '[2001-01-03,2001-01-03]');
 -- Only time dimension
 SELECT stbox_t('[2001-01-03,2001-01-03]');
 -- Only value dimension with X, Y, and Z geodetic coordinates
 SELECT geodstbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
 --  Both value (with X, Y, and Z geodetic coordinates) and time dimensions
-SELECT geodstbox_zt('[2001-01-03,2001-01-04]', 1.0,2.0,3.0, 1.0,2.0,3.0);
+SELECT geodstbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, '[2001-01-03,2001-01-04]');
 -- Only time dimension for geodetic box
 SELECT geodstbox_t('[2001-01-03,2001-01-03]');
 -- Geometry and time dimension
-SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2001-01-03, 2001-01-05]');
+SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2001-01-03,2001-01-05]');
 -- Geography and time dimension
-SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2001-01-03, 2001-01-05]');
+SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2001-01-03,2001-01-05]');
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -239,7 +239,7 @@ SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::period;
 SELECT floatspan '(1.0,2.0)'::tbox;
 -- TBOX X((1, 2))
 SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
--- TBOX XT((2001-01-01, 2001-01-04))
+-- TBOX T((2001-01-01,2001-01-04))
 </programlisting>
 			</listitem>
 
@@ -428,7 +428,7 @@ SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 					<para><varname>expandValue(tbox,float): tbox</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandValue(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', 1);
--- TBOX XT((0,3),[2001-01-01, 2001-01-03])
+-- TBOX XT((0,3),[2001-01-01,2001-01-03])
 SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have value dimension
 </programlisting>
@@ -440,7 +440,7 @@ SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 					<para><varname>expandSpatial(stbox,float): stbox</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandSpatial(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
--- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01, 2001-01-03])
+-- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01,2001-01-03])
 SELECT expandSpatial(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have XY(Z) dimension
 </programlisting>
@@ -452,10 +452,10 @@ SELECT expandSpatial(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 					<para><varname>expandTemporal(box,interval): box</varname></para>
 					<programlisting xml:space="preserve">
 SELECT expandTemporal(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
--- TBOX XT((1,2),[2011-12-31, 2001-01-04])
+-- TBOX XT((1,2),[2011-12-31,2001-01-04])
 SELECT expandTemporal(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
   interval '1 day');
--- STBOX ZT(((1,1,1),(2,2,2)),[2011-12-31, 2001-01-04])
+-- STBOX ZT(((1,1,1),(2,2,2)),[2011-12-31,2001-01-04])
 </programlisting>
 				</listitem>
 
@@ -557,7 +557,7 @@ SELECT extent(b) FROM boxes;
 				<para>Are the bounding boxes equal?</para>
 				<para><varname>box = box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' =
+SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' =
   tbox 'TBOX T([2,2],[2001-01-03,2001-01-05])';
 -- false
 </programlisting>
@@ -568,8 +568,8 @@ SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' =
 				<para>Are the bounding boxes different?</para>
 				<para><varname>box &lt;&gt; box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &lt;&gt;
-  tbox 'TBOX T([2,2],[2001-01-03,2001-01-05])';
+SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;&gt;
+  tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
 -- true
 </programlisting>
 			</listitem>
@@ -579,8 +579,8 @@ SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &lt;&gt;
 				<para>Is the first bounding box less than the second one?</para>
 				<para><varname>box &lt; box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &lt;
-  tbox 'TBOX T([1,2],[2001-01-03,2001-01-05])';
+SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;
+  tbox 'TBOX XT([1,2],[2001-01-03,2001-01-05])';
 -- true
 </programlisting>
 			</listitem>
@@ -601,8 +601,8 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-03,2001-01-04])' &gt;
 				<para>Is the first bounding box less than or equal to the second one?</para>
 				<para><varname>box &lt;= box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &lt;=
-  tbox 'TBOX T([2,2],[2001-01-03,2001-01-05])';
+SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;=
+  tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
 -- true
 </programlisting>
 			</listitem>
@@ -612,8 +612,8 @@ SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &lt;=
 				<para>Is the first bounding box greater than or equal to the second one?</para>
 				<para><varname>box &gt;= box: boolean</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &gt;=
-  tbox 'TBOX T([2,2],[2001-01-03,2001-01-05])';
+SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &gt;=
+  tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
 -- false
 </programlisting>
 			</listitem>
@@ -631,9 +631,9 @@ SELECT tbox 'TBOX T([1,1],[2001-01-01,2001-01-04])' &gt;=
 				<para>Union of the bounding boxes</para>
 				<para><varname>box + box: box</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,3),[2001-01-01,2001-01-03])' +
+SELECT tbox 'TBOX XT([1,3),[2001-01-01,2001-01-03])' +
   tbox 'TBOX T([2,4),[2001-01-02,2001-01-04])';
--- TBOX T([1,4),[2001-01-01, 2001-01-04])
+-- TBOX XT([1,4),[2001-01-01,2001-01-04])
 SELECT stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])' +
   stbox 'STBOX XT(((2,2),(3,3))),[2001-01-01,2001-01-03]';
 -- ERROR:  The arguments must be of the same dimensionality
@@ -648,7 +648,7 @@ SELECT tbox 'TBOX XT((1,3),[2001-01-01,2001-01-02])' +
 				<para>Intersection of the bounding boxes</para>
 				<para><varname>box * box: box</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbox 'TBOX T([1,3),[2001-01-01,2001-01-03])' *
+SELECT tbox 'TBOX XT([1,3),[2001-01-01,2001-01-03])' *
   tbox 'TBOX T([2001-01-02,2001-01-04))';
 -- TBOX T([2001-01-02,2001-01-03))
 SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *

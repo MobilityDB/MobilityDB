@@ -277,6 +277,10 @@ tbox_parse(char **str)
   if (hasx)
   {
     span = span_parse(str, T_FLOATSPAN, false, true);
+    if (hast)
+    {
+      
+    }
     /* Determine whether there is an X dimension */
     p_whitespace(str);
     if (((*str)[0]) == ',')
