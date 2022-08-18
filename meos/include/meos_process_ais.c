@@ -159,7 +159,7 @@ int main(void)
   {
     trips[i] = tsequence_make((const TInstant **) trip_instants[i].instants,
       numinstants[i], true, true, true, true);
-    printf("MMSI: %ld Number of input instants: %d, Number of instants: %d, "
+    printf("MMSI: %ld, Number of input instants: %d, Number of instants: %d, "
       "Distance travelled %lf\n", trip_instants[i].MMSI, numinstants[i],
       trips[i]->count, tpoint_length((Temporal *) trips[i]));
   }
