@@ -369,7 +369,7 @@ int main(void)
   printf("\n%d trip records read.\n\n", records);
   /* The last argument states whether all communes, including those that have
      a zero value, are printed */
-  matrix_print(distance, true);
+  matrix_print(distance, false);
 
   /* Close the file */
   fclose(file);
