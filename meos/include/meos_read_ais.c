@@ -71,7 +71,6 @@ int main(void)
   }
 
   AIS_record rec;
-  int read = 0;
   int records = 0;
   int nulls = 0;
   char buffer[1024];
@@ -82,7 +81,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
+    int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
       buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
     rec.T = pg_timestamp_in(buffer, -1);
@@ -99,6 +98,7 @@ int main(void)
     if (ferror(file))
     {
       printf("Error reading file\n");
+      fclose(file);
       return 1;
     }
 

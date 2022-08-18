@@ -668,12 +668,12 @@ SELECT box(temp) FROM tbl_tint;
 SELECT box(temp) FROM tbl_tfloat;
 SELECT period(temp) FROM tbl_ttext;
 */
-SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst;
+SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst ORDER BY 1;
  getvalue 
 ----------
- 
  f
  t
+ 
 (3 rows)
 
 SELECT MAX(getValue(inst)) FROM tbl_tint_inst;

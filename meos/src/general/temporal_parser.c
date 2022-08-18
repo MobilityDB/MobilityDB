@@ -240,7 +240,7 @@ tbox_parse(char **str)
   bool hasx = false, hast = false;
   Span *span = NULL;
   Period *period = NULL;
-  
+
   p_whitespace(str);
   if (strncasecmp(*str, "TBOX", 4) == 0)
   {
@@ -250,40 +250,48 @@ tbox_parse(char **str)
   else
     elog(ERROR, "Could not parse temporal box");
 
-  if (strncasecmp(*str, "T", 1) == 0)
+  if (strncasecmp(*str, "XT", 2) == 0)
+  {
+    hasx = hast = true;
+    *str += 2;
+    p_whitespace(str);
+  }
+  else if (strncasecmp(*str, "X", 1) == 0)
+  {
+    hasx = true;
+    *str += 1;
+    p_whitespace(str);
+  }
+  else /* strncasecmp(*str, "T", 1) == 0 */
   {
     hast = true;
     *str += 1;
     p_whitespace(str);
   }
 
+
   /* Parse opening parenthesis */
   if (! p_oparen(str))
     elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
-  
-  if (hast)
-  {
-    period = span_parse(str, T_PERIOD, false, true);
-    /* Determine whether there is an X dimension */
-    p_whitespace(str);
-    if (((*str)[0]) == ',')
-    {
-      hasx = true;
-      *str += 1;
-      p_whitespace(str);
-    }
-  }
-  else
-    hasx = true;
 
   if (hasx)
+  {
     span = span_parse(str, T_FLOATSPAN, false, true);
+    if (hast)
+    {
+      /* Consume the comma separating the span and the period */
+      p_whitespace(str);
+      if (! p_comma(str))
+        elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
+    }
+  }
+
+  if (hast)
+    period = span_parse(str, T_PERIOD, false, true);
 
   p_whitespace(str);
   if (!p_cparen(str))
     elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
-  p_whitespace(str);
-  p_comma(str);
   p_whitespace(str);
 
   /* Ensure there is no more input */

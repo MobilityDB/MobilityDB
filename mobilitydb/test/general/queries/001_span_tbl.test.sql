@@ -81,12 +81,10 @@ SELECT MAX(duration(period(t, t + i, false, false))) FROM tbl_timestamptz, tbl_i
 
 -------------------------------------------------------------------------------
 
-SELECT i::int4range FROM tbl_intspan LIMIT 10;
-SELECT p::tstzrange FROM tbl_period LIMIT 10;
-
-SELECT tstzrange(p) FROM tbl_period;
-SELECT period(r) FROM tbl_tstzrange;
-SELECT t::period FROM tbl_timestamptz;
+SELECT k, i::int4range FROM tbl_intspan ORDER BY 1;
+SELECT k, p::tstzrange FROM tbl_period ORDER BY 1;
+SELECT k, r::period FROM tbl_tstzrange ORDER BY 1;
+SELECT k, t::period FROM tbl_timestamptz ORDER BY 1;
 
 -------------------------------------------------------------------------------
 

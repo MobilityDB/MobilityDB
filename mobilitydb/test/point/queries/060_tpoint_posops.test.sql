@@ -30,22 +30,22 @@
 -------------------------------------------------------------------------------
 
 /* Errors*/
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' << period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' &< period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' >> period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' &> period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' <<| period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' &<| period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' |>> period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' |&> period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' <</ period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' &</ period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' />> period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' /&> period '[2000-01-01,2000-01-02]'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' <<# geometry 'Point(1 1)'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' &<# geometry 'Point(1 1)'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' #>> geometry 'Point(1 1)'::stbox;
-SELECT stbox 'STBOX ZT([2001-01-02,2001-01-02],((1.0,1.0,1.0),(2.0,2.0,2.0)))' #&> geometry 'Point(1 1)'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' << period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &< period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' >> period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &> period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' <<| period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &<| period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' |>> period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' |&> period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' <</ period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &</ period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' />> period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' /&> period '[2000-01-01,2000-01-02]'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' <<# geometry 'Point(1 1)'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &<# geometry 'Point(1 1)'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' #>> geometry 'Point(1 1)'::stbox;
+SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' #&> geometry 'Point(1 1)'::stbox;
 
 -------------------------------------------------------------------------------
 
@@ -126,15 +126,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' << tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' << tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -216,15 +216,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -306,15 +306,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -396,15 +396,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -486,15 +486,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -576,15 +576,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -666,15 +666,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -756,15 +756,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 -- Mixed 2D/3D
 SELECT geometry 'Point(1 1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'Point(1 1 1)';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'SRID=5676;Point(1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
@@ -789,15 +789,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <</ geometry 'Point Z empty';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <</ geometry 'Point Z empty';
 
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' <</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' <</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -822,10 +822,10 @@ SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
 SELECT geometry 'Point(1 1)' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'SRID=5676;Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'Point(1 1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
 
@@ -851,15 +851,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' />> geometry 'Point Z empty';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' />> geometry 'Point Z empty';
 
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' />> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' />> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' />> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' />> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' />> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' />> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' />> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' />> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1 1)@2000-01-01';
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' />> tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -883,10 +883,10 @@ SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'SRID=5676;Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'Point(1 1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
 
@@ -912,15 +912,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &</ geometry 'Point Z empty';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &</ geometry 'Point Z empty';
 
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' &</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' &</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &</ stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &</ stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -944,10 +944,10 @@ SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'SRID=5676;Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'Point(1 1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
 
@@ -973,15 +973,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' /&> geometry 'Point Z empty';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' /&> geometry 'Point Z empty';
 
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' /&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' /&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' /&> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' /&> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' /&> stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' /&> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' /&> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' /&> stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))';
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -1005,10 +1005,10 @@ SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'SRID=5676;Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'Point(1 1 1)';
-SELECT stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'SRID=5676;STBOX((1.0,1.0),(2.0,2.0))';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'SRID=5676;STBOX X(((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
 
@@ -1086,15 +1086,15 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <<# tgeogpo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <<# tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<# timestamptz '2000-01-01';
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <<# timestamptz '2000-01-01';
@@ -1203,8 +1203,8 @@ SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
 /* Errors */
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 
 -------------------------------------------------------------------------------
 
@@ -1280,15 +1280,15 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #>> tgeogpo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #>> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #>> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' #>> timestamptz '2000-01-01';
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #>> timestamptz '2000-01-01';
@@ -1397,8 +1397,8 @@ SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
 /* Errors */
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 
 -------------------------------------------------------------------------------
 
@@ -1474,15 +1474,15 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' &<# tgeogpo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' &<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' &<# tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<# timestamptz '2000-01-01';
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' &<# timestamptz '2000-01-01';
@@ -1591,8 +1591,8 @@ SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
 /* Errors */
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 
 -------------------------------------------------------------------------------
 
@@ -1668,15 +1668,15 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #&> tgeogpo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #&> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #&> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-SELECT stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> stbox 'STBOX T([2001-01-01,2001-01-02],((1.0,1.0),(2.0,2.0)))';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2001-01-01,2001-01-02])';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' #&> timestamptz '2000-01-01';
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #&> timestamptz '2000-01-01';
@@ -1785,7 +1785,7 @@ SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
 /* Errors */
-SELECT stbox 'STBOX((1.0,1.0),(2.0,2.0))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX((1.0,1.0),(2.0,2.0))';
+SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))';
 
 -------------------------------------------------------------------------------

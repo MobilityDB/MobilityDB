@@ -150,7 +150,7 @@ ensure_has_T_stbox(const STBOX *box)
 /*****************************************************************************
  * Input/ouput functions in string format
  *****************************************************************************/
- 
+
  /**
  * @ingroup libmeos_box_in_out
  * @brief Return a spatial box from its Well-Known Text (WKT) representation.
@@ -237,12 +237,12 @@ stbox_out(const STBOX *box, int maxdd)
     {
       zmin = float8_out(box->zmin, maxdd);
       zmax = float8_out(box->zmax, maxdd);
-      snprintf(str, size, "%s%s ZT(%s,((%s,%s,%s),(%s,%s,%s)))",
-        srid, boxtype, period, xmin, ymin, zmin, xmax, ymax, zmax);
+      snprintf(str, size, "%s%s ZT(((%s,%s,%s),(%s,%s,%s)),%s)",
+        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period);
     }
     else
-      snprintf(str, size, "%s%s T(%s,((%s,%s),(%s,%s)))",
-        srid, boxtype, period, xmin, ymin, xmax, ymax);
+      snprintf(str, size, "%s%s XT(((%s,%s),(%s,%s)),%s)",
+        srid, boxtype, xmin, ymin, xmax, ymax, period);
   }
   else if (hasx)
   {
@@ -258,7 +258,7 @@ stbox_out(const STBOX *box, int maxdd)
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
     }
     else
-      snprintf(str, size, "%s%s((%s,%s),(%s,%s))",
+      snprintf(str, size, "%s%s X((%s,%s),(%s,%s))",
         srid, boxtype, xmin, ymin, xmax, ymax);
   }
   else /* hast */
