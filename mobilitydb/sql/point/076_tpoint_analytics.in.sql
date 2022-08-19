@@ -91,7 +91,7 @@ RETURNS tfloat
 AS 'MODULE_PATHNAME', 'Tfloat_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION simplify(tgeompoint, bool, float8)
+CREATE FUNCTION simplify(tgeompoint, float8, boolean DEFAULT FALSE)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Tpoint_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

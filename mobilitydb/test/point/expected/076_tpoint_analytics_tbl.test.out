@@ -466,13 +466,13 @@ SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tfloat;
   50
 (1 row)
 
-SELECT MAX(numInstants(simplify(temp, false, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tgeompoint;
  max 
 -----
   53
 (1 row)
 
-SELECT MAX(numInstants(simplify(temp, true, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(simplify(temp, 4, true))) FROM tbl_tgeompoint;
  max 
 -----
   56
