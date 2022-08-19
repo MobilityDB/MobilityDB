@@ -1526,8 +1526,9 @@ extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *t
 /* Analytics functions for temporal types */
 
 Temporal *geo_to_tpoint(const GSERIALIZED *geo);
-Temporal *temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist);
-bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
+Temporal *temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized);
+bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
+  int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
 bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/
