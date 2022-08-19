@@ -1315,26 +1315,26 @@ extern bool right_tpoint_tpoint(const Temporal *tpoint1, const Temporal *tpoint2
 
 /* Distance functions for temporal types */
 
-Temporal *distance_tfloat_float(const Temporal *temp, double d);
-Temporal *distance_tint_int(const Temporal *temp, int i);
-Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
-Temporal *distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
-Temporal *distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
-double nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs);
-double nad_stbox_stbox(const STBOX *box1, const STBOX *box2);
-double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
-double nad_tfloat_float(const Temporal *temp, double d);
-double nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2);
-int nad_tint_int(const Temporal *temp, int i);
-int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
-double nad_tnumber_tbox(const Temporal *temp, const TBOX *box);
-double nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-double nad_tpoint_stbox(const Temporal *temp, const STBOX *box);
-double nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
-TInstant *nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-TInstant *nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
-bool shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, GSERIALIZED **result);
-bool shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, GSERIALIZED **result);
+extern Temporal *distance_tfloat_float(const Temporal *temp, double d);
+extern Temporal *distance_tint_int(const Temporal *temp, int i);
+extern Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
+extern Temporal *distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern double nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs);
+extern double nad_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern double nad_tfloat_float(const Temporal *temp, double d);
+extern double nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2);
+extern int nad_tint_int(const Temporal *temp, int i);
+extern int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
+extern double nad_tnumber_tbox(const Temporal *temp, const TBOX *box);
+extern double nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern double nad_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern double nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern TInstant *nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern TInstant *nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, GSERIALIZED **result);
+extern bool shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, GSERIALIZED **result);
 
 /*****************************************************************************/
 
