@@ -1027,7 +1027,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
 /*****************************************************************************/
 
 static TSequence *
-tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
+tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   uint32_t minpts)
 {
   static size_t stack_size = 256;
@@ -1109,14 +1109,14 @@ tsequence_simplify(const TSequence *seq, bool synchronized, double eps_dist,
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
-tsequenceset_simplify(const TSequenceSet *ss, bool synchronized,
-  double eps_dist, uint32_t minpts)
+tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
+  bool synchronized, uint32_t minpts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tsequence_simplify(seq, synchronized, eps_dist, minpts);
+    sequences[i] = tsequence_simplify(seq, eps_dist, synchronized, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
@@ -1128,7 +1128,7 @@ tsequenceset_simplify(const TSequenceSet *ss, bool synchronized,
  * @sqlfunc simplify()
  */
 Temporal *
-temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist)
+temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1136,11 +1136,11 @@ temporal_simplify(const Temporal *temp, bool synchronized, double eps_dist)
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify((TSequence *) temp, synchronized,
-      eps_dist, 2);
+    result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
+      synchronized, 2);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
-      synchronized, eps_dist, 2);
+      eps_dist, synchronized, 2);
   return result;
 }
 
