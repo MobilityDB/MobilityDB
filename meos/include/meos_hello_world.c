@@ -37,12 +37,6 @@
  * @endcode
  */
 
-
-/* meos_hello_world.c
- * To build the program run the following command
- * cc meos_hello_world.c -o meos_hello_world -l meos
- */
-
 #include <stdio.h>  /* for printf */
 
 /* Include the MEOS API header */
@@ -50,7 +44,7 @@
 
 int main()
 {
-  /* Initialize session_timezone */
+  /* Initialize MEOS */
   meos_initialize();
 
   /* Input temporal points in WKT format */

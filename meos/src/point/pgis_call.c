@@ -1441,7 +1441,7 @@ gserialized_out(const GSERIALIZED *geom)
  * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-PGIS_LWGEOM_from_text(const char *wkt, int srid)
+gserialized_from_text(const char *wkt, int srid)
 {
   LWGEOM_PARSER_RESULT lwg_parser_result;
   GSERIALIZED *geom_result = NULL;
@@ -1467,23 +1467,22 @@ PGIS_LWGEOM_from_text(const char *wkt, int srid)
   return geom_result;
 }
 
-/*
- * LWGEOM_to_text(lwgeom) --> text
- * output is 'SRID=#;<wkb in hex form>'
- * ie. 'SRID=-99;0101000000000000000000F03F0000000000000040'
- * WKB is machine endian
- * if SRID=-1, the 'SRID=-1;' will probably not be present.
+/**
+ * @brief Returns a geometry Given an OGC WKT (and optionally a SRID)
+ * @return a geometry.
+ * @note Note that this is a a stricter version
+ *     of geometry_in, where we refuse to
+ *     accept (HEX)WKB or EWKT.
+ * @note PostGIS function: LWGEOM_asText(PG_FUNCTION_ARGS)
  */
+
+/** convert LWGEOM to wkt (in TEXT format) */
 char *
-gserialized_to_text(const GSERIALIZED *geom)
+gserialized_as_text(const GSERIALIZED *geom, int precision)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
-  lwvarlena_t *hexwkb = lwgeom_to_hexwkb_varlena(lwgeom, WKB_EXTENDED);
-  char *result = strdup(VARDATA(hexwkb));
-  pfree(hexwkb);
-  return result;
+  return lwgeom_to_wkt(lwgeom, WKT_ISO, precision, NULL);
 }
-
 /**
  * @brief Return the WKB representation in hex-encoded ASCII of a geometry.
  * @note PostGIS function: LWGEOM_asHEXEWKB
@@ -1534,6 +1533,92 @@ gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
   GSERIALIZED *geom = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
   return geom;
+}
+
+/**
+ * @brief Input a geometry from GeoJSON format
+ *
+ * @note PostGIS function: geom_from_geojson(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+gserialized_from_geojson(char *geojson)
+{
+  GSERIALIZED *geom;
+  LWGEOM *lwgeom;
+  char *srs = NULL;
+  int32_t srid = WGS84_SRID;
+
+  lwgeom = lwgeom_from_geojson(geojson, &srs);
+  if (!lwgeom)
+  {
+    /* Shouldn't get here */
+    elog(ERROR, "lwgeom_from_geojson returned NULL");
+    return NULL;
+  }
+
+  // if (srs)
+  // {
+    // srid = GetSRIDCacheBySRS(fcinfo, srs);
+    // lwfree(srs);
+  // }
+
+  lwgeom_set_srid(lwgeom, srid);
+  geom = geo_serialize(lwgeom);
+  lwgeom_free(lwgeom);
+
+  return geom;
+}
+
+/**
+ * @brief Output a geometry in GeoJSON format
+ *
+ * @note PostGIS function: LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
+ */
+char *
+gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision,
+  char *srs)
+{
+  LWGEOM *lwgeom;
+  // int precision = OUT_DEFAULT_DECIMAL_DIGITS;
+  int output_bbox = LW_FALSE;
+  // int output_long_crs = LW_FALSE;
+  // int output_short_crs = LW_FALSE;
+  // int output_guess_short_srid = LW_FALSE;
+  // const char *srs = NULL;
+
+  // int32_t srid = gserialized_get_srid(geom);
+
+  /* Retrieve output option
+   * 0 = without option
+   * 1 = bbox
+   * 2 = short crs
+   * 4 = long crs
+   * 8 = guess if CRS is needed (default)
+   */
+  // output_guess_short_srid = (option & 8) ? LW_TRUE : LW_FALSE;
+  // output_short_crs = (option & 2) ? LW_TRUE : LW_FALSE;
+  // output_long_crs = (option & 4) ? LW_TRUE : LW_FALSE;
+  output_bbox = (option & 1) ? LW_TRUE : LW_FALSE;
+
+  // if (output_guess_short_srid && srid != WGS84_SRID && srid != SRID_UNKNOWN)
+    // output_short_crs = LW_TRUE;
+
+  // if (srid != SRID_UNKNOWN && (output_short_crs || output_long_crs))
+  // {
+    // srs = GetSRSCacheBySRID(fcinfo, srid, !output_long_crs);
+
+    // if (!srs)
+    // {
+      // elog(ERROR, "SRID %i unknown in spatial_ref_sys table", srid);
+      // return NULL;
+    // }
+  // }
+
+  lwgeom = lwgeom_from_gserialized(geom);
+  lwvarlena_t *txt = lwgeom_to_geojson(lwgeom, srs, precision, output_bbox);
+  char *result = pstrdup(VARDATA(txt));
+  pfree(txt);
+  return result;
 }
 
 /*****************************************************************************

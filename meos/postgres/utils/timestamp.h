@@ -55,13 +55,11 @@
 
 #define TimestampTzPlusMilliseconds(tz,ms) ((tz) + ((ms) * (int64) 1000))
 
-
 /* Set at postmaster start */
 extern TimestampTz PgStartTime;
 
 /* Set at configuration reload */
 extern TimestampTz PgReloadTime;
-
 
 /* Internal routines (not fmgr-callable) */
 

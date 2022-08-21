@@ -223,16 +223,6 @@ extern void meos_initialize(void);
 extern void meos_finish(void);
 
 /*****************************************************************************
- * Functions for input/output base types
- *****************************************************************************/
-
-extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod);
-extern char *gserialized_out(const GSERIALIZED *geom);
-extern char *gserialized_as_hexwkb(const GSERIALIZED *geom, const char *type);
-
-extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
-
-/*****************************************************************************
  * Functions for input/output PostgreSQL time types
  *****************************************************************************/
 
@@ -242,6 +232,26 @@ extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern Timestamp pg_timestamp_in(char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
 extern char *pg_timestamp_out(Timestamp dt);
+extern Interval *pg_interval_in(char *str, int32 typmod);
+extern char *pg_interval_out(Interval *span);
+
+/*****************************************************************************
+ * Functions for input/output PostGIS types
+ *****************************************************************************/
+
+extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod); // const char *input ?
+extern char *gserialized_out(const GSERIALIZED *geom);
+
+extern GSERIALIZED *gserialized_from_text(const char *wkt, int srid);
+extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);
+
+extern GSERIALIZED *gserialized_from_hexewkb(const bytea *bytea_wkb, int32 srid);
+extern char *gserialized_as_hexwkb(const GSERIALIZED *geom, const char *type);
+
+extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
+extern GSERIALIZED *gserialized_from_geojson(char *geojson);
+
+extern char *gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision, char *srs);
 
 /*****************************************************************************
  * Functions for span and time types

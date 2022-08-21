@@ -25,6 +25,39 @@ struct tzEntry;
 /* Definitions of the global variables taken from miscadmin.h */
 extern int DateStyle;
 extern int DateOrder;
+extern int IntervalStyle;
+
+/* valid DateOrder values taken */
+#define DATEORDER_YMD      0
+#define DATEORDER_DMY      1
+#define DATEORDER_MDY      2
+
+/* Defitinitions taken from dt.h */
+
+#define MAXTZLEN			 10
+
+typedef int32 fsec_t;
+
+#define USE_POSTGRES_DATES				0
+#define USE_ISO_DATES					1
+#define USE_SQL_DATES					2
+#define USE_GERMAN_DATES				3
+#define USE_XSD_DATES      4
+
+#define INTSTYLE_POSTGRES			  0
+#define INTSTYLE_POSTGRES_VERBOSE	  1
+#define INTSTYLE_SQL_STANDARD		  2
+#define INTSTYLE_ISO_8601			  3
+
+#define INTERVAL_FULL_RANGE (0x7FFF)
+#define INTERVAL_MASK(b) (1 << (b))
+#define MAX_INTERVAL_PRECISION 6
+
+#define DTERR_BAD_FORMAT		(-1)
+#define DTERR_FIELD_OVERFLOW	(-2)
+#define DTERR_MD_FIELD_OVERFLOW (-3)	/* triggers hint about DateStyle */
+#define DTERR_INTERVAL_OVERFLOW (-4)
+#define DTERR_TZDISP_OVERFLOW	(-5)
 
 /* ----------------------------------------------------------------
  *				time types + support macros
