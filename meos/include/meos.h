@@ -228,11 +228,15 @@ extern void meos_finish(void);
 
 extern DateADT pg_date_in(char *str);
 extern char *pg_date_out(DateADT date);
+extern TimeADT pg_time_in(char *str, int32 typmod);
+extern char *pg_time_out(TimeADT time);
 extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern Timestamp pg_timestamp_in(char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
 extern char *pg_timestamp_out(Timestamp dt);
 extern Interval *pg_interval_in(char *str, int32 typmod);
+extern Interval *pg_interval_make(int32 years, int32 months, int32 weeks,
+  int32 days, int32 hours, int32 mins, double secs);
 extern char *pg_interval_out(Interval *span);
 
 /*****************************************************************************

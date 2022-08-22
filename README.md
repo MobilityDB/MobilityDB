@@ -82,9 +82,9 @@ Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
-*   PostgreSQL >= 11
+*   PostgreSQL >= 12
 *   CMake >= 3.7
-*   PostGIS >= 2.5
+*   PostGIS >= 3
 *   JSON-C
 *   GNU Scientific Library (GSL)
 *   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
