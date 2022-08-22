@@ -385,6 +385,69 @@ pg_time_out(TimeADT time)
  * Functions adapted from timestamp.c
  *****************************************************************************/
 
+/*
+ * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
+ * Works for either timestamp or timestamptz.
+ */
+bool
+AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
+{
+  static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
+
+  static const int64 TimestampOffsets[MAX_TIMESTAMP_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
+
+  if (!TIMESTAMP_NOT_FINITE(*time)
+    && (typmod != -1) && (typmod != MAX_TIMESTAMP_PRECISION))
+  {
+    if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
+    {
+      if (error)
+      {
+        *error = true;
+        return false;
+      }
+
+      elog(ERROR, "timestamp(%d) precision must be between %d and %d",
+              typmod, 0, MAX_TIMESTAMP_PRECISION);
+    }
+
+    if (*time >= INT64CONST(0))
+    {
+      *time = ((*time + TimestampOffsets[typmod]) / TimestampScales[typmod]) *
+        TimestampScales[typmod];
+    }
+    else
+    {
+      *time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
+            * TimestampScales[typmod]);
+    }
+  }
+
+  return true;
+}
+
+void
+AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
+{
+  (void) AdjustTimestampForTypmodError(time, typmod, NULL);
+}
+
 /**
  * @brief Convert a string to a either timestamp or a timestamp with timezone.
  * @note The function returns a TimestampTz that must be cast to a Timestamp

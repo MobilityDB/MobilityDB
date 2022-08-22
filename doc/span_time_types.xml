@@ -1020,7 +1020,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 		<sect2>
 			<title>Distance Operator</title>
 
-			<para>The distance operator <varname>&lt;-&gt;</varname> for span and time types consider the bouding span or period and returns a <varname>float</varname> value which is the smallest distance between the two values. In the case of periods it returns the number of seconds between the two time values. The distance operator can also be used for nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_time_types" />).</para>
+			<para>The distance operator <varname>&lt;-&gt;</varname> for span and time types consider the bounding span or period and returns a <varname>float</varname> value which is the smallest distance between the two values. In the case of periods it returns the number of seconds between the two time values. The distance operator can also be used for nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_time_types" />).</para>
 
 			<itemizedlist>
 				<listitem id="smallest_distance_time">
