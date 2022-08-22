@@ -53,7 +53,7 @@
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
- 
+
 /* Definitions taken from miscadmin.h */
 
 /* valid DateStyle values */
@@ -70,15 +70,15 @@
 
 /*
  * IntervalStyles
- *	 INTSTYLE_POSTGRES			   Like Postgres < 8.4 when DateStyle = 'iso'
- *	 INTSTYLE_POSTGRES_VERBOSE	   Like Postgres < 8.4 when DateStyle != 'iso'
- *	 INTSTYLE_SQL_STANDARD		   SQL standard interval literals
- *	 INTSTYLE_ISO_8601			   ISO-8601-basic formatted intervals
+ *   INTSTYLE_POSTGRES         Like Postgres < 8.4 when DateStyle = 'iso'
+ *   INTSTYLE_POSTGRES_VERBOSE     Like Postgres < 8.4 when DateStyle != 'iso'
+ *   INTSTYLE_SQL_STANDARD       SQL standard interval literals
+ *   INTSTYLE_ISO_8601         ISO-8601-basic formatted intervals
  */
-#define INTSTYLE_POSTGRES			0
-#define INTSTYLE_POSTGRES_VERBOSE	1
-#define INTSTYLE_SQL_STANDARD		2
-#define INTSTYLE_ISO_8601			3
+#define INTSTYLE_POSTGRES      0
+#define INTSTYLE_POSTGRES_VERBOSE  1
+#define INTSTYLE_SQL_STANDARD    2
+#define INTSTYLE_ISO_8601      3
 
 /* Definitions from globals.c */
 
@@ -298,6 +298,47 @@ pg_date_out(DateADT date)
  *   Time ADT
  *****************************************************************************/
 
+/* AdjustTimeForTypmod()
+ * Force the precision of the time value to a specified value.
+ * Uses *exactly* the same code as in AdjustTimestampForTypmod()
+ * but we make a separate copy because those types do not
+ * have a fundamental tie together but rather a coincidence of
+ * implementation. - thomas
+ */
+void
+AdjustTimeForTypmod(TimeADT *time, int32 typmod)
+{
+  static const int64 TimeScales[MAX_TIME_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
+
+  static const int64 TimeOffsets[MAX_TIME_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
+
+  if (typmod >= 0 && typmod <= MAX_TIME_PRECISION)
+  {
+    if (*time >= INT64CONST(0))
+      *time = ((*time + TimeOffsets[typmod]) / TimeScales[typmod]) *
+        TimeScales[typmod];
+    else
+      *time = -((((-*time) + TimeOffsets[typmod]) / TimeScales[typmod]) *
+            TimeScales[typmod]);
+  }
+}
+
 TimeADT
 pg_time_in(char *str, int32 typmod)
 {
@@ -482,6 +523,172 @@ pg_timestamp_out(Timestamp dt)
 }
 
 /*****************************************************************************/
+
+/*
+ *  Adjust interval for specified precision, in both YEAR to SECOND
+ *  range and sub-second precision.
+ */
+static void
+AdjustIntervalForTypmod(Interval *interval, int32 typmod)
+{
+  static const int64 IntervalScales[MAX_INTERVAL_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
+
+  static const int64 IntervalOffsets[MAX_INTERVAL_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
+
+  /*
+   * Unspecified range and precision? Then not necessary to adjust. Setting
+   * typmod to -1 is the convention for all data types.
+   */
+  if (typmod >= 0)
+  {
+    int      range = INTERVAL_RANGE(typmod);
+    int      precision = INTERVAL_PRECISION(typmod);
+
+    /*
+     * Our interpretation of intervals with a limited set of fields is
+     * that fields to the right of the last one specified are zeroed out,
+     * but those to the left of it remain valid.  Thus for example there
+     * is no operational difference between INTERVAL YEAR TO MONTH and
+     * INTERVAL MONTH.  In some cases we could meaningfully enforce that
+     * higher-order fields are zero; for example INTERVAL DAY could reject
+     * nonzero "month" field.  However that seems a bit pointless when we
+     * can't do it consistently.  (We cannot enforce a range limit on the
+     * highest expected field, since we do not have any equivalent of
+     * SQL's <interval leading field precision>.)  If we ever decide to
+     * revisit this, interval_support will likely require adjusting.
+     *
+     * Note: before PG 8.4 we interpreted a limited set of fields as
+     * actually causing a "modulo" operation on a given value, potentially
+     * losing high-order as well as low-order information.  But there is
+     * no support for such behavior in the standard, and it seems fairly
+     * undesirable on data consistency grounds anyway.  Now we only
+     * perform truncation or rounding of low-order fields.
+     */
+    if (range == INTERVAL_FULL_RANGE)
+    {
+      /* Do nothing... */
+    }
+    else if (range == INTERVAL_MASK(YEAR))
+    {
+      interval->month = (interval->month / MONTHS_PER_YEAR) * MONTHS_PER_YEAR;
+      interval->day = 0;
+      interval->time = 0;
+    }
+    else if (range == INTERVAL_MASK(MONTH))
+    {
+      interval->day = 0;
+      interval->time = 0;
+    }
+    /* YEAR TO MONTH */
+    else if (range == (INTERVAL_MASK(YEAR) | INTERVAL_MASK(MONTH)))
+    {
+      interval->day = 0;
+      interval->time = 0;
+    }
+    else if (range == INTERVAL_MASK(DAY))
+    {
+      interval->time = 0;
+    }
+    else if (range == INTERVAL_MASK(HOUR))
+    {
+      interval->time = (interval->time / USECS_PER_HOUR) *
+        USECS_PER_HOUR;
+    }
+    else if (range == INTERVAL_MASK(MINUTE))
+    {
+      interval->time = (interval->time / USECS_PER_MINUTE) *
+        USECS_PER_MINUTE;
+    }
+    else if (range == INTERVAL_MASK(SECOND))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    /* DAY TO HOUR */
+    else if (range == (INTERVAL_MASK(DAY) |
+               INTERVAL_MASK(HOUR)))
+    {
+      interval->time = (interval->time / USECS_PER_HOUR) *
+        USECS_PER_HOUR;
+    }
+    /* DAY TO MINUTE */
+    else if (range == (INTERVAL_MASK(DAY) |
+               INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE)))
+    {
+      interval->time = (interval->time / USECS_PER_MINUTE) *
+        USECS_PER_MINUTE;
+    }
+    /* DAY TO SECOND */
+    else if (range == (INTERVAL_MASK(DAY) |
+               INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE) |
+               INTERVAL_MASK(SECOND)))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    /* HOUR TO MINUTE */
+    else if (range == (INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE)))
+    {
+      interval->time = (interval->time / USECS_PER_MINUTE) *
+        USECS_PER_MINUTE;
+    }
+    /* HOUR TO SECOND */
+    else if (range == (INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE) |
+               INTERVAL_MASK(SECOND)))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    /* MINUTE TO SECOND */
+    else if (range == (INTERVAL_MASK(MINUTE) |
+               INTERVAL_MASK(SECOND)))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    else
+      elog(ERROR, "unrecognized interval typmod: %d", typmod);
+
+    /* Need to adjust sub-second precision? */
+    if (precision != INTERVAL_FULL_PRECISION)
+    {
+      if (precision < 0 || precision > MAX_INTERVAL_PRECISION)
+        elog(ERROR, "interval(%d) precision must be between %d and %d",
+                precision, 0, MAX_INTERVAL_PRECISION);
+
+      if (interval->time >= INT64CONST(0))
+      {
+        interval->time = ((interval->time +
+                   IntervalOffsets[precision]) /
+                  IntervalScales[precision]) *
+          IntervalScales[precision];
+      }
+      else
+      {
+        interval->time = -(((-interval->time +
+                   IntervalOffsets[precision]) /
+                  IntervalScales[precision]) *
+                   IntervalScales[precision]);
+      }
+    }
+  }
+}
 
 /**
  * @brief Convert a string to internal form.
@@ -838,12 +1045,12 @@ pg_interval_cmp(const Interval *interval1, const Interval *interval2)
 
 #define mix(a,b,c) \
 { \
-  a -= c;  a ^= rot(c, 4);	c += b; \
-  b -= a;  b ^= rot(a, 6);	a += c; \
-  c -= b;  c ^= rot(b, 8);	b += a; \
-  a -= c;  a ^= rot(c,16);	c += b; \
-  b -= a;  b ^= rot(a,19);	a += c; \
-  c -= b;  c ^= rot(b, 4);	b += a; \
+  a -= c;  a ^= rot(c, 4);  c += b; \
+  b -= a;  b ^= rot(a, 6);  a += c; \
+  c -= b;  c ^= rot(b, 8);  b += a; \
+  a -= c;  a ^= rot(c,16);  c += b; \
+  b -= a;  b ^= rot(a,19);  a += c; \
+  c -= b;  c ^= rot(b, 4);  b += a; \
 }
 
 #define final(a,b,c) \

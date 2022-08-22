@@ -111,7 +111,4 @@ extern int	date2isoyearday(int year, int mon, int mday);
 
 extern bool TimestampTimestampTzRequiresRewrite(void);
 
-// MobilityDB
-extern void AdjustIntervalForTypmod(Interval *interval, int32 typmod);
-
 #endif							/* TIMESTAMP_H */
