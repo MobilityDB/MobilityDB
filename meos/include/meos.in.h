@@ -38,9 +38,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 /* PostgreSQL */
-#include "../postgres/postgres.h"
-#include "../postgres/utils/timestamp_def.h"
-#include "../postgres/utils/date.h"
+@POSTGRES_DEFS@
 /* PostGIS */
 #include <liblwgeom.h>
 

@@ -58,7 +58,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/include/postgresql -o meos_store_ais meos_store_ais.c -L/usr/local/lib -lmeos -lpq
+ * gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o meos_store_ais meos_store_ais.c -L/usr/local/lib -lmeos -lpq
  * @endcode
  */
 
