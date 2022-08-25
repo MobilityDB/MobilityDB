@@ -245,7 +245,7 @@ tsequence_inst_n(const TSequence *seq, int index)
   return (TInstant *)(
     /* start of data */
     ((char *)seq) + double_pad(sizeof(TSequence)) +
-      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Period))) + 
+      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Period))) +
       seq->count * sizeof(size_t) +
       /* offset */
       (tsequence_offsets_ptr(seq))[index]);
@@ -1478,6 +1478,39 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
     lower_inc, upper_inc, linear, normalize);
   pfree_array((void **) instants, count);
   return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence from arrays of coordinates, one perror
+ * dimension.
+ *
+ * @param[in] xcoords Array of x coordinates
+ * @param[in] ycoords Array of y coordinates
+ * @param[in] zcoords Array of z coordinates
+ * @param[in] times Array of z timestamps
+ * @param[in] count Number of elements in the arrays
+ * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] linear True when the interpolation is linear
+ * @param[in] normalize True when the resulting value should be normalized
+ */
+TSequence *
+tpointseq_make_coords(const double *xcoords, const double *ycoords,
+  const double *zcoords, const TimestampTz *times, int count, int32 srid,
+  bool geodetic, bool lower_inc, bool upper_inc, bool linear, bool normalize)
+{
+  assert(count > 0);
+  bool hasz = (zcoords != NULL);
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i ++)
+  {
+    Datum point = PointerGetDatum(gspoint_make(xcoords[i], ycoords[i],
+      hasz ? zcoords[i] : 0.0, hasz, geodetic, srid));
+    instants[i] = tinstant_make(point, geodetic ? T_TGEOGPOINT : T_TGEOMPOINT,
+      times[i]);
+  }
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, linear,
+    normalize);
 }
 
 /**

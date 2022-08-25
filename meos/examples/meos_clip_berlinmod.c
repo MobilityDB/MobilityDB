@@ -77,10 +77,8 @@ typedef struct
 typedef struct
 {
   int vehicle;
-  DateADT day;
   int seq;
   Temporal *trip;
-  GSERIALIZED *trajectory;
 } trip_record;
 
 /* Arrays to compute the results */
@@ -296,7 +294,7 @@ int main(void)
   }
 
   trip_record trip_rec;
-  int read = 0;
+  int read;
   int records = 0;
 
   /* Read the first line of the file with the headers */
@@ -307,12 +305,8 @@ int main(void)
   {
     read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
       &trip_rec.vehicle, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
-    /* Transform the string representing the date into a date value */
-    trip_rec.day = pg_date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
-    /* Transform the string representing the trajectory into a geometry value */
-    trip_rec.trajectory = gserialized_in(geo_buffer, -1);
 
     if (read == 5)
       records++;

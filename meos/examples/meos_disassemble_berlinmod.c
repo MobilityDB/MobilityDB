@@ -89,7 +89,7 @@ int main(void)
     return 1;
   }
 
-  int read = 0;
+  int read;
   int i = 0;
 
   /* Read the first line of the file with the headers */
@@ -105,7 +105,7 @@ int main(void)
     DateADT day = pg_date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     Temporal *trip = temporal_from_hexwkb(trip_buffer);
-    
+
     /* Save the trip record */
     trips[i].vehicle = vehicle;
     trips[i].seq = seq;
