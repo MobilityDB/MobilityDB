@@ -1482,8 +1482,8 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence from arrays of coordinates, one perror
- * dimension.
+ * @brief Construct a temporal sequence from arrays of coordinates, one per
+ * dimension, and timestamps.
  *
  * @param[in] xcoords Array of x coordinates
  * @param[in] ycoords Array of y coordinates
