@@ -614,35 +614,6 @@ tinstantset_time(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_cast
- * @brief Return the bounding period of a temporal instant set
- * @sqlfunc period()
- * @sqlop @p ::
- */
-void
-tinstantset_set_period(const TSequence *seq, Period *p)
-{
-  TimestampTz lower = tinstantset_start_timestamp(seq);
-  TimestampTz upper = tinstantset_end_timestamp(seq);
-  return span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-    true, true, T_TIMESTAMPTZ, p);
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the timespan of a temporal instant set.
- * @sqlfunc timespan()
- */
-Interval *
-tinstantset_timespan(const TSequence *seq)
-{
-  TimestampTz lower = tinstantset_start_timestamp(seq);
-  TimestampTz upper = tinstantset_end_timestamp(seq);
-  Interval *result = pg_timestamp_mi(upper, lower);
-  return result;
-}
-
-/**
  * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of sequences of a temporal instant set.
  * @post The output parameter @p count is equal to the number of instants of
@@ -659,23 +630,6 @@ tinstantset_sequences(const TSequence *seq, int *count)
     const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = tinstant_to_tsequence(inst, linear);
   }
-  *count = seq->count;
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the array of instants of a temporal instant set.
- * @post The output parameter @p count is equal to the number of instants of
- * the input temporal instant set
- * @sqlfunc instants()
- */
-const TInstant **
-tinstantset_instants(const TSequence *seq, int *count)
-{
-  const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-    result[i] = tsequence_inst_n(seq, i);
   *count = seq->count;
   return result;
 }
@@ -821,62 +775,6 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
   }
   TSequence *result = tinstantset_make(instants, ts->count, MERGE_NO);
   pfree(instants);
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant set shifted and/or scaled by the intervals
- * @pre The duration is greater than 0 if it is not NULL
- * @sqlfunc shift(), tscale(), shiftTscale().
- */
-TSequence *
-tinstantset_shift_tscale(const TSequence *seq, const Interval *shift,
-  const Interval *duration)
-{
-  assert(shift != NULL || duration != NULL);
-
-  /* Copy the input instant set to the result */
-  TSequence *result = tsequence_copy(seq);
-
-  /* Shift and/or scale the period */
-  Period p1, p2;
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
-  span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
-    true, true, T_TIMESTAMPTZ, &p1);
-  span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
-  period_shift_tscale(shift, duration, &p2);
-  TimestampTz delta;
-  if (shift != NULL)
-    delta = p2.lower - p1.lower;
-  double scale;
-  bool instant = (p2.lower == p2.upper);
-  /* If the sequence set is instantaneous we cannot scale */
-  if (duration != NULL && ! instant)
-    scale = (double) (p2.upper - p2.lower) / (double) (p1.upper - p1.lower);
-
-  /* Set the first instant */
-  TInstant *inst = (TInstant *) tsequence_inst_n(result, 0);
-  inst->t = p2.lower;
-  if (seq->count > 1)
-  {
-    /* Shift and/or scale from the second to the penultimate instant */
-    for (int i = 1; i < seq->count - 1; i++)
-    {
-      inst = (TInstant *) tsequence_inst_n(result, i);
-      if (shift != NULL && (duration == NULL || instant))
-        inst->t += delta;
-      if (duration != NULL && ! instant)
-        inst->t = p2.lower + (inst->t - p1.lower) * scale;
-    }
-    /* Set the last instant */
-    inst = (TInstant *) tsequence_inst_n(result, seq->count - 1);
-    inst->t = p2.upper;
-  }
-  /* Shift and/or scale bounding box */
-  void *bbox = TSEQUENCE_BBOX_PTR(result);
-  temporal_bbox_shift_tscale(shift, duration, seq->temptype, bbox);
   return result;
 }
 
@@ -1195,57 +1093,6 @@ tnumberinstset_restrict_spans(const TSequence *seq, Span **normspans,
     tinstantset_make(instants, newcount, MERGE_NO);
   pfree(instants);
   return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return a pointer to the instant with minimum base value of a
- * temporal instant set
- *
- * @note Function used, e.g., for computing the shortest line between two
- * temporal points from their temporal distance
- * @sqlfunc minInstant()
- */
-const TInstant *
-tinstantset_min_instant(const TSequence *seq)
-{
-  Datum min = tinstant_value(tsequence_inst_n(seq, 0));
-  int k = 0;
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 1; i < seq->count; i++)
-  {
-    Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_lt(value, min, basetype))
-    {
-      min = value;
-      k = i;
-    }
-  }
-  return tsequence_inst_n(seq, k);
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return a pointer to the instant with minimum base value of a
- * temporal instant set
- * @sqlfunc maxInstant()
- */
-const TInstant *
-tinstantset_max_instant(const TSequence *seq)
-{
-  Datum max = tinstant_value(tsequence_inst_n(seq, 0));
-  int k = 0;
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 1; i < seq->count; i++)
-  {
-    Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_gt(value, max, basetype))
-    {
-      max = value;
-      k = i;
-    }
-  }
-  return tsequence_inst_n(seq, k);
 }
 
 /**

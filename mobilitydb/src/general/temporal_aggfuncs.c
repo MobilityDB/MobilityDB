@@ -476,22 +476,22 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[inout] state Skiplist containing the state
- * @param[in] is Temporal value
+ * @param[in] seq Temporal value
  * @param[in] func Function
  */
 static SkipList *
 tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TSequence *is, datum_func2 func)
+  const TSequence *seq, datum_func2 func)
 {
   int count;
-  const TInstant **instants = tinstantset_instants(is, &count);
+  const TInstant **instants = tsequence_instants(seq, &count);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) instants, is->count, TEMPORAL);
+    result = skiplist_make(fcinfo, (void **) instants, seq->count, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) instants[0]);
-    skiplist_splice(fcinfo, state, (void **) instants, is->count, func, false);
+    skiplist_splice(fcinfo, state, (void **) instants, seq->count, func, false);
     result = state;
   }
   pfree(instants);

@@ -1454,7 +1454,7 @@ tinstantset_to_wkb_size(const TSequence *seq, uint8_t variant)
   /* Include the number of instants */
   size += MOBDB_WKB_INT4_SIZE;
   int count;
-  const TInstant **instants = tinstantset_instants(seq, &count);
+  const TInstant **instants = tsequence_instants(seq, &count);
   /* Include the TInstant array */
   size += tinstarr_to_wkb_size(instants, count);
   pfree(instants);

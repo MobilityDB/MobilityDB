@@ -575,20 +575,6 @@ tfloatinst_to_tintinst(const TInstant *inst)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant set transformed into a temporal instant.
- * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
- */
-TInstant *
-tinstantset_to_tinstant(const TSequence *ti)
-{
-  if (ti->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal instant");
-
-  return tinstant_copy(tsequence_inst_n(ti, 0));
-}
-
-/**
- * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal instant.
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
