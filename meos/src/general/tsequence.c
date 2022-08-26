@@ -226,7 +226,7 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 /**
  * Return a pointer to the offsets array of a temporal sequence
  */
-static size_t *
+size_t *
 tsequence_offsets_ptr(const TSequence *seq)
 {
   return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
@@ -1238,30 +1238,30 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
 /**
  * Temporally intersect two temporal sequences
  *
- * @param[in] seq,is Input values
+ * @param[in] seq1,seq2 Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *is,
-  TInstantSet **inter1, TInstantSet **inter2)
+intersection_tsequence_tinstantset(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  if (! overlaps_span_span(&seq->period, &is->period))
+  if (! overlaps_span_span(&seq1->period, &seq2->period))
     return false;
 
-  TInstant **instants1 = palloc(sizeof(TInstant *) * is->count);
-  const TInstant **instants2 = palloc(sizeof(TInstant *) * is->count);
+  TInstant **instants1 = palloc(sizeof(TInstant *) * seq2->count);
+  const TInstant **instants2 = palloc(sizeof(TInstant *) * seq2->count);
   int k = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq2->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    if (contains_period_timestamp(&seq->period, inst->t))
+    const TInstant *inst = tsequence_inst_n(seq2, i);
+    if (contains_period_timestamp(&seq1->period, inst->t))
     {
-      instants1[k] = tsequence_at_timestamp(seq, inst->t);
+      instants1[k] = tsequence_at_timestamp(seq1, inst->t);
       instants2[k++] = inst;
     }
-    if ((TimestampTz) seq->period.upper < inst->t)
+    if ((TimestampTz) seq1->period.upper < inst->t)
       break;
   }
   if (k == 0)
@@ -1279,15 +1279,15 @@ intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *is,
 /**
  * Temporally intersect two temporal values
  *
- * @param[in] is,seq Temporal values
+ * @param[in] seq1,seq Temporal values
  * @param[out] inter1,inter2 Output values
  * @result Return false if the input values do not overlap on time.
  */
 bool
-intersection_tinstantset_tsequence(const TInstantSet *is, const TSequence *seq,
-  TInstantSet **inter1, TInstantSet **inter2)
+intersection_tinstantset_tsequence(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
 {
-  return intersection_tsequence_tinstantset(seq, is, inter2, inter1);
+  return intersection_tsequence_tinstantset(seq2, seq1, inter2, inter1);
 }
 
 /*****************************************************************************
@@ -1784,11 +1784,11 @@ tinstant_to_tsequence(const TInstant *inst, bool linear)
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
 TSequence *
-tinstantset_to_tsequence(const TInstantSet *is, bool linear)
+tinstantset_to_tsequence(const TSequence *seq, bool linear)
 {
-  if (is->count != 1)
+  if (seq->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal sequence");
-  return tinstant_to_tsequence(tinstantset_inst_n(is, 0), linear);
+  return tinstant_to_tsequence(tsequence_inst_n(seq, 0), linear);
 }
 
 /**
@@ -2163,7 +2163,7 @@ tsequence_max_value(const TSequence *seq)
   {
     TBOX *box = TSEQUENCE_BBOX_PTR(seq);
     Datum max = box->span.upper;
-    /* The upper bound for integer spans is exclusive due to cananicalization */
+    /* The upper bound for integer spans is exclusive due to canonicalization */
     if (seq->temptype == T_TINT)
       max = Int32GetDatum((int) DatumGetFloat8(max));
     return max;
@@ -3783,7 +3783,7 @@ tsequence_minus_timestamp(const TSequence *seq, TimestampTz t)
  * @brief Restrict a temporal sequence to a timestamp set.
  * @sqlfunc atTimestampSet()
  */
-TInstantSet *
+TSequence *
 tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
   TInstant *inst;
@@ -3794,7 +3794,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
     inst = tsequence_at_timestamp(seq, timestampset_time_n(ts, 0));
     if (inst == NULL)
       return NULL;
-    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1,
+    TSequence *result = tinstantset_make((const TInstant **) &inst, 1,
       MERGE_NO);
     pfree(inst);
     return result;

@@ -80,9 +80,9 @@ extern bool intersection_tsequence_tinstant(const TSequence *seq,
 extern bool intersection_tinstant_tsequence(const TInstant *inst,
   const TSequence *seq, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tsequence_tinstantset(const TSequence *seq,
-  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequence(const TInstantSet *is,
-  const TSequence *seq, TInstantSet **inter1, TInstantSet **inter2);
+  const TSequence *is, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tinstantset_tsequence(const TSequence *is,
+  const TSequence *seq, TSequence **inter1, TSequence **inter2);
 
 /* Input/output functions */
 

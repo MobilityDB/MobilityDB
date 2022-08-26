@@ -856,21 +856,21 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz, bool hast,
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
  * @param[out] bm Bit matrix
- * @param[in] is Temporal point
+ * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 static void
-tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *is, bool hasz,
+tpointinstset_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   bool hast, const STboxGridState *state)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
   memset(coords, 0, sizeof(coords));
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
     bitmatrix_set_cell(bm, coords, true);
   }
@@ -943,7 +943,7 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
   if (temp->subtype == TINSTANT)
     tpointinst_set_tiles(bm, (TInstant *) temp, hasz, hast, state);
   else if (temp->subtype == TINSTANTSET)
-    tpointinstset_set_tiles(bm, (TInstantSet *) temp, hasz, hast, state);
+    tpointinstset_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
   else if (temp->subtype == TSEQUENCE)
     tpointseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
   else /* temp->subtype == TSEQUENCESET */

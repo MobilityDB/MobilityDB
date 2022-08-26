@@ -104,7 +104,7 @@ tpoint_as_text(const Temporal *temp, int maxdd)
     result = tinstant_to_string((TInstant *) temp, Int32GetDatum(maxdd),
       &wkt_out);
   else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_to_string((TInstantSet *) temp, Int32GetDatum(maxdd),
+    result = tinstantset_to_string((TSequence *) temp, Int32GetDatum(maxdd),
       &wkt_out);
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_to_string((TSequence *) temp, Int32GetDatum(maxdd),

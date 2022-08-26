@@ -257,7 +257,7 @@ tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
  * @param[in] temptype Temporal type
  * @param[inout] tpoint_srid SRID of the temporal point
  */
-TInstantSet *
+TSequence *
 tpointinstset_parse(char **str, mobdbType temptype, int *tpoint_srid)
 {
   p_whitespace(str);

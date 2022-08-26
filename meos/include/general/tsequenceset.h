@@ -63,9 +63,9 @@ extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ss,
 extern bool intersection_tinstant_tsequenceset(const TInstant *inst,
   const TSequenceSet *ss, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
-  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequenceset(const TInstantSet *is,
-  const TSequenceSet *ss, TInstantSet **inter1, TInstantSet **inter2);
+  const TSequence *is, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tinstantset_tsequenceset(const TSequence *is,
+  const TSequenceSet *ss, TSequence **inter1, TSequence **inter2);
 extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
   const TSequenceSet *ss, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);

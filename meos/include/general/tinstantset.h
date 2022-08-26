@@ -44,23 +44,23 @@
 
 /* General functions */
 
-extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
-extern bool tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t,
+extern TSequence *tinstantset_make1(const TInstant **instants, int count);
+extern bool tinstantset_find_timestamp(const TSequence *is, TimestampTz t,
   int *pos);
 
 /* Input/output functions */
 
-extern char *tinstantset_to_string(const TInstantSet *is, Datum arg,
+extern char *tinstantset_to_string(const TSequence *is, Datum arg,
   char *(*value_out)(mobdbType, Datum, Datum));
 
 /* Intersection functions */
 
-extern bool intersection_tinstantset_tinstant(const TInstantSet *is,
+extern bool intersection_tinstantset_tinstant(const TSequence *is,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstant_tinstantset(const TInstant *inst,
-  const TInstantSet *is, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstantset_tinstantset(const TInstantSet *is1,
-  const TInstantSet *is2, TInstantSet **inter1, TInstantSet **inter2);
+  const TSequence *is, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tinstantset_tinstantset(const TSequence *is1,
+  const TSequence *is2, TSequence **inter1, TSequence **inter2);
 
 /*****************************************************************************/
 

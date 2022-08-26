@@ -469,7 +469,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal instant set from its MF-JSON representation.
  */
-TInstantSet *
+TSequence *
 tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   mobdbType temptype)
 {
@@ -485,7 +485,7 @@ tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  * @brief Return a temporal instant set boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
-TInstantSet *
+TSequence *
 tboolinstset_from_mfjson(json_object *mfjson)
 {
   return tinstantset_from_mfjson(mfjson, false, 0, T_TBOOL);
@@ -496,7 +496,7 @@ tboolinstset_from_mfjson(json_object *mfjson)
  * @brief Return a temporal instant set integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
-TInstantSet *
+TSequence *
 tintinstset_from_mfjson(json_object *mfjson)
 {
   return tinstantset_from_mfjson(mfjson, false, 0, T_TINT);
@@ -507,7 +507,7 @@ tintinstset_from_mfjson(json_object *mfjson)
  * @brief Return a temporal instant set float from its MF-JSON representation.
  * @sqlfunc tfloattFromMFJSON()
  */
-TInstantSet *
+TSequence *
 tfloatinstset_from_mfjson(json_object *mfjson)
 {
   return tinstantset_from_mfjson(mfjson, false, 0, T_TFLOAT);
@@ -518,7 +518,7 @@ tfloatinstset_from_mfjson(json_object *mfjson)
  * @brief Return a temporal instant set text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
-TInstantSet *
+TSequence *
 ttextinstset_from_mfjson(json_object *mfjson)
 {
   return tinstantset_from_mfjson(mfjson, false, 0, T_TTEXT);
@@ -530,7 +530,7 @@ ttextinstset_from_mfjson(json_object *mfjson)
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
  */
-TInstantSet *
+TSequence *
 tgeompointinstset_from_mfjson(json_object *mfjson, int srid)
 {
   return tinstantset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
@@ -542,7 +542,7 @@ tgeompointinstset_from_mfjson(json_object *mfjson, int srid)
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
  */
-TInstantSet *
+TSequence *
 tgeogpointinstset_from_mfjson(json_object *mfjson, int srid)
 {
   return tinstantset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
@@ -1589,7 +1589,7 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 /**
  * Return a temporal instant set value from its WKB representation
  */
-static TInstantSet *
+static TSequence *
 tinstantset_from_wkb_state(wkb_parse_state *s)
 {
   /* Get the number of instants */

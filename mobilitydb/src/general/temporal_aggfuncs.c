@@ -481,7 +481,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  */
 static SkipList *
 tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TInstantSet *is, datum_func2 func)
+  const TSequence *is, datum_func2 func)
 {
   int count;
   const TInstant **instants = tinstantset_instants(is, &count);
@@ -576,7 +576,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   if (temp->subtype == TINSTANT)
     result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp, func);
   else if (temp->subtype == TINSTANTSET)
-    result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *) temp,
+    result =  tinstantset_tagg_transfn(fcinfo, state, (TSequence *) temp,
       func);
   else if (temp->subtype == TSEQUENCE)
     result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *) temp,
@@ -670,13 +670,13 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  * Transform a temporal instant set value for aggregation
  */
 TInstant **
-tinstantset_transform_tagg(const TInstantSet *is,
+tinstantset_transform_tagg(const TSequence *is,
   TInstant *(*func)(const TInstant *))
 {
   TInstant **result = palloc(sizeof(TInstant *) * is->count);
   for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(is, i);
     result[i] = func(inst);
   }
   return result;
@@ -733,8 +733,8 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   else if (temp->subtype == TINSTANTSET)
   {
     result = (Temporal **) tinstantset_transform_tagg((
-      TInstantSet *) temp, func);
-    *count = ((TInstantSet *) temp)->count;
+      TSequence *) temp, func);
+    *count = ((TSequence *) temp)->count;
   }
   else if (temp->subtype == TSEQUENCE)
   {
@@ -807,13 +807,13 @@ tinstant_transform_tcount(const TInstant *inst)
  * performing temporal count aggregation
  */
 static TInstant **
-tinstantset_transform_tcount(const TInstantSet *is)
+tinstantset_transform_tcount(const TSequence *is)
 {
   TInstant **result = palloc(sizeof(TInstant *) * is->count);
   Datum datum_one = Int32GetDatum(1);
   for (int i = 0; i < is->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(is, i);
     result[i] = tinstant_make(datum_one, T_TINT, inst->t);
   }
   return result;
@@ -877,8 +877,8 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TINSTANTSET)
   {
-    result = (Temporal **) tinstantset_transform_tcount((TInstantSet *) temp);
-    *count = ((TInstantSet *) temp)->count;
+    result = (Temporal **) tinstantset_transform_tcount((TSequence *) temp);
+    *count = ((TSequence *) temp)->count;
   }
   else if (temp->subtype == TSEQUENCE)
   {
@@ -1264,7 +1264,7 @@ Tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 /**
  * Final function for temporal average aggregation of temporal instat values
  */
-static TInstantSet *
+static TSequence *
 tinstant_tavg_finalfn(TInstant **instants, int count)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);

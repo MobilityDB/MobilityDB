@@ -125,12 +125,12 @@ tpointinst_transform_tcentroid(const TInstant *inst)
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TInstant **
-tpointinstset_transform_tcentroid(const TInstantSet *ti)
+tpointinstset_transform_tcentroid(const TSequence *ti)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tsequence_inst_n(ti, i);
     result[i] = tpointinst_transform_tcentroid(inst);
   }
   return result;
@@ -186,8 +186,8 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TINSTANTSET)
   {
-    result = (Temporal **) tpointinstset_transform_tcentroid((TInstantSet *) temp);
-    *count = ((TInstantSet *) temp)->count;
+    result = (Temporal **) tpointinstset_transform_tcentroid((TSequence *) temp);
+    *count = ((TSequence *) temp)->count;
   }
   else if (temp->subtype == TSEQUENCE)
   {
@@ -356,7 +356,7 @@ doublen_to_point(const TInstant *inst, int srid)
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
  */
-static TInstantSet *
+static TSequence *
 tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);

@@ -1305,16 +1305,16 @@ tinstant_to_tsequenceset(const TInstant *inst, bool linear)
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
-tinstantset_to_tsequenceset(const TInstantSet *is, bool linear)
+tinstantset_to_tsequenceset(const TSequence *seq, bool linear)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     sequences[i] = tinstant_to_tsequence(inst, linear);
   }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    is->count, NORMALIZE_NO);
+    seq->count, NORMALIZE_NO);
   pfree(sequences);
   return result;
 }
@@ -2273,31 +2273,31 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 /**
  * Temporally intersect two temporal values
  *
- * @param[in] ss,is Input values
+ * @param[in] ss,seq Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
  */
 bool
 intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
-  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2)
+  const TSequence *seq, TSequence **inter1, TSequence **inter2)
 {
   /* Bounding period test */
-  if (! overlaps_span_span(&ss->period, &is->period))
+  if (! overlaps_span_span(&ss->period, &seq->period))
     return false;
 
-  TInstant **instants1 = palloc(sizeof(TInstant *) * is->count);
-  const TInstant **instants2 = palloc(sizeof(TInstant *) * is->count);
+  TInstant **instants1 = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant **instants2 = palloc(sizeof(TInstant *) * seq->count);
   int i = 0, j = 0, k = 0;
-  while (i < ss->count && j < is->count)
+  while (i < ss->count && j < seq->count)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
-    const TInstant *inst = tinstantset_inst_n(is, j);
-    if (contains_period_timestamp(&seq->period, inst->t))
+    const TSequence *seq1 = tsequenceset_seq_n(ss, i);
+    const TInstant *inst = tsequence_inst_n(seq, j);
+    if (contains_period_timestamp(&seq1->period, inst->t))
     {
-      instants1[k] = tsequence_at_timestamp(seq, inst->t);
+      instants1[k] = tsequence_at_timestamp(seq1, inst->t);
       instants2[k++] = inst;
     }
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
+    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq1->period.upper),
       inst->t);
     if (cmp == 0)
     {
@@ -2323,15 +2323,15 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
 /**
  * Temporally intersect two temporal values
  *
- * @param[in] is,ss Input values
+ * @param[in] seq,ss Input values
  * @param[out] inter1,inter2 Output values
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_tsequenceset(const TInstantSet *is,
-  const TSequenceSet *ss, TInstantSet **inter1, TInstantSet **inter2)
+intersection_tinstantset_tsequenceset(const TSequence *seq,
+  const TSequenceSet *ss, TSequence **inter1, TSequence **inter2)
 {
-  return intersection_tsequenceset_tinstantset(ss, is, inter2, inter1);
+  return intersection_tsequenceset_tinstantset(ss, seq, inter2, inter1);
 }
 
 /**

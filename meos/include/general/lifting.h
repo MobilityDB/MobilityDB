@@ -72,7 +72,7 @@ typedef struct
 
 extern TInstant *tfunc_tinstant(const TInstant *inst,
   LiftedFunctionInfo *lfinfo);
-extern TInstantSet *tfunc_tinstantset(const TInstantSet *is,
+extern TSequence *tfunc_tinstantset(const TSequence *is,
   LiftedFunctionInfo *lfinfo);
 extern TSequence *tfunc_tsequence(const TSequence *seq,
   LiftedFunctionInfo *lfinfo);
@@ -83,7 +83,7 @@ extern Temporal *tfunc_temporal(const Temporal *temp,
 
 extern TInstant *tfunc_tinstant_base(const TInstant *inst, Datum value,
   LiftedFunctionInfo *lfinfo);
-extern TInstantSet *tfunc_tinstantset_base(const TInstantSet *is, Datum value,
+extern TSequence *tfunc_tinstantset_base(const TSequence *is, Datum value,
   LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_tsequence_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo);
@@ -94,8 +94,8 @@ extern Temporal *tfunc_temporal_base(const Temporal *temp, Datum value,
 
 extern TInstant *tfunc_tinstant_tinstant(const TInstant *inst1,
   const TInstant *inst2, LiftedFunctionInfo *lfinfo);
-extern TInstantSet *tfunc_tinstantset_tinstantset(const TInstantSet *is1,
-  const TInstantSet *is2, LiftedFunctionInfo *lfinfo);
+extern TSequence *tfunc_tinstantset_tinstantset(const TSequence *is1,
+  const TSequence *is2, LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 

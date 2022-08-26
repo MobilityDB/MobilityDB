@@ -55,49 +55,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal instant set
- * @sqlfunc period(), tbox(), stbox()
- * @sqlop @p ::
- */
-void
-tinstantset_set_bbox(const TInstantSet *is, void *box)
-{
-  memset(box, 0, is->bboxsize);
-  memcpy(box, TINSTANTSET_BBOX_PTR(is), is->bboxsize);
-  return;
-}
-
-/**
- * Return a pointer to the offsets array of a temporal instant set
- */
-static size_t *
-tinstantset_offsets_ptr(const TInstantSet *is)
-{
-  return (size_t *)(((char *) is) + double_pad(sizeof(TInstantSet)) +
-    /* The period component of the bbox is already declared in the struct */
-    double_pad(is->bboxsize - sizeof(Period)));
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the n-th instant of a temporal instant set.
- * @pre The argument @p index is less than the number of instants in the
- * instant set
- */
-const TInstant *
-tinstantset_inst_n(const TInstantSet *is, int index)
-{
-  return (TInstant *)(
-    /* start of data */
-    ((char *) is) + double_pad(sizeof(TInstantSet)) +
-      /* The period component of the bbox is already declared in the struct */
-      (is->bboxsize - sizeof(Period)) + is->count * sizeof(size_t) +
-      /* offset */
-      (tinstantset_offsets_ptr(is))[index]);
-}
-
-/**
  * Ensure the validity of the arguments when creating a temporal instant set
  */
 static void
@@ -118,7 +75,7 @@ tinstantset_make_valid(const TInstant **instants, int count, bool merge)
  * instants is as follows
  * @code
  *  -----------------------------------------------------------------
- *  ( TInstantSet )_X | (end of bbox )_X | offset_0 | offset_1 | ...
+ *  ( TSequence )_X | (end of bbox )_X | offset_0 | offset_1 | ...
  *  -----------------------------------------------------------------
  *  -------------------------------------
  *  ( TInstant_0 )_X | ( TInstant_1 )_X |
@@ -127,22 +84,22 @@ tinstantset_make_valid(const TInstant **instants, int count, bool merge)
  * where the `_X` are unused bytes added for double padding, `offset_0` and
  * `offset_1` are offsets for the corresponding instants
  */
-TInstantSet *
+TSequence *
 tinstantset_make1(const TInstant **instants, int count)
 {
   /* Get the bounding box size */
   size_t bboxsize = temporal_bbox_size(instants[0]->temptype);
+  /* The period component of the bbox is already declared in the struct */
+  size_t memsize = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
 
   /* Compute the size of the temporal instant set */
-  /* The period component of the bbox is already declared in the struct */
-  size_t memsize = bboxsize - sizeof(Period);
   /* Size of composing instants */
   for (int i = 0; i < count; i++)
     memsize += double_pad(VARSIZE(instants[i]));
   /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TInstantSet)) + count * sizeof(size_t);
-  /* Create the TInstantSet */
-  TInstantSet *result = palloc0(memsize);
+  memsize += double_pad(sizeof(TSequence)) + count * sizeof(size_t);
+  /* Create the TSequence */
+  TSequence *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
   result->temptype = instants[0]->temptype;
@@ -163,20 +120,21 @@ tinstantset_make1(const TInstant **instants, int count)
   /*
    * Compute the bounding box
    * Only external types have bounding box, internal types such
-   * as double2, double3, or double4 do not have bounding box
+   * as double2, double3, or double4 do not have bounding box but
+   * require to set the period attribute
    */
   if (bboxsize != 0)
   {
-    tinstantset_compute_bbox(instants, count, TINSTANTSET_BBOX_PTR(result));
+    tinstantset_compute_bbox(instants, count, TSEQUENCE_BBOX_PTR(result));
   }
   /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TInstantSet)) +
+  size_t pdata = double_pad(sizeof(TSequence)) +
     double_pad(bboxsize - sizeof(Period)) + count * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < count; i++)
   {
     memcpy(((char *)result) + pdata + pos, instants[i], VARSIZE(instants[i]));
-    (tinstantset_offsets_ptr(result))[i] = pos;
+    (tsequence_offsets_ptr(result))[i] = pos;
     pos += double_pad(VARSIZE(instants[i]));
   }
 
@@ -209,16 +167,16 @@ tinstantset_make1(const TInstant **instants, int count)
  * @result Return true if the timestamp is contained in the temporal instant set
  */
 bool
-tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t, int *loc)
+tinstantset_find_timestamp(const TSequence *seq, TimestampTz t, int *loc)
 {
   int first = 0;
-  int last = is->count - 1;
+  int last = seq->count - 1;
   int middle = 0; /* make compiler quiet */
   const TInstant *inst = NULL; /* make compiler quiet */
   while (first <= last)
   {
     middle = (first + last)/2;
-    inst = tinstantset_inst_n(is, middle);
+    inst = tsequence_inst_n(seq, middle);
     int cmp = timestamptz_cmp_internal(inst->t, t);
     if (cmp == 0)
     {
@@ -249,7 +207,7 @@ tinstantset_find_timestamp(const TInstantSet *is, TimestampTz t, int *loc)
  * @param[in] str String
  * @param[in] temptype Temporal type
  */
-TInstantSet *
+TSequence *
 tinstantset_in(char *str, mobdbType temptype)
 {
   return tinstantset_parse(&str, temptype);
@@ -260,7 +218,7 @@ tinstantset_in(char *str, mobdbType temptype)
  * @brief Return a temporal instant set boolean from its Well-Known Text (WKT)
  * representation.
  */
-TInstantSet *
+TSequence *
 tboolinstset_in(char *str)
 {
   return tinstantset_parse(&str, T_TBOOL);
@@ -271,7 +229,7 @@ tboolinstset_in(char *str)
  * @brief Return a temporal instant set integer from its Well-Known Text (WKT)
  * representation.
  */
-TInstantSet *
+TSequence *
 tintinstset_in(char *str)
 {
   return tinstantset_parse(&str, T_TINT);
@@ -282,7 +240,7 @@ tintinstset_in(char *str)
  * @brief Return a temporal instant set float from its Well-Known Text (WKT)
  * representation.
  */
-TInstantSet *
+TSequence *
 tfloatinstset_in(char *str)
 {
   return tinstantset_parse(&str, T_TFLOAT);
@@ -293,7 +251,7 @@ tfloatinstset_in(char *str)
  * @brief Return a temporal instant set text from its Well-Known Text (WKT)
  * representation.
  */
-TInstantSet *
+TSequence *
 ttextinstset_in(char *str)
 {
   return tinstantset_parse(&str, T_TTEXT);
@@ -304,13 +262,13 @@ ttextinstset_in(char *str)
  * @brief Return a temporal instant set geometric point from its Well-Known Text
  * (WKT) representation.
  */
-TInstantSet *
+TSequence *
 tgeompointinstset_in(char *str)
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
   assert (temp->subtype == TINSTANT);
-  return (TInstantSet *) temp;
+  return (TSequence *) temp;
 }
 
 /**
@@ -318,13 +276,13 @@ tgeompointinstset_in(char *str)
  * @brief Return a temporal instant set geographic point from its Well-Known
  * Text (WKT) representation.
  */
-TInstantSet *
+TSequence *
 tgeogpointinstset_in(char *str)
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
   assert (temp->subtype == TINSTANTSET);
-  return (TInstantSet *) temp;
+  return (TSequence *) temp;
 }
 #endif
 
@@ -332,26 +290,26 @@ tgeogpointinstset_in(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant
  * set.
  *
- * @param[in] is Temporal instant set
+ * @param[in] seq Temporal instant set
  * @param[in] arg Maximum number of decimal digits to output for floating point
  * values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */
 char *
-tinstantset_to_string(const TInstantSet *is, Datum arg,
+tinstantset_to_string(const TSequence *seq, Datum arg,
   char *(*value_out)(mobdbType, Datum, Datum))
 {
-  char **strings = palloc(sizeof(char *) * is->count);
+  char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
 
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     strings[i] = tinstant_to_string(inst, arg, value_out);
     outlen += strlen(strings[i]) + 2;
   }
-  return stringarr_to_string(strings, is->count, outlen, "", '{', '}');
+  return stringarr_to_string(strings, seq->count, outlen, "", '{', '}');
 }
 
 /**
@@ -360,9 +318,9 @@ tinstantset_to_string(const TInstantSet *is, Datum arg,
  * set.
  */
 char *
-tinstantset_out(const TInstantSet *is, Datum arg)
+tinstantset_out(const TSequence *seq, Datum arg)
 {
-  return tinstantset_to_string(is, arg, &basetype_output);
+  return tinstantset_to_string(seq, arg, &basetype_output);
 }
 
 /*****************************************************************************
@@ -380,7 +338,7 @@ tinstantset_out(const TInstantSet *is, Datum arg)
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
  */
-TInstantSet *
+TSequence *
 tinstantset_make(const TInstant **instants, int count, bool merge)
 {
   tinstantset_make_valid(instants, count, merge);
@@ -398,7 +356,7 @@ tinstantset_make(const TInstant **instants, int count, bool merge)
  * merge operations
  * @see tinstantset_make
  */
-TInstantSet *
+TSequence *
 tinstantset_make_free(TInstant **instants, int count, bool merge)
 {
   if (count == 0)
@@ -406,21 +364,9 @@ tinstantset_make_free(TInstant **instants, int count, bool merge)
     pfree(instants);
     return NULL;
   }
-  TInstantSet *result = tinstantset_make((const TInstant **) instants,
+  TSequence *result = tinstantset_make((const TInstant **) instants,
     count, merge);
   pfree_array((void **) instants, count);
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_constructor
- * @brief Return a copy of a temporal instant set.
- */
-TInstantSet *
-tinstantset_copy(const TInstantSet *is)
-{
-  TInstantSet *result = palloc0(VARSIZE(is));
-  memcpy(result, is, VARSIZE(is));
   return result;
 }
 
@@ -433,14 +379,14 @@ tinstantset_copy(const TInstantSet *is)
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
  */
-TInstantSet *
-tinstantset_from_base(Datum value, mobdbType temptype, const TInstantSet *is)
+TSequence *
+tinstantset_from_base(Datum value, mobdbType temptype, const TSequence *seq)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
     instants[i] = tinstant_make(value, temptype,
-      tinstantset_inst_n(is, i)->t);
-  return tinstantset_make_free(instants, is->count, MERGE_NO);
+      tsequence_inst_n(seq, i)->t);
+  return tinstantset_make_free(instants, seq->count, MERGE_NO);
 }
 
 #if MEOS
@@ -449,10 +395,10 @@ tinstantset_from_base(Datum value, mobdbType temptype, const TInstantSet *is)
  * @brief Construct a temporal boolean instant set from a boolean and a
  * timestamp set.
  */
-TInstantSet *
-tboolinstset_from_base(bool b, const TInstantSet *is)
+TSequence *
+tboolinstset_from_base(bool b, const TSequence *seq)
 {
-  return tinstantset_from_base(BoolGetDatum(b), T_TBOOL, is);
+  return tinstantset_from_base(BoolGetDatum(b), T_TBOOL, seq);
 }
 
 /**
@@ -460,10 +406,10 @@ tboolinstset_from_base(bool b, const TInstantSet *is)
  * @brief Construct a temporal integer instant set from an integer and a
  * timestamp set.
  */
-TInstantSet *
-tintinstset_from_base(int i, const TInstantSet *is)
+TSequence *
+tintinstset_from_base(int i, const TSequence *seq)
 {
-  return tinstantset_from_base(Int32GetDatum(i), T_TINT, is);
+  return tinstantset_from_base(Int32GetDatum(i), T_TINT, seq);
 }
 
 /**
@@ -471,20 +417,20 @@ tintinstset_from_base(int i, const TInstantSet *is)
  * @brief Construct a temporal float instant set from a float and a
  * timestamp set.
  */
-TInstantSet *
-tfloatinstset_from_base(bool b, const TInstantSet *is)
+TSequence *
+tfloatinstset_from_base(bool b, const TSequence *seq)
 {
-  return tinstantset_from_base(BoolGetDatum(b), T_TFLOAT, is);
+  return tinstantset_from_base(BoolGetDatum(b), T_TFLOAT, seq);
 }
 
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text instant set from a text and a timestamp set.
  */
-TInstantSet *
-ttextinstset_from_base(const text *txt, const TInstantSet *is)
+TSequence *
+ttextinstset_from_base(const text *txt, const TSequence *seq)
 {
-  return tinstantset_from_base(PointerGetDatum(txt), T_TTEXT, is);
+  return tinstantset_from_base(PointerGetDatum(txt), T_TTEXT, seq);
 }
 
 /**
@@ -492,10 +438,10 @@ ttextinstset_from_base(const text *txt, const TInstantSet *is)
  * @brief Construct a temporal geometric point instant set from a point and a
  * timestamp set.
  */
-TInstantSet *
-tgeompointinstset_from_base(const GSERIALIZED *gs, const TInstantSet *is)
+TSequence *
+tgeompointinstset_from_base(const GSERIALIZED *gs, const TSequence *seq)
 {
-  return tinstantset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, is);
+  return tinstantset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, seq);
 }
 
 /**
@@ -503,10 +449,10 @@ tgeompointinstset_from_base(const GSERIALIZED *gs, const TInstantSet *is)
  * @brief Construct a temporal geographic point instant set from a point and a
  * timestamp set.
  */
-TInstantSet *
-tgeogpointinstset_from_base(const GSERIALIZED *gs, const TInstantSet *is)
+TSequence *
+tgeogpointinstset_from_base(const GSERIALIZED *gs, const TSequence *seq)
 {
-  return tinstantset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, is);
+  return tinstantset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, seq);
 }
 #endif /* MEOS */
 
@@ -518,7 +464,7 @@ tgeogpointinstset_from_base(const GSERIALIZED *gs, const TInstantSet *is)
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
  */
-TInstantSet *
+TSequence *
 tinstantset_from_base_time(Datum value, mobdbType temptype,
   const TimestampSet *ts)
 {
@@ -534,7 +480,7 @@ tinstantset_from_base_time(Datum value, mobdbType temptype,
  * @brief Construct a temporal boolean instant set from a boolean and a
  * timestamp set.
  */
-TInstantSet *
+TSequence *
 tboolinstset_from_base_time(bool b, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(BoolGetDatum(b), T_TBOOL, ts);
@@ -545,7 +491,7 @@ tboolinstset_from_base_time(bool b, const TimestampSet *ts)
  * @brief Construct a temporal integer instant set from an integer and a
  * timestamp set.
  */
-TInstantSet *
+TSequence *
 tintinstset_from_base_time(int i, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(Int32GetDatum(i), T_TINT, ts);
@@ -556,7 +502,7 @@ tintinstset_from_base_time(int i, const TimestampSet *ts)
  * @brief Construct a temporal float instant set from a float and a
  * timestamp set.
  */
-TInstantSet *
+TSequence *
 tfloatinstset_from_base_time(bool b, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(BoolGetDatum(b), T_TFLOAT, ts);
@@ -566,7 +512,7 @@ tfloatinstset_from_base_time(bool b, const TimestampSet *ts)
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text instant set from a text and a timestamp set.
  */
-TInstantSet *
+TSequence *
 ttextinstset_from_base_time(const text *txt, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(txt), T_TTEXT, ts);
@@ -577,7 +523,7 @@ ttextinstset_from_base_time(const text *txt, const TimestampSet *ts)
  * @brief Construct a temporal geometric point instant set from a point and a
  * timestamp set.
  */
-TInstantSet *
+TSequence *
 tgeompointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ts);
@@ -588,7 +534,7 @@ tgeompointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
  * @brief Construct a temporal geographic point instant set from a point and a
  * timestamp set.
  */
-TInstantSet *
+TSequence *
 tgeogpointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 {
   return tinstantset_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ts);
@@ -602,20 +548,20 @@ tgeogpointinstset_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 /**
  * Return the array of base values of a temporal instant set
  *
- * @param[in] is Temporal instant set
+ * @param[in] seq Temporal instant set
  * @param[out] result Array of base values
  * @result Number of elements in the output array
  */
 int
-tinstantset_values1(const TInstantSet *is, Datum *result)
+tinstantset_values1(const TSequence *seq, Datum *result)
 {
-  for (int i = 0; i < is->count; i++)
-    result[i] = tinstant_value(tinstantset_inst_n(is, i));
-  if (is->count == 1)
+  for (int i = 0; i < seq->count; i++)
+    result[i] = tinstant_value(tsequence_inst_n(seq, i));
+  if (seq->count == 1)
     return 1;
-  mobdbType basetype = temptype_basetype(is->temptype);
-  datumarr_sort(result, is->count, basetype);
-  return datumarr_remove_duplicates(result, is->count, basetype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  datumarr_sort(result, seq->count, basetype);
+  return datumarr_remove_duplicates(result, seq->count, basetype);
 }
 
 /**
@@ -624,10 +570,10 @@ tinstantset_values1(const TInstantSet *is, Datum *result)
  * @sqlfunc getValues()
  */
 Datum *
-tinstantset_values(const TInstantSet *is, int *count)
+tinstantset_values(const TSequence *seq, int *count)
 {
-  Datum *result = palloc(sizeof(Datum *) * is->count);
-  *count = tinstantset_values1(is, result);
+  Datum *result = palloc(sizeof(Datum *) * seq->count);
+  *count = tinstantset_values1(seq, result);
   return result;
 }
 
@@ -637,10 +583,10 @@ tinstantset_values(const TInstantSet *is, int *count)
  * @sqlfunc getValues()
  */
 Span **
-tfloatinstset_spans(const TInstantSet *is, int *count)
+tfloatinstset_spans(const TSequence *seq, int *count)
 {
   int newcount;
-  Datum *values = tinstantset_values(is, &newcount);
+  Datum *values = tinstantset_values(seq, &newcount);
   Span **result = palloc(sizeof(Span *) * newcount);
   for (int i = 0; i < newcount; i++)
     result[i] = span_make(values[i], values[i], true, true, T_FLOAT8);
@@ -655,71 +601,15 @@ tfloatinstset_spans(const TInstantSet *is, int *count)
  * @sqlfunc getTime()
  */
 PeriodSet *
-tinstantset_time(const TInstantSet *is)
+tinstantset_time(const TSequence *seq)
 {
-  Period **periods = palloc(sizeof(Period *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  Period **periods = palloc(sizeof(Period *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     periods[i] = span_make(inst->t, inst->t, true, true, T_TIMESTAMPTZ);
   }
-  PeriodSet *result = periodset_make_free(periods, is->count, NORMALIZE_NO);
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the minimum base value of a temporal instant set.
- * @sqlfunc minValue()
- */
-Datum
-tinstantset_min_value(const TInstantSet *is)
-{
-  if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
-  {
-    TBOX *box = TINSTANTSET_BBOX_PTR(is);
-    Datum min = box->span.lower;
-    if (is->temptype == T_TINT)
-      min = Int32GetDatum((int) DatumGetFloat8(min));
-    return min;
-  }
-
-  mobdbType basetype = temptype_basetype(is->temptype);
-  Datum result = tinstant_value(tinstantset_inst_n(is, 0));
-  for (int i = 1; i < is->count; i++)
-  {
-    Datum value = tinstant_value(tinstantset_inst_n(is, i));
-    if (datum_lt(value, result, basetype))
-      result = value;
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the maximum base value of a temporal instant set.
- * @sqlfunc maxValue()
- */
-Datum
-tinstantset_max_value(const TInstantSet *is)
-{
-  if (is->temptype == T_TINT || is->temptype == T_TFLOAT)
-  {
-    TBOX *box = TINSTANTSET_BBOX_PTR(is);
-    Datum max = box->span.upper;
-    if (is->temptype == T_TINT)
-      max = Int32GetDatum((int) DatumGetFloat8(max));
-    return max;
-  }
-
-  mobdbType basetype = temptype_basetype(is->temptype);
-  Datum result = tinstant_value(tinstantset_inst_n(is, 0));
-  for (int i = 1; i < is->count; i++)
-  {
-    Datum value = tinstant_value(tinstantset_inst_n(is, i));
-    if (datum_gt(value, result, basetype))
-      result = value;
-  }
+  PeriodSet *result = periodset_make_free(periods, seq->count, NORMALIZE_NO);
   return result;
 }
 
@@ -730,10 +620,10 @@ tinstantset_max_value(const TInstantSet *is)
  * @sqlop @p ::
  */
 void
-tinstantset_set_period(const TInstantSet *is, Period *p)
+tinstantset_set_period(const TSequence *seq, Period *p)
 {
-  TimestampTz lower = tinstantset_start_timestamp(is);
-  TimestampTz upper = tinstantset_end_timestamp(is);
+  TimestampTz lower = tinstantset_start_timestamp(seq);
+  TimestampTz upper = tinstantset_end_timestamp(seq);
   return span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
     true, true, T_TIMESTAMPTZ, p);
 }
@@ -744,10 +634,10 @@ tinstantset_set_period(const TInstantSet *is, Period *p)
  * @sqlfunc timespan()
  */
 Interval *
-tinstantset_timespan(const TInstantSet *is)
+tinstantset_timespan(const TSequence *seq)
 {
-  TimestampTz lower = tinstantset_start_timestamp(is);
-  TimestampTz upper = tinstantset_end_timestamp(is);
+  TimestampTz lower = tinstantset_start_timestamp(seq);
+  TimestampTz upper = tinstantset_end_timestamp(seq);
   Interval *result = pg_timestamp_mi(upper, lower);
   return result;
 }
@@ -760,16 +650,16 @@ tinstantset_timespan(const TInstantSet *is)
  * @sqlfunc sequences()
  */
 TSequence **
-tinstantset_sequences(const TInstantSet *is, int *count)
+tinstantset_sequences(const TSequence *seq, int *count)
 {
-  TSequence **result = palloc(sizeof(TSequence *) * is->count);
-  bool linear = MOBDB_FLAGS_GET_CONTINUOUS(is->flags);
-  for (int i = 0; i < is->count; i++)
+  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
+  bool linear = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = tinstant_to_tsequence(inst, linear);
   }
-  *count = is->count;
+  *count = seq->count;
   return result;
 }
 
@@ -781,12 +671,12 @@ tinstantset_sequences(const TInstantSet *is, int *count)
  * @sqlfunc instants()
  */
 const TInstant **
-tinstantset_instants(const TInstantSet *is, int *count)
+tinstantset_instants(const TSequence *seq, int *count)
 {
-  const TInstant **result = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
-    result[i] = tinstantset_inst_n(is, i);
-  *count = is->count;
+  const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    result[i] = tsequence_inst_n(seq, i);
+  *count = seq->count;
   return result;
 }
 
@@ -796,9 +686,9 @@ tinstantset_instants(const TInstantSet *is, int *count)
  * @sqlfunc startTimestamp()
  */
 TimestampTz
-tinstantset_start_timestamp(const TInstantSet *is)
+tinstantset_start_timestamp(const TSequence *seq)
 {
-  return (tinstantset_inst_n(is, 0))->t;
+  return (tsequence_inst_n(seq, 0))->t;
 }
 
 /**
@@ -807,9 +697,9 @@ tinstantset_start_timestamp(const TInstantSet *is)
  * @sqlfunc endTimestamp()
  */
 TimestampTz
-tinstantset_end_timestamp(const TInstantSet *is)
+tinstantset_end_timestamp(const TSequence *seq)
 {
-  return (tinstantset_inst_n(is, is->count - 1))->t;
+  return (tsequence_inst_n(seq, seq->count - 1))->t;
 }
 
 /**
@@ -820,12 +710,12 @@ tinstantset_end_timestamp(const TInstantSet *is)
  * @sqlfunc timestamps()
  */
 TimestampTz *
-tinstantset_timestamps(const TInstantSet *is, int *count)
+tinstantset_timestamps(const TSequence *seq, int *count)
 {
-  TimestampTz *result = palloc(sizeof(TimestampTz) * is->count);
-  for (int i = 0; i < is->count; i++)
-    result[i] = (tinstantset_inst_n(is, i))->t;
-  *count = is->count;
+  TimestampTz *result = palloc(sizeof(TimestampTz) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    result[i] = (tsequence_inst_n(seq, i))->t;
+  *count = seq->count;
   return result;
 }
 
@@ -838,14 +728,14 @@ tinstantset_timestamps(const TInstantSet *is, int *count)
  * @brief Cast a temporal instant set integer to a temporal instant set float.
  * @sqlop @p ::
  */
-TInstantSet *
-tintinstset_to_tfloatinstset(const TInstantSet *is)
+TSequence *
+tintinstset_to_tfloatinstset(const TSequence *seq)
 {
-  TInstantSet *result = tinstantset_copy(is);
+  TSequence *result = tsequence_copy(seq);
   result->temptype = T_TFLOAT;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = (TInstant *) tinstantset_inst_n(result, i);
+    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
     inst->temptype = T_TFLOAT;
     inst->value = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
   }
@@ -857,14 +747,14 @@ tintinstset_to_tfloatinstset(const TInstantSet *is)
  * @brief Cast a temporal instant set float to a temporal instant set integer.
  * @sqlop @p ::
  */
-TInstantSet *
-tfloatinstset_to_tintinstset(const TInstantSet *is)
+TSequence *
+tfloatinstset_to_tintinstset(const TSequence *seq)
 {
-  TInstantSet *result = tinstantset_copy(is);
+  TSequence *result = tsequence_copy(seq);
   result->temptype = T_TINT;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = (TInstant *) tinstantset_inst_n(result, i);
+    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
     inst->temptype = T_TINT;
     inst->value = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
   }
@@ -881,7 +771,7 @@ tfloatinstset_to_tintinstset(const TInstantSet *is)
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
  */
-TInstantSet *
+TSequence *
 tinstant_to_tinstantset(const TInstant *inst)
 {
   return tinstantset_make(&inst, 1, MERGE_NO);
@@ -894,7 +784,7 @@ tinstant_to_tinstantset(const TInstant *inst)
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
  */
-TInstantSet *
+TSequence *
 tsequence_to_tinstantset(const TSequence *seq)
 {
   if (seq->count != 1)
@@ -912,7 +802,7 @@ tsequence_to_tinstantset(const TSequence *seq)
  * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
  * etc.
  */
-TInstantSet *
+TSequence *
 tsequenceset_to_tinstantset(const TSequenceSet *ts)
 {
   const TSequence *seq;
@@ -929,7 +819,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
     seq = tsequenceset_seq_n(ts, i);
     instants[i] = tsequence_inst_n(seq, 0);
   }
-  TInstantSet *result = tinstantset_make(instants, ts->count, MERGE_NO);
+  TSequence *result = tinstantset_make(instants, ts->count, MERGE_NO);
   pfree(instants);
   return result;
 }
@@ -940,19 +830,19 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * @pre The duration is greater than 0 if it is not NULL
  * @sqlfunc shift(), tscale(), shiftTscale().
  */
-TInstantSet *
-tinstantset_shift_tscale(const TInstantSet *is, const Interval *shift,
+TSequence *
+tinstantset_shift_tscale(const TSequence *seq, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
 
   /* Copy the input instant set to the result */
-  TInstantSet *result = tinstantset_copy(is);
+  TSequence *result = tsequence_copy(seq);
 
   /* Shift and/or scale the period */
   Period p1, p2;
-  const TInstant *inst1 = tinstantset_inst_n(is, 0);
-  const TInstant *inst2 = tinstantset_inst_n(is, is->count - 1);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
   span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
     true, true, T_TIMESTAMPTZ, &p1);
   span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
@@ -967,26 +857,26 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *shift,
     scale = (double) (p2.upper - p2.lower) / (double) (p1.upper - p1.lower);
 
   /* Set the first instant */
-  TInstant *inst = (TInstant *) tinstantset_inst_n(result, 0);
+  TInstant *inst = (TInstant *) tsequence_inst_n(result, 0);
   inst->t = p2.lower;
-  if (is->count > 1)
+  if (seq->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
-    for (int i = 1; i < is->count - 1; i++)
+    for (int i = 1; i < seq->count - 1; i++)
     {
-      inst = (TInstant *) tinstantset_inst_n(result, i);
+      inst = (TInstant *) tsequence_inst_n(result, i);
       if (shift != NULL && (duration == NULL || instant))
         inst->t += delta;
       if (duration != NULL && ! instant)
         inst->t = p2.lower + (inst->t - p1.lower) * scale;
     }
     /* Set the last instant */
-    inst = (TInstant *) tinstantset_inst_n(result, is->count - 1);
+    inst = (TInstant *) tsequence_inst_n(result, seq->count - 1);
     inst->t = p2.upper;
   }
   /* Shift and/or scale bounding box */
-  void *bbox = TINSTANTSET_BBOX_PTR(result);
-  temporal_bbox_shift_tscale(shift, duration, is->temptype, bbox);
+  void *bbox = TSEQUENCE_BBOX_PTR(result);
+  temporal_bbox_shift_tscale(shift, duration, seq->temptype, bbox);
   return result;
 }
 
@@ -1000,16 +890,16 @@ tinstantset_shift_tscale(const TInstantSet *is, const Interval *shift,
  * @sqlop @p ?=
  */
 bool
-tinstantset_ever_eq(const TInstantSet *is, Datum value)
+tinstantset_ever_eq(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) is, value, EVER))
+  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
     return false;
 
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 0; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
+    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
     if (datum_eq(valueinst, value, basetype))
       return true;
   }
@@ -1022,21 +912,21 @@ tinstantset_ever_eq(const TInstantSet *is, Datum value)
  * @sqlop @p %=
  */
 bool
-tinstantset_always_eq(const TInstantSet *is, Datum value)
+tinstantset_always_eq(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) is, value, ALWAYS))
+  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
     return false;
 
   /* The bounding box test above is enough to compute the answer for temporal
    * numbers */
-  if (tnumber_type(is->temptype))
+  if (tnumber_type(seq->temptype))
     return true;
 
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 0; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
+    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
     if (datum_ne(valueinst, value, basetype))
       return false;
   }
@@ -1051,16 +941,16 @@ tinstantset_always_eq(const TInstantSet *is, Datum value)
  * @sqlop @p ?<
  */
 bool
-tinstantset_ever_lt(const TInstantSet *is, Datum value)
+tinstantset_ever_lt(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, EVER))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
     return false;
 
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 0; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
+    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
     if (datum_lt(valueinst, value, basetype))
       return true;
   }
@@ -1074,16 +964,16 @@ tinstantset_ever_lt(const TInstantSet *is, Datum value)
  * @sqlop @p ?<=
  */
 bool
-tinstantset_ever_le(const TInstantSet *is, Datum value)
+tinstantset_ever_le(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, EVER))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
     return false;
 
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 0; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
+    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
     if (datum_le(valueinst, value, basetype))
       return true;
   }
@@ -1096,16 +986,16 @@ tinstantset_ever_le(const TInstantSet *is, Datum value)
  * @sqlop @p %<
  */
 bool
-tinstantset_always_lt(const TInstantSet *is, Datum value)
+tinstantset_always_lt(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, ALWAYS))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, ALWAYS))
     return false;
 
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 0; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
+    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
     if (! datum_lt(valueinst, value, basetype))
       return false;
   }
@@ -1119,21 +1009,21 @@ tinstantset_always_lt(const TInstantSet *is, Datum value)
  * @sqlop @p %<=
  */
 bool
-tinstantset_always_le(const TInstantSet *is, Datum value)
+tinstantset_always_le(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) is, value, ALWAYS))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, ALWAYS))
     return false;
 
   /* The bounding box test above is enough to compute the answer for temporal
    * numbers */
-  if (tnumber_type(is->temptype))
+  if (tnumber_type(seq->temptype))
     return true;
 
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 0; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum valueinst = tinstant_value(tinstantset_inst_n(is, i));
+    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
     if (! datum_le(valueinst, value, basetype))
       return false;
   }
@@ -1148,39 +1038,39 @@ tinstantset_always_le(const TInstantSet *is, Datum value)
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant set to (the complement of) a base value.
  *
- * @param[in] is Temporal instant set
+ * @param[in] seq Temporal instant set
  * @param[in] value Base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @note There is no bounding box test in this function, it is done in the
  * dispatch function for all temporal types.
  * @sqlfunc atValue(), minusValue()
  */
-TInstantSet *
-tinstantset_restrict_value(const TInstantSet *is, Datum value, bool atfunc)
+TSequence *
+tinstantset_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
-  mobdbType basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
 
   /* Singleton instant set */
-  if (is->count == 1)
+  if (seq->count == 1)
   {
-    Datum value1 = tinstant_value(tinstantset_inst_n(is, 0));
+    Datum value1 = tinstant_value(tsequence_inst_n(seq, 0));
     bool equal = datum_eq(value, value1, basetype);
     if ((atfunc && ! equal) || (! atfunc && equal))
       return NULL;
-    return tinstantset_copy(is);
+    return tsequence_copy(seq);
   }
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int count = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     bool equal = datum_eq(value, tinstant_value(inst), basetype);
     if ((atfunc && equal) || (! atfunc && ! equal))
       instants[count++] = inst;
   }
-  TInstantSet *result = (count == 0) ? NULL :
+  TSequence *result = (count == 0) ? NULL :
     tinstantset_make(instants, count, MERGE_NO);
   pfree(instants);
   return result;
@@ -1191,38 +1081,38 @@ tinstantset_restrict_value(const TInstantSet *is, Datum value, bool atfunc)
  * @brief Restrict a temporal instant set to (the complement of) an array of
  * base values.
  *
- * @param[in] is Temporal instant set
+ * @param[in] seq Temporal instant set
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
  */
-TInstantSet *
-tinstantset_restrict_values(const TInstantSet *is, const Datum *values,
+TSequence *
+tinstantset_restrict_values(const TSequence *seq, const Datum *values,
   int count, bool atfunc)
 {
   const TInstant *inst;
 
   /* Singleton instant set */
-  if (is->count == 1)
+  if (seq->count == 1)
   {
-    inst = tinstantset_inst_n(is, 0);
+    inst = tsequence_inst_n(seq, 0);
     if (tinstant_restrict_values_test(inst, values, count, atfunc))
-      return tinstantset_copy(is);
+      return tsequence_copy(seq);
     return NULL;
   }
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int newcount = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    inst = tinstantset_inst_n(is, i);
+    inst = tsequence_inst_n(seq, i);
     if (tinstant_restrict_values_test(inst, values, count, atfunc))
       instants[newcount++] = inst;
   }
-  TInstantSet *result = (newcount == 0) ? NULL :
+  TSequence *result = (newcount == 0) ? NULL :
     tinstantset_make(instants, newcount, MERGE_NO);
   pfree(instants);
   return result;
@@ -1233,31 +1123,31 @@ tinstantset_restrict_values(const TInstantSet *is, const Datum *values,
  * @brief Restrict a temporal instant set number to (the complement of) a
  * span of base values.
  *
- * @param[in] is Temporal number
+ * @param[in] seq Temporal number
  * @param[in] span Span of base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpan(), minusSpan()
  */
-TInstantSet *
-tnumberinstset_restrict_span(const TInstantSet *is, const Span *span,
+TSequence *
+tnumberinstset_restrict_span(const TSequence *seq, const Span *span,
   bool atfunc)
 {
   /* Singleton instant set */
-  if (is->count == 1)
-    return atfunc ? tinstantset_copy(is) : NULL;
+  if (seq->count == 1)
+    return atfunc ? tsequence_copy(seq) : NULL;
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int count = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     if (tnumberinst_restrict_span_test(inst, span, atfunc))
       instants[count++] = inst;
   }
-  TInstantSet *result = (count == 0) ? NULL :
+  TSequence *result = (count == 0) ? NULL :
     tinstantset_make(instants, count, MERGE_NO);
   pfree(instants);
   return result;
@@ -1268,7 +1158,7 @@ tnumberinstset_restrict_span(const TInstantSet *is, const Span *span,
  * @brief Restrict a temporal instant set number to (the complement of) an
  * array of spans of base values.
  *
- * @param[in] is Temporal number
+ * @param[in] seq Temporal number
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
@@ -1277,31 +1167,31 @@ tnumberinstset_restrict_span(const TInstantSet *is, const Span *span,
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpans(), minusSpans()
  */
-TInstantSet *
-tnumberinstset_restrict_spans(const TInstantSet *is, Span **normspans,
+TSequence *
+tnumberinstset_restrict_spans(const TSequence *seq, Span **normspans,
   int count, bool atfunc)
 {
   const TInstant *inst;
 
   /* Singleton instant set */
-  if (is->count == 1)
+  if (seq->count == 1)
   {
-    inst = tinstantset_inst_n(is, 0);
+    inst = tsequence_inst_n(seq, 0);
     if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
-      return tinstantset_copy(is);
+      return tsequence_copy(seq);
     return NULL;
   }
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int newcount = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    inst = tinstantset_inst_n(is, i);
+    inst = tsequence_inst_n(seq, i);
     if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
       instants[newcount++] = inst;
   }
-  TInstantSet *result = (newcount == 0) ? NULL :
+  TSequence *result = (newcount == 0) ? NULL :
     tinstantset_make(instants, newcount, MERGE_NO);
   pfree(instants);
   return result;
@@ -1317,21 +1207,21 @@ tnumberinstset_restrict_spans(const TInstantSet *is, Span **normspans,
  * @sqlfunc minInstant()
  */
 const TInstant *
-tinstantset_min_instant(const TInstantSet *is)
+tinstantset_min_instant(const TSequence *seq)
 {
-  Datum min = tinstant_value(tinstantset_inst_n(is, 0));
+  Datum min = tinstant_value(tsequence_inst_n(seq, 0));
   int k = 0;
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 1; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 1; i < seq->count; i++)
   {
-    Datum value = tinstant_value(tinstantset_inst_n(is, i));
+    Datum value = tinstant_value(tsequence_inst_n(seq, i));
     if (datum_lt(value, min, basetype))
     {
       min = value;
       k = i;
     }
   }
-  return tinstantset_inst_n(is, k);
+  return tsequence_inst_n(seq, k);
 }
 
 /**
@@ -1341,21 +1231,21 @@ tinstantset_min_instant(const TInstantSet *is)
  * @sqlfunc maxInstant()
  */
 const TInstant *
-tinstantset_max_instant(const TInstantSet *is)
+tinstantset_max_instant(const TSequence *seq)
 {
-  Datum max = tinstant_value(tinstantset_inst_n(is, 0));
+  Datum max = tinstant_value(tsequence_inst_n(seq, 0));
   int k = 0;
-  mobdbType basetype = temptype_basetype(is->temptype);
-  for (int i = 1; i < is->count; i++)
+  mobdbType basetype = temptype_basetype(seq->temptype);
+  for (int i = 1; i < seq->count; i++)
   {
-    Datum value = tinstant_value(tinstantset_inst_n(is, i));
+    Datum value = tinstant_value(tsequence_inst_n(seq, i));
     if (datum_gt(value, max, basetype))
     {
       max = value;
       k = i;
     }
   }
-  return tinstantset_inst_n(is, k);
+  return tsequence_inst_n(seq, k);
 }
 
 /**
@@ -1363,17 +1253,17 @@ tinstantset_max_instant(const TInstantSet *is)
  * @brief Restrict a temporal instant set to (the complement of) its
  * minimum/maximum base value
  *
- * @param[in] is Temporal instant set
+ * @param[in] seq Temporal instant set
  * @param[in] min True when restricted to the minumum value, false for the
  * maximum value
  * @param[in] atfunc True when the restriction is at, false for minus
  * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
-TInstantSet *
-tinstantset_restrict_minmax(const TInstantSet *is, bool min, bool atfunc)
+TSequence *
+tinstantset_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 {
-  Datum minmax = min ? tinstantset_min_value(is) : tinstantset_max_value(is);
-  return tinstantset_restrict_value(is, minmax, atfunc);
+  Datum minmax = min ? tsequence_min_value(seq) : tsequence_max_value(seq);
+  return tinstantset_restrict_value(seq, minmax, atfunc);
 }
 
 /**
@@ -1386,13 +1276,13 @@ tinstantset_restrict_minmax(const TInstantSet *is, bool min, bool atfunc)
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tinstantset_value_at_timestamp(const TInstantSet *is, TimestampTz t, Datum *result)
+tinstantset_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
 {
   int loc;
-  if (! tinstantset_find_timestamp(is, t, &loc))
+  if (! tinstantset_find_timestamp(seq, t, &loc))
     return false;
 
-  const TInstant *inst = tinstantset_inst_n(is, loc);
+  const TInstant *inst = tsequence_inst_n(seq, loc);
   *result = tinstant_value_copy(inst);
   return true;
 }
@@ -1407,37 +1297,37 @@ tinstantset_value_at_timestamp(const TInstantSet *is, TimestampTz t, Datum *resu
  * @sqlfunc atTimestamp(), minusTimestamp()
  */
 Temporal *
-tinstantset_restrict_timestamp(const TInstantSet *is, TimestampTz t, bool atfunc)
+tinstantset_restrict_timestamp(const TSequence *seq, TimestampTz t, bool atfunc)
 {
   /* Bounding box test */
-  if (!contains_period_timestamp(&is->period, t))
-    return atfunc ? NULL : (Temporal *) tinstantset_copy(is);
+  if (!contains_period_timestamp(&seq->period, t))
+    return atfunc ? NULL : (Temporal *) tsequence_copy(seq);
 
   /* Singleton instant set */
-  if (is->count == 1)
-    return atfunc ? (Temporal *) tinstant_copy(tinstantset_inst_n(is, 0)) : NULL;
+  if (seq->count == 1)
+    return atfunc ? (Temporal *) tinstant_copy(tsequence_inst_n(seq, 0)) : NULL;
 
   /* General case */
   const TInstant *inst;
   if (atfunc)
   {
     int loc;
-    if (! tinstantset_find_timestamp(is, t, &loc))
+    if (! tinstantset_find_timestamp(seq, t, &loc))
       return NULL;
-    inst = tinstantset_inst_n(is, loc);
+    inst = tsequence_inst_n(seq, loc);
     return (Temporal *) tinstant_copy(inst);
   }
   else
   {
-    const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+    const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
     int count = 0;
-    for (int i = 0; i < is->count; i++)
+    for (int i = 0; i < seq->count; i++)
     {
-      inst= tinstantset_inst_n(is, i);
+      inst= tsequence_inst_n(seq, i);
       if (inst->t != t)
         instants[count++] = inst;
     }
-    TInstantSet *result = (count == 0) ? NULL :
+    TSequence *result = (count == 0) ? NULL :
       tinstantset_make(instants, count, MERGE_NO);
     pfree(instants);
     return (Temporal *) result;
@@ -1449,20 +1339,20 @@ tinstantset_restrict_timestamp(const TInstantSet *is, TimestampTz t, bool atfunc
  * @brief Restrict a temporal instant set to (the complement of) a timestamp set.
  * @sqlfunc atTimestampSet(), minusTimestampSet()
  */
-TInstantSet *
-tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
+TSequence *
+tinstantset_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
   bool atfunc)
 {
-  TInstantSet *result;
+  TSequence *result;
   const TInstant *inst;
 
   /* Singleton timestamp set */
   if (ts->count == 1)
   {
-    Temporal *temp = tinstantset_restrict_timestamp(is,
+    Temporal *temp = tinstantset_restrict_timestamp(seq,
       timestampset_time_n(ts, 0), atfunc);
     if (temp == NULL || temp->subtype == TINSTANTSET)
-      return (TInstantSet *) temp;
+      return (TSequence *) temp;
     TInstant *inst1 = (TInstant *) temp;
     result = tinstantset_make((const TInstant **) &inst1, 1, MERGE_NO);
     pfree(inst1);
@@ -1470,25 +1360,25 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
   }
 
   /* Bounding box test */
-  if (!overlaps_span_span(&is->period, &ts->period))
-    return atfunc ? NULL : tinstantset_copy(is);
+  if (!overlaps_span_span(&seq->period, &ts->period))
+    return atfunc ? NULL : tsequence_copy(seq);
 
 
   /* Singleton instant set */
-  if (is->count == 1)
+  if (seq->count == 1)
   {
-    inst = tinstantset_inst_n(is, 0);
+    inst = tsequence_inst_n(seq, 0);
     if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
-      return tinstantset_copy(is);
+      return tsequence_copy(seq);
     return NULL;
   }
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int i = 0, j = 0, k = 0;
-  while (i < is->count && j < ts->count)
+  while (i < seq->count && j < ts->count)
   {
-    inst = tinstantset_inst_n(is, i);
+    inst = tsequence_inst_n(seq, i);
     TimestampTz t = timestampset_time_n(ts, j);
     int cmp = timestamptz_cmp_internal(inst->t, t);
     if (cmp == 0)
@@ -1510,8 +1400,8 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
   /* For minus copy the instants after the instant set */
   if (! atfunc)
   {
-    while (i < is->count)
-      instants[k++] = tinstantset_inst_n(is, i++);
+    while (i < seq->count)
+      instants[k++] = tsequence_inst_n(seq, i++);
   }
   result = (k == 0) ? NULL : tinstantset_make(instants, k, MERGE_NO);
   pfree(instants);
@@ -1523,29 +1413,29 @@ tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ts,
  * @brief Restrict a temporal instant set to (the complement of) a period.
  * @sqlfunc atPeriod(), minusPeriod()
  */
-TInstantSet *
-tinstantset_restrict_period(const TInstantSet *is, const Period *period,
+TSequence *
+tinstantset_restrict_period(const TSequence *seq, const Period *period,
   bool atfunc)
 {
   /* Bounding box test */
-  if (!overlaps_span_span(&is->period, period))
-    return atfunc ? NULL : tinstantset_copy(is);
+  if (!overlaps_span_span(&seq->period, period))
+    return atfunc ? NULL : tsequence_copy(seq);
 
   /* Singleton instant set */
-  if (is->count == 1)
-    return atfunc ? tinstantset_copy(is) : NULL;
+  if (seq->count == 1)
+    return atfunc ? tsequence_copy(seq) : NULL;
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int count = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     bool contains = contains_period_timestamp(period, inst->t);
     if ((atfunc && contains) || (! atfunc && ! contains))
       instants[count++] = inst;
   }
-  TInstantSet *result = (count == 0) ? NULL :
+  TSequence *result = (count == 0) ? NULL :
     tinstantset_make(instants, count, MERGE_NO);
   pfree(instants);
   return result;
@@ -1556,40 +1446,40 @@ tinstantset_restrict_period(const TInstantSet *is, const Period *period,
  * @brief Restrict a temporal instant set to (the complement of) a period set.
  * @sqlfunc atPeriodSet(), minusPeriodSet()
  */
-TInstantSet *
-tinstantset_restrict_periodset(const TInstantSet *is, const PeriodSet *ps,
+TSequence *
+tinstantset_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   bool atfunc)
 {
   const TInstant *inst;
 
   /* Singleton period set */
   if (ps->count == 1)
-    return tinstantset_restrict_period(is, periodset_per_n(ps, 0), atfunc);
+    return tinstantset_restrict_period(seq, periodset_per_n(ps, 0), atfunc);
 
   /* Bounding box test */
-  if (!overlaps_span_span(&is->period, &ps->period))
-    return atfunc ? NULL : tinstantset_copy(is);
+  if (!overlaps_span_span(&seq->period, &ps->period))
+    return atfunc ? NULL : tsequence_copy(seq);
 
   /* Singleton instant set */
-  if (is->count == 1)
+  if (seq->count == 1)
   {
-    inst = tinstantset_inst_n(is, 0);
+    inst = tsequence_inst_n(seq, 0);
     if (tinstant_restrict_periodset_test(inst, ps, atfunc))
-      return tinstantset_copy(is);
+      return tsequence_copy(seq);
     return NULL;
   }
 
   /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int count = 0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    inst = tinstantset_inst_n(is, i);
+    inst = tsequence_inst_n(seq, i);
     bool contains = contains_periodset_timestamp(ps, inst->t);
     if ((atfunc && contains) || (! atfunc && ! contains))
       instants[count++] = inst;
   }
-  TInstantSet *result = (count == 0) ? NULL :
+  TSequence *result = (count == 0) ? NULL :
     tinstantset_make(instants, count, MERGE_NO);
   pfree(instants);
   return result;
@@ -1604,22 +1494,22 @@ tinstantset_restrict_periodset(const TInstantSet *is, const PeriodSet *ps,
  * @brief Append an instant to a temporal instant set.
  * @sqlfunc appendInstant()
  */
-TInstantSet *
-tinstantset_append_tinstant(const TInstantSet *is, const TInstant *inst)
+TSequence *
+tinstantset_append_tinstant(const TSequence *seq, const TInstant *inst)
 {
   /* Ensure validity of the arguments */
-  assert(is->temptype == inst->temptype);
-  const TInstant *inst1 = tinstantset_inst_n(is, is->count - 1);
+  assert(seq->temptype == inst->temptype);
+  const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
   ensure_increasing_timestamps(inst1, inst, MERGE);
   if (inst1->t == inst->t)
-    return tinstantset_copy(is);
+    return tsequence_copy(seq);
 
   /* Create the result */
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count + 1);
-  for (int i = 0; i < is->count; i++)
-    instants[i] = tinstantset_inst_n(is, i);
-  instants[is->count] = (TInstant *) inst;
-  TInstantSet *result = tinstantset_make1(instants, is->count + 1);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count + 1);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tsequence_inst_n(seq, i);
+  instants[seq->count] = (TInstant *) inst;
+  TSequence *result = tinstantset_make1(instants, seq->count + 1);
   pfree(instants);
   return result;
 }
@@ -1630,9 +1520,9 @@ tinstantset_append_tinstant(const TInstantSet *is, const TInstant *inst)
  * @sqlfunc merge()
  */
 Temporal *
-tinstantset_merge(const TInstantSet *is1, const TInstantSet *is2)
+tinstantset_merge(const TSequence *seq1, const TSequence *seq2)
 {
-  const TInstantSet *instsets[] = {is1, is2};
+  const TSequence *instsets[] = {seq1, seq2};
   return tinstantset_merge_array(instsets, 2);
 }
 
@@ -1651,7 +1541,7 @@ tinstantset_merge(const TInstantSet *is1, const TInstantSet *is2)
  * @sqlfunc merge()
  */
 Temporal *
-tinstantset_merge_array(const TInstantSet **instsets, int count)
+tinstantset_merge_array(const TSequence **instsets, int count)
 {
   /* Validity test will be done in tinstant_merge_array */
   /* Collect the composing instants */
@@ -1663,7 +1553,7 @@ tinstantset_merge_array(const TInstantSet **instsets, int count)
   for (int i = 0; i < count; i++)
   {
     for (int j = 0; j < instsets[i]->count; j++)
-      instants[k++] = tinstantset_inst_n(instsets[i], j);
+      instants[k++] = tsequence_inst_n(instsets[i], j);
   }
   /* Create the result */
   Temporal *result = tinstant_merge_array(instants, totalcount);
@@ -1678,15 +1568,15 @@ tinstantset_merge_array(const TInstantSet **instsets, int count)
 /**
  * Temporally intersect a temporal instant set and a temporal instant
  *
- * @param[in] is,inst Input values
+ * @param[in] seq,inst Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_tinstant(const TInstantSet *is, const TInstant *inst,
+intersection_tinstantset_tinstant(const TSequence *seq, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
-  TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(is, inst->t, REST_AT);
+  TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(seq, inst->t, REST_AT);
   if (inst1 == NULL)
     return false;
 
@@ -1698,52 +1588,52 @@ intersection_tinstantset_tinstant(const TInstantSet *is, const TInstant *inst,
 /**
  * Temporally intersect two temporal instant sets
  *
- * @param[in] inst,is Input values
+ * @param[in] inst,seq Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstant_tinstantset(const TInstant *inst, const TInstantSet *is,
+intersection_tinstant_tinstantset(const TInstant *inst, const TSequence *seq,
   TInstant **inter1, TInstant **inter2)
 {
-  return intersection_tinstantset_tinstant(is, inst, inter2, inter1);
+  return intersection_tinstantset_tinstant(seq, inst, inter2, inter1);
 }
 
 /**
  * Temporally intersect two temporal instant sets
  *
- * @param[in] is1,is2 Input values
+ * @param[in] seq1,seq2 Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *is2,
-  TInstantSet **inter1, TInstantSet **inter2)
+intersection_tinstantset_tinstantset(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
 {
   /* Bounding period test */
-  if (!overlaps_span_span(&is1->period, &is2->period))
+  if (!overlaps_span_span(&seq1->period, &seq2->period))
     return false;
 
-  int count = Min(is1->count, is2->count);
+  int count = Min(seq1->count, seq2->count);
   const TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   const TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   int i = 0, j = 0, k = 0;
-  const TInstant *inst1 = tinstantset_inst_n(is1, i);
-  const TInstant *inst2 = tinstantset_inst_n(is2, j);
-  while (i < is1->count && j < is2->count)
+  const TInstant *inst1 = tsequence_inst_n(seq1, i);
+  const TInstant *inst2 = tsequence_inst_n(seq2, j);
+  while (i < seq1->count && j < seq2->count)
   {
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       instants1[k] = inst1;
       instants2[k++] = inst2;
-      inst1 = tinstantset_inst_n(is1, ++i);
-      inst2 = tinstantset_inst_n(is2, ++j);
+      inst1 = tsequence_inst_n(seq1, ++i);
+      inst2 = tsequence_inst_n(seq2, ++j);
     }
     else if (cmp < 0)
-      inst1 = tinstantset_inst_n(is1, ++i);
+      inst1 = tsequence_inst_n(seq1, ++i);
     else
-      inst2 = tinstantset_inst_n(is2, ++j);
+      inst2 = tsequence_inst_n(seq2, ++j);
   }
   if (k != 0)
   {
@@ -1765,10 +1655,10 @@ intersection_tinstantset_tinstantset(const TInstantSet *is1, const TInstantSet *
  * @sqlfunc intersectsTimestamp()
  */
 bool
-tinstantset_intersects_timestamp(const TInstantSet *is, TimestampTz t)
+tinstantset_intersects_timestamp(const TSequence *seq, TimestampTz t)
 {
   int loc;
-  return tinstantset_find_timestamp(is, t, &loc);
+  return tinstantset_find_timestamp(seq, t, &loc);
 }
 
 /**
@@ -1777,11 +1667,11 @@ tinstantset_intersects_timestamp(const TInstantSet *is, TimestampTz t)
  * @sqlfunc intersectsTimestampSet()
  */
 bool
-tinstantset_intersects_timestampset(const TInstantSet *is,
+tinstantset_intersects_timestampset(const TSequence *seq,
   const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
-    if (tinstantset_intersects_timestamp(is, timestampset_time_n(ts, i)))
+    if (tinstantset_intersects_timestamp(seq, timestampset_time_n(ts, i)))
       return true;
   return false;
 }
@@ -1792,11 +1682,11 @@ tinstantset_intersects_timestampset(const TInstantSet *is,
  * @sqlfunc intersectsPeriod()
  */
 bool
-tinstantset_intersects_period(const TInstantSet *is, const Period *period)
+tinstantset_intersects_period(const TSequence *seq, const Period *period)
 {
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     if (contains_period_timestamp(period, inst->t))
       return true;
   }
@@ -1809,10 +1699,10 @@ tinstantset_intersects_period(const TInstantSet *is, const Period *period)
  * @sqlfunc intersectsPeriodSet()
  */
 bool
-tinstantset_intersects_periodset(const TInstantSet *is, const PeriodSet *ps)
+tinstantset_intersects_periodset(const TSequence *seq, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
-    if (tinstantset_intersects_period(is, periodset_per_n(ps, i)))
+    if (tinstantset_intersects_period(seq, periodset_per_n(ps, i)))
       return true;
   return false;
 }
@@ -1829,16 +1719,16 @@ tinstantset_intersects_periodset(const TInstantSet *is, const PeriodSet *ps)
  * @sqlfunc twAvg()
  */
 double
-tnumberinstset_twavg(const TInstantSet *is)
+tnumberinstset_twavg(const TSequence *seq)
 {
-  mobdbType basetype = temptype_basetype(is->temptype);
+  mobdbType basetype = temptype_basetype(seq->temptype);
   double result = 0.0;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result += datum_double(tinstant_value(inst), basetype);
   }
-  return result / is->count;
+  return result / seq->count;
 }
 
 /*****************************************************************************
@@ -1854,23 +1744,23 @@ tnumberinstset_twavg(const TInstantSet *is)
  * @sqlop @p =
  */
 bool
-tinstantset_eq(const TInstantSet *is1, const TInstantSet *is2)
+tinstantset_eq(const TSequence *seq1, const TSequence *seq2)
 {
-  assert(is1->temptype == is2->temptype);
+  assert(seq1->temptype == seq2->temptype);
   /* If number of sequences or flags are not equal */
-  if (is1->count != is2->count || is1->flags != is2->flags)
+  if (seq1->count != seq2->count || seq1->flags != seq2->flags)
     return false;
 
   /* If bounding boxes are not equal */
-  if (! temporal_bbox_eq(TINSTANTSET_BBOX_PTR(is1), TINSTANTSET_BBOX_PTR(is2),
-      is1->temptype))
+  if (! temporal_bbox_eq(TSEQUENCE_BBOX_PTR(seq1), TSEQUENCE_BBOX_PTR(seq2),
+      seq1->temptype))
     return false;
 
   /* Compare the composing instants */
-  for (int i = 0; i < is1->count; i++)
+  for (int i = 0; i < seq1->count; i++)
   {
-    const TInstant *inst1 = tinstantset_inst_n(is1, i);
-    const TInstant *inst2 = tinstantset_inst_n(is2, i);
+    const TInstant *inst1 = tsequence_inst_n(seq1, i);
+    const TInstant *inst2 = tsequence_inst_n(seq2, i);
     if (! tinstant_eq(inst1, inst2))
       return false;
   }
@@ -1888,25 +1778,25 @@ tinstantset_eq(const TInstantSet *is1, const TInstantSet *is2)
  * @sqlfunc tbool_cmp(), tint_cmp(), tfloat_cmp(), ttext_cmp(), etc.
  */
 int
-tinstantset_cmp(const TInstantSet *is1, const TInstantSet *is2)
+tinstantset_cmp(const TSequence *seq1, const TSequence *seq2)
 {
-  assert(is1->temptype == is2->temptype);
+  assert(seq1->temptype == seq2->temptype);
 
   /* Compare composing instants */
-  int count = Min(is1->count, is2->count);
+  int count = Min(seq1->count, seq2->count);
   for (int i = 0; i < count; i++)
   {
-    const TInstant *inst1 = tinstantset_inst_n(is1, i);
-    const TInstant *inst2 = tinstantset_inst_n(is2, i);
+    const TInstant *inst1 = tsequence_inst_n(seq1, i);
+    const TInstant *inst2 = tsequence_inst_n(seq2, i);
     int result = tinstant_cmp(inst1, inst2);
     if (result)
       return result;
   }
 
-  /* is1->count == is2->count because of the bounding box and the
+  /* seq1->count == seq2->count because of the bounding box and the
    * composing instant tests above */
 
-  /* is1->flags == is2->flags since the equality of flags were
+  /* seq1->flags == seq2->flags since the equality of flags were
    * tested for each of the composing sequences */
 
   /* The two values are equal */
@@ -1925,12 +1815,12 @@ tinstantset_cmp(const TInstantSet *is1, const TInstantSet *is2)
  * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
  */
 uint32
-tinstantset_hash(const TInstantSet *is)
+tinstantset_hash(const TSequence *seq)
 {
   uint32 result = 1;
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     uint32 inst_hash = tinstant_hash(inst);
     result = (result << 5) - result + inst_hash;
   }

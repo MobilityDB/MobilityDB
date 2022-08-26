@@ -487,7 +487,7 @@ tinstant_parse(char **str, mobdbType temptype, bool end, bool make)
  * @param[in] str Input string
  * @param[in] temptype Base type
  */
-TInstantSet *
+TSequence *
 tinstantset_parse(char **str, mobdbType temptype)
 {
   p_whitespace(str);

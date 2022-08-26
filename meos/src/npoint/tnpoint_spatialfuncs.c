@@ -148,7 +148,7 @@ tnpoint_srid(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnpointinst_srid((const TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
-    result = tpointinstset_srid((TInstantSet *) temp);
+    result = tpointinstset_srid((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_srid((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -164,20 +164,20 @@ tnpoint_srid(const Temporal *temp)
 /**
  * Return the network points covered by a temporal network point
  *
- * @param[in] is Temporal network point
+ * @param[in] seq Temporal network point
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
 static Npoint **
-tnpointinstset_npoints(const TInstantSet *is, int *count)
+tnpointinstset_npoints(const TSequence *seq, int *count)
 {
-  Npoint **result = palloc(sizeof(Npoint *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  Npoint **result = palloc(sizeof(Npoint *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    Npoint *np = DatumGetNpointP(tinstant_value(tinstantset_inst_n(is, i)));
+    Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, i)));
     result[i] = np;
   }
-  *count = is->count;
+  *count = seq->count;
   return result;
 }
 
@@ -246,18 +246,18 @@ tnpointinst_geom(const TInstant *inst)
 /**
  * @brief Return the geometry covered by a temporal network point.
  *
- * @param[in] is Temporal network point
+ * @param[in] seq Temporal network point
  */
 GSERIALIZED *
-tnpointinstset_geom(const TInstantSet *is)
+tnpointinstset_geom(const TSequence *seq)
 {
   /* Instantaneous sequence */
-  if (is->count == 1)
-    return tnpointinst_geom(tinstantset_inst_n(is, 0));
+  if (seq->count == 1)
+    return tnpointinst_geom(tsequence_inst_n(seq, 0));
 
   int count;
   /* The following function does not remove duplicate values */
-  Npoint **points = tnpointinstset_npoints(is, &count);
+  Npoint **points = tnpointinstset_npoints(seq, &count);
   GSERIALIZED *result = npointarr_geom(points, count);
   pfree(points);
   return result;
@@ -335,7 +335,7 @@ tnpoint_geom(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnpointinst_geom((TInstant *) temp);
   else if (temp->subtype == TINSTANTSET)
-    result = tnpointinstset_geom((TInstantSet *) temp);
+    result = tnpointinstset_geom((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_geom((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

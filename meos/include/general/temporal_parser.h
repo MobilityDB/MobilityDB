@@ -65,7 +65,7 @@ extern Span *span_parse(char **str, mobdbType spantype, bool end, bool make);
 
 extern TInstant *tinstant_parse(char **str, mobdbType temptype, bool end,
   bool make);
-extern TInstantSet *tinstantset_parse(char **str, mobdbType temptype);
+extern TSequence *tinstantset_parse(char **str, mobdbType temptype);
 extern TSequence *tsequence_parse(char **str, mobdbType temptype, bool linear,
   bool end, bool make);
 extern TSequenceSet *tsequenceset_parse(char **str, mobdbType temptype,

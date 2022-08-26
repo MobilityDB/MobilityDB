@@ -233,30 +233,30 @@ tpointinst_transform(const TInstant *inst, int srid)
 /**
  * @brief Transform a temporal point into another spatial reference system
  */
-TInstantSet *
-tpointinstset_transform(const TInstantSet *is, int srid)
+TSequence *
+tpointinstset_transform(const TSequence *seq, int srid)
 {
   /* Singleton instant set */
-  if (is->count == 1)
+  if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_transform(tinstantset_inst_n(is, 0),
+    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
       Int32GetDatum(srid));
-    TInstantSet *result = tinstantset_make((const TInstant **) &inst, 1,
+    TSequence *result = tinstantset_make((const TInstant **) &inst, 1,
       MERGE_NO);
     pfree(inst);
     return result;
   }
 
   /* General case */
-  Datum multipoint = PointerGetDatum(tpointinstset_trajectory(is));
+  Datum multipoint = PointerGetDatum(tpointinstset_trajectory(seq));
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tinstant_make(point, inst->temptype, inst->t);
     pfree(DatumGetPointer(point));
   }
@@ -264,7 +264,7 @@ tpointinstset_transform(const TInstantSet *is, int srid)
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
-  return tinstantset_make_free(instants, is->count, MERGE_NO);
+  return tinstantset_make_free(instants, seq->count, MERGE_NO);
 }
 
 /**
@@ -401,7 +401,7 @@ tpoint_transform(const Temporal *temp, int srid)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
   else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_transform((TInstantSet *) temp, srid);
+    result = (Temporal *) tpointinstset_transform((TSequence *) temp, srid);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_transform((TSequence *) temp, srid);
   else /* temp->subtype == TSEQUENCESET */

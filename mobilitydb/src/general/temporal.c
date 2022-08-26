@@ -642,7 +642,7 @@ Tinstantset_from_base_time(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TInstantSet *result = tinstantset_from_base_time(value, temptype, ts);
+  TSequence *result = tinstantset_from_base_time(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }

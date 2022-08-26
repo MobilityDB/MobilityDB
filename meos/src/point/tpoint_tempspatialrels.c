@@ -150,27 +150,27 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
- * @param[in] is Temporal point
+ * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func PostGIS function to be called
  */
-TInstantSet *
-tinterrel_tpointinstset_geom(const TInstantSet *is, Datum geom, bool tinter,
+TSequence *
+tinterrel_tpointinstset_geom(const TSequence *seq, Datum geom, bool tinter,
   Datum (*func)(Datum, Datum))
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     bool result = DatumGetBool(func(tinstant_value(inst), geom));
     /* For disjoint we need to invert the result */
     if (! tinter)
       result = ! result;
     instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
-  TInstantSet *result = tinstantset_make(instants, is->count, MERGE_NO);
-  pfree_array((void **) instants, is->count);
+  TSequence *result = tinstantset_make(instants, seq->count, MERGE_NO);
+  pfree_array((void **) instants, seq->count);
   return result;
 }
 
@@ -486,7 +486,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
       PointerGetDatum(gs), tinter, func);
   else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tinterrel_tpointinstset_geom((TInstantSet *) temp,
+    result = (Temporal *) tinterrel_tpointinstset_geom((TSequence *) temp,
       PointerGetDatum(gs), tinter, func);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tinterrel_tpointseq_geom((TSequence *) temp,
@@ -1201,7 +1201,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
+    result = (Temporal *) tfunc_tinstantset_base((TSequence *) temp,
       PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
@@ -1247,7 +1247,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
         (TInstant *) sync2, &lfinfo);
     else /* sync1->subtype == TINSTANTSET */
       result = (Temporal *) tfunc_tinstantset_tinstantset(
-        (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
+        (TSequence *) sync1, (TSequence *) sync2, &lfinfo);
   }
   else if (sync1->subtype == TSEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
