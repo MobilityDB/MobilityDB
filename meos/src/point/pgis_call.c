@@ -1483,6 +1483,21 @@ gserialized_as_text(const GSERIALIZED *geom, int precision)
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   return lwgeom_to_wkt(lwgeom, WKT_ISO, precision, NULL);
 }
+
+/**
+ * @brief Returns a geometry Given an OGC WKT (and optionally a SRID)
+ * @return a geometry.
+ * @note Note that this is a a stricter version
+ *     of geometry_in, where we refuse to
+ *     accept (HEX)WKB or EWKT.
+ * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+gserialized_from_hexwkb(const char *wkt)
+{
+  return gserialized_in((char *) wkt, -1);
+}
+  
 /**
  * @brief Return the WKB representation in hex-encoded ASCII of a geometry.
  * @note PostGIS function: LWGEOM_asHEXEWKB
