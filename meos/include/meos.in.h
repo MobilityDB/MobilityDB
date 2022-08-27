@@ -219,22 +219,20 @@ extern Interval *pg_interval_make(int32 years, int32 months, int32 weeks,
 extern char *pg_interval_out(Interval *span);
 
 /*****************************************************************************
- * Functions for input/output PostGIS types
+ * Functions for input/output and manipulation of PostGIS types
  *****************************************************************************/
 
 extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod); // const char *input ?
 extern char *gserialized_out(const GSERIALIZED *geom);
-
 extern GSERIALIZED *gserialized_from_text(const char *wkt, int srid);
 extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);
-
-extern GSERIALIZED *gserialized_from_hexewkb(const bytea *bytea_wkb, int32 srid);
-extern char *gserialized_as_hexwkb(const GSERIALIZED *geom, const char *type);
-
+extern GSERIALIZED *gserialized_from_hexewkb(const char *bytea_wkb);
+extern char *gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type);
 extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
+extern bytea *gserialized_as_ewkb(GSERIALIZED *geom, char *type);
 extern GSERIALIZED *gserialized_from_geojson(char *geojson);
-
 extern char *gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision, char *srs);
+extern bool gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
 
 /*****************************************************************************
  * Functions for span and time types

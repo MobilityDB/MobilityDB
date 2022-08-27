@@ -576,7 +576,7 @@ SELECT round(derivative(tfloat '1@2000-01-01'), 6);
 SELECT round(derivative(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}'), 6);
 SELECT round(derivative(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'), 6);
 SELECT round(derivative(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'), 6);
-/* Errors */
+-- NULL
 SELECT round(derivative(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'), 6);
 SELECT round(derivative(tfloat 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'), 6);
 

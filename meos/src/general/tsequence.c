@@ -469,11 +469,12 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Return the index of the segment of a temporal sequence containing a
- * timestamp using binary search
+ * @brief Return the index of the segment of a temporal continuous sequence
+ * containing a timestamp using binary search
  *
  * If the timestamp is contained in a temporal sequence, the index of the
  * segment containing the timestamp is returned in the output parameter.
+ * Otherwise, return -1.
  * For example, given a value composed of 3 sequences and a timestamp,
  * the value returned in the output parameter is as follows:
  * @code
@@ -483,33 +484,76 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
  * 2)        t^                         => result = 0 if the lower bound is inclusive, -1 otherwise
  * 3)              t^                   => result = 1
  * 4)                 t^                => result = 1
- * 5)                             t^    => result = -1
+ * 5)                          t^       => result = 3 if the upper bound is inclusive, -1 otherwise
+ * 6)                             t^    => result = -1
  * @endcode
  *
- * @param[in] seq Temporal sequence
+ * @param[in] seq Temporal continuous sequence
  * @param[in] t Timestamp
  * @result Return -1 if the timestamp is not contained in a temporal sequence
  */
 int
-tsequence_find_timestamp(const TSequence *seq, TimestampTz t)
+tcontseq_find_timestamp(const TSequence *seq, TimestampTz t)
 {
   int first = 0;
   int last = seq->count - 1;
-  int middle = (first + last)/2;
   while (first <= last)
   {
+    int middle = (first + last) / 2;
     const TInstant *inst1 = tsequence_inst_n(seq, middle);
     const TInstant *inst2 = tsequence_inst_n(seq, middle + 1);
     bool lower_inc = (middle == 0) ? seq->period.lower_inc : true;
     bool upper_inc = (middle == seq->count - 1) ? seq->period.upper_inc : false;
     if ((inst1->t < t && t < inst2->t) ||
-      (lower_inc && inst1->t == t) || (upper_inc && inst2->t == t))
+        (lower_inc && inst1->t == t) || (upper_inc && inst2->t == t))
       return middle;
     if (t <= inst1->t)
       last = middle - 1;
     else
       first = middle + 1;
-    middle = (first + last)/2;
+  }
+  return -1;
+}
+
+/**
+ * @brief Return the index of a timestamp in a temporal discrete sequence
+ * value using binary search
+ *
+ * If the timestamp is contained in the temporal discrete sequence, the index
+ * of the composing instant is returned in the output parameter. Otherwise,
+ * return -1.
+ * For example, given a value composed of 3 instants and a timestamp,
+ * the value returned in the output parameter is as follows:
+ * @code
+ *            0        1        2
+ *            |        |        |
+ * 1)    t^                             => result = -1
+ * 2)        t^                         => result = 0
+ * 3)                 t^                => result = 1
+ * 4)                          t^       => result = 2
+ * 5)                              t^   => result = -1
+ * @endcode
+ *
+ * @param[in] seq Temporal discrete sequence
+ * @param[in] t Timestamp
+ * @result Return true if the timestamp is contained in the temporal instant set
+ */
+int
+tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t)
+{
+  int first = 0;
+  int last = seq->count - 1;
+  while (first <= last)
+  {
+    int middle = (first + last) / 2;
+    const TInstant *inst = tsequence_inst_n(seq, middle);
+    int cmp = timestamptz_cmp_internal(inst->t, t);
+    if (cmp == 0)
+      return middle;
+    if (cmp > 0)
+      last = middle - 1;
+    else
+      first = middle + 1;
   }
   return -1;
 }
@@ -898,12 +942,12 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   int i = 0, j = 0, k = 0, l = 0;
   if (inst1->t < (TimestampTz) inter.lower)
   {
-    i = tsequence_find_timestamp(seq1, inter.lower) + 1;
+    i = tcontseq_find_timestamp(seq1, inter.lower) + 1;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
   else if (inst2->t < (TimestampTz) inter.lower)
   {
-    j = tsequence_find_timestamp(seq2, inter.lower) + 1;
+    j = tcontseq_find_timestamp(seq2, inter.lower) + 1;
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 2;
@@ -1279,7 +1323,7 @@ intersection_tsequence_tinstantset(const TSequence *seq1, const TSequence *seq2,
 /**
  * Temporally intersect two temporal values
  *
- * @param[in] seq1,seq Temporal values
+ * @param[in] seq1,seq2 Temporal values
  * @param[out] inter1,inter2 Output values
  * @result Return false if the input values do not overlap on time.
  */
@@ -1490,6 +1534,8 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * @param[in] zcoords Array of z coordinates
  * @param[in] times Array of z timestamps
  * @param[in] count Number of elements in the arrays
+ * @param[in] srid SRID of the spatial coordinates
+ * @param[in] geodetic True for tgeogpoint, false for tgeompoint
  * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
  * @param[in] linear True when the interpolation is linear
  * @param[in] normalize True when the resulting value should be normalized
@@ -2064,7 +2110,19 @@ tfloatseq_spans(const TSequence *seq, int *count)
 PeriodSet *
 tsequence_time(const TSequence *seq)
 {
-  return period_to_periodset(&seq->period);
+  /* Continuous sequence */
+  if (! MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+    return period_to_periodset(&seq->period);
+
+  /* Discrete sequence */
+  Period **periods = palloc(sizeof(Period *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    periods[i] = span_make(inst->t, inst->t, true, true, T_TIMESTAMPTZ);
+  }
+  PeriodSet *result = periodset_make_free(periods, seq->count, NORMALIZE_NO);
+  return result;
 }
 
 /**
@@ -2475,7 +2533,7 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict,
   }
 
   /* General case */
-  int n = tsequence_find_timestamp(seq, t);
+  int n = tcontseq_find_timestamp(seq, t);
   const TInstant *inst1 = tsequence_inst_n(seq, n);
   if (t == inst1->t)
     *result = tinstant_value_copy(inst1);
@@ -3656,7 +3714,7 @@ tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
     return tinstant_copy(tsequence_inst_n(seq, 0));
 
   /* General case */
-  int n = tsequence_find_timestamp(seq, t);
+  int n = tcontseq_find_timestamp(seq, t);
   const TInstant *inst1 = tsequence_inst_n(seq, n);
   if (t == inst1->t)
     return tinstant_copy(inst1);
@@ -3701,7 +3759,7 @@ tsequence_minus_timestamp1(const TSequence *seq, TimestampTz t,
   inst1 = tsequence_inst_n(seq, 0);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   int i, k = 0;
-  int n = tsequence_find_timestamp(seq, t);
+  int n = tcontseq_find_timestamp(seq, t);
   /* Compute the first sequence until t */
   if (n != 0 || inst1->t < t)
   {
@@ -3994,7 +4052,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
   }
 
   const TInstant *inst1, *inst2;
-  int n = tsequence_find_timestamp(seq, inter.lower);
+  int n = tcontseq_find_timestamp(seq, inter.lower);
   /* If the lower bound of the intersecting period is exclusive */
   if (n == -1)
     n = 0;
@@ -4252,6 +4310,10 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
 bool
 tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t)
 {
+  /* Discrete sequence */
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+    return (tdiscseq_find_timestamp(seq, t) >= 0);
+  /* Continuous sequence */
   return contains_period_timestamp(&seq->period, t);
 }
 
@@ -4261,10 +4323,10 @@ tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc intersectsTimestampSet()
  */
 bool
-tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ss)
+tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
-  for (int i = 0; i < ss->count; i++)
-    if (tsequence_intersects_timestamp(seq, timestampset_time_n(ss, i)))
+  for (int i = 0; i < ts->count; i++)
+    if (tsequence_intersects_timestamp(seq, timestampset_time_n(ts, i)))
       return true;
   return false;
 }
@@ -4277,7 +4339,22 @@ tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ss)
 bool
 tsequence_intersects_period(const TSequence *seq, const Period *p)
 {
-  return overlaps_span_span(&seq->period, p);
+  /* Bounding period test */
+  if (! overlaps_span_span(&seq->period, p))
+    return false;
+
+  /* For continuous sequences return true given the above test */
+  if (! MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+    return true;
+  
+  /* Discrete sequence */
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    if (contains_period_timestamp(p, inst->t))
+      return true;
+  }
+  return false;
 }
 
 /**

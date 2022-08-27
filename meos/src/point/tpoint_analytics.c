@@ -1106,6 +1106,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
  *
  * @param[in] ss Temporal point
  * @param[in] eps_dist Epsilon speed
+ * @param[in] synchronized True when computing the Synchronized Euclidean
+ * Distance (SED), false when computing the spatial only Douglas-Peucker
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *

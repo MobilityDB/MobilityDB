@@ -1002,12 +1002,12 @@ tfunc_tsequence_tsequence_single(const TSequence *seq1, const TSequence *seq2,
   int i = 0, j = 0, k = 0, l = 0;
   if (inst1->t < (TimestampTz) inter->lower)
   {
-    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
   else if (inst2->t < (TimestampTz) inter->lower)
   {
-    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 2;
@@ -1104,13 +1104,13 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
   {
     start1 = tsequence_at_timestamp(seq1, inter->lower);
     tofree[l++] = start1;
-    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
   }
   else if (start2->t < (TimestampTz) inter->lower)
   {
     start2 = tsequence_at_timestamp(seq2, inter->lower);
     tofree[l++] = start2;
-    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
   }
   bool lower_inc = inter->lower_inc;
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
@@ -1843,13 +1843,13 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
   {
     start1 = tsequence_at_timestamp(seq1, inter->lower);
     tofree[l++] = start1;
-    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
   }
   else if (start2->t < (TimestampTz) inter->lower)
   {
     start2 = tsequence_at_timestamp(seq2, inter->lower);
     tofree[l++] = start2;
-    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
   }
   bool lower_inc = inter->lower_inc;
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);

@@ -535,7 +535,7 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 /**
  * Return true if the temporal points are ever within the given distance
  *
- * @param[in] is1,is2 Temporal points
+ * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
  * @pre The temporal points are synchronized

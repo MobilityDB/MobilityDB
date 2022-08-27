@@ -354,9 +354,9 @@ Temporal *
 tnumber_derivative(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
+    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);

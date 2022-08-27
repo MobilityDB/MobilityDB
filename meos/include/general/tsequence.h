@@ -44,7 +44,8 @@
 
 /* General functions */
 
-extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
+extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);
+extern int tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t);
 extern void tsequence_make_valid1(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, bool linear);
 extern TSequence *tsequence_make1(const TInstant **instants, int count,

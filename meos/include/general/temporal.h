@@ -175,26 +175,30 @@ typedef enum
 
 #define MOBDB_FLAG_BYVAL      0x0001
 #define MOBDB_FLAG_CONTINUOUS 0x0002
-#define MOBDB_FLAG_LINEAR     0x0004
-#define MOBDB_FLAG_X          0x0008
-#define MOBDB_FLAG_Z          0x0010
-#define MOBDB_FLAG_T          0x0020
-#define MOBDB_FLAG_GEODETIC   0x0040
+#define MOBDB_FLAG_DISCRETE   0x0004
+#define MOBDB_FLAG_LINEAR     0x0008
+#define MOBDB_FLAG_X          0x0010
+#define MOBDB_FLAG_Z          0x0020
+#define MOBDB_FLAG_T          0x0040
+#define MOBDB_FLAG_GEODETIC   0x0080
 
 /* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_FLAG_LINEAR)>>2))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>3))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>4))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>5))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>6))
+#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (((flags) & MOBDB_FLAG_DISCRETE)>>2))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_FLAG_LINEAR)>>3))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>7))
 
 /* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
+#define MOBDB_FLAGS_SET_DISCRETE(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_DISCRETE) : ((flags) & ~MOBDB_FLAG_DISCRETE))
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_LINEAR) : ((flags) & ~MOBDB_FLAG_LINEAR))
 #define MOBDB_FLAGS_SET_X(flags, value) \

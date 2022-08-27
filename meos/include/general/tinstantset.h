@@ -45,8 +45,6 @@
 /* General functions */
 
 extern TSequence *tinstantset_make1(const TInstant **instants, int count);
-extern bool tinstantset_find_timestamp(const TSequence *is, TimestampTz t,
-  int *pos);
 
 /* Input/output functions */
 

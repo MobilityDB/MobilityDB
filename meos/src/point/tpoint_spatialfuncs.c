@@ -2390,7 +2390,7 @@ tpoint_length(const Temporal *temp)
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
-    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+      ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_length((TSequence *) temp);
@@ -2571,9 +2571,9 @@ Temporal *
 tpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
+      ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
@@ -2895,8 +2895,7 @@ tpoint_azimuth(const Temporal *temp)
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
-    (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->subtype == TSEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+      ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);

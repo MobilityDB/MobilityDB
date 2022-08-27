@@ -105,9 +105,9 @@ tinstantset_make1(const TInstant **instants, int count)
   result->temptype = instants[0]->temptype;
   result->subtype = TINSTANTSET;
   result->bboxsize = bboxsize;
-  bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
+    MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags));
+  MOBDB_FLAGS_SET_DISCRETE(result->flags, true);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(instants[0]->temptype))
@@ -139,59 +139,6 @@ tinstantset_make1(const TInstant **instants, int count)
   }
 
   return result;
-}
-
-/**
- * Return the location of the timestamp in a temporal instant set
- * value using binary search
- *
- * If the timestamp is contained in the temporal instant set, the index
- * of the sequence is returned in the output parameter. Otherwise,
- * returns a number encoding whether the timestamp is before, between
- * two sequences, or after the temporal instant set.
- * For example, given a value composed of 3 instants and a timestamp,
- * the value returned in the output parameter is as follows:
- * @code
- *            0        1        2
- *            |        |        |
- * 1)    t^                            => result = 0
- * 2)        t^                        => result = 0
- * 3)            t^                    => result = 1
- * 4)                    t^            => result = 2
- * 5)                            t^    => result = 3
- * @endcode
- *
- * @param[in] is Temporal instant set
- * @param[in] t Timestamp
- * @param[out] loc Location
- * @result Return true if the timestamp is contained in the temporal instant set
- */
-bool
-tinstantset_find_timestamp(const TSequence *seq, TimestampTz t, int *loc)
-{
-  int first = 0;
-  int last = seq->count - 1;
-  int middle = 0; /* make compiler quiet */
-  const TInstant *inst = NULL; /* make compiler quiet */
-  while (first <= last)
-  {
-    middle = (first + last)/2;
-    inst = tsequence_inst_n(seq, middle);
-    int cmp = timestamptz_cmp_internal(inst->t, t);
-    if (cmp == 0)
-    {
-      *loc = middle;
-      return true;
-    }
-    if (cmp > 0)
-      last = middle - 1;
-    else
-      first = middle + 1;
-  }
-  if (t > inst->t)
-    middle++;
-  *loc = middle;
-  return false;
 }
 
 /*****************************************************************************
@@ -597,24 +544,6 @@ tfloatinstset_spans(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_int_temporal_accessor
- * @brief Return the time frame of a temporal instant set as a period set.
- * @sqlfunc getTime()
- */
-PeriodSet *
-tinstantset_time(const TSequence *seq)
-{
-  Period **periods = palloc(sizeof(Period *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    periods[i] = span_make(inst->t, inst->t, true, true, T_TIMESTAMPTZ);
-  }
-  PeriodSet *result = periodset_make_free(periods, seq->count, NORMALIZE_NO);
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of sequences of a temporal instant set.
  * @post The output parameter @p count is equal to the number of instants of
  * the input temporal instant set
@@ -654,23 +583,6 @@ TimestampTz
 tinstantset_end_timestamp(const TSequence *seq)
 {
   return (tsequence_inst_n(seq, seq->count - 1))->t;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the distinct timestamps of a temporal instant set.
- * @post The output parameter @p count is equal to the number of instants of
- * the input temporal instant set
- * @sqlfunc timestamps()
- */
-TimestampTz *
-tinstantset_timestamps(const TSequence *seq, int *count)
-{
-  TimestampTz *result = palloc(sizeof(TimestampTz) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-    result[i] = (tsequence_inst_n(seq, i))->t;
-  *count = seq->count;
-  return result;
 }
 
 /*****************************************************************************
@@ -1125,8 +1037,8 @@ tinstantset_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 bool
 tinstantset_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
 {
-  int loc;
-  if (! tinstantset_find_timestamp(seq, t, &loc))
+  int loc = tdiscseq_find_timestamp(seq, t);
+  if (loc < 0)
     return false;
 
   const TInstant *inst = tsequence_inst_n(seq, loc);
@@ -1158,8 +1070,8 @@ tinstantset_restrict_timestamp(const TSequence *seq, TimestampTz t, bool atfunc)
   const TInstant *inst;
   if (atfunc)
   {
-    int loc;
-    if (! tinstantset_find_timestamp(seq, t, &loc))
+    int loc = tdiscseq_find_timestamp(seq, t);
+    if (loc < 0)
       return NULL;
     inst = tsequence_inst_n(seq, loc);
     return (Temporal *) tinstant_copy(inst);
@@ -1490,68 +1402,6 @@ intersection_tinstantset_tinstantset(const TSequence *seq1, const TSequence *seq
 
   pfree(instants1); pfree(instants2);
   return k != 0;
-}
-
-/*****************************************************************************
- * Intersects functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_time
- * @brief Return true if a temporal instant set intersects a timestamp.
- * @sqlfunc intersectsTimestamp()
- */
-bool
-tinstantset_intersects_timestamp(const TSequence *seq, TimestampTz t)
-{
-  int loc;
-  return tinstantset_find_timestamp(seq, t, &loc);
-}
-
-/**
- * @ingroup libmeos_int_temporal_time
- * @brief Return true if a temporal instant set intersects a timestamp set.
- * @sqlfunc intersectsTimestampSet()
- */
-bool
-tinstantset_intersects_timestampset(const TSequence *seq,
-  const TimestampSet *ts)
-{
-  for (int i = 0; i < ts->count; i++)
-    if (tinstantset_intersects_timestamp(seq, timestampset_time_n(ts, i)))
-      return true;
-  return false;
-}
-
-/**
- * @ingroup libmeos_int_temporal_time
- * @brief Return true if a temporal instant set intersects a period.
- * @sqlfunc intersectsPeriod()
- */
-bool
-tinstantset_intersects_period(const TSequence *seq, const Period *period)
-{
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    if (contains_period_timestamp(period, inst->t))
-      return true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_int_temporal_time
- * @brief Return true if a temporal instant set intersects a period set.
- * @sqlfunc intersectsPeriodSet()
- */
-bool
-tinstantset_intersects_periodset(const TSequence *seq, const PeriodSet *ps)
-{
-  for (int i = 0; i < ps->count; i++)
-    if (tinstantset_intersects_period(seq, periodset_per_n(ps, i)))
-      return true;
-  return false;
 }
 
 /*****************************************************************************

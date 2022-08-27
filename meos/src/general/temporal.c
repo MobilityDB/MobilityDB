@@ -153,8 +153,13 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
-  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) !=
-      MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+  if (temp1->subtype == TINSTANT || temp2->subtype == TINSTANT)
+    return;
+
+  if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags) != 
+        MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ||
+      MOBDB_FLAGS_GET_LINEAR(temp1->flags) != 
+        MOBDB_FLAGS_GET_LINEAR(temp2->flags))
     elog(ERROR, "The temporal values must have the same interpolation");
   return;
 }
@@ -1036,13 +1041,9 @@ temporal_merge_array(Temporal **temparr, int count)
    * temporal subtype of the result */
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
-  bool interpolation = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags);
   for (int i = 1; i < count; i++)
   {
-    if (MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags) != interpolation)
-    {
-      elog(ERROR, "Input values must be of the same interpolation");
-    }
+    ensure_same_interpolation(temparr[0], temparr[i]);
     uint8 subtype1 = temparr[i]->subtype;
     if (subtype != subtype1)
     {
@@ -1568,9 +1569,7 @@ temporal_time(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_time((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_time((TSequence *) temp);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_time((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_time((TSequenceSet *) temp);
@@ -3305,9 +3304,7 @@ temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_intersects_timestamp((TInstant *) temp, t);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_intersects_timestamp((TSequence *) temp, t);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_intersects_timestamp((TSequence *) temp, t);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_intersects_timestamp((TSequenceSet *) temp, t);
@@ -3327,9 +3324,7 @@ temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_intersects_timestampset((TInstant *) temp, ts);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_intersects_timestampset((TSequence *) temp, ts);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_intersects_timestampset((TSequence *) temp, ts);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_intersects_timestampset((TSequenceSet *) temp, ts);
@@ -3349,9 +3344,7 @@ temporal_intersects_period(const Temporal *temp, const Period *p)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_intersects_period((TInstant *) temp, p);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_intersects_period((TSequence *) temp, p);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_intersects_period((TSequence *) temp, p);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_intersects_period((TSequenceSet *) temp, p);
@@ -3371,9 +3364,7 @@ temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_intersects_periodset((TInstant *) temp, ps);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_intersects_periodset((TSequence *) temp, ps);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_intersects_periodset((TSequence *) temp, ps);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_intersects_periodset((TSequenceSet *) temp, ps);
