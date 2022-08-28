@@ -103,10 +103,7 @@ tpoint_as_text(const Temporal *temp, int maxdd)
   if (temp->subtype == TINSTANT)
     result = tinstant_to_string((TInstant *) temp, Int32GetDatum(maxdd),
       &wkt_out);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_to_string((TSequence *) temp, Int32GetDatum(maxdd),
-      &wkt_out);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_to_string((TSequence *) temp, Int32GetDatum(maxdd),
       false, &wkt_out);
   else /* temp->subtype == TSEQUENCESET */
@@ -127,8 +124,9 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
   int srid = tpoint_srid(temp);
   char str1[20];
   if (srid > 0)
-    sprintf(str1, "SRID=%d%c", srid, MOBDB_FLAGS_GET_DISCRETE(temp->flags) ||
-      MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
+    sprintf(str1, "SRID=%d%c", srid, 
+      temp->subtype != TINSTANT && temp->subtype != TINSTANTSET && 
+      ! MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ',' : ';');
   else
     str1[0] = '\0';
   char *str2 = tpoint_as_text(temp, maxdd);

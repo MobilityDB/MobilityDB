@@ -1447,6 +1447,7 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
   size_t outlen = 0;
   char prefix[20];
   if (! component && MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) &&
+      ! MOBDB_FLAGS_GET_DISCRETE(seq->flags) &&
       ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -1457,8 +1458,17 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
     strings[i] = tinstant_to_string(inst, arg, value_out);
     outlen += strlen(strings[i]) + 2;
   }
-  char open = seq->period.lower_inc ? (char) '[' : (char) '(';
-  char close = seq->period.upper_inc ? (char) ']' : (char) ')';
+  char open, close;
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  {
+    open = (char) '{';
+    close = (char) '}';
+  }
+  else
+  {
+    open = seq->period.lower_inc ? (char) '[' : (char) '(';
+    close = seq->period.upper_inc ? (char) ']' : (char) ')';
+  }
   return stringarr_to_string(strings, seq->count, outlen, prefix,
     open, close);
 }
@@ -2628,9 +2638,6 @@ tsequence_always_eq(const TSequence *seq, Datum value)
   if (tnumber_type(seq->temptype))
     return true;
 
-  /* The following test assumes that the sequence is in normal form */
-  if (seq->count > 2)
-    return false;
   mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {

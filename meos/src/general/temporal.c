@@ -153,14 +153,11 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
-  if (temp1->subtype == TINSTANT || temp2->subtype == TINSTANT)
-    return;
-
-  if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags) != 
-        MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ||
+  if ((temp1->subtype == TSEQUENCE || temp1->subtype == TSEQUENCESET) &&
+      (temp2->subtype == TSEQUENCE || temp2->subtype == TSEQUENCESET) &&
       MOBDB_FLAGS_GET_LINEAR(temp1->flags) != 
         MOBDB_FLAGS_GET_LINEAR(temp2->flags))
-    elog(ERROR, "The temporal values must have the same interpolation");
+    elog(ERROR, "The temporal values must have the same continuous interpolation");
   return;
 }
 
@@ -208,7 +205,6 @@ ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
   bool merge, int16 subtype __attribute__((unused)))
 #endif
 {
-  ensure_same_interpolation((Temporal *) inst1, (Temporal *) inst2);
   ensure_increasing_timestamps(inst1, inst2, merge);
   ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
 #if NPOINT
@@ -639,9 +635,7 @@ temporal_out(const Temporal *temp, Datum arg)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_out((TInstant *) temp, arg);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_out((TSequence *) temp, arg);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_out((TSequence *) temp, arg);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_out((TSequenceSet *) temp, arg);
@@ -2388,9 +2382,7 @@ temporal_ever_eq(const Temporal *temp, Datum value)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_ever_eq((TInstant *) temp, value);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_ever_eq((TSequence *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_ever_eq((TSequence *) temp, value);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_ever_eq((TSequenceSet *) temp, value);
@@ -2450,9 +2442,7 @@ temporal_always_eq(const Temporal *temp, Datum value)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_always_eq((TInstant *) temp, value);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_always_eq((TSequence *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_always_eq((TSequence *) temp, value);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_always_eq((TSequenceSet *) temp, value);
@@ -2512,9 +2502,7 @@ temporal_ever_lt(const Temporal *temp, Datum value)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_ever_lt((TInstant *) temp, value);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_ever_lt((TSequence *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_ever_lt((TSequence *) temp, value);
   else /* subtype == TSEQUENCESET */
     result = tsequenceset_ever_lt((TSequenceSet *) temp, value);
@@ -2564,9 +2552,7 @@ temporal_always_lt(const Temporal *temp, Datum value)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_always_lt((TInstant *) temp, value);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_always_lt((TSequence *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_always_lt((TSequence *) temp, value);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_always_lt((TSequenceSet *) temp, value);
@@ -2617,9 +2603,7 @@ temporal_ever_le(const Temporal *temp, Datum value)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_ever_le((TInstant *) temp, value);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_ever_le((TSequence *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_ever_le((TSequence *) temp, value);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_ever_le((TSequenceSet *) temp, value);
@@ -2671,9 +2655,7 @@ temporal_always_le(const Temporal *temp, Datum value)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_always_le((TInstant *) temp, value);
-  else if (temp->subtype == TINSTANTSET)
-    result = tinstantset_always_le((TSequence *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
     result = tsequence_always_le((TSequence *) temp, value);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_always_le((TSequenceSet *) temp, value);

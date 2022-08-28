@@ -48,9 +48,6 @@ extern TSequence *tinstantset_make1(const TInstant **instants, int count);
 
 /* Input/output functions */
 
-extern char *tinstantset_to_string(const TSequence *is, Datum arg,
-  char *(*value_out)(mobdbType, Datum, Datum));
-
 /* Intersection functions */
 
 extern bool intersection_tinstantset_tinstant(const TSequence *is,

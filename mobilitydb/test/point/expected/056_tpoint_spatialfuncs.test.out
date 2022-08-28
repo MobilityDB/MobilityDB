@@ -1513,15 +1513,30 @@ SELECT round(speed(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-
  Interp=Stepwise;{[1.815459@2000-01-01 00:00:00+00, 1.815459@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)
 
-/* Errors */
 SELECT round(speed(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeompoint 'Point(1 1 1)@2000-01-01'), 6);
  round 
 -------
@@ -1572,13 +1587,29 @@ SELECT round(speed(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.
 
 /* Errors */
 SELECT round(speed(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT round(speed(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
-ERROR:  The temporal value must have linear interpolation
+ round 
+-------
+ 
+(1 row)
+
 SELECT ST_AsText(round(twcentroid(tgeompoint 'Point(1 1)@2000-01-01'), 6));
  st_astext  
 ------------

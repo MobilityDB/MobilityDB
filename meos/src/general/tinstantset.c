@@ -233,43 +233,6 @@ tgeogpointinstset_in(char *str)
 }
 #endif
 
-/**
- * @brief Return the Well-Known Text (WKT) representation of a temporal instant
- * set.
- *
- * @param[in] seq Temporal instant set
- * @param[in] arg Maximum number of decimal digits to output for floating point
- * values
- * @param[in] value_out Function called to output the base value depending on
- * its type
- */
-char *
-tinstantset_to_string(const TSequence *seq, Datum arg,
-  char *(*value_out)(mobdbType, Datum, Datum))
-{
-  char **strings = palloc(sizeof(char *) * seq->count);
-  size_t outlen = 0;
-
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    strings[i] = tinstant_to_string(inst, arg, value_out);
-    outlen += strlen(strings[i]) + 2;
-  }
-  return stringarr_to_string(strings, seq->count, outlen, "", '{', '}');
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return the Well-Known Text (WKT) representation of a temporal instant
- * set.
- */
-char *
-tinstantset_out(const TSequence *seq, Datum arg)
-{
-  return tinstantset_to_string(seq, arg, &basetype_output);
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -593,7 +556,7 @@ tinstantset_end_timestamp(const TSequence *seq)
  * @ingroup libmeos_int_temporal_cast
  * @brief Cast a temporal instant set integer to a temporal instant set float.
  * @sqlop @p ::
- */
+ */ 
 TSequence *
 tintinstset_to_tfloatinstset(const TSequence *seq)
 {
@@ -694,151 +657,6 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * Ever/always functions
  *****************************************************************************/
 
-/**
- * @ingroup libmeos_int_temporal_ever
- * @brief Return true if a temporal instant set is ever equal to a base value.
- * @sqlop @p ?=
- */
-bool
-tinstantset_ever_eq(const TSequence *seq, Datum value)
-{
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
-    return false;
-
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_eq(valueinst, value, basetype))
-      return true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_int_temporal_ever
- * @brief Return true if a temporal instant set is always equal to a base value.
- * @sqlop @p %=
- */
-bool
-tinstantset_always_eq(const TSequence *seq, Datum value)
-{
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  /* The bounding box test above is enough to compute the answer for temporal
-   * numbers */
-  if (tnumber_type(seq->temptype))
-    return true;
-
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_ne(valueinst, value, basetype))
-      return false;
-  }
-  return true;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_ever
- * @brief Return true if a temporal instant set is ever less than a base value.
- * @sqlop @p ?<
- */
-bool
-tinstantset_ever_lt(const TSequence *seq, Datum value)
-{
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
-    return false;
-
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_lt(valueinst, value, basetype))
-      return true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_int_temporal_ever
- * @brief Return true if a temporal instant set is ever less than or equal to a
- * base value
- * @sqlop @p ?<=
- */
-bool
-tinstantset_ever_le(const TSequence *seq, Datum value)
-{
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
-    return false;
-
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_le(valueinst, value, basetype))
-      return true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_int_temporal_ever
- * @brief Return true if a temporal instant set is always less than a base value.
- * @sqlop @p %<
- */
-bool
-tinstantset_always_lt(const TSequence *seq, Datum value)
-{
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (! datum_lt(valueinst, value, basetype))
-      return false;
-  }
-  return true;
-}
-
-/**
- * @ingroup libmeos_int_temporal_ever
- * @brief Return true if a temporal instant set is always less than or equal to
- * a base value
- * @sqlop @p %<=
- */
-bool
-tinstantset_always_le(const TSequence *seq, Datum value)
-{
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  /* The bounding box test above is enough to compute the answer for temporal
-   * numbers */
-  if (tnumber_type(seq->temptype))
-    return true;
-
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (! datum_le(valueinst, value, basetype))
-      return false;
-  }
-  return true;
-}
 
 /*****************************************************************************
  * Restriction Functions
