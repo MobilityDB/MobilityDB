@@ -295,7 +295,7 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = STEP;
+  lfinfo.reslinear = STEPWISE;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
@@ -427,7 +427,7 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (temp->subtype == TINSTANT)
     result = disjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
       func);
-  else if (temp->subtype == TINSTANTSET || temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = disjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
       func);
   else /* temp->subtype == TSEQUENCESET */
@@ -540,19 +540,19 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
  * @param[in] func DWithin function (2D or 3D)
  * @pre The temporal points are synchronized
  */
-static bool
-dwithin_tpointinstset_tpointinstset(const TSequence *seq1,
-  const TSequence *seq2, double dist, datum_func3 func)
-{
-  for (int i = 0; i < seq1->count; i++)
-  {
-    const TInstant *inst1 = tsequence_inst_n(seq1, i);
-    const TInstant *inst2 = tsequence_inst_n(seq2, i);
-    if (dwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
-      return true;
-  }
-  return false;
-}
+// static bool
+// dwithin_tpointinstset_tpointinstset(const TSequence *seq1,
+  // const TSequence *seq2, double dist, datum_func3 func)
+// {
+  // for (int i = 0; i < seq1->count; i++)
+  // {
+    // const TInstant *inst1 = tsequence_inst_n(seq1, i);
+    // const TInstant *inst2 = tsequence_inst_n(seq2, i);
+    // if (dwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
+      // return true;
+  // }
+  // return false;
+// }
 
 /**
  * Return true if the temporal points are ever within the given distance
@@ -665,9 +665,9 @@ dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   if (sync1->subtype == TINSTANT)
     result = dwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
-  else if (sync1->subtype == TINSTANTSET)
-    result = dwithin_tpointinstset_tpointinstset((TSequence *) sync1,
-      (TSequence *) sync2, dist, func);
+  // else if (sync1->subtype == TINSTANTSET)
+    // result = dwithin_tpointinstset_tpointinstset((TSequence *) sync1,
+      // (TSequence *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
     result = dwithin_tpointseq_tpointseq((TSequence *) sync1,
       (TSequence *) sync2, dist, func);

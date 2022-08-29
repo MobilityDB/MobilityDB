@@ -243,48 +243,50 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * @param[out] buckets Start timestamp of the buckets containing a fragment
  * @param[out] newcount Number of values in the output array
  */
-static TSequence **
-tinstantset_time_split(const TSequence *seq, TimestampTz start,
-  int64 tunits, int count, TimestampTz **buckets, int *newcount)
-{
-  TSequence **result = palloc(sizeof(TSequence *) * count);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int i = 0,  /* counter for instants of temporal value */
-      k = 0,  /* counter for instants of next split */
-      l = 0;  /* counter for resulting fragments */
-  TimestampTz lower = start;
-  TimestampTz upper = start + tunits;
-  while (i < seq->count)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    if (lower <= inst->t && inst->t < upper)
-    {
-      instants[k++] = inst;
-      i++;
-    }
-    else
-    {
-      if (k > 0)
-      {
-        times[l] = lower;
-        result[l++] = tinstantset_make(instants, k, MERGE_NO);
-        k = 0;
-      }
-      lower = upper;
-      upper += tunits;
-    }
-  }
-  if (k > 0)
-  {
-    times[l] = lower;
-    result[l++] = tinstantset_make(instants, k, MERGE_NO);
-  }
-  pfree(instants);
-  *buckets = times;
-  *newcount = l;
-  return result;
-}
+// static TSequence **
+// tinstantset_time_split(const TSequence *seq, TimestampTz start,
+  // int64 tunits, int count, TimestampTz **buckets, int *newcount)
+// {
+  // TSequence **result = palloc(sizeof(TSequence *) * count);
+  // TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+  // const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  // int i = 0,  /* counter for instants of temporal value */
+      // k = 0,  /* counter for instants of next split */
+      // l = 0;  /* counter for resulting fragments */
+  // TimestampTz lower = start;
+  // TimestampTz upper = start + tunits;
+  // while (i < seq->count)
+  // {
+    // const TInstant *inst = tsequence_inst_n(seq, i);
+    // if (lower <= inst->t && inst->t < upper)
+    // {
+      // instants[k++] = inst;
+      // i++;
+    // }
+    // else
+    // {
+      // if (k > 0)
+      // {
+        // times[l] = lower;
+        // result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
+          // NORMALIZE_NO);
+        // k = 0;
+      // }
+      // lower = upper;
+      // upper += tunits;
+    // }
+  // }
+  // if (k > 0)
+  // {
+    // times[l] = lower;
+    // result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
+      // NORMALIZE_NO);
+  // }
+  // pfree(instants);
+  // *buckets = times;
+  // *newcount = l;
+  // return result;
+// }
 
 /*****************************************************************************/
 
@@ -535,9 +537,9 @@ temporal_time_split(const Temporal *temp, TimestampTz start, TimestampTz end,
   if (temp->subtype == TINSTANT)
     fragments = (Temporal **) tinstant_time_split((const TInstant *) temp,
       tunits, torigin, buckets, newcount);
-  else if (temp->subtype == TINSTANTSET)
-    fragments = (Temporal **) tinstantset_time_split((const TSequence *) temp,
-      start, tunits, count, buckets, newcount);
+  // else if (temp->subtype == TINSTANTSET)
+    // fragments = (Temporal **) tinstantset_time_split((const TSequence *) temp,
+      // start, tunits, count, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
     fragments = (Temporal **) tsequence_time_split((const TSequence *) temp,
       start, end, tunits, count, buckets, newcount);
@@ -607,60 +609,61 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
  * @param[out] buckets Start value of the buckets containing a fragment
  * @param[out] newcount Number of values in the output arrays
  */
-static TSequence **
-tnumberinstset_value_split(const TSequence *seq, Datum start_bucket,
-  Datum size, int count, Datum **buckets, int *newcount)
-{
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  TSequence **result;
-  Datum *values, value, bucket_value;
+// static TSequence **
+// tnumberinstset_value_split(const TSequence *seq, Datum start_bucket,
+  // Datum size, int count, Datum **buckets, int *newcount)
+// {
+  // mobdbType basetype = temptype_basetype(seq->temptype);
+  // TSequence **result;
+  // Datum *values, value, bucket_value;
 
-  /* Singleton instant set */
-  if (seq->count == 1)
-  {
-    result = palloc(sizeof(TSequence *));
-    values = palloc(sizeof(Datum));
-    result[0] = tsequence_copy(seq);
-    value = tinstant_value(tsequence_inst_n(seq, 0));
-    values[0] = datum_bucket(value, size, start_bucket, basetype);
-    *buckets = values;
-    *newcount = 1;
-    return result;
-  }
+  // /* Singleton instant set */
+  // if (seq->count == 1)
+  // {
+    // result = palloc(sizeof(TSequence *));
+    // values = palloc(sizeof(Datum));
+    // result[0] = tsequence_copy(seq);
+    // value = tinstant_value(tsequence_inst_n(seq, 0));
+    // values[0] = datum_bucket(value, size, start_bucket, basetype);
+    // *buckets = values;
+    // *newcount = 1;
+    // return result;
+  // }
 
-  /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
-  /* palloc0 to initialize the counters to 0 */
-  int *numinsts = palloc0(sizeof(int) * count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    value = tinstant_value(inst);
-    bucket_value = datum_bucket(value, size, start_bucket, basetype);
-    int bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
-    int inst_no = numinsts[bucket_no]++;
-    instants[bucket_no * seq->count + inst_no] = inst;
-  }
-  /* Assemble the result for each value bucket */
-  result = palloc(sizeof(TSequence *) * count);
-  values = palloc(sizeof(Datum) * count);
-  int k = 0;
-  bucket_value = start_bucket;
-  for (int i = 0; i < count; i++)
-  {
-    if (numinsts[i] > 0)
-    {
-      result[k] = tinstantset_make(&instants[i * seq->count], numinsts[i], MERGE_NO);
-      values[k++] = bucket_value;
-    }
-    bucket_value = datum_add(bucket_value, size, basetype, basetype);
-  }
-  pfree(instants);
-  pfree(numinsts);
-  *buckets = values;
-  *newcount = k;
-  return result;
-}
+  // /* General case */
+  // const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
+  // /* palloc0 to initialize the counters to 0 */
+  // int *numinsts = palloc0(sizeof(int) * count);
+  // for (int i = 0; i < seq->count; i++)
+  // {
+    // const TInstant *inst = tsequence_inst_n(seq, i);
+    // value = tinstant_value(inst);
+    // bucket_value = datum_bucket(value, size, start_bucket, basetype);
+    // int bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
+    // int inst_no = numinsts[bucket_no]++;
+    // instants[bucket_no * seq->count + inst_no] = inst;
+  // }
+  // /* Assemble the result for each value bucket */
+  // result = palloc(sizeof(TSequence *) * count);
+  // values = palloc(sizeof(Datum) * count);
+  // int k = 0;
+  // bucket_value = start_bucket;
+  // for (int i = 0; i < count; i++)
+  // {
+    // if (numinsts[i] > 0)
+    // {
+      // result[k] = tsequence_make(&instants[i * seq->count], numinsts[i],
+        // true, true, DISCRETE, NORMALIZE_NO);
+      // values[k++] = bucket_value;
+    // }
+    // bucket_value = datum_add(bucket_value, size, basetype, basetype);
+  // }
+  // pfree(instants);
+  // pfree(numinsts);
+  // *buckets = values;
+  // *newcount = k;
+  // return result;
+// }
 
 /*****************************************************************************/
 
@@ -718,7 +721,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-      k, lower_inc1, false, STEP, NORMALIZE);
+      k, lower_inc1, false, STEPWISE, NORMALIZE);
     bounds[0] = bounds[1];
     inst1 = inst2;
     lower_inc1 = true;
@@ -731,7 +734,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no]++;
-    result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEP);
+    result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEPWISE);
   }
   pfree_array((void **) tofree, l);
   return;
@@ -1036,9 +1039,9 @@ tnumber_value_split(const Temporal *temp, Datum start_bucket, Datum size,
   if (temp->subtype == TINSTANT)
     fragments = (Temporal **) tnumberinst_value_split((const TInstant *) temp,
       start_bucket, size, buckets, newcount);
-  else if (temp->subtype == TINSTANTSET)
-    fragments = (Temporal **) tnumberinstset_value_split((const TSequence *) temp,
-      start_bucket, size, count, buckets, newcount);
+  // else if (temp->subtype == TINSTANTSET)
+    // fragments = (Temporal **) tnumberinstset_value_split((const TSequence *) temp,
+      // start_bucket, size, count, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
     fragments = (Temporal **) tnumberseq_value_split((const TSequence *) temp,
       start_bucket, size, count, buckets, newcount);

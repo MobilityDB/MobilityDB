@@ -63,17 +63,17 @@ DECLARE
   RandPeriodset periodset;
 
   Randtintinst tint(Instant);
-  Randtinti tint(InstantSet);
+  Randtinti tint(Sequence);
   Randtintseq tint(Sequence);
   Randtints tint(SequenceSet);
 
   Randtfloatinst tfloat(Instant);
-  Randtfloati tfloat(InstantSet);
+  Randtfloati tfloat(Sequence);
   Randtfloatseq tfloat(Sequence);
   Randtfloats tfloat(SequenceSet);
 
   Randtgeompointinst tgeompoint(Instant, Point);
-  Randtgeompointi tgeompoint(InstantSet, Point);
+  Randtgeompointi tgeompoint(Sequence, Point);
   Randtgeompointseq tgeompoint(Sequence, Point);
   Randtgeompoints tgeompoint(SequenceSet, Point);
 

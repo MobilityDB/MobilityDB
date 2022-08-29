@@ -153,10 +153,10 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointseq_set_stbox(const TInstant **instants, int count, bool linear,
+tnpointseq_set_stbox(const TInstant **instants, int count, int interp,
   STBOX *box)
 {
-  if (linear)
+  if (interp == LINEAR)
     tnpointinstarr_linear_set_stbox(instants, count, box);
   else
     tnpointinstarr_set_stbox(instants, count, box);

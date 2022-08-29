@@ -68,7 +68,7 @@ typedef struct
   bool hast;           /**< T? */
   bool geodetic;       /**< Geodetic? */
   bool has_srid;       /**< SRID? */
-  bool linear;         /**< Linear interpolation? */
+  int interp;          /**< Interpolation */
   const uint8_t *pos;  /**< Current parse position */
 } wkb_parse_state;
 
@@ -467,95 +467,11 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 /**
  * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set from its MF-JSON representation.
- */
-TSequence *
-tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  mobdbType temptype)
-{
-  int count;
-  TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
-    &count);
-  return tinstantset_make_free(instants, count, MERGE_NO);
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set boolean from its MF-JSON representation.
- * @sqlfunc tboolFromMFJSON()
- */
-TSequence *
-tboolinstset_from_mfjson(json_object *mfjson)
-{
-  return tinstantset_from_mfjson(mfjson, false, 0, T_TBOOL);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set integer from its MF-JSON representation.
- * @sqlfunc tintFromMFJSON()
- */
-TSequence *
-tintinstset_from_mfjson(json_object *mfjson)
-{
-  return tinstantset_from_mfjson(mfjson, false, 0, T_TINT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set float from its MF-JSON representation.
- * @sqlfunc tfloattFromMFJSON()
- */
-TSequence *
-tfloatinstset_from_mfjson(json_object *mfjson)
-{
-  return tinstantset_from_mfjson(mfjson, false, 0, T_TFLOAT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set text from its MF-JSON representation.
- * @sqlfunc ttextFromMFJSON()
- */
-TSequence *
-ttextinstset_from_mfjson(json_object *mfjson)
-{
-  return tinstantset_from_mfjson(mfjson, false, 0, T_TTEXT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set geometric point from its MF-JSON
- * representation.
- * @sqlfunc tgeompointFromMFJSON()
- */
-TSequence *
-tgeompointinstset_from_mfjson(json_object *mfjson, int srid)
-{
-  return tinstantset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set geographic point from its MF-JSON
- * representation.
- * @sqlfunc tgeogpointFromMFJSON()
- */
-TSequence *
-tgeogpointinstset_from_mfjson(json_object *mfjson, int srid)
-{
-  return tinstantset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_int_temporal_in_out
  * @brief Return a temporal sequence point from its MF-JSON representation.
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  mobdbType temptype, bool linear)
+  mobdbType temptype, int interp)
 {
   /* Get the array of temporal instant points */
   int count;
@@ -578,7 +494,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
   /* Construct the temporal point */
   return tsequence_make_free(instants, count, lower_inc, upper_inc,
-    linear, NORMALIZE);
+    interp, NORMALIZE);
 }
 
 #if MEOS
@@ -590,7 +506,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TSequence *
 tboolseq_from_mfjson(json_object *mfjson)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, false);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEPWISE);
 }
 
 /**
@@ -601,7 +517,7 @@ tboolseq_from_mfjson(json_object *mfjson)
 TSequence *
 tintseq_from_mfjson(json_object *mfjson)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, false);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEPWISE);
 }
 
 /**
@@ -610,9 +526,9 @@ tintseq_from_mfjson(json_object *mfjson)
  * @sqlfunc tfloattFromMFJSON()
  */
 TSequence *
-tfloatseq_from_mfjson(json_object *mfjson, bool linear)
+tfloatseq_from_mfjson(json_object *mfjson, int interp)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, linear);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
 }
 
 /**
@@ -623,7 +539,7 @@ tfloatseq_from_mfjson(json_object *mfjson, bool linear)
 TSequence *
 ttextseq_from_mfjson(json_object *mfjson)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, false);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEPWISE);
 }
 
 /**
@@ -633,9 +549,9 @@ ttextseq_from_mfjson(json_object *mfjson)
  * @sqlfunc tgeompointFromMFJSON()
  */
 TSequence *
-tgeompointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
+tgeompointseq_from_mfjson(json_object *mfjson, int srid, int interp)
 {
-  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, linear);
+  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
 
 /**
@@ -645,9 +561,9 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
  * @sqlfunc tgeogpointFromMFJSON()
  */
 TSequence *
-tgeogpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
+tgeogpointseq_from_mfjson(json_object *mfjson, int srid, int interp)
 {
-  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, linear);
+  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
 #endif /* MEOS */
 
@@ -657,7 +573,7 @@ tgeogpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  mobdbType temptype, bool linear)
+  mobdbType temptype, int interp)
 {
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
@@ -676,7 +592,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   {
     json_object* seqvalue = NULL;
     seqvalue = json_object_array_get_idx(seqs, i);
-    sequences[i] = tsequence_from_mfjson(seqvalue, isgeo, srid, temptype, linear);
+    sequences[i] = tsequence_from_mfjson(seqvalue, isgeo, srid, temptype, interp);
   }
   return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
@@ -691,7 +607,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TSequenceSet *
 tboolseqset_from_mfjson(json_object *mfjson)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, false);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEPWISE);
 }
 
 /**
@@ -702,7 +618,7 @@ tboolseqset_from_mfjson(json_object *mfjson)
 TSequenceSet *
 tintseqset_from_mfjson(json_object *mfjson)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, false);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEPWISE);
 }
 
 /**
@@ -711,9 +627,9 @@ tintseqset_from_mfjson(json_object *mfjson)
  * @sqlfunc tfloatFromMFJSON()
  */
 TSequenceSet *
-tfloatseqset_from_mfjson(json_object *mfjson, bool linear)
+tfloatseqset_from_mfjson(json_object *mfjson, int interp)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, linear);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
 }
 
 /**
@@ -724,7 +640,7 @@ tfloatseqset_from_mfjson(json_object *mfjson, bool linear)
 TSequenceSet *
 ttextseqset_from_mfjson(json_object *mfjson)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, false);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEPWISE);
 }
 
 /**
@@ -734,9 +650,9 @@ ttextseqset_from_mfjson(json_object *mfjson)
  * @sqlfunc tgeompointFromMFJSON()
  */
 TSequenceSet *
-tgeompointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
+tgeompointseqset_from_mfjson(json_object *mfjson, int srid, int interp)
 {
-  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, linear);
+  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
 
 /**
@@ -746,9 +662,9 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
  * @sqlfunc tgeogpointFromMFJSON()
  */
 TSequenceSet *
-tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
+tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, int interp)
 {
-  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, linear);
+  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
 #endif /* MEOS */
 
@@ -881,8 +797,8 @@ temporal_from_mfjson(char *mfjson)
       poObjDates = findMemberByName(poObj, "datetimes");
       if (poObjDates != NULL &&
         json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *) tinstantset_from_mfjson(poObj, isgeo, srid,
-          temptype);
+        result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
+          temptype, DISCRETE);
       else
         result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid,
           temptype);
@@ -890,14 +806,14 @@ temporal_from_mfjson(char *mfjson)
     else if (strcmp(pszInterp, "Stepwise") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
     {
-      bool linear = strcmp(pszInterp, "Linear") == 0;
+      int interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEPWISE;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
         result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
-          temptype, linear);
+          temptype, interp);
       else
         result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
-          temptype, linear);
+          temptype, interp);
     }
     else
       elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
@@ -1479,16 +1395,13 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
       s->has_srid = true;
   }
   if (wkb_flags & MOBDB_WKB_LINEAR_INTERP)
-    s->linear = true;
+    s->interp = LINEAR;
   /* Mask off the upper flags to get the subtype */
   wkb_flags = wkb_flags & (uint8_t) 0x0F;
   switch (wkb_flags)
   {
     case MOBDB_WKB_TINSTANT:
       s->subtype = TINSTANT;
-      break;
-    case MOBDB_WKB_TINSTANTSET:
-      s->subtype = TINSTANTSET;
       break;
     case MOBDB_WKB_TSEQUENCE:
       s->subtype = TSEQUENCE;
@@ -1589,16 +1502,17 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 /**
  * Return a temporal instant set value from its WKB representation
  */
-static TSequence *
-tinstantset_from_wkb_state(wkb_parse_state *s)
-{
-  /* Get the number of instants */
-  int count = int32_from_wkb_state(s);
-  assert(count > 0);
-  /* Parse the instants */
-  TInstant **instants = tinstarr_from_wkb_state(s, count);
-  return tinstantset_make_free(instants, count, MERGE_NO);
-}
+// static TSequence *
+// tinstantset_from_wkb_state(wkb_parse_state *s)
+// {
+  // /* Get the number of instants */
+  // int count = int32_from_wkb_state(s);
+  // assert(count > 0);
+  // /* Parse the instants */
+  // TInstant **instants = tinstarr_from_wkb_state(s, count);
+  // return tsequence_make_free(instants, count, true, true, DISCRETE,
+    // NORMALIZE_NO);
+// }
 
 /**
  * Return a temporal sequence value from its WKB representation
@@ -1616,7 +1530,7 @@ tsequence_from_wkb_state(wkb_parse_state *s)
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
   return tsequence_make_free(instants, count, lower_inc, upper_inc,
-    s->linear, NORMALIZE);
+    s->interp, NORMALIZE);
 }
 
 /**
@@ -1650,7 +1564,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
         pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
-      upper_inc, s->linear, NORMALIZE);
+      upper_inc, s->interp, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -1679,8 +1593,8 @@ temporal_from_wkb_state(wkb_parse_state *s)
   ensure_valid_tempsubtype(s->subtype);
   if (s->subtype == TINSTANT)
     return (Temporal *) tinstant_from_wkb_state(s);
-  else if (s->subtype == TINSTANTSET)
-    return (Temporal *) tinstantset_from_wkb_state(s);
+  // else if (s->subtype == TINSTANTSET)
+    // return (Temporal *) tinstantset_from_wkb_state(s);
   else if (s->subtype == TSEQUENCE)
     return (Temporal *) tsequence_from_wkb_state(s);
   else /* s->subtype == TSEQUENCESET */

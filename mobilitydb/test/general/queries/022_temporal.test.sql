@@ -139,14 +139,14 @@ FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
 SELECT temporal_typmod_in(ARRAY[[cstring 'Instant']]);
 SELECT temporal_typmod_in(ARRAY[cstring 'Instant', NULL]);
 SELECT tfloat('') '1@2000-01-01';
-SELECT tfloat(Instant, InstantSet) '1@2000-01-01';
+SELECT tfloat(Instant, Sequence) '1@2000-01-01';
 
 SELECT tbool 'true@2000-01-01';
 SELECT tbool '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 SELECT tbool(Instant) 'true@2000-01-01';
-SELECT tbool(InstantSet) '{true@2000-01-01, false@2000-01-02}';
+SELECT tbool(Sequence) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(Sequence) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(SequenceSet) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 
@@ -161,17 +161,17 @@ SELECT tbool '0@2000-01-01';
 
 /* Errors */
 SELECT tbool(Instan) 'true@2000-01-01';
-SELECT tbool(InstantSet) 'true@2000-01-01';
+SELECT tbool(Sequence) 'true@2000-01-01';
 SELECT tbool(Sequence) 'true@2000-01-01';
 SELECT tbool(SequenceSet) 'true@2000-01-01';
 SELECT tbool(Instant) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(Sequence) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(SequenceSet) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(Instant) '[true@2000-01-01, false@2000-01-02]';
-SELECT tbool(InstantSet) '[true@2000-01-01, false@2000-01-02]';
+SELECT tbool(Sequence) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(SequenceSet) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(Instant) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
-SELECT tbool(InstantSet) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
+SELECT tbool(Sequence) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 SELECT tbool(Sequence) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 
 SELECT tint '1@2000-01-01';
@@ -179,21 +179,21 @@ SELECT tint '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint '[1@2000-01-01, 2@2000-01-02]';
 SELECT tint '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT tint(Instant) '1@2000-01-01';
-SELECT tint(InstantSet) '{1@2000-01-01, 2@2000-01-02}';
+SELECT tint(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tint(SequenceSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 /* Errors */
-SELECT tint(InstantSet) '1@2000-01-01';
+SELECT tint(Sequence) '1@2000-01-01';
 SELECT tint(Sequence) '1@2000-01-01';
 SELECT tint(SequenceSet) '1@2000-01-01';
 SELECT tint(Instant) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint(Instant) '[1@2000-01-01, 2@2000-01-02]';
-SELECT tint(InstantSet) '[1@2000-01-01, 2@2000-01-02]';
+SELECT tint(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tint(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tint(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-SELECT tint(InstantSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+SELECT tint(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT tint(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 
 SELECT tfloat '1@2000-01-01';
@@ -201,21 +201,21 @@ SELECT tfloat '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat '[1@2000-01-01, 2@2000-01-02]';
 SELECT tfloat '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT tfloat(Instant) '1@2000-01-01';
-SELECT tfloat(InstantSet) '{1@2000-01-01, 2@2000-01-02}';
+SELECT tfloat(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tfloat(SequenceSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 /* Errors */
-SELECT tfloat(InstantSet) '1@2000-01-01';
+SELECT tfloat(Sequence) '1@2000-01-01';
 SELECT tfloat(Sequence) '1@2000-01-01';
 SELECT tfloat(SequenceSet) '1@2000-01-01';
 SELECT tfloat(Instant) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat(Instant) '[1@2000-01-01, 2@2000-01-02]';
-SELECT tfloat(InstantSet) '[1@2000-01-01, 2@2000-01-02]';
+SELECT tfloat(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tfloat(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tfloat(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-SELECT tfloat(InstantSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+SELECT tfloat(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT tfloat(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 
 SELECT ttext '1@2000-01-01';
@@ -223,21 +223,21 @@ SELECT ttext '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT ttext(Instant) '1@2000-01-01';
-SELECT ttext(InstantSet) '{1@2000-01-01, 2@2000-01-02}';
+SELECT ttext(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext(SequenceSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 /* Errors */
-SELECT ttext(InstantSet) '1@2000-01-01';
+SELECT ttext(Sequence) '1@2000-01-01';
 SELECT ttext(Sequence) '1@2000-01-01';
 SELECT ttext(SequenceSet) '1@2000-01-01';
 SELECT ttext(Instant) '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext(Instant) '[1@2000-01-01, 2@2000-01-02]';
-SELECT ttext(InstantSet) '[1@2000-01-01, 2@2000-01-02]';
+SELECT ttext(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-SELECT ttext(InstantSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 
 -------------------------------------------------------------------------------

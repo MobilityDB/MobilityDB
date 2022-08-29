@@ -447,27 +447,27 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography
  */
-static TInstant *
-NAI_tpointinstset_geo(const TSequence *seq, const LWGEOM *geo)
-{
-  double mindist = DBL_MAX;
-  int number = 0; /* keep compiler quiet */
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    LWGEOM *point = lwgeom_from_gserialized(gs);
-    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
-    if (dist < mindist)
-    {
-      mindist = dist;
-      number = i;
-    }
-    lwgeom_free(point);
-  }
-  return tinstant_copy(tsequence_inst_n(seq, number));
-}
+// static TInstant *
+// NAI_tpointinstset_geo(const TSequence *seq, const LWGEOM *geo)
+// {
+  // double mindist = DBL_MAX;
+  // int number = 0; /* keep compiler quiet */
+  // for (int i = 0; i < seq->count; i++)
+  // {
+    // const TInstant *inst = tsequence_inst_n(seq, i);
+    // Datum value = tinstant_value(inst);
+    // GSERIALIZED *gs = DatumGetGserializedP(value);
+    // LWGEOM *point = lwgeom_from_gserialized(gs);
+    // double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
+    // if (dist < mindist)
+    // {
+      // mindist = dist;
+      // number = i;
+    // }
+    // lwgeom_free(point);
+  // }
+  // return tinstant_copy(tsequence_inst_n(seq, number));
+// }
 
 /*****************************************************************************/
 
@@ -711,8 +711,8 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = NAI_tpointinstset_geo((TSequence *) temp, geo);
+  // else if (temp->subtype == TINSTANTSET)
+    // result = NAI_tpointinstset_geo((TSequence *) temp, geo);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *) temp, geo) :

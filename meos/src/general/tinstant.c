@@ -949,14 +949,15 @@ tinstant_merge_array(const TInstant **instants, int count)
   assert(count > 1);
   tinstarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments */
-  ensure_valid_tinstarr(instants, count, MERGE, TINSTANT);
+  ensure_valid_tinstarr(instants, count, MERGE, DISCRETE);
 
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);
   int newcount = tinstarr_remove_duplicates(newinstants, count);
   Temporal *result = (newcount == 1) ?
     (Temporal *) tinstant_copy(newinstants[0]) :
-    (Temporal *) tinstantset_make1(newinstants, newcount);
+    (Temporal *) tsequence_make1(newinstants, newcount, true, true, DISCRETE,
+      NORMALIZE_NO);
   pfree(newinstants);
   return result;
 }

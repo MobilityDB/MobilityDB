@@ -80,7 +80,8 @@ tnpointinstset_tgeompointinstset(const TSequence *seq)
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tnpointinst_tgeompointinst(inst);
   }
-  TSequence *result = tinstantset_make_free(instants, seq->count, MERGE_NO);
+  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
+    DISCRETE, NORMALIZE_NO);
   return result;
 }
 
@@ -141,8 +142,6 @@ tnpoint_tgeompoint(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tnpointinstset_tgeompointinstset((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_tgeompointseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -185,7 +184,8 @@ tgeompointinstset_tnpointinstset(const TSequence *seq)
     }
     instants[i] = inst1;
   }
-  TSequence *result = tinstantset_make_free(instants, seq->count, MERGE_NO);
+  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
+    DISCRETE, NORMALIZE_NO);
   return result;
 }
 
@@ -248,8 +248,6 @@ tgeompoint_tnpoint(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tgeompointinstset_tnpointinstset((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tgeompointseq_tnpointseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -417,8 +415,6 @@ tnpoint_positions(const Temporal *temp, int *count)
     result = tnpointinst_positions((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == TINSTANTSET)
-    result = tnpointinstset_positions((TSequence *) temp, count);
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_positions((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
@@ -524,11 +520,11 @@ tnpoint_routes(const Temporal *temp, int *count)
     result = tnpointinst_routes((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    result = tnpointinstset_routes((TSequence *) temp);
-    *count = ((TSequence *) temp)->count;
-  }
+  // else if (temp->subtype == TINSTANTSET)
+  // {
+    // result = tnpointinstset_routes((TSequence *) temp);
+    // *count = ((TSequence *) temp)->count;
+  // }
   else if (temp->subtype == TSEQUENCE)
   {
     result = tnpointseq_routes((TSequence *) temp);

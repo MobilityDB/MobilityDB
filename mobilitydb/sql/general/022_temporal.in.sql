@@ -263,7 +263,7 @@ CREATE FUNCTION tint_seq(tint[], lower_inc boolean DEFAULT true,
   AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seq(tfloat[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
+  upper_inc boolean DEFAULT true, interp int DEFAULT 2)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -295,7 +295,7 @@ CREATE FUNCTION tint_seqset_gaps(tint[], maxdist float DEFAULT 0.0,
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tstepseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear boolean DEFAULT true,
+CREATE FUNCTION tfloat_seqset_gaps(tfloat[], interp int DEFAULT 2,
     maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'

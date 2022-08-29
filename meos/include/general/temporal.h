@@ -113,9 +113,6 @@ extern char *text_to_cstring(const text *t);
 #define NORMALIZE       true
 #define NORMALIZE_NO    false
 
-#define LINEAR          true
-#define STEP            false
-
 /** Symbolic constants for the normalizing spans */
 #define SORT            true
 #define SORT_NO         false
@@ -153,9 +150,19 @@ typedef enum
  */
 #define ANYTEMPSUBTYPE  0
 #define TINSTANT        1
-#define TINSTANTSET     2
-#define TSEQUENCE       3
-#define TSEQUENCESET    4
+#define TSEQUENCE       2
+#define TSEQUENCESET    3
+
+/*****************************************************************************
+ * Interpolation functions
+ *****************************************************************************/
+
+/**
+ * Enumeration for the concrete subtype of temporal types
+ */
+#define DISCRETE        0
+#define STEPWISE        1
+#define LINEAR          2
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
@@ -258,15 +265,13 @@ typedef enum
 enum MOBDB_WKB_TSUBTYPE
 {
   MOBDB_WKB_TINSTANT = 1,
-  MOBDB_WKB_TINSTANTSET = 2,
-  MOBDB_WKB_TSEQUENCE = 3,
-  MOBDB_WKB_TSEQUENCESET = 4,
+  MOBDB_WKB_TSEQUENCE = 2,
+  MOBDB_WKB_TSEQUENCESET = 3,
 };
 
 // #define MOBDB_WKB_TINSTANT          1
-// #define MOBDB_WKB_TINSTANTSET       2
-// #define MOBDB_WKB_TSEQUENCE         3
-// #define MOBDB_WKB_TSEQUENCESET      4
+// #define MOBDB_WKB_TSEQUENCE         2
+// #define MOBDB_WKB_TSEQUENCESET      3
 
 /* Period bounds */
 #define MOBDB_WKB_LOWER_INC        0x01
@@ -438,9 +443,9 @@ extern void ensure_same_interpolation(const Temporal *temp1,
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, int16 subtype);
+  bool merge, int interp);
 extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
-  bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
+  bool merge, int interp, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, mobdbType basetype);

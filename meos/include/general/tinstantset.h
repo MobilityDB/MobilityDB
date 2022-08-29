@@ -44,8 +44,6 @@
 
 /* General functions */
 
-extern TSequence *tinstantset_make1(const TInstant **instants, int count);
-
 /* Input/output functions */
 
 /* Intersection functions */

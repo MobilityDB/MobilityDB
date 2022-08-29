@@ -290,28 +290,28 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  */
-void
-tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
-{
-  /* Only external types have bounding box */
-  ensure_temporal_type(instants[0]->temptype);
-  if (talpha_type(instants[0]->temptype))
-    span_set(TimestampTzGetDatum(instants[0]->t),
-      TimestampTzGetDatum(instants[count - 1]->t), true, true, T_TIMESTAMPTZ,
-      (Span *) box);
-  else if (tnumber_type(instants[0]->temptype))
-    tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
-  else if (tgeo_type(instants[0]->temptype))
-    tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
-#if NPOINT
-  else if (instants[0]->temptype == T_TNPOINT)
-    tnpointinstarr_set_stbox(instants, count, (STBOX *) box);
-#endif
-  else
-    elog(ERROR, "unknown bounding box function for temporal type: %d",
-      instants[0]->temptype);
-  return;
-}
+// void
+// tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
+// {
+  // /* Only external types have bounding box */
+  // ensure_temporal_type(instants[0]->temptype);
+  // if (talpha_type(instants[0]->temptype))
+    // span_set(TimestampTzGetDatum(instants[0]->t),
+      // TimestampTzGetDatum(instants[count - 1]->t), true, true, T_TIMESTAMPTZ,
+      // (Span *) box);
+  // else if (tnumber_type(instants[0]->temptype))
+    // tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
+  // else if (tgeo_type(instants[0]->temptype))
+    // tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
+// #if NPOINT
+  // else if (instants[0]->temptype == T_TNPOINT)
+    // tnpointinstarr_set_stbox(instants, count, (STBOX *) box);
+// #endif
+  // else
+    // elog(ERROR, "unknown bounding box function for temporal type: %d",
+      // instants[0]->temptype);
+  // return;
+// }
 
 /**
  * Set a bounding box from an array of temporal instant values
@@ -319,15 +319,15 @@ tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc Period bounds
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  * @param[out] box Bounding box
  */
 void
 tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 #if NPOINT
-  bool upper_inc, bool linear, void *box)
+  bool upper_inc, int interp, void *box)
 #else
-  bool upper_inc, bool linear __attribute__((unused)), void *box)
+  bool upper_inc, int interp __attribute__((unused)), void *box)
 #endif
 {
   /* Only external types have bounding box */
@@ -344,7 +344,7 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
     tgeogpointinstarr_set_stbox(instants, count, (STBOX *) box);
 #if NPOINT
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointseq_set_stbox(instants, count, linear, (STBOX *) box);
+    tnpointseq_set_stbox(instants, count, interp, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",

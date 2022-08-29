@@ -862,7 +862,7 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz, bool hast,
  * @param[in] state Grid definition
  */
 static void
-tpointinstset_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
+tdiscseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   bool hast, const STboxGridState *state)
 {
   /* Transform the point into tile coordinates */
@@ -887,7 +887,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
  * @param[in] state Grid definition
  */
 static void
-tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz, bool hast,
+tcontseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state)
 {
   int numdims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
@@ -921,7 +921,7 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ss, bool hasz,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    tpointseq_set_tiles(bm, seq, hasz, hast, state);
+    tcontseq_set_tiles(bm, seq, hasz, hast, state);
   }
   return;
 }
@@ -942,10 +942,13 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     tpointinst_set_tiles(bm, (TInstant *) temp, hasz, hast, state);
-  else if (temp->subtype == TINSTANTSET)
-    tpointinstset_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
   else if (temp->subtype == TSEQUENCE)
-    tpointseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+      tdiscseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
+    else
+      tcontseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
+  }
   else /* temp->subtype == TSEQUENCESET */
     tpointseqset_set_tiles(bm, (TSequenceSet *) temp, hasz, hast, state);
   return;

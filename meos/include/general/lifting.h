@@ -56,9 +56,9 @@ typedef struct
   int numparam;              /**< Number of parameters of the function */
   Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
   bool args;                 /**< True if the lifted function requires arguments */
-  mobdbType argtype[2];     /**< Base type of the arguments */
-  mobdbType restype;        /**< Temporal type of the result of the function */
-  bool reslinear;            /**< True if the result has linear interpolation */
+  mobdbType argtype[2];      /**< Base type of the arguments */
+  mobdbType restype;         /**< Temporal type of the result of the function */
+  int reslinear;             /**< Interpolation of the result */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, mobdbType,

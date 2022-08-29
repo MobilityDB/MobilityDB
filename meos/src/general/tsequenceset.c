@@ -162,13 +162,9 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
   for (int i = 0; i < count; i++)
   {
     if (sequences[i]->subtype != TSEQUENCE)
-    {
       elog(ERROR, "Input values must be temporal sequences");
-    }
     if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
-    {
       elog(ERROR, "Input sequences must have the same interpolation");
-    }
   }
   return;
 }
@@ -319,11 +315,11 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  */
 static int *
 tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, bool linear, double maxdist, Interval *maxt, int *countsplits)
+  bool upper_inc, int interp, double maxdist, Interval *maxt, int *countsplits)
 {
-  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
   return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
-    TSEQUENCE, maxdist, maxt, countsplits);
+    interp, maxdist, maxt, countsplits);
 }
 
 /**
@@ -334,14 +330,14 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_in
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
- * @param[in] linear True when the resulting value has linear interpolation.
- * @param[in] maxdist Maximum distance for defining a gap.
- * @param[in] maxt Maximum time interval for defining a gap.
+ * @param[in] interp Interpolation
+ * @param[in] maxdist Maximum distance for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap
  * @sqlfunc tint_seqset_gaps(), tfloat_seqset_gaps(),
  * tgeompoint_seqset_gaps(), tgeogpoint_seqset_gaps()
  */
 TSequenceSet *
-tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
+tsequenceset_make_gaps(const TInstant **instants, int count, int interp,
   float maxdist, Interval *maxt)
 {
   /* Set the interval to NULL if it is negative or zero */
@@ -358,7 +354,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
   if (maxdist <= 0.0 && maxt == NULL)
   {
     seq = tsequence_make((const TInstant **) instants, count, true, true,
-      linear, NORMALIZE);
+      interp, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     pfree(seq);
     return result;
@@ -367,13 +363,13 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
   /* Ensure that the array of instants is valid and determine the splits */
   int countsplits;
   int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
-    count, true, true, linear, maxdist, maxt, &countsplits);
+    count, true, true, interp, maxdist, maxt, &countsplits);
   if (countsplits == 0)
   {
     /* There are no gaps  */
     pfree(splits);
-    seq = tsequence_make1((const TInstant **) instants, count,
-      true, true, linear, NORMALIZE);
+    seq = tsequence_make1((const TInstant **) instants, count, true, true,
+      interp, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     pfree(seq);
   }
@@ -391,7 +387,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
         /* Finalize the current sequence and start a new one */
         assert(k > 0);
         sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
-          true, true, linear, NORMALIZE);
+          true, true, interp, NORMALIZE);
         j++; k = 0;
       }
       /* Continue with the current sequence */
@@ -400,7 +396,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
     /* Construct last sequence */
     if (k > 0)
       sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
-        true, true, linear, NORMALIZE);
+        true, true, interp, NORMALIZE);
     result = tsequenceset_make((const TSequence **) sequences, newcount,
       NORMALIZE);
     pfree(newinsts); pfree(sequences);
@@ -430,18 +426,18 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] ss Period set
- * @param[in] linear True when the resulting value has linear interpolation
+ * @param[in] interp Interpolation
  */
 TSequenceSet *
 tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss,
-  bool linear)
+  int interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     sequences[i] = tsequence_from_base_time(value, temptype, &seq->period,
-      linear);
+      interp);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
@@ -475,9 +471,9 @@ tintseqset_from_base(int i, const TSequenceSet *ss)
  * frame of another temporal sequence set.
  */
 TSequenceSet *
-tfloatseqset_from_base(bool b, const TSequenceSet *ss, bool linear)
+tfloatseqset_from_base(bool b, const TSequenceSet *ss, int interp)
 {
-  return tsequenceset_from_base(BoolGetDatum(b), T_TFLOAT, ss, linear);
+  return tsequenceset_from_base(BoolGetDatum(b), T_TFLOAT, ss, interp);
 }
 
 /**
@@ -498,9 +494,9 @@ ttextseqset_from_base(const text *txt, const TSequenceSet *ss)
  */
 TSequenceSet *
 tgeompointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
-  bool linear)
+  int interp)
 {
-  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, ss, linear);
+  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOMPOINT, ss, interp);
 }
 
 /**
@@ -510,9 +506,9 @@ tgeompointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
  */
 TSequenceSet *
 tgeogpointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
-  bool linear)
+  int interp)
 {
-  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, ss, linear);
+  return tsequenceset_from_base(PointerGetDatum(gs), T_TGEOGPOINT, ss, interp);
 }
 #endif /* MEOS */
 
@@ -525,17 +521,17 @@ tgeogpointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] ps Period set
- * @param[in] linear True when the resulting value has linear interpolation
+ * @param[in] interp Interpolation
  */
 TSequenceSet *
 tsequenceset_from_base_time(Datum value, mobdbType temptype,
-  const PeriodSet *ps, bool linear)
+  const PeriodSet *ps, int interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    sequences[i] = tsequence_from_base_time(value, temptype, p, linear);
+    sequences[i] = tsequence_from_base_time(value, temptype, p, interp);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
@@ -549,7 +545,7 @@ tsequenceset_from_base_time(Datum value, mobdbType temptype,
 TSequenceSet *
 tboolseqset_from_base_time(bool b, const PeriodSet *ps)
 {
-  return tsequenceset_from_base_time(BoolGetDatum(b), T_TBOOL, ps, STEP);
+  return tsequenceset_from_base_time(BoolGetDatum(b), T_TBOOL, ps, STEPWISE);
 }
 
 /**
@@ -560,7 +556,7 @@ tboolseqset_from_base_time(bool b, const PeriodSet *ps)
 TSequenceSet *
 tintseqset_from_base_time(int i, const PeriodSet *ps)
 {
-  return tsequenceset_from_base_time(Int32GetDatum(i), T_TINT, ps, STEP);
+  return tsequenceset_from_base_time(Int32GetDatum(i), T_TINT, ps, STEPWISE);
 }
 
 /**
@@ -568,9 +564,9 @@ tintseqset_from_base_time(int i, const PeriodSet *ps)
  * @brief Construct a temporal float sequence set from a float and a period set.
  */
 TSequenceSet *
-tfloatseqset_from_base_time(bool b, const PeriodSet *ps, bool linear)
+tfloatseqset_from_base_time(bool b, const PeriodSet *ps, int interp)
 {
-  return tsequenceset_from_base_time(BoolGetDatum(b), T_TFLOAT, ps, linear);
+  return tsequenceset_from_base_time(BoolGetDatum(b), T_TFLOAT, ps, interp);
 }
 
 /**
@@ -590,10 +586,10 @@ ttextseqset_from_base_time(const text *txt, const PeriodSet *ps)
  */
 TSequenceSet *
 tgeompointseqset_from_base_time(const GSERIALIZED *gs, const PeriodSet *ps,
-  bool linear)
+  int interp)
 {
   return tsequenceset_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ps,
-    linear);
+    interp);
 }
 
 /**
@@ -603,10 +599,10 @@ tgeompointseqset_from_base_time(const GSERIALIZED *gs, const PeriodSet *ps,
  */
 TSequenceSet *
 tgeogpointseqset_from_base_time(const GSERIALIZED *gs, const PeriodSet *ps,
-  bool linear)
+  int interp)
 {
   return tsequenceset_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ps,
-    linear);
+    interp);
 }
 #endif /* MEOS */
 
@@ -1291,9 +1287,9 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
-tinstant_to_tsequenceset(const TInstant *inst, bool linear)
+tinstant_to_tsequenceset(const TInstant *inst, int interp)
 {
-  TSequence *seq = tinstant_to_tsequence(inst, linear);
+  TSequence *seq = tinstant_to_tsequence(inst, interp);
   TSequenceSet *result = tsequence_to_tsequenceset(seq);
   pfree(seq);
   return result;
@@ -1305,13 +1301,13 @@ tinstant_to_tsequenceset(const TInstant *inst, bool linear)
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
-tinstantset_to_tsequenceset(const TSequence *seq, bool linear)
+tinstantset_to_tsequenceset(const TSequence *seq, int interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    sequences[i] = tinstant_to_tsequence(inst, linear);
+    sequences[i] = tinstant_to_tsequence(inst, interp);
   }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     seq->count, NORMALIZE_NO);
@@ -1805,8 +1801,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
     if (atfunc && temp != NULL)
     {
       TInstant *inst = (TInstant *) temp;
-      Temporal *result = (Temporal *) tinstantset_make((const TInstant **) &inst,
-        1, MERGE_NO);
+      Temporal *result = (Temporal *) tsequence_make((const TInstant **) &inst,
+        1, true, true, DISCRETE, NORMALIZE_NO);
       pfree(inst);
       return result;
     }
@@ -1847,7 +1843,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
           j++;
       }
     }
-    return (Temporal *) tinstantset_make_free(instants, count, MERGE_NO);
+    return (Temporal *) tsequence_make_free(instants, count, true, true,
+      DISCRETE, NORMALIZE_NO);
   }
   else
   {
@@ -2314,8 +2311,8 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
     return false;
   }
 
-  *inter1 = tinstantset_make_free(instants1, k, MERGE_NO);
-  *inter2 = tinstantset_make(instants2, k, MERGE_NO);
+  *inter1 = tsequence_make_free(instants1, k, true, true, DISCRETE, NORMALIZE_NO);
+  *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants2);
   return true;
 }
@@ -2360,12 +2357,12 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
  *
  * @param[in] str String
  * @param[in] temptype Temporal type
- * @param[in] linear True when the temporal type has linear interpolation
+ * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_in(char *str, mobdbType temptype, bool linear)
+tsequenceset_in(char *str, mobdbType temptype, int interp)
 {
-  return tsequenceset_parse(&str, temptype, linear);
+  return tsequenceset_parse(&str, temptype, interp);
 }
 /**
  * @ingroup libmeos_int_temporal_in_out

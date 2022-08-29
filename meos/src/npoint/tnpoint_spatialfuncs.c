@@ -61,6 +61,7 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tnpoint_srid(temp) != box->srid)
     elog(ERROR, "The temporal network point and the box must be in the same SRID");
+  return;
 }
 
 /**
@@ -71,6 +72,7 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 {
   if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
     elog(ERROR, "All network points composing a temporal sequence must have same route identifier");
+  return;
 }
 
 /*****************************************************************************
@@ -147,8 +149,6 @@ tnpoint_srid(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tnpointinst_srid((const TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = tpointinstset_srid((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_srid((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -334,8 +334,6 @@ tnpoint_geom(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tnpointinst_geom((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = tnpointinstset_geom((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_geom((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -442,9 +440,7 @@ tnpoint_length(const Temporal *temp)
 {
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
-    (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->subtype == TSEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_length((TSequence *) temp);
@@ -543,7 +539,7 @@ tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+  if (temp->subtype == TINSTANT)
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp, false);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
@@ -600,7 +596,7 @@ tnpointseq_speed(const TSequence *seq)
   }
   /* The resulting sequence has stepwise interpolation */
   TSequence *result = tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, true);
+    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, true);
   return result;
 }
 
@@ -620,7 +616,7 @@ tnpointseqset_speed(const TSequenceSet *ss)
       sequences[k++] = seq1;
   }
   /* The resulting sequence set has stepwise interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEPWISE);
   return result;
 }
 
@@ -632,7 +628,7 @@ tnpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+  if (temp->subtype == TINSTANT)
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
@@ -725,7 +721,7 @@ tsequence_assemble_instants(TInstant ***instants, int *countinsts,
   Datum last_value = tinstant_value(allinstants[n - 1]);
   allinstants[n++] = tinstant_make(last_value, T_TFLOAT, last_time);
   /* Resulting sequence has stepwise interpolation */
-  return tsequence_make_free(allinstants, n, lower_inc, true, STEP, true);
+  return tsequence_make_free(allinstants, n, lower_inc, true, STEPWISE, true);
 }
 
 /**
@@ -808,7 +804,7 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
     k += countstep;
   }
   /* Resulting sequence set has stepwise interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEPWISE);
   return result;
 }
 
@@ -820,9 +816,7 @@ tnpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
-    (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->subtype == TSEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);

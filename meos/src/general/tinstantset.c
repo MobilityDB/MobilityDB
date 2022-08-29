@@ -51,97 +51,6 @@
 #include "point/tpoint_parser.h"
 
 /*****************************************************************************
- * General functions
- *****************************************************************************/
-
-/**
- * Ensure the validity of the arguments when creating a temporal instant set
- */
-static void
-tinstantset_make_valid(const TInstant **instants, int count, bool merge)
-{
-  /* Test the validity of the instants */
-  assert(count > 0);
-  ensure_tinstarr(instants, count);
-  ensure_valid_tinstarr(instants, count, merge, TINSTANTSET);
-  return;
-}
-
-/**
- * Create a temporal instant set from its arguments
- * @pre The validity of the arguments has been tested before
- *
- * For example, the memory structure of a temporal instant set with two
- * instants is as follows
- * @code
- *  -----------------------------------------------------------------
- *  ( TSequence )_X | (end of bbox )_X | offset_0 | offset_1 | ...
- *  -----------------------------------------------------------------
- *  -------------------------------------
- *  ( TInstant_0 )_X | ( TInstant_1 )_X |
- *  -------------------------------------
- * @endcode
- * where the `_X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding instants
- */
-TSequence *
-tinstantset_make1(const TInstant **instants, int count)
-{
-  /* Get the bounding box size */
-  size_t bboxsize = temporal_bbox_size(instants[0]->temptype);
-  /* The period component of the bbox is already declared in the struct */
-  size_t memsize = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
-
-  /* Compute the size of the temporal instant set */
-  /* Size of composing instants */
-  for (int i = 0; i < count; i++)
-    memsize += double_pad(VARSIZE(instants[i]));
-  /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TSequence)) + count * sizeof(size_t);
-  /* Create the TSequence */
-  TSequence *result = palloc0(memsize);
-  SET_VARSIZE(result, memsize);
-  result->count = count;
-  result->temptype = instants[0]->temptype;
-  result->subtype = TINSTANTSET;
-  result->bboxsize = bboxsize;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
-    MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags));
-  MOBDB_FLAGS_SET_DISCRETE(result->flags, true);
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(instants[0]->temptype))
-  {
-    MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags,
-      MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
-  }
-  /* Initialization of the variable-length part */
-  /*
-   * Compute the bounding box
-   * Only external types have bounding box, internal types such
-   * as double2, double3, or double4 do not have bounding box but
-   * require to set the period attribute
-   */
-  if (bboxsize != 0)
-  {
-    tinstantset_compute_bbox(instants, count, TSEQUENCE_BBOX_PTR(result));
-  }
-  /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TSequence)) +
-    double_pad(bboxsize - sizeof(Period)) + count * sizeof(size_t);
-  size_t pos = 0;
-  for (int i = 0; i < count; i++)
-  {
-    memcpy(((char *)result) + pdata + pos, instants[i], VARSIZE(instants[i]));
-    (tsequence_offsets_ptr(result))[i] = pos;
-    pos += double_pad(VARSIZE(instants[i]));
-  }
-
-  return result;
-}
-
-/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -238,51 +147,6 @@ tgeogpointinstset_in(char *str)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant set from an array of temporal instants.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] merge True when overlapping instants are allowed as required in
- * merge operations
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
- * etc.
- */
-TSequence *
-tinstantset_make(const TInstant **instants, int count, bool merge)
-{
-  tinstantset_make_valid(instants, count, merge);
-  return tinstantset_make1(instants, count);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant set from an array of temporal instants
- * and free the array and the instants after the creation.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] merge True when overlapping instants are allowed as required in
- * merge operations
- * @see tinstantset_make
- */
-TSequence *
-tinstantset_make_free(TInstant **instants, int count, bool merge)
-{
-  if (count == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
-  TSequence *result = tinstantset_make((const TInstant **) instants,
-    count, merge);
-  pfree_array((void **) instants, count);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
  * @ingroup libmeos_int_temporal_constructor
  * @brief Construct a temporal instant set from a base value and the time frame
  * of another temporal instant set.
@@ -296,7 +160,8 @@ tinstantset_from_base(Datum value, mobdbType temptype, const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
     instants[i] = tinstant_make(value, temptype,
       tsequence_inst_n(seq, i)->t);
-  return tinstantset_make_free(instants, seq->count, MERGE_NO);
+  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 #if MEOS
@@ -381,7 +246,8 @@ tinstantset_from_base_time(Datum value, mobdbType temptype,
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
     instants[i] = tinstant_make(value, temptype, timestampset_time_n(ts, i));
-  return tinstantset_make_free(instants, ts->count, MERGE_NO);
+  return tsequence_make_free(instants, ts->count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 #if MEOS
@@ -505,159 +371,6 @@ tfloatinstset_spans(const TSequence *seq, int *count)
   return result;
 }
 
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the array of sequences of a temporal instant set.
- * @post The output parameter @p count is equal to the number of instants of
- * the input temporal instant set
- * @sqlfunc sequences()
- */
-TSequence **
-tinstantset_sequences(const TSequence *seq, int *count)
-{
-  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
-  bool linear = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    result[i] = tinstant_to_tsequence(inst, linear);
-  }
-  *count = seq->count;
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the start timestamp of a temporal instant set.
- * @sqlfunc startTimestamp()
- */
-TimestampTz
-tinstantset_start_timestamp(const TSequence *seq)
-{
-  return (tsequence_inst_n(seq, 0))->t;
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the end timestamp of a temporal instant set.
- * @sqlfunc endTimestamp()
- */
-TimestampTz
-tinstantset_end_timestamp(const TSequence *seq)
-{
-  return (tsequence_inst_n(seq, seq->count - 1))->t;
-}
-
-/*****************************************************************************
- * Cast functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_cast
- * @brief Cast a temporal instant set integer to a temporal instant set float.
- * @sqlop @p ::
- */ 
-TSequence *
-tintinstset_to_tfloatinstset(const TSequence *seq)
-{
-  TSequence *result = tsequence_copy(seq);
-  result->temptype = T_TFLOAT;
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
-    inst->temptype = T_TFLOAT;
-    inst->value = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_cast
- * @brief Cast a temporal instant set float to a temporal instant set integer.
- * @sqlop @p ::
- */
-TSequence *
-tfloatinstset_to_tintinstset(const TSequence *seq)
-{
-  TSequence *result = tsequence_copy(seq);
-  result->temptype = T_TINT;
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
-    inst->temptype = T_TINT;
-    inst->value = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
-  }
-  return result;
-}
-
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant transformed into a temporal instant set.
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
- * etc.
- */
-TSequence *
-tinstant_to_tinstantset(const TInstant *inst)
-{
-  return tinstantset_make(&inst, 1, MERGE_NO);
-}
-
-/**
- * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal sequence transformed into a temporal instant.
- * @return Return an error if a temporal sequence has more than one instant
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
- * etc.
- */
-TSequence *
-tsequence_to_tinstantset(const TSequence *seq)
-{
-  if (seq->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal instant set");
-
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  return tinstant_to_tinstantset(inst);
-}
-
-/**
- * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal sequence set transformed into a temporal instant set.
- * @return Return an error if any of the composing temporal sequences has
- * more than one instant
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
- * etc.
- */
-TSequence *
-tsequenceset_to_tinstantset(const TSequenceSet *ts)
-{
-  const TSequence *seq;
-  for (int i = 0; i < ts->count; i++)
-  {
-    seq = tsequenceset_seq_n(ts, i);
-    if (seq->count != 1)
-      elog(ERROR, "Cannot transform input to a temporal instant set");
-  }
-
-  const TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    seq = tsequenceset_seq_n(ts, i);
-    instants[i] = tsequence_inst_n(seq, 0);
-  }
-  TSequence *result = tinstantset_make(instants, ts->count, MERGE_NO);
-  pfree(instants);
-  return result;
-}
-
-/*****************************************************************************
- * Ever/always functions
- *****************************************************************************/
-
-
 /*****************************************************************************
  * Restriction Functions
  *****************************************************************************/
@@ -699,7 +412,7 @@ tinstantset_restrict_value(const TSequence *seq, Datum value, bool atfunc)
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
-    tinstantset_make(instants, count, MERGE_NO);
+    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -741,7 +454,7 @@ tinstantset_restrict_values(const TSequence *seq, const Datum *values,
       instants[newcount++] = inst;
   }
   TSequence *result = (newcount == 0) ? NULL :
-    tinstantset_make(instants, newcount, MERGE_NO);
+    tsequence_make(instants, newcount, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -776,7 +489,7 @@ tnumberinstset_restrict_span(const TSequence *seq, const Span *span,
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
-    tinstantset_make(instants, count, MERGE_NO);
+    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -820,7 +533,7 @@ tnumberinstset_restrict_spans(const TSequence *seq, Span **normspans,
       instants[newcount++] = inst;
   }
   TSequence *result = (newcount == 0) ? NULL :
-    tinstantset_make(instants, newcount, MERGE_NO);
+    tsequence_make(instants, newcount, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -905,7 +618,7 @@ tinstantset_restrict_timestamp(const TSequence *seq, TimestampTz t, bool atfunc)
         instants[count++] = inst;
     }
     TSequence *result = (count == 0) ? NULL :
-      tinstantset_make(instants, count, MERGE_NO);
+      tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
     pfree(instants);
     return (Temporal *) result;
   }
@@ -928,10 +641,11 @@ tinstantset_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
   {
     Temporal *temp = tinstantset_restrict_timestamp(seq,
       timestampset_time_n(ts, 0), atfunc);
-    if (temp == NULL || temp->subtype == TINSTANTSET)
+    if (temp == NULL)
       return (TSequence *) temp;
     TInstant *inst1 = (TInstant *) temp;
-    result = tinstantset_make((const TInstant **) &inst1, 1, MERGE_NO);
+    result = tsequence_make((const TInstant **) &inst1, 1, true, true,
+      DISCRETE, NORMALIZE_NO);
     pfree(inst1);
     return result;
   }
@@ -980,7 +694,8 @@ tinstantset_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
     while (i < seq->count)
       instants[k++] = tsequence_inst_n(seq, i++);
   }
-  result = (k == 0) ? NULL : tinstantset_make(instants, k, MERGE_NO);
+  result = (k == 0) ? NULL : tsequence_make(instants, k, true, true, DISCRETE,
+    NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -1013,7 +728,7 @@ tinstantset_restrict_period(const TSequence *seq, const Period *period,
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
-    tinstantset_make(instants, count, MERGE_NO);
+    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -1057,7 +772,7 @@ tinstantset_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
-    tinstantset_make(instants, count, MERGE_NO);
+    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -1086,7 +801,8 @@ tinstantset_append_tinstant(const TSequence *seq, const TInstant *inst)
   for (int i = 0; i < seq->count; i++)
     instants[i] = tsequence_inst_n(seq, i);
   instants[seq->count] = (TInstant *) inst;
-  TSequence *result = tinstantset_make1(instants, seq->count + 1);
+  TSequence *result = tsequence_make1(instants, seq->count + 1, true, true,
+    DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -1214,8 +930,8 @@ intersection_tinstantset_tinstantset(const TSequence *seq1, const TSequence *seq
   }
   if (k != 0)
   {
-    *inter1 = tinstantset_make(instants1, k, MERGE_NO);
-    *inter2 = tinstantset_make(instants2, k, MERGE_NO);
+    *inter1 = tsequence_make(instants1, k, true, true, DISCRETE, NORMALIZE_NO);
+    *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, NORMALIZE_NO);
   }
 
   pfree(instants1); pfree(instants2);
@@ -1244,102 +960,6 @@ tnumberinstset_twavg(const TSequence *seq)
     result += datum_double(tinstant_value(inst), basetype);
   }
   return result / seq->count;
-}
-
-/*****************************************************************************
- * Functions for defining B-tree indexes
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_comp
- * @brief Return true if two temporal instant sets are equal.
- *
- * @pre The arguments are of the same base type
- * @note The internal B-tree comparator is not used to increase efficiency
- * @sqlop @p =
- */
-bool
-tinstantset_eq(const TSequence *seq1, const TSequence *seq2)
-{
-  assert(seq1->temptype == seq2->temptype);
-  /* If number of sequences or flags are not equal */
-  if (seq1->count != seq2->count || seq1->flags != seq2->flags)
-    return false;
-
-  /* If bounding boxes are not equal */
-  if (! temporal_bbox_eq(TSEQUENCE_BBOX_PTR(seq1), TSEQUENCE_BBOX_PTR(seq2),
-      seq1->temptype))
-    return false;
-
-  /* Compare the composing instants */
-  for (int i = 0; i < seq1->count; i++)
-  {
-    const TInstant *inst1 = tsequence_inst_n(seq1, i);
-    const TInstant *inst2 = tsequence_inst_n(seq2, i);
-    if (! tinstant_eq(inst1, inst2))
-      return false;
-  }
-  return true;
-}
-
-/**
- * @ingroup libmeos_int_temporal_comp
- * @brief Return -1, 0, or 1 depending on whether the first temporal instant
- * set is less than, equal, or greater than the second one.
- *
- * @pre The arguments are of the same base type
- * @note Period and bounding box comparison have been done by the calling
- * function temporal_cmp
- * @sqlfunc tbool_cmp(), tint_cmp(), tfloat_cmp(), ttext_cmp(), etc.
- */
-int
-tinstantset_cmp(const TSequence *seq1, const TSequence *seq2)
-{
-  assert(seq1->temptype == seq2->temptype);
-
-  /* Compare composing instants */
-  int count = Min(seq1->count, seq2->count);
-  for (int i = 0; i < count; i++)
-  {
-    const TInstant *inst1 = tsequence_inst_n(seq1, i);
-    const TInstant *inst2 = tsequence_inst_n(seq2, i);
-    int result = tinstant_cmp(inst1, inst2);
-    if (result)
-      return result;
-  }
-
-  /* seq1->count == seq2->count because of the bounding box and the
-   * composing instant tests above */
-
-  /* seq1->flags == seq2->flags since the equality of flags were
-   * tested for each of the composing sequences */
-
-  /* The two values are equal */
-  return 0;
-}
-
-/*****************************************************************************
- * Function for defining hash index
- * The function reuses the approach for array types for combining the hash of
- * the elements.
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the 32-bit hash value of a temporal instant set
- * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
- */
-uint32
-tinstantset_hash(const TSequence *seq)
-{
-  uint32 result = 1;
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    uint32 inst_hash = tinstant_hash(inst);
-    result = (result << 5) - result + inst_hash;
-  }
-  return result;
 }
 
 /*****************************************************************************/

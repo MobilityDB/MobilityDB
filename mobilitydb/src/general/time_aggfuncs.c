@@ -419,13 +419,13 @@ period_transform_tcount(const Period *p)
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1,
-      p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
+      p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
   }
   else
   {
     instants[1] = tinstant_make(datum_one, T_TINT, p->upper);
     result = tsequence_make((const TInstant **) instants, 2,
-      p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
+      p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
     pfree(instants[1]);
   }
   pfree(instants[0]);

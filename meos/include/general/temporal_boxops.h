@@ -66,7 +66,7 @@ extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
 extern void tinstantset_compute_bbox(const TInstant **inst, int count,
   void *bbox);
 extern void tsequence_compute_bbox(const TInstant** inst, int count,
-  bool lower_inc, bool upper_inc, bool linear, void *bbox);
+  bool lower_inc, bool upper_inc, int interp, void *bbox);
 extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
   void *bbox);
 

@@ -184,16 +184,20 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
     result[0] = (Temporal *) tpointinst_transform_tcentroid((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    result = (Temporal **) tpointinstset_transform_tcentroid((TSequence *) temp);
-    *count = ((TSequence *) temp)->count;
-  }
   else if (temp->subtype == TSEQUENCE)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tpointseq_transform_tcentroid((TSequence *) temp);
-    *count = 1;
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    {
+      result = (Temporal **) tpointinstset_transform_tcentroid((TSequence *) temp);
+      *count = ((TSequence *) temp)->count;
+    }
+    else
+    {
+      result = palloc(sizeof(Temporal *));
+      result[0] = (Temporal *) tpointseq_transform_tcentroid((TSequence *) temp);
+      *count = 1;
+    }
+
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -367,7 +371,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(value));
   }
-  return tinstantset_make_free(newinstants, count, MERGE_NO);
+  return tsequence_make_free(newinstants, count, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**

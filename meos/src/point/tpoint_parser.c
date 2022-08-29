@@ -287,7 +287,7 @@ tpointinstset_parse(char **str, mobdbType temptype, int *tpoint_srid)
     instants[i] = tpointinst_parse(str, temptype, false, true, tpoint_srid);
   }
   p_cbrace(str);
-  return tinstantset_make_free(instants, count, MERGE_NO);
+  return tsequence_make_free(instants, count, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -295,14 +295,14 @@ tpointinstset_parse(char **str, mobdbType temptype, int *tpoint_srid)
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
  * @param[inout] tpoint_srid SRID of the temporal point
 */
 TSequence *
-tpointseq_parse(char **str, mobdbType temptype, bool linear, bool end,
+tpointseq_parse(char **str, mobdbType temptype, int interp, bool end,
   bool make, int *tpoint_srid)
 {
   p_whitespace(str);
@@ -345,7 +345,7 @@ tpointseq_parse(char **str, mobdbType temptype, bool linear, bool end,
   p_cbracket(str);
   p_cparen(str);
   return tsequence_make_free(instants, count, lower_inc, upper_inc,
-    linear, NORMALIZE);
+    interp, NORMALIZE);
 }
 
 /**
@@ -353,11 +353,11 @@ tpointseq_parse(char **str, mobdbType temptype, bool linear, bool end,
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  * @param[inout] tpoint_srid SRID of the temporal point
  */
 TSequenceSet *
-tpointseqset_parse(char **str, mobdbType temptype, bool linear,
+tpointseqset_parse(char **str, mobdbType temptype, int interp,
   int *tpoint_srid)
 {
   p_whitespace(str);
@@ -367,12 +367,12 @@ tpointseqset_parse(char **str, mobdbType temptype, bool linear,
 
   /* First parsing */
   char *bak = *str;
-  tpointseq_parse(str, temptype, linear, false, false, tpoint_srid);
+  tpointseq_parse(str, temptype, interp, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tpointseq_parse(str, temptype, linear, false, false, tpoint_srid);
+    tpointseq_parse(str, temptype, interp, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse temporal point value: Missing closing brace");
@@ -384,7 +384,7 @@ tpointseqset_parse(char **str, mobdbType temptype, bool linear,
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tpointseq_parse(str, temptype, linear, false, true,
+    sequences[i] = tpointseq_parse(str, temptype, interp, false, true,
       tpoint_srid);
   }
   p_cbrace(str);
@@ -431,13 +431,13 @@ tpoint_parse(char **str, mobdbType temptype)
   // if (temptype == T_TGEOGPOINT)
     // srid_is_latlong(fcinfo, tpoint_srid);
 
-  bool linear = temptype_continuous(temptype);
+  int interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   /* Starts with "Interp=Stepwise" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
     /* Move str after the semicolon */
     *str += 16;
-    linear = false;
+    interp = STEPWISE;
   }
   Temporal *result = NULL; /* keep compiler quiet */
   /* Determine the type of the temporal point */
@@ -449,7 +449,7 @@ tpoint_parse(char **str, mobdbType temptype)
       &tpoint_srid);
   }
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tpointseq_parse(str, temptype, linear, true, true,
+    result = (Temporal *) tpointseq_parse(str, temptype, interp, true, true,
       &tpoint_srid);
   else if (**str == '{')
   {
@@ -459,7 +459,7 @@ tpoint_parse(char **str, mobdbType temptype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *) tpointseqset_parse(str, temptype, linear,
+      result = (Temporal *) tpointseqset_parse(str, temptype, interp,
         &tpoint_srid);
     }
     else

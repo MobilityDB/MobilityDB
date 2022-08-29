@@ -234,15 +234,15 @@ tpointinst_transform(const TInstant *inst, int srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TSequence *
-tpointinstset_transform(const TSequence *seq, int srid)
+tpointdiscseq_transform(const TSequence *seq, int srid)
 {
   /* Singleton instant set */
   if (seq->count == 1)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
       Int32GetDatum(srid));
-    TSequence *result = tinstantset_make((const TInstant **) &inst, 1,
-      MERGE_NO);
+    TSequence *result = tsequence_make((const TInstant **) &inst, 1,
+      true, true, DISCRETE, NORMALIZE_NO);
     pfree(inst);
     return result;
   }
@@ -264,23 +264,25 @@ tpointinstset_transform(const TSequence *seq, int srid)
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
-  return tinstantset_make_free(instants, seq->count, MERGE_NO);
+  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
  * @brief Transform a temporal point into another spatial reference system
  */
 TSequence *
-tpointseq_transform(const TSequence *seq, int srid)
+tpointcontseq_transform(const TSequence *seq, int srid)
 {
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  int interp = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE :
+    ( MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE );
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
       Int32GetDatum(srid));
-    TSequence *result = tinstant_to_tsequence(inst, linear);
+    TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
   }
@@ -293,8 +295,8 @@ tpointseq_transform(const TSequence *seq, int srid)
     GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
-  /* Last parameter set to STEP to force the function to return multipoint */
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEP);
+  /* Last parameter set to STEPWISE to force the function to return multipoint */
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEPWISE);
   Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
   Datum transf = datum_transform(multipoint, srid);
@@ -317,7 +319,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   lwmpoint_free(lwmpoint);
 
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, linear, NORMALIZE_NO);
+    seq->period.upper_inc, interp, NORMALIZE_NO);
 }
 
 /**
@@ -332,20 +334,21 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ss, 0),
+    TSequence *seq1 = tpointcontseq_transform(tsequenceset_seq_n(ss, 0),
       Int32GetDatum(srid));
-    TSequenceSet *result = tsequence_to_tsequenceset(seq);
-    pfree(seq);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
+    pfree(seq1);
     return result;
   }
 
   /* General case */
   int k = 0;
+  const TSequence *seq;
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
   int maxcount = -1; /* number of instants of the longest sequence */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    seq = tsequenceset_seq_n(ss, i);
     maxcount = Max(maxcount, seq->count);
     for (int j = 0; j < seq->count; j++)
     {
@@ -354,8 +357,8 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
       points[k++] = lwgeom_from_gserialized(gsvalue);
     }
   }
-  /* Last parameter set to STEP to force the function to return multipoint */
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
+  /* Last parameter set to STEPWISE to force the function to return multipoint */
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEPWISE);
   Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
   Datum transf = datum_transform(multipoint, srid);
@@ -363,11 +366,12 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(ss->flags);
+  int interp = MOBDB_FLAGS_GET_DISCRETE(ss->flags) ? DISCRETE :
+    ( MOBDB_FLAGS_GET_LINEAR(ss->flags) ? LINEAR : STEPWISE );
   k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    seq = tsequenceset_seq_n(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
       Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k++])));
@@ -376,7 +380,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
       pfree(DatumGetPointer(point));
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE_NO);
+      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
     for (int j = 0; j < seq->count; j++)
       pfree(instants[j]);
   }
@@ -400,10 +404,10 @@ tpoint_transform(const Temporal *temp, int srid)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_transform((TSequence *) temp, srid);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_transform((TSequence *) temp, srid);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tpointdiscseq_transform((TSequence *) temp, srid) :
+      (Temporal *) tpointcontseq_transform((TSequence *) temp, srid);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
   return result;
