@@ -46,11 +46,11 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttype_instset</varname> representa cualquier tipo temporal con subtipo conjunto de instantes,</para>
+			<para><varname>ttype_seq</varname> representa cualquier tipo temporal con subtipo secuencia,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttype_seq</varname> representa cualquier tipo temporal con subtipo secuencia,</para>
+			<para><varname>ttype_discseq</varname> representa cualquier tipo temporal con subtipo conjunto de instantes,</para>
 		</listitem>
 
 		<listitem>

@@ -49,19 +49,19 @@ SELECT numSequences(wavg(inst, interval '5 minutes')) FROM tbl_tfloat_inst;
 -- Temporal instantset
 -------------------------------------------------------------------------------
 
-SELECT numSequences(wmin(ti, interval '5 minutes')) FROM tbl_tint_instset;
-SELECT numSequences(wmax(ti, interval '5 minutes')) FROM tbl_tint_instset;
-SELECT numSequences(wsum(ti, interval '5 minutes')) FROM tbl_tint_instset;
-SELECT numSequences(wcount(ti, interval '5 minutes')) FROM tbl_tint_instset;
-SELECT numSequences(wavg(ti, interval '5 minutes')) FROM tbl_tint_instset;
+SELECT numSequences(wmin(ti, interval '5 minutes')) FROM tbl_tint_discseq;
+SELECT numSequences(wmax(ti, interval '5 minutes')) FROM tbl_tint_discseq;
+SELECT numSequences(wsum(ti, interval '5 minutes')) FROM tbl_tint_discseq;
+SELECT numSequences(wcount(ti, interval '5 minutes')) FROM tbl_tint_discseq;
+SELECT numSequences(wavg(ti, interval '5 minutes')) FROM tbl_tint_discseq;
 
 -------------------------------------------------------------------------------
 
-SELECT numSequences(wmin(ti, interval '5 minutes')) FROM tbl_tfloat_instset;
-SELECT numSequences(wmax(ti, interval '5 minutes')) FROM tbl_tfloat_instset;
-SELECT numSequences(wsum(ti, interval '5 minutes')) FROM tbl_tfloat_instset;
-SELECT numSequences(wcount(ti, interval '5 minutes')) FROM tbl_tfloat_instset;
-SELECT numSequences(wavg(ti, interval '5 minutes')) FROM tbl_tfloat_instset;
+SELECT numSequences(wmin(ti, interval '5 minutes')) FROM tbl_tfloat_discseq;
+SELECT numSequences(wmax(ti, interval '5 minutes')) FROM tbl_tfloat_discseq;
+SELECT numSequences(wsum(ti, interval '5 minutes')) FROM tbl_tfloat_discseq;
+SELECT numSequences(wcount(ti, interval '5 minutes')) FROM tbl_tfloat_discseq;
+SELECT numSequences(wavg(ti, interval '5 minutes')) FROM tbl_tfloat_discseq;
 
 -------------------------------------------------------------------------------
 -- Temporal sequences

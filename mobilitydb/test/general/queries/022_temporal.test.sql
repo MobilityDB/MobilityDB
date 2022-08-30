@@ -55,7 +55,7 @@ SELECT tfloat '25';
 SELECT tfloat '2@2012-01-01 08:00:00,';
 
 -------------------------------------------------------------------------------
--- Temporal instant set
+-- Temporal discrete sequence
 
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
 SELECT tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}';
@@ -66,10 +66,10 @@ SELECT tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:0
 SELECT ttext ' { A@2001-01-01 08:00:00 , B@2001-01-01 08:05:00 , C@2001-01-01 08:06:00 } ';
 SELECT ttext '{A@2001-01-01 08:00:00,B@2001-01-01 08:05:00,C@2001-01-01 08:06:00}';
 /* Errors */
-SELECT tbool_instset(tbool '{true@2000-01-01, true@2000-01-03, false@2000-01-02, false@2000-01-04}');
-SELECT tint_instset(tint '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
-SELECT tfloat_instset(tfloat '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
-SELECT ttext_instset(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-01-02, BB@2000-01-04}');
+SELECT tbool_discseq(tbool '{true@2000-01-01, true@2000-01-03, false@2000-01-02, false@2000-01-04}');
+SELECT tint_discseq(tint '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
+SELECT tfloat_discseq(tfloat '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
+SELECT ttext_discseq(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-01-02, BB@2000-01-04}');
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
 
@@ -165,10 +165,8 @@ SELECT tbool(Sequence) 'true@2000-01-01';
 SELECT tbool(Sequence) 'true@2000-01-01';
 SELECT tbool(SequenceSet) 'true@2000-01-01';
 SELECT tbool(Instant) '{true@2000-01-01, false@2000-01-02}';
-SELECT tbool(Sequence) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(SequenceSet) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(Instant) '[true@2000-01-01, false@2000-01-02]';
-SELECT tbool(Sequence) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(SequenceSet) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(Instant) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 SELECT tbool(Sequence) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
@@ -187,10 +185,8 @@ SELECT tint(Sequence) '1@2000-01-01';
 SELECT tint(Sequence) '1@2000-01-01';
 SELECT tint(SequenceSet) '1@2000-01-01';
 SELECT tint(Instant) '{1@2000-01-01, 2@2000-01-02}';
-SELECT tint(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tint(Instant) '[1@2000-01-01, 2@2000-01-02]';
-SELECT tint(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tint(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tint(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT tint(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
@@ -209,10 +205,8 @@ SELECT tfloat(Sequence) '1@2000-01-01';
 SELECT tfloat(Sequence) '1@2000-01-01';
 SELECT tfloat(SequenceSet) '1@2000-01-01';
 SELECT tfloat(Instant) '{1@2000-01-01, 2@2000-01-02}';
-SELECT tfloat(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
 SELECT tfloat(Instant) '[1@2000-01-01, 2@2000-01-02]';
-SELECT tfloat(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tfloat(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT tfloat(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT tfloat(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
@@ -231,10 +225,8 @@ SELECT ttext(Sequence) '1@2000-01-01';
 SELECT ttext(Sequence) '1@2000-01-01';
 SELECT ttext(SequenceSet) '1@2000-01-01';
 SELECT ttext(Instant) '{1@2000-01-01, 2@2000-01-02}';
-SELECT ttext(Sequence) '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
 SELECT ttext(Instant) '[1@2000-01-01, 2@2000-01-02]';
-SELECT ttext(Sequence) '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
@@ -253,15 +245,15 @@ SELECT tbool_inst(NULL, timestamptz '2012-01-01 08:00:00');
 SELECT tint_inst(NULL, timestamptz '2012-01-01 08:00:00');
 SELECT tfloat_inst(NULL, timestamptz '2012-01-01 08:00:00');
 
-SELECT tbool_instset(true, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
-SELECT tint_instset(1, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
-SELECT tfloat_instset(1.5, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
-SELECT ttext_instset('AAA', timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tbool_discseq(true, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tint_discseq(1, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tfloat_discseq(1.5, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT ttext_discseq('AAA', timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
 -- NULL
-SELECT tbool_instset(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
-SELECT tint_instset(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
-SELECT tfloat_instset(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
-SELECT ttext_instset(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tbool_discseq(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tint_discseq(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tfloat_discseq(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT ttext_discseq(NULL, timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
 
 SELECT tbool_seq(true, period '[2012-01-01, 2012-01-03]');
 SELECT tint_seq(1, period '[2012-01-01, 2012-01-03]');
@@ -288,36 +280,36 @@ SELECT ttext_seqset(NULL, periodset '{[2012-01-01, 2012-01-03]}');
 
 -------------------------------------------------------------------------------
 
-SELECT tbool_instset(ARRAY[
+SELECT tbool_discseq(ARRAY[
 tbool_inst(true, timestamptz '2012-01-01 08:00:00'),
 tbool_inst(true, timestamptz '2012-01-01 08:10:00'),
 tbool_inst(true, timestamptz '2012-01-01 08:20:00')
 ]);
-SELECT tint_instset(ARRAY[
+SELECT tint_discseq(ARRAY[
 tint_inst(1, timestamptz '2012-01-01 08:00:00'),
 tint_inst(2, timestamptz '2012-01-01 08:10:00'),
 tint_inst(3, timestamptz '2012-01-01 08:20:00')
 ]);
-SELECT tfloat_instset(ARRAY[
+SELECT tfloat_discseq(ARRAY[
 tfloat_inst(1, timestamptz '2012-01-01 08:00:00'),
 tfloat_inst(2, timestamptz '2012-01-01 08:10:00'),
 tfloat_inst(3, timestamptz '2012-01-01 08:20:00')
 ]);
-SELECT ttext_instset(ARRAY[
+SELECT ttext_discseq(ARRAY[
 ttext_inst('A', timestamptz '2012-01-01 08:00:00'),
 ttext_inst('B', timestamptz '2012-01-01 08:10:00'),
 ttext_inst('C', timestamptz '2012-01-01 08:20:00')
 ]);
 
 /* Errors */
-SELECT tbool_instset('{}'::tbool[]);
-SELECT tint_instset('{}'::tint[]);
-SELECT tfloat_instset('{}'::tfloat[]);
-SELECT ttext_instset('{}'::ttext[]);
-SELECT tbool_instset(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-SELECT tint_instset(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-SELECT tfloat_instset(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-SELECT ttext_instset(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+SELECT tbool_discseq('{}'::tbool[]);
+SELECT tint_discseq('{}'::tint[]);
+SELECT tfloat_discseq('{}'::tfloat[]);
+SELECT ttext_discseq('{}'::ttext[]);
+SELECT tbool_discseq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tint_discseq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tfloat_discseq(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT ttext_discseq(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
 
 -------------------------------------------------------------------------------
 
@@ -426,33 +418,20 @@ SELECT ttext_seqset(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]'
 
 -------------------------------------------------------------------------------
 
-SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05']);
-SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], 1, '0 min');
-SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], 0, '1 day');
-SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], 1, '1 day');
+SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05']);
+SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], 1, '0 min');
+SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], 0, '1 day');
+SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], 1, '1 day');
 
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05']);
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], true);
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], false);
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], true, 1.0);
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], false, 1.0);
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], true, 0, '1 day');
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], false, 0, '1 day');
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], true, 1, '1 day');
-SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], false, 1, '1 day');
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05']);
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], true);
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], false);
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], true, 1.0);
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], false, 1.0);
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], true, 0, '1 day');
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], false, 0, '1 day');
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], true, 1, '1 day');
+SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], false, 1, '1 day');
 
 -------------------------------------------------------------------------------
 -- Cast functions
@@ -493,9 +472,10 @@ SELECT tint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}
 -------------------------------------------------------------------------------
 
 SELECT tbool_inst(tbool 't@2000-01-01');
-SELECT tbool_instset(tbool 't@2000-01-01');
-SELECT tbool_instset(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT tbool_discseq(tbool 't@2000-01-01');
+SELECT tbool_discseq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT tbool_seq(tbool 't@2000-01-01');
+SELECT tbool_seq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT tbool_seq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
 SELECT tbool_seqset(tbool 't@2000-01-01');
 SELECT tbool_seqset(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
@@ -505,15 +485,15 @@ SELECT tbool_seqset(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-0
 SELECT tbool_inst(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT tbool_inst(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
 SELECT tbool_inst(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tbool_instset(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT tbool_instset(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tbool_seq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT tbool_discseq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT tbool_discseq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 SELECT tbool_seq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 
 SELECT tint_inst(tint '1@2000-01-01');
-SELECT tint_instset(tint '1@2000-01-01');
-SELECT tint_instset(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT tint_discseq(tint '1@2000-01-01');
+SELECT tint_discseq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT tint_seq(tint '1@2000-01-01');
+SELECT tint_seq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT tint_seq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 SELECT tint_seqset(tint '1@2000-01-01');
 SELECT tint_seqset(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
@@ -523,21 +503,21 @@ SELECT tint_seqset(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-
 SELECT tint_inst(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT tint_inst(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 SELECT tint_inst(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT tint_instset(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT tint_instset(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT tint_seq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT tint_discseq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT tint_discseq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 SELECT tint_seq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 
 SELECT tfloat_inst(tfloat '1.5@2000-01-01');
 SELECT tfloat_inst(tfloat '{1.5@2000-01-01}');
 SELECT tfloat_inst(tfloat '[1.5@2000-01-01]');
 SELECT tfloat_inst(tfloat '{[1.5@2000-01-01]}');
-SELECT tfloat_instset(tfloat '1.5@2000-01-01');
-SELECT tfloat_instset(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT tfloat_instset(tfloat '[1.5@2000-01-01]');
-SELECT tfloat_instset(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}');
+SELECT tfloat_discseq(tfloat '1.5@2000-01-01');
+SELECT tfloat_discseq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT tfloat_discseq(tfloat '[1.5@2000-01-01]');
+SELECT tfloat_discseq(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}');
 SELECT tfloat_seq(tfloat '1.5@2000-01-01');
 SELECT tfloat_seq(tfloat '{1.5@2000-01-01}');
+SELECT tfloat_seq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
 SELECT tfloat_seq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}');
 SELECT tfloat_seq(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}');
@@ -550,15 +530,15 @@ SELECT tfloat_seqset(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[
 SELECT tfloat_inst(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
 SELECT tfloat_inst(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
 SELECT tfloat_inst(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT tfloat_instset(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT tfloat_instset(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT tfloat_seq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT tfloat_discseq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT tfloat_discseq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 
 SELECT ttext_inst(ttext 'AAA@2000-01-01');
-SELECT ttext_instset(ttext 'AAA@2000-01-01');
-SELECT ttext_instset(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT ttext_discseq(ttext 'AAA@2000-01-01');
+SELECT ttext_discseq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT ttext_seq(ttext 'AAA@2000-01-01');
+SELECT ttext_seq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT ttext_seq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT ttext_seqset(ttext 'AAA@2000-01-01');
 SELECT ttext_seqset(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
@@ -568,9 +548,8 @@ SELECT ttext_seqset(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CC
 SELECT ttext_inst(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT ttext_inst(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT ttext_inst(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-SELECT ttext_instset(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-SELECT ttext_instset(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-SELECT ttext_seq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT ttext_discseq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT ttext_discseq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 SELECT ttext_seq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 -------------------------------------------------------------------------------

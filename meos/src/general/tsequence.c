@@ -267,7 +267,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   if (interp == STEPWISE && count > 1 && ! upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
       tinstant_value(instants[count - 2]), basetype))
-    elog(ERROR, "Invalid end value for temporal sequence");
+    elog(ERROR, "Invalid end value for temporal sequence with stepwise interpolation");
   return;
 }
 
@@ -322,7 +322,7 @@ tinstarr_normalize(const TInstant **instants, int interp, int count,
       /* 3 consecutive linear instants that have the same value
         ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
       */
-      (interp = LINEAR && datum_eq(value1, value2, basetype) &&
+      (interp == LINEAR && datum_eq(value1, value2, basetype) &&
         datum_eq(value2, value3, basetype))
       ||
       /* collinear linear instants
@@ -649,34 +649,44 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   int count = seq->count + 1;
   if (seq->count > 1)
   {
-    /* Normalize the result */
-    inst1 = tsequence_inst_n(seq, seq->count - 2);
-    Datum value1 = tinstant_value(inst1);
-    const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
-    Datum value2 = tinstant_value(inst2);
-    Datum value3 = tinstant_value(inst);
-    if (
-      /* step sequences and 2 consecutive instants that have the same value
-        ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
-      */
-      (interp == STEPWISE && datum_eq(value1, value2, basetype))
-      ||
-      /* 3 consecutive float/point instants that have the same value
-        ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
-      */
-      (datum_eq(value1, value2, basetype) && datum_eq(value2, value3, basetype))
-      ||
-      /* collinear float/point instants that have the same duration
-        ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
-      */
-      (interp == LINEAR && datum_collinear(basetype, value1, value2, value3,
-        inst1->t, inst2->t, inst->t))
-      )
+    if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
     {
-      /* The new instant replaces the last instant of the sequence */
-      count--;
+      /* Do not add the point if it is equal */
+      inst1 = tsequence_inst_n(seq, seq->count - 1);
+      if (tinstant_eq(inst1, inst))
+        return (Temporal *) tsequence_copy(seq);
     }
-  }
+    else
+    {
+      /* Normalize the result */
+      inst1 = tsequence_inst_n(seq, seq->count - 2);
+      Datum value1 = tinstant_value(inst1);
+      const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
+      Datum value2 = tinstant_value(inst2);
+      Datum value3 = tinstant_value(inst);
+      if (
+        /* step sequences and 2 consecutive instants that have the same value
+          ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
+        */
+        (interp == STEPWISE && datum_eq(value1, value2, basetype))
+        ||
+        /* 3 consecutive float/point instants that have the same value
+          ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
+        */
+        (datum_eq(value1, value2, basetype) && datum_eq(value2, value3, basetype))
+        ||
+        /* collinear float/point instants that have the same duration
+          ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
+        */
+        (interp == LINEAR && datum_collinear(basetype, value1, value2, value3,
+          inst1->t, inst2->t, inst->t))
+        )
+      {
+        /* The new instant replaces the last instant of the sequence */
+        count--;
+      }
+    }
+  }    
 
   const TInstant **instants = palloc(sizeof(TInstant *) * count);
   int k = 0;
@@ -684,7 +694,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
     instants[k++] = tsequence_inst_n(seq, i);
   instants[k++] = inst;
   TSequence *result = tsequence_make1(instants, count, seq->period.lower_inc,
-    true, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+    true, interp, NORMALIZE_NO);
   pfree(instants);
   return (Temporal *) result;
 }
@@ -1828,6 +1838,18 @@ tfloatseq_to_tintseq(const TSequence *seq)
 
 /**
  * @ingroup libmeos_int_temporal_transf
+ * @brief Return a temporal instant transformed into a temporal instant set.
+ * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
+ * etc.
+ */
+TSequence *
+tinstant_to_tdiscseq(const TInstant *inst)
+{
+  return tsequence_make(&inst, 1, true, true, DISCRETE, NORMALIZE_NO);
+}
+
+/**
+ * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence.
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
@@ -1839,16 +1861,38 @@ tinstant_to_tsequence(const TInstant *inst, int interp)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant set transformed into a temporal sequence
- * value.
+ * @brief Return a temporal sequence transformed from discrete interpolation to
+ * linear or stepwise interpolation.
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
 TSequence *
-tinstantset_to_tsequence(const TSequence *seq, int interp)
+tdiscseq_to_tsequence(const TSequence *seq, int interp)
 {
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal sequence");
   return tinstant_to_tsequence(tsequence_inst_n(seq, 0), interp);
+}
+
+/**
+ * @ingroup libmeos_int_temporal_transf
+ * @brief Return a temporal sequence transformed into discrete interpolation.
+ * @return Return an error if a temporal sequence has more than one instant
+ * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
+ * etc.
+ */
+TSequence *
+tsequence_to_tdiscseq(const TSequence *seq)
+{
+  /* If the sequence has discrete interpolation return a copy */
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+    return tsequence_copy(seq);
+
+  /* General case */
+  if (seq->count != 1)
+    elog(ERROR, "Cannot transform input to a temporal discrete sequence");
+
+  const TInstant *inst = tsequence_inst_n(seq, 0);
+  return tinstant_to_tdiscseq(inst);
 }
 
 /**

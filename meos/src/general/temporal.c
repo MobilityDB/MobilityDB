@@ -1148,6 +1148,27 @@ temporal_to_tinstant(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value transformed into a temporal sequence with
+ * discrete interpolation.
+ * @sqlfunc tbool_tdiscseq(), tint_tdiscseq(), tfloat_tdiscseq(),
+ * ttext_tdiscseq(), etc.
+ */
+Temporal *
+temporal_to_tdiscseq(const Temporal *temp)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_to_tdiscseq((TInstant *) temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_to_tdiscseq((TSequence *) temp);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_to_tdiscseq((TSequenceSet *) temp);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence.
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
@@ -1158,7 +1179,7 @@ temporal_to_tsequence(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
-      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEPWISE);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_copy((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

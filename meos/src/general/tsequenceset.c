@@ -1297,11 +1297,12 @@ tinstant_to_tsequenceset(const TInstant *inst, int interp)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant set transformed into a temporal sequence set.
+ * @brief Return a temporal discrete sequence transformed into a temporal
+ * sequence set.
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
-tinstantset_to_tsequenceset(const TSequence *seq, int interp)
+tdiscseq_to_tsequenceset(const TSequence *seq, int interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -1317,12 +1318,48 @@ tinstantset_to_tsequenceset(const TSequence *seq, int interp)
 
 /**
  * @ingroup libmeos_int_temporal_transf
+ * @brief Return a temporal sequence set transformed into discrete interpolation.
+ * @return Return an error if any of the composing temporal sequences has
+ * more than one instant
+ * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
+ * etc.
+ */
+TSequence *
+tsequenceset_to_tdiscseq(const TSequenceSet *ts)
+{
+  const TSequence *seq;
+  for (int i = 0; i < ts->count; i++)
+  {
+    seq = tsequenceset_seq_n(ts, i);
+    if (seq->count != 1)
+      elog(ERROR, "Cannot transform input to a temporal instant set");
+  }
+
+  const TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    seq = tsequenceset_seq_n(ts, i);
+    instants[i] = tsequence_inst_n(seq, 0);
+  }
+  TSequence *result = tsequence_make(instants, ts->count, true, true, DISCRETE,
+    NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set.
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
 {
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  {
+    int interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEPWISE;
+    return tdiscseq_to_tsequenceset(seq, interp);
+  }
   return tsequenceset_make(&seq, 1, NORMALIZE_NO);
 }
 

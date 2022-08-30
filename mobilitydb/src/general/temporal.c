@@ -481,7 +481,7 @@ PG_FUNCTION_INFO_V1(Tinstantset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from the array of temporal instants
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset(),
+ * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
  */
 PGDLLEXPORT Datum
 Tinstantset_constructor(PG_FUNCTION_ARGS)
@@ -501,11 +501,14 @@ Tinstantset_constructor(PG_FUNCTION_ARGS)
  * @brief Construct a temporal sequence from the array of temporal instants
  */
 static Datum
-tsequence_constructor_ext(FunctionCallInfo fcinfo, int interp)
+tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_bounds,
+  bool get_linear)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  bool lower_inc = (interp = DISCRETE) ? true : PG_GETARG_BOOL(1);
-  bool upper_inc = (interp = DISCRETE) ? true : PG_GETARG_BOOL(2);
+  bool lower_inc = (! get_bounds) ? true : PG_GETARG_BOOL(1);
+  bool upper_inc = (! get_bounds) ? true : PG_GETARG_BOOL(2);
+  bool linear = get_linear ? PG_GETARG_BOOL(3) : false;
+  int interp = (! get_bounds) ? DISCRETE : (linear ? LINEAR : STEPWISE);
   ensure_non_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
@@ -526,7 +529,7 @@ PG_FUNCTION_INFO_V1(Tdiscseq_constructor);
 PGDLLEXPORT Datum
 Tdiscseq_constructor(PG_FUNCTION_ARGS)
 {
-  return tsequence_constructor_ext(fcinfo, DISCRETE);
+  return tsequence_constructor_ext(fcinfo, false, false);
 }
 
 PG_FUNCTION_INFO_V1(Tstepseq_constructor);
@@ -539,7 +542,7 @@ PG_FUNCTION_INFO_V1(Tstepseq_constructor);
 PGDLLEXPORT Datum
 Tstepseq_constructor(PG_FUNCTION_ARGS)
 {
-  return tsequence_constructor_ext(fcinfo, STEPWISE);
+  return tsequence_constructor_ext(fcinfo, true, false);
 }
 
 PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
@@ -552,7 +555,7 @@ PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
 PGDLLEXPORT Datum
 Tlinearseq_constructor(PG_FUNCTION_ARGS)
 {
-  return tsequence_constructor_ext(fcinfo, LINEAR);
+  return tsequence_constructor_ext(fcinfo, true, true);
 }
 
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
@@ -581,22 +584,22 @@ Tsequenceset_constructor(PG_FUNCTION_ARGS)
  * or temporal gap defined by the arguments
  */
 Datum
-tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_interp)
+tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
   int interp;
   float maxdist;
   Interval *maxt;
-  if (get_interp)
+  if (get_linear)
   {
-    interp = PG_GETARG_INT32(1);
+    interp = PG_GETARG_BOOL(1) ? LINEAR : STEPWISE;
     maxdist = PG_GETARG_FLOAT8(2);
     maxt = PG_GETARG_INTERVAL_P(3);
   }
   else
   {
-    interp = LINEAR;
+    interp = STEPWISE;
     maxdist = PG_GETARG_FLOAT8(1);
     maxt = PG_GETARG_INTERVAL_P(2);
   }
@@ -645,7 +648,7 @@ PG_FUNCTION_INFO_V1(Tinstantset_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from a base value and a timestamp set
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset()
+ * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
  */
 PGDLLEXPORT Datum
 Tinstantset_from_base_time(PG_FUNCTION_ARGS)
@@ -671,7 +674,7 @@ Tsequence_from_base_time(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_SPAN_P(1);
   int interp = LINEAR;
   if (PG_NARGS() > 2)
-    interp = PG_GETARG_INT32(2);
+    interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tsequence_from_base_time(value, temptype, p, interp);
   PG_RETURN_POINTER(result);
@@ -691,7 +694,7 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   int interp = LINEAR;
   if (PG_NARGS() > 2)
-    interp = PG_GETARG_INT32(2);
+    interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
     interp);
@@ -1506,13 +1509,29 @@ PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal instant
- * @sqlfunc tbool_instset(), tint_instset(), tfloat_instset(), ttext_instset()
+ * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst()
  */
 PGDLLEXPORT Datum
 Temporal_to_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_to_tinstant(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_to_tdiscseq);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Transform a temporal value into a temporal sequence with discrete
+ * interpolation
+ * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
+ */
+PGDLLEXPORT Datum
+Temporal_to_tdiscseq(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_to_tdiscseq(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

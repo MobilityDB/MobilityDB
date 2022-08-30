@@ -235,19 +235,19 @@ CREATE FUNCTION ttext_inst(text, timestamptz)
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_instset(tbool[])
+CREATE FUNCTION tbool_discseq(tbool[])
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_instset(tint[])
+CREATE FUNCTION tint_discseq(tint[])
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_instset(tfloat[])
+CREATE FUNCTION tfloat_discseq(tfloat[])
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_instset(ttext[])
+CREATE FUNCTION ttext_discseq(ttext[])
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -263,7 +263,7 @@ CREATE FUNCTION tint_seq(tint[], lower_inc boolean DEFAULT true,
   AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seq(tfloat[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true, interp int DEFAULT 2)
+  upper_inc boolean DEFAULT true, linear bool DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -295,7 +295,7 @@ CREATE FUNCTION tint_seqset_gaps(tint[], maxdist float DEFAULT 0.0,
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tstepseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset_gaps(tfloat[], interp int DEFAULT 2,
+CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear bool DEFAULT true,
     maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
@@ -303,19 +303,19 @@ CREATE FUNCTION tfloat_seqset_gaps(tfloat[], interp int DEFAULT 2,
 
 /******************************************************************************/
 
-CREATE FUNCTION tbool_instset(boolean, timestampset)
+CREATE FUNCTION tbool_discseq(boolean, timestampset)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_instset(integer, timestampset)
+CREATE FUNCTION tint_discseq(integer, timestampset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_instset(float, timestampset)
+CREATE FUNCTION tfloat_discseq(float, timestampset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_instset(text, timestampset)
+CREATE FUNCTION ttext_discseq(text, timestampset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1404,21 +1404,21 @@ CREATE FUNCTION ttext_inst(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_instset(tbool)
+CREATE FUNCTION tbool_discseq(tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstantset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_instset(tint)
+CREATE FUNCTION tint_discseq(tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstantset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_instset(tfloat)
+CREATE FUNCTION tfloat_discseq(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstantset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_instset(ttext)
+CREATE FUNCTION ttext_discseq(ttext)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstantset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seq(tbool)
