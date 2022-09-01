@@ -149,9 +149,10 @@ tpointseq_transform_tcentroid(const TSequence *seq)
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tpointinst_transform_tcentroid(inst);
   }
-  return tsequence_make_free(instants,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
+    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE_NO);
 }
 
 /**

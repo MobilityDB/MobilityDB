@@ -1381,6 +1381,8 @@ temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
 void
 temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
+  s->hasx = true;
+  s->hast = true;
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
@@ -1394,10 +1396,11 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
     if (wkb_flags & MOBDB_WKB_SRIDFLAG)
       s->has_srid = true;
   }
-  if (wkb_flags & MOBDB_WKB_LINEAR_INTERP)
-    s->interp = LINEAR;
+  s->interp = MOBDB_WKB_GET_DISCRETE(wkb_flags) ? DISCRETE :
+    ( MOBDB_WKB_GET_LINEAR(wkb_flags) ? LINEAR : STEPWISE );
+
   /* Mask off the upper flags to get the subtype */
-  wkb_flags = wkb_flags & (uint8_t) 0x0F;
+  wkb_flags = wkb_flags & (uint8_t) 0x03;
   switch (wkb_flags)
   {
     case MOBDB_WKB_TINSTANT:

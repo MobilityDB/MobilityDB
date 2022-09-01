@@ -233,9 +233,9 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant(inst, lfinfo);
   }
-  int interp = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE :
-    ( MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
-      temptype_continuous(lfinfo->restype) ? LINEAR : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
+      temptype_continuous(lfinfo->restype) ? LINEAR :
+    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, NORMALIZE);
 }
@@ -378,9 +378,9 @@ tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant_base(inst, value, lfinfo);
   }
-  int interp = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE :
-    ( MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
-      temptype_continuous(lfinfo->restype) ? LINEAR : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
+      temptype_continuous(lfinfo->restype) ? LINEAR :
+    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
   result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, NORMALIZE);
   return 1;

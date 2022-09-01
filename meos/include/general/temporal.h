@@ -158,7 +158,7 @@ typedef enum
  *****************************************************************************/
 
 /**
- * Enumeration for the concrete subtype of temporal types
+ * Enumeration for the interpolation functions for temporal types
  */
 #define DISCRETE        0
 #define STEPWISE        1
@@ -186,6 +186,7 @@ typedef enum
 /* The following two flags are only used for TSequence and TSequenceSet */
 #define MOBDB_FLAG_DISCRETE   0x0004  // 4
 #define MOBDB_FLAG_LINEAR     0x0008  // 8
+/* The following two flags are used for bounding boxes and temporal types */
 #define MOBDB_FLAG_X          0x0010  // 16
 #define MOBDB_FLAG_Z          0x0020  // 32
 #define MOBDB_FLAG_T          0x0040  // 64
@@ -216,6 +217,9 @@ typedef enum
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
+
+#define MOBDB_FLAGS_GET_INTERP(flags) ((((flags) & 0x000C)) >> 2)
+#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) & 0xFFF3) | ((value & 0x0003) << 2)))
 
 /*****************************************************************************
  * Well-Known Binary (WKB)
@@ -285,14 +289,29 @@ enum MOBDB_WKB_TSUBTYPE
  * The first byte of the variation flag depends on the type we are sending
  * - Box types: xxTX where X and T state whether the corresponding dimensions
  *   are present and x are unused
- * - Temporal types: xSSS where SSS correspond to the subtype and x is unused
+ * - Temporal types: xxSS where SS correspond to the subtype and x is unused
  */
 #define MOBDB_WKB_XFLAG            0x01
 #define MOBDB_WKB_TFLAG            0x02
+#define MOBDB_WKB_DISCRETEFLAG     0x04
+#define MOBDB_WKB_LINEARFLAG       0x08
 #define MOBDB_WKB_ZFLAG            0x10
 #define MOBDB_WKB_GEODETICFLAG     0x20
 #define MOBDB_WKB_SRIDFLAG         0x40
-#define MOBDB_WKB_LINEAR_INTERP    0x80
+
+// #define MOBDB_WKB_SRIDFLAG         0x01
+// #define MOBDB_WKB_DISCRETE_INTERP  0x04
+// #define MOBDB_WKB_LINEAR_INTERP    0x08
+// #define MOBDB_WKB_XFLAG            0x10
+// #define MOBDB_WKB_ZFLAG            0x20
+// #define MOBDB_WKB_TFLAG            0x40
+// #define MOBDB_WKB_GEODETICFLAG     0x80
+
+#define MOBDB_WKB_GET_DISCRETE(flags)   ((bool) (((flags) & MOBDB_WKB_DISCRETEFLAG)>>2))
+#define MOBDB_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_WKB_LINEARFLAG)>>3))
+
+// #define MOBDB_WKB_GET_INTERP(flags) ((((flags) & 0x0C)) >> 2)
+// #define MOBDB_WKB_SET_INTERP(flags, value) (((flags) & 0xF3) | ((value & 0x03) << 2))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling

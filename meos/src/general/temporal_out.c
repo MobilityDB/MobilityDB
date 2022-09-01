@@ -1038,8 +1038,7 @@ temporalarr_out(const Temporal **temparr, int count, Datum arg)
  * The MobilityDB binary format builds upon the one of PostGIS. In particular,
  * it reuses many of the flags defined in liblwgeom.h such as WKB_NDR vs WKB_XDR
  * (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc.
- * In addition, additional flags are needed such as MOBDB_WKB_LINEAR_INTERP for
- * linear interporation, etc.
+ * In addition, additional flags are needed such for interporation, etc.
  *
  * - For box types, the format depends on the existing dimensions (X, Z, T).
  * - For span types, the format depends on the base type (int4, float8, ...).
@@ -1980,15 +1979,20 @@ temporal_temptype_to_wkb_buf(const Temporal *temp, uint8_t *buf,
  * Write into the buffer the flag containing the temporal type and
  * other characteristics represented in Well-Known Binary (WKB) format.
  * In binary format it is a byte as follows
- * LSGZxTTT
+ * xSGZIITT
  * L = Linear, S = SRID, G = Geodetic, Z = has Z, x = unused bit
- * TTT = Temporal subtype with values 1 to 4
+ * II = Interpolation with values 0 to 2
+ * TT = Temporal subtype with values 1 to 3
  */
 static uint8_t *
 temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   /* Write the flags */
+  if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    wkb_flags |= MOBDB_WKB_DISCRETEFLAG;
+  if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    wkb_flags |= MOBDB_WKB_LINEARFLAG;
   if (tgeo_type(temp->temptype))
   {
     if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1998,10 +2002,8 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
     if (tpoint_wkb_needs_srid(temp, variant))
       wkb_flags |= MOBDB_WKB_SRIDFLAG;
   }
-  if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    wkb_flags |= MOBDB_WKB_LINEAR_INTERP;
   /* Write the subtype */
-  uint8 subtype = temp->subtype;
+  uint8 subtype = (uint8_t) temp->subtype;
   if (variant & WKB_HEX)
   {
     buf[0] = (uint8_t) hexchr[wkb_flags >> 4];

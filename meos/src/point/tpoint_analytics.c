@@ -694,8 +694,7 @@ geo_to_tpointseq(const GSERIALIZED *geo)
   }
   lwgeom_free(lwgeom);
   /* The resulting sequence assumes linear interpolation */
-  return tsequence_make_free(instants, npoints, true, true,
-    LINEAR, NORMALIZE);
+  return tsequence_make_free(instants, npoints, true, true, LINEAR, NORMALIZE);
 }
 
 /**

@@ -851,8 +851,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   {
     if (new2->subtype == TSEQUENCE)
     {
-      int interp = MOBDB_FLAGS_GET_DISCRETE(new2->flags) ? DISCRETE : 
-        (MOBDB_FLAGS_GET_LINEAR(new2->flags) ? LINEAR : STEPWISE);
+      int interp = MOBDB_FLAGS_GET_LINEAR(new2->flags) ? LINEAR : 
+        (MOBDB_FLAGS_GET_DISCRETE(new2->flags) ? DISCRETE : STEPWISE);
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1, interp);
     }
     else /* new2->subtype == TSEQUENCESET */
@@ -975,22 +975,15 @@ temporal_merge_array(Temporal **temparr, int count)
    * the result */
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
-  int interp = MOBDB_FLAGS_GET_DISCRETE(temparr[0]->flags) ? DISCRETE :
-    (MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags) ? LINEAR : STEPWISE);
-  int interptest;
-  if (MOBDB_FLAGS_GET_DISCRETE(temparr[0]->flags))
-    interptest = DISCRETE;
-  else if (MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags))
-    interptest = LINEAR;
-  else 
-    interptest = STEPWISE;
+  int interp = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags) ? LINEAR :
+    (MOBDB_FLAGS_GET_DISCRETE(temparr[0]->flags) ? DISCRETE : STEPWISE);
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation(temparr[0], temparr[i]);
     uint8 subtype1 = temparr[i]->subtype;
-    int interp1 = MOBDB_FLAGS_GET_DISCRETE(temparr[i]->flags) ? DISCRETE :
-      (MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags) ? LINEAR : STEPWISE);
+    int interp1 = MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags) ? LINEAR :
+      (MOBDB_FLAGS_GET_DISCRETE(temparr[i]->flags) ? DISCRETE : STEPWISE);
     if (subtype != subtype1 || interp != interp1)
     {
       convert = true;
@@ -1909,8 +1902,8 @@ temporal_start_sequence(const Temporal *temp)
     result = tsequence_copy((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequenceSet *ts = (const TSequenceSet *) temp;
-    result = tsequence_copy(tsequenceset_seq_n(ts, 0));
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    result = tsequence_copy(tsequenceset_seq_n(ss, 0));
   }
   return result;
 }
@@ -1929,8 +1922,8 @@ temporal_end_sequence(const Temporal *temp)
     result = tsequence_copy((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequenceSet *ts = (const TSequenceSet *) temp;
-    result = tsequence_copy(tsequenceset_seq_n(ts, ts->count - 1));
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    result = tsequence_copy(tsequenceset_seq_n(ss, ss->count - 1));
   }
   return result;
 }
@@ -1954,9 +1947,9 @@ temporal_sequence_n(const Temporal *temp, int i)
   }
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequenceSet *ts = (const TSequenceSet *) temp;
-    if (i >= 1 && i <= ts->count)
-      result = tsequence_copy(tsequenceset_seq_n(ts, i - 1));
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    if (i >= 1 && i <= ss->count)
+      result = tsequence_copy(tsequenceset_seq_n(ss, i - 1));
   }
   return result;
 }
@@ -3435,7 +3428,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 
   const TInstant *inst1;
   const TSequence *seq;
-  const TSequenceSet *ts;
+  const TSequenceSet *ss;
   /* If both are of the same temporal type use the specific equality */
   if (temp1->subtype == temp2->subtype)
   {
@@ -3467,10 +3460,10 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
     }
     if (temp2->subtype == TSEQUENCESET)
     {
-      ts = (TSequenceSet *) temp2;
-      if (ts->count != 1)
+      ss = (TSequenceSet *) temp2;
+      if (ss->count != 1)
         return false;
-      seq = tsequenceset_seq_n(ts, 0);
+      seq = tsequenceset_seq_n(ss, 0);
       if (seq->count != 1)
         return false;
       inst1 = tsequence_inst_n(seq, 0);
@@ -3479,11 +3472,28 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   }
   /* temp1->subtype == TSEQUENCE && temp2->subtype == TSEQUENCESET */
   seq = (TSequence *) temp1;
-  ts = (TSequenceSet *) temp2;
-  if (ts->count != 1)
-    return false;
-  const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
-  return tsequence_eq(seq, seq1);
+  ss = (TSequenceSet *) temp2;
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  {
+    for (int i = 0; i < seq->count; i ++)
+    {
+      const TSequence *seq1 = tsequenceset_seq_n(ss, i);
+      if (seq1->count != 1)
+        return false;
+      inst1 = tsequence_inst_n(seq, i);
+      const TInstant *inst2 = tsequence_inst_n(seq1, 0);
+      if (! tinstant_eq(inst1, inst2))
+        return false;
+    }
+    return true;
+  }
+  else
+  {
+    if (ss->count != 1)
+      return false;
+    const TSequence *seq1 = tsequenceset_seq_n(ss, 0);
+    return tsequence_eq(seq, seq1);
+  }
 }
 
 /**
