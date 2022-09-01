@@ -180,16 +180,17 @@ typedef enum
  * to the value of the continuous subtype flag.
  *****************************************************************************/
 
-#define MOBDB_FLAG_BYVAL      0x0001
-#define MOBDB_FLAG_CONTINUOUS 0x0002
-#define MOBDB_FLAG_DISCRETE   0x0004
-#define MOBDB_FLAG_LINEAR     0x0008
-#define MOBDB_FLAG_X          0x0010
-#define MOBDB_FLAG_Z          0x0020
-#define MOBDB_FLAG_T          0x0040
-#define MOBDB_FLAG_GEODETIC   0x0080
+/* The following two flags are only used for TInstant */
+#define MOBDB_FLAG_BYVAL      0x0001  // 1
+#define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
+/* The following two flags are only used for TSequence and TSequenceSet */
+#define MOBDB_FLAG_DISCRETE   0x0004  // 4
+#define MOBDB_FLAG_LINEAR     0x0008  // 8
+#define MOBDB_FLAG_X          0x0010  // 16
+#define MOBDB_FLAG_Z          0x0020  // 32
+#define MOBDB_FLAG_T          0x0040  // 64
+#define MOBDB_FLAG_GEODETIC   0x0080  // 128
 
-/* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
 #define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (((flags) & MOBDB_FLAG_DISCRETE)>>2))
@@ -199,7 +200,6 @@ typedef enum
 #define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
 #define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>7))
 
-/* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
@@ -432,7 +432,7 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
-extern void ensure_seq_subtypes(int16 subtype);
+extern void ensure_continuous(const Temporal *temp);
 extern void ensure_tinstarr(const TInstant **instants, int count);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);

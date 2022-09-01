@@ -1607,7 +1607,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_restrict_value(tsequenceset_seq_n(ss, 0), value, atfunc);
+    return tcontseq_restrict_value(tsequenceset_seq_n(ss, 0), value, atfunc);
 
   /* General case */
   int count = ss->totalcount;
@@ -1619,7 +1619,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tsequence_restrict_value1(seq, value, atfunc, &sequences[k]);
+    k += tcontseq_restrict_value1(seq, value, atfunc, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1635,14 +1635,14 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @param[in] atfunc True when the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
- */
+ */ 
 TSequenceSet *
 tsequenceset_restrict_values(const TSequenceSet *ss, const Datum *values,
   int count, bool atfunc)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_restrict_values(tsequenceset_seq_n(ss, 0), values,
+    return tcontseq_restrict_values(tsequenceset_seq_n(ss, 0), values,
       count, atfunc);
 
   /* General case
@@ -1783,8 +1783,8 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
   /* Singleton sequence set */
   if (ss->count == 1)
     return atfunc ?
-      (Temporal *) tsequence_at_timestamp(tsequenceset_seq_n(ss, 0), t) :
-      (Temporal *) tsequence_minus_timestamp(tsequenceset_seq_n(ss, 0), t);
+      (Temporal *) tcontseq_at_timestamp(tsequenceset_seq_n(ss, 0), t) :
+      (Temporal *) tcontseq_minus_timestamp(tsequenceset_seq_n(ss, 0), t);
 
   /* General case */
   const TSequence *seq;
@@ -1805,7 +1805,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
     for (i = 0; i < ss->count; i++)
     {
       seq = tsequenceset_seq_n(ss, i);
-      k += tsequence_minus_timestamp1(seq, t, &sequences[k]);
+      k += tcontseq_minus_timestamp1(seq, t, &sequences[k]);
       if (t < (TimestampTz) seq->period.upper)
       {
         i++;
@@ -1816,7 +1816,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
     for (int j = i; j < ss->count; j++)
       sequences[k++] = tsequence_copy(tsequenceset_seq_n(ss, j));
     /* k is never equal to 0 since in that case it is a singleton sequence set
-       and it has been dealt by tsequence_minus_timestamp above */
+       and it has been dealt by tcontseq_minus_timestamp above */
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE_NO);
   }
 }
@@ -1853,8 +1853,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   /* Singleton sequence set */
   if (ss->count == 1)
     return atfunc ?
-      (Temporal *) tsequence_at_timestampset(tsequenceset_seq_n(ss, 0), ts) :
-      (Temporal *) tsequence_minus_timestampset(tsequenceset_seq_n(ss, 0), ts);
+      (Temporal *) tcontseq_at_timestampset(tsequenceset_seq_n(ss, 0), ts) :
+      (Temporal *) tcontseq_minus_timestampset(tsequenceset_seq_n(ss, 0), ts);
 
   /* General case */
   const TSequence *seq;
@@ -1893,7 +1893,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
     for (int i = 0; i < ss->count; i++)
     {
       seq = tsequenceset_seq_n(ss, i);
-      k += tsequence_minus_timestampset1(seq, ts, &sequences[k]);
+      k += tcontseq_minus_timestampset1(seq, ts, &sequences[k]);
 
     }
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -1921,13 +1921,13 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
   {
     if (atfunc)
     {
-      seq = tsequence_at_period(tsequenceset_seq_n(ss, 0), p);
+      seq = tcontseq_at_period(tsequenceset_seq_n(ss, 0), p);
       result = tsequence_to_tsequenceset(seq);
       pfree(seq);
       return result;
     }
     else
-      tsequence_minus_period(tsequenceset_seq_n(ss, 0), p);
+      tcontseq_minus_period(tsequenceset_seq_n(ss, 0), p);
   }
 
   /* General case */
@@ -1947,7 +1947,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
         sequences[k++] = seq;
       else if (overlaps_span_span(p, &seq->period))
       {
-        TSequence *newseq = tsequence_at_period(seq, p);
+        TSequence *newseq = tcontseq_at_period(seq, p);
         sequences[k++] = tofree[l++] = newseq;
       }
       int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
@@ -2003,7 +2003,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
 
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_restrict_periodset(tsequenceset_seq_n(ss, 0), ps, atfunc);
+    return tcontseq_restrict_periodset(tsequenceset_seq_n(ss, 0), ps, atfunc);
 
   /* General case */
   TSequence **sequences;
@@ -2034,7 +2034,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
       if (atfunc)
       {
         /* Compute the restriction of the sequence and the period */
-        TSequence *seq1 = tsequence_at_period(seq, p);
+        TSequence *seq1 = tcontseq_at_period(seq, p);
         if (seq1 != NULL)
           sequences[k++] = seq1;
         int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
@@ -2055,7 +2055,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
          * Notice that we cannot compute the difference with the
          * current period without replicating the functionality in
          * tsequence_minus_periodset */
-        k += tsequence_minus_periodset(seq, ps, j, &sequences[k]);
+        k += tcontseq_minus_periodset1(seq, ps, j, &sequences[k]);
         i++;
       }
     }
@@ -2634,7 +2634,7 @@ tnumberseqset_twavg(const TSequenceSet *ss)
   {
     result = 0;
     for (int i = 0; i < ss->count; i++)
-      result += tnumberseq_twavg(tsequenceset_seq_n(ss, i));
+      result += tnumbercontseq_twavg(tsequenceset_seq_n(ss, i));
     return result / ss->count;
   }
   else

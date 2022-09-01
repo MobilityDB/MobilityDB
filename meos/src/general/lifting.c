@@ -1032,7 +1032,7 @@ tfunc_tsequence_tsequence_single(const TSequence *seq1, const TSequence *seq2,
     else if (cmp < 0)
     {
       i++;
-      inst2 = tsequence_at_timestamp(seq2, inst1->t);
+      inst2 = tcontseq_at_timestamp(seq2, inst1->t);
       tofree[l++] = inst2;
     }
     else

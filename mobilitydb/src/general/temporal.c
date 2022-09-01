@@ -1064,7 +1064,7 @@ PGDLLEXPORT Datum
 Temporal_num_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  // ensure_seq_subtypes(temp->subtype);
   int result = temporal_num_sequences(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -1577,7 +1577,7 @@ PGDLLEXPORT Datum
 Tempstep_to_templinear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  // ensure_seq_subtypes(temp->subtype);
   Temporal *result = temporal_step_to_linear(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

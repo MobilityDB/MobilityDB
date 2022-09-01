@@ -482,13 +482,13 @@ tinstant_parse(char **str, mobdbType temptype, bool end, bool make)
 }
 
 /**
- * @brief Parse a temporal instant set value from the buffer.
+ * @brief Parse a temporal discrete sequence from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Base type
  */
 TSequence *
-tinstantset_parse(char **str, mobdbType temptype)
+tdiscseq_parse(char **str, mobdbType temptype)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -532,7 +532,7 @@ tinstantset_parse(char **str, mobdbType temptype)
  * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
-tsequence_parse(char **str, mobdbType temptype, int interp, bool end,
+tcontseq_parse(char **str, mobdbType temptype, int interp, bool end,
   bool make)
 {
   p_whitespace(str);
@@ -595,12 +595,12 @@ tsequenceset_parse(char **str, mobdbType temptype, int interp)
 
   /* First parsing */
   char *bak = *str;
-  tsequence_parse(str, temptype, interp, false, false);
+  tcontseq_parse(str, temptype, interp, false, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tsequence_parse(str, temptype, interp, false, false);
+    tcontseq_parse(str, temptype, interp, false, false);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse temporal value: Missing closing brace");
@@ -613,7 +613,7 @@ tsequenceset_parse(char **str, mobdbType temptype, int interp)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tsequence_parse(str, temptype, interp, false, true);
+    sequences[i] = tcontseq_parse(str, temptype, interp, false, true);
   }
   p_cbrace(str);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -641,7 +641,7 @@ temporal_parse(char **str, mobdbType temptype)
   if (**str != '{' && **str != '[' && **str != '(')
     result = (Temporal *) tinstant_parse(str, temptype, true, true);
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tsequence_parse(str, temptype, interp, true, true);
+    result = (Temporal *) tcontseq_parse(str, temptype, interp, true, true);
   else if (**str == '{')
   {
     char *bak = *str;
@@ -655,7 +655,7 @@ temporal_parse(char **str, mobdbType temptype)
     else
     {
       *str = bak;
-      result = (Temporal *) tinstantset_parse(str, temptype);
+      result = (Temporal *) tdiscseq_parse(str, temptype);
     }
   }
   return result;

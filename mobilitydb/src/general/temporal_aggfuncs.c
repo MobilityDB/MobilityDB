@@ -276,13 +276,13 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
       lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq1, &period);
+    sequences[k++] = tcontseq_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
       lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq2, &period);
+    sequences[k++] = tcontseq_at_period(seq2, &period);
   }
 
   /*
@@ -311,13 +311,13 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
       ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq1, &period);
+    sequences[k++] = tcontseq_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
       ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq2, &period);
+    sequences[k++] = tcontseq_at_period(seq2, &period);
   }
 
   /* Normalization */

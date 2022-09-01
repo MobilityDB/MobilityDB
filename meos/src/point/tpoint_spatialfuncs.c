@@ -2613,9 +2613,9 @@ tpointinstset_twcentroid(const TSequence *seq)
   TSequence *tiz = hasz ?
     tsequence_make_free(instantsz, seq->count, true, true, DISCRETE,
       NORMALIZE_NO) : NULL;
-  double twavgx = tnumberinstset_twavg(tix);
-  double twavgy = tnumberinstset_twavg(tiy);
-  double twavgz = hasz ? tnumberinstset_twavg(tiz) : 0;
+  double twavgx = tnumberdiscseq_twavg(tix);
+  double twavgy = tnumberdiscseq_twavg(tiy);
+  double twavgz = hasz ? tnumberdiscseq_twavg(tiz) : 0;
   GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
 
   pfree(tix); pfree(tiy);
@@ -2658,9 +2658,9 @@ tpointseq_twcentroid(const TSequence *seq)
   TSequence *seqz = hasz ?
     tsequence_make_free(instantsz, seq->count, seq->period.lower_inc,
       seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE) : NULL;
-  double twavgx = tnumberseq_twavg(seqx);
-  double twavgy = tnumberseq_twavg(seqy);
-  double twavgz = hasz ? tnumberseq_twavg(seqz) : 0;
+  double twavgx = tnumbercontseq_twavg(seqx);
+  double twavgy = tnumbercontseq_twavg(seqy);
+  double twavgz = hasz ? tnumberdiscseq_twavg(seqz) : 0;
   GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(seqx); pfree(seqy);
   if (hasz)
@@ -4287,7 +4287,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   }
   PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
-  *count = tsequence_at_periodset(seq, ps, result);
+  *count = tcontseq_at_periodset1(seq, ps, result);
   pfree(ps);
   return result;
 }
@@ -4370,7 +4370,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
     return NULL;
   }
   TSequence **result = palloc(sizeof(TSequence *) * ps2->count);
-  *count = tsequence_at_periodset(seq, ps2, result);
+  *count = tcontseq_at_periodset1(seq, ps2, result);
   pfree(ps2);
   return result;
 }
