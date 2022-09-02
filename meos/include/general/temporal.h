@@ -213,9 +213,9 @@ typedef enum
 #define MOBDB_FLAGS_GET_INTERP(flags) (((flags) & MOBDB_FLAGS_INTERP) >> 2)
 #define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
 
-#define MOBDB_FLAGS_GET_DISCRETE(flags)   (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE)
-#define MOBDB_FLAGS_GET_STEPWISE(flags)   (MOBDB_FLAGS_GET_INTERP((flags)) == STEPWISE)
-#define MOBDB_FLAGS_GET_LINEAR(flags)     (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR)
+#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE))
+#define MOBDB_FLAGS_GET_STEPWISE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEPWISE))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR))
 
 /*****************************************************************************
  * Well-Known Binary (WKB)

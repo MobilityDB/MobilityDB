@@ -206,7 +206,7 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
  * @param[in] lfinfo Information about the lifted function
  */
 TSequence *
-tfunc_tinstantset(const TSequence *is, LiftedFunctionInfo *lfinfo)
+tfunc_tdiscseq(const TSequence *is, LiftedFunctionInfo *lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * is->count);
   for (int i = 0; i < is->count; i++)
@@ -225,7 +225,7 @@ tfunc_tinstantset(const TSequence *is, LiftedFunctionInfo *lfinfo)
  * @param[in] lfinfo Information about the lifted function
  */
 TSequence *
-tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
+tfunc_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -250,7 +250,7 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tfunc_tsequence(seq, lfinfo);
+    sequences[i] = tfunc_tcontseq(seq, lfinfo);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
@@ -268,10 +268,10 @@ tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant((TInstant *) temp, lfinfo);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal *) tfunc_tinstantset((TSequence *) temp, lfinfo);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfunc_tsequence((TSequence *) temp, lfinfo);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tfunc_tdiscseq((TSequence *) temp, lfinfo) :
+      (Temporal *) tfunc_tcontseq((TSequence *) temp, lfinfo);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfunc_tsequenceset((TSequenceSet *) temp, lfinfo);
   return result;
@@ -341,7 +341,7 @@ tfunc_tinstant_base(const TInstant *inst, Datum value,
  * @param[in] lfinfo Information about the lifted function
  */
 TSequence *
-tfunc_tinstantset_base(const TSequence *is, Datum value,
+tfunc_tdiscseq_base(const TSequence *is, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * is->count);
@@ -449,6 +449,7 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
   Datum startvalue = tinstant_value(start);
   Datum startresult = tfunc_base_base(startvalue, value, lfinfo);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  int interp = linear ? LINEAR : STEPWISE;
   TInstant *instants[2];
 
   /* Instantaneous sequence */
@@ -504,16 +505,16 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
       if (lower_inc && ! lower_eq)
       {
         tinstant_set(instants[0], startresult, start->t);
-        result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+        result[k++] = tinstant_to_tsequence(instants[0], interp);
       }
       tinstant_set(instants[0], intresult, start->t);
       tinstant_set(instants[1], intresult, end->t);
       result[k++] = tsequence_make((const TInstant **) instants, 2,
-        lower_eq, upper_eq, lfinfo->reslinear, NORMALIZE_NO);
+        lower_eq, upper_eq, interp, NORMALIZE_NO);
       if (upper_inc && ! upper_eq)
       {
         tinstant_set(instants[0], endresult, end->t);
-        result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+        result[k++] = tinstant_to_tsequence(instants[0], interp);
       }
       DATUM_FREE(intvalue, basetype);
       DATUM_FREE(intresult, resbasetype);
@@ -538,11 +539,11 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, end->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc,
-          hascross ? upper_eq : false, lfinfo->reslinear, NORMALIZE_NO);
+          hascross ? upper_eq : false, interp, NORMALIZE_NO);
         if (! hascross && upper_inc)
         {
           tinstant_set(instants[0], endresult, end->t);
-          result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+          result[k++] = tinstant_to_tsequence(instants[0], interp);
           DATUM_FREE(endresult, resbasetype);
         }
       }
@@ -553,18 +554,18 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, inttime);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, lower_eq, lfinfo->reslinear, NORMALIZE_NO);
+          lower_inc, lower_eq, interp, NORMALIZE_NO);
         /* Second sequence if any */
         if (! lower_eq && ! upper_eq)
         {
           tinstant_set(instants[0], intresult, inttime);
-          result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+          result[k++] = tinstant_to_tsequence(instants[0], interp);
         }
         /* Third sequence */
         tinstant_set(instants[0], endresult, inttime);
         tinstant_set(instants[1], endresult, end->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          upper_eq, upper_inc, lfinfo->reslinear, NORMALIZE_NO);
+          upper_eq, upper_inc, interp, NORMALIZE_NO);
         DATUM_FREE(intvalue, basetype);
         DATUM_FREE(intresult, resbasetype);
       }
@@ -656,12 +657,10 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal *) tfunc_tinstantset_base((TSequence *) temp, value,
-      // lfinfo);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfunc_tsequence_base((TSequence *) temp, value,
-      lfinfo);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tfunc_tdiscseq_base((TSequence *) temp, value, lfinfo) :
+      (Temporal *) tfunc_tsequence_base((TSequence *) temp, value, lfinfo);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
       lfinfo);
@@ -716,7 +715,7 @@ tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static TInstant *
-// tfunc_tinstantset_tinstant(const TSequence *is, const TInstant *inst,
+// tfunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
   // LiftedFunctionInfo *lfinfo)
 // {
   // Datum value1;
@@ -737,11 +736,11 @@ tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static TInstant *
-// tfunc_tinstant_tinstantset(const TInstant *inst, const TSequence *is,
+// tfunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *is,
   // LiftedFunctionInfo *lfinfo)
 // {
   // lfinfo_invert(lfinfo);
-  // return tfunc_tinstantset_tinstant(is, inst, lfinfo);
+  // return tfunc_tdiscseq_tinstant(is, inst, lfinfo);
 // }
 
 /**
@@ -832,7 +831,7 @@ tfunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * repeated
  */
 TSequence *
-tfunc_tinstantset_tinstantset(const TSequence *is1, const TSequence *is2,
+tfunc_tdiscseq_tdiscseq(const TSequence *is1, const TSequence *is2,
   LiftedFunctionInfo *lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) *
@@ -870,7 +869,7 @@ tfunc_tinstantset_tinstantset(const TSequence *is1, const TSequence *is2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static TSequence *
-// tfunc_tsequence_tinstantset(const TSequence *seq, const TSequence *is,
+// tfunc_tsequence_tdiscseq(const TSequence *seq, const TSequence *is,
   // LiftedFunctionInfo *lfinfo)
 // {
   // TInstant **instants = palloc(sizeof(TInstant *) * is->count);
@@ -903,11 +902,11 @@ tfunc_tinstantset_tinstantset(const TSequence *is1, const TSequence *is2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static TSequence *
-// tfunc_tinstantset_tsequence(const TSequence *is, const TSequence *seq,
+// tfunc_tdiscseq_tsequence(const TSequence *is, const TSequence *seq,
   // LiftedFunctionInfo *lfinfo)
 // {
   // lfinfo_invert(lfinfo);
-  // return tfunc_tsequence_tinstantset(seq, is, lfinfo);
+  // return tfunc_tsequence_tdiscseq(seq, is, lfinfo);
 // }
 
 /**
@@ -918,7 +917,7 @@ tfunc_tinstantset_tinstantset(const TSequence *is1, const TSequence *is2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static TSequence *
-// tfunc_tsequenceset_tinstantset(const TSequenceSet *ss, const TSequence *is,
+// tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *is,
   // LiftedFunctionInfo *lfinfo)
 // {
   // TInstant **instants = palloc(sizeof(TInstant *) * is->count);
@@ -960,11 +959,11 @@ tfunc_tinstantset_tinstantset(const TSequence *is1, const TSequence *is2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static TSequence *
-// tfunc_tinstantset_tsequenceset(const TSequence *is, const TSequenceSet *ss,
+// tfunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
   // LiftedFunctionInfo *lfinfo)
 // {
   // lfinfo_invert(lfinfo);
-  // return tfunc_tsequenceset_tinstantset(ss, is, lfinfo);
+  // return tfunc_tsequenceset_tdiscseq(ss, is, lfinfo);
 // }
 
 /*****************************************************************************/
@@ -1068,8 +1067,10 @@ tfunc_tsequence_tsequence_single(const TSequence *seq1, const TSequence *seq2,
     /* We cannot DATUM_FREE(value, lfinfo->restype); */
   }
   pfree_array((void **) tofree, l);
+  int interp = Min(MOBDB_FLAGS_GET_INTERP(seq1->flags),
+    MOBDB_FLAGS_GET_INTERP(seq2->flags));
   result[0] = tsequence_make_free(instants, k, inter->lower_inc,
-    inter->upper_inc, lfinfo->reslinear, NORMALIZE);
+    inter->upper_inc, interp, NORMALIZE);
   return 1;
 }
 
@@ -1122,6 +1123,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
     basetype2 = temptype_basetype(seq2->temptype);
   }
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  int interp = lfinfo->reslinear ? LINEAR : STEPWISE;
   /* Each iteration of the loop adds
    * - one sequence when the interpolations of the temporal values are different
    * - between one and three sequences for functions with discontinuities
@@ -1164,7 +1166,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
       instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
       instants[1] = tinstant_make(endresult, lfinfo->restype, end1->t);
       result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc,
-        false, lfinfo->reslinear, NORMALIZE_NO);
+        false, interp, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
     }
     else
@@ -1181,7 +1183,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
         instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
         instants[1] = tinstant_make(startresult, lfinfo->restype, end1->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, false, lfinfo->reslinear, NORMALIZE_NO);
+          lower_inc, false, interp, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
       }
       /* If either the start values or the end values are equal and both have
@@ -1201,13 +1203,13 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
         if (lower_inc && ! lower_eq)
         {
           instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-          result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+          result[k++] = tinstant_to_tsequence(instants[0], interp);
           pfree(instants[0]);
         }
         instants[0] = tinstant_make(intresult, lfinfo->restype, start1->t);
         instants[1] = tinstant_make(intresult, lfinfo->restype, end1->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_eq, false, lfinfo->reslinear, NORMALIZE_NO);
+          lower_eq, false, interp, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
         DATUM_FREE(intvalue1, basetype1);
         DATUM_FREE(intvalue2, basetype2);
@@ -1232,7 +1234,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
           instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
           instants[1] = tinstant_make(startresult, lfinfo->restype, end1->t);
           result[k++] = tsequence_make((const TInstant **) instants, 2,
-            lower_inc, false, lfinfo->reslinear, NORMALIZE_NO);
+            lower_inc, false, interp, NORMALIZE_NO);
           pfree(instants[0]); pfree(instants[1]);
         }
         else
@@ -1241,20 +1243,20 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
           instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
           instants[1] = tinstant_make(startresult, lfinfo->restype, inttime);
           result[k++] = tsequence_make((const TInstant **) instants, 2,
-            lower_inc, lower_eq, lfinfo->reslinear, NORMALIZE_NO);
+            lower_inc, lower_eq, interp, NORMALIZE_NO);
           pfree(instants[0]); pfree(instants[1]);
           /* Second sequence if any */
           if (! lower_eq && ! upper_eq)
           {
             instants[0] = tinstant_make(intresult, lfinfo->restype, inttime);
-            result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+            result[k++] = tinstant_to_tsequence(instants[0], interp);
             pfree(instants[0]);
           }
           /* Third sequence */
           instants[0] = tinstant_make(endresult, lfinfo->restype, inttime);
           instants[1] = tinstant_make(endresult, lfinfo->restype, end1->t);
           result[k++] = tsequence_make((const TInstant **) instants, 2,
-            upper_eq, false, lfinfo->reslinear, NORMALIZE_NO);
+            upper_eq, false, interp, NORMALIZE_NO);
           pfree(instants[0]); pfree(instants[1]);
           DATUM_FREE(intvalue1, basetype1);
           DATUM_FREE(intvalue2, basetype2);
@@ -1275,7 +1277,7 @@ tfunc_tsequence_tsequence_multi(const TSequence *seq1, const TSequence *seq2,
     startvalue2 = tinstant_value(start2);
     startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
     instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
-    result[k++] = tinstant_to_tsequence(instants[0], lfinfo->reslinear);
+    result[k++] = tinstant_to_tsequence(instants[0], interp);
     pfree(instants[0]);
     DATUM_FREE(startresult, resbasetype);
   }
@@ -1305,7 +1307,11 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
     tsequence_value_at_timestamp(seq2, inter.lower, true, &value2);
     Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
     TInstant *inst = tinstant_make(resvalue, lfinfo->restype, inter.lower);
-    result[0] = tinstant_to_tsequence(inst, lfinfo->reslinear);
+    int interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+    int interp2 = MOBDB_FLAGS_GET_INTERP(seq2->flags);
+    int interp = (interp1 == DISCRETE || interp2 == DISCRETE) ?
+      DISCRETE : (lfinfo->reslinear ? LINEAR : STEPWISE);
+    result[0] = tinstant_to_tsequence(inst, interp);
     DATUM_FREE(value1, temptype_basetype(seq1->temptype));
     DATUM_FREE(value2, temptype_basetype(seq2->temptype));
     DATUM_FREE(resvalue, temptype_basetype(lfinfo->restype));
@@ -1315,7 +1321,9 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
 
   if (lfinfo->discont)
     return tfunc_tsequence_tsequence_multi(seq1, seq2, lfinfo, &inter, true, result);
-  if (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags))
+
+  if (MOBDB_FLAGS_GET_DISCRETE(seq1->flags) || MOBDB_FLAGS_GET_DISCRETE(seq2->flags) ||
+      (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags)))
     return tfunc_tsequence_tsequence_single(seq1, seq2, lfinfo, &inter, result);
   else
     return tfunc_tsequence_tsequence_multi(seq1, seq2, lfinfo, &inter, false, result);
@@ -1333,7 +1341,8 @@ tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
     count = (seq1->count + seq2->count) * 3;
   else
   {
-    if (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags))
+    if (MOBDB_FLAGS_GET_DISCRETE(seq1->flags) || MOBDB_FLAGS_GET_DISCRETE(seq2->flags) ||
+        (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags)))
       count = 1;
     else
       count = (seq1->count + seq2->count) * 2;
@@ -1371,7 +1380,7 @@ tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
-static TSequenceSet *
+static Temporal *
 tfunc_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
@@ -1402,7 +1411,13 @@ tfunc_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
       break;
   }
   /* We need to normalize when discont is true */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  if (k == 1)
+  {
+    Temporal *result = (Temporal *) sequences[0];
+    pfree(sequences);
+    return result;
+  }
+  return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -1411,7 +1426,7 @@ tfunc_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
  * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
-static TSequenceSet *
+static Temporal *
 tfunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
@@ -1562,7 +1577,7 @@ efunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static int
-// efunc_tinstantset_tinstant(const TSequence *is, const TInstant *inst,
+// efunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
   // LiftedFunctionInfo *lfinfo)
 // {
   // Datum value1;
@@ -1581,11 +1596,11 @@ efunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  * @param[in] lfinfo Information about the lifted function
  */
 // static int
-// efunc_tinstant_tinstantset(const TInstant *inst, const TSequence *is,
+// efunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *is,
   // LiftedFunctionInfo *lfinfo)
 // {
   // lfinfo_invert(lfinfo);
-  // return efunc_tinstantset_tinstant(is, inst, lfinfo);
+  // return efunc_tdiscseq_tinstant(is, inst, lfinfo);
 // }
 
 /**
@@ -1671,7 +1686,7 @@ efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * repeated
  */
 // static int
-// efunc_tinstantset_tinstantset(const TSequence *is1, const TSequence *is2,
+// efunc_tdiscseq_tdiscseq(const TSequence *is1, const TSequence *is2,
   // LiftedFunctionInfo *lfinfo)
 // {
   // int i = 0, j = 0;
@@ -1704,7 +1719,7 @@ efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @param[in] lfinfo Information about the lifted function
  */
 // static int
-// efunc_tsequence_tinstantset(const TSequence *seq, const TSequence *is,
+// efunc_tsequence_tdiscseq(const TSequence *seq, const TSequence *is,
   // LiftedFunctionInfo *lfinfo)
 // {
   // for (int i = 0; i < is->count; i++)
@@ -1732,11 +1747,11 @@ efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @param[in] lfinfo Information about the lifted function
  */
 // static int
-// efunc_tinstantset_tsequence(const TSequence *is, const TSequence *seq,
+// efunc_tdiscseq_tsequence(const TSequence *is, const TSequence *seq,
   // LiftedFunctionInfo *lfinfo)
 // {
   // lfinfo_invert(lfinfo);
-  // return efunc_tsequence_tinstantset(seq, is, lfinfo);
+  // return efunc_tsequence_tdiscseq(seq, is, lfinfo);
 // }
 
 /**
@@ -1747,7 +1762,7 @@ efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @param[in] lfinfo Information about the lifted function
  */
 // static int
-// efunc_tsequenceset_tinstantset(const TSequenceSet *ss, const TSequence *is,
+// efunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *is,
   // LiftedFunctionInfo *lfinfo)
 // {
   // int i = 0, j = 0;
@@ -1785,11 +1800,11 @@ efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @param[in] lfinfo Information about the lifted function
  */
 // static int
-// efunc_tinstantset_tsequenceset(const TSequence *is, const TSequenceSet *ss,
+// efunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
   // LiftedFunctionInfo *lfinfo)
 // {
   // lfinfo_invert(lfinfo);
-  // return efunc_tsequenceset_tinstantset(ss, is, lfinfo);
+  // return efunc_tsequenceset_tdiscseq(ss, is, lfinfo);
 // }
 
 /**

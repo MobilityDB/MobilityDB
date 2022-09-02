@@ -112,7 +112,6 @@ static char *tempsubtypeName[] =
 {
   "AnyDuration",
   "Instant",
-  "InstantSet",
   "Sequence",
   "SequenceSet"
 };
