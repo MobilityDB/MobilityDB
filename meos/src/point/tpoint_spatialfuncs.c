@@ -716,7 +716,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
  * @sqlop @p ?=
  */
 bool
-tpointinstset_ever_eq(const TSequence *seq, Datum value)
+tpointdiscseq_ever_eq(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
@@ -816,7 +816,7 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
  * @ingroup libmeos_int_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
- * @see tpointinstset_ever_eq
+ * @see tpointdiscseq_ever_eq
  * @see tpointseq_ever_eq
  * @see tpointseqset_ever_eq
  */
@@ -885,7 +885,7 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
  * @sqlop @p %=
  */
 bool
-tpointinstset_always_eq(const TSequence *seq, Datum value)
+tpointdiscseq_always_eq(const TSequence *seq, Datum value)
 {
   /* Bounding box test */
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
@@ -936,7 +936,7 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
  * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal point is always equal to a point.
  * @see tpointinst_always_eq
- * @see tpointinstset_always_eq
+ * @see tpointdiscseq_always_eq
  * @see tpointseq_always_eq
  * @see tpointseqset_always_eq
  * @sqlop @p %=
@@ -1712,7 +1712,7 @@ lwline_make(Datum value1, Datum value2)
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
-tpointinstset_trajectory(const TSequence *seq)
+tpointdiscseq_trajectory(const TSequence *seq)
 {
   /* Singleton instant set */
   if (seq->count == 1)
@@ -1745,7 +1745,7 @@ tpointinstset_trajectory(const TSequence *seq)
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
-tpointseq_trajectory(const TSequence *seq)
+tpointcontseq_trajectory(const TSequence *seq)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1786,7 +1786,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointseq_trajectory(tsequenceset_seq_n(ss, 0));
+    return tpointcontseq_trajectory(tsequenceset_seq_n(ss, 0));
 
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ss->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ss->totalcount);
@@ -1794,7 +1794,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   int k = 0, l = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    GSERIALIZED *traj = tpointseq_trajectory(tsequenceset_seq_n(ss, i));
+    GSERIALIZED *traj = tpointcontseq_trajectory(tsequenceset_seq_n(ss, i));
     int geotype = gserialized_get_type(traj);
     if (geotype == POINTTYPE)
       points[l++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(traj));
@@ -1862,10 +1862,10 @@ tpoint_trajectory(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
-  // else if (temp->subtype == TINSTANTSET)
-    // result = tpointinstset_trajectory((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_trajectory((TSequence *) temp);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tpointdiscseq_trajectory((TSequence *) temp) :
+      tpointcontseq_trajectory((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;
@@ -1885,18 +1885,6 @@ tpointinst_srid(const TInstant *inst)
 {
   GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
   return gserialized_get_srid(gs);
-}
-
-/**
- * @ingroup libmeos_int_temporal_spatial_accessor
- * @brief Return the SRID of a temporal instant set point.
- * @sqlfunc SRID()
- */
-int
-tpointinstset_srid(const TSequence *is)
-{
-  STBOX *box = TSEQUENCE_BBOX_PTR(is);
-  return box->srid;
 }
 
 /**
@@ -2352,7 +2340,7 @@ tpointseq_length(const TSequence *seq)
   else
   {
     /* We are sure that the trajectory is a line */
-    GSERIALIZED *traj = tpointseq_trajectory(seq);
+    GSERIALIZED *traj = tpointcontseq_trajectory(seq);
     double result = PGIS_geography_length(traj, true);
     pfree(traj);
     return result;
@@ -2587,9 +2575,9 @@ tpoint_speed(const Temporal *temp)
  * @sqlfunc twCentroid()
  */
 GSERIALIZED *
-tpointinstset_twcentroid(const TSequence *seq)
+tpointdiscseq_twcentroid(const TSequence *seq)
 {
-  int srid = tpointinstset_srid(seq);
+  int srid = tpointseq_srid(seq);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   TInstant **instantsx = palloc(sizeof(TInstant *) * seq->count);
   TInstant **instantsy = palloc(sizeof(TInstant *) * seq->count);
@@ -2738,9 +2726,10 @@ tpoint_twcentroid(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   // else if (temp->subtype == TINSTANTSET)
-    // result = tpointinstset_twcentroid((TSequence *) temp);
+    // result = tpointdiscseq_twcentroid((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_twcentroid((TSequence *) temp);
+    result = 
+      tpointseq_twcentroid((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_twcentroid((TSequenceSet *) temp);
   return result;
@@ -3514,7 +3503,7 @@ tpoint_instarr_is_simple(const Temporal *temp, int count)
  * @sqlfunc isSimple()
  */
 bool
-tpointinstset_is_simple(const TSequence *is)
+tpointdiscseq_is_simple(const TSequence *is)
 {
   if (is->count == 1)
     return true;
@@ -3577,7 +3566,7 @@ tpoint_is_simple(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = true;
   // else if (temp->subtype == TINSTANTSET)
-    // result = tpointinstset_is_simple((TSequence *) temp);
+    // result = tpointdiscseq_is_simple((TSequence *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_is_simple((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -3597,7 +3586,7 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The instant set has at least two instants
  */
 static TSequence **
-tpointinstset_split(const TSequence *seq, bool *splits, int count)
+tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 1);
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -3631,7 +3620,7 @@ tpointinstset_split(const TSequence *seq, bool *splits, int count)
  * @sqlfunc makeSimple()
  */
 TSequence **
-tpointinstset_make_simple(const TSequence *seq, int *count)
+tpointdiscseq_make_simple(const TSequence *seq, int *count)
 {
   TSequence **result;
   /* Special case when the input instant set has 1 instant */
@@ -3655,7 +3644,7 @@ tpointinstset_make_simple(const TSequence *seq, int *count)
     return result;
   }
 
-  result = tpointinstset_split(seq, splits, numsplits + 1);
+  result = tpointdiscseq_split(seq, splits, numsplits + 1);
   pfree(splits);
   *count = numsplits + 1;
   return result;
@@ -3806,7 +3795,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
  *
  * @param[in] temp Temporal point
  * @param[out] count Number of elements in the output array
- * @see tpointinstset_make_simple
+ * @see tpointdiscseq_make_simple
  * @see tpointseq_make_simple
  * @see tpointseqset_make_simple
  * @sqlfunc makeSimple()
@@ -3823,7 +3812,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
     *count = 1;
   }
   // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal **) tpointinstset_make_simple((TSequence *) temp, count);
+    // result = (Temporal **) tpointdiscseq_make_simple((TSequence *) temp, count);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal **) tpointseq_make_simple((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
@@ -3872,7 +3861,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequence *
-tpointinstset_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   bool atfunc)
 {
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -3943,7 +3932,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   /* Loop for every simple piece of the sequence */
   for (int i = 0; i < countsimple; i++)
   {
-    Datum traj = PointerGetDatum(tpointseq_trajectory(simpleseqs[i]));
+    Datum traj = PointerGetDatum(tpointcontseq_trajectory(simpleseqs[i]));
     Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
     GSERIALIZED *gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
@@ -4233,7 +4222,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, countsimple);
-    Datum traj = PointerGetDatum(tpointseq_trajectory(seq));
+    Datum traj = PointerGetDatum(tpointcontseq_trajectory(seq));
     Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
     GSERIALIZED *gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
@@ -4254,7 +4243,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* Loop for every simple piece of the sequence */
     for (int i = 0; i < countsimple; i++)
     {
-      Datum traj = PointerGetDatum(tpointseq_trajectory(simpleseqs[i]));
+      Datum traj = PointerGetDatum(tpointcontseq_trajectory(simpleseqs[i]));
       Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
       GSERIALIZED *gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
@@ -4506,7 +4495,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
     result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
       gs, atfunc);
   // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal *) tpointinstset_restrict_geometry((TSequence *) temp,
+    // result = (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp,
       // gs, atfunc);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_restrict_geometry((TSequence *) temp,

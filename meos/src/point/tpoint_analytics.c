@@ -133,37 +133,37 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
  */
-// static GSERIALIZED *
-// tpointinstset_to_geo_measure(const TSequence *seq, const TSequence *measure)
-// {
-  // LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-  // for (int i = 0; i < seq->count; i++)
-  // {
-    // const TInstant *inst = tsequence_inst_n(seq, i);
-    // if (measure)
-    // {
-      // const TInstant *m = tsequence_inst_n(measure, i);
-      // points[i] = (LWGEOM *) point_measure_to_lwpoint(tinstant_value(inst),
-          // tinstant_value(m));
-    // }
-    // else
-      // points[i] = (LWGEOM *) tpointinst_to_lwpoint(inst);
-  // }
-  // GSERIALIZED *result;
-  // if (seq->count == 1)
-    // result = geo_serialize(points[0]);
-  // else
-  // {
-    // LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      // points[0]->srid, NULL, (uint32_t) seq->count, points);
-    // result = geo_serialize(mpoint);
-    // pfree(mpoint);
-  // }
-  // for (int i = 0; i < seq->count; i++)
-    // lwgeom_free (points[i]);
-  // pfree(points);
-  // return result;
-// }
+static GSERIALIZED *
+tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
+{
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    if (measure)
+    {
+      const TInstant *m = tsequence_inst_n(measure, i);
+      points[i] = (LWGEOM *) point_measure_to_lwpoint(tinstant_value(inst),
+          tinstant_value(m));
+    }
+    else
+      points[i] = (LWGEOM *) tpointinst_to_lwpoint(inst);
+  }
+  GSERIALIZED *result;
+  if (seq->count == 1)
+    result = geo_serialize(points[0]);
+  else
+  {
+    LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+      points[0]->srid, NULL, (uint32_t) seq->count, points);
+    result = geo_serialize(mpoint);
+    pfree(mpoint);
+  }
+  for (int i = 0; i < seq->count; i++)
+    lwgeom_free (points[i]);
+  pfree(points);
+  return result;
+}
 
 /**
  * Construct a geometry/geography with M measure from the temporal sequence
@@ -530,15 +530,18 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
   if (sync1->subtype == TINSTANT)
     *result = tpointinst_to_geo_measure(
       (TInstant *) sync1, (TInstant *) sync2);
-  // else if (sync1->subtype == TINSTANTSET)
-    // *result = tpointinstset_to_geo_measure(
-      // (TSequence *) sync1, (TSequence *) sync2);
   else if (sync1->subtype == TSEQUENCE)
-    *result = segmentize ?
-      tpointseq_to_geo_measure_segmentize(
-        (TSequence *) sync1, (TSequence *) sync2) :
-      tpointseq_to_geo_measure(
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(sync1->flags))
+      *result = tpointdiscseq_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
+    else
+      *result = segmentize ?
+        tpointseq_to_geo_measure_segmentize(
+          (TSequence *) sync1, (TSequence *) sync2) :
+        tpointseq_to_geo_measure(
+          (TSequence *) sync1, (TSequence *) sync2);
+  }
   else /* sync1->subtype == TSEQUENCESET */
     *result = segmentize ?
       tpointseqset_to_geo_measure_segmentize(
@@ -608,7 +611,7 @@ geo_to_tpointinst(const GSERIALIZED *geo)
  * encode the timestamps in Unix epoch into a temporal instant set point.
  */
 static TSequence *
-geo_to_tpointinstset(const GSERIALIZED *geo)
+geo_to_tpointdiscseq(const GSERIALIZED *geo)
 {
   /* Geometry is a MULTIPOINT */
   LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
@@ -756,7 +759,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
   if (geomtype == POINTTYPE)
     result = (Temporal *) geo_to_tpointinst(geo);
   else if (geomtype == MULTIPOINTTYPE)
-    result = (Temporal *) geo_to_tpointinstset(geo);
+    result = (Temporal *) geo_to_tpointdiscseq(geo);
   else if (geomtype == LINETYPE)
     result = (Temporal *) geo_to_tpointseq(geo);
   else if (geomtype == MULTILINETYPE || geomtype == COLLECTIONTYPE)
@@ -1154,65 +1157,65 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
  * Return a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
-// static TSequence *
-// tpointinstset_remove_repeated_points(const TSequence *seq, double tolerance,
-  // int min_points)
-// {
-  // /* No-op on short inputs */
-  // if (seq->count <= min_points)
-    // return tsequence_copy(seq);
+static TSequence *
+tpointdiscseq_remove_repeated_points(const TSequence *seq, double tolerance,
+  int min_points)
+{
+  /* No-op on short inputs */
+  if (seq->count <= min_points)
+    return tsequence_copy(seq);
 
-  // double tolsq = tolerance * tolerance;
-  // double dsq = FLT_MAX;
+  double tolsq = tolerance * tolerance;
+  double dsq = FLT_MAX;
 
-  // const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  // instants[0] = tsequence_inst_n(seq, 0);
-  // const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
-  // int k = 1;
-  // for (int i = 1; i < seq->count; i++)
-  // {
-    // bool last_point = (i == seq->count - 1);
-    // const TInstant *inst = tsequence_inst_n(seq, i);
-    // const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = tsequence_inst_n(seq, 0);
+  const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
+  int k = 1;
+  for (int i = 1; i < seq->count; i++)
+  {
+    bool last_point = (i == seq->count - 1);
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
 
-    // /* Don't drop points if we are running short of points */
-    // if (seq->count - k > min_points + i)
-    // {
-      // if (tolerance > 0.0)
-      // {
-        // /* Only drop points that are within our tolerance */
-        // dsq = distance2d_sqr_pt_pt(last, pt);
-        // /* Allow any point but the last one to be dropped */
-        // if (! last_point && dsq <= tolsq)
-          // continue;
-      // }
-      // else
-      // {
-        // /* At tolerance zero, only skip exact dupes */
-        // if (FP_EQUALS(pt->x, last->x) && FP_EQUALS(pt->y, last->y))
-          // continue;
-      // }
+    /* Don't drop points if we are running short of points */
+    if (seq->count - k > min_points + i)
+    {
+      if (tolerance > 0.0)
+      {
+        /* Only drop points that are within our tolerance */
+        dsq = distance2d_sqr_pt_pt(last, pt);
+        /* Allow any point but the last one to be dropped */
+        if (! last_point && dsq <= tolsq)
+          continue;
+      }
+      else
+      {
+        /* At tolerance zero, only skip exact dupes */
+        if (FP_EQUALS(pt->x, last->x) && FP_EQUALS(pt->y, last->y))
+          continue;
+      }
 
-      // /* Got to last point, and it's not very different from
-       // * the point that preceded it. We want to keep the last
-       // * point, not the second-to-last one, so we pull our write
-       // * index back one value */
-      // if (last_point && k > 1 && tolerance > 0.0 && dsq <= tolsq)
-      // {
-        // k--;
-      // }
-    // }
+      /* Got to last point, and it's not very different from
+       * the point that preceded it. We want to keep the last
+       * point, not the second-to-last one, so we pull our write
+       * index back one value */
+      if (last_point && k > 1 && tolerance > 0.0 && dsq <= tolsq)
+      {
+        k--;  
+      }
+    }
 
-    // /* Save the point */
-    // instants[k++] = inst;
-    // last = pt;
-  // }
-  // /* Construct the result */
-  // TSequence *result = tsequence_make(instants, seq->count, true, true,
-    // DISCRETE, NORMALIZE_NO);
-  // pfree(instants);
-  // return result;
-// }
+    /* Save the point */
+    instants[k++] = inst;
+    last = pt;
+  }
+  /* Construct the result */
+  TSequence *result = tsequence_make(instants, seq->count, true, true,
+    DISCRETE, NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
 
 /**
  * Return a temporal point with consecutive equal points removed.
@@ -1337,12 +1340,12 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal *) tpointinstset_remove_repeated_points(
-      // (TSequence *) temp, tolerance, min_points);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_remove_repeated_points(
-      (TSequence *) temp, tolerance, min_points);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tpointdiscseq_remove_repeated_points(
+        (TSequence *) temp, tolerance, min_points) :
+      (Temporal *) tpointseq_remove_repeated_points(
+        (TSequence *) temp, tolerance, min_points);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_remove_repeated_points(
       (TSequenceSet *) temp, tolerance, min_points);
@@ -1406,21 +1409,21 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 /**
  * Affine transform a temporal point.
  */
-// static TSequence *
-// tpointinstset_affine(const TSequence *seq, const AFFINE *a)
-// {
-  // int srid = tpointinstset_srid(seq);
-  // bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  // TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  // for (int i = 0; i < seq->count; i++)
-  // {
-    // const TInstant *inst = tsequence_inst_n(seq, i);
-    // tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
-  // }
-  // TSequence *result = tsequence_make_free(instants, seq->count, true, true,
-    // DISCRETE, NORMALIZE_NO);
-  // return result;
-// }
+static TSequence *
+tpointdiscseq_affine(const TSequence *seq, const AFFINE *a)
+{
+  int srid = tpointseq_srid(seq);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
+  }
+  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
+    DISCRETE, NORMALIZE_NO);
+  return result;
+}
 
 /**
  * Affine transform a temporal point.
@@ -1466,10 +1469,10 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_affine((TInstant *) temp, a);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal *) tpointinstset_affine((TSequence *) temp, a);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_affine((TSequence *) temp, a);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tpointdiscseq_affine((TSequence *) temp, a) :
+      (Temporal *) tpointseq_affine((TSequence *) temp, a);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_affine((TSequenceSet *) temp, a);
   return result;
@@ -1521,36 +1524,36 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 /**
  * Stick a temporal point to the given grid specification.
  */
-// static TSequence *
-// tpointinstset_grid(const TSequence *seq, const gridspec *grid)
-// {
-  // bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  // int srid = tpointinstset_srid(seq);
-  // TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  // int k = 0;
-  // for (int i = 0; i < seq->count; i++)
-  // {
-    // POINT4D p, prev_p;
-    // const TInstant *inst = tsequence_inst_n(seq, i);
-    // Datum value = tinstant_value(inst);
-    // point_grid(value, hasz, grid, &p);
-    // /* Skip duplicates */
-    // if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
-      // (hasz ? prev_p.z == p.z : 1))
-      // continue;
+static TSequence *
+tpointdiscseq_grid(const TSequence *seq, const gridspec *grid)
+{
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  int srid = tpointseq_srid(seq);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  int k = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    POINT4D p, prev_p;
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    Datum value = tinstant_value(inst);
+    point_grid(value, hasz, grid, &p);
+    /* Skip duplicates */
+    if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
+      (hasz ? prev_p.z == p.z : 1))
+      continue;
 
-    // /* Write rounded values into the next instant */
-    // LWPOINT *lwpoint = hasz ?
-      // lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
-    // GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    // instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-    // lwpoint_free(lwpoint);
-    // pfree(gs);
-    // memcpy(&prev_p, &p, sizeof(POINT4D));
-  // }
-  // /* Construct the result */
-  // return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
-// }
+    /* Write rounded values into the next instant */
+    LWPOINT *lwpoint = hasz ?
+      lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
+    GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+    lwpoint_free(lwpoint);
+    pfree(gs);
+    memcpy(&prev_p, &p, sizeof(POINT4D));
+  }
+  /* Construct the result */
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
+}
 
 /**
  * Stick a temporal point to the given grid specification.
@@ -1625,10 +1628,10 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_grid((TInstant *) temp, grid);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = (Temporal *) tpointinstset_grid((TSequence *) temp, grid);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tpointdiscseq_grid((TSequence *) temp, grid) :
+      (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid,
       filter_pts);
@@ -1730,7 +1733,7 @@ tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
  * @param[out] count Number of elements in the output array
  */
 // static GSERIALIZED *
-// tpointinstset_decouple(const TSequence *seq, int64 **timesarr, int *count)
+// tpointdiscseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
 // {
   // /* Instantaneous sequence */
   // if (seq->count == 1)
@@ -1867,7 +1870,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
   if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
   // else if (temp->subtype == TINSTANTSET)
-    // result = tpointinstset_decouple((TSequence *) temp, timesarr, count);
+    // result = tpointdiscseq_decouple((TSequence *) temp, timesarr, count);
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_decouple((TSequence *) temp, timesarr, count);
   else /* temp->subtype == TSEQUENCESET */

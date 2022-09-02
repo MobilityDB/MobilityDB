@@ -58,7 +58,7 @@ typedef struct
   bool args;                 /**< True if the lifted function requires arguments */
   mobdbType argtype[2];      /**< Base type of the arguments */
   mobdbType restype;         /**< Temporal type of the result of the function */
-  int reslinear;             /**< Interpolation of the result */
+  bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, mobdbType,
@@ -83,7 +83,7 @@ extern Temporal *tfunc_temporal(const Temporal *temp,
 
 extern TInstant *tfunc_tinstant_base(const TInstant *inst, Datum value,
   LiftedFunctionInfo *lfinfo);
-extern TSequence *tfunc_tinstantset_base(const TSequence *is, Datum value,
+extern TSequence *tfunc_tdiscseq_base(const TSequence *is, Datum value,
   LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_tsequence_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo);

@@ -248,7 +248,7 @@ tpointdiscseq_transform(const TSequence *seq, int srid)
   }
 
   /* General case */
-  Datum multipoint = PointerGetDatum(tpointinstset_trajectory(seq));
+  Datum multipoint = PointerGetDatum(tpointdiscseq_trajectory(seq));
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));

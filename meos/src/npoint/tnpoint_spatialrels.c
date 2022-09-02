@@ -111,7 +111,7 @@ spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = temptype_basetype(tpoint1->temptype);
   lfinfo.argtype[1] = temptype_basetype(tpoint2->temptype);
   lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = STEPWISE;
+  lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(tpoint1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(tpoint2->flags);

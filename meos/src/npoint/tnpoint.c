@@ -72,7 +72,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
  * @brief Cast a temporal network point as a temporal geometric point.
  */
 TSequence *
-tnpointinstset_tgeompointinstset(const TSequence *seq)
+tnpointdiscseq_tgeompointinstset(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -171,7 +171,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 TSequence *
-tgeompointinstset_tnpointinstset(const TSequence *seq)
+tgeompointinstset_tnpointdiscseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -276,7 +276,7 @@ tnpointinst_positions(const TInstant *inst)
  * @brief Return the network segments covered by the temporal network point.
  */
 Nsegment **
-tnpointinstset_positions(const TSequence *seq, int *count)
+tnpointdiscseq_positions(const TSequence *seq, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
@@ -466,7 +466,7 @@ tnpointinst_routes(const TInstant *inst)
  * @brief Return the array of routes of a temporal network point
  */
 int64 *
-tnpointinstset_routes(const TSequence *seq)
+tnpointdiscseq_routes(const TSequence *seq)
 {
   int64 *result = palloc(sizeof(int64) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -482,7 +482,7 @@ tnpointinstset_routes(const TSequence *seq)
  * @brief Return the array of routes of a temporal network point
  */
 int64 *
-tnpointseq_routes(const TSequence *seq)
+tnpointcontseq_routes(const TSequence *seq)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
@@ -521,15 +521,18 @@ tnpoint_routes(const Temporal *temp, int *count)
     result = tnpointinst_routes((TInstant *) temp);
     *count = 1;
   }
-  // else if (temp->subtype == TINSTANTSET)
-  // {
-    // result = tnpointinstset_routes((TSequence *) temp);
-    // *count = ((TSequence *) temp)->count;
-  // }
   else if (temp->subtype == TSEQUENCE)
   {
-    result = tnpointseq_routes((TSequence *) temp);
-    *count = 1;
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    {
+      result = tnpointdiscseq_routes((TSequence *) temp);
+      *count = ((TSequence *) temp)->count;
+    }
+    else 
+    {
+      result = tnpointcontseq_routes((TSequence *) temp);
+      *count = 1;
+    }
   }
   else /* temp->subtype == TSEQUENCESET */
   {
