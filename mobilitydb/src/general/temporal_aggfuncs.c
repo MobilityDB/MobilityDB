@@ -300,7 +300,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
       inst1->t);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
-    lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
+    lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
   /* Compute the aggregation on the period after the intersection
@@ -693,9 +693,8 @@ tcontseq_transform_tagg(const TSequence *seq,
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = func(inst);
   }
-  return tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -1302,7 +1301,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+      MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }

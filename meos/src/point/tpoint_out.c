@@ -124,8 +124,8 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
   int srid = tpoint_srid(temp);
   char str1[20];
   if (srid > 0)
-    sprintf(str1, "SRID=%d%c", srid, temp->subtype != TINSTANT && 
-      ! MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ',' : ';');
+    sprintf(str1, "SRID=%d%c", srid, 
+      (MOBDB_FLAGS_GET_INTERP(temp->flags) == STEPWISE) ? ',' : ';');
   else
     str1[0] = '\0';
   char *str2 = tpoint_as_text(temp, maxdd);

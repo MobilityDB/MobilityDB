@@ -2156,7 +2156,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   }
   lwmpoint_free(lwmpoint);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**

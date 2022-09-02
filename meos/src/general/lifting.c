@@ -233,11 +233,8 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant(inst, lfinfo);
   }
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
-      temptype_continuous(lfinfo->restype) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -378,11 +375,8 @@ tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant_base(inst, value, lfinfo);
   }
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
-      temptype_continuous(lfinfo->restype) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
   result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   return 1;
 }
 
@@ -404,7 +398,7 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE;
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {

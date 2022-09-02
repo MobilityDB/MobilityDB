@@ -849,17 +849,11 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   Temporal *new, *newts = NULL;
   if (new1->subtype == TINSTANT)
   {
+    int interp = MOBDB_FLAGS_GET_INTERP(new2->flags);
     if (new2->subtype == TSEQUENCE)
-    {
-      int interp = MOBDB_FLAGS_GET_LINEAR(new2->flags) ? LINEAR : 
-        (MOBDB_FLAGS_GET_DISCRETE(new2->flags) ? DISCRETE : STEPWISE);
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1, interp);
-    }
     else /* new2->subtype == TSEQUENCESET */
-    {
-      int interp = MOBDB_FLAGS_GET_LINEAR(new2->flags) ? LINEAR : STEPWISE;
       new = (Temporal *) tinstant_to_tsequenceset((TInstant *) new1, interp);
-    }
   }
   else /* new1->subtype == TSEQUENCE && new2->subtype == TSEQUENCESET */
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
@@ -975,15 +969,13 @@ temporal_merge_array(Temporal **temparr, int count)
    * the result */
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
-  int interp = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags) ? LINEAR :
-    (MOBDB_FLAGS_GET_DISCRETE(temparr[0]->flags) ? DISCRETE : STEPWISE);
+  int interp = MOBDB_FLAGS_GET_INTERP(temparr[0]->flags);
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation(temparr[0], temparr[i]);
     uint8 subtype1 = temparr[i]->subtype;
-    int interp1 = MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags) ? LINEAR :
-      (MOBDB_FLAGS_GET_DISCRETE(temparr[i]->flags) ? DISCRETE : STEPWISE);
+    int interp1 = MOBDB_FLAGS_GET_INTERP(temparr[i]->flags);
     if (subtype != subtype1 || interp != interp1)
     {
       convert = true;
@@ -2965,9 +2957,9 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != TSEQUENCE) ?
-        temporal_copy(temp) :
-        (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
+      return (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags)) ?
+        (Temporal *) tsequence_to_tsequenceset((TSequence *) temp) :
+        temporal_copy(temp);
   }
 
   Temporal *result;

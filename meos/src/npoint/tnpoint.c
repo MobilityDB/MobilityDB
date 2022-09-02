@@ -111,7 +111,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
   pfree(DatumGetPointer(line));
   return result;
 }
@@ -128,7 +128,8 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     sequences[i] = tnpointseq_tgeompointseq(seq);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count, false);
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
+    NORMALIZE_NO);
   return result;
 }
 
@@ -209,7 +210,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   return result;
 }
 

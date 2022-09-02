@@ -228,8 +228,8 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
   result->bboxsize = bboxsize;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
-  MOBDB_FLAGS_SET_LINEAR(result->flags,
-    MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
+  MOBDB_FLAGS_SET_INTERP(result->flags,
+    MOBDB_FLAGS_GET_INTERP(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(sequences[0]->temptype))
@@ -1234,7 +1234,7 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ss)
   TSequenceSet *result = tsequenceset_copy(ss);
   result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  MOBDB_FLAGS_SET_INTERP(result->flags, STEPWISE);
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
@@ -1262,7 +1262,7 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
   TSequenceSet *result = tsequenceset_copy(ss);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  MOBDB_FLAGS_SET_INTERP(result->flags, STEPWISE);
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);

@@ -1396,8 +1396,7 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
     if (wkb_flags & MOBDB_WKB_SRIDFLAG)
       s->has_srid = true;
   }
-  s->interp = MOBDB_WKB_GET_DISCRETE(wkb_flags) ? DISCRETE :
-    ( MOBDB_WKB_GET_LINEAR(wkb_flags) ? LINEAR : STEPWISE );
+  s->interp = MOBDB_WKB_GET_INTERP(wkb_flags);
 
   /* Mask off the upper flags to get the subtype */
   wkb_flags = wkb_flags & (uint8_t) 0x03;

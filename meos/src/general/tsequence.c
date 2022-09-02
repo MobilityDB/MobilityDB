@@ -395,8 +395,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   result->bboxsize = bboxsize;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
-  MOBDB_FLAGS_SET_DISCRETE(result->flags, interp == DISCRETE);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, interp == LINEAR);
+  MOBDB_FLAGS_SET_INTERP(result->flags, interp);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(instants[0]->temptype))
@@ -464,7 +463,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
     instants[k++] = tsequence_inst_n(seq2, i);
   TSequence *result = tsequence_make1(instants, count,
     seq1->period.lower_inc, seq2->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq1->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
+    MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -607,8 +606,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 {
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
   mobdbType basetype = temptype_basetype(seq->temptype);
 #if NPOINT
@@ -965,10 +963,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return false;
 
-  int interp1 = MOBDB_FLAGS_GET_DISCRETE(seq1->flags) ? DISCRETE :
-    ( MOBDB_FLAGS_GET_LINEAR(seq1->flags) ? LINEAR : STEPWISE );
-  int interp2 = MOBDB_FLAGS_GET_DISCRETE(seq2->flags) ? DISCRETE :
-    ( MOBDB_FLAGS_GET_LINEAR(seq2->flags) ? LINEAR : STEPWISE );
+  int interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+  int interp2 = MOBDB_FLAGS_GET_INTERP(seq2->flags);
   TInstant *inst1, *inst2;
 
   /* If the two sequences intersect at an instant */
@@ -1839,7 +1835,7 @@ tintseq_to_tfloatseq(const TSequence *seq)
   TSequence *result = tsequence_copy(seq);
   result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  MOBDB_FLAGS_SET_INTERP(result->flags, MOBDB_FLAGS_GET_INTERP(result->flags));
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
@@ -1862,7 +1858,7 @@ tfloatseq_to_tintseq(const TSequence *seq)
   TSequence *result = tsequence_copy(seq);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  MOBDB_FLAGS_SET_INTERP(result->flags, MOBDB_FLAGS_GET_INTERP(result->flags));
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
@@ -1964,7 +1960,7 @@ tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
   if (seq->count == 1)
   {
     result[0] = tsequence_copy(seq);
-    MOBDB_FLAGS_SET_LINEAR(result[0]->flags, true);
+    MOBDB_FLAGS_SET_INTERP(result[0]->flags, LINEAR);
     return 1;
   }
 
@@ -2406,7 +2402,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
   }
 
   TInstant *instants[2];
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE;
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   TInstant *inst1, *inst2;
   int k = 0;
@@ -3223,8 +3219,7 @@ tcontseq_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
   }
 
   /* General case */
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
@@ -3306,8 +3301,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
     return 0;
 
   /* General case */
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
@@ -4346,8 +4340,7 @@ tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   const TInstant *inst1, *inst2;
   inst1 = tsequence_inst_n(seq, 0);
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   int i, k = 0;
   int n = tcontseq_find_timestamp(seq, t);
   /* Compute the first sequence until t */
@@ -4379,7 +4372,7 @@ tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
       /* inst1->t < t */
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
-        tsegment_at_timestamp(inst1, inst2, interp, t) :
+        tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), t) :
         tinstant_make(tinstant_value(inst1), inst1->temptype, t);
       result[k++] = tsequence_make((const TInstant **) instants, n + 2,
         seq->period.lower_inc, false, interp, NORMALIZE_NO);
@@ -4391,7 +4384,7 @@ tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   inst2 = tsequence_inst_n(seq, n + 1);
   if (t < inst2->t)
   {
-    instants[0] = tsegment_at_timestamp(inst1, inst2, interp, t);
+    instants[0] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), t);
     for (i = 1; i < seq->count - n; i++)
       instants[i] = (TInstant *) tsequence_inst_n(seq, i + n);
     result[k++] = tsequence_make((const TInstant **) instants, seq->count - n,
@@ -4520,8 +4513,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
   }
 
   /* General case */
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   instants[0] = (TInstant *) tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
@@ -4573,7 +4565,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
       {
         /* The instant to remove is not the first one of the sequence */
         instants[l] = (interp == LINEAR) ?
-          tsegment_at_timestamp(instants[l - 1], inst, interp, t) :
+          tsegment_at_timestamp(instants[l - 1], inst, (interp == LINEAR), t) :
           tinstant_make(tinstant_value(instants[l - 1]), inst->temptype, t);
         result[k++] = tsequence_make((const TInstant **) instants, l + 1,
           lower_inc, false, interp, NORMALIZE_NO);
@@ -4630,8 +4622,7 @@ tcontseq_at_period(const TSequence *seq, const Period *p)
     return tsequence_copy(seq);
 
   /* General case */
-  int interp = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR :
-    ( MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEPWISE );
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *result;
   /* Intersecting period is instantaneous */
   if (inter.lower == inter.upper)
@@ -4651,7 +4642,7 @@ tcontseq_at_period(const TSequence *seq, const Period *p)
   /* Compute the value at the beginning of the intersecting period */
   inst1 = tsequence_inst_n(seq, n);
   inst2 = tsequence_inst_n(seq, n + 1);
-  instants[0] = tsegment_at_timestamp(inst1, inst2, interp, inter.lower);
+  instants[0] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), inter.lower);
   int k = 1;
   for (int i = n + 2; i < seq->count; i++)
   {
@@ -4670,7 +4661,7 @@ tcontseq_at_period(const TSequence *seq, const Period *p)
   /* The last two values of sequences with step interpolation and
    * exclusive upper bound must be equal */
   if (interp == LINEAR || inter.upper_inc)
-    instants[k++] = tsegment_at_timestamp(inst1, inst2, interp, inter.upper);
+    instants[k++] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), inter.upper);
   else
   {
     Datum value = tinstant_value(instants[k - 1]);

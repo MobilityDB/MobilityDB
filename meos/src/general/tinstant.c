@@ -319,7 +319,6 @@ tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = temptype_continuous(temptype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-  // MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))
@@ -550,7 +549,6 @@ tintinst_to_tfloatinst(const TInstant *inst)
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  // MOBDB_FLAGS_SET_LINEAR(result->flags, true);
   result->value = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
   return result;
 }
@@ -566,7 +564,6 @@ tfloatinst_to_tintinst(const TInstant *inst)
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  // MOBDB_FLAGS_SET_LINEAR(result->flags, true);
   result->value = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
   return result;
 }

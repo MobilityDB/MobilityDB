@@ -470,8 +470,9 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   }
 
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   /* Stepwise interpolation */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! linear)
   {
     Datum length = Float8GetDatum(0.0);
     for (int i = 0; i < seq->count; i++)
@@ -498,8 +499,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
     }
   }
   TSequence *result = tsequence_make((const TInstant **) instants,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+    seq->count, seq->period.lower_inc, seq->period.upper_inc, linear, false);
 
   for (int i = 1; i < seq->count; i++)
     pfree(instants[i]);
@@ -628,7 +628,7 @@ tnpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);

@@ -160,32 +160,30 @@ typedef enum
 /**
  * Enumeration for the interpolation functions for temporal types
  */
-#define DISCRETE        0
-#define STEPWISE        1
-#define LINEAR          2
+#define INTERP_NONE     0
+#define DISCRETE        1
+#define STEPWISE        2
+#define LINEAR          3
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
- * bits are GTZXLCB, where
+ * bits are GTZXIICB, where
  *   G: coordinates are geodetic
  *   T: has T coordinate,
  *   Z: has Z coordinate
  *   X: has value or X coordinate
- *   L: linear interpolation
+ *   II: interpolation
  *   C: continuous base type
  *   B: base type passed by value
- * Notice that formally speaking the Linear interpolation flag is only needed
- * for sequence and sequence set subtypes. To facilate the transformation from
- * one subtype to another, the linear flag for instant and instant set is set
- * to the value of the continuous subtype flag.
+ * Notice that formally speaking the interpolation flags are only needed
+ * for sequence and sequence set subtypes.
  *****************************************************************************/
 
 /* The following two flags are only used for TInstant */
 #define MOBDB_FLAG_BYVAL      0x0001  // 1
 #define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
-/* The following two flags are only used for TSequence and TSequenceSet */
-#define MOBDB_FLAG_DISCRETE   0x0004  // 4
-#define MOBDB_FLAG_LINEAR     0x0008  // 8
+/* The following two interpolation flags are only used for TSequence and TSequenceSet */
+#define MOBDB_FLAGS_INTERP    0x000C  // 4 or 8
 /* The following two flags are used for bounding boxes and temporal types */
 #define MOBDB_FLAG_X          0x0010  // 16
 #define MOBDB_FLAG_Z          0x0020  // 32
@@ -194,8 +192,6 @@ typedef enum
 
 #define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
-#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (((flags) & MOBDB_FLAG_DISCRETE)>>2))
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_FLAG_LINEAR)>>3))
 #define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
 #define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
 #define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
@@ -205,10 +201,6 @@ typedef enum
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
-#define MOBDB_FLAGS_SET_DISCRETE(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_DISCRETE) : ((flags) & ~MOBDB_FLAG_DISCRETE))
-#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_LINEAR) : ((flags) & ~MOBDB_FLAG_LINEAR))
 #define MOBDB_FLAGS_SET_X(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
@@ -218,8 +210,12 @@ typedef enum
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
 
-#define MOBDB_FLAGS_GET_INTERP(flags) ((((flags) & 0x000C)) >> 2)
-#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) & 0xFFF3) | ((value & 0x0003) << 2)))
+#define MOBDB_FLAGS_GET_INTERP(flags) (((flags) & MOBDB_FLAGS_INTERP) >> 2)
+#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
+
+#define MOBDB_FLAGS_GET_DISCRETE(flags)   (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE)
+#define MOBDB_FLAGS_GET_STEPWISE(flags)   (MOBDB_FLAGS_GET_INTERP((flags)) == STEPWISE)
+#define MOBDB_FLAGS_GET_LINEAR(flags)     (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR)
 
 /*****************************************************************************
  * Well-Known Binary (WKB)
@@ -293,8 +289,7 @@ enum MOBDB_WKB_TSUBTYPE
  */
 #define MOBDB_WKB_XFLAG            0x01
 #define MOBDB_WKB_TFLAG            0x02
-#define MOBDB_WKB_DISCRETEFLAG     0x04
-#define MOBDB_WKB_LINEARFLAG       0x08
+#define MOBDB_WKB_INTERPFLAGS      0x0C
 #define MOBDB_WKB_ZFLAG            0x10
 #define MOBDB_WKB_GEODETICFLAG     0x20
 #define MOBDB_WKB_SRIDFLAG         0x40
@@ -307,11 +302,10 @@ enum MOBDB_WKB_TSUBTYPE
 // #define MOBDB_WKB_TFLAG            0x40
 // #define MOBDB_WKB_GEODETICFLAG     0x80
 
-#define MOBDB_WKB_GET_DISCRETE(flags)   ((bool) (((flags) & MOBDB_WKB_DISCRETEFLAG)>>2))
-#define MOBDB_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_WKB_LINEARFLAG)>>3))
+#define MOBDB_WKB_GET_INTERP(flags) (((flags) & MOBDB_WKB_INTERPFLAGS) >> 2)
+#define MOBDB_WKB_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_WKB_INTERPFLAGS) | ((value & 0x0003) << 2)))
 
-// #define MOBDB_WKB_GET_INTERP(flags) ((((flags) & 0x0C)) >> 2)
-// #define MOBDB_WKB_SET_INTERP(flags, value) (((flags) & 0xF3) | ((value & 0x03) << 2))
+// #define MOBDB_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_WKB_LINEARFLAG)>>3))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling
