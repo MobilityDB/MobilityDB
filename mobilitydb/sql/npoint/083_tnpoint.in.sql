@@ -129,7 +129,7 @@ CREATE FUNCTION tnpoint_inst(val npoint, t timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_discseq(tnpoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(tnpoint[], lower_inc boolean DEFAULT true,
     upper_inc boolean DEFAULT true, linear bool DEFAULT true)
@@ -143,7 +143,7 @@ CREATE FUNCTION tnpoint_seqset(tnpoint[])
 
 CREATE FUNCTION tnpoint_discseq(npoint, timestampset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, period, boolean DEFAULT true)
   RETURNS tnpoint

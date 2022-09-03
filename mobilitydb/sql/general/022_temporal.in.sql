@@ -237,19 +237,19 @@ CREATE FUNCTION ttext_inst(text, timestamptz)
 
 CREATE FUNCTION tbool_discseq(tbool[])
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_discseq(tint[])
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_discseq(tfloat[])
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_discseq(ttext[])
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seq(tbool[], lower_inc boolean DEFAULT true,
@@ -305,19 +305,19 @@ CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear bool DEFAULT true,
 
 CREATE FUNCTION tbool_discseq(boolean, timestampset)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_discseq(integer, timestampset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_discseq(float, timestampset)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_discseq(text, timestampset)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seq(boolean, period)

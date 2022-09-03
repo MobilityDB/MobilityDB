@@ -643,19 +643,19 @@ Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tinstantset_from_base_time);
+PG_FUNCTION_INFO_V1(Tdiscseq_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant set from a base value and a timestamp set
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
  */
 PGDLLEXPORT Datum
-Tinstantset_from_base_time(PG_FUNCTION_ARGS)
+Tdiscseq_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequence *result = tinstantset_from_base_time(value, temptype, ts);
+  TSequence *result = tdiscseq_from_base_time(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }

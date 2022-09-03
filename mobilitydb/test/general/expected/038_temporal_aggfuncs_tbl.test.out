@@ -28,25 +28,25 @@ SELECT round(extent(inst), 13) FROM tbl_tfloat_inst;
  TBOX XT([3.6493356390856, 99.5110547081567],[2001-01-08 00:47:00+00, 2001-12-27 08:54:00+00])
 (1 row)
 
-SELECT extent(ti) FROM tbl_tbool_instset;
+SELECT extent(ti) FROM tbl_tbool_discseq;
                       extent                      
 --------------------------------------------------
  [2001-01-01 11:25:00+00, 2001-12-29 11:56:00+00]
 (1 row)
 
-SELECT extent(ti) FROM tbl_ttext_instset;
+SELECT extent(ti) FROM tbl_ttext_discseq;
                       extent                      
 --------------------------------------------------
  [2001-01-05 07:52:00+00, 2001-12-30 13:11:00+00]
 (1 row)
 
-SELECT extent(ti) FROM tbl_tint_instset;
+SELECT extent(ti) FROM tbl_tint_discseq;
                               extent                               
 -------------------------------------------------------------------
  TBOX XT([1, 99],[2001-01-01 00:34:00+00, 2001-12-30 14:46:00+00])
 (1 row)
 
-SELECT round(extent(ti), 13) FROM tbl_tfloat_instset;
+SELECT round(extent(ti), 13) FROM tbl_tfloat_discseq;
                                              round                                             
 -----------------------------------------------------------------------------------------------
  TBOX XT([1.2496102433652, 99.9664310226217],[2001-01-05 08:30:00+00, 2001-12-22 15:00:00+00])
@@ -460,103 +460,103 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_ttext_inst GROUP BY k%10 ORDER B
         9 |          10
 (10 rows)
 
-SELECT numInstants(tand(ti)) FROM tbl_tbool_instset;
+SELECT numInstants(tand(ti)) FROM tbl_tbool_discseq;
  numinstants 
 -------------
          475
 (1 row)
 
-SELECT numInstants(tor(ti)) FROM tbl_tbool_instset;
+SELECT numInstants(tor(ti)) FROM tbl_tbool_discseq;
  numinstants 
 -------------
          475
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tbool_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_tbool_discseq;
  numinstants 
 -------------
          475
 (1 row)
 
-SELECT numInstants(tmin(ti)) FROM tbl_tint_instset;
+SELECT numInstants(tmin(ti)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tmax(ti)) FROM tbl_tint_instset;
+SELECT numInstants(tmax(ti)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tint_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tsum(ti)) FROM tbl_tint_instset;
+SELECT numInstants(tsum(ti)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tavg(ti)) FROM tbl_tint_instset;
+SELECT numInstants(tavg(ti)) FROM tbl_tint_discseq;
  numinstants 
 -------------
          466
 (1 row)
 
-SELECT numInstants(tmin(ti)) FROM tbl_tfloat_instset;
+SELECT numInstants(tmin(ti)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tmax(ti)) FROM tbl_tfloat_instset;
+SELECT numInstants(tmax(ti)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tfloat_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tsum(ti)) FROM tbl_tfloat_instset;
+SELECT numInstants(tsum(ti)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tavg(ti)) FROM tbl_tfloat_instset;
+SELECT numInstants(tavg(ti)) FROM tbl_tfloat_discseq;
  numinstants 
 -------------
          503
 (1 row)
 
-SELECT numInstants(tmin(ti)) FROM tbl_ttext_instset;
+SELECT numInstants(tmin(ti)) FROM tbl_ttext_discseq;
  numinstants 
 -------------
          457
 (1 row)
 
-SELECT numInstants(tmax(ti)) FROM tbl_ttext_instset;
+SELECT numInstants(tmax(ti)) FROM tbl_ttext_discseq;
  numinstants 
 -------------
          457
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_ttext_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_ttext_discseq;
  numinstants 
 -------------
          457
 (1 row)
 
-SELECT k%10, numInstants(tand(ti)) FROM tbl_tbool_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tand(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          60
@@ -571,7 +571,7 @@ SELECT k%10, numInstants(tand(ti)) FROM tbl_tbool_instset GROUP BY k%10 ORDER BY
         9 |          40
 (10 rows)
 
-SELECT k%10, numInstants(tor(ti)) FROM tbl_tbool_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tor(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          60
@@ -586,7 +586,7 @@ SELECT k%10, numInstants(tor(ti)) FROM tbl_tbool_instset GROUP BY k%10 ORDER BY 
         9 |          40
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tbool_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tbool_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          60
@@ -601,7 +601,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tbool_instset GROUP BY k%10 ORDER 
         9 |          40
 (10 rows)
 
-SELECT k%10, numInstants(tmin(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -616,7 +616,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tmax(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -631,7 +631,7 @@ SELECT k%10, numInstants(tmax(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -646,7 +646,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER B
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tsum(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tsum(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -661,7 +661,7 @@ SELECT k%10, numInstants(tsum(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tavg(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tavg(ti)) FROM tbl_tint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          51
@@ -676,7 +676,7 @@ SELECT k%10, numInstants(tavg(ti)) FROM tbl_tint_instset GROUP BY k%10 ORDER BY 
         9 |          51
 (10 rows)
 
-SELECT k%10, numInstants(tmin(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -691,7 +691,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tmax(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -706,7 +706,7 @@ SELECT k%10, numInstants(tmax(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -721,7 +721,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tsum(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tsum(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -736,7 +736,7 @@ SELECT k%10, numInstants(tsum(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloat_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          46
@@ -751,7 +751,7 @@ SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloat_instset GROUP BY k%10 ORDER B
         9 |          61
 (10 rows)
 
-SELECT k%10, numInstants(tmin(ti)) FROM tbl_ttext_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmin(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          38
@@ -766,7 +766,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_ttext_instset GROUP BY k%10 ORDER BY
         9 |          47
 (10 rows)
 
-SELECT k%10, numInstants(tmax(ti)) FROM tbl_ttext_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tmax(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          38
@@ -781,7 +781,7 @@ SELECT k%10, numInstants(tmax(ti)) FROM tbl_ttext_instset GROUP BY k%10 ORDER BY
         9 |          47
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_ttext_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_ttext_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          38

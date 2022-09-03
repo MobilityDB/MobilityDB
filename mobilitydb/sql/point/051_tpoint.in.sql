@@ -146,11 +146,11 @@ CREATE FUNCTION tgeogpoint_inst(geography(Point), timestamptz)
 
 CREATE FUNCTION tgeompoint_discseq(tgeompoint[])
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint_discseq(tgeogpoint[])
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompoint_seq(tgeompoint[], lower_inc boolean DEFAULT true,
@@ -224,7 +224,7 @@ CREATE FUNCTION tgeompoint_seqset(tgeompoint)
 
 CREATE FUNCTION tgeompoint_discseq(geometry, timestampset)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint_seq(geometry, period, linear bool DEFAULT true)
   RETURNS tgeompoint
@@ -254,7 +254,7 @@ CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
 
 CREATE FUNCTION tgeogpoint_discseq(geography, timestampset)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint_seq(geography, period, linear bool DEFAULT true)
   RETURNS tgeogpoint

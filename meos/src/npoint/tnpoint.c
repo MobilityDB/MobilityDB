@@ -280,7 +280,7 @@ tnpointdiscseq_positions(const TSequence *seq, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
-  Datum *values = tinstantset_values(seq, &count1);
+  Datum *values = tdiscseq_values(seq, &count1);
   Nsegment **result = palloc(sizeof(Nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {

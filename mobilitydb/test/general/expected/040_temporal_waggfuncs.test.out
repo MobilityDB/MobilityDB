@@ -113,9 +113,9 @@ SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) 
 (1 row)
 
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
-                          wavg                          
---------------------------------------------------------
- {[1@2000-01-01 00:00:00+00, 1@2000-01-01 00:05:00+00]}
+                                  wavg                                  
+------------------------------------------------------------------------
+ Interp=Stepwise;{[1@2000-01-01 00:00:00+00, 1@2000-01-01 00:05:00+00]}
 (1 row)
 
 SELECT wmin(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);

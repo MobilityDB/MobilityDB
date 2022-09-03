@@ -72,9 +72,9 @@
  *    defined by the two segments are equal.
  *
  * Examples
- *   - `tfloatseq * base => tfunc_tsequence_base`
+ *   - `tfloatseq * base => tfunc_tcontseq_base`
  *     applies the `*` operator to each instant and results in a `tfloatseq`.
- *   - `tfloatseq < base => tfunc_tsequence_base_discont`
+ *   - `tfloatseq < base => tfunc_tcontseq_base_discont`
  *     applies the `<` operator to each instant, if the sequence is equal
  *     to the base value in the middle of two consecutive instants add an
  *     instantaneous sequence at the crossing. The result is a `tfloatseqset`.
@@ -366,7 +366,7 @@ tfunc_tdiscseq_base(const TSequence *seq, Datum value,
  * sequences are stored
  */
 static int
-tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
+tfunc_tcontseq_base_scan(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -391,7 +391,7 @@ tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
  * sequences are stored
  */
 static int
-tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
+tfunc_tcontseq_base_turnpt(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   int k = 0;
@@ -442,14 +442,13 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
  * the function func.
  */
 static int
-tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
+tfunc_tcontseq_base_discont(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   const TInstant *start = tsequence_inst_n(seq, 0);
   Datum startvalue = tinstant_value(start);
   Datum startresult = tfunc_base_base(startvalue, value, lfinfo);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  int interp = linear ? LINEAR : STEPWISE;
   TInstant *instants[2];
 
   /* Instantaneous sequence */
@@ -505,16 +504,16 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
       if (lower_inc && ! lower_eq)
       {
         tinstant_set(instants[0], startresult, start->t);
-        result[k++] = tinstant_to_tsequence(instants[0], interp);
+        result[k++] = tinstant_to_tsequence(instants[0], STEPWISE);
       }
       tinstant_set(instants[0], intresult, start->t);
       tinstant_set(instants[1], intresult, end->t);
       result[k++] = tsequence_make((const TInstant **) instants, 2,
-        lower_eq, upper_eq, interp, NORMALIZE_NO);
+        lower_eq, upper_eq, STEPWISE, NORMALIZE_NO);
       if (upper_inc && ! upper_eq)
       {
         tinstant_set(instants[0], endresult, end->t);
-        result[k++] = tinstant_to_tsequence(instants[0], interp);
+        result[k++] = tinstant_to_tsequence(instants[0], STEPWISE);
       }
       DATUM_FREE(intvalue, basetype);
       DATUM_FREE(intresult, resbasetype);
@@ -539,11 +538,11 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, end->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc,
-          hascross ? upper_eq : false, interp, NORMALIZE_NO);
+          hascross ? upper_eq : false, STEPWISE, NORMALIZE_NO);
         if (! hascross && upper_inc)
         {
           tinstant_set(instants[0], endresult, end->t);
-          result[k++] = tinstant_to_tsequence(instants[0], interp);
+          result[k++] = tinstant_to_tsequence(instants[0], STEPWISE);
           DATUM_FREE(endresult, resbasetype);
         }
       }
@@ -554,18 +553,18 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, inttime);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, lower_eq, interp, NORMALIZE_NO);
+          lower_inc, lower_eq, STEPWISE, NORMALIZE_NO);
         /* Second sequence if any */
         if (! lower_eq && ! upper_eq)
         {
           tinstant_set(instants[0], intresult, inttime);
-          result[k++] = tinstant_to_tsequence(instants[0], interp);
+          result[k++] = tinstant_to_tsequence(instants[0], STEPWISE);
         }
         /* Third sequence */
         tinstant_set(instants[0], endresult, inttime);
         tinstant_set(instants[1], endresult, end->t);
         result[k++] = tsequence_make((const TInstant **) instants, 2,
-          upper_eq, upper_inc, interp, NORMALIZE_NO);
+          upper_eq, upper_inc, STEPWISE, NORMALIZE_NO);
         DATUM_FREE(intvalue, basetype);
         DATUM_FREE(intresult, resbasetype);
       }
@@ -585,7 +584,7 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
  * instantaneous discontinuities.
  */
 Temporal *
-tfunc_tsequence_base(const TSequence *seq, Datum value,
+tfunc_tcontseq_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   int count;
@@ -596,16 +595,16 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   if (lfinfo->discont)
   {
-    int k = tfunc_tsequence_base_discont(seq, value, lfinfo, sequences);
+    int k = tfunc_tcontseq_base_discont(seq, value, lfinfo, sequences);
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
   else
   {
     /* We are sure that the result is a single sequence */
     if (lfinfo->tpfunc_base != NULL)
-      tfunc_tsequence_base_turnpt(seq, value, lfinfo, sequences);
+      tfunc_tcontseq_base_turnpt(seq, value, lfinfo, sequences);
     else
-      tfunc_tsequence_base_scan(seq, value, lfinfo, sequences);
+      tfunc_tcontseq_base_scan(seq, value, lfinfo, sequences);
     return (Temporal *) sequences[0];
   }
 }
@@ -632,11 +631,11 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (lfinfo->discont)
-      k += tfunc_tsequence_base_discont(seq, value, lfinfo, &sequences[k]);
+      k += tfunc_tcontseq_base_discont(seq, value, lfinfo, &sequences[k]);
     else if (lfinfo->tpfunc_base != NULL)
-      k += tfunc_tsequence_base_turnpt(seq, value, lfinfo, &sequences[k]);
+      k += tfunc_tcontseq_base_turnpt(seq, value, lfinfo, &sequences[k]);
     else
-      k += tfunc_tsequence_base_scan(seq, value, lfinfo, &sequences[k]);
+      k += tfunc_tcontseq_base_scan(seq, value, lfinfo, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -660,7 +659,7 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tfunc_tdiscseq_base((TSequence *) temp, value, lfinfo) :
-      (Temporal *) tfunc_tsequence_base((TSequence *) temp, value, lfinfo);
+      (Temporal *) tfunc_tcontseq_base((TSequence *) temp, value, lfinfo);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
       lfinfo);
