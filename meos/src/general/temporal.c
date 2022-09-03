@@ -477,8 +477,8 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == TSEQUENCE)
       result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
-        intersection_tdiscseq_tsequenceset(
-          (TSequence *) temp1, (TSequenceSet *) temp2,
+        intersection_tsequenceset_tdiscseq(
+          (TSequenceSet *) temp1, (TSequence *) temp2,
           (TSequence **) inter1, (TSequence **) inter2) :
         synchronize_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,

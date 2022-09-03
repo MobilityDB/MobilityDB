@@ -144,7 +144,9 @@ tnpoint_tgeompoint(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnpointseq_tgeompointseq((TSequence *) temp);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tnpointdiscseq_tgeompointinstset((TSequence *) temp) :
+      (Temporal *) tnpointseq_tgeompointseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   return result;
