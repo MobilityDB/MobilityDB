@@ -1830,6 +1830,8 @@ Temporal *
 tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   const TimestampSet *ts, bool atfunc)
 {
+  int interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
+
   /* Singleton timestamp set */
   if (ts->count == 1)
   {
@@ -1839,7 +1841,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
     {
       TInstant *inst = (TInstant *) temp;
       Temporal *result = (Temporal *) tsequence_make((const TInstant **) &inst,
-        1, true, true, DISCRETE, NORMALIZE_NO);
+        1, true, true, interp, NORMALIZE_NO);
       pfree(inst);
       return result;
     }
@@ -1881,7 +1883,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
       }
     }
     return (Temporal *) tsequence_make_free(instants, count, true, true,
-      DISCRETE, NORMALIZE_NO);
+      interp, NORMALIZE_NO);
   }
   else
   {
@@ -2312,7 +2314,7 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
+intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
   const TSequence *seq, TSequence **inter1, TSequence **inter2)
 {
   /* Bounding period test */
@@ -2362,10 +2364,10 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ss,
  * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_tsequenceset(const TSequence *seq,
+intersection_tdiscseq_tsequenceset(const TSequence *seq,
   const TSequenceSet *ss, TSequence **inter1, TSequence **inter2)
 {
-  return intersection_tsequenceset_tinstantset(ss, seq, inter2, inter1);
+  return intersection_tsequenceset_tdiscseq(ss, seq, inter2, inter1);
 }
 
 /**

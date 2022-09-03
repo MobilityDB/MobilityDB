@@ -598,8 +598,8 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   INPUT_AGG_TRANS_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
-  if ( ! MOBDB_FLAGS_GET_DISCRETE(temp->flags) && temp->temptype == T_TFLOAT &&
-      func == &datum_sum_float8)
+  if ( temp->subtype != TINSTANT && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags) && 
+      temp->temptype == T_TFLOAT && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal continuous float sequences")));
 

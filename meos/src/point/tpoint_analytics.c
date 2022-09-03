@@ -1732,35 +1732,35 @@ tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array
  */
-// static GSERIALIZED *
-// tpointdiscseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
-// {
-  // /* Instantaneous sequence */
-  // if (seq->count == 1)
-    // return tpointinst_decouple(tsequence_inst_n(seq, 0), timesarr, count);
+static GSERIALIZED *
+tpointdiscseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return tpointinst_decouple(tsequence_inst_n(seq, 0), timesarr, count);
 
-  // /* General case */
-  // LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-  // int64 *times = palloc(sizeof(int64) * seq->count);
-  // for (int i = 0; i < seq->count; i++)
-  // {
-    // const TInstant *inst = tsequence_inst_n(seq, i);
-    // Datum value = tinstant_value(inst);
-    // GSERIALIZED *gs = DatumGetGserializedP(value);
-    // points[i] = lwgeom_from_gserialized(gs);
-    // times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
-  // }
-  // LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count,
-    // MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  // GSERIALIZED *result = geo_serialize(lwgeom);
-  // pfree(lwgeom);
-  // *timesarr = times;
-  // *count = seq->count;
-  // for (int i = 0; i < seq->count; i++)
-    // lwpoint_free((LWPOINT *) points[i]);
-  // pfree(points);
-  // return result;
-// }
+  /* General case */
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+  int64 *times = palloc(sizeof(int64) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    Datum value = tinstant_value(inst);
+    GSERIALIZED *gs = DatumGetGserializedP(value);
+    points[i] = lwgeom_from_gserialized(gs);
+    times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
+  }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count,
+    MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  GSERIALIZED *result = geo_serialize(lwgeom);
+  pfree(lwgeom);
+  *timesarr = times;
+  *count = seq->count;
+  for (int i = 0; i < seq->count; i++)
+    lwpoint_free((LWPOINT *) points[i]);
+  pfree(points);
+  return result;
+}
 
 /**
  * Decouple the points and the timestamps of a temporal point.
@@ -1869,10 +1869,10 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = tpointdiscseq_decouple((TSequence *) temp, timesarr, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_decouple((TSequence *) temp, timesarr, count);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tpointdiscseq_decouple((TSequence *) temp, timesarr, count) :
+      tpointseq_decouple((TSequence *) temp, timesarr, count);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_decouple((TSequenceSet *) temp, timesarr, count);
   return result;

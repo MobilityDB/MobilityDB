@@ -16,13 +16,13 @@ SELECT round(extent(inst), 13) FROM tbl_tgeogpoint_inst;
  SRID=4326;GEODSTBOX ZT(((0.3012902436663,-0.1223893824626,0.5739543992938),(0.8148999611744,0.37733008391,0.9480414196466)),[2001-01-04 09:31:00+00, 2001-12-30 22:05:00+00])
 (1 row)
 
-SELECT round(extent(ti), 13) FROM tbl_tgeompoint_instset;
+SELECT round(extent(ti), 13) FROM tbl_tgeompoint_discseq;
                                                                round                                                                
 ------------------------------------------------------------------------------------------------------------------------------------
  STBOX XT(((0.0985009595752,0.8637114427984),(99.8823272529989,99.4073610752821)),[2001-01-01 12:09:00+00, 2001-12-23 15:39:00+00])
 (1 row)
 
-SELECT round(extent(ti), 13) FROM tbl_tgeogpoint_instset;
+SELECT round(extent(ti), 13) FROM tbl_tgeogpoint_discseq;
                                                                                       round                                                                                      
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((0.2659574564108,-0.1391303536183,0.5739040318005),(0.8189093712393,0.4140127102514,0.9504268983287)),[2001-01-10 21:37:00+00, 2001-12-29 00:22:00+00])
@@ -76,16 +76,16 @@ SELECT round(extent(inst), 13) FROM tbl_tgeogpoint3D_inst;
  SRID=4326;GEODSTBOX ZT(((0.2798746018342,-0.1044272356346,0.5743441535227),(0.8162635971796,0.3625724960918,0.9479365232256)),[2001-01-04 03:22:00+00, 2001-12-28 09:03:00+00])
 (1 row)
 
-SELECT round(extent(ti), 13) FROM tbl_tgeompoint3D_instset;
+SELECT round(extent(ti), 13) FROM tbl_tgeompoint3D_discseq;
                                                                                round                                                                               
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
  STBOX ZT(((0.3783178515732,0.7382857147604,0.4343484994024),(99.87389924936,99.9101084191352,99.8306760564446)),[2001-01-09 23:49:00+00, 2001-12-28 14:07:00+00])
 (1 row)
 
-SELECT round(extent(ti), 13) FROM tbl_tgeogpoint3D_instset;
+SELECT round(extent(ti), 13) FROM tbl_tgeogpoint3D_discseq;
                                                                                      round                                                                                      
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((0.270672143751,-0.1166039973612,0.5744200283304),(0.8170478770726,0.4274378815711,0.9509580638819)),[2001-01-06 01:21:00+00, 2001-12-18 06:24:00+00])
+ SRID=4326;GEODSTBOX ZT(((0.270672143751,-0.1166039973612,0.5744200283304),(0.8170478770726,0.4274378815711,0.9524059712118)),[2001-01-06 01:21:00+00, 2001-12-18 06:24:00+00])
 (1 row)
 
 SELECT round(extent(seq), 13) FROM tbl_tgeompoint3D_seq;
@@ -166,19 +166,19 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint_inst GROUP BY k%10 OR
         9 |          10
 (10 rows)
 
-SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint_instset;
+SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint_discseq;
  numinstants 
 -------------
          454
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint_discseq;
  numinstants 
 -------------
          454
 (1 row)
 
-SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          59
@@ -193,7 +193,7 @@ SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint_instset GROUP BY k%1
         9 |          41
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          59
@@ -334,19 +334,19 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint3D_inst GROUP BY k%10 
         9 |          10
 (10 rows)
 
-SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_instset;
+SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_discseq;
  numinstants 
 -------------
          495
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint3D_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint3D_discseq;
  numinstants 
 -------------
          495
 (1 row)
 
-SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          47
@@ -361,7 +361,7 @@ SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_instset GROUP BY k
         9 |          58
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint3D_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint3D_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          47
@@ -481,13 +481,13 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst GROUP BY k%10 OR
         9 |          10
 (10 rows)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tgeogpoint_instset;
+SELECT numInstants(tcount(ti)) FROM tbl_tgeogpoint_discseq;
  numinstants 
 -------------
          476
 (1 row)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpoint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpoint_discseq GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          59

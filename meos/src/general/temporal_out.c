@@ -43,7 +43,6 @@
 #include <meos_internal.h>
 #include "general/pg_call.h"
 #include "general/tinstant.h"
-#include "general/tinstantset.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/temporal_util.h"
@@ -1282,7 +1281,7 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
  * represented in Well-Known Binary (WKB) format
  */
 // static size_t
-// tinstantset_to_wkb_size(const TSequence *seq, uint8_t variant)
+// tdiscseq_to_wkb_size(const TSequence *seq, uint8_t variant)
 // {
   // /* Endian flag + temporal type + temporal flag */
   // size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
@@ -1360,7 +1359,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
   if (temp->subtype == TINSTANT)
     size = tinstant_to_wkb_size((TInstant *) temp, variant);
   // else if (temp->subtype == TINSTANTSET)
-    // size = tinstantset_to_wkb_size((TSequence *) temp, variant);
+    // size = tdiscseq_to_wkb_size((TSequence *) temp, variant);
   else if (temp->subtype == TSEQUENCE)
     size = tsequence_to_wkb_size((TSequence *) temp, variant);
   else /* temp->subtype == TSEQUENCESET */
@@ -2098,7 +2097,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
  * - Output of the instants by function tinstant_basevalue_time_to_wkb_buf
  */
 // static uint8_t *
-// tinstantset_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
+// tdiscseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 // {
   // /* Write the endian flag */
   // buf = endian_to_wkb_buf(buf, variant);
@@ -2217,7 +2216,7 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
   if (temp->subtype == TINSTANT)
     buf = tinstant_to_wkb_buf((TInstant *) temp, buf, variant);
   // else if (temp->subtype == TINSTANTSET)
-    // buf = tinstantset_to_wkb_buf((TSequence *) temp, buf, variant);
+    // buf = tdiscseq_to_wkb_buf((TSequence *) temp, buf, variant);
   else if (temp->subtype == TSEQUENCE)
     buf = tsequence_to_wkb_buf((TSequence *) temp, buf, variant);
   else /* temp->subtype == TSEQUENCESET */

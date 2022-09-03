@@ -41,7 +41,6 @@
 /* MobilityDB */
 #include <meos.h>
 #include "general/tinstant.h"
-#include "general/tinstantset.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/temporal_util.h"

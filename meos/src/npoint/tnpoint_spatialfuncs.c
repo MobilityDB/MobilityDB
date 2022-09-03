@@ -499,7 +499,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
     }
   }
   TSequence *result = tsequence_make((const TInstant **) instants,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc, linear, false);
+    seq->count, seq->period.lower_inc, seq->period.upper_inc, LINEAR, false);
 
   for (int i = 1; i < seq->count; i++)
     pfree(instants[i]);
@@ -539,7 +539,7 @@ tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp, false);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);

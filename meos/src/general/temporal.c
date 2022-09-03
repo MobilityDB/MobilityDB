@@ -433,19 +433,41 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   }
   else if (temp1->subtype == TSEQUENCE)
   {
-    if (temp2->subtype == TINSTANT)
-      result = intersection_tsequence_tinstant(
-        (TSequence *) temp1, (TInstant *) temp2,
-        (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->subtype == TSEQUENCE)
-      result = synchronize_tsequence_tsequence(
+    if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags))
+    {
+      if (temp2->subtype == TINSTANT)
+        result = intersection_tdiscseq_tinstant(
+          (TSequence *) temp1, (TInstant *) temp2,
+          (TInstant **) inter1, (TInstant **) inter2);
+      else if (temp2->subtype == TSEQUENCE)
+        result = intersection_tdiscseq_tdiscseq(
           (TSequence *) temp1, (TSequence *) temp2,
-          (TSequence **) inter1, (TSequence **) inter2,
-            mode == SYNCHRONIZE_CROSS);
-    else /* temp2->subtype == TSEQUENCESET */
-      result = intersection_tsequence_tsequenceset(
-          (TSequence *) temp1, (TSequenceSet *) temp2, mode,
-          (TSequenceSet **) inter1, (TSequenceSet **) inter2);
+          (TSequence **) inter1, (TSequence **) inter2);
+      else /* temp2->subtype == TSEQUENCESET */
+        result = intersection_tdiscseq_tsequenceset(
+          (TSequence *) temp1, (TSequenceSet *) temp2,
+          (TSequence **) inter1, (TSequence **) inter2);
+    }
+    else
+    {
+      if (temp2->subtype == TINSTANT)
+        result = intersection_tsequence_tinstant(
+          (TSequence *) temp1, (TInstant *) temp2,
+          (TInstant **) inter1, (TInstant **) inter2);
+      else if (temp2->subtype == TSEQUENCE)
+        result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
+          intersection_tdiscseq_tdiscseq(
+            (TSequence *) temp1, (TSequence *) temp2,
+            (TSequence **) inter1, (TSequence **) inter2) :
+          synchronize_tsequence_tsequence(
+            (TSequence *) temp1, (TSequence *) temp2,
+            (TSequence **) inter1, (TSequence **) inter2,
+              mode == SYNCHRONIZE_CROSS);
+      else /* temp2->subtype == TSEQUENCESET */
+        result = intersection_tsequence_tsequenceset(
+            (TSequence *) temp1, (TSequenceSet *) temp2, mode,
+            (TSequenceSet **) inter1, (TSequenceSet **) inter2);
+    }
   }
   else /* temp1->subtype == TSEQUENCESET */
   {
@@ -454,7 +476,11 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TSequenceSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
     else if (temp2->subtype == TSEQUENCE)
-      result = synchronize_tsequenceset_tsequence(
+      result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
+        intersection_tdiscseq_tsequenceset(
+          (TSequence *) temp1, (TSequenceSet *) temp2,
+          (TSequence **) inter1, (TSequence **) inter2) :
+        synchronize_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
     else /* temp2->subtype == TSEQUENCESET */
@@ -690,8 +716,10 @@ temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_from_base(value, temptype,
-      (TSequence *) temp, interp);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tdiscseq_from_base(value, temptype, (TSequence *) temp) :
+      (Temporal *) tsequence_from_base(value, temptype, (TSequence *) temp,
+        interp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_from_base(value, temptype,
       (TSequenceSet *) temp, interp);
@@ -1356,10 +1384,10 @@ temporal_values(const Temporal *temp, int *count)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_values((TInstant *) temp, count);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = tinstantset_values((TSequence *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_values((TSequence *) temp, count);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tdiscseq_values((TSequence *) temp, count) :
+      tsequence_values((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;
@@ -1465,8 +1493,6 @@ tfloat_spans(const Temporal *temp, int *count)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tfloatinst_spans((TInstant *) temp, count);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = tfloatinstset_spans((TSequence *) temp, count);
   else if (temp->subtype == TSEQUENCE)
     result = tfloatseq_spans((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
@@ -2797,7 +2823,8 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != TSEQUENCE) ?
+      return (temp->subtype != TSEQUENCE ||
+          MOBDB_FLAGS_GET_DISCRETE(temp->flags)) ?
         temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
@@ -2957,7 +2984,8 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags)) ?
+      return (temp->subtype == TSEQUENCE && 
+          ! MOBDB_FLAGS_GET_DISCRETE(temp->flags)) ?
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp) :
         temporal_copy(temp);
   }
@@ -3388,8 +3416,6 @@ tnumber_twavg(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tnumberinst_double((TInstant *) temp);
-  // else if (temp->subtype == TINSTANTSET)
-    // result = 
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       tnumberdiscseq_twavg((TSequence *) temp) :
