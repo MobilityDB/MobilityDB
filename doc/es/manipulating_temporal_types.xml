@@ -50,7 +50,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttype_discseq</varname> representa cualquier tipo temporal con subtipo conjunto de instantes,</para>
+			<para><varname>ttype_discseq</varname> representa cualquier tipo temporal con subtipo secuencia e interpolación discreta,</para>
 		</listitem>
 
 		<listitem>
@@ -399,12 +399,12 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 		<title>Funciones de constructor</title>
 
 		<para>
-			Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo; y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
+			Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_discseq</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo; y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, secuencia con interpolación discreta, secuencia con interpolación linear o escalonada y conjunto de secuencias. Ejemplos son <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
 		</para>
 
 		<itemizedlist>
 			<listitem>
-				<para>Un primer conjunto de funciones tiene dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname> para construir, respectivamente, un valor de subtipo instante, conjunto de instantes, secuencia o conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo base continuo tienen además un tercer argumento opcional que es un booleano para indicar si el valor temporal resultante tiene interpolación lineal o no. Por defecto, este argumento es verdadero si no se especifica.</para>
+				<para>Un primer conjunto de funciones tiene dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname> para construir, respectivamente, un valor de subtipo instante, una secuencia con interpolación discreta, una secuencia con interpolación linear o escalonada o un conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo base continuo tienen además un tercer argumento opcional que es un booleano para indicar si el valor temporal resultante tiene interpolación lineal o no. Por defecto, este argumento es verdadero si no se especifica.</para>
 			</listitem>
 
 			<listitem>
@@ -441,36 +441,34 @@ SELECT tgeogpoint_inst('SRID=7844;Point(1 1)', '2001-01-01');
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_instset">
-				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de subtipo conjunto de instantes</para>
-				<para><varname>ttype_instset(base,timestampset): ttype_instset</varname></para>
-				<para><varname>ttype_instset(ttype_inst[]): ttype_instset</varname></para>
+			<listitem id="ttype_discseq">
+				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
+				<para>Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
+				<para><varname>ttype_discseq(base,timestampset): ttype_discseq</varname></para>
+				<para><varname>ttype_discseq(ttype_inst[]): ttype_discseq</varname></para>
 				<programlisting xml:space="preserve">
-SELECT tbool_instset(true, '{2001-01-01, 2001-01-02}');
-SELECT tint_instset(1, '{2001-01-01, 2001-01-02}');
-SELECT tfloat_instset(1.5, '{2001-01-01, 2001-01-02}');
-SELECT ttext_instset('AAA', '{2001-01-01, 2001-01-02}');
-SELECT tgeompoint_instset('Point(1 1)', '{2001-01-01, 2001-01-02}');
-SELECT tgeogpoint_instset('SRID=7844;Point(1 1)', '{2001-01-01, 2001-01-02}');
+SELECT tbool_discseq(true, '{2001-01-01, 2001-01-02}');
+SELECT tint_discseq(1, '{2001-01-01, 2001-01-02}');
+SELECT tfloat_discseq(1.5, '{2001-01-01, 2001-01-02}');
+SELECT ttext_discseq('AAA', '{2001-01-01, 2001-01-02}');
+SELECT tgeompoint_discseq('Point(1 1)', '{2001-01-01, 2001-01-02}');
+SELECT tgeogpoint_discseq('SRID=7844;Point(1 1)', '{2001-01-01, 2001-01-02}');
 </programlisting>
 				<programlisting xml:space="preserve">
-SELECT tfloat_instset(1.5, '{2001-01-01, 2001-01-02}');
-SELECT ttext_instset('AAA', '{2001-01-01, 2001-01-02}');
-SELECT tbool_instset(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
-SELECT tint_instset(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
-SELECT tfloat_instset(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00']);
-SELECT ttext_instset(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
-SELECT tgeompoint_instset(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+SELECT tbool_discseq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
+SELECT tint_discseq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
+SELECT tfloat_discseq(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00']);
+SELECT ttext_discseq(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
+SELECT tgeompoint_discseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00']);
-SELECT tgeogpoint_instset(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
+SELECT tgeogpoint_discseq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
   'Point(2 2)@2001-01-01 08:05:00']);
 </programlisting>
 			</listitem>
 
 			<listitem id="ttype_seq">
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de subtipo secuencia</para>
+				<para>Constructor para tipos temporales de subtipo secuencia con interpolación linear o escalonada</para>
 				<para><varname>tdisc_seq(base,period): tdisc_seq</varname></para>
 				<para><varname>tcont_seq(base,period,linear=true): tcont_seq</varname></para>
 				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
@@ -726,7 +724,7 @@ SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 			<listitem id="tempSubtype">
 				<indexterm><primary><varname>tempSubtype</varname></primary></indexterm>
 				<para>Obtener el subtipo temporal</para>
-				<para><varname>tempSubtype(ttype): {'Instant','InstantSet','Sequence','SequenceSet'}</varname></para>
+				<para><varname>tempSubtype(ttype): {'Instant','Sequence','SequenceSet'}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- "Sequence"
@@ -1179,20 +1177,20 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 		<itemizedlist>
 			<listitem id="ttype_transform">
 				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Transformar un tipo temporal a otro subtipo</para>
 				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
-				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
 				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
+				<para><varname>ttype_discseq(ttype): ttype_discseq</varname></para>
 				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- "t@2001-01-01 00:00:00+00"
 SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
 -- ERROR: Cannot transform input to a temporal instant
-SELECT tbool_instset(tbool 'true@2001-01-01');
+SELECT tbool_discseq(tbool 'true@2001-01-01');
 -- "{t@2001-01-01}"
 SELECT tint_seq(tint '1@2001-01-01');
 -- "[1@2001-01-01]"
@@ -1455,7 +1453,7 @@ SELECT atTimestamp(tfloat '[1@2001-01-01, 5@2001-01-05)', '2001-01-02');
 				<listitem id="atTimestampSet">
 					<indexterm><primary><varname>atTimestampSet</varname></primary></indexterm>
 					<para>Restringir a un conjunto de marcas de tiempo</para>
-					<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_instset}</varname></para>
+					<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_seq}</varname></para>
 					<programlisting xml:space="preserve">
 SELECT atTimestampSet(tint '[1@2001-01-01, 1@2001-01-15)',
   timestampset '{2001-01-01, 2001-01-03}');
@@ -1702,7 +1700,7 @@ SELECT asText(minusGeometry(minusPeriod(temp, box::period), box::geometry)) FROM
 		<sect2>
 			<title>Operadores de comparación tradicionales</title>
 
-			<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver la <xref linkend="time_comp_operators" />), después los cuadros delimitadores (ver la <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
+			<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver la <xref linkend="time_comp_operators" />), después los cuadros delimitadores (ver la <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
 
 			<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes subtipos como se muestra a continuación.
 				<programlisting xml:space="preserve">
@@ -2685,7 +2683,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 			<listitem id="tcount">
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
-				<para><varname>tcount(ttype): {tintinstset,tint_seqset}</varname></para>
+				<para><varname>tcount(ttype): {tint_seq,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tcount(NoEmps) FROM Department;
 -- "{[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}"
@@ -2727,7 +2725,7 @@ SELECT tor(NoEmps #&gt; 6) FROM Department;
 			<listitem id="tmin">
 				<indexterm><primary><varname>tmin</varname></primary></indexterm>
 				<para>Mínimo temporal</para>
-				<para><varname>tmin(ttype): {ttype_instset,ttype_seqset}</varname></para>
+				<para><varname>tmin(ttype): {ttype_seq,ttype_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tmin(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}"
@@ -2737,7 +2735,7 @@ SELECT tmin(NoEmps) FROM Department;
 			<listitem id="tmax">
 				<indexterm><primary><varname>tmax</varname></primary></indexterm>
 				<para>Máximo temporal</para>
-				<para><varname>tmax(ttype): {ttype_instset,ttype_seqset}</varname></para>
+				<para><varname>tmax(ttype): {ttype_seq,ttype_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tmax(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}"
@@ -2747,7 +2745,7 @@ SELECT tmax(NoEmps) FROM Department;
 			<listitem id="tsum">
 				<indexterm><primary><varname>tsum</varname></primary></indexterm>
 				<para>Suma temporal</para>
-				<para><varname>tsum(tnumber): {tnumberinstset,tnumberseqset}</varname></para>
+				<para><varname>tsum(tnumber): {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tsum(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
@@ -2758,7 +2756,7 @@ SELECT tsum(NoEmps) FROM Department;
 			<listitem id="tavg">
 				<indexterm><primary><varname>tavg</varname></primary></indexterm>
 				<para>Promedio temporal</para>
-				<para><varname>tavg(tnumber): {tfloatinstset,tfloat_seqset}</varname></para>
+				<para><varname>tavg(tnumber): {tfloat_seq,tfloat_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tavg(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
@@ -2770,7 +2768,7 @@ SELECT tavg(NoEmps) FROM Department;
 			<listitem id="wmin">
 				<indexterm><primary><varname>wmin</varname></primary></indexterm>
 				<para>Mínimo de ventana</para>
-				<para><varname>wmin(tnumber,interval): {tnumberinstset,tnumberseqset}</varname></para>
+				<para><varname>wmin(tnumber,interval): {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wmin(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}"
@@ -2780,7 +2778,7 @@ SELECT wmin(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wmax">
 				<indexterm><primary><varname>wmax</varname></primary></indexterm>
 				<para>Máximo de ventana</para>
-				<para><varname>wmax(tnumber,interval): {tnumberinstset,tnumberseqset}</varname></para>
+				<para><varname>wmax(tnumber,interval): {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wmax(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}"
@@ -2790,7 +2788,7 @@ SELECT wmax(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wcount">
 				<indexterm><primary><varname>wcount</varname></primary></indexterm>
 				<para>Conteo de ventana</para>
-				<para><varname>wcount(tnumber,interval): {tintinstset,tint_seqset}</varname></para>
+				<para><varname>wcount(tnumber,interval): {tint_seq,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wcount(NoEmps, interval '2 days') FROM Department;
 -- "{[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
@@ -2801,7 +2799,7 @@ SELECT wcount(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wsum">
 				<indexterm><primary><varname>wsum</varname></primary></indexterm>
 				<para>Suma de ventana</para>
-				<para><varname>wsum(tint,interval): {tintinstset,tint_seqset}</varname></para>
+				<para><varname>wsum(tint,interval): {tint_seq,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wsum(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
@@ -2812,7 +2810,7 @@ SELECT wsum(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wavg">
 				<indexterm><primary><varname>wavg</varname></primary></indexterm>
 				<para>Promedio de ventana</para>
-				<para><varname>wavg(tint,interval): {tfloatinstset,tfloat_seqset}</varname></para>
+				<para><varname>wavg(tint,interval): {tfloat_discseq,tfloat_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wavg(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),

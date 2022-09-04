@@ -82,6 +82,10 @@ extern bool intersection_tinstant_discseq(const TInstant *inst,
   const TSequence *is, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tdiscseq_tdiscseq(const TSequence *is1,
   const TSequence *is2, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tcontseq_tdiscseq(const TSequence *seq1,
+  const TSequence *seq2, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tdiscseq_tcontseq(const TSequence *is,
+  const TSequence *seq2, TSequence **inter1, TSequence **inter2);
 
 extern bool intersection_tsequence_tinstant(const TSequence *seq,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);

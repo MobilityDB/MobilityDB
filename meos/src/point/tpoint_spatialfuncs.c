@@ -2626,6 +2626,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 {
   int srid = tpointseqset_srid(ss);
   bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
+  int interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ss->count);
   TSequence **sequencesy = palloc(sizeof(TSequence *) * ss->count);
   TSequence **sequencesz = hasz ?
@@ -2648,15 +2649,12 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
         instantsz[j] = tinstant_make(Float8GetDatum(p.z), T_TFLOAT, inst->t);
     }
     sequencesx[i] = tsequence_make_free(instantsx, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
     sequencesy[i] = tsequence_make_free(instantsy,
-      seq->count, seq->period.lower_inc, seq->period.upper_inc,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+      seq->count, seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
     if (hasz)
       sequencesz[i] = tsequence_make_free(instantsz, seq->count,
-        seq->period.lower_inc, seq->period.upper_inc,
-        MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+        seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
   }
   TSequenceSet *tsx = tsequenceset_make_free(sequencesx, ss->count, NORMALIZE);
   TSequenceSet *tsy = tsequenceset_make_free(sequencesy, ss->count, NORMALIZE);

@@ -2002,8 +2002,8 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
   uint8 subtype = (uint8_t) temp->subtype;
   if (variant & WKB_HEX)
   {
-    buf[0] = '0';
-    buf[1] = (uint8_t) hexchr[subtype + wkb_flags];
+    buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
+    buf[1] = (uint8_t) hexchr[subtype];
     return buf + 2;
   }
   else

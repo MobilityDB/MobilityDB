@@ -1235,7 +1235,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
   ensure_valid_tempsubtype(sync1->subtype);
-  if (sync1->subtype == TINSTANT)
+  if (sync1->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(sync1->flags))
   {
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1243,11 +1243,12 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     lfinfo.numparam = 1;
     lfinfo.param[0] = Float8GetDatum(dist);
     lfinfo.restype = T_TBOOL;
-    result = (Temporal *) tfunc_tinstant_tinstant((TInstant *) sync1,
-      (TInstant *) sync2, &lfinfo);
-    // else /* sync1->subtype == TINSTANTSET */
-      // result = (Temporal *) tfunc_tdiscseq_tdiscseq(
-        // (TSequence *) sync1, (TSequence *) sync2, &lfinfo);
+    if (sync1->subtype == TINSTANT)
+      result = (Temporal *) tfunc_tinstant_tinstant((TInstant *) sync1,
+        (TInstant *) sync2, &lfinfo);
+    else /* sync1->subtype == TSEQUENCE */
+      result = (Temporal *) tfunc_tdiscseq_tdiscseq(
+        (TSequence *) sync1, (TSequence *) sync2, &lfinfo);
   }
   else if (sync1->subtype == TSEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,

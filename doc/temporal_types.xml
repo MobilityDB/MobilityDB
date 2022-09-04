@@ -19,7 +19,7 @@
 	</para>
 
 	<para>
-		The <emphasis>subtype</emphasis> of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four subtypes, namely, instant, instant set, sequence, and sequence set.
+		The <emphasis>subtype</emphasis> of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in trhee subtypes, namely, instant, sequence, and sequence set.
 	</para>
 
 	<para>
@@ -122,7 +122,7 @@ SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-0
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequence));
 </programlisting>
 	<para>
-		the type modifier for the type <varname>varchar</varname> is the value 25, which indicates the maximum length of the values of the column, while the type modifier for the type <varname>tint</varname> is the string <varname>Sequence</varname>, which restricts the subtype of the values of the column to be sequences. In the case of temporal alphanumeric types (that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>), the possible values for the type modifier are <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type modifier is specified for a column, values of any subtype are allowed.
+		the type modifier for the type <varname>varchar</varname> is the value 25, which indicates the maximum length of the values of the column, while the type modifier for the type <varname>tint</varname> is the string <varname>Sequence</varname>, which restricts the subtype of the values of the column to be sequences. In the case of temporal alphanumeric types (that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>), the possible values for the type modifier are <varname>Instant</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type modifier is specified for a column, values of any subtype are allowed.
 	</para>
 
 	<para>

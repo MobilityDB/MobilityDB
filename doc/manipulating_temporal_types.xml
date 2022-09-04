@@ -744,7 +744,7 @@ SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 			<listitem id="tempSubtype">
 				<indexterm><primary><varname>tempSubtype</varname></primary></indexterm>
 				<para>Get the temporal type</para>
-				<para><varname>tempSubtype(ttype): {'Instant','InstantSet','Sequence','SequenceSet'}</varname></para>
+				<para><varname>tempSubtype(ttype): {'Instant','Sequence','SequenceSet'}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- "Sequence"
@@ -1197,23 +1197,23 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 		<itemizedlist>
 			<listitem id="ttype_transform">
 				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Transform a temporal value to another subtype</para>
 				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
-				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
 				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
+				<para><varname>ttype_discseq(ttype): ttype_discseq</varname></para>
 				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- "t@2001-01-01 00:00:00+00"
 SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
 -- ERROR: Cannot transform input to a temporal instant
-SELECT tbool_instset(tbool 'true@2001-01-01');
--- "{t@2001-01-01}"
 SELECT tint_seq(tint '1@2001-01-01');
 -- "[1@2001-01-01]"
+SELECT tbool_discseq(tbool 'true@2001-01-01');
+-- "{t@2001-01-01}"
 SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
 -- "{[2.5@2001-01-01]}"
 SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
@@ -1473,7 +1473,7 @@ SELECT atTimestamp(tfloat '[1@2001-01-01, 5@2001-01-05)', '2001-01-02');
 				<listitem id="atTimestampSet">
 					<indexterm><primary><varname>atTimestampSet</varname></primary></indexterm>
 					<para>Restrict to a timestamp set</para>
-					<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_instset}</varname></para>
+					<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_seq}</varname></para>
 					<programlisting xml:space="preserve">
 SELECT atTimestampSet(tint '[1@2001-01-01, 1@2001-01-15)',
   timestampset '{2001-01-01, 2001-01-03}');
@@ -1720,7 +1720,7 @@ SELECT asText(minusGeometry(minusPeriod(temp, box::period), box::geometry)) FROM
 		<sect2>
 			<title>Traditional Comparison Operators</title>
 
-			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding periods (see <xref linkend="time_comp_operators" />), then the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the subtype. For instant values, they compare first the timestamps and if those are equal, compare the values. For instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding periods (see <xref linkend="time_comp_operators" />), then the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the subtype. For instant values, they compare first the timestamps and if those are equal, compare the values. For sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
 
 			<para>The equality and inequality operators consider the equivalent representation for different subtypes as shown next.
 				<programlisting xml:space="preserve">
@@ -2701,7 +2701,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 			<listitem id="tcount">
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Temporal count</para>
-				<para><varname>tcount(ttype): {tint_instset,tint_seqset}</varname></para>
+				<para><varname>tcount(ttype): {tint_seq,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tcount(NoEmps) FROM Department;
 -- "{[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}"
@@ -2743,7 +2743,7 @@ SELECT tor(NoEmps #&gt; 6) FROM Department;
 			<listitem id="tmin">
 				<indexterm><primary><varname>tmin</varname></primary></indexterm>
 				<para>Temporal minimum</para>
-				<para><varname>tmin(ttype): {ttype_instset,ttype_seqset}</varname></para>
+				<para><varname>tmin(ttype): {ttype_seq,ttype_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tmin(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}"
@@ -2753,7 +2753,7 @@ SELECT tmin(NoEmps) FROM Department;
 			<listitem id="tmax">
 				<indexterm><primary><varname>tmax</varname></primary></indexterm>
 				<para>Temporal maximum</para>
-				<para><varname>tmax(ttype): {ttype_instset,ttype_seqset}</varname></para>
+				<para><varname>tmax(ttype): {ttype_seq,ttype_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tmax(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}"
@@ -2763,7 +2763,7 @@ SELECT tmax(NoEmps) FROM Department;
 			<listitem id="tsum">
 				<indexterm><primary><varname>tsum</varname></primary></indexterm>
 				<para>Temporal sum</para>
-				<para><varname>tsum(tnumber): {tnumberinstset,tnumberseqset}</varname></para>
+				<para><varname>tsum(tnumber): {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tsum(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
@@ -2774,7 +2774,7 @@ SELECT tsum(NoEmps) FROM Department;
 			<listitem id="tavg">
 				<indexterm><primary><varname>tavg</varname></primary></indexterm>
 				<para>Temporal average</para>
-				<para><varname>tavg(tnumber): {tfloat_instset,tfloat_seqset}</varname></para>
+				<para><varname>tavg(tnumber): {tfloat_seq,tfloat_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tavg(NoEmps) FROM Department;
 -- "{[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
@@ -2786,7 +2786,7 @@ SELECT tavg(NoEmps) FROM Department;
 			<listitem id="wmin">
 				<indexterm><primary><varname>wmin</varname></primary></indexterm>
 				<para>Window minimum</para>
-				<para><varname>wmin(tnumber,interval): {tnumberinstset,tnumberseqset}</varname></para>
+				<para><varname>wmin(tnumber,interval): {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wmin(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}"
@@ -2796,7 +2796,7 @@ SELECT wmin(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wmax">
 				<indexterm><primary><varname>wmax</varname></primary></indexterm>
 				<para>Window maximum</para>
-				<para><varname>wmax(tnumber,interval): {tnumberinstset,tnumberseqset}</varname></para>
+				<para><varname>wmax(tnumber,interval): {tnumber_discseq,tnumber_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wmax(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}"
@@ -2806,7 +2806,7 @@ SELECT wmax(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wcount">
 				<indexterm><primary><varname>wcount</varname></primary></indexterm>
 				<para>Window count</para>
-				<para><varname>wcount(tnumber,interval): {tint_instset,tint_seqset}</varname></para>
+				<para><varname>wcount(tnumber,interval): {tint_seq,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wcount(NoEmps, interval '2 days') FROM Department;
 -- "{[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
@@ -2817,7 +2817,7 @@ SELECT wcount(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wsum">
 				<indexterm><primary><varname>wsum</varname></primary></indexterm>
 				<para>Window sum</para>
-				<para><varname>wsum(tint,interval): {tint_instset,tint_seqset}</varname></para>
+				<para><varname>wsum(tint,interval): {tint_seq,tint_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wsum(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
@@ -2828,7 +2828,7 @@ SELECT wsum(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wavg">
 				<indexterm><primary><varname>wavg</varname></primary></indexterm>
 				<para>Window average</para>
-				<para><varname>wavg(tint,interval): {tfloat_instset,tfloat_seqset}</varname></para>
+				<para><varname>wavg(tint,interval): {tfloat_seq,tfloat_seqset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT wavg(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),

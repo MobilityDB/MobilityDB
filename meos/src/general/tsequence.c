@@ -1162,6 +1162,61 @@ intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   return k != 0;
 }
 
+/**
+ * Temporally intersect two temporal sequences
+ *
+ * @param[in] seq1,seq2 Input values
+ * @param[out] inter1, inter2 Output values
+ * @result Return false if the input values do not overlap on time.
+ */
+bool
+intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
+{
+  /* Test whether the bounding period of the two temporal values overlap */
+  if (! overlaps_span_span(&seq1->period, &seq2->period))
+    return false;
+
+  TInstant **instants1 = palloc(sizeof(TInstant *) * seq2->count);
+  const TInstant **instants2 = palloc(sizeof(TInstant *) * seq2->count);
+  int k = 0;
+  for (int i = 0; i < seq2->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq2, i);
+    if (contains_period_timestamp(&seq1->period, inst->t))
+    {
+      instants1[k] = tsequence_at_timestamp(seq1, inst->t);
+      instants2[k++] = inst;
+    }
+    if ((TimestampTz) seq1->period.upper < inst->t)
+      break;
+  }
+  if (k == 0)
+  {
+    pfree(instants1); pfree(instants2);
+    return false;
+  }
+
+  *inter1 = tsequence_make_free(instants1, k, true, true, DISCRETE, MERGE_NO);
+  *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, MERGE_NO);
+  pfree(instants2);
+  return true;
+}
+
+/**
+ * Temporally intersect two temporal values
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[out] inter1,inter2 Output values
+ * @result Return false if the input values do not overlap on time.
+ */
+bool
+intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
+{
+  return intersection_tcontseq_tdiscseq(seq2, seq1, inter2, inter1);
+}
+
 /*****************************************************************************/
 
 /**
@@ -4683,7 +4738,6 @@ TSequence *
 tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
   TInstant *inst;
-  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
 
   /* Singleton timestamp set */
   if (ts->count == 1)
@@ -4692,7 +4746,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
     if (inst == NULL)
       return NULL;
     TSequence *result = tsequence_make((const TInstant **) &inst, 1,
-      true, true, interp, NORMALIZE_NO);
+      true, true, DISCRETE, NORMALIZE_NO);
     pfree(inst);
     return result;
   }
@@ -4708,7 +4762,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   {
     if (! contains_timestampset_timestamp(ts, inst->t))
       return NULL;
-    return tsequence_make((const TInstant **) &inst, 1, true, true, interp,
+    return tsequence_make((const TInstant **) &inst, 1, true, true, DISCRETE,
       NORMALIZE_NO);
   }
 
@@ -4725,7 +4779,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
     if (inst != NULL)
       instants[k++] = inst;
   }
-  return tsequence_make_free(instants, k, true, true, interp, NORMALIZE_NO);
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /*****************************************************************************/

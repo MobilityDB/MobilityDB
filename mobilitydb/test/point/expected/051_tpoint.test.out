@@ -4000,13 +4000,13 @@ SELECT asText(atTimestampSet(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000
 SELECT asText(atTimestampSet(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestampset '{2000-01-01}'));
                astext                
 -------------------------------------
- [POINT(1 1)@2000-01-01 00:00:00+00]
+ {POINT(1 1)@2000-01-01 00:00:00+00}
 (1 row)
 
 SELECT asText(atTimestampSet(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', timestampset '{2000-01-01}'));
                astext                
 -------------------------------------
- [POINT(1 1)@2000-01-01 00:00:00+00]
+ {POINT(1 1)@2000-01-01 00:00:00+00}
 (1 row)
 
 SELECT asText(atTimestampSet(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestampset '{2000-01-01}'));
@@ -4024,13 +4024,13 @@ SELECT asText(atTimestampSet(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2
 SELECT asText(atTimestampSet(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestampset '{2000-01-01}'));
                  astext                  
 -----------------------------------------
- [POINT(1.5 1.5)@2000-01-01 00:00:00+00]
+ {POINT(1.5 1.5)@2000-01-01 00:00:00+00}
 (1 row)
 
 SELECT asText(atTimestampSet(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', timestampset '{2000-01-01}'));
                  astext                  
 -----------------------------------------
- [POINT(1.5 1.5)@2000-01-01 00:00:00+00]
+ {POINT(1.5 1.5)@2000-01-01 00:00:00+00}
 (1 row)
 
 SELECT asText(minusTimestampSet(tgeompoint 'Point(1 1)@2000-01-01', timestampset '{2000-01-01}'));

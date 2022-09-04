@@ -1091,7 +1091,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
     instants[i] = tsequence_inst_n(seq, outlist[i]);
   TSequence *result = tsequence_make((const TInstant **) instants, outn,
     seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE, NORMALIZE);
   pfree(instants);
 
   /* Only free if arrays are on heap */
@@ -1137,8 +1137,7 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT ||
-    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
@@ -1276,7 +1275,8 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   }
   /* Construct the result */
   TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
+    LINEAR : STEPWISE, NORMALIZE);
   pfree(instants);
   return result;
 }
@@ -1441,7 +1441,8 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   }
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
+    LINEAR : STEPWISE, NORMALIZE);
 }
 
 /**
@@ -1593,8 +1594,8 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
   /* Construct the result */
   return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
-    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_LINEAR(seq->flags),
-    NORMALIZE);
+    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
+    LINEAR : STEPWISE, NORMALIZE);
 }
 
 /**

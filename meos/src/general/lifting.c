@@ -1511,8 +1511,11 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     TSequence *seq1 = (TSequence *) temp1;
     int interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
     if (temp2->subtype == TINSTANT)
-      result = (Temporal *) tfunc_tcontseq_tinstant(
-        (TSequence *) temp1, (TInstant *) temp2, lfinfo);
+      result = (interp1 == DISCRETE) ?
+        (Temporal *) tfunc_tdiscseq_tinstant(
+          (TSequence *) temp1, (TInstant *) temp2, lfinfo) :
+        (Temporal *) tfunc_tcontseq_tinstant(
+          (TSequence *) temp1, (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
     {
       TSequence *seq2 = (TSequence *) temp2;
@@ -2095,8 +2098,11 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   else if (temp1->subtype == TSEQUENCE)
   {
     if (temp2->subtype == TINSTANT)
-      result = efunc_tcontseq_tinstant((TSequence *) temp1,
-        (TInstant *) temp2, lfinfo);
+      result =  MOBDB_FLAGS_GET_DISCRETE(temp1->flags) ?
+        efunc_tdiscseq_tinstant((TSequence *) temp1,
+          (TInstant *) temp2, lfinfo) :
+        efunc_tcontseq_tinstant((TSequence *) temp1,
+          (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
     {
       int interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);

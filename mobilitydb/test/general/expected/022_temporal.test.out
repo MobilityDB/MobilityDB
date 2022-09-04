@@ -450,25 +450,25 @@ ERROR:  Invalid temporal type modifier: instan
 LINE 2: SELECT tbool(Instan) 'true@2000-01-01';
                ^
 SELECT tbool(Sequence) 'true@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT tbool(Sequence) 'true@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT tbool(SequenceSet) 'true@2000-01-01';
 ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT tbool(Sequence) 'true@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT tbool(SequenceSet) 'true@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT tbool(Instant) '{true@2000-01-01, false@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT tbool(SequenceSet) '{true@2000-01-01, false@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT tbool(Instant) '[true@2000-01-01, false@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT tbool(SequenceSet) '[true@2000-01-01, false@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT tbool(Instant) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tbool(SequenceSet) '{true@2000-01-01, false@2000-01-02}';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT tbool(Instant) '[true@2000-01-01, false@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tbool(SequenceSet) '[true@2000-01-01, false@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT tbool(Instant) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
+ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT tbool(Sequence) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT tbool(Sequence) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT tint '1@2000-01-01';
            tint           
 --------------------------
@@ -519,25 +519,25 @@ SELECT tint(SequenceSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-0
 
 /* Errors */
 SELECT tint(Sequence) '1@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT tint(Sequence) '1@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT tint(SequenceSet) '1@2000-01-01';
 ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT tint(Sequence) '1@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT tint(SequenceSet) '1@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT tint(Instant) '{1@2000-01-01, 2@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT tint(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT tint(Instant) '[1@2000-01-01, 2@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT tint(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT tint(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tint(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT tint(Instant) '[1@2000-01-01, 2@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tint(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT tint(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT tint(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT tint(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT tfloat '1@2000-01-01';
           tfloat          
 --------------------------
@@ -588,25 +588,25 @@ SELECT tfloat(SequenceSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000
 
 /* Errors */
 SELECT tfloat(Sequence) '1@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT tfloat(Sequence) '1@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT tfloat(SequenceSet) '1@2000-01-01';
 ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT tfloat(Sequence) '1@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT tfloat(SequenceSet) '1@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT tfloat(Instant) '{1@2000-01-01, 2@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT tfloat(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT tfloat(Instant) '[1@2000-01-01, 2@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT tfloat(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT tfloat(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tfloat(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT tfloat(Instant) '[1@2000-01-01, 2@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tfloat(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT tfloat(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT tfloat(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT tfloat(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT ttext '1@2000-01-01';
            ttext            
 ----------------------------
@@ -657,25 +657,25 @@ SELECT ttext(SequenceSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-
 
 /* Errors */
 SELECT ttext(Sequence) '1@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT ttext(Sequence) '1@2000-01-01';
-ERROR:  Temporal type (Instant) does not match column type (InstantSet)
-SELECT ttext(SequenceSet) '1@2000-01-01';
 ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT ttext(Sequence) '1@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT ttext(SequenceSet) '1@2000-01-01';
+ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT ttext(Instant) '{1@2000-01-01, 2@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT ttext(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT ttext(Instant) '[1@2000-01-01, 2@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Instant)
-SELECT ttext(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
-ERROR:  Temporal type (InstantSet) does not match column type (Sequence)
-SELECT ttext(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT ttext(SequenceSet) '{1@2000-01-01, 2@2000-01-02}';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT ttext(Instant) '[1@2000-01-01, 2@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT ttext(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
+ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+SELECT ttext(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
-ERROR:  Temporal type (Sequence) does not match column type (InstantSet)
+ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT tbool_inst(TRUE, timestamptz '2012-01-01 08:00:00');
         tbool_inst        
 --------------------------

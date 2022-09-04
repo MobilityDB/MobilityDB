@@ -219,28 +219,28 @@
 					<para><varname>random_tgeogpoint3D_inst</varname>: Generate a random temporal geographic 3D point of instant subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tbool_instset</varname>: Generate a random temporal Boolean of instant set subtype</para>
+					<para><varname>random_tbool_discseq</varname>: Generate a random temporal Boolean of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tint_instset</varname>: Generate a random temporal integer of instant set subtype</para>
+					<para><varname>random_tint_discseq</varname>: Generate a random temporal integer of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tfloat_instset</varname>: Generate a random temporal float of instant set subtype</para>
+					<para><varname>random_tfloat_discseq</varname>: Generate a random temporal float of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_ttext_instset</varname>: Generate a random temporal text of instant set subtype</para>
+					<para><varname>random_ttext_discseq</varname>: Generate a random temporal text of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint_instset</varname>: Generate a random temporal geometric 2D point of instant set subtype</para>
+					<para><varname>random_tgeompoint_discseq</varname>: Generate a random temporal geometric 2D point of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_instset</varname>: Generate a random temporal geometric 3D point of instant set subtype</para>
+					<para><varname>random_tgeompoint3D_discseq</varname>: Generate a random temporal geometric 3D point of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint_instset</varname>: Generate a random temporal geographic 2D point of instant set subtype</para>
+					<para><varname>random_tgeogpoint_discseq</varname>: Generate a random temporal geographic 2D point of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_instset</varname>: Generate a random temporal geographic 3D point of instant set subtype</para>
+					<para><varname>random_tgeogpoint3D_discseq</varname>: Generate a random temporal geographic 3D point of instant set subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_seq</varname>: Generate a random temporal Boolean of sequence subtype</para>
@@ -497,32 +497,32 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 		</para>
 
 		<para>
-			The creation of a table <varname>tbl_tint_instset</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
+			The creation of a table <varname>tbl_tint_discseq</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
 		</para>
 		<programlisting xml:space="preserve">
-CREATE TABLE tbl_tint_instset AS
+CREATE TABLE tbl_tint_discseq AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tint_instset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+SELECT k, random_tint_discseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tint_instset t1
-SET ti = (SELECT ti FROM tbl_tint_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tint_discseq t1
+SET ti = (SELECT ti FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc rows with the same timestamp */
-UPDATE tbl_tint_instset t1
-SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tint_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tint_discseq t1
+SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc rows that meet */
-UPDATE tbl_tint_instset t1
+UPDATE tbl_tint_discseq t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tint_instset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc rows that overlap */
-UPDATE tbl_tint_instset t1
+UPDATE tbl_tint_discseq t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tint_instset t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 </programlisting>
 		<para>
@@ -588,30 +588,30 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_tgeompoint_instset</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
+			The creation of a table <varname>tbl_tgeompoint_discseq</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
 		</para>
 		<programlisting xml:space="preserve">
-CREATE TABLE tbl_tgeompoint_instset AS
-SELECT k, random_tgeompoint_instset(0, 100, 0, 100, '2001-01-01', '2001-12-31',
+CREATE TABLE tbl_tgeompoint_discseq AS
+SELECT k, random_tgeompoint_discseq(0, 100, 0, 100, '2001-01-01', '2001-12-31',
   10, 10, 5, 10, 3812) AS ti
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompoint_instset t1
-SET ti = (SELECT ti FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint_discseq t1
+SET ti = (SELECT ti FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompoint_instset t1
-SET ti = (SELECT round(ti,6) FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint_discseq t1
+SET ti = (SELECT round(ti,6) FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompoint_instset t1
+UPDATE tbl_tgeompoint_discseq t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompoint_instset t1
+UPDATE tbl_tgeompoint_discseq t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tgeompoint_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 </programlisting>
 
@@ -660,10 +660,10 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 				<para><varname>random_tnpoint_inst</varname>: Generate a random temporal network point of instant subtype</para>
 			</listitem>
 			<listitem>
-				<para><varname>random_tnpoint_instset</varname>: Generate a random temporal network point of instant set subtype</para>
+				<para><varname>random_tnpoint_discseq</varname>: Generate a random temporal network point of sequence subtype and discrete interpolation</para>
 			</listitem>
 			<listitem>
-				<para><varname>random_tnpoint_seq</varname>: Generate a random temporal network point of sequence subtype</para>
+				<para><varname>random_tnpoint_seq</varname>: Generate a random temporal network point of sequence subtype and linear or stepwise interpolation</para>
 			</listitem>
 			<listitem>
 				<para><varname>random_tnpoint_seqset</varname>: Generate a random temporal network point of sequence set subtype</para>

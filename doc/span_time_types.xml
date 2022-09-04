@@ -655,7 +655,7 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 
 			<listitem id="time_tscale">
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
-				<para>Scale the time value to an interval. If the time span of the time value is zero (for example, for a singleton instant set), the result is the time value. The given interval must be strictly greater than zero.</para>
+				<para>Scale the time value to an interval. If the time span of the time value is zero (for example, for a singleton timestamp set), the result is the time value. The given interval must be strictly greater than zero.</para>
 				<para><varname>tscale({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
 				<programlisting xml:space="preserve">
 SELECT tscale(timestampset '{2001-01-01}', '1 day');
@@ -1061,7 +1061,7 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<listitem id="time_tcount">
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Temporal count</para>
-					<para><varname>tcount({timestampset,period,periodset}): {tint_instset,tint_seqset}</varname></para>
+					<para><varname>tcount({timestampset,period,periodset}): {tint_seq,tint_seqset}</varname></para>
 					<programlisting xml:space="preserve">
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION

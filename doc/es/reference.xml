@@ -606,11 +606,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_instset"><varname>ttype_instset</varname></link>: Constructor para tipos temporales de subtipo conjunto de instantes</para>
+					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
+					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
 				</listitem>
 
 				<listitem>
@@ -670,7 +670,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_instset, ttype_seq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
 				</listitem>
 
 				<listitem>
@@ -1699,11 +1699,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_instset"><varname>tnpoint_instset</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de instantes</para>
+						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructor para puntos de red temporal de subtipo secuencia</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructor para puntos de red temporal de subtipo secuencia</para>
+						<para><link linkend="tnpoint_discseq"><varname>tnpoint_discseq</varname></link>: Constructor para puntos de red temporal de subtipo secuencia con interpolación discreta</para>
 					</listitem>
 
 					<listitem>
@@ -1729,7 +1729,7 @@
 				<title>Funciones y operadores</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_instset, tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
+						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
 					</listitem>
 
 					<listitem>

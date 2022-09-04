@@ -1830,8 +1830,6 @@ Temporal *
 tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   const TimestampSet *ts, bool atfunc)
 {
-  int interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
-
   /* Singleton timestamp set */
   if (ts->count == 1)
   {
@@ -1841,7 +1839,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
     {
       TInstant *inst = (TInstant *) temp;
       Temporal *result = (Temporal *) tsequence_make((const TInstant **) &inst,
-        1, true, true, interp, NORMALIZE_NO);
+        1, true, true, DISCRETE, NORMALIZE_NO);
       pfree(inst);
       return result;
     }
@@ -1883,7 +1881,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
       }
     }
     return (Temporal *) tsequence_make_free(instants, count, true, true,
-      interp, NORMALIZE_NO);
+      DISCRETE, NORMALIZE_NO);
   }
   else
   {

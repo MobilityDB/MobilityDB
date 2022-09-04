@@ -148,10 +148,10 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
-  if ((temp1->subtype == TSEQUENCE || temp1->subtype == TSEQUENCESET) &&
-      (temp2->subtype == TSEQUENCE || temp2->subtype == TSEQUENCESET) &&
-      MOBDB_FLAGS_GET_LINEAR(temp1->flags) != 
-        MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+  int interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
+  int interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+  if ((interp1 == STEPWISE && interp2 == LINEAR) ||
+      (interp2 == STEPWISE && interp1 == LINEAR))
     elog(ERROR, "The temporal values must have the same continuous interpolation");
   return;
 }
@@ -440,9 +440,13 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           (TSequence *) temp1, (TInstant *) temp2,
           (TInstant **) inter1, (TInstant **) inter2);
       else if (temp2->subtype == TSEQUENCE)
-        result = intersection_tdiscseq_tdiscseq(
-          (TSequence *) temp1, (TSequence *) temp2,
-          (TSequence **) inter1, (TSequence **) inter2);
+        result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
+          intersection_tdiscseq_tdiscseq(
+            (TSequence *) temp1, (TSequence *) temp2,
+            (TSequence **) inter1, (TSequence **) inter2) :
+          intersection_tdiscseq_tcontseq(
+            (TSequence *) temp1, (TSequence *) temp2,
+            (TSequence **) inter1, (TSequence **) inter2);
       else /* temp2->subtype == TSEQUENCESET */
         result = intersection_tdiscseq_tsequenceset(
           (TSequence *) temp1, (TSequenceSet *) temp2,
@@ -456,7 +460,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           (TInstant **) inter1, (TInstant **) inter2);
       else if (temp2->subtype == TSEQUENCE)
         result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
-          intersection_tdiscseq_tdiscseq(
+          intersection_tcontseq_tdiscseq(
             (TSequence *) temp1, (TSequence *) temp2,
             (TSequence **) inter1, (TSequence **) inter2) :
           synchronize_tsequence_tsequence(

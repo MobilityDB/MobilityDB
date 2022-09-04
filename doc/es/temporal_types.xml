@@ -19,7 +19,7 @@
 	</para>
 
 	<para>
-		El <emphasis>subtipo</emphasis> de un valor temporal establece la extensión temporal en la que se registra la evolución de los valores. Los valores temporales vienen en cuatro subtipos, a saber, instante, conjunto de instantes, secuencia y conjunto de secuencias.
+		El <emphasis>subtipo</emphasis> de un valor temporal establece la extensión temporal en la que se registra la evolución de los valores. Los valores temporales vienen en tres subtipos, a saber, instante, secuencia y conjunto de secuencias.
 	</para>
 
 	<para>
@@ -122,7 +122,7 @@ SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-0
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequence));
 </programlisting>
 	<para>
-		el modificador de tipo para el tipo <varname>varchar</varname> es el valor 25, que indica la longitud máxima de los valores de la columna, mientras que el modificador de tipo para el tipo <varname>tint</varname> es la cadena de caracteres <varname>Sequence</varname>, que restringe el subtipo de los valores de la columna para que sean secuencias. En el caso de tipos alfanuméricos temporales (es decir, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname> y <varname>ttext</varname>), los valores posibles para el modificador de tipo son <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname> y <varname>SequenceSet</varname>. Si no se especifica ningún modificador de tipo para una columna, se permiten valores de cualquier subtipo.
+		el modificador de tipo para el tipo <varname>varchar</varname> es el valor 25, que indica la longitud máxima de los valores de la columna, mientras que el modificador de tipo para el tipo <varname>tint</varname> es la cadena de caracteres <varname>Sequence</varname>, que restringe el subtipo de los valores de la columna para que sean secuencias. En el caso de tipos alfanuméricos temporales (es decir, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname> y <varname>ttext</varname>), los valores posibles para el modificador de tipo son <varname>Instant</varname>, <varname>Sequence</varname> y <varname>SequenceSet</varname>. Si no se especifica ningún modificador de tipo para una columna, se permiten valores de cualquier subtipo.
 	</para>
 
 	<para>

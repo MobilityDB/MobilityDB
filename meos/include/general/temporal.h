@@ -287,12 +287,12 @@ enum MOBDB_WKB_TSUBTYPE
  *   are present and x are unused
  * - Temporal types: xxSS where SS correspond to the subtype and x is unused
  */
-#define MOBDB_WKB_XFLAG            0x01
-#define MOBDB_WKB_TFLAG            0x02
-#define MOBDB_WKB_INTERPFLAGS      0x0C
-#define MOBDB_WKB_ZFLAG            0x10
-#define MOBDB_WKB_GEODETICFLAG     0x20
-#define MOBDB_WKB_SRIDFLAG         0x40
+#define MOBDB_WKB_XFLAG            0x01  // 1
+#define MOBDB_WKB_TFLAG            0x02  // 2
+#define MOBDB_WKB_INTERPFLAGS      0x0C  // 4 + 8
+#define MOBDB_WKB_ZFLAG            0x10  // 16
+#define MOBDB_WKB_GEODETICFLAG     0x20  // 32
+#define MOBDB_WKB_SRIDFLAG         0x40  // 64
 
 // #define MOBDB_WKB_SRIDFLAG         0x01
 // #define MOBDB_WKB_DISCRETE_INTERP  0x04
