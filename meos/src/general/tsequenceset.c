@@ -1332,7 +1332,7 @@ tsequenceset_to_tdiscseq(const TSequenceSet *ts)
   {
     seq = tsequenceset_seq_n(ts, i);
     if (seq->count != 1)
-      elog(ERROR, "Cannot transform input to a temporal instant set");
+      elog(ERROR, "Cannot transform input to a temporal discrete sequence");
   }
 
   const TInstant **instants = palloc(sizeof(TInstant *) * ts->count);

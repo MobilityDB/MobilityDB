@@ -127,8 +127,8 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal instant set
- * point and the temporal float.
+ * Construct a geometry/geography with M measure from the temporal discrete
+ * sequence point and the temporal float.
  *
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
@@ -608,7 +608,7 @@ geo_to_tpointinst(const GSERIALIZED *geo)
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal instant set point.
+ * encode the timestamps in Unix epoch into a temporal discrete sequence point.
  */
 static TSequence *
 geo_to_tpointdiscseq(const GSERIALIZED *geo)
@@ -1785,7 +1785,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags));
+    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE);
   for (int i = 0; i < seq->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);

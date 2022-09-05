@@ -342,7 +342,7 @@ SELECT tnpoint(Sequence) 'Npoint(1, 0.2)@2000-01-01';
 -- ERROR: Temporal type (Instant) does not match column type (Sequence)
 </programlisting>
 
-		<para>Temporal network point values of sequence subtype must be defined on a single route. Therefore, a value of sequence set subtype is needed for representing the movement of an object that traverses several routes, even if there is no temporal gap. For example, in the following value</para>
+		<para>Temporal network point values of sequence subtype and linear or stepwise interpolation must be defined on a single route. Therefore, a value of sequence set subtype is needed for representing the movement of an object that traverses several routes, even if there is no temporal gap. For example, in the following value</para>
 		<programlisting xml:space="preserve">
 SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.5)@2001-01-03),
   [NPoint(2, 0.4)@2001-01-03, NPoint(2, 0.6)@2001-01-04)}';

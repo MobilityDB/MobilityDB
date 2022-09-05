@@ -276,7 +276,7 @@ SELECT periodsetFromHexWKB(
 		<sect2>
 			<title>Funciones de constructor</title>
 
-			<para>Los tipos de rango tienen una función constructora que acepta dos o cuatro argumentos. La forma de dos argumentos construye un rango en <emphasis>forma normal</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo. La forma de cuatro argumentos construye un rango con límites especificados por el tercer y cuarto argumento, que son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o no. Nótese que los rangos de enteros son siempre convertidos en forma normal.
+			<para>Los tipos de rango tienen una función constructora que acepta cuatro argumentos, donde los dos últimos son opcionales. Los primeros dos argumentos especifican, respectivamente, el límite inferior y el superior, y los dos últimos argumentos son valores booleanos que indican, respectivamente, si los límites inferior y el superior son inclusivos o no. Se supone que los dos últimos argumentos son verdaderos si no se especifican. Nótese que los intervalos de enteros siempre se transforman en <emphasis>normal form</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo.
 			</para>
 			<itemizedlist>
 				<listitem id="period">

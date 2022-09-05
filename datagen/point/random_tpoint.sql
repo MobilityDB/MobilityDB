@@ -1580,8 +1580,8 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeompoint_instset;
-CREATE FUNCTION random_tgeompoint_instset(lowx float, highx float, lowy float,
+DROP FUNCTION IF EXISTS random_tgeompoint_discseq;
+CREATE FUNCTION random_tgeompoint_discseq(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
   maxminutes int, mincard int, maxcard int, srid int DEFAULT 0)
   RETURNS tgeompoint AS $$
@@ -1601,18 +1601,18 @@ BEGIN
   LOOP
     result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_instset(result);
+  RETURN tgeompoint_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint_instset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asewkt(random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asewkt(random_tgeompoint_instset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812))
+SELECT k, asewkt(random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeompoint_instset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -1630,8 +1630,8 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeompoint3D_instset;
-CREATE FUNCTION random_tgeompoint3D_instset(lowx float, highx float,
+DROP FUNCTION IF EXISTS random_tgeompoint3D_discseq;
+CREATE FUNCTION random_tgeompoint3D_discseq(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int, mincard int, maxcard int,
   srid int DEFAULT 0)
@@ -1652,18 +1652,18 @@ BEGIN
   LOOP
     result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_instset(result);
+  RETURN tgeompoint_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint3D_instset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)) AS ti
+SELECT k, asewkt(random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, asewkt(random_tgeompoint3D_instset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812)) AS ti
+SELECT k, asewkt(random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812)) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeompoint3D_instset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)
+SELECT k, random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)
 FROM generate_series(1,10) k;
 */
 
@@ -1680,8 +1680,8 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeogpoint_instset;
-CREATE FUNCTION random_tgeogpoint_instset(lowx float, highx float,
+DROP FUNCTION IF EXISTS random_tgeogpoint_discseq;
+CREATE FUNCTION random_tgeogpoint_discseq(lowx float, highx float,
   lowy float, highy float, lowtime timestamptz, hightime timestamptz,
   maxdelta float, maxminutes int, mincard int, maxcard int, srid int DEFAULT 4326)
   RETURNS tgeogpoint AS $$
@@ -1701,18 +1701,18 @@ BEGIN
   LOOP
     result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_instset(result);
+  RETURN tgeogpoint_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint_instset(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEwkt(random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asEwkt(random_tgeogpoint_instset(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
+SELECT k, asEwkt(random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeogpoint_instset(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -1730,8 +1730,8 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
-DROP FUNCTION IF EXISTS random_tgeogpoint3D_instset;
-CREATE FUNCTION random_tgeogpoint3D_instset(lowx float, highx float,
+DROP FUNCTION IF EXISTS random_tgeogpoint3D_discseq;
+CREATE FUNCTION random_tgeogpoint3D_discseq(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int, mincard int, maxcard int,
   srid int DEFAULT 4326)
@@ -1752,18 +1752,18 @@ BEGIN
   LOOP
     result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_instset(result);
+  RETURN tgeogpoint_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3D_instset(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEwkt(random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asEwkt(random_tgeogpoint3D_instset(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
+SELECT k, asEwkt(random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeogpoint3D_instset(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 

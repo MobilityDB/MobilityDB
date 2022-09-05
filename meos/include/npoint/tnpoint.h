@@ -87,13 +87,13 @@ typedef struct
 #define GEOM_TO_NPOINT        false
 
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
-extern TSequence *tnpointinstset_tgeompointinstset(const TSequence *is);
-extern TSequence *tnpointseq_tgeompointseq(const TSequence *seq);
+extern TSequence *tnpointdiscseq_tgeompointdiscseq(const TSequence *is);
+extern TSequence *tnpointcontseq_tgeompointcontseq(const TSequence *seq);
 extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss);
 extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 
 extern TInstant *tgeompointinst_tnpointinst(const TInstant *inst);
-extern TSequence *tgeompointinstset_tnpointinstset(const TSequence *is);
+extern TSequence *tgeompointdiscseq_tnpointdiscseq(const TSequence *is);
 extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);
 extern TSequenceSet *tgeompointseqset_tnpointseqset(const TSequenceSet *ss);
 extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
@@ -103,15 +103,14 @@ extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 /* Accessor functions */
 
 extern Nsegment **tnpointinst_positions(const TInstant *inst);
-extern Nsegment **tnpointinstset_positions(const TSequence *is, int *count);
 extern Nsegment **tnpointseq_positions(const TSequence *seq, int *count);
 extern Nsegment **tnpointseqset_positions(const TSequenceSet *ss, int *count);
 extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpointinst_route(const TInstant *inst);
 extern int64 tnpoint_route(const Temporal *temp);
 extern int64 *tnpointinst_routes(const TInstant *inst);
-extern int64 *tnpointinstset_routes(const TSequence *is);
-extern int64 *tnpointseq_routes(const TSequence *seq);
+extern int64 *tnpointdiscseq_routes(const TSequence *is);
+extern int64 *tnpointcontseq_routes(const TSequence *seq);
 extern int64 *tnpointseqset_routes(const TSequenceSet *ss);
 extern int64 *tnpoint_routes(const Temporal *temp, int *count);
 

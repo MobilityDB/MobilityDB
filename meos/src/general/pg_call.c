@@ -206,7 +206,7 @@ pg_datan2(float8 arg1, float8 arg2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a string to a date in internal date format.
  * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
@@ -270,7 +270,7 @@ pg_date_in(char *str)
  * Given internal format date, convert to text string.
  */
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a date in internal date format to a string.
  * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
@@ -339,6 +339,11 @@ AdjustTimeForTypmod(TimeADT *time, int32 typmod)
   }
 }
 
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a string to a time.
+ * @note PostgreSQL function: Datum time_in(PG_FUNCTION_ARGS)
+ */
 TimeADT
 pg_time_in(char *str, int32 typmod)
 {
@@ -366,6 +371,11 @@ pg_time_in(char *str, int32 typmod)
   return result;
 }
 
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a time to a string.
+ * @note PostgreSQL function: Datum time_out(PG_FUNCTION_ARGS)
+ */
 char *
 pg_time_out(TimeADT time)
 {
@@ -515,7 +525,7 @@ timestamp_in_common(char *str, int32 typmod, bool withtz)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp with time zone.
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
@@ -526,7 +536,7 @@ pg_timestamptz_in(char *str, int32 typmod)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
  * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
  */
@@ -564,7 +574,7 @@ timestamp_out_common(TimestampTz dt, bool withtz)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a timestamp with timezone to a string.
  * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
  */
@@ -575,7 +585,7 @@ pg_timestamptz_out(TimestampTz dt)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a timestamp without timezone to a string.
  * @note PostgreSQL function: Datum timestamp_out(PG_FUNCTION_ARGS)
  */
@@ -754,10 +764,8 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
 }
 
 /**
- * @brief Convert a string to internal form.
- *
- * External format(s):
- *  Uses the generic date/time parsing and decoding routines.
+ * @ingroup libmeos_pg_types
+ * @brief Convert a string to an interval.
  * @note PostgreSQL function: Datum interval_in(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -823,6 +831,7 @@ pg_interval_in(char *str, int32 typmod)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Interval constructor
  * @note PostgreSQL function: Datum make_interval(PG_FUNCTION_ARGS)
  */
@@ -851,6 +860,7 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Convert a time span to external form.
  * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
  */
@@ -876,6 +886,7 @@ pg_interval_out(Interval *span)
 #define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
  * @note PostgreSQL function: Datum interval_pl(PG_FUNCTION_ARGS)
  */
@@ -904,6 +915,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
  *
  * Note that interval has provisions for qualitative year/month and day
@@ -983,6 +995,7 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
  * @note PostgreSQL function: Datum timestamp_pl_interval(PG_FUNCTION_ARGS)
  */
@@ -996,7 +1009,7 @@ pg_timestamp_mi_interval(TimestampTz timestamp, const Interval *span)
   return pg_timestamp_pl_interval(timestamp, &tspan);
 }
 
-/*
+/**
  * @brief Add an interval to a timestamp data type.
  *
  *  Adjust interval so 'time' contains less than a whole day, adding
@@ -1031,7 +1044,8 @@ pg_interval_justify_hours(const Interval *span)
   return result;
 }
 
-/*
+/**
+ * @ingroup libmeos_pg_types
  * @brief Compute the difference of two timestamps
  * @note PostgreSQL function: Datum timestamp_mi(PG_FUNCTION_ARGS)
  * The original code from PostgreSQL has `Timestamp` as arguments
@@ -1085,7 +1099,8 @@ interval_cmp_value(const Interval *interval)
   return span;
 }
 
-/*
+/**
+ * @ingroup libmeos_pg_types
  * @brief Compare the two intervals
  * @note PostgreSQL function: Datum interval_cmp(PG_FUNCTION_ARGS)
  */
@@ -1178,7 +1193,7 @@ hash_bytes_uint32_extended(uint32 k, uint64 seed)
 
 #endif /* POSTGRESQL_VERSION_NUMBER < 130000 */
 
-/*
+/**
  * @brief Get the 32-bit hash value of an int64 value.
  * @note PostgreSQL function: Datum hashint8(PG_FUNCTION_ARGS)
  */
@@ -1199,7 +1214,7 @@ pg_hashint8(int64 val)
   return DatumGetUInt32(hash_uint32(lohalf));
 }
 
-/*
+/**
  * @brief Get the 64-bit hash value of an int64 value.
  * @note PostgreSQL function: Datum hashint8extended(PG_FUNCTION_ARGS)
  */
@@ -1213,7 +1228,7 @@ pg_hashint8extended(int64 val, uint64 seed)
   return hash_uint32_extended(lohalf, seed);
 }
 
-/*
+/**
  * @brief Get the 32-bit hash value of an float64 value.
  * @note PostgreSQL function: Datum hashfloat8(PG_FUNCTION_ARGS)
  */
@@ -1238,7 +1253,7 @@ pg_hashfloat8(float8 key)
 }
 
 #if 0 /* not used */
-/*
+/**
  * @brief Get the 64-bit hash value of a float64 value.
  * @note PostgreSQL function: Datum hashfloat8extended(PG_FUNCTION_ARGS)
  */
@@ -1255,7 +1270,7 @@ pg_hashfloat8extended(float8 key, uint64 seed)
 }
 #endif /* not used */
 
-/*
+/**
  * @brief Get the 32-bit hash value of an text value.
  * @note PostgreSQL function: Datum hashtext(PG_FUNCTION_ARGS)
  * We simulate what would happen using DEFAULT_COLLATION_OID

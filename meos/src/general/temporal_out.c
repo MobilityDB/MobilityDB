@@ -1508,7 +1508,20 @@ bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 /**
  * Write into the buffer the int4 represented in Well-Known Binary (WKB) format
  */
-uint8_t *
+static uint8_t *
+uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
+{
+  if (sizeof(int8) != MOBDB_WKB_BYTE_SIZE)
+    elog(ERROR, "Machine int8 size is not %d bytes!", MOBDB_WKB_BYTE_SIZE);
+
+  char *iptr = (char *)(&i);
+  return bytes_to_wkb_buf(iptr, MOBDB_WKB_BYTE_SIZE, buf, variant);
+}
+
+/**
+ * Write into the buffer the int2 represented in Well-Known Binary (WKB) format
+ */
+static uint8_t *
 int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int16) != MOBDB_WKB_INT2_SIZE)
@@ -1986,9 +1999,10 @@ temporal_temptype_to_wkb_buf(const Temporal *temp, uint8_t *buf,
 static uint8_t *
 temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-  uint8_t wkb_flags = 0;
-  /* Write the flags */
+  /* Set the subtype and the interpolation */
+  uint8_t wkb_flags = (uint8_t) temp->subtype;
   MOBDB_WKB_SET_INTERP(wkb_flags, MOBDB_FLAGS_GET_INTERP(temp->flags));
+  /* Set the flags */
   if (tgeo_type(temp->temptype))
   {
     if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1998,19 +2012,8 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
     if (tpoint_wkb_needs_srid(temp, variant))
       wkb_flags |= MOBDB_WKB_SRIDFLAG;
   }
-  /* Write the subtype */
-  uint8 subtype = (uint8_t) temp->subtype;
-  if (variant & WKB_HEX)
-  {
-    buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
-    buf[1] = (uint8_t) hexchr[subtype];
-    return buf + 2;
-  }
-  else
-  {
-    buf[0] = (uint8_t) subtype + wkb_flags;
-    return buf + 1;
-  }
+  /* Write the flags */
+  return uint8_to_wkb_buf(wkb_flags, buf, variant);
 }
 
 /**
@@ -2086,39 +2089,6 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
     buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
   return tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
 }
-
-/**
- * Write into the buffer the temporal instant set represented in
- * Well-Known Binary (WKB) format as follows
- * - Endian
- * - Linear, SRID, Geodetic, Z, Temporal Subtype
- * - SRID (if requested)
- * - Number of instants
- * - Output of the instants by function tinstant_basevalue_time_to_wkb_buf
- */
-// static uint8_t *
-// tdiscseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
-// {
-  // /* Write the endian flag */
-  // buf = endian_to_wkb_buf(buf, variant);
-  // /* Write the temporal type */
-  // buf = temporal_temptype_to_wkb_buf((Temporal *) seq, buf, variant);
-  // /* Write the temporal flags */
-  // buf = temporal_flags_to_wkb_buf((Temporal *) seq, buf, variant);
-  // /* Write the optional SRID for extended variant */
-  // if (tgeo_type(seq->temptype) &&
-      // tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    // buf = int32_to_wkb_buf(tpointinstset_srid(seq), buf, variant);
-  // /* Write the count */
-  // buf = int32_to_wkb_buf(seq->count, buf, variant);
-  // /* Write the array of instants */
-  // for (int i = 0; i < seq->count; i++)
-  // {
-    // const TInstant *inst = tsequence_inst_n(seq, i);
-    // buf = tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
-  // }
-  // return buf;
-// }
 
 /**
  * Write into the buffer the temporal sequence represented in

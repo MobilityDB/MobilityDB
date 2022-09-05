@@ -187,10 +187,10 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
  *
- * @param[in] inst1, inst2 Temporal instants
+ * @param[in] inst1,inst2 Temporal instants
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
- * @param[in] subtype Subtype for which the function is called
+ * @param[in] interp Interpolation
  */
 void
 ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
@@ -241,7 +241,7 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
  * @param[in] count Number of elements in the input array
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
- * @param[in] subtype Subtype for which the function is called
+ * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance to split the temporal sequence
  * @param[in] maxt Maximum time interval to split the temporal sequence
  * @param[out] countsplits Number of splits
@@ -436,7 +436,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags))
     {
       if (temp2->subtype == TINSTANT)
-        result = intersection_tdiscseq_tinstant(
+        result = intersection_tsequence_tinstant(
           (TSequence *) temp1, (TInstant *) temp2,
           (TInstant **) inter1, (TInstant **) inter2);
       else if (temp2->subtype == TSEQUENCE)
@@ -953,6 +953,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temparr Array of values
  * @param[in] count Number of values
  * @param[in] subtype common subtype
+ * @param[in] interp Interpolation
  * @result  Array of output values
  */
 static Temporal **
@@ -1389,9 +1390,7 @@ temporal_values(const Temporal *temp, int *count)
   if (temp->subtype == TINSTANT)
     result = tinstant_values((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      tdiscseq_values((TSequence *) temp, count) :
-      tsequence_values((TSequence *) temp, count);
+    result = tsequence_values((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;

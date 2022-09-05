@@ -72,7 +72,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
  * @brief Cast a temporal network point as a temporal geometric point.
  */
 TSequence *
-tnpointdiscseq_tgeompointinstset(const TSequence *seq)
+tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -89,7 +89,7 @@ tnpointdiscseq_tgeompointinstset(const TSequence *seq)
  * @brief Cast a temporal network point as a temporal geometric point.
  */
 TSequence *
-tnpointseq_tgeompointseq(const TSequence *seq)
+tnpointcontseq_tgeompointcontseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, 0)));
@@ -126,7 +126,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tnpointseq_tgeompointseq(seq);
+    sequences[i] = tnpointcontseq_tgeompointcontseq(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
     NORMALIZE_NO);
@@ -145,8 +145,8 @@ tnpoint_tgeompoint(const Temporal *temp)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tnpointdiscseq_tgeompointinstset((TSequence *) temp) :
-      (Temporal *) tnpointseq_tgeompointseq((TSequence *) temp);
+      (Temporal *) tnpointdiscseq_tgeompointdiscseq((TSequence *) temp) :
+      (Temporal *) tnpointcontseq_tgeompointcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   return result;
@@ -173,7 +173,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 TSequence *
-tgeompointinstset_tnpointdiscseq(const TSequence *seq)
+tgeompointdiscseq_tnpointdiscseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -196,7 +196,7 @@ tgeompointinstset_tnpointdiscseq(const TSequence *seq)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 TSequence *
-tgeompointseq_tnpointseq(const TSequence *seq)
+tgeompointcontseq_tnpointcontseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -226,7 +226,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    TSequence *seq1 = tgeompointseq_tnpointseq(seq);
+    TSequence *seq1 = tgeompointcontseq_tnpointcontseq(seq);
     if (seq1 == NULL)
     {
       pfree_array((void **) sequences, i);
@@ -252,7 +252,9 @@ tgeompoint_tnpoint(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tgeompointseq_tnpointseq((TSequence *) temp);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tgeompointdiscseq_tnpointdiscseq((TSequence *) temp) :
+      (Temporal *) tgeompointcontseq_tnpointcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   return result;
@@ -276,26 +278,7 @@ tnpointinst_positions(const TInstant *inst)
 
 /**
  * @brief Return the network segments covered by the temporal network point.
- */
-Nsegment **
-tnpointdiscseq_positions(const TSequence *seq, int *count)
-{
-  int count1;
-  /* The following function removes duplicate values */
-  Datum *values = tdiscseq_values(seq, &count1);
-  Nsegment **result = palloc(sizeof(Nsegment *) * count1);
-  for (int i = 0; i < count1; i++)
-  {
-    Npoint *np = DatumGetNpointP(values[i]);
-    result[i] = nsegment_make(np->rid, np->pos, np->pos);
-  }
-  pfree(values);
-  *count = count1;
-  return result;
-}
-
-/**
- * Return the network segments covered by the temporal network point.
+ * @note The function is used for both discrete and stepwise interpolation
  */
 Nsegment **
 tnpointseq_step_positions(const TSequence *seq, int *count)
@@ -315,7 +298,7 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 }
 
 /**
- * Return the network segments covered by the temporal network point.
+ * @brief Return the network segments covered by the temporal network point.
  */
 Nsegment *
 tnpointseq_linear_positions(const TSequence *seq)
@@ -352,7 +335,7 @@ tnpointseq_positions(const TSequence *seq, int *count)
 }
 
 /**
- * Return the network segments covered by the temporal network point.
+ * @brief Return the network segments covered by the temporal network point.
  */
 Nsegment **
 tnpointseqset_linear_positions(const TSequenceSet *ss, int *count)
@@ -398,10 +381,9 @@ Nsegment **
 tnpointseqset_positions(const TSequenceSet *ss, int *count)
 {
   Nsegment **result;
-  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
-    result = tnpointseqset_linear_positions(ss, count);
-  else
-    result = tnpointseqset_step_positions(ss, count);
+  result = (MOBDB_FLAGS_GET_LINEAR(ss->flags)) ?
+    tnpointseqset_linear_positions(ss, count) :
+    tnpointseqset_step_positions(ss, count);
   return result;
 }
 
@@ -443,8 +425,8 @@ tnpointinst_route(const TInstant *inst)
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if (temp->subtype != TINSTANT && temp->subtype != TSEQUENCE)
-    elog(ERROR, "Input must be a temporal instant or a temporal sequence");
+  if (temp->subtype != TINSTANT && MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    elog(ERROR, "Input must be a temporal instant or a temporal sequence with continuous interpolation");
 
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : tsequence_inst_n((const TSequence *) temp, 0);

@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for temporal instant sets.
+ * @brief General functions for temporal discrete sequences.
  */
 
 /* C */
@@ -48,137 +48,6 @@
 #include "general/temporal_boxops.h"
 #include "point/tpoint_parser.h"
 
-/*****************************************************************************
- * Input/output functions
- *****************************************************************************/
-
-#if MEOS
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set from its Well-Known Text (WKT)
- * representation.
- *
- * @param[in] str String
- * @param[in] temptype Temporal type
- */
-TSequence *
-tdiscseq_in(char *str, mobdbType temptype)
-{
-  return tdiscseq_parse(&str, temptype);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set boolean from its Well-Known Text (WKT)
- * representation.
- */
-TSequence *
-tbooldiscseq_in(char *str)
-{
-  return tdiscseq_parse(&str, T_TBOOL);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set integer from its Well-Known Text (WKT)
- * representation.
- */
-TSequence *
-tintdiscseq_in(char *str)
-{
-  return tdiscseq_parse(&str, T_TINT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set float from its Well-Known Text (WKT)
- * representation.
- */
-TSequence *
-tfloatdiscseq_in(char *str)
-{
-  return tdiscseq_parse(&str, T_TFLOAT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set text from its Well-Known Text (WKT)
- * representation.
- */
-TSequence *
-ttextdiscseq_in(char *str)
-{
-  return tdiscseq_parse(&str, T_TTEXT);
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set geometric point from its Well-Known Text
- * (WKT) representation.
- */
-TSequence *
-tgeompointdiscseq_in(char *str)
-{
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  assert (temp->subtype == TINSTANT);
-  return (TSequence *) temp;
-}
-
-/**
- * @ingroup libmeos_int_temporal_in_out
- * @brief Return a temporal instant set geographic point from its Well-Known
- * Text (WKT) representation.
- */
-TSequence *
-tgeogpointdiscseq_in(char *str)
-{
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
-  assert (temp->subtype == TINSTANTSET);
-  return (TSequence *) temp;
-}
-#endif
-
-/*****************************************************************************
- * Constructor functions
- *****************************************************************************/
-
-/*****************************************************************************
- * Accessor functions
- *****************************************************************************/
-
-/**
- * Return the array of base values of a temporal instant set
- *
- * @param[in] seq Temporal instant set
- * @param[out] result Array of base values
- * @result Number of elements in the output array
- */
-int
-tdiscseq_values1(const TSequence *seq, Datum *result)
-{
-  for (int i = 0; i < seq->count; i++)
-    result[i] = tinstant_value(tsequence_inst_n(seq, i));
-  if (seq->count == 1)
-    return 1;
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  datumarr_sort(result, seq->count, basetype);
-  return datumarr_remove_duplicates(result, seq->count, basetype);
-}
-
-/**
- * @ingroup libmeos_int_temporal_accessor
- * @brief Return the array of base values of a temporal instant set.
- * @sqlfunc getValues()
- */
-Datum *
-tdiscseq_values(const TSequence *seq, int *count)
-{
-  Datum *result = palloc(sizeof(Datum *) * seq->count);
-  *count = tdiscseq_values1(seq, result);
-  return result;
-}
 
 /*****************************************************************************
  * Append and merge functions
@@ -186,7 +55,7 @@ tdiscseq_values(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Append an instant to a temporal instant set.
+ * @brief Append an instant to a temporal discrete sequence.
  * @sqlfunc appendInstant()
  */
 TSequence *
@@ -212,7 +81,7 @@ tdiscseq_append_tinstant(const TSequence *seq, const TInstant *inst)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Merge two temporal instant sets.
+ * @brief Merge two temporal discrete sequences.
  * @sqlfunc merge()
  */
 Temporal *
@@ -233,7 +102,7 @@ tdiscseq_merge(const TSequence *seq1, const TSequence *seq2)
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @result Result value that can be either a temporal instant or a
- * temporal instant set
+ * temporal discrete sequence
  * @sqlfunc merge()
  */
 // Temporal *
@@ -267,8 +136,8 @@ tdiscseq_merge(const TSequence *seq1, const TSequence *seq2)
 
 /**
  * @ingroup libmeos_int_temporal_agg
- * @brief Return the time-weighted average of a temporal instant set number
- * @note Since an instant set does not have duration, the function returns the
+ * @brief Return the time-weighted average of a temporal discrete sequence number
+ * @note Since an discrete sequence does not have duration, the function returns the
  * traditional average of the values
  * @sqlfunc twAvg()
  */

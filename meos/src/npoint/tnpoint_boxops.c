@@ -149,7 +149,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
  *
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  * @param[out] box Spatiotemporal box
  */
 void

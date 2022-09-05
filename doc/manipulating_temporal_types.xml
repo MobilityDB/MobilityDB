@@ -223,6 +223,7 @@ SELECT tgeogpoint 'Interp=Stepwise;{[Point(0 0)@2017-01-01 08:00:00,
   Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
   Point(0 1)@2017-01-01 08:15:00)}';
 </programlisting>
+
 		<para>
 			For temporal points, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows:
 		</para>

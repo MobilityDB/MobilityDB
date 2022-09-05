@@ -251,14 +251,14 @@ tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
 }
 
 /**
- * @brief Parse a temporal instant set point from the buffer.
+ * @brief Parse a temporal discrete sequence point from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[inout] tpoint_srid SRID of the temporal point
  */
 TSequence *
-tpointinstset_parse(char **str, mobdbType temptype, int *tpoint_srid)
+tpointdiscseq_parse(char **str, mobdbType temptype, int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -465,7 +465,7 @@ tpoint_parse(char **str, mobdbType temptype)
     else
     {
       *str = bak;
-      result = (Temporal *) tpointinstset_parse(str, temptype, &tpoint_srid);
+      result = (Temporal *) tpointdiscseq_parse(str, temptype, &tpoint_srid);
     }
   }
   return result;

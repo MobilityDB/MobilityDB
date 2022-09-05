@@ -76,10 +76,6 @@ extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
   TimestampTz *t);
 
-extern bool intersection_tdiscseq_tinstant(const TSequence *is,
-  const TInstant *inst, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_discseq(const TInstant *inst,
-  const TSequence *is, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tdiscseq_tdiscseq(const TSequence *is1,
   const TSequence *is2, TSequence **inter1, TSequence **inter2);
 extern bool intersection_tcontseq_tdiscseq(const TSequence *seq1,
@@ -91,10 +87,6 @@ extern bool intersection_tsequence_tinstant(const TSequence *seq,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstant_tsequence(const TInstant *inst,
   const TSequence *seq, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequence_tinstantset(const TSequence *seq,
-  const TSequence *is, TSequence **inter1, TSequence **inter2);
-extern bool intersection_tinstantset_tsequence(const TSequence *is,
-  const TSequence *seq, TSequence **inter1, TSequence **inter2);
 
 /* Input/output functions */
 

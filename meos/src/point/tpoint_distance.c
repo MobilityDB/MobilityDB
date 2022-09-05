@@ -441,8 +441,8 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * Return the nearest approach instant between the temporal instant set point
- * and a geometry/geography
+ * Return the nearest approach instant between the temporal discrete sequence
+ * point and a geometry/geography
  *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography

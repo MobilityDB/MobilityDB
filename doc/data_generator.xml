@@ -219,28 +219,28 @@
 					<para><varname>random_tgeogpoint3D_inst</varname>: Generate a random temporal geographic 3D point of instant subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tbool_discseq</varname>: Generate a random temporal Boolean of instant set subtype</para>
+					<para><varname>random_tbool_discseq</varname>: Generate a random temporal Boolean of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tint_discseq</varname>: Generate a random temporal integer of instant set subtype</para>
+					<para><varname>random_tint_discseq</varname>: Generate a random temporal integer of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tfloat_discseq</varname>: Generate a random temporal float of instant set subtype</para>
+					<para><varname>random_tfloat_discseq</varname>: Generate a random temporal float of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_ttext_discseq</varname>: Generate a random temporal text of instant set subtype</para>
+					<para><varname>random_ttext_discseq</varname>: Generate a random temporal text of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint_discseq</varname>: Generate a random temporal geometric 2D point of instant set subtype</para>
+					<para><varname>random_tgeompoint_discseq</varname>: Generate a random temporal geometric 2D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeompoint3D_discseq</varname>: Generate a random temporal geometric 3D point of instant set subtype</para>
+					<para><varname>random_tgeompoint3D_discseq</varname>: Generate a random temporal geometric 3D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint_discseq</varname>: Generate a random temporal geographic 2D point of instant set subtype</para>
+					<para><varname>random_tgeogpoint_discseq</varname>: Generate a random temporal geographic 2D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tgeogpoint3D_discseq</varname>: Generate a random temporal geographic 3D point of instant set subtype</para>
+					<para><varname>random_tgeogpoint3D_discseq</varname>: Generate a random temporal geographic 3D point of sequence subtype and discrete interpolation</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbool_seq</varname>: Generate a random temporal Boolean of sequence subtype</para>
@@ -497,7 +497,7 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 		</para>
 
 		<para>
-			The creation of a table <varname>tbl_tint_discseq</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
+			The creation of a table <varname>tbl_tint_discseq</varname> containing random <varname>tint</varname> values of sequence subtype and discrete interpolation having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
 		</para>
 		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tint_discseq AS
@@ -588,7 +588,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_tgeompoint_discseq</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
+			The creation of a table <varname>tbl_tgeompoint_discseq</varname> containing random <varname>tgeompoint</varname> 2D values of sequence subtype and discrete interpolation having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
 		</para>
 		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tgeompoint_discseq AS

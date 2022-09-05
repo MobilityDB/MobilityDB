@@ -169,26 +169,6 @@ tnpoint_srid(const Temporal *temp)
  * @note Only the particular cases returning points are covered
  */
 static Npoint **
-tnpointinstset_npoints(const TSequence *seq, int *count)
-{
-  Npoint **result = palloc(sizeof(Npoint *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, i)));
-    result[i] = np;
-  }
-  *count = seq->count;
-  return result;
-}
-
-/**
- * Return the network points covered by a temporal network point
- *
- * @param[in] seq Temporal network point
- * @param[out] count Number of elements of the output array
- * @note Only the particular cases returning points are covered
- */
-static Npoint **
 tnpointseq_step_npoints(const TSequence *seq, int *count)
 {
   Npoint **result = palloc(sizeof(Npoint *) * seq->count);
@@ -241,26 +221,6 @@ tnpointinst_geom(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   return npoint_geom(np);
-}
-
-/**
- * @brief Return the geometry covered by a temporal network point.
- *
- * @param[in] seq Temporal network point
- */
-GSERIALIZED *
-tnpointinstset_geom(const TSequence *seq)
-{
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return tnpointinst_geom(tsequence_inst_n(seq, 0));
-
-  int count;
-  /* The following function does not remove duplicate values */
-  Npoint **points = tnpointinstset_npoints(seq, &count);
-  GSERIALIZED *result = npointarr_geom(points, count);
-  pfree(points);
-  return result;
 }
 
 /**

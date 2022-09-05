@@ -11,15 +11,15 @@
 <chapter id="temporal_types">
 	<title>Tipos temporales</title>
 	<para>
-		Hay seis tipos temporales nativos, a saber <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, que se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname> y <varname>geography</varname> (los dos últimos tipos restringidos a puntos 2D o 3D con dimensión Z).
+		MobilityDB proporciona seis tipos temporales nativos, a saber, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, que se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname> y <varname>geography</varname> (los dos últimos tipos restringidos a puntos 2D o 3D con dimensión Z).
 	</para>
 
 	<para>
-		La <emphasis>interpolación</emphasis> de un valor temporal establece cómo evoluciona el valor entre instantes sucesivos. La interpolación es <emphasis>escalonada</emphasis> cuando el valor permanece constante entre dos instantes sucesivos. Por ejemplo, el número de empleados de un departamento puede representarse con un número entero temporal, lo que indica que su valor es constante entre dos instantes de tiempo. Por otro lado, la interpolación es <emphasis>lineal</emphasis> cuando el valor evoluciona linealmente entre dos instantes sucesivos. Por ejemplo, la temperatura de una habitación puede representarse con un número flotante temporal, lo que indica que los valores se conocen en los dos instantes de tiempo pero evolucionan continuamente entre ellos. De manera similar, la ubicación de un vehículo se puede representar mediante un punto temporal en el que la ubicación entre dos lecturas GPS consecutivas se obtiene mediante interpolación lineal. Los tipos temporales basados en tipos base discretos, es decir <varname>tbool</varname>, <varname>tint</varname>, o <varname>ttext</varname> evolucionan necesariamente de manera escalonada. Por otro lado, los tipos temporales basados en tipos base continuos, es decir <varname>tfloat</varname>, <varname>tgeompoint</varname>, o <varname>tgeogpoint</varname> pueden evolucionar de manera lineal o escalonada.
+		La <emphasis>interpolación</emphasis> de un valor temporal establece cómo evoluciona el valor entre instantes sucesivos. La interpolación es <emphasis>discreta</emphasis> cuando se desconoce el valor entre dos instantes sucesivos. Pueden representar, por ejemplo, entradas/salidas cuando se utiliza un lector de tarjetas RFID para entrar o salir de un edificio. La interpolación es <emphasis>escalonada</emphasis> cuando el valor permanece constante entre dos instantes sucesivos. Por ejemplo, la marcha que utiliza un automóvil en movimiento puede representarse con un número entero temporal, lo que indica que su valor es constante entre dos instantes de tiempo. Por otro lado, la interpolación es <emphasis>lineal</emphasis> cuando el valor evoluciona linealmente entre dos instantes sucesivos. Por ejemplo, la velocidad de un automóvil puede representarse con un flotante temporal, lo que indica que los valores se conocen en los instantes de tiempo pero evolucionan continuamente entre ellos. De manera similar, la ubicación de un vehículo se puede representar mediante un punto temporal en el que la ubicación entre dos lecturas GPS consecutivas se obtiene mediante interpolación lineal. Los tipos temporales basados en tipos base discretos, es decir <varname>tbool</varname>, <varname>tint</varname> o <varname>ttext</varname> evolucionan necesariamente de manera escalonada. Por otro lado, los tipos temporales basados en tipos base continuos, es decir <varname>tfloat</varname>, <varname>tgeompoint</varname> o <varname>tgeogpoint</varname> pueden evolucionar de manera lineal o escalonada.
 	</para>
 
 	<para>
-		El <emphasis>subtipo</emphasis> de un valor temporal establece la extensión temporal en la que se registra la evolución de los valores. Los valores temporales vienen en tres subtipos, a saber, instante, secuencia y conjunto de secuencias.
+		El <emphasis>subtipo</emphasis> de un valor temporal establece la extensión temporal en la que se registra la evolución de los valores. Los valores temporales vienen en tres subtipos, explicados a continuación.
 	</para>
 
 	<para>
@@ -30,27 +30,26 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 </programlisting>
 
 	<para>
-		Un valor temporal de subtipo <emphasis>conjunto de instantes</emphasis> (brevemente, un <emphasis>valor de conjunto de instantes</emphasis>) representa la evolución del valor en un conjunto de instantes de tiempo, donde los valores entre estos instantes son desconocidos. Un ejemplo es el siguiente:
+		Un valor temporal de subtipo <emphasis>secuencia</emphasis> (brevemente, un <emphasis>valor de secuencia</emphasis>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función discreta, escalonada, o lineal (ver arriba). Un ejemplo es el siguiente:
 	</para>
 	<programlisting xml:space="preserve">
-SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
+-- Interpolación discreta 
+SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}'
+-- Interpolación escalonada
+SELECT tfloat 'Interp=Stepwise;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
+  15@2018-01-01 08:10:00]'
+-- Interpolación lineal
+SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]'
 </programlisting>
 
 	<para>
-		Un valor temporal de subtipo <emphasis>secuencia</emphasis> (brevemente, un <emphasis>valor de secuencia</emphasis>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función lineal o escalonada (ver más abajo). Un ejemplo es el siguiente:
-	</para>
-	<programlisting xml:space="preserve">
-SELECT tint '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
-</programlisting>
-
-	<para>
-		Como puede verse, un valor de secuencia tiene un límite superior e inferior que pueden ser inclusivos (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>' y &lsquo;<varname>)</varname>'). Un valor de secuencia con un único instante como
+		Como puede verse, un valor de secuencia tiene un límite superior e inferior que pueden ser inclusivos (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>' y &lsquo;<varname>)</varname>'). Por definición, ambos límites deben ser inclusivos cuando la interpolación es discreta o cuando la secuencia tiene un solo instante (que se llama <emphasis>secuencia instantánea</emphasis>), como el ejemplo suiguiente.
 	</para>
 	<programlisting xml:space="preserve">
 SELECT tint '[10@2018-01-01 08:00:00]';
 </programlisting>
 	<para>
-		es llamado una <emphasis>secuencia instantánea</emphasis>. En ese caso, ambos límites deben ser inclusivos.
+		Los valores de secuencia deben ser <emphasis>uniformes</emphasis>, es decir, deben construirse a partir de valores de instante del mismo tipo de base. Los valores de secuencia con interpolación escalonada o lineal se denominan <emphasis>secuencias continuas</emphasis>.
 	</para>
 
 	<para>
@@ -70,13 +69,12 @@ SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08
 SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
   [18@2018-01-01 08:10:00, 18@2018-01-01 08:15:00]}';
 </programlisting>
-
 	<para>
-		Los valores temporales con subtipo instante o secuencia se denominan <emphasis>valores temporales unitarios</emphasis>, mientras que los valores temporales con subtipo conjunto de instantes o de secuencias se llaman <emphasis>valores temporales de conjunto</emphasis>. Los valores temporales de conjunto se pueden considerar como una matriz de los valores unitarios correspondientes. Los valores de conjunto temporales deben ser <emphasis>uniformes</emphasis>, es decir, deben construirse a partir de valores unitarios del mismo tipo de base y el mismo subtipo.
+		Como se muestra en los ejemplos anteriores, los valores de conjunto de secuencias solo pueden ser de interpolación escalonada o lineal. Además, todas las secuencias que componen un valor de conjunto de secuencias deben ser del mismo tipo de base y de la misma interpolación.
 	</para>
 
 	<para>
-		Los valores de secuencia temporal se convierten en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores instantáneos consecutivos se fusionan cuando es posible. Para la interpolación escalonada, tres valores instantáneos consecutivos se pueden fusionar en dos si tienen el mismo valor. Para la interpolación lineal, tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Ejemplos de transformación en forma normal son los siguientes.
+		Los valores de secuencia continuos se convierten en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores de instante consecutivos se fusionan cuando es posible. Para la interpolación escalonada, tres valores instantáneos consecutivos se pueden fusionar en dos si tienen el mismo valor. Para la interpolación lineal, tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Ejemplos de transformación en forma normal son los siguientes.
 	</para>
 	<programlisting xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
@@ -84,8 +82,8 @@ SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:10:00)';
 -- "[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)"
-SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]']);
--- "{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}"
+SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
+-- "[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]"
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
   Point(3 3)@2001-01-01 08:10:00]';
 -- "[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]"
@@ -95,22 +93,21 @@ SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:
 		De manera similar, los valores del conjunto de secuencias temporales se convierten en forma normal. Para ello, los valores de secuencia consecutivos se fusionan cuando es posible. Ejemplos de transformación en forma normal son los siguientes.
 	</para>
 	<programlisting xml:space="preserve">
-SELECT tint_seqset(ARRAY[tint '[1@2001-01-01, 1@2001-01-03)', '[2@2001-01-03, 2@2001-01-05)']);
+SELECT tint '{[1@2001-01-01, 1@2001-01-03), [2@2001-01-03, 2@2001-01-05)}';
 -- '{[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)}'
-SELECT tfloat_seqset(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03)',
-  '[2@2001-01-03, 3@2001-01-05]']);
+SELECT tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-03, 3@2001-01-05]}';
 -- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
-SELECT tfloat_seqset(ARRAY[tfloat '[1@2001-01-01, 3@2001-01-05)', '[3@2001-01-05]']);
+SELECT tfloat '{[1@2001-01-01, 3@2001-01-05), [3@2001-01-05]}';
 -- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
 SELECT asText(tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
   Point(1 1)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00),
   [Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)}');
 -- "{[[Point(0 0)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:15:00)}"
-SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00),
+SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00),
   [Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}');
 -- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
-SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00),
+SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,Point(3 3)@2001-01-01 08:10:00),
   [Point(3 3)@2001-01-01 08:10:00]}');
 -- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
 </programlisting>
@@ -242,7 +239,7 @@ WHERE T1.CarId &lt; T2.CarId;
 			</listitem>
 
 			<listitem>
-				<para>Un valor de secuencia instantánea debe tener límites superior e inferior inclusivos.</para>
+				<para>Un valor de secuencia instantánea o con interpolación discreta debe tener límites inferior y superior inclusivos.</para>
 			</listitem>
 
 			<listitem>
@@ -254,15 +251,11 @@ WHERE T1.CarId &lt; T2.CarId;
 			</listitem>
 
 			<listitem>
-				<para>Un valor de conjunto debe estar compuesto por al menos un valor unitario.</para>
+				<para>Un valor de conjunto de secuencias debe estar compuesto por al menos un valor de secuencia.</para>
 			</listitem>
 
 			<listitem>
-				<para>En un valor de conjunto de instantes, los instantes que lo componen deben ser diferentes y ordenados. Esto implica que la extensión temporal de un valor de conjunto de instantes es un conjunto ordenado de valores de <varname>timestamptz</varname> sin duplicados.</para>
-			</listitem>
-
-			<listitem>
-				<para>En un valor de conjunto de secuencias, los valores de las secuencias componentes no deben superponerse y deben estar ordenados. Esto implica que la extensión temporal de un valor de conjunto de secuencias es un conjunto ordenado de períodos disjuntos.</para>
+				<para>En un valor de conjunto de secuencias, los valores de las secuencias componentes no deben superponerse y deben estar ordenados.</para>
 			</listitem>
 		</itemizedlist>
 		<para>
@@ -283,15 +276,15 @@ SELECT tint '[1@2001-01-01 09:00:00)';
 SELECT tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:00:00]';
 -- Marcas de tiempo desordenadas
 SELECT tint '[1@2001-01-01 08:10:00, 2@2001-01-01 08:00:00]';
--- Valor final incorrecto
+-- Valor final incorrecto para interpolación escalonada
 SELECT tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:10:00)';
 -- Conjunto de secuencias vacío
-SELECT tints(ARRAY[]);
+SELECT tint '{[]}';
 -- Marcas de tiempo duplicadas
-SELECT tinti(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:00:00']);
+SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-01 08:00:00}';
 -- Períodos superpuestos
-SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 1@2001-01-01 10:00:00)',
-  '[2@2001-01-01 09:00:00, 2@2001-01-01 11:00:00)']);
+SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-01 10:00:00),
+  [2@2001-01-01 09:00:00, 2@2001-01-01 11:00:00)}';
 </programlisting>
 	</sect1>
 </chapter>

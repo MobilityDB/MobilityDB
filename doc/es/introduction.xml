@@ -11,9 +11,9 @@
 <chapter id ="introduction">
 	<title>Introducción</title>
 
-	<para>MobilityDB es una extensión de <ulink url="http://postgresql.org"> PostgreSQL</ulink> y <ulink url="http://postgis.net"> PostGIS</ulink> que proporciona <emphasis>tipos temporales</emphasis>. Dichos tipos de datos representan la evolución en el tiempo de los valores de algún tipo de elemento, llamado tipo base del tipo temporal. Por ejemplo, se pueden usar enteros temporales para representar la evolución en el tiempo del número de empleados de un departamento. En este caso, el tipo de datos es <emphasis>entero temporal</emphasis> y el tipo base es <emphasis>entero</emphasis>. Del mismo modo, se puede utilizar un número flotante temporal para representar la evolución en el tiempo de la temperatura de una habitación. Como otro ejemplo, se puede usar un punto temporal para representar la evolución en el tiempo de la ubicación de un automóvil, como lo reportan los dispositivos GPS. Los tipos temporales son útiles porque representar valores que evolucionan en el tiempo es esencial en muchas aplicaciones, por ejemplo, en aplicaciones de movilidad. Además, los operadores de los tipos base (como los operadores aritméticos y la agregación para números enteros y flotantes, las relaciones espaciales y la distancia para las geometrías) se pueden generalizar intuitivamente cuando los valores evolucionan en el tiempo.</para>
+	<para>MobilityDB es una extensión de <ulink url="http://postgresql.org"> PostgreSQL</ulink> y <ulink url="http://postgis.net"> PostGIS</ulink> que proporciona <emphasis>tipos temporales</emphasis>. Dichos tipos de datos representan la evolución en el tiempo de los valores de algún tipo de elemento, llamado tipo base del tipo temporal. Por ejemplo, se pueden usar enteros temporales para representar la evolución en el tiempo de la marchar utilizada por un automóvil en movimiento. En este caso, el tipo de datos es <emphasis>entero temporal</emphasis> y el tipo base es <emphasis>entero</emphasis>. Del mismo modo, se puede utilizar un número flotante temporal para representar la evolución en el tiempo de la velocidad de un automóvil. Como otro ejemplo, se puede usar un punto temporal para representar la evolución en el tiempo de la ubicación de un automóvil, como lo reportan los dispositivos GPS. Los tipos temporales son útiles porque representar valores que evolucionan en el tiempo es esencial en muchas aplicaciones, por ejemplo, en aplicaciones de movilidad. Además, los operadores de los tipos base (como los operadores aritméticos y la agregación para números enteros y flotantes, las relaciones espaciales y la distancia para las geometrías) se pueden generalizar intuitivamente cuando los valores evolucionan en el tiempo.</para>
 
-	<para>MobilityDB proporciona los siguientes tipos temporales: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Estos tipos temporales se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname> y <varname>text</varname> proporcionados por PostgreSQL, y en los tipos base de <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS (restringido a puntos 2D o 3D).<footnote><para>Aunque los puntos temporales 4D se pueden representar, la dimensión M actualmente no se tiene en cuenta.</para></footnote> Además, MobilityDB usa cuatro tipos de tiempo para representar lapsos de tiempo: el tipo <varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos tipos que son <varname>period</varname>, <varname>timestampset</varname> y <varname>periodset</varname>. Además, se definen dos tipos de rango en MobilityDB: <varname>intspan</varname> y <varname>floatspan</varname>.</para>
+	<para>MobilityDB proporciona los siguientes tipos temporales: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Estos tipos temporales se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname> y <varname>text</varname> proporcionados por PostgreSQL, y en los tipos base de <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS (restringido a puntos 2D o 3D).<footnote><para>Aunque los puntos temporales 4D se pueden representar, la dimensión M actualmente no se tiene en cuenta.</para></footnote> Además, MobilityDB usa cuatro tipos de tiempo para representar lapsos de tiempo: el tipo <varname>timestamptz</varname> proporcionado por PostgreSQL y tres tipos adicionales que son <varname>period</varname>, <varname>timestampset</varname> y <varname>periodset</varname>. Además, en MobilityDB se definen dos tipos de rangos para representar rangos de valores: <varname>intspan</varname> y <varname>floatspan</varname>.</para>
 
 	<sect1 id="psc">
 		<title>Comité directivo del proyecto</title>
@@ -24,7 +24,7 @@
 			A continuación se detallan los miembros actuales en orden alfabético y sus principales responsabilidades:
 			<itemizedlist>
 				<listitem><para>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, versiones distribuidas y en la nube, integración con <ulink url="https://www.citusdata.com/">Citus</ulink></para></listitem>
-				<listitem><para>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, <ulink url="https://github.com/adonmo/meos">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></para></listitem>
+				<listitem><para>Krishna Chaitanya Bommakanti: <ulink url="https://www.libmeos.org">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></para></listitem>
 				<listitem><para>Anita Graser: integración con <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> y el ecosistema de Python, integración con <ulink url="https://qgis.org/">QGIS</ulink></para></listitem>
 				<listitem><para>Darafei Praliaskouski: integración con <ulink url="https://postgis.net/">PostGIS</ulink></para></listitem>
 				<listitem><para>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, copresidente del OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>)</para></listitem>
@@ -127,15 +127,15 @@ max_locks_per_transaction = 128
 </programlisting>
 
 			<para>
-				Si no carga previamente la biblioteca PostGIS, no podrá cargar la biblioteca MobilityDB y obtendrá un mensaje de error como el siguiente:
+				Si no carga previamente la biblioteca PostGIS con la configuración anterior, no podrá cargar la biblioteca MobilityDB y obtendrá un mensaje de error como el siguiente:
 			</para>
 			<programlisting xml:space="preserve">
-ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.0.so":
+ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.1.so":
   undefined symbol: ST_Distance
 </programlisting>
 
 			<para>
-				Observe que puede encontrar la ubicación del archivo <varname>postgresql.conf</varname> de la manera siguiente.
+				Puede encontrar la ubicación del archivo <varname>postgresql.conf</varname> de la manera siguiente.
 			</para>
 			<programlisting xml:space="preserve">
 $ which postgres
@@ -220,9 +220,10 @@ CREATE EXTENSION mobilitydb CASCADE;
 				Para poder compilar MobilityDB, asegúrese de que se cumplan las siguientes dependencias:
 			</para>
 			<itemizedlist>
-				<listitem><para>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</para></listitem>
+				<listitem>Sistema de compilación multiplataforma <filename>CMake</filename>.</listitem>
+				<listitem><para>Compilador C <filename>gcc</filename> o <filename>clang</filename>. Se pueden usar otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
-				<listitem><para>PostgreSQL versión 11 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
+				<listitem><para>PostgreSQL versión 12 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
 				<listitem><para>PostGIS versión 3 o superior. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 			</itemizedlist>
@@ -254,7 +255,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 
 			<para>Dependencias de base de datos</para>
 			<programlisting xml:space="preserve">
-sudo apt-get install postgresql-13 postgresql-server-dev-13 postgresql-13-postgis
+sudo apt-get install postgresql-14 postgresql-server-dev-14 postgresql-14-postgis
 </programlisting>
 			<para>Dependencias de construcción</para>
 			<programlisting xml:space="preserve">
@@ -281,7 +282,7 @@ cmake -L ..
 		<sect2 id="build_install">
 			<title>Construir e instalar</title>
 			<para>
-				Tenga en cuenta que la versión actual de MobilityDB solo se ha probado en sistemas Linux. Puede funcionar en otros sistemas similares a UNIX, pero no se ha probado. Está previsto el soporte para Windows. Buscamos voluntarios que nos ayuden a probar MobilityDB en múltiples plataformas.
+				Tenga en cuenta que la versión actual de MobilityDB solo se ha probado en sistemas Linux y MacOS. Puede funcionar en otros sistemas similares a Unix, pero no se ha probado. Está previsto el soporte para Windows. Buscamos voluntarios que nos ayuden a probar MobilityDB en múltiples plataformas.
 			</para>
 			<para>
 				Las siguientes instrucciones comienzan desde <varname>path/to/MobilityDB</varname> en un sistema Linux

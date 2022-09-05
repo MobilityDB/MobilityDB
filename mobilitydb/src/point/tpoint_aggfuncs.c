@@ -125,7 +125,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TInstant **
-tpointinstset_transform_tcentroid(const TSequence *ti)
+tpointdiscseq_transform_tcentroid(const TSequence *ti)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -187,7 +187,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   {
     if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     {
-      result = (Temporal **) tpointinstset_transform_tcentroid((TSequence *) temp);
+      result = (Temporal **) tpointdiscseq_transform_tcentroid((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
     }
     else

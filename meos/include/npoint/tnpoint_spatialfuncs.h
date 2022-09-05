@@ -60,7 +60,6 @@ extern bool tnpointsegm_intersection_value(const TInstant *inst1,
 extern int tnpointinst_srid(const TInstant *inst);
 extern int tnpoint_srid(const Temporal *temp);
 extern GSERIALIZED *tnpointinst_geom(const TInstant *inst);
-extern GSERIALIZED *tnpointinstset_geom(const TSequence *ti);
 extern GSERIALIZED *tnpointseq_geom(const TSequence *seq);
 extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ts);
 extern GSERIALIZED *tnpoint_geom(const Temporal *temp);

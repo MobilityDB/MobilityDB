@@ -144,7 +144,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 			</para>
 
 		<para>
-			Un valor de instante es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Un valor de secuencia es un conjunto de valores <varname>v1@t1,...,vn@tn</varname> delimitado por límites superior e inferior, que pueden ser inclusivo (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>&rsquo; y &lsquo;<varname>)</varname>&rsquo;). Ejemplos de entrada de valores temporales unitarios son los siguientes:
+			Un valor de instante es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Ejemplos de entrada de valores de instante son los siguientes:
 		</para>
 		<programlisting xml:space="preserve">
 SELECT tbool 'true@2001-01-01 08:00:00';
@@ -153,30 +153,52 @@ SELECT tfloat '1.5@2001-01-01 08:00:00';
 SELECT ttext 'AAA@2001-01-01 08:00:00';
 SELECT tgeompoint 'Point(0 0)@2017-01-01 08:00:05';
 SELECT tgeogpoint 'Point(0 0)@2017-01-01 08:00:05';
+</programlisting>
+
+		<para>
+			Un valor de secuencia es un conjunto de valores <varname>v1@t1,...,vn@tn</varname> delimitado por límites superior e inferior, que pueden ser inclusivo (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>&rsquo; y &lsquo;<varname>)</varname>&rsquo;). Un valor de secuencia compuesto por una sola pareja <varname>v@t</varname> se denomina <emphasis>secuencia instantánea</emphasis>. Los valores de secuencia tienen una <emphasis>función de interpolación</emphasis> asociada que puede ser discreta, lineal o escalonada. Por definición, los límites inferior y superior de una secuencia instantánea o de un valor de secuencia con interpolación discreta son inclusivos. La extensión temporal de un valor de secuencia con interpolación discreta es un conjunto de marcas de tiempo. Ejemplos de valores de secuencia con interpolación discreta son los siguientes.
+		</para>
+		<programlisting xml:space="preserve">
+SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
+SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
+SELECT tint '{1@2001-01-01 08:00:00}'; -- Instantaneous sequence
+SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
+SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
+SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
+SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
+</programlisting>
+		<para>
+			La extensión temporal de un valor de secuencia con interpolación lineal o escalonada es un período definido por el primer y el últimpo instante, así como por los límites inferior y superior. Ejemplos de valores de secuencia con interpolación lineal son los siguientes:
+		</para>
+		<programlisting xml:space="preserve">
 SELECT tbool '[true@2001-01-01 08:00:00, true@2001-01-03 08:00:00]';
 SELECT tint '[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00]';
 SELECT tfloat '[2.5@2001-01-01 08:00:00, 3@2001-01-03 08:00:00, 1@2001-01-04 08:00:00]';
-SELECT tfloat '[1.5@2001-01-01 08:00:00]';  -- Instant sequence
+SELECT tfloat '[1.5@2001-01-01 08:00:00]'; -- Instantaneous sequence
 SELECT ttext '[BBB@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00]';
 SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:00)';
 SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
   Point(0 0)@2017-01-01 08:10:00)';
 </programlisting>
-
-		<para>
-			La extensión temporal de un valor de instante es un sólo instante, mientras que la extensión temporal de un valor de secuencia es un período definido por el primer y último instantes, así como por los límites superior e inferior.
-		</para>
-
-		<para>
-			Un valor temporal de conjunto es un conjunto <varname>{v1,...,vn}</varname> donce cada <varname>vi</varname> es un valor unitario del tipo correspondiente. Ejemplos de entrada de valores temporales de conjunto son los siguientes:
+		<para>Los valores de secuencia cuyo tipo base es continuo pueden especificar que la interpolación es escalonada con el prefijo <varname>Interp=Stepwise</varname>. Si no se especifica, se supone que la interpolación es lineal por defecto. A continuación se dan ejemplos de valores de secuencia con interpolación escalonada:
 		</para>
 		<programlisting xml:space="preserve">
-SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
-SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
-SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
-SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
-SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
+SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01 08:00:00, 3@2001-01-01 08:10:00]';
+SELECT tgeompoint 'Interp=Stepwise;[Point(0 0)@2017-01-01 08:00:00,
+  Point(1 1)@2017-01-01 08:05:00, Point(1 1)@2017-01-01 08:10:00)';
+SELECT tgeompoint 'Interp=Stepwise;[Point(0 0)@2017-01-01 08:00:00,
+ Point(1 1)@2017-01-01 08:05:00, Point(0 0)@2017-01-01 08:10:00)';
+ERROR:  Invalid end value for temporal sequence with stepwise interpolation
+SELECT tgeogpoint 'Interp=Stepwise;[Point(0 0)@2017-01-01 08:00:00,
+  Point(1 1)@2017-01-01 08:10:00]';
+</programlisting>
+		<para>
+			Los dos últimos instantes de un valor de secuencia con interpolación discreta y límite superior exclusivo deben tener el mismo valor base, como se muestra en el segundo y tercer ejemplo anteriores.
+		</para>
+		<para>
+			Un <emphasis>valor de conjunto de secuencias</emphasis> es un conjunto <varname>{v1,...,vn}</varname> donde cada <varname>vi</varname> es un valor de secuencia. La interpolación de los valores conjunto de secuencias solo puede ser lineal o escalonada, no discreta. Todas las secuencias que componen un valor de conjunto de secuencias deben tener la misma interpolación. La extensión temporal de un valor de conjunto de secuencias es un conjunto de períodos. Ejemplos de valores de conjunto de secuencias con interpolación lineal son los siguientes:
+		</para>
+		<programlisting xml:space="preserve">
 SELECT tbool '{[false@2001-01-01 08:00:00, false@2001-01-03 08:00:00),
   [true@2001-01-03 08:00:00], (false@2001-01-04 08:00:00, false@2001-01-06 08:00:00]}';
 SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00),
@@ -191,25 +213,18 @@ SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
   [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
 </programlisting>
 		<para>
-			La extensión temporal de un valor de conjunto de instantes es un conjunto de marcas de tiempo, mientras que la extensión temporal de un valor de conjunto de secuencias es un conjunto de períodos.
-		</para>
-
-		<para>
-			Los valores de secuencia o conjunto de secuencias cuyo tipo de base es continuo pueden especificar que la interpolación es escalonada. Si no se especifica, se supone que la interpolación es lineal por defecto.
+			Los valores de conjunto de secuencias cuyo tipo base es continuo pueden especificar que la interpolación es escalonada con el prefijo <varname>Interp=Stepwise</varname>. Si no se especifica, se supone que la interpolación es lineal por defecto. A continuación se dan ejemplos de valores de conjunto de secuencias con interpolación escalonada:
 		</para>
 		<programlisting xml:space="preserve">
--- Interpolación lineal por defecto
-SELECT tfloat '[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
-SELECT tgeompoint '{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
-  [Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
--- Interpolación escalonada
-SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
-SELECT tgeompoint 'Interp=Stepwise;{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
-  [Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
+SELECT tfloat 'Interp=Stepwise;{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00,
+  2@2001-01-04 08:00:00, 3@2001-01-06 08:00:00]}';
+SELECT tgeompoint 'Interp=Stepwise;{[Point(0 0)@2017-01-01 08:00:00,
+  Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
+  Point(0 1)@2017-01-01 08:15:00)}';
+SELECT tgeogpoint 'Interp=Stepwise;{[Point(0 0)@2017-01-01 08:00:00,
+  Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
+  Point(0 1)@2017-01-01 08:15:00)}';
 </programlisting>
-		<para>
-			Para los valores de subtipo conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.
-		</para>
 
 		<para>
 			Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación extendida de texto conocido (EWKT) de la siguiente manera:
@@ -408,7 +423,7 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 			</listitem>
 
 			<listitem>
-				<para>Otro conjunto de funciones para valores de conjunto de instantes tiene un solo argumento, que es una matriz de valores de instante correspondientes.</para>
+				<para>Otro conjunto de funciones para valores de secuencia con interpolación discreta tiene un solo argumento, que es una matriz de valores de instante correspondientes.</para>
 			</listitem>
 
 			<listitem>

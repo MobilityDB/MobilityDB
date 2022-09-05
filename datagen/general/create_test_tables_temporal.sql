@@ -249,108 +249,108 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
 -------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS tbl_tbool_instset;
-CREATE TABLE tbl_tbool_instset AS
+DROP TABLE IF EXISTS tbl_tbool_discseq;
+CREATE TABLE tbl_tbool_discseq AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbool_instset('2001-01-01', '2001-12-31', 10, 5, 10) AS ti
+SELECT k, random_tbool_discseq('2001-01-01', '2001-12-31', 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tbool_instset t1
-SET ti = (SELECT ti FROM tbl_tbool_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tbool_discseq t1
+SET ti = (SELECT ti FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tbool_instset t1
-SET ti = (SELECT ~ ti FROM tbl_tbool_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tbool_discseq t1
+SET ti = (SELECT ~ ti FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tbool_instset t1
+UPDATE tbl_tbool_discseq t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tbool_instset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tbool_instset t1
+UPDATE tbl_tbool_discseq t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tbool_instset t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-DROP TABLE IF EXISTS tbl_tint_instset;
-CREATE TABLE tbl_tint_instset AS
+DROP TABLE IF EXISTS tbl_tint_discseq;
+CREATE TABLE tbl_tint_discseq AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tint_instset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+SELECT k, random_tint_discseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tint_instset t1
-SET ti = (SELECT ti FROM tbl_tint_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tint_discseq t1
+SET ti = (SELECT ti FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tint_instset t1
-SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tint_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tint_discseq t1
+SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tint_instset t1
+UPDATE tbl_tint_discseq t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tint_instset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tint_instset t1
+UPDATE tbl_tint_discseq t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tint_instset t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-DROP TABLE IF EXISTS tbl_tfloat_instset;
-CREATE TABLE tbl_tfloat_instset AS
+DROP TABLE IF EXISTS tbl_tfloat_discseq;
+CREATE TABLE tbl_tfloat_discseq AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloat_instset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+SELECT k, random_tfloat_discseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tfloat_instset t1
-SET ti = (SELECT ti FROM tbl_tfloat_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tfloat_discseq t1
+SET ti = (SELECT ti FROM tbl_tfloat_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tfloat_instset t1
-SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tfloat_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tfloat_discseq t1
+SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tfloat_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tfloat_instset t1
+UPDATE tbl_tfloat_discseq t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tfloat_instset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tfloat_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tfloat_instset t1
+UPDATE tbl_tfloat_discseq t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tfloat_instset t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tfloat_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-DROP TABLE IF EXISTS tbl_ttext_instset;
-CREATE TABLE tbl_ttext_instset AS
+DROP TABLE IF EXISTS tbl_ttext_discseq;
+CREATE TABLE tbl_ttext_discseq AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttext_instset('2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+SELECT k, random_ttext_discseq('2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_ttext_instset t1
-SET ti = (SELECT ti FROM tbl_ttext_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_ttext_discseq t1
+SET ti = (SELECT ti FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_ttext_instset t1
-SET ti = (SELECT ti || text 'A' FROM tbl_ttext_instset t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_ttext_discseq t1
+SET ti = (SELECT ti || text 'A' FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_ttext_instset t1
+UPDATE tbl_ttext_discseq t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_ttext_instset t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_ttext_instset t1
+UPDATE tbl_ttext_discseq t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_ttext_instset t2 WHERE t2.k = t1.k+2)
+  FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 -------------------------------------------------------------------------------
@@ -562,28 +562,28 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tbool;
 CREATE TABLE tbl_tbool(k, temp) AS
 (SELECT k, inst FROM tbl_tbool_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_tbool_instset order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_tbool_discseq order by k limit size / 4) UNION all
 (SELECT k + size / 2, seq FROM tbl_tbool_seq order by k limit size / 4) UNION all
 (SELECT k + size / 4 * 3, ts FROM tbl_tbool_seqset order by k limit size / 4);
 
 DROP TABLE IF EXISTS tbl_tint;
 CREATE TABLE tbl_tint(k, temp) AS
 (SELECT k, inst FROM tbl_tint_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_tint_instset order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_tint_discseq order by k limit size / 4) UNION all
 (SELECT k + size / 2, seq FROM tbl_tint_seq order by k limit size / 4) UNION all
 (SELECT k + size / 4 * 3, ts FROM tbl_tint_seqset order by k limit size / 4);
 
 DROP TABLE IF EXISTS tbl_tfloat;
 CREATE TABLE tbl_tfloat(k, temp) AS
 (SELECT k, inst FROM tbl_tfloat_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_tfloat_instset order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_tfloat_discseq order by k limit size / 4) UNION all
 (SELECT k + size / 2, seq FROM tbl_tfloat_seq order by k limit size / 4) UNION all
 (SELECT k + size / 4 * 3, ts FROM tbl_tfloat_seqset order by k limit size / 4);
 
 DROP TABLE IF EXISTS tbl_ttext;
 CREATE TABLE tbl_ttext(k, temp) AS
 (SELECT k, inst FROM tbl_ttext_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_ttext_instset order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_ttext_discseq order by k limit size / 4) UNION all
 (SELECT k + size / 2, seq FROM tbl_ttext_seq order by k limit size / 4) UNION all
 (SELECT k + size / 4 * 3, ts FROM tbl_ttext_seqset order by k limit size / 4);
 

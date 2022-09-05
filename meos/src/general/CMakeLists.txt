@@ -26,7 +26,6 @@ add_library(general OBJECT
   time_ops.c
   timestampset.c
   tinstant.c
-  tinstantset.c
   tnumber_distance.c
   tnumber_mathfuncs.c
   tnumber_mathfuncs_meos.c

@@ -1386,6 +1386,8 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
+  /* Get the interpolation */
+  s->interp = MOBDB_WKB_GET_INTERP(wkb_flags);
   /* Get the flags */
   if (tgeo_type(s->temptype))
   {
@@ -1396,10 +1398,8 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
     if (wkb_flags & MOBDB_WKB_SRIDFLAG)
       s->has_srid = true;
   }
-  s->interp = MOBDB_WKB_GET_INTERP(wkb_flags);
-
   /* Mask off the upper flags to get the subtype */
-  wkb_flags = wkb_flags & (uint8_t) 0x03;
+  wkb_flags &= (uint8_t) 0x03;
   switch (wkb_flags)
   {
     case MOBDB_WKB_TINSTANT:
@@ -1502,21 +1502,6 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 }
 
 /**
- * Return a temporal instant set value from its WKB representation
- */
-// static TSequence *
-// tinstantset_from_wkb_state(wkb_parse_state *s)
-// {
-  // /* Get the number of instants */
-  // int count = int32_from_wkb_state(s);
-  // assert(count > 0);
-  // /* Parse the instants */
-  // TInstant **instants = tinstarr_from_wkb_state(s, count);
-  // return tsequence_make_free(instants, count, true, true, DISCRETE,
-    // NORMALIZE_NO);
-// }
-
-/**
  * Return a temporal sequence value from its WKB representation
  */
 static TSequence *
@@ -1595,8 +1580,6 @@ temporal_from_wkb_state(wkb_parse_state *s)
   ensure_valid_tempsubtype(s->subtype);
   if (s->subtype == TINSTANT)
     return (Temporal *) tinstant_from_wkb_state(s);
-  // else if (s->subtype == TINSTANTSET)
-    // return (Temporal *) tinstantset_from_wkb_state(s);
   else if (s->subtype == TSEQUENCE)
     return (Temporal *) tsequence_from_wkb_state(s);
   else /* s->subtype == TSEQUENCESET */

@@ -476,26 +476,6 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tinstantset_constructor);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal instant set from the array of temporal instants
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
- */
-PGDLLEXPORT Datum
-Tinstantset_constructor(PG_FUNCTION_ARGS)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
-  int count;
-  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
-  Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
-    count, true, true, DISCRETE, NORMALIZE_NO);
-  pfree(instants);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @brief Construct a temporal sequence from the array of temporal instants
  */

@@ -1755,7 +1755,7 @@ efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
  * Synchronizes the temporal values and applies to them the function with the
  * optional argument
  *
- * @param[in] is,seq Temporal values
+ * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
