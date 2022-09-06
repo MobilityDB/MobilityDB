@@ -1849,9 +1849,7 @@ tnumber_restrict_spans_ext(FunctionCallInfo fcinfo, bool atfunc)
   int count;
   INPUT_REST_ARRAY(temp, array, count);
   Span **spans = spanarr_extract(array, &count);
-  Temporal *result = (count > 1) ?
-    tnumber_restrict_spans(temp, spans, count, atfunc) :
-    tnumber_restrict_span(temp, spans[0], atfunc);
+  Temporal *result = tnumber_restrict_spans(temp, spans, count, atfunc);
   pfree(spans);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(array, 1);

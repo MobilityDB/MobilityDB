@@ -669,7 +669,7 @@ extern bool stbox_zmin(const STBOX *box, double *result);
 extern bool stbox_zmax(const STBOX *box, double *result);
 extern bool stbox_tmin(const STBOX *box, TimestampTz *result);
 extern bool stbox_tmax(const STBOX *box, TimestampTz *result);
-extern int32 stbox_get_srid(const STBOX *box);
+extern int32 stbox_srid(const STBOX *box);
 
 /*****************************************************************************/
 

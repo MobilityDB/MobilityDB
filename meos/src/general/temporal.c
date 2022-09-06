@@ -3029,9 +3029,12 @@ tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != TSEQUENCE) ?
-        temporal_copy(temp) :
-        (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
+    {
+      if (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+        return (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
+      else
+        return temporal_copy(temp);
+    }
   }
   if (newcount == 1)
     return tnumber_restrict_span(temp, newspans[0], atfunc);
@@ -3248,13 +3251,8 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   if (hast)
-  {
+    /* Due the bounding box test above, temp1 is never NULL */
     temp1 = temporal_restrict_period(temp, &box->period, REST_AT);
-    /* Despite the bounding box test above, temp1 may be NULL due to
-     * exclusive bounds */
-    if (temp1 == NULL)
-      return NULL;
-  }
   else
     temp1 = (Temporal *) temp;
 

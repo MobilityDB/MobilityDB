@@ -103,7 +103,7 @@
 			<para>
 				Para compilar asumiendo que tiene todas las dependencias en su ruta de búsqueda
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 git clone https://github.com/MobilityDB/MobilityDB
 mkdir MobilityDB/build
 cd MobilityDB/build
@@ -114,14 +114,14 @@ sudo make install
 			<para>
 				Los comandos anteriores instalan la rama <varname>master</varname>. Si desea instalar otra rama, por ejemplo, <varname>develop</varname>, puede reemplazar el primer comando anterior de la siguiente manera:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 git clone --branch develop https://github.com/MobilityDB/MobilityDB
 </programlisting>
 
 			<para>
 				También debe configurar lo siguiente en el archivo <varname>postgresql.conf</varname> según la versión de PostGIS que haya instalado (a continuación usamos PostGIS 3):
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 shared_preload_libraries = 'postgis-3'
 max_locks_per_transaction = 128
 </programlisting>
@@ -129,7 +129,7 @@ max_locks_per_transaction = 128
 			<para>
 				Si no carga previamente la biblioteca PostGIS con la configuración anterior, no podrá cargar la biblioteca MobilityDB y obtendrá un mensaje de error como el siguiente:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.1.so":
   undefined symbol: ST_Distance
 </programlisting>
@@ -137,7 +137,7 @@ ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.1.so":
 			<para>
 				Puede encontrar la ubicación del archivo <varname>postgresql.conf</varname> de la manera siguiente.
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 $ which postgres
 /usr/local/pgsql/bin/postgres
 $ ls /usr/local/pgsql/data/postgresql.conf
@@ -150,7 +150,7 @@ $ ls /usr/local/pgsql/data/postgresql.conf
 			<para>
 				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos en la que desee usarlo. En el siguiente ejemplo, usamos una base de datos llamada <varname>mobility</varname>.
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 createdb mobility
 psql mobility -c "CREATE EXTENSION PostGIS"
 psql mobility -c "CREATE EXTENSION MobilityDB"
@@ -170,7 +170,7 @@ psql mobility -c "CREATE EXTENSION MobilityDB"
 			<para>
 				Para descargar esta versión:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
 </programlisting>
 			<para>
@@ -184,7 +184,7 @@ wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v
 			<para>
 				Para descargar el repositorio
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 git clone https://github.com/MobilityDB/MobilityDB.git
 cd MobilityDB
 git checkout v1.0
@@ -198,14 +198,14 @@ git checkout v1.0
 			<para>
 				MobilityDB es una extensión que depende de PostGIS. Habilitar PostGIS antes de habilitar MobilityDB en la base de datos se puede hacer de la siguiente manera
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 CREATE EXTENSION postgis;
 CREATE EXTENSION mobilitydb;
 </programlisting>
 			<para>
 				Alternativamente, esto se puede hacer con un solo comando usando <varname>CASCADE</varname>, que instala la extensión PostGIS requerida antes de instalar la extensión MobilityDB
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 CREATE EXTENSION mobilitydb CASCADE;
 </programlisting>
 		</sect2>
@@ -254,11 +254,11 @@ CREATE EXTENSION mobilitydb CASCADE;
 			</para>
 
 			<para>Dependencias de base de datos</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 sudo apt-get install postgresql-14 postgresql-server-dev-14 postgresql-14-postgis
 </programlisting>
 			<para>Dependencias de construcción</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 sudo apt-get install cmake gcc libgsl-dev
 </programlisting>
 		</sect2>
@@ -269,11 +269,11 @@ sudo apt-get install cmake gcc libgsl-dev
 				MobilityDB usa el sistema <varname>cmake</varname> para realizar la configuración. El directorio de compilación deber ser diferente del directorio de origen.
 			</para>
 			<para>Para crear el directorio de compilación</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 mkdir build
 </programlisting>
 			<para>Para ver las variables que se pueden configurar</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 cd build
 cmake -L ..
 </programlisting>
@@ -287,7 +287,7 @@ cmake -L ..
 			<para>
 				Las siguientes instrucciones comienzan desde <varname>path/to/MobilityDB</varname> en un sistema Linux
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 mkdir build
 cd build
 cmake ..
@@ -297,7 +297,7 @@ sudo make install
 			<para>
 				Cuando cambia la configuración
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 rm -rf build
 </programlisting>
 			<para>
@@ -313,19 +313,19 @@ rm -rf build
 			<para>
 				Para ejecutar todas las pruebas
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 ctest
 </programlisting>
 			<para>
 				Para ejecutar un archivo de prueba dado
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 ctest -R '21_tbox'
 </programlisting>
 			<para>
 				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 ctest -R '22_*'
 </programlisting>
 		</sect2>
@@ -391,7 +391,7 @@ ctest -R '22_*'
 			<para>
 				Generar la documentación del usuario y del desarrollador en todos los formatos y en todos los idiomas.
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 cmake -D DOC_ALL=ON -D LANG_ALL=ON -D DOC_DEV=ON ..
 make doc
 make doc_dev
@@ -399,21 +399,21 @@ make doc_dev
 			<para>
 				Generar la documentación del usuario en formato HTML y en todos los idiomas.
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 cmake -D DOC_HTML=ON -D LANG_ALL=ON ..
 make doc
 </programlisting>
 			<para>
 				Generar la documentación del usuario en inglés en todos los formatos.
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 cmake -D DOC_ALL=ON ..
 make doc
 </programlisting>
 			<para>
 				Generar la documentación del usuario en formato PDF en inglés y en español.
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="bash" xml:space="preserve">
 cmake -D DOC_PDF=ON -D ES=ON ..
 make doc
 </programlisting>
@@ -434,7 +434,7 @@ make doc
 				<listitem><para>Si su problema no se ha informado, cree un <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">nuevo asunto</ulink> para ello.</para></listitem>
 				<listitem><para>En su informe, incluya instrucciones explícitas para replicar su problema. Las mejores etradas incluyen consultas SQL exactas que se necesitan para reproducir un problema. Reporte también el sistema operativo y las versiones de MobilityDB, PostGIS y PostgreSQL.</para></listitem>
 				<listitem><para>Se recomienda utilizar el siguiente envoltorio en su problema para determinar el paso que está causando el problema.
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SET client_min_messages TO debug;
 &lt;your code&gt;
 SET client_min_messages TO notice;

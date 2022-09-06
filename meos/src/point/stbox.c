@@ -905,7 +905,7 @@ stbox_tmax(const STBOX *box, TimestampTz *result)
  * @pymeosfunc srid()
  */
 int32
-stbox_get_srid(const STBOX *box)
+stbox_srid(const STBOX *box)
 {
   return box->srid;
 }

@@ -1284,7 +1284,7 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT asewkt(tgeompoint_discseq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
 ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT asewkt(tgeompoint_discseq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-ERROR:  Cannot transform input to a temporal instant set
+ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT asewkt(tgeompoint_seq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input to a temporal sequence
 SELECT asewkt(tgeogpoint_inst(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -1351,7 +1351,7 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT asewkt(tgeogpoint_discseq(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
 ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT asewkt(tgeogpoint_discseq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
-ERROR:  Cannot transform input to a temporal instant set
+ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT asewkt(tgeogpoint_seq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input to a temporal sequence
 SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01]'));
@@ -5615,5 +5615,53 @@ SELECT 1 WHERE tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
  ?column? 
 ----------
         1
+(1 row)
+
+SELECT tgeompoint_hash(tgeompoint 'Point(1 1)@2000-01-01');
+ tgeompoint_hash 
+-----------------
+        -5434271
+(1 row)
+
+SELECT tgeompoint_hash(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ tgeompoint_hash 
+-----------------
+      -275850004
+(1 row)
+
+SELECT tgeompoint_hash(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ tgeompoint_hash 
+-----------------
+      -275850004
+(1 row)
+
+SELECT tgeompoint_hash(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ tgeompoint_hash 
+-----------------
+      1176402621
+(1 row)
+
+SELECT tgeogpoint_hash(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ tgeogpoint_hash 
+-----------------
+      -561657319
+(1 row)
+
+SELECT tgeogpoint_hash(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ tgeogpoint_hash 
+-----------------
+       360498788
+(1 row)
+
+SELECT tgeogpoint_hash(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ tgeogpoint_hash 
+-----------------
+       360498788
+(1 row)
+
+SELECT tgeogpoint_hash(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ tgeogpoint_hash 
+-----------------
+     -2142249749
 (1 row)
 

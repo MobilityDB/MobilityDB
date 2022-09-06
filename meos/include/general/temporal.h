@@ -230,48 +230,47 @@ typedef enum
 #define MOBDB_WKB_BYTE_SIZE        1
 
 /* MobilityDB Types */
-#define MOBDB_WKB_T_BOOL           1   /**< boolean type */
-#define MOBDB_WKB_T_DOUBLE2        2   /**< double2 type */
-#define MOBDB_WKB_T_DOUBLE3        3   /**< double3 type */
-#define MOBDB_WKB_T_DOUBLE4        4   /**< double4 type */
-#define MOBDB_WKB_T_FLOAT8         5   /**< float8 type */
-#define MOBDB_WKB_T_FLOATSPAN      6   /**< float8 span type */
-#define MOBDB_WKB_T_INT4           7   /**< int4 type */
-#define MOBDB_WKB_T_INTSPAN        8   /**< int4 span type */
-#define MOBDB_WKB_T_INT8           9   /**< int8 type */
-#define MOBDB_WKB_T_PERIOD         10  /**< period type */
-#define MOBDB_WKB_T_PERIODSET      11  /**< period set type */
-#define MOBDB_WKB_T_STBOX          12  /**< spatiotemporal box type */
-#define MOBDB_WKB_T_TBOOL          13  /**< temporal boolean type */
-#define MOBDB_WKB_T_TBOX           14  /**< temporal box type */
-#define MOBDB_WKB_T_TDOUBLE2       15  /**< temporal double2 type */
-#define MOBDB_WKB_T_TDOUBLE3       16  /**< temporal double3 type */
-#define MOBDB_WKB_T_TDOUBLE4       17  /**< temporal double4 type */
-#define MOBDB_WKB_T_TEXT           18  /**< text type */
-#define MOBDB_WKB_T_TFLOAT         19  /**< temporal float type */
-#define MOBDB_WKB_T_TIMESTAMPSET   20  /**< timestamp set type */
-#define MOBDB_WKB_T_TIMESTAMPTZ    21  /**< timestamp with time zone type */
-#define MOBDB_WKB_T_TINT           22  /**< temporal integer type */
-#define MOBDB_WKB_T_TTEXT          23  /**< temporal text type */
-#define MOBDB_WKB_T_GEOMETRY       24  /**< geometry type */
-#define MOBDB_WKB_T_GEOGRAPHY      25  /**< geography type */
-#define MOBDB_WKB_T_TGEOMPOINT     26  /**< temporal geometry point type */
-#define MOBDB_WKB_T_TGEOGPOINT     27  /**< temporal geography point type */
-#define MOBDB_WKB_T_NPOINT         28  /**< network point type */
-#define MOBDB_WKB_T_NSEGMENT       29  /**< network segment type */
-#define MOBDB_WKB_T_TNPOINT        30  /**< temporal network point type */
+enum MOBDB_WKB_TYPE
+{
+  MOBDB_WKB_T_BOOL =           1,   /**< boolean type */
+  MOBDB_WKB_T_DOUBLE2 =        2,   /**< double2 type */
+  MOBDB_WKB_T_DOUBLE3 =        3,   /**< double3 type */
+  MOBDB_WKB_T_DOUBLE4 =        4,   /**< double4 type */
+  MOBDB_WKB_T_FLOAT8 =         5,   /**< float8 type */
+  MOBDB_WKB_T_FLOATSPAN =      6,   /**< float8 span type */
+  MOBDB_WKB_T_INT4 =           7,   /**< int4 type */
+  MOBDB_WKB_T_INTSPAN =        8,   /**< int4 span type */
+  MOBDB_WKB_T_INT8 =           9,   /**< int8 type */
+  MOBDB_WKB_T_PERIOD =         10,  /**< period type */
+  MOBDB_WKB_T_PERIODSET =      11,  /**< period set type */
+  MOBDB_WKB_T_STBOX =          12,  /**< spatiotemporal box type */
+  MOBDB_WKB_T_TBOOL =          13,  /**< temporal boolean type */
+  MOBDB_WKB_T_TBOX =           14,  /**< temporal box type */
+  MOBDB_WKB_T_TDOUBLE2 =       15,  /**< temporal double2 type */
+  MOBDB_WKB_T_TDOUBLE3 =       16,  /**< temporal double3 type */
+  MOBDB_WKB_T_TDOUBLE4 =       17,  /**< temporal double4 type */
+  MOBDB_WKB_T_TEXT =           18,  /**< text type */
+  MOBDB_WKB_T_TFLOAT =         19,  /**< temporal float type */
+  MOBDB_WKB_T_TIMESTAMPSET =   20,  /**< timestamp set type */
+  MOBDB_WKB_T_TIMESTAMPTZ =    21,  /**< timestamp with time zone type */
+  MOBDB_WKB_T_TINT =           22,  /**< temporal integer type */
+  MOBDB_WKB_T_TTEXT =          23,  /**< temporal text type */
+  MOBDB_WKB_T_GEOMETRY =       24,  /**< geometry type */
+  MOBDB_WKB_T_GEOGRAPHY =      25,  /**< geography type */
+  MOBDB_WKB_T_TGEOMPOINT =     26,  /**< temporal geometry point type */
+  MOBDB_WKB_T_TGEOGPOINT =     27,  /**< temporal geography point type */
+  MOBDB_WKB_T_NPOINT =         28,  /**< network point type */
+  MOBDB_WKB_T_NSEGMENT =       29,  /**< network segment type */
+  MOBDB_WKB_T_TNPOINT =        30,  /**< temporal network point type */
+};
 
 /* Temporal subtype */
 enum MOBDB_WKB_TSUBTYPE
 {
-  MOBDB_WKB_TINSTANT = 1,
-  MOBDB_WKB_TSEQUENCE = 2,
-  MOBDB_WKB_TSEQUENCESET = 3,
+  MOBDB_WKB_TINSTANT =         1,  /**< temporal instant subtype */
+  MOBDB_WKB_TSEQUENCE =        2,  /**< temporal sequence subtype */
+  MOBDB_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
 };
-
-// #define MOBDB_WKB_TINSTANT          1
-// #define MOBDB_WKB_TSEQUENCE         2
-// #define MOBDB_WKB_TSEQUENCESET      3
 
 /* Period bounds */
 #define MOBDB_WKB_LOWER_INC        0x01

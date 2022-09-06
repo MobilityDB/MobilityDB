@@ -52,7 +52,7 @@
 		<para>
 			As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows:
 		</para>
-		<programlisting xml:space="preserve">
+		<programlisting language="sql" xml:space="preserve">
 {timestampset, period, periodset} @&gt; time: boolean
 </programlisting>
 		<para>
@@ -69,7 +69,7 @@
 			<para>
 				A value of a span type has two bounds, the <emphasis>lower bound</emphasis> and the <emphasis>upper bound</emphasis>, which are values of the underlying <emphasis>base type</emphasis>. For example, a value of the <varname>period</varname> type has two bounds, which are <varname>timestamptz</varname> values. The bounds can be inclusive or exclusive. An inclusive bound means that the boundary instant is included in the span, while an exclusive bound means that the boundary instant is not included in the span. In the text form of a span value, inclusive and exclusive lower bounds are represented, respectively, by &ldquo;<varname>[</varname>&rdquo; and &ldquo;<varname>(</varname>&rdquo;. Likewise, inclusive and exclusive upper bounds are represented, respectively, by &ldquo;<varname>]</varname>&rdquo; and &ldquo;<varname>)</varname>&rdquo;. In a span value, the lower bound must be less than or equal to the upper bound. A span value with equal and inclusive bounds is called an <emphasis>instantaneous span</emphasis> and corresponds to a base type value. Examples of span values are as follows:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)';
 SELECT floatspan '[1.5, 3.5]';
 SELECT period '[2001-01-01 08:00:00, 2001-01-03 09:30:00)';
@@ -86,7 +86,7 @@ SELECT period '[2001-01-01 08:00:00, 2001-01-01 08:00:00)';
 			<para>
 				The <varname>timestampset</varname> type represents a set of different <varname>timestamptz</varname> values. A <varname>timestampset</varname> value must contain at least one element, in which case it corresponds to a <varname>timestamptz</varname> value. The elements composing a <varname>timestampset</varname> value must be ordered. Examples of <varname>timestampset</varname> values are as follows:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 SELECT timestampset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
 -- Singleton timestampset
 SELECT timestampset '{2001-01-01 08:00:00}';
@@ -99,7 +99,7 @@ SELECT timestampset '{2001-01-01 08:00:00, 2001-01-01 08:00:00}';
 			<para>
 				Finally, the <varname>periodset</varname> type represents a set of disjoint <varname>period</varname> values. A <varname>periodset</varname> value must contain at least one element, in which case it corresponds to a <varname>period</varname> value. The elements composing a <varname>periodset</varname> value must be ordered. Examples of <varname>periodset</varname> values are as follows:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 SELECT periodset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00],
   [2001-01-01 08:20:00, 2001-01-01 08:40:00]}';
 -- Singleton periodset
@@ -115,10 +115,10 @@ SELECT periodset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00],
 			<para>
 				Values of the <varname>periodset</varname> type are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive adjacent period values are merged when possible. An example of transformation into normal form is as follows:
 			</para>
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 SELECT periodset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
   [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00, 2001-01-01 08:20:00]}';
--- "{[2001-01-01 08:00:00+00,2001-01-01 08:20:00+00]}"
+-- {[2001-01-01 08:00:00+00,2001-01-01 08:20:00+00]}
 </programlisting>
 
 			<para>
@@ -132,7 +132,7 @@ SELECT periodset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 					<para><varname>asBinary({span,timestampset,periodset}): bytea</varname></para>
 					<para><varname>asBinary({span,timestampset,periodset},endian text): bytea</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(intspan '[1, 2]');
 -- \x010800010100000003000000
 SELECT asBinary(intspan '[1, 2]', 'XDR');
@@ -154,7 +154,7 @@ SELECT asBinary(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}'
 					<para><varname>asHexWKB({span,timestampset,periodset}): text</varname></para>
 					<para><varname>asHexWKB({span,timestampset,periodset},endian text): text</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(intspan '[1, 2]');
 -- 010800010100000003000000
 SELECT asHexWKB(intspan '[1, 2]', 'XDR');
@@ -174,7 +174,7 @@ SELECT asHexWKB(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}'
 					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
 					<para>Input an integer span from a Well-Known Binary (WKB) representation</para>
 					<para><varname>intspanFromBinary(bytea): intspan</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspanFromBinary('\x010800010100000003000000');
 -- [1, 3)
 </programlisting>
@@ -184,7 +184,7 @@ SELECT intspanFromBinary('\x010800010100000003000000');
 					<indexterm><primary><varname>floatspanFromBinary</varname></primary></indexterm>
 					<para>Input a float span from a Well-Known Binary (WKB) representation</para>
 					<para><varname>floatspanFromBinary(bytea): floatspan</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT floatspanFromBinary('\x01060001000000000000f83f0000000000000440');
 -- [1.5, 2.5)
 </programlisting>
@@ -194,7 +194,7 @@ SELECT floatspanFromBinary('\x01060001000000000000f83f0000000000000440');
 					<indexterm><primary><varname>periodFromBinary</varname></primary></indexterm>
 					<para>Input a period from a Well-Known Binary (WKB) representation</para>
 					<para><varname>periodFromBinary(bytea): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodFromBinary('\x010a000300fce0136a58010000bc8f4f92580100');
 -- [2001-01-01, 2001-01-03]
 </programlisting>
@@ -204,7 +204,7 @@ SELECT periodFromBinary('\x010a000300fce0136a58010000bc8f4f92580100');
 					<indexterm><primary><varname>timestampsetFromBinary</varname></primary></indexterm>
 					<para>Input a timestamp set from a Well-Known Binary (WKB) representation</para>
 					<para><varname>timestampsetFromBinary(bytea): timestampset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestampsetFromBinary('\x010200000000fce0136a58010000bc8f4f92580100');
 -- {2001-01-01, 2001-01-03}
 </programlisting>
@@ -214,7 +214,7 @@ SELECT timestampsetFromBinary('\x010200000000fce0136a58010000bc8f4f92580100');
 					<indexterm><primary><varname>periodsetFromBinary</varname></primary></indexterm>
 					<para>Input a period set from a Well-Known Binary (WKB) representation</para>
 					<para><varname>periodsetFromBinary(bytea): periodset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodsetFromBinary(
   '\x01020000000300fce0136a58010000bc8f4f9258010003001c676da6580100007c3e8bba580100');
 -- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
@@ -225,7 +225,7 @@ SELECT periodsetFromBinary(
 					<indexterm><primary><varname>intspanFromHexWKB</varname></primary></indexterm>
 					<para>Input an integer span from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>intspanFromHexWKB(text): intspan</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspanFromHexWKB('010800010100000003000000');
 -- [1, 3)
 </programlisting>
@@ -235,7 +235,7 @@ SELECT intspanFromHexWKB('010800010100000003000000');
 					<indexterm><primary><varname>floatspanFromHexWKB</varname></primary></indexterm>
 					<para>Input a float span from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>floatspanFromHexWKB(text): floatspan</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
 -- [1.5, 2.5)
 </programlisting>
@@ -245,7 +245,7 @@ SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
 					<indexterm><primary><varname>periodFromHexWKB</varname></primary></indexterm>
 					<para>Input a period from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>periodFromHexWKB(text): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
 -- [2001-01-01, 2001-01-03]
 </programlisting>
@@ -255,9 +255,9 @@ SELECT periodFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
 					<indexterm><primary><varname>timestampsetFromHexWKB</varname></primary></indexterm>
 					<para>Input a timestamp set from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>timestampsetFromHexWKB(text): timestampset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
---  {2001-01-01, 2001-01-03}
+-- {2001-01-01, 2001-01-03}
 </programlisting>
 				</listitem>
 
@@ -265,10 +265,10 @@ SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 					<indexterm><primary><varname>periodsetFromHexWKB</varname></primary></indexterm>
 					<para>Input a periodset from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 					<para><varname>periodsetFromHexWKB(text): periodset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodsetFromHexWKB(
   '01020000000300FCE0136A58010000BC8F4F9258010003001C676DA6580100007C3E8BBA580100');
---  {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
+-- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -286,7 +286,7 @@ SELECT periodsetFromHexWKB(
 					<para><varname>intspan(integer,integer,left_inc=true,right_inc=false): intspan</varname></para>
 					<para><varname>floatspan(float,float,left_inc=true,right_inc=false): floatspan</varname></para>
 					<para><varname>period(timestamptz,timestamptz,left_inc=true,right_inc=false): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 -- Float span defined with two arguments
 SELECT floatspan(20.5, 25);
 -- [20.5, 25)
@@ -307,9 +307,9 @@ SELECT period('2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
 					<indexterm><primary><varname>timestampset</varname></primary></indexterm>
 					<para>Constructor for <varname>timestampset</varname></para>
 					<para><varname>timestampset(timestamptz[]): timestampset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestampset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
--- "{2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}"
+-- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -321,7 +321,7 @@ SELECT timestampset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:0
 					<indexterm><primary><varname>periodset</varname></primary></indexterm>
 					<para>Constructor for <varname>periodset</varname></para>
 					<para><varname>periodset(period[]): periodset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodset(ARRAY[period '[2001-01-01 08:00:00, 2001-01-01 08:10:00]',
 -- '[2001-01-01 08:20:00, 2001-01-01 08:40:00]']);
 </programlisting>
@@ -341,25 +341,25 @@ SELECT periodset(ARRAY[period '[2001-01-01 08:00:00, 2001-01-01 08:10:00]',
 					<para><varname>timestamptz::timestampset</varname></para>
 					<para><varname>timestamptz::period</varname></para>
 					<para><varname>timestamptz::periodset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS timestampset);
--- "{2001-01-01 08:00:00+01}"
+-- {2001-01-01 08:00:00+01}
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS period);
--- "[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]"
+-- [2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS periodset);
--- "{[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]}"
+-- {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]}
 </programlisting>
 				</listitem>
 				<listitem id="timestampset_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
 					<para><varname>timestampset::periodset</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestampset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
   2001-01-01 08:25:00}' AS periodset);
--- "{[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
-  [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
-  [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]}"
+/* {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
+   [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
+   [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]} */
 </programlisting>
 				</listitem>
 				<listitem id="period_cast">
@@ -367,38 +367,38 @@ SELECT CAST(timestampset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
 					<para>Cast a <varname>period</varname> to another time type</para>
 					<para><varname>period::periodset</varname></para>
 					<para><varname>period::tstzrange</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::periodset;
--- "{[2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)}"
+-- {[2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)}
 SELECT period '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzrange;
--- "["2001-01-01 08:00:00+01","2001-01-01 08:30:00+01")"
+-- ["2001-01-01 08:00:00+01","2001-01-01 08:30:00+01")
 </programlisting>
 				</listitem>
 				<listitem id="intspan_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Cast an <varname>intspan</varname> to an <varname>int4range</varname></para>
 					<para><varname>intspan::int4range</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[10, 20)'::int4range;
--- "[10,20)"
+-- [10,20)
 </programlisting>
 				</listitem>
 				<listitem id="tstzrange_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
 					<para><varname>tstzrange::period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::period;
--- "[2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)"
+-- [2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)
 </programlisting>
 				</listitem>
 				<listitem id="int4range_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Cast an <varname>int4range</varname> to an <varname>intspan</varname></para>
 					<para><varname>int4range::intspan</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT int4range '[10, 20)'::intspan;
--- "[10,20)"
+-- [10,20)
 SELECT int4range 'empty'::intspan;
 -- ERROR:  Range cannot be empty
 SELECT int4range '[10,)'::intspan;
@@ -416,7 +416,7 @@ SELECT int4range '[10,)'::intspan;
 					<indexterm><primary><varname>memSize</varname></primary></indexterm>
 					<para>Get the memory size in bytes</para>
 					<para><varname>memSize({timestampset,periodset}): integer</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT memSize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 104
 SELECT memSize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
@@ -429,11 +429,11 @@ SELECT memSize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
 					<indexterm><primary><varname>lower</varname></primary></indexterm>
 					<para>Get the lower bound</para>
 					<para><varname>lower(span): element</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT lower(intspan '[20, 25)');
 -- 20
 SELECT lower(period '[2011-01-01, 2011-01-05)');
--- "2011-01-01"
+-- 2011-01-01
 </programlisting>
 				</listitem>
 
@@ -441,11 +441,11 @@ SELECT lower(period '[2011-01-01, 2011-01-05)');
 					<indexterm><primary><varname>upper</varname></primary></indexterm>
 					<para>Get the upper bound</para>
 					<para><varname>upper(span): element</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(period '[2011-01-01, 2011-01-05)');
--- "2011-01-05"
+-- 2011-01-05
 </programlisting>
 				</listitem>
 
@@ -453,7 +453,7 @@ SELECT upper(period '[2011-01-01, 2011-01-05)');
 					<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
 					<para>Is the lower bound inclusive?</para>
 					<para><varname>lower_inc(span): boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT lower(intspan '[20, 25)');
 -- true
 SELECT lower_inc(period '[2011-01-01, 2011-01-05)');
@@ -465,7 +465,7 @@ SELECT lower_inc(period '[2011-01-01, 2011-01-05)');
 					<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
 					<para>Is the upper bound inclusive?</para>
 					<para><varname>upper_inc(span): boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT upper(floatspan '[20.5, 25.3]');
 -- true
 SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
@@ -477,11 +477,11 @@ SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
 					<indexterm><primary><varname>duration</varname></primary></indexterm>
 					<para>Get the duration</para>
 					<para><varname>duration({period,periodset}): interval</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT duration(period '[2001-01-01, 2001-01-03)');
--- "2 days"
+-- 2 days
 SELECT duration(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
--- "3 days"
+-- 3 days
 </programlisting>
 				</listitem>
 
@@ -489,7 +489,7 @@ SELECT duration(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}'
 					<indexterm><primary><varname>width</varname></primary></indexterm>
 					<para>Get the width of the span as a float</para>
 					<para><varname>width(numspan): float</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT width(intspan '[1, 3)');
 -- 2
 SELECT width(floatspan '[1, 3.5)');
@@ -501,11 +501,11 @@ SELECT width(floatspan '[1, 3.5)');
 					<indexterm><primary><varname>timespan</varname></primary></indexterm>
 					<para>Get the timespan ignoring the potential time gaps</para>
 					<para><varname>timespan({timestampset,periodset}): interval</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timespan(timestampset '{2001-01-01, 2001-01-03}');
--- "2 days"
+-- 2 days
 SELECT timespan(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
--- "4 days"
+-- 4 days
 </programlisting>
 				</listitem>
 
@@ -513,11 +513,11 @@ SELECT timespan(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}'
 					<indexterm><primary><varname>period</varname></primary></indexterm>
 					<para>Get the period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
 					<para><varname>period({timestampset,periodset}): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT period(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}');
--- "[2001-01-01, 2001-01-05]"
+-- [2001-01-01, 2001-01-05]
 SELECT period(periodset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
--- "[2001-01-01, 2001-01-04)"
+-- [2001-01-01, 2001-01-04)
 </programlisting>
 				</listitem>
 
@@ -525,7 +525,7 @@ SELECT period(periodset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 					<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
 					<para>Get the number of different timestamps</para>
 					<para><varname>numTimestamps({timestampset,periodset}): integer</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT numTimestamps(timestampset '{2001-01-01, 2001-01-03, 2001-01-04}');
 -- 3
 SELECT numTimestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
@@ -538,9 +538,9 @@ SELECT numTimestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-
 					<para>Get the start timestamp</para>
 					<para><varname>startTimestamp({timestampset,periodset}): timestamptz</varname></para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT startTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- "2001-01-01"
+-- 2001-01-01
 </programlisting>
 				</listitem>
 
@@ -549,9 +549,9 @@ SELECT startTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01
 					<para>Get the end timestamp</para>
 					<para><varname>endTimestamp({timestampset,periodset}): timestamptz</varname></para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT endTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- "2001-01-05"
+-- 2001-01-05
 </programlisting>
 				</listitem>
 
@@ -560,9 +560,9 @@ SELECT endTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 					<para>Get the n-th different timestamp</para>
 					<para><varname>timestampN({timestampset,periodset},integer): timestamptz</varname></para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestampN(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
--- "2001-01-04"
+-- 2001-01-04
 </programlisting>
 				</listitem>
 
@@ -571,9 +571,9 @@ SELECT timestampN(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)
 					<para>Get the different timestamps</para>
 					<para><varname>timestamps({timestampset,periodset}): timestampset</varname></para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- "{"2001-01-01", "2001-01-03", "2001-01-05"}"
+-- {"2001-01-01", "2001-01-03", "2001-01-05"}
 </programlisting>
 				</listitem>
 
@@ -581,7 +581,7 @@ SELECT timestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)
 					<indexterm><primary><varname>numPeriods</varname></primary></indexterm>
 					<para>Get the number of periods</para>
 					<para><varname>numPeriods(periodset): integer</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT numPeriods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
 -- 3
@@ -592,10 +592,10 @@ SELECT numPeriods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04]
 					<indexterm><primary><varname>startPeriod</varname></primary></indexterm>
 					<para>Get the start period</para>
 					<para><varname>startPeriod(periodset): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT startPeriod(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
--- "[2001-01-01,2001-01-03)"
+-- [2001-01-01,2001-01-03)
 </programlisting>
 				</listitem>
 
@@ -603,10 +603,10 @@ SELECT startPeriod(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04
 					<indexterm><primary><varname>endPeriod</varname></primary></indexterm>
 					<para>Get the end period</para>
 					<para><varname>endPeriod(periodset): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT endPeriod(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
--- "[2001-01-05,2001-01-06)"
+-- [2001-01-05,2001-01-06)
 </programlisting>
 				</listitem>
 
@@ -614,10 +614,10 @@ SELECT endPeriod(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 					<indexterm><primary><varname>periodN</varname></primary></indexterm>
 					<para>Get the n-th period</para>
 					<para><varname>periodN(periodset,integer): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodN(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}', 2);
--- "[2001-01-04,2001-01-04]"
+-- [2001-01-04,2001-01-04]
 </programlisting>
 				</listitem>
 
@@ -625,10 +625,10 @@ SELECT periodN(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 					<indexterm><primary><varname>periods</varname></primary></indexterm>
 					<para>Get the periods</para>
 					<para><varname>periods(periodset): period[]</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
--- "{"[2001-01-01,2001-01-03)", "[2001-01-04,2001-01-04]", "[2001-01-05,2001-01-06)"}"
+-- {"[2001-01-01,2001-01-03)", "[2001-01-04,2001-01-04]", "[2001-01-05,2001-01-06)"}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -642,14 +642,14 @@ SELECT periods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 					<indexterm><primary><varname>shift</varname></primary></indexterm>
 					<para>Shift the time value by an interval</para>
 					<para><varname>shift({timestampset,period,periodset}): {timestampset,period,periodset}</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT shift(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
--- "{2001-01-02, 2001-01-04, 2001-01-06}"
+-- {2001-01-02, 2001-01-04, 2001-01-06}
 SELECT shift(period '[2001-01-01, 2001-01-03]', '1 day'::interval);
--- "[2001-01-02, 2001-01-04]"
+-- [2001-01-02, 2001-01-04]
 SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
   '1 day'::interval);
--- "{[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}"
+-- {[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}
 </programlisting>
 				</listitem>
 
@@ -657,7 +657,7 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
 				<para>Scale the time value to an interval. If the time span of the time value is zero (for example, for a singleton timestamp set), the result is the time value. The given interval must be strictly greater than zero.</para>
 				<para><varname>tscale({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
-				<programlisting xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve">
 SELECT tscale(timestampset '{2001-01-01}', '1 day');
 -- {2001-01-01}
 SELECT tscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
@@ -665,8 +665,8 @@ SELECT tscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
 SELECT tscale(period '[2001-01-01, 2001-01-03]', '1 day');
 -- [2001-01-01, 2001-01-02]
 SELECT tscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}', '1 day');
--- {[2001-01-01 00:00:00, 2001-01-01 12:00:00],
-  [2001-01-01 18:00:00, 2001-01-02 00:00:00]}
+/* {[2001-01-01 00:00:00, 2001-01-01 12:00:00],
+   [2001-01-01 18:00:00, 2001-01-02 00:00:00]} */
 SELECT tscale(timestampset '{2001-01-01}', '-1 day');
 -- ERROR:  The duration must be a positive interval: -1 days
 </programlisting>
@@ -677,7 +677,7 @@ SELECT tscale(timestampset '{2001-01-01}', '-1 day');
 				<para>Shift and scale the time value to the two intervals. This function combines in a single step the functions <link linkend="time_shift"><varname>shift</varname></link> and <link linkend="time_tscale"><varname>tscale</varname></link>.</para>
 				<para><varname>shiftTscale({timestampset,period,periodset},interval,interval):</varname></para>
 				<para><varname>  {timestampset,period,periodset}</varname></para>
-				<programlisting xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve">
 SELECT shiftTscale(timestampset '{2001-01-01}', '1 day', '1 day');
 -- {2001-01-02}
 SELECT shiftTscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
@@ -686,8 +686,8 @@ SELECT shiftTscale(period '[2001-01-01, 2001-01-03]', '1 day', '1 day');
 -- [2001-01-02, 2001-01-03]
 SELECT shiftTscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
   '1 day', '1 day');
--- {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
-  [2001-01-02 18:00:00, 2001-01-03 00:00:00]}
+/* {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
+   [2001-01-02 18:00:00, 2001-01-03 00:00:00]} */
 </programlisting>
 			</listitem>
 
@@ -695,13 +695,11 @@ SELECT shiftTscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05
 					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Round the bounds of a float span to a number of decimal places</para>
 					<para><varname>round(floatspan,integer): floatspan</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT round(floatspan '[1.123456789,2.123456789)', 3);
--- "[1.123,2.123)"
-SELECT round(floatspan '(,2.123456789]', 3);
--- "(,2.123]"
+-- [1.123,2.123)
 SELECT round(floatspan '[1.123456789, inf)', 3);
--- "[1.123,Infinity)"
+-- [1.123,Infinity)
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -719,7 +717,7 @@ SELECT round(floatspan '[1.123456789, inf)', 3);
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Are the values equal?</para>
 					<para><varname>{numspan,time} = {numspan,time}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1,3]' = intspan '[1,4)';
 -- true
 SELECT period '[2001-01-01, 2001-01-04)' = period '[2001-01-01, 2001-01-04)';
@@ -731,7 +729,7 @@ SELECT period '[2001-01-01, 2001-01-04)' = period '[2001-01-01, 2001-01-04)';
 					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 					<para>Are the values different?</para>
 					<para><varname>{numspan,time} &lt;&gt; {numspan,time}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2001-01-01, 2001-01-04)' &lt;&gt; period '[2001-01-03, 2001-01-05)';
 -- true
 SELECT timestampset '{2001-01-01, 2001-01-04}' &lt;&gt; timestampset '{2001-01-01, 2001-01-05}';
@@ -743,7 +741,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt;&gt; timestampset '{2001-01-0
 					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 					<para>Is the first value less than the second one?</para>
 					<para><varname>{numspan,time} &lt; {numspan,time}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[3, 4]' &lt; floatspan '(3, 4]';
 -- true
 SELECT period '[2001-01-01, 2001-01-04)' &lt; period '[2001-01-01, 2001-01-04]';
@@ -757,7 +755,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt; timestampset '{2001-01-01, 2
 					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 					<para>Is the first value greater than the second one?</para>
 					<para><varname>{numspan,time} &gt; {numspan,time}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[3, 4]' &gt; floatspan '[3, 4)';
 -- true
 SELECT period '[2001-01-03, 2001-01-04)' &gt; period '[2001-01-02, 2001-01-05)';
@@ -769,7 +767,7 @@ SELECT period '[2001-01-03, 2001-01-04)' &gt; period '[2001-01-02, 2001-01-05)';
 					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 					<para>Is the first value less than or equal to the second one?</para>
 					<para><varname>{numspan,time} &lt;= {numspan,time}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
   periodset '{[2001-01-01, 2001-01-05), [2001-01-06, 2001-01-07)}';
 -- true
@@ -780,7 +778,7 @@ SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
 					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>Is the first value greater than or equal to the second one?</para>
 					<para><varname>{numspan,time} &gt;= {numspan,time}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2001-01-03, 2001-01-05)' &gt;= period '[2001-01-03, 2001-01-04)';
 -- true
 </programlisting>
@@ -799,7 +797,7 @@ SELECT period '[2001-01-03, 2001-01-05)' &gt;= period '[2001-01-03, 2001-01-04)'
 					<para>Union of span or time values</para>
 					<para><varname>numspan + numspan: numspan</varname></para>
 					<para><varname>time + time: time</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' + intspan '[3, 5)';
 -- [1, 5)
 SELECT floatspan '[1, 3)' + floatspan '[4, 5)';
@@ -820,7 +818,7 @@ SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
 					<para>Difference of span or time values</para>
 					<para><varname>numspan - numspan: numspan</varname></para>
 					<para><varname>time - time: time</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 5]' - intspan '[3, 6]';
 -- [1, 3)
 SELECT period '[2011-01-01, 2011-01-05)' - period '[2011-01-03, 2011-01-07)';
@@ -832,8 +830,8 @@ SELECT period '[2011-01-01, 2011-01-05]' - period '[2011-01-03, 2011-01-04]'
 SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
   periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],
   [2011-01-08, 2011-01-09]}';
--- {[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
-  [2011-01-07,2011-01-08), (2011-01-09,2011-01-10]}
+/* {[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
+   [2011-01-07,2011-01-08), (2011-01-09,2011-01-10]} */
 </programlisting>
 				</listitem>
 
@@ -842,7 +840,7 @@ SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
 					<para>Intersection of span or time values</para>
 					<para><varname>numspan * numspan: numspan</varname></para>
 					<para><varname>time * time: time</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 5)' * intspan '[3, 6)';
 -- [3, 5)
 SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';
@@ -864,7 +862,7 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 					<para>Do the values overlap (have values in common)?</para>
 					<para><varname>{numrange,number} &amp;&amp; {numrange,number}: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} &amp;&amp; {timestampset,period,periodset}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' &amp;&amp; intspan '[2, 4)';
 -- true
 SELECT floatspan '[1, 3)' &amp;&amp; floatspan '[3, 4)';
@@ -879,7 +877,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 					<para>Does the first value contain the second one?</para>
 					<para><varname>numrange @&gt; {numrange,number}: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} @&gt; time: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[1, 5]' @&gt; floatspan '[2, 5)';
 -- true
 SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
@@ -892,7 +890,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 					<para>Is the first value contained by the second one?</para>
 					<para><varname> {numrange,number}&lt;@ numrange: boolean</varname></para>
 					<para><varname>time &lt;@ {timestampset,period,periodset}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
 -- false
 SELECT period '[2011-02-01, 2011-03-01)' &lt;@ period '[2011-01-01, 2011-05-01)';
@@ -907,7 +905,7 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 					<para>Is the first value adjacent to the second one?</para>
 					<para><varname>{numrange,number} -|- {numrange,number}: boolean</varname></para>
 					<para><varname>time -|- time: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 -- true
 SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
@@ -930,7 +928,7 @@ SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-0
 					<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
 					<para>Is the first value strictly left of the second one?</para>
 					<para><varname>{number,span} &lt;&lt; {number,span}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &lt;&lt; 20;
 -- true
 SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
@@ -942,7 +940,7 @@ SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
 					<para>Is the first value strictly to the right of the second one?</para>
 					<para><varname>{number,span} &gt;&gt; {number,span}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &gt;&gt; 10;
 -- true
 SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
@@ -954,7 +952,7 @@ SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
 					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
 					<para>Is the first value not to the right of the second one?</para>
 					<para><varname>{number,span} &amp;&lt; {number,span}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &amp;&lt; 18;
 -- false
 SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
@@ -966,7 +964,7 @@ SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
 					<para>Is the first value not to the left of the second one?</para>
 					<para><varname>{number,span} &amp;&gt; {number,span}: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &amp;&gt; 30;
 -- true
 SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
@@ -978,7 +976,7 @@ SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
 					<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<para>Is the first value scritly before the second one?</para>
 					<para><varname>time &lt;&lt;# time: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';
 -- true
 </programlisting>
@@ -988,7 +986,7 @@ SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 20
 					<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>Is the first value strictly after the second one?</para>
 					<para><varname>time #&gt;&gt; time: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
   periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
 -- true
@@ -999,7 +997,7 @@ SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
 					<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 					<para>Is the first value not after the second one?</para>
 					<para><varname>time &amp;&lt;# time: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
 -- false
 </programlisting>
@@ -1009,7 +1007,7 @@ SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2
 					<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 					<para>Is the first value not before the second one?</para>
 					<para><varname>time #&amp;&gt; time: boolean</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 -- true
 </programlisting>
@@ -1028,7 +1026,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 					<para>Get the smallest distance ever</para>
 					<para><varname>{number,span} &lt;-&gt; {number,span}: float</varname></para>
 					<para><varname>time &lt;-&gt; time: float</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 SELECT 3 &lt;-&gt; intspan '(5, 7]';
 -- 3
 SELECT floatspan '[1, 3]' &lt;-&gt; floatspan '(5.5, 7]';
@@ -1062,14 +1060,14 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Temporal count</para>
 					<para><varname>tcount({timestampset,period,periodset}): {tint_seq,tint_seqset}</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
   SELECT timestampset '{2000-01-01, 2000-01-02}'
 )
 SELECT tcount(ts) FROM times;
--- "{2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}"
+-- {2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}
 
 WITH periods(ps) AS (
   SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
@@ -1077,8 +1075,8 @@ WITH periods(ps) AS (
   SELECT periodset '{[2000-01-02, 2000-01-06]}'
 )
 SELECT tcount(ps) FROM periods;
--- {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
-   (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]}
+/* {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
+   (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]} */
 </programlisting>
 				</listitem>
 
@@ -1087,14 +1085,14 @@ SELECT tcount(ps) FROM periods;
 					<para>Bounding span or period</para>
 					<para><varname>extent(span): span</varname></para>
 					<para><varname>extent({timestampset,period,periodset}): period</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 WITH spans(r) AS (
   SELECT floatspan '[1, 4)' UNION
   SELECT floatspan '(5, 8)' UNION
   SELECT floatspan '(7, 9)'
 )
 SELECT extent(r) FROM spans;
--- "[1,9)"
+-- [1,9)
 
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
@@ -1102,7 +1100,7 @@ WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-02}'
 )
 SELECT extent(ts) FROM times;
--- "[2000-01-01, 2000-01-06]"
+-- [2000-01-01, 2000-01-06]
 
 WITH periods(ps) AS (
   SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
@@ -1110,7 +1108,7 @@ WITH periods(ps) AS (
   SELECT periodset '{[2000-01-02, 2000-01-06]}'
 )
 SELECT extent(ps) FROM periods;
--- "[2000-01-01, 2000-01-06]"
+-- [2000-01-01, 2000-01-06]
 </programlisting>
 				</listitem>
 
@@ -1118,21 +1116,21 @@ SELECT extent(ps) FROM periods;
 					<indexterm><primary><varname>tunion</varname></primary></indexterm>
 					<para>Temporal union</para>
 					<para><varname>tunion({timestampset,period,periodset}): {timestampset,periodset}</varname></para>
-					<programlisting xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
   SELECT timestampset '{2000-01-01, 2000-01-02}'
 )
 SELECT tunion(ts) FROM times;
--- "{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}"
+-- {2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}
 WITH periods(ps) AS (
   SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
   SELECT periodset '{[2000-01-02, 2000-01-03], [2000-01-05, 2000-01-06]}' UNION
   SELECT periodset '{[2000-01-07, 2000-01-08]}'
 )
 SELECT tunion(ps) FROM periods;
--- "{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}"
+-- {[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -1143,7 +1141,7 @@ SELECT tunion(ps) FROM periods;
 		<title>Indexing of Time and Span Types</title>
 
 		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>intspan</varname>, <varname>floatspan</varname>, <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname> types. The GiST index implements an R-tree while the SP-GiST index implements a quad-tree. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
-			<programlisting xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During period);
 CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);

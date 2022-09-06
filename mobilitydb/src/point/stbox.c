@@ -710,7 +710,7 @@ PGDLLEXPORT Datum
 Stbox_get_srid(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_INT32(stbox_get_srid(box));
+  PG_RETURN_INT32(stbox_srid(box));
 }
 
 PG_FUNCTION_INFO_V1(Stbox_set_srid);

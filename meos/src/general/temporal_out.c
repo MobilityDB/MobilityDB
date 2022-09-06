@@ -1155,11 +1155,13 @@ tbox_to_wkb_size(const TBOX *box)
  * Return true if the spatiotemporal box needs to output the SRID
  */
 static bool
-stbox_wkb_needs_srid(const STBOX *box)
+stbox_wkb_needs_srid(const STBOX *box, uint8_t variant)
 {
-  /* Add an SRID if the box has one */
-  if (box->srid != SRID_UNKNOWN)
+  /* Add an SRID if the WKB form is extended and if the temporal point has one */
+  if ((variant & WKB_EXTENDED) && stbox_srid(box) != SRID_UNKNOWN)
     return true;
+
+  /* Everything else doesn't get an SRID */
   return false;
 }
 
@@ -1168,7 +1170,7 @@ stbox_wkb_needs_srid(const STBOX *box)
  * Binary (WKB) format
  */
 static size_t
-stbox_to_wkb_size(const STBOX *box)
+stbox_to_wkb_size(const STBOX *box, uint8_t variant)
 {
   /* Endian flag + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
@@ -1178,7 +1180,7 @@ stbox_to_wkb_size(const STBOX *box)
   /* If there is a value dimension */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
-    if (stbox_wkb_needs_srid(box))
+    if (stbox_wkb_needs_srid(box, variant))
       size += MOBDB_WKB_INT4_SIZE;
     size += MOBDB_WKB_DOUBLE_SIZE * 4;
     if (MOBDB_FLAGS_GET_Z(box->flags))
@@ -1277,29 +1279,6 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 }
 
 /**
- * Return the maximum size in bytes of the temporal instant set
- * represented in Well-Known Binary (WKB) format
- */
-// static size_t
-// tdiscseq_to_wkb_size(const TSequence *seq, uint8_t variant)
-// {
-  // /* Endian flag + temporal type + temporal flag */
-  // size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
-  // /* Extended WKB needs space for optional SRID integer */
-  // if (tgeo_type(seq->temptype) &&
-      // tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    // size += MOBDB_WKB_INT4_SIZE;
-  // /* Include the number of instants */
-  // size += MOBDB_WKB_INT4_SIZE;
-  // int count;
-  // const TInstant **instants = tsequence_instants(seq, &count);
-  // /* Include the TInstant array */
-  // size += tinstarr_to_wkb_size(instants, count);
-  // pfree(instants);
-  // return size;
-// }
-
-/**
  * Return the maximum size in bytes of the temporal sequence
  * represented in Well-Known Binary (WKB) format
  */
@@ -1393,7 +1372,7 @@ datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
       result = tbox_to_wkb_size((TBOX *) DatumGetPointer(value));
       break;
     case T_STBOX:
-      result = stbox_to_wkb_size((STBOX *) DatumGetPointer(value));
+      result = stbox_to_wkb_size((STBOX *) DatumGetPointer(value), variant);
       break;
     case T_TBOOL:
     case T_TINT:
@@ -1889,19 +1868,10 @@ stbox_flags_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
     wkb_flags |= MOBDB_WKB_TFLAG;
   if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
     wkb_flags |= MOBDB_WKB_GEODETICFLAG;
-  if (stbox_wkb_needs_srid(box))
+  if (stbox_wkb_needs_srid(box, variant))
     wkb_flags |= MOBDB_WKB_SRIDFLAG;
-  if (variant & WKB_HEX)
-  {
-    buf[0] = '0';
-    buf[1] = (uint8_t) hexchr[wkb_flags];
-    return buf + 2;
-  }
-  else
-  {
-    buf[0] = wkb_flags;
-    return buf + 1;
-  }
+  /* Write the flags */
+  return uint8_to_wkb_buf(wkb_flags, buf, variant);
 }
 
 /**
@@ -1922,15 +1892,15 @@ stbox_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal flags */
   buf = stbox_flags_to_wkb_buf(box, buf, variant);
+  /* Write the optional SRID for extended variant */
+  if (stbox_wkb_needs_srid(box, variant))
+    buf = int32_to_wkb_buf(stbox_srid(box), buf, variant);
   /* Write the temporal dimension if any */
   if (MOBDB_FLAGS_GET_T(box->flags))
     buf = span_to_wkb_buf_int(&box->period, buf, variant);
   /* Write the value dimension if any */
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
-    /* Write the optional SRID for extended variant */
-    if (stbox_wkb_needs_srid(box))
-      buf = int32_to_wkb_buf(box->srid, buf, variant);
     /* Write the coordinates */
     buf = double_to_wkb_buf(box->xmin, buf, variant);
     buf = double_to_wkb_buf(box->xmax, buf, variant);
@@ -2207,9 +2177,6 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
     case T_PERIOD:
       buf = span_to_wkb_buf((Span *) DatumGetPointer(value), buf, variant);
       break;
-    case T_TIMESTAMPTZ:
-      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(value), buf, variant);
-      break;
     case T_TIMESTAMPSET:
       buf = timestampset_to_wkb_buf((TimestampSet *) DatumGetPointer(value),
         buf, variant);
@@ -2354,6 +2321,7 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_in_out
  * @brief Return the WKB representation of a span in hex-encoded ASCII.
@@ -2366,6 +2334,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2382,6 +2351,7 @@ timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_in_out
  * @brief Return the WKB representation of a timestamp set in hex-encoded ASCII.
@@ -2395,6 +2365,7 @@ timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2411,6 +2382,7 @@ periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_in_out
  * @brief Return the WKB representation of a period set in hex-encoded ASCII.
@@ -2423,6 +2395,7 @@ periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2439,6 +2412,7 @@ tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_in_out
  * @brief Return the WKB representation of a temporal box in hex-encoded ASCII.
@@ -2451,6 +2425,7 @@ tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2467,6 +2442,7 @@ stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_in_out
  * @brief Return the WKB representation of a spatiotemporal box in hex-encoded ASCII.
@@ -2479,6 +2455,7 @@ stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2495,6 +2472,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_in_out
  * @brief Return the WKB representation of a temporal value in hex-encoded ASCII.
@@ -2507,5 +2485,6 @@ temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
