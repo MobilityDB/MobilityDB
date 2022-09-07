@@ -1644,6 +1644,7 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence from arrays of coordinates, one per
@@ -1678,6 +1679,7 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
     normalize);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_int_temporal_constructor
