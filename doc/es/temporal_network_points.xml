@@ -57,7 +57,7 @@ SELECT nsegment 'Nsegment(64, 1.0, 0.0)';
 		<para>Como se puede ver en el último ejemplo, los valores <varname>startPosition</varname> y <varname>endPosition</varname> se invertirán para asegurar que la condición <varname>startPosition &le; endPosition</varname> siempre se satisface. La función de constructor para segmentos de red tiene un argumento para el identificador de ruta y dos argumentos opcionales para las posiciones inicial y final. Los ejemplos de valores de segmento de red definidos con la función constructora son los siguientes:</para>
 			<programlisting language="sql" xml:space="preserve">
 SELECT nsegment(76, 0.3, 0.3);
-SELECT nsegment(76); -- se asume que las posiciones inicial y final son 0 y 1 respectivamente
+SELECT nsegment(76); -- se asume que las posiciones inicial y final son 0 y 1
 SELECT nsegment(76, 0.5); -- se asume que la posición final es 1
 </programlisting>
 		<para>Los valores del tipo <varname>npoint</varname> se pueden convertir al tipo <varname>nsegment</varname> usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname> como se muestra a continuación.</para>
@@ -76,11 +76,11 @@ SELECT npoint(76, 0.33)::nsegment;
 		</itemizedlist>
 		<para>Ejemplos de valores de tipo de red estática incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve">
--- incorrect rid value
+-- Valor rid incorrecto
 SELECT npoint 'Npoint(87.5, 1.0)';
--- incorrect position value
+-- Valor de posición incorrecto
 SELECT npoint 'Npoint(87, 2.0)';
--- rid value not found in the ways table
+-- Valor rid inexistente en la table ways
 SELECT npoint 'Npoint(99999999, 1.0)';
 </programlisting>
 		<para>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</para>
@@ -365,12 +365,12 @@ SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,
 
 		<para>Los valores de los puntos de red temporal deben satisfacer las restricciones especificadas en la <xref linkend="validity_temporal_types" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve">
--- no se permiten valores nulos
+-- No se permiten valores nulos
 SELECT tnpoint 'NULL@2001-01-01 08:05:00';
 SELECT tnpoint 'Point(0 0)@NULL';
--- el tipo base no es un punto de red
+-- El tipo base no es un punto de red
 SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';
--- múltiples rutas en una secuencia
+-- Múltiples rutas en una secuencia
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 09:05:00)';
 </programlisting>
 	</sect1>
@@ -424,10 +424,10 @@ SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', false);
 					<para><varname>tnpoint_seqset(tnpoint[]):tnpoint_seqset</varname></para>
 					<para><varname>tnpoint_seqset(npoint,periodset,boolean=true):tnpoint_seqset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
-  Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]']);
--- {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03],
-  [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]}
+SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1,0.2)@2000-01-01, Npoint(1,0.4)@2000-01-02,
+  Npoint(1,0.5)@2000-01-03]', '[Npoint(2,0.6)@2000-01-04, Npoint(2,0.6)@2000-01-05]']);
+/* {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03],
+   [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]} */
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -445,8 +445,8 @@ SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@
 				<programlisting language="sql" xml:space="preserve">
 SELECT astext((tnpoint '[NPoint(1, 0.2)@2001-01-01,
   NPoint(1, 0.3)@2001-01-02)')::tgeompoint);
--- [POINT(23.057077727326 28.7666335767956)@2001-01-01,
-  POINT(48.7117553116406 20.9256801894708)@2001-01-02)
+/* [POINT(23.057077727326 28.7666335767956)@2001-01-01,
+   POINT(48.7117553116406 20.9256801894708)@2001-01-02) */
 </programlisting>
 			</listitem>
 
@@ -494,7 +494,7 @@ SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 				<para>Redondear la fracción del punto de red temporal en el número de lugares decimales</para>
 				<para><varname>round(tnpoint,integer): tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}', 6);
+SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}
 </programlisting>
 			</listitem>
@@ -539,8 +539,8 @@ SELECT length(tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]');
 				<programlisting language="sql" xml:space="preserve">
 SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02,
   NPoint(1, 0.5)@2000-01-03], [NPoint(1, 0.6)@2000-01-04, NPoint(1, 0.7)@2000-01-05]}');
--- {[0@2000-01-01, 54.3757408468784@2000-01-02, 54.3757408468784@2000-01-03],
-  [54.3757408468784@2000-01-04, 81.5636112703177@2000-01-05]}
+/* {[0@2000-01-01, 54.3757408468784@2000-01-02, 54.3757408468784@2000-01-03],
+   [54.3757408468784@2000-01-04, 81.5636112703177@2000-01-05]} */
 </programlisting>
 			</listitem>
 
@@ -551,8 +551,8 @@ SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@200
 				<programlisting language="sql" xml:space="preserve">
 SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, 0.4)@2000-01-02,
   NPoint(1, 0.6)@2000-01-03]') * 3600 * 24;
--- Interp=Stepwise;[21.4016800272077@2000-01-01, 14.2677866848051@2000-01-02,
-  14.2677866848051@2000-01-03]
+/* Interp=Stepwise;[21.4016800272077@2000-01-01, 14.2677866848051@2000-01-02,
+   14.2677866848051@2000-01-03] */
 </programlisting>
 			</listitem>
 
@@ -588,10 +588,10 @@ SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
 				<para><varname>azimuth(tnpoint): tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]');
--- {[0.974681063778863@2001-01-01 00:00:00+01,
-  0.974681063778863@2001-01-01 23:54:36.721091+01),
-  [3.68970843029227@2001-01-01 23:54:36.721091+01,
-  3.68970843029227@2001-01-02 00:00:00+01)}
+/* {[0.974681063778863@2001-01-01 00:00:00+01,
+   0.974681063778863@2001-01-01 23:54:36.721091+01),
+   [3.68970843029227@2001-01-01 23:54:36.721091+01,
+   3.68970843029227@2001-01-02 00:00:00+01)} */
 </programlisting>
 				<para>Dado que la geometría subyacente asociada a una ruta puede tener varios vértices, el valor de acimut puede cambiar entre instantes del punto de red temporal de entrada, como se muestra en el ejemplo anterior.</para>
 			</listitem>
@@ -668,8 +668,8 @@ SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03
 				<programlisting language="sql" xml:space="preserve">
 SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'NPoint(2, 0.5)');
--- {[NPoint(2,0.3)@2001-01-01, NPoint(2,0.5)@2001-01-02),
-  (NPoint(2,0.5)@2001-01-02, NPoint(2,0.7)@2001-01-03]}
+/* {[NPoint(2,0.3)@2001-01-01, NPoint(2,0.5)@2001-01-02),
+   (NPoint(2,0.5)@2001-01-02, NPoint(2,0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
 
@@ -680,8 +680,8 @@ SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03
 				<programlisting language="sql" xml:space="preserve">
 SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
--- {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673+01,
-  NPoint(2,0.7)@2001-01-03 00:00:00+01]}
+/* {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673+01,
+   NPoint(2,0.7)@2001-01-03 00:00:00+01]} */
 </programlisting>
 			</listitem>
 
@@ -871,9 +871,9 @@ SELECT tdisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
 -- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
 SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
   tnpoint '[NPoint(1, 0.5)@2001-01-01, NPoint(1, 0.3)@2001-01-03)', 1);
--- {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
-  (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,
-  t@2001-01-03 00:00:00+01)}
+/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
+   (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,
+   t@2001-01-03 00:00:00+01)} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -911,8 +911,8 @@ SELECT tnpoint '[NPoint(1, 0.2)@2001-01-02, NPoint(1, 0.4)@2001-01-04)' UNION
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05)' )
 SELECT wcount(Temp, '1 day')
 FROM Temp
--- {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
-  1@2001-01-06)}
+/* {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
+   1@2001-01-06)} */
 </programlisting>
 			</listitem>
 
@@ -927,8 +927,8 @@ SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' UNION
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)' )
 SELECT astext(tcentroid(Temp))
 FROM Temp
--- {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
-  POINT(55.7001249027598 72.9552602410653)@2001-01-03)}
+/* {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
+   POINT(55.7001249027598 72.9552602410653)@2001-01-03)} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

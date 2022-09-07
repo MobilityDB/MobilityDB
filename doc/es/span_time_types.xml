@@ -256,7 +256,7 @@ SELECT periodFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
 					<para><varname>timestampsetFromHexWKB(text): timestampset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
---  {2001-01-01, 2001-01-03}
+-- {2001-01-01, 2001-01-03}
 </programlisting>
 				</listitem>
 
@@ -267,7 +267,7 @@ SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 					<programlisting language="sql" xml:space="preserve">
 SELECT periodsetFromHexWKB(
   '01020000000300FCE0136A58010000BC8F4F9258010003001C676DA6580100007C3E8BBA580100');
---  {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
+-- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -356,7 +356,7 @@ SELECT CAST(timestamptz '2001-01-01 08:00:00' AS periodset);
 					<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestampset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
   2001-01-01 08:25:00}' AS periodset);
--- {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
+/* {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
    [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
    [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]} */
 </programlisting>
@@ -375,7 +375,7 @@ SELECT period '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzrange;
 				</listitem>
 				<listitem id="intspan_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Cast an <varname>intspan</varname> to an <varname>int4range</varname></para>
+					<para>Convertir un <varname>intspan</varname> en un <varname>int4range</varname></para>
 					<para><varname>intspan::int4range</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[10, 20)'::int4range;
@@ -673,8 +673,8 @@ SELECT shiftTscale(period '[2001-01-01, 2001-01-03]', '1 day', '1 day');
 -- [2001-01-02, 2001-01-03]
 SELECT shiftTscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
   '1 day', '1 day');
--- {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
-  [2001-01-02 18:00:00, 2001-01-03 00:00:00]}
+/* {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
+   [2001-01-02 18:00:00, 2001-01-03 00:00:00]} */
 </programlisting>
 			</listitem>
 
@@ -817,8 +817,8 @@ SELECT period '[2011-01-01, 2011-01-05]' - period '[2011-01-03, 2011-01-04]'
 SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
   periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],
   [2011-01-08, 2011-01-09]}';
--- {[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
-  [2011-01-07,2011-01-08), (2011-01-09,2011-01-10]}
+/* {[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
+   [2011-01-07,2011-01-08), (2011-01-09,2011-01-10]} */
 </programlisting>
 				</listitem>
 
@@ -1063,8 +1063,8 @@ WITH periods(ps) AS (
   SELECT periodset '{[2000-01-02, 2000-01-06]}'
 )
 SELECT tcount(ps) FROM periods;
--- {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
-   (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]}
+/* {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
+   (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]} */
 </programlisting>
 				</listitem>
 

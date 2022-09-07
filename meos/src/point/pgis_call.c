@@ -1312,7 +1312,7 @@ postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Input function for geometries
  *
  * Format is '[SRID=#;]wkt|wkb'
@@ -1416,7 +1416,7 @@ gserialized_in(char *input, int32 geom_typmod)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Output function for geometries
  *
  * LWGEOM_out(lwgeom) --> cstring
@@ -1434,7 +1434,7 @@ gserialized_out(const GSERIALIZED *geom)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation (and optionally a SRID)
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  *  (HEX)WKB or EWKT.
@@ -1468,7 +1468,7 @@ gserialized_from_text(const char *wkt, int srid)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Return the WKT representation (and optionally a SRID) of a geometry 
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
@@ -1482,7 +1482,7 @@ gserialized_as_text(const GSERIALIZED *geom, int precision)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
@@ -1495,7 +1495,7 @@ gserialized_from_hexewkb(const char *wkt)
 }
   
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Return the WKB representation of a geometry in hex-encoded ASCII.
  * @note PostGIS function: AsHEXEWKB(geom, string)
  */
@@ -1520,7 +1520,7 @@ gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its EWKB representation
  * @note PostGIS function: LWGEOMFromEWKB(wkb, [SRID])
  * @note wkb is in *binary* not hex form
@@ -1546,8 +1546,8 @@ gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
   return geom;
 }
 
-/*
- * @ingroup libmeos_base
+/**
+ * @ingroup libmeos_pgis_types
  * @brief Return the EWKB representation of a geometry
  * @note PostGIS function: WKBFromLWGEOM(lwgeom) --> wkb
  */
@@ -1575,7 +1575,7 @@ gserialized_as_ewkb(GSERIALIZED *geom, char *type)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Input a geometry from GeoJSON format
  * @note PostGIS function: geom_from_geojson(PG_FUNCTION_ARGS)
  */
@@ -1609,6 +1609,7 @@ gserialized_from_geojson(char *geojson)
 }
 
 /**
+ * @ingroup libmeos_pgis_types
  * @brief Output a geometry in GeoJSON format
  * @note PostGIS function: LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  */
@@ -1660,7 +1661,7 @@ gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision,
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pgis_types
  * @brief Return true if the geometries are the same
  */
 bool

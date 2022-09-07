@@ -138,7 +138,7 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert "t" or "f" to 1 or 0
  *
  * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
@@ -175,7 +175,7 @@ bool_in(const char *in_str)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert 1 or 0 to "t" or "f"
  * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
  */

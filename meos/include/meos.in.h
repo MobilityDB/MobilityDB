@@ -205,34 +205,40 @@ extern void meos_finish(void);
  * Functions for input/output PostgreSQL time types
  *****************************************************************************/
 
+extern bool bool_in(const char *in_str);
+extern char *bool_out(bool b);
 extern DateADT pg_date_in(char *str);
 extern char *pg_date_out(DateADT date);
+extern int pg_interval_cmp(const Interval *interval1, const Interval *interval2);
+extern Interval *pg_interval_in(char *str, int32 typmod);
+extern Interval *pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours, int32 mins, double secs);
+extern char *pg_interval_out(Interval *span);
+extern Interval *pg_interval_pl(const Interval *span1, const Interval *span2);
 extern TimeADT pg_time_in(char *str, int32 typmod);
 extern char *pg_time_out(TimeADT time);
-extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
 extern Timestamp pg_timestamp_in(char *str, int32 typmod);
-extern char *pg_timestamptz_out(TimestampTz dt);
+extern Interval *pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2);
+extern TimestampTz pg_timestamp_mi_interval(TimestampTz timestamp, const Interval *span);
 extern char *pg_timestamp_out(Timestamp dt);
-extern Interval *pg_interval_in(char *str, int32 typmod);
-extern Interval *pg_interval_make(int32 years, int32 months, int32 weeks,
-  int32 days, int32 hours, int32 mins, double secs);
-extern char *pg_interval_out(Interval *span);
+extern TimestampTz pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span);
+extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
+extern char *pg_timestamptz_out(TimestampTz dt);
 
 /*****************************************************************************
  * Functions for input/output and manipulation of PostGIS types
  *****************************************************************************/
 
-extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod); // const char *input ?
-extern char *gserialized_out(const GSERIALIZED *geom);
-extern GSERIALIZED *gserialized_from_text(const char *wkt, int srid);
-extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);
-extern GSERIALIZED *gserialized_from_hexewkb(const char *bytea_wkb);
-extern char *gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type);
-extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
 extern bytea *gserialized_as_ewkb(GSERIALIZED *geom, char *type);
-extern GSERIALIZED *gserialized_from_geojson(char *geojson);
 extern char *gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision, char *srs);
-extern bool gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
+extern char *gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type);
+extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);
+extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
+extern GSERIALIZED *gserialized_from_geojson(char *geojson);
+extern GSERIALIZED *gserialized_from_hexewkb(const char *wkt);
+extern GSERIALIZED *gserialized_from_text(const char *wkt, int srid);
+extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod);
+extern char *gserialized_out(const GSERIALIZED *geom);
+extern bool 	gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
 
 /*****************************************************************************
  * Functions for span and time types
