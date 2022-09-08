@@ -340,9 +340,8 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
    */
   char str[33];
   json_object *datetimes = findMemberByName(mfjson, "datetimes");
-  /* We don't need to test that datetimes is NULL since to differentiate
-   * between an instant and a instant set we look for the "datetimes"
-   * member and then call this function */
+  /* We don't need to test that datetimes is NULL since we look for the
+   * "datetimes" member and then call this function */
   const char *strdatetimes = json_object_get_string(datetimes);
   if (strdatetimes == NULL)
   {

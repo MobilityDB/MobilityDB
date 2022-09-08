@@ -1042,7 +1042,7 @@ temporalarr_out(const Temporal **temparr, int count, Datum arg)
  * - For box types, the format depends on the existing dimensions (X, Z, T).
  * - For span types, the format depends on the base type (int4, float8, ...).
  * - For temporal types, the binary format depends on the subtype
- *   (instant, instant set, ...) and the basetype (int4, float8, text, ...).
+ *   (instant, sequence, ...) and the basetype (int4, float8, text, ...).
  *****************************************************************************/
 
 /*****************************************************************************

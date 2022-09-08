@@ -717,7 +717,7 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
  *
  * @pre There are no duplicates values in the array
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
@@ -755,7 +755,7 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
@@ -792,7 +792,7 @@ tnumberinst_restrict_span(const TInstant *inst, const Span *span,
  * (the complement of) an array of spans of base values
  * @pre The spans are normalized
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
@@ -846,7 +846,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * (the complement of) a timestamp set.
  *
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts,
@@ -891,7 +891,7 @@ tinstant_restrict_period(const TInstant *inst, const Period *period,
  * Return true if a temporal instant satisfies the restriction to
  * (the complement of) a timestamp set.
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,

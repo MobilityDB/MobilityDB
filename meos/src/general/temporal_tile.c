@@ -617,7 +617,7 @@ tdiscseq_value_split(const TSequence *seq, Datum start_bucket,
   TSequence **result;
   Datum *values, value, bucket_value;
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     result = palloc(sizeof(TSequence *));

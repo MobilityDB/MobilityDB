@@ -626,7 +626,8 @@ Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Tdiscseq_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal instant set from a base value and a timestamp set
+ * @brief Construct a temporal discrete sequence from a base value and a
+ * timestamp set
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
  */
 PGDLLEXPORT Datum

@@ -121,16 +121,16 @@ tpointinst_transform_tcentroid(const TInstant *inst)
 }
 
 /**
- * Transform a temporal point value of instant set type into a temporal
+ * Transform a temporal point discrete sequence into a temporal
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TInstant **
-tpointdiscseq_transform_tcentroid(const TSequence *ti)
+tpointdiscseq_transform_tcentroid(const TSequence *seq)
 {
-  TInstant **result = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  TInstant **result = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(ti, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = tpointinst_transform_tcentroid(inst);
   }
   return result;
@@ -143,12 +143,7 @@ tpointdiscseq_transform_tcentroid(const TSequence *ti)
 static TSequence *
 tpointseq_transform_tcentroid(const TSequence *seq)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    instants[i] = tpointinst_transform_tcentroid(inst);
-  }
+  TInstant **instants = tpointdiscseq_transform_tcentroid(seq);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }

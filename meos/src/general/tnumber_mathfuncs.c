@@ -329,13 +329,13 @@ tnumberseq_derivative(const TSequence *seq)
  * @sqlfunc derivative()
  */
 TSequenceSet *
-tnumberseqset_derivative(const TSequenceSet *ts)
+tnumberseqset_derivative(const TSequenceSet *ss)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int k = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (seq->count > 1)
       sequences[k++] = tnumberseq_derivative(seq);
   }

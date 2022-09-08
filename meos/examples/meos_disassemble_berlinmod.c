@@ -89,7 +89,6 @@ int main(void)
     return 1;
   }
 
-  int read;
   int i = 0;
 
   /* Read the first line of the file with the headers */
@@ -99,7 +98,7 @@ int main(void)
   do
   {
     int vehicle, seq;
-    read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
+    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
       &vehicle, date_buffer, &seq, trip_buffer, geo_buffer);
     /* Transform the string representing the date into a date value */
     DateADT day = pg_date_in(date_buffer);

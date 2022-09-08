@@ -254,18 +254,18 @@ tpointseq_stboxes(const TSequence *seq, int *count)
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
  *
- * @param[in] ts Temporal value
+ * @param[in] ss Temporal value
  * @param[out] count Number of elements in the output array
  */
 STBOX *
-tpointseqset_stboxes(const TSequenceSet *ts, int *count)
+tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
-  assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
-  STBOX *result = palloc(sizeof(STBOX) * ts->totalcount);
+  assert(MOBDB_FLAGS_GET_LINEAR(ss->flags));
+  STBOX *result = palloc(sizeof(STBOX) * ss->totalcount);
   int k = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     k += tpointseq_stboxes1(seq, &result[k]);
   }
   *count = k;

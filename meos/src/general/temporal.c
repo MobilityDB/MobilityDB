@@ -495,16 +495,6 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
-/**
- * Return the n-th instant of the temporal instant set or a temporal sequence.
- */
-const TInstant *
-tinstarr_inst_n(const Temporal *temp, int n)
-{
-  assert(temp->subtype == TSEQUENCE);
-  return tsequence_inst_n((TSequence *) temp, n);
-}
-
 /*****************************************************************************
  * Version functions
  *****************************************************************************/
@@ -2909,7 +2899,7 @@ TSequence *
 tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
   bool atfunc)
 {
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
     return atfunc ? tsequence_copy(seq) : NULL;
 
@@ -2930,7 +2920,7 @@ tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set number to (the complement of) an
+ * @brief Restrict a temporal discrete sequence number to (the complement of) an
  * array of spans of base values.
  *
  * @param[in] seq Temporal number
@@ -2947,7 +2937,7 @@ tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
 {
   const TInstant *inst;
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);

@@ -173,30 +173,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 TSequence *
-tgeompointdiscseq_tnpointdiscseq(const TSequence *seq)
-{
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    TInstant *inst1 = tgeompointinst_tnpointinst(inst);
-    if (inst1 == NULL)
-    {
-      pfree_array((void **) instants, i);
-      return NULL;
-    }
-    instants[i] = inst1;
-  }
-  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
-    DISCRETE, NORMALIZE_NO);
-  return result;
-}
-
-/**
- * @brief Cast a temporal geometric point as a temporal network point.
- */
-TSequence *
-tgeompointcontseq_tnpointcontseq(const TSequence *seq)
+tgeompointseq_tnpointseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -226,7 +203,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    TSequence *seq1 = tgeompointcontseq_tnpointcontseq(seq);
+    TSequence *seq1 = tgeompointseq_tnpointseq(seq);
     if (seq1 == NULL)
     {
       pfree_array((void **) sequences, i);
@@ -252,9 +229,7 @@ tgeompoint_tnpoint(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tgeompointdiscseq_tnpointdiscseq((TSequence *) temp) :
-      (Temporal *) tgeompointcontseq_tnpointcontseq((TSequence *) temp);
+    result = (Temporal *) tgeompointseq_tnpointseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   return result;

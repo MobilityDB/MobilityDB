@@ -85,7 +85,7 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
 }
 
 /**
- * Extend the temporal instant set value by the time interval
+ * Extend the temporal discrete sequence value by the time interval
  *
  * @param[in] seq Temporal value
  * @param[in] interval Interval
@@ -279,7 +279,7 @@ tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
 }
 
 /**
- * Transform the temporal number instant set value by the time interval
+ * Transform the temporal number discrete sequence value by the time interval
  *
  * @param[in] seq Temporal value
  * @param[in] interval Interval

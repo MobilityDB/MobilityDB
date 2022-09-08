@@ -1203,7 +1203,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tfunc_tdiscseq_base((TSequence *) temp,
+      (Temporal *) tfunc_tsequence_base((TSequence *) temp,
         PointerGetDatum(gs), &lfinfo) :
       (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
         PointerGetDatum(gs), Float8GetDatum(dist), func);

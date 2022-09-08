@@ -462,7 +462,6 @@ extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
-extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 
 /* Version functions */
 

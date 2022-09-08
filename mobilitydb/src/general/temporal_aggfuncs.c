@@ -157,7 +157,7 @@ datum_sum_double4(Datum l, Datum r)
  * Generic aggregate function for temporal instants
  *
  * @param[in] instants1 Accumulated state
- * @param[in] instants2 instants of the input temporal instant set value
+ * @param[in] instants2 Instants of the input temporal discrete sequence
  * @note Return new sequences that must be freed by the calling function.
  */
 TInstant **
@@ -471,8 +471,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic transition function for aggregating temporal values
- * of instant set subtype
+ * Generic transition function for aggregating temporal discrete sequence values
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[inout] state Skiplist containing the state
@@ -665,16 +664,16 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Transform a temporal instant set value for aggregation
+ * Transform a temporal discrete sequence value for aggregation
  */
 TInstant **
-tdiscseq_transform_tagg(const TSequence *is,
+tdiscseq_transform_tagg(const TSequence *seq,
   TInstant *(*func)(const TInstant *))
 {
-  TInstant **result = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  TInstant **result = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = func(inst);
   }
   return result;
@@ -803,17 +802,17 @@ tinstant_transform_tcount(const TInstant *inst)
 }
 
 /**
- * Transform a temporal instant set value into a temporal integer value for
- * performing temporal count aggregation
+ * Transform a temporal discrete sequence value into a temporal integer value
+ * for performing temporal count aggregation
  */
 static TInstant **
-tdiscseq_transform_tcount(const TSequence *is)
+tdiscseq_transform_tcount(const TSequence *seq)
 {
-  TInstant **result = palloc(sizeof(TInstant *) * is->count);
+  TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   Datum datum_one = Int32GetDatum(1);
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = tinstant_make(datum_one, T_TINT, inst->t);
   }
   return result;

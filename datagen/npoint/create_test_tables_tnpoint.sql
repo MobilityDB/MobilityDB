@@ -84,9 +84,9 @@ CREATE TABLE tbl_tnpoint_inst AS
 SELECT k, random_tnpoint_inst(0, size, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tnpoint_instset;
-CREATE TABLE tbl_tnpoint_instset AS
-SELECT k, random_tnpoint_instset(0, size, '2001-01-01', '2001-12-31', 10, 1, 10) AS ti
+DROP TABLE IF EXISTS tbl_tnpoint_discseq;
+CREATE TABLE tbl_tnpoint_discseq AS
+SELECT k, random_tnpoint_discseq(0, size, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_seq;
@@ -96,15 +96,15 @@ FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_seqset;
 CREATE TABLE tbl_tnpoint_seqset AS
-SELECT k, random_tnpoint_seqset(0, size, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ts
+SELECT k, random_tnpoint_seqset(0, size, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ss
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tnpoint;
 CREATE TABLE tbl_tnpoint(k, temp) AS
 (SELECT k, inst FROM tbl_tnpoint_inst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, ti FROM tbl_tnpoint_instset LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, seq FROM tbl_tnpoint_discseq LIMIT size / 4) UNION ALL
 (SELECT k + size / 2, seq FROM tbl_tnpoint_seq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ts FROM tbl_tnpoint_seqset LIMIT size / 4);
+(SELECT k + size / 4 * 3, ss FROM tbl_tnpoint_seqset LIMIT size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
@@ -116,7 +116,7 @@ $$ LANGUAGE 'plpgsql';
 SELECT * FROM tbl_npoint LIMIT 3;
 SELECT * FROM tbl_nsegment LIMIT 3;
 SELECT * FROM tbl_tnpoint_inst LIMIT 3;
-SELECT * FROM tbl_tnpoint_instset LIMIT 3;
+SELECT * FROM tbl_tnpoint_discseq LIMIT 3;
 SELECT * FROM tbl_tnpoint_seq LIMIT 3;
 SELECT * FROM tbl_tnpoint_seqset LIMIT 3;
 SELECT * FROM tbl_tnpoint LIMIT 3;

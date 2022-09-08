@@ -1559,7 +1559,7 @@ gserialized_as_ewkb(GSERIALIZED *geom, char *type)
   /* If user specified endianness, respect it */
   if (type)
   {
-    if ( type && (! strncmp(type, "xdr", 3) || ! strncmp(type, "XDR", 3)))
+    if (! strncmp(type, "xdr", 3) || ! strncmp(type, "XDR", 3))
       variant = variant | WKB_XDR;
     else
       variant = variant | WKB_NDR;

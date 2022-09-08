@@ -1325,23 +1325,23 @@ tdiscseq_to_tsequenceset(const TSequence *seq, int interp)
  * etc.
  */
 TSequence *
-tsequenceset_to_tdiscseq(const TSequenceSet *ts)
+tsequenceset_to_tdiscseq(const TSequenceSet *ss)
 {
   const TSequence *seq;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ts, i);
+    seq = tsequenceset_seq_n(ss, i);
     if (seq->count != 1)
       elog(ERROR, "Cannot transform input to a temporal discrete sequence");
   }
 
-  const TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  const TInstant **instants = palloc(sizeof(TInstant *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ts, i);
+    seq = tsequenceset_seq_n(ss, i);
     instants[i] = tsequence_inst_n(seq, 0);
   }
-  TSequence *result = tsequence_make(instants, ts->count, true, true, DISCRETE,
+  TSequence *result = tsequence_make(instants, ss->count, true, true, DISCRETE,
     NORMALIZE_NO);
   pfree(instants);
   return result;

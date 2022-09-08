@@ -294,7 +294,6 @@ int main(void)
   }
 
   trip_record trip_rec;
-  int read;
   int records = 0;
 
   /* Read the first line of the file with the headers */
@@ -303,7 +302,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
+    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
       &trip_rec.vehicle, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);

@@ -536,7 +536,7 @@ tcontseq_find_timestamp(const TSequence *seq, TimestampTz t)
  *
  * @param[in] seq Temporal discrete sequence
  * @param[in] t Timestamp
- * @result Return true if the timestamp is contained in the temporal instant set
+ * @result Return true if the timestamp is contained in the discrete sequence
  */
 int
 tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t)
@@ -720,7 +720,7 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @result Result value that can be either a temporal instant or a
- * temporal instant set
+ * temporal discrete sequence
  * @sqlfunc merge()
  */
 Temporal *
@@ -1083,7 +1083,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
  *****************************************************************************/
 
 /**
- * Temporally intersect two temporal instant sets
+ * Temporally intersect two temporal discrete sequences
  *
  * @param[in] seq1,seq2 Input values
  * @param[out] inter1, inter2 Output values
@@ -1697,8 +1697,8 @@ tsequence_copy(const TSequence *seq)
 
 /**
  * @ingroup libmeos_int_temporal_constructor
- * @brief Construct a temporal instant set from a base value and the time frame
- * of another temporal instant set.
+ * @brief Construct a temporal discrete sequence from a base value and the time
+ * frame of another temporal discrete sequence.
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
  * etc.
  */
@@ -1716,7 +1716,7 @@ tdiscseq_from_base(Datum value, mobdbType temptype, const TSequence *seq)
 #if MEOS
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal boolean instant set from a boolean and a
+ * @brief Construct a temporal boolean discrete sequence from a boolean and a
  * timestamp set.
  */
 TSequence *
@@ -1727,7 +1727,7 @@ tbooldiscseq_from_base(bool b, const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal integer instant set from an integer and a
+ * @brief Construct a temporal integer discrete sequence from an integer and a
  * timestamp set.
  */
 TSequence *
@@ -1738,7 +1738,7 @@ tintdiscseq_from_base(int i, const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float instant set from a float and a
+ * @brief Construct a temporal float discrete sequence from a float and a
  * timestamp set.
  */
 TSequence *
@@ -1749,7 +1749,8 @@ tfloatdiscseq_from_base(bool b, const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text instant set from a text and a timestamp set.
+ * @brief Construct a temporal text discrete sequence from a text and a
+ * timestamp set.
  */
 TSequence *
 ttextdiscseq_from_base(const text *txt, const TSequence *seq)
@@ -1759,8 +1760,8 @@ ttextdiscseq_from_base(const text *txt, const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point instant set from a point and a
- * timestamp set.
+ * @brief Construct a temporal geometric point discrete sequence from a point
+ * and a timestamp set.
  */
 TSequence *
 tgeompointdiscseq_from_base(const GSERIALIZED *gs, const TSequence *seq)
@@ -1770,8 +1771,8 @@ tgeompointdiscseq_from_base(const GSERIALIZED *gs, const TSequence *seq)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point instant set from a point and a
- * timestamp set.
+ * @brief Construct a temporal geographic point discrete sequence from a point
+ * and a timestamp set.
  */
 TSequence *
 tgeogpointdiscseq_from_base(const GSERIALIZED *gs, const TSequence *seq)
@@ -1784,7 +1785,8 @@ tgeogpointdiscseq_from_base(const GSERIALIZED *gs, const TSequence *seq)
 
 /**
  * @ingroup libmeos_int_temporal_constructor
- * @brief Construct a temporal instant set from a base value and a timestamp set.
+ * @brief Construct a temporal discrete sequence from a base value and a
+ * timestamp set.
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
  * etc.
  */
@@ -1802,7 +1804,7 @@ tdiscseq_from_base_time(Datum value, mobdbType temptype,
 #if MEOS
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal boolean instant set from a boolean and a
+ * @brief Construct a temporal boolean discrete sequence from a boolean and a
  * timestamp set.
  */
 TSequence *
@@ -1813,7 +1815,7 @@ tbooldiscseq_from_base_time(bool b, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal integer instant set from an integer and a
+ * @brief Construct a temporal integer discrete sequence from an integer and a
  * timestamp set.
  */
 TSequence *
@@ -1824,7 +1826,7 @@ tintdiscseq_from_base_time(int i, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float instant set from a float and a
+ * @brief Construct a temporal float discrete sequence from a float and a
  * timestamp set.
  */
 TSequence *
@@ -1835,7 +1837,8 @@ tfloatdiscseq_from_base_time(bool b, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text instant set from a text and a timestamp set.
+ * @brief Construct a temporal text discrete sequence from a text and a
+ * timestamp set.
  */
 TSequence *
 ttextdiscseq_from_base_time(const text *txt, const TimestampSet *ts)
@@ -1845,8 +1848,8 @@ ttextdiscseq_from_base_time(const text *txt, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point instant set from a point and a
- * timestamp set.
+ * @brief Construct a temporal geometric point discrete sequence from a point
+ * and a timestamp set.
  */
 TSequence *
 tgeompointdiscseq_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
@@ -1856,8 +1859,8 @@ tgeompointdiscseq_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point instant set from a point and a
- * timestamp set.
+ * @brief Construct a temporal geographic point discrete sequence from a point
+ * and a timestamp set.
  */
 TSequence *
 tgeogpointdiscseq_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
@@ -3193,9 +3196,10 @@ tsequence_always_le(const TSequence *seq, Datum value)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) a base value.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a base
+ * value.
  *
- * @param[in] seq Temporal instant set
+ * @param[in] seq Temporal sequence
  * @param[in] value Base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @note There is no bounding box test in this function, it is done in the
@@ -3207,7 +3211,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
   mobdbType basetype = temptype_basetype(seq->temptype);
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     Datum value1 = tinstant_value(tsequence_inst_n(seq, 0));
@@ -3235,10 +3239,10 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) an array of
- * base values.
+ * @brief Restrict a temporal discrete sequence to (the complement of) an array
+ * of base values.
  *
- * @param[in] seq Temporal instant set
+ * @param[in] seq Temporal sequence
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus
@@ -3251,7 +3255,7 @@ tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
 {
   const TInstant *inst;
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
@@ -3605,7 +3609,7 @@ tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set number to (the complement of) a
+ * @brief Restrict a temporal discrete sequence number to (the complement of) a
  * span of base values.
  *
  * @param[in] seq Temporal number
@@ -3619,7 +3623,7 @@ TSequence *
 tdiscseq_restrict_span(const TSequence *seq, const Span *span,
   bool atfunc)
 {
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
     return atfunc ? tsequence_copy(seq) : NULL;
 
@@ -3640,7 +3644,7 @@ tdiscseq_restrict_span(const TSequence *seq, const Span *span,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set number to (the complement of) an
+ * @brief Restrict a temporal discrete sequence number to (the complement of) an
  * array of spans of base values.
  *
  * @param[in] seq Temporal number
@@ -3658,7 +3662,7 @@ tdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
 {
   const TInstant *inst;
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
@@ -4175,10 +4179,10 @@ tnumberseq_restrict_spans(const TSequence *seq, Span **normspans,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) its
+ * @brief Restrict a temporal discrete sequence to (the complement of) its
  * minimum/maximum base value
  *
- * @param[in] seq Temporal instant set
+ * @param[in] seq Temporal sequence
  * @param[in] min True when restricted to the minumum value, false for the
  * maximum value
  * @param[in] atfunc True when the restriction is at, false for minus
@@ -4213,7 +4217,7 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 
 /**
  * @ingroup libmeos_int_temporal_accessor
- * @brief Return the base value of a temporal instant set at a timestamp
+ * @brief Return the base value of a temporal discrete sequence at a timestamp
  *
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
@@ -4234,7 +4238,7 @@ tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) a timestamp.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a timestamp.
  *
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
@@ -4263,7 +4267,7 @@ tdiscseq_at_timestamp(const TSequence *seq, TimestampTz t)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) a timestamp.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a timestamp.
  *
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
@@ -4298,7 +4302,7 @@ tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) a timestamp set.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a timestamp set.
  * @sqlfunc atTimestampSet(), minusTimestampSet()
  */
 TSequence *
@@ -4361,7 +4365,7 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
     else
       j++;
   }
-  /* For minus copy the instants after the instant set */
+  /* For minus copy the instants after the discrete sequence */
   if (! atfunc)
   {
     while (i < seq->count)
@@ -4375,7 +4379,7 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) a period.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a period.
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TSequence *
@@ -4385,7 +4389,7 @@ tdiscseq_at_period(const TSequence *seq, const Period *period)
   if (! overlaps_span_span(&seq->period, period))
     return NULL;
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
     return tsequence_copy(seq);
 
@@ -4406,7 +4410,7 @@ tdiscseq_at_period(const TSequence *seq, const Period *period)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal instant set to (the complement of) a period.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a period.
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TSequence *
@@ -4416,7 +4420,7 @@ tdiscseq_minus_period(const TSequence *seq, const Period *period)
   if (! overlaps_span_span(&seq->period, period))
     return tsequence_copy(seq);
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
 
@@ -4456,7 +4460,7 @@ tdiscseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   if (! overlaps_span_span(&seq->period, &ps->period))
     return atfunc ? NULL : tsequence_copy(seq);
 
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
@@ -5241,9 +5245,9 @@ tnumberseq_integral(const TSequence *seq)
 
 /**
  * @ingroup libmeos_int_temporal_agg
- * @brief Return the time-weighted average of a temporal instant set number
- * @note Since an instant set does not have duration, the function returns the
- * traditional average of the values
+ * @brief Return the time-weighted average of a temporal discrete sequence number
+ * @note Since a discrete sequence does not have duration, the function returns
+ * the traditional average of the values
  * @sqlfunc twAvg()
  */
 double

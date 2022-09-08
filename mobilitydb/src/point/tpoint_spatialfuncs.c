@@ -236,7 +236,7 @@ tpointinst_transform(const TInstant *inst, int srid)
 TSequence *
 tpointdiscseq_transform(const TSequence *seq, int srid)
 {
-  /* Singleton instant set */
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
@@ -294,7 +294,7 @@ tpointcontseq_transform(const TSequence *seq, int srid)
     GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
-  /* Last parameter set to STEPWISE to force the function to return multipoint */
+  /* Last parameter set to STEPWISE to obtain a multipoint */
   LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEPWISE);
   Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);

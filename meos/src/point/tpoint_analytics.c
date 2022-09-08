@@ -1157,70 +1157,6 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
  * Equality test only on x and y dimensions of input.
  */
 static TSequence *
-tpointdiscseq_remove_repeated_points(const TSequence *seq, double tolerance,
-  int min_points)
-{
-  /* No-op on short inputs */
-  if (seq->count <= min_points)
-    return tsequence_copy(seq);
-
-  double tolsq = tolerance * tolerance;
-  double dsq = FLT_MAX;
-
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  instants[0] = tsequence_inst_n(seq, 0);
-  const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
-  int k = 1;
-  for (int i = 1; i < seq->count; i++)
-  {
-    bool last_point = (i == seq->count - 1);
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
-
-    /* Don't drop points if we are running short of points */
-    if (seq->count - k > min_points + i)
-    {
-      if (tolerance > 0.0)
-      {
-        /* Only drop points that are within our tolerance */
-        dsq = distance2d_sqr_pt_pt(last, pt);
-        /* Allow any point but the last one to be dropped */
-        if (! last_point && dsq <= tolsq)
-          continue;
-      }
-      else
-      {
-        /* At tolerance zero, only skip exact dupes */
-        if (FP_EQUALS(pt->x, last->x) && FP_EQUALS(pt->y, last->y))
-          continue;
-      }
-
-      /* Got to last point, and it's not very different from
-       * the point that preceded it. We want to keep the last
-       * point, not the second-to-last one, so we pull our write
-       * index back one value */
-      if (last_point && k > 1 && tolerance > 0.0 && dsq <= tolsq)
-      {
-        k--;  
-      }
-    }
-
-    /* Save the point */
-    instants[k++] = inst;
-    last = pt;
-  }
-  /* Construct the result */
-  TSequence *result = tsequence_make(instants, seq->count, true, true,
-    DISCRETE, NORMALIZE_NO);
-  pfree(instants);
-  return result;
-}
-
-/**
- * Return a temporal point with consecutive equal points removed.
- * Equality test only on x and y dimensions of input.
- */
-static TSequence *
 tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   int min_points)
 {
@@ -1275,8 +1211,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   }
   /* Construct the result */
   TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
-    LINEAR : STEPWISE, NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   pfree(instants);
   return result;
 }
@@ -1341,11 +1276,8 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_remove_repeated_points(
-        (TSequence *) temp, tolerance, min_points) :
-      (Temporal *) tpointseq_remove_repeated_points(
-        (TSequence *) temp, tolerance, min_points);
+    result = (Temporal *) tpointseq_remove_repeated_points(
+      (TSequence *) temp, tolerance, min_points);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_remove_repeated_points(
       (TSequenceSet *) temp, tolerance, min_points);
@@ -1410,25 +1342,6 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
  * Affine transform a temporal point.
  */
 static TSequence *
-tpointdiscseq_affine(const TSequence *seq, const AFFINE *a)
-{
-  int srid = tpointseq_srid(seq);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
-  }
-  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
-    DISCRETE, NORMALIZE_NO);
-  return result;
-}
-
-/**
- * Affine transform a temporal point.
- */
-static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
   int srid = tpointseq_srid(seq);
@@ -1441,8 +1354,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   }
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
-    LINEAR : STEPWISE, NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -1471,9 +1383,7 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_affine((TInstant *) temp, a);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_affine((TSequence *) temp, a) :
-      (Temporal *) tpointseq_affine((TSequence *) temp, a);
+    result = (Temporal *) tpointseq_affine((TSequence *) temp, a);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_affine((TSequenceSet *) temp, a);
   return result;
@@ -1526,40 +1436,6 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
  * Stick a temporal point to the given grid specification.
  */
 static TSequence *
-tpointdiscseq_grid(const TSequence *seq, const gridspec *grid)
-{
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  int srid = tpointseq_srid(seq);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int k = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    POINT4D p, prev_p;
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    Datum value = tinstant_value(inst);
-    point_grid(value, hasz, grid, &p);
-    /* Skip duplicates */
-    if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
-      (hasz ? prev_p.z == p.z : 1))
-      continue;
-
-    /* Write rounded values into the next instant */
-    LWPOINT *lwpoint = hasz ?
-      lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
-    GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-    lwpoint_free(lwpoint);
-    pfree(gs);
-    memcpy(&prev_p, &p, sizeof(POINT4D));
-  }
-  /* Construct the result */
-  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
-}
-
-/**
- * Stick a temporal point to the given grid specification.
- */
-static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
@@ -1594,8 +1470,8 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
   /* Construct the result */
   return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
-    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
-    LINEAR : STEPWISE, NORMALIZE);
+    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_INTERP(seq->flags),
+    NORMALIZE);
 }
 
 /**
@@ -1630,9 +1506,7 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_grid((TInstant *) temp, grid);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_grid((TSequence *) temp, grid) :
-      (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
+    result = (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid,
       filter_pts);
@@ -1685,7 +1559,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   /* Snap to integer precision, removing duplicate and single points */
   Temporal *tpoint4 = tpoint_grid(tpoint3, &grid, true);
   pfree(tpoint3);
-  if (tpoint4 == NULL || !clip_geom)
+  if (tpoint4 == NULL || ! clip_geom)
     return tpoint4;
 
   /* Clip temporal point taking into account the buffer */
