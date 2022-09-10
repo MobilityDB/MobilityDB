@@ -36,27 +36,27 @@ SET force_parallel_mode=regress;
 -- Extent aggregate function
 -------------------------------------------------------------------------------
 
-SELECT round(extent(inst), 13) FROM tbl_tgeompoint_inst;
-SELECT round(extent(inst), 13) FROM tbl_tgeogpoint_inst;
-SELECT round(extent(ti), 13) FROM tbl_tgeompoint_discseq;
-SELECT round(extent(ti), 13) FROM tbl_tgeogpoint_discseq;
-SELECT round(extent(seq), 13) FROM tbl_tgeompoint_seq;
-SELECT round(extent(seq), 13) FROM tbl_tgeogpoint_seq;
-SELECT round(extent(ts), 13) FROM tbl_tgeompoint_seqset;
-SELECT round(extent(ts), 13) FROM tbl_tgeogpoint_seqset;
-SELECT round(extent(temp), 13) FROM tbl_tgeompoint;
-SELECT round(extent(temp), 13) FROM tbl_tgeogpoint;
+SELECT round(extent(inst), 6) FROM tbl_tgeompoint_inst;
+SELECT round(extent(inst), 6) FROM tbl_tgeogpoint_inst;
+SELECT round(extent(ti), 6) FROM tbl_tgeompoint_discseq;
+SELECT round(extent(ti), 6) FROM tbl_tgeogpoint_discseq;
+SELECT round(extent(seq), 6) FROM tbl_tgeompoint_seq;
+SELECT round(extent(seq), 6) FROM tbl_tgeogpoint_seq;
+SELECT round(extent(ts), 6) FROM tbl_tgeompoint_seqset;
+SELECT round(extent(ts), 6) FROM tbl_tgeogpoint_seqset;
+SELECT round(extent(temp), 6) FROM tbl_tgeompoint;
+SELECT round(extent(temp), 6) FROM tbl_tgeogpoint;
 
-SELECT round(extent(inst), 13) FROM tbl_tgeompoint3D_inst;
-SELECT round(extent(inst), 13) FROM tbl_tgeogpoint3D_inst;
-SELECT round(extent(ti), 13) FROM tbl_tgeompoint3D_discseq;
-SELECT round(extent(ti), 13) FROM tbl_tgeogpoint3D_discseq;
-SELECT round(extent(seq), 13) FROM tbl_tgeompoint3D_seq;
-SELECT round(extent(seq), 13) FROM tbl_tgeogpoint3D_seq;
-SELECT round(extent(ts), 13) FROM tbl_tgeompoint3D_seqset;
-SELECT round(extent(ts), 13) FROM tbl_tgeogpoint3D_seqset;
-SELECT round(extent(temp), 13) FROM tbl_tgeompoint3D;
-SELECT round(extent(temp), 13) FROM tbl_tgeogpoint3D;
+SELECT round(extent(inst), 6) FROM tbl_tgeompoint3D_inst;
+SELECT round(extent(inst), 6) FROM tbl_tgeogpoint3D_inst;
+SELECT round(extent(ti), 6) FROM tbl_tgeompoint3D_discseq;
+SELECT round(extent(ti), 6) FROM tbl_tgeogpoint3D_discseq;
+SELECT round(extent(seq), 6) FROM tbl_tgeompoint3D_seq;
+SELECT round(extent(seq), 6) FROM tbl_tgeogpoint3D_seq;
+SELECT round(extent(ts), 6) FROM tbl_tgeompoint3D_seqset;
+SELECT round(extent(ts), 6) FROM tbl_tgeogpoint3D_seqset;
+SELECT round(extent(temp), 6) FROM tbl_tgeompoint3D;
+SELECT round(extent(temp), 6) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 

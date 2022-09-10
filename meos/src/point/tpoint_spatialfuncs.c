@@ -1693,7 +1693,7 @@ tpointcontseq_trajectory(const TSequence *seq)
       points[k++] = lwpoint;
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, k,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE);
+    MOBDB_FLAGS_GET_INTERP(seq->flags));
   GSERIALIZED *result = geo_serialize(lwgeom);
   pfree(lwgeom);
   for (int i = 0; i < k; i++)

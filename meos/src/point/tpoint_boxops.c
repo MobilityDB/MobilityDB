@@ -100,38 +100,28 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 }
 
 /**
- * Set the GBOX bounding box from an array of temporal point instants
+ * Set the GBOX bounding box from an array of temporal geographic point instants
  *
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
  * @param[out] box Resulting bounding box
  */
 static void
-tpointinstarr_set_gbox(const TInstant **instants, int count, GBOX *box)
+tgeogpointinstarr_set_gbox(const TInstant **instants, int count, int interp,
+  GBOX *box)
 {
-  assert(box);
-  assert(count > 0);
-  const POINT2D *p;
-  POINT3D A1, A2;
-  GBOX edge_gbox;
-  gbox_init(&edge_gbox);
-  edge_gbox.flags = box->flags;
-
-  /* Initialization with the first instant */
-  p = datum_point2d_p(tinstant_value(instants[0]));
-  ll2cart(p, &A1);
-  box->xmin = box->xmax = A1.x;
-  box->ymin = box->ymax = A1.y;
-  box->zmin = box->zmax = A1.z;
-  for (int i = 1; i < count; i++)
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
+  for (int i = 0; i < count; i++)
   {
-    p = datum_point2d_p(tinstant_value(instants[i]));
-    ll2cart(p, &A2);
-    edge_calculate_gbox(&A1, &A2, &edge_gbox);
-    /* Expand the box where necessary */
-    gbox_merge(&edge_gbox, box);
-    A1 = A2;
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(instants[i]));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, count,
+    interp);
+  lwgeom_calculate_gbox_geodetic(lwgeom, box);
+
+  lwgeom_free(lwgeom);
+  /* We cannot pfree(points); */
   return;
 }
 
@@ -151,14 +141,15 @@ tpointinstarr_set_gbox(const TInstant **instants, int count, GBOX *box)
  * gbox for a MultiPoint and a Linestring is around 2e-7
  */
 void
-tgeogpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
+tgeogpointinstarr_set_stbox(const TInstant **instants, int count, int interp,
+  STBOX *box)
 {
   GBOX gbox;
   gbox_init(&gbox);
   FLAGS_SET_Z(gbox.flags, 1);
   FLAGS_SET_M(gbox.flags, 0);
   FLAGS_SET_GEODETIC(gbox.flags, 1);
-  tpointinstarr_set_gbox(instants, count, &gbox);
+  tgeogpointinstarr_set_gbox(instants, count, interp, &gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   int32 srid = tpointinst_srid(instants[0]);
   Period period;

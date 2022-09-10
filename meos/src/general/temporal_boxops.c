@@ -311,7 +311,7 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else if (instants[0]->temptype == T_TGEOMPOINT)
     tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->temptype == T_TGEOGPOINT)
-    tgeogpointinstarr_set_stbox(instants, count, (STBOX *) box);
+    tgeogpointinstarr_set_stbox(instants, count, interp, (STBOX *) box);
 #if NPOINT
   else if (instants[0]->temptype == T_TNPOINT)
     tnpointseq_set_stbox(instants, count, interp, (STBOX *) box);
