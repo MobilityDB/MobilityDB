@@ -38,8 +38,7 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-// #include <utils/timestamp.h>
-// #include <utils/float.h>
+
 /* PostGIS */
 #include <lwgeodetic_tree.h>
 #include <measures.h>

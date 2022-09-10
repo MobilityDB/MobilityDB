@@ -923,7 +923,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
   POINT3DZ c;
   double r;
   /* If start==end, then use pt distance */
-  if (A->x == B->x && A->y == B->y && A->z == B->z)
+  if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y) && FP_EQUALS(A->z, B->z))
     return dist3d_pt_pt(p, A);
 
   r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +

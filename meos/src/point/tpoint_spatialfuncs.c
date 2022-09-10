@@ -630,34 +630,13 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
 /**
  * Return true if point p is in the segment defined by A and B (geodetic)
  */
-static long double
+static bool
 point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
 {
-  GEOGRAPHIC_EDGE e;
-  GEOGRAPHIC_POINT gp, proj;
-  long double length, /* length from A to the closest point */
-    seglength; /* length of the segment AB */
-  long double result; /* ratio */
-
-  /* Initialize target point */
-  geographic_point_init(p->x, p->y, &gp);
-
-  /* Initialize edge */
-  geographic_point_init(A->x, A->y, &(e.start));
-  geographic_point_init(B->x, B->y, &(e.end));
-
-  /* Get the spherical distance between point and edge */
-  if (edge_distance_to_point(&e, &gp, &proj) > MOBDB_EPSILON)
-    return false;
-
-  /* Compute distance from beginning of the segment to closest point */
-  seglength = (long double) sphere_distance(&(e.start), &(e.end));
-  length = (long double) sphere_distance(&(e.start), &proj);
-  result = length / seglength;
-
-  /* Compute Z value for closest point */
-  double z = A->z + ((B->z - A->z) * result);
-  return FP_EQUALS(p->z, z);
+  POINT4D closest;
+  double dist;
+  closest_point_on_segment_sphere(p, A, B, &closest, &dist);
+  return (dist > MOBDB_EPSILON) && (FP_EQUALS(p->z, closest.z));
 }
 
 /**
@@ -1042,8 +1021,10 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
   /*
    * Function closest_point2d_on_segment_ratio above explains how r is computed
    */
-  long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + (p->z-A->z) * (B->z-A->z) ) /
-    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + (B->z-A->z) * (B->z-A->z) );
+  long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + 
+      (p->z-A->z) * (B->z-A->z) ) /
+    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + 
+      (B->z-A->z) * (B->z-A->z) );
 
   if (r < 0)
   {
@@ -2709,8 +2690,7 @@ tpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT ||
-      ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);
@@ -2782,6 +2762,7 @@ geog_bearing(Datum point1, Datum point2)
   if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
       (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;
+
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
   double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);

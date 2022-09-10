@@ -1262,7 +1262,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
  count 
 -------
-    85
+    96
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);

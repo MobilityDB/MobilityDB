@@ -234,20 +234,24 @@ tpointinst_transform(const TInstant *inst, int srid)
  * @brief Transform a temporal point into another spatial reference system
  */
 TSequence *
-tpointdiscseq_transform(const TSequence *seq, int srid)
+tpointseq_transform(const TSequence *seq, int srid)
 {
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
       Int32GetDatum(srid));
     TSequence *result = tsequence_make((const TInstant **) &inst, 1,
-      true, true, DISCRETE, NORMALIZE_NO);
+      true, true, interp, NORMALIZE_NO);
     pfree(inst);
     return result;
   }
 
   /* General case */
+  /* Call the discrete sequence function even for continuous sequences
+   * to obtain a Multipoint that is sent to PostGIS for transformion */
   Datum multipoint = PointerGetDatum(tpointdiscseq_trajectory(seq));
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
@@ -264,61 +268,8 @@ tpointdiscseq_transform(const TSequence *seq, int srid)
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
-  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
+  return tsequence_make_free(instants, seq->count, true, true, interp,
     NORMALIZE_NO);
-}
-
-/**
- * @brief Transform a temporal point into another spatial reference system
- */
-TSequence *
-tpointcontseq_transform(const TSequence *seq, int srid)
-{
-  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
-      Int32GetDatum(srid));
-    TSequence *result = tinstant_to_tsequence(inst, interp);
-    pfree(inst);
-    return result;
-  }
-
-  /* General case */
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    GSERIALIZED *gsvalue = DatumGetGserializedP(value);
-    points[i] = lwgeom_from_gserialized(gsvalue);
-  }
-  /* Last parameter set to STEPWISE to obtain a multipoint */
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEPWISE);
-  Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
-  pfree(lwgeom);
-  Datum transf = datum_transform(multipoint, srid);
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
-  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    instants[i] = tinstant_make(point, inst->temptype, inst->t);
-    pfree(DatumGetPointer(point));
-  }
-
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
-  pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
-  lwmpoint_free(lwmpoint);
-
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE_NO);
 }
 
 /**
@@ -333,7 +284,8 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequence *seq1 = tpointcontseq_transform(tsequenceset_seq_n(ss, 0),
+    // TSequence *seq1 = tpointcontseq_transform(tsequenceset_seq_n(ss, 0),
+    TSequence *seq1 = tpointseq_transform(tsequenceset_seq_n(ss, 0),
       Int32GetDatum(srid));
     TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
@@ -403,9 +355,10 @@ tpoint_transform(const Temporal *temp, int srid)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_transform((TSequence *) temp, srid) :
-      (Temporal *) tpointcontseq_transform((TSequence *) temp, srid);
+    result = // MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      // (Temporal *) tpointdiscseq_transform((TSequence *) temp, srid) :
+      // (Temporal *) tpointcontseq_transform((TSequence *) temp, srid);
+      (Temporal *) tpointseq_transform((TSequence *) temp, srid);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
   return result;

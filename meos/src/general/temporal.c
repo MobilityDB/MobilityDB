@@ -433,42 +433,39 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   }
   else if (temp1->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags))
+    if (temp2->subtype == TINSTANT)
+      result = intersection_tsequence_tinstant(
+        (TSequence *) temp1, (TInstant *) temp2,
+        (TInstant **) inter1, (TInstant **) inter2);
+    else if (temp2->subtype == TSEQUENCE)
     {
-      if (temp2->subtype == TINSTANT)
-        result = intersection_tsequence_tinstant(
-          (TSequence *) temp1, (TInstant *) temp2,
-          (TInstant **) inter1, (TInstant **) inter2);
-      else if (temp2->subtype == TSEQUENCE)
-        result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
-          intersection_tdiscseq_tdiscseq(
-            (TSequence *) temp1, (TSequence *) temp2,
-            (TSequence **) inter1, (TSequence **) inter2) :
-          intersection_tdiscseq_tcontseq(
+      bool disc1 = MOBDB_FLAGS_GET_DISCRETE(temp1->flags);
+      bool disc2 = MOBDB_FLAGS_GET_DISCRETE(temp2->flags);
+      if (disc1 && disc2)
+        result = intersection_tdiscseq_tdiscseq(
             (TSequence *) temp1, (TSequence *) temp2,
             (TSequence **) inter1, (TSequence **) inter2);
-      else /* temp2->subtype == TSEQUENCESET */
-        result = intersection_tdiscseq_tsequenceset(
-          (TSequence *) temp1, (TSequenceSet *) temp2,
-          (TSequence **) inter1, (TSequence **) inter2);
-    }
-    else
-    {
-      if (temp2->subtype == TINSTANT)
-        result = intersection_tsequence_tinstant(
-          (TSequence *) temp1, (TInstant *) temp2,
-          (TInstant **) inter1, (TInstant **) inter2);
-      else if (temp2->subtype == TSEQUENCE)
-        result = MOBDB_FLAGS_GET_DISCRETE(temp2->flags) ?
-          intersection_tcontseq_tdiscseq(
+      else if (disc1 && ! disc2)
+        result = intersection_tdiscseq_tcontseq(
             (TSequence *) temp1, (TSequence *) temp2,
-            (TSequence **) inter1, (TSequence **) inter2) :
-          synchronize_tsequence_tsequence(
+            (TSequence **) inter1, (TSequence **) inter2);
+      else if (! disc1 && disc2)
+        result = intersection_tcontseq_tdiscseq(
+            (TSequence *) temp1, (TSequence *) temp2,
+            (TSequence **) inter1, (TSequence **) inter2);
+      else /* !disc1 && ! disc2 */
+        result = synchronize_tsequence_tsequence(
             (TSequence *) temp1, (TSequence *) temp2,
             (TSequence **) inter1, (TSequence **) inter2,
               mode == SYNCHRONIZE_CROSS);
-      else /* temp2->subtype == TSEQUENCESET */
-        result = intersection_tsequence_tsequenceset(
+    }
+    else /* temp2->subtype == TSEQUENCESET */
+    {
+      result = MOBDB_FLAGS_GET_DISCRETE(temp1->flags) ?
+        intersection_tdiscseq_tsequenceset(
+          (TSequence *) temp1, (TSequenceSet *) temp2,
+          (TSequence **) inter1, (TSequence **) inter2) :
+        intersection_tsequence_tsequenceset(
             (TSequence *) temp1, (TSequenceSet *) temp2, mode,
             (TSequenceSet **) inter1, (TSequenceSet **) inter2);
     }
