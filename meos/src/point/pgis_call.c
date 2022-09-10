@@ -82,7 +82,6 @@ void srid_check_latlong(int32_t srid);
 LWGEOM *
 PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
 {
-  POINTARRAY *pa = ptarray_construct_empty(0, 0, 5);
   POINT4D pt;
   LWGEOM *result;
 
@@ -112,6 +111,7 @@ PGIS_BOX2D_to_LWGEOM(GBOX *box, int srid)
     /* Assign coordinates to point array */
     pt.x = box->xmin;
     pt.y = box->ymin;
+    POINTARRAY *pa = ptarray_construct_empty(0, 0, 2);
     ptarray_append_point(pa, &pt, LW_TRUE);
     pt.x = box->xmax;
     pt.y = box->ymax;

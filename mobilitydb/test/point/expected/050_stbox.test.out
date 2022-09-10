@@ -1,7 +1,7 @@
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))';
-        stbox         
-----------------------
- STBOX X((1,2),(3,4))
+         stbox          
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
@@ -187,9 +187,9 @@ SELECT stbox_t('[2001-01-03,2001-01-06]');
 (1 row)
 
 SELECT stbox(1,2,3,4);
-        stbox         
-----------------------
- STBOX X((1,2),(3,4))
+         stbox          
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox_z(1,2,3,4,5,6);
@@ -622,9 +622,9 @@ SELECT tmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
 (1 row)
 
 SELECT round(stbox 'STBOX X(((1.12345,1.12345),(2.12345,2.12345)))', 2);
-              round               
-----------------------------------
- STBOX X((1.12,1.12),(2.12,2.12))
+               round                
+------------------------------------
+ STBOX X(((1.12,1.12),(2.12,2.12)))
 (1 row)
 
 SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),[2000-01-01,2000-01-02])', 2);
@@ -1071,9 +1071,9 @@ ERROR:  The temporal point must have Z dimension
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
 ERROR:  The temporal point must have Z dimension
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' + stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' + stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
@@ -1183,27 +1183,27 @@ ERROR:  The arguments must be of the same dimensionality
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' + stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' * stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' * stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' * stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' * stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' * stbox 'STBOX T([2001-01-01,2001-01-02])';
@@ -1213,9 +1213,9 @@ SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' * stbox 'STBOX T([2001-01-01,2001-
 (1 row)
 
 SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' * stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' * stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
@@ -1225,9 +1225,9 @@ SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' * stbox 'STBOX Z(((1.0,2.0
 (1 row)
 
 SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' * stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' * stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])';
@@ -1243,15 +1243,15 @@ SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))' * stbox 'STBOX T([2001-01-
 (1 row)
 
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])' * stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])' * stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])' * stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])';
@@ -1273,9 +1273,9 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])' * stbox '
 (1 row)
 
 SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])' * stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))';
-       ?column?       
-----------------------
- STBOX X((1,2),(3,4))
+        ?column?        
+------------------------
+ STBOX X(((1,2),(3,4)))
 (1 row)
 
 SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])' * stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';

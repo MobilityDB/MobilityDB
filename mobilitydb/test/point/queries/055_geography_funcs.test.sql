@@ -32,7 +32,9 @@
 SELECT ST_AsText(round(ST_LineInterpolatePoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0), 6));
 SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, true), 6));
 SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false), 6));
-SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
+-- PostGIS 3.3 changed the output of MULTIPOINT
+-- SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6)::geometry)) AS t(dp);
 
 -- Empty geography -> NULL
 SELECT ST_LineInterpolatePoint(geography 'Linestring empty', 0.1);

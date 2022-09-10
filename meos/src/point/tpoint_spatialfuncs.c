@@ -2206,7 +2206,6 @@ tpointseq_length_3d(const TSequence *seq)
     result += sqrt( ((p1->x - p2->x)*(p1->x - p2->x)) +
       ((p1->y - p2->y)*(p1->y - p2->y)) +
       ((p1->z - p2->z)*(p1->z - p2->z)) );
-    start = end;
     p1 = p2;
   }
   return result;

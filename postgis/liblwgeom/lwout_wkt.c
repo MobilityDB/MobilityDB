@@ -240,6 +240,11 @@ static void lwmpoint_to_wkt_sb(const LWMPOINT *mpoint, stringbuffer_t *sb, int p
 	}
 	stringbuffer_append_len(sb, "(", 1);
 	variant = variant | WKT_IS_CHILD; /* Inform the sub-geometries they are childre */
+#if POSTGIS_VERSION_NUMBER >= 30300
+/* MobilityDB: Definition taken from PostGIS version 3.3.0 */
+	if ( !(variant & WKT_ISO) )
+		variant = variant | WKT_NO_PARENS;
+#endif /* POSTGIS_VERSION_NUMBER >= 30300 */
 	for ( i = 0; i < mpoint->ngeoms; i++ )
 	{
 		if ( i > 0 )

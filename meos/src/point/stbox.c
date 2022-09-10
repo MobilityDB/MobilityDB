@@ -99,27 +99,6 @@ stbox_shift_tscale(const Interval *shift, const Interval *duration, STBOX *box)
   return;
 }
 
-/**
- * Set the values of a GBOX
- */
-static void
-gbox_set(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
-  double ymin, double ymax, double zmin, double zmax, GBOX *box)
-{
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(GBOX));
-  box->xmin = xmin;
-  box->xmax = xmax;
-  box->ymin = ymin;
-  box->ymax = ymax;
-  box->zmin = zmin;
-  box->zmax = zmax;
-  FLAGS_SET_Z(box->flags, hasz);
-  FLAGS_SET_M(box->flags, hasm);
-  FLAGS_SET_GEODETIC(box->flags, geodetic);
-  return;
-}
-
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -258,7 +237,7 @@ stbox_out(const STBOX *box, int maxdd)
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
     }
     else
-      snprintf(str, size, "%s%s X((%s,%s),(%s,%s))",
+      snprintf(str, size, "%s%s X(((%s,%s),(%s,%s)))",
         srid, boxtype, xmin, ymin, xmax, ymax);
   }
   else /* hast */
@@ -365,11 +344,22 @@ stbox_copy(const STBOX *box)
 void
 stbox_set_gbox(const STBOX *box, GBOX *gbox)
 {
-  assert(MOBDB_FLAGS_GET_X(box->flags));
+  ensure_has_X_stbox(box);
+  /* Note: zero-fill is required here, just as in heap tuples */
   memset(gbox, 0, sizeof(GBOX));
-  gbox_set(MOBDB_FLAGS_GET_Z(box->flags), false,
-    MOBDB_FLAGS_GET_GEODETIC(box->flags), box->xmin, box->xmax,
-    box->ymin, box->ymax, box->zmin, box->zmax, gbox);
+  /* Initialize existing dimensions */
+  gbox->xmin = box->xmin;
+  gbox->xmax = box->xmax;
+  gbox->ymin = box->ymin;
+  gbox->ymax = box->ymax;
+  if (MOBDB_FLAGS_GET_Z(box->flags))
+  {
+    gbox->zmin = box->zmin;
+    gbox->zmax = box->zmax;
+  }
+  FLAGS_SET_Z(gbox->flags, MOBDB_FLAGS_GET_Z(box->flags));
+  FLAGS_SET_M(gbox->flags, false);
+  FLAGS_SET_GEODETIC(gbox->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
   return;
 }
 
@@ -395,6 +385,7 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
     box3d->zmax = box->zmax;
   }
   box3d->srid = box->srid;
+  /* box3d does not have a flags attribute */
   return;
 }
 

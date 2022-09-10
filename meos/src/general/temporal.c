@@ -868,7 +868,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     new2 = (Temporal *) temp2;
   }
 
-  Temporal *new, *newts = NULL;
+  Temporal *new;
   if (new1->subtype == TINSTANT)
   {
     int interp = MOBDB_FLAGS_GET_INTERP(new2->flags);
@@ -881,13 +881,13 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
   if (swap)
   {
-    *out1 = (newts == NULL) ? temporal_copy(temp1) : newts;
+    *out1 = temporal_copy(temp1);
     *out2 = new;
   }
   else
   {
     *out1 = new;
-    *out2 = (newts == NULL) ? temporal_copy(temp2) : newts;
+    *out2 = temporal_copy(temp2);
   }
   return;
 }
