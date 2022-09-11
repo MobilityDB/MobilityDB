@@ -384,11 +384,11 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
  * Apply the function to the temporal value and the base value when the
  * function has instantaneuous discontinuties
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @note The current version of the function supposes that the basetype
  * is passed by value and thus it is not necessary to create and pfree
  * each pair of instants used for constructing a segment of the result.

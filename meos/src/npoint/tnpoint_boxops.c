@@ -61,8 +61,8 @@
 /**
  * @brief Set the spatiotemporal box from the network point value.
  *
- * @param[out] box Spatiotemporal box
  * @param[in] np Network point
+ * @param[out] box Spatiotemporal box
  */
 bool
 npoint_set_stbox(const Npoint *np, STBOX *box)
@@ -76,8 +76,8 @@ npoint_set_stbox(const Npoint *np, STBOX *box)
 /**
  * Set the spatiotemporal box from the network point value
  *
- * @param[out] box Spatiotemporal box
  * @param[in] inst Temporal network point
+ * @param[out] box Spatiotemporal box
  */
 void
 tnpointinst_set_stbox(const TInstant *inst, STBOX *box)
@@ -92,9 +92,9 @@ tnpointinst_set_stbox(const TInstant *inst, STBOX *box)
 /**
  * Set the spatiotemporal box from the array of temporal network point values
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal network point values
  * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
  */
 void
 tnpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
@@ -112,9 +112,9 @@ tnpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 /**
  * Set the spatiotemporal box from the array of temporal network point values
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
  */
 void
 tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
@@ -210,7 +210,7 @@ npoint_period_set_stbox(const Npoint *np, const Period *p, STBOX *box)
  * @param[in] temp Temporal network point
  * @param[in] gs Geometry
  * @param[in] func Function
- * @param[in] invert True when the geometry is the first argument of the
+ * @param[in] invert True if the geometry is the first argument of the
  * function
  */
 int
@@ -234,9 +234,9 @@ boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal network point
  * @param[in] box Bounding box
  * @param[in] func Function
- * @param[in] spatial True when the function considers the spatial dimension,
+ * @param[in] spatial True if the function considers the spatial dimension,
  * false when it considers the temporal dimension
- * @param[in] invert True when the bounding box is the first argument of the
+ * @param[in] invert True if the bounding box is the first argument of the
  * function
  */
 int
@@ -260,7 +260,7 @@ boxop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
  * @param[in] temp Temporal network point
  * @param[in] np network point
  * @param[in] func Function
- * @param[in] invert True when the network point is the first argument of the
+ * @param[in] invert True if the network point is the first argument of the
  * function
  */
 bool

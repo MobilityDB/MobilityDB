@@ -162,8 +162,8 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[in] basetype Base type
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
- * @param[in] invert True when the base value is the first argument
- * of the function
+ * @param[in] invert True if the base value is the first argument of the
+ * function
  */
 Temporal *
 arithop_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype,

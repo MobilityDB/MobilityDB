@@ -707,10 +707,8 @@ temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tdiscseq_from_base(value, temptype, (TSequence *) temp) :
-      (Temporal *) tsequence_from_base(value, temptype, (TSequence *) temp,
-        interp);
+    result = (Temporal *) tsequence_from_base(value, temptype,
+      (TSequence *) temp, interp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_from_base(value, temptype,
       (TSequenceSet *) temp, interp);
@@ -2888,7 +2886,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
  *
  * @param[in] seq Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpan(), minusSpan()
  */
@@ -2923,7 +2921,7 @@ tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
  * @param[in] seq Temporal number
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpans(), minusSpans()

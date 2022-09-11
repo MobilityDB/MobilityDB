@@ -187,7 +187,7 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
+ * @param[in] normalize True if the resulting value should be normalized.
  * In particular, normalize is false when synchronizing two temporal sequence
  * sets before applying an operation to them.
  */
@@ -272,7 +272,7 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
+ * @param[in] normalize True if the resulting value should be normalized.
  * In particular, normalize is false when synchronizing two
  * temporal sequence sets before applying an operation to them.
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
@@ -291,7 +291,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
+ * @param[in] normalize True if the resulting value should be normalized.
  * @see tsequenceset_make
  */
 TSequenceSet *
@@ -1126,7 +1126,7 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
  *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
- * @param[in] strict True when exclusive bounds are taken into account
+ * @param[in] strict True if exclusive bounds are taken into account
  * @param[out] result Base value
  * @result Return true if the timestamp is contained in the temporal sequence set
  * @pre A bounding box test has been done before by the calling function
@@ -1632,7 +1632,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @param[in] ss Temporal sequence set
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
  */ 
@@ -1717,7 +1717,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
  * @param[in] ss Temporal number
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number value
  * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
@@ -1754,9 +1754,9 @@ tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
  * minimum/maximum base value
  *
  * @param[in] ss Temporal sequence set
- * @param[in] min True when restricted to the minumum value, false for the
+ * @param[in] min True if restricted to the minumum value, false for the
  * maximum value
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
 TSequenceSet *

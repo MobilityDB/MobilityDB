@@ -182,12 +182,12 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
 /**
  * Extend the temporal sequence set value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ss Temporal value
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise.
  * This parameter is only used for linear interpolation.
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
 tsequenceset_extend(const TSequenceSet *ss, const Interval *interval, bool min,
@@ -264,10 +264,10 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
 /**
  * Transform the temporal number instant value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] inst Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
 tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
@@ -561,7 +561,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
  * @param[in] interval Interval
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @note This function is directly called by the window sum aggregation for
  * temporal floats after verifying since the operation is not supported for
  * sequence (set) type
@@ -588,7 +588,7 @@ temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 Datum
 temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,

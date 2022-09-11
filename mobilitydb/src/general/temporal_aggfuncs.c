@@ -204,7 +204,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  *
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
  * @note Return new sequences that must be freed by the calling function
@@ -343,7 +343,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
  * @param[in] sequences2 Sequences of a temporal sequence set value
  * @param[in] count2 Number of elements in the temporal sequence set value
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @param[out] newcount Number of elements in the result
  * @note Return new sequences that must be freed by the calling function.
  */
@@ -505,7 +505,7 @@ tdiscseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[inout] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
 tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
@@ -531,7 +531,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[inout] state Skiplist containing the state
  * @param[in] ss Temporal value
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 static SkipList *
 tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
@@ -561,7 +561,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
 temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
@@ -591,7 +591,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] state1, state2 State values
  * @param[in] func Aggregate function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @note This function is called for aggregating temporal points and thus
  * after checking the dimensionality and the SRID of the values
  */
@@ -618,7 +618,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
 temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
@@ -760,7 +760,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @param[in] transform Transform function
  */
 Datum

@@ -950,8 +950,8 @@ tsequence_merge_array(const TSequence **sequences, int count)
  * interpolation.
  *
  * @param[in] seq1,seq2 Input values
+ * @param[in] crossings True if turning points are added in the segments
  * @param[out] sync1,sync2 Output values
- * @param[in] crossings State whether turning points are added in the segments
  * @result Return false if the input values do not overlap on time
  */
 bool
@@ -1544,7 +1544,7 @@ tgeogpointseq_in(char *str, int interp __attribute__((unused)))
  * @param[in] seq Temporal sequence
  * @param[in] arg Maximum number of decimal digits to output for floating point
  * values
- * @param[in] component True when the output string is a component of a
+ * @param[in] component True if the output string is a component of a
  * temporal sequence set and thus no interpolation string at the begining of
  * the string should be output
  * @param[in] value_out Function called to output the base value
@@ -1603,9 +1603,9 @@ tsequence_out(const TSequence *seq, Datum arg)
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
- * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
- * @param[in] normalize True when the resulting value should be normalized
+ * @param[in] normalize True if the resulting value should be normalized
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
 TSequence *
@@ -1624,9 +1624,9 @@ tsequence_make(const TInstant **instants, int count, bool lower_inc,
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
- * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
- * @param[in] normalize True when the resulting value should be normalized
+ * @param[in] normalize True if the resulting value should be normalized
  * @see tsequence_make
  */
 TSequence *
@@ -1657,9 +1657,9 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the arrays
  * @param[in] srid SRID of the spatial coordinates
  * @param[in] geodetic True for tgeogpoint, false for tgeompoint
- * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
- * @param[in] normalize True when the resulting value should be normalized
+ * @param[in] normalize True if the resulting value should be normalized
  */
 TSequence *
 tpointseq_make_coords(const double *xcoords, const double *ycoords,
@@ -1697,8 +1697,8 @@ tsequence_copy(const TSequence *seq)
 
 /**
  * @ingroup libmeos_int_temporal_constructor
- * @brief Construct a temporal discrete sequence from a base value and the time
- * frame of another temporal discrete sequence.
+ * @brief Construct a temporal discrete sequence from a base value and a
+ * timestamp set.
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
  * etc.
  */
@@ -1707,81 +1707,10 @@ tdiscseq_from_base(Datum value, mobdbType temptype, const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = tinstant_make(value, temptype,
-      tsequence_inst_n(seq, i)->t);
+    instants[i] = tinstant_make(value, temptype, tsequence_inst_n(seq, i)->t);
   return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal boolean discrete sequence from a boolean and a
- * timestamp set.
- */
-TSequence *
-tbooldiscseq_from_base(bool b, const TSequence *seq)
-{
-  return tdiscseq_from_base(BoolGetDatum(b), T_TBOOL, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal integer discrete sequence from an integer and a
- * timestamp set.
- */
-TSequence *
-tintdiscseq_from_base(int i, const TSequence *seq)
-{
-  return tdiscseq_from_base(Int32GetDatum(i), T_TINT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float discrete sequence from a float and a
- * timestamp set.
- */
-TSequence *
-tfloatdiscseq_from_base(bool b, const TSequence *seq)
-{
-  return tdiscseq_from_base(BoolGetDatum(b), T_TFLOAT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text discrete sequence from a text and a
- * timestamp set.
- */
-TSequence *
-ttextdiscseq_from_base(const text *txt, const TSequence *seq)
-{
-  return tdiscseq_from_base(PointerGetDatum(txt), T_TTEXT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point discrete sequence from a point
- * and a timestamp set.
- */
-TSequence *
-tgeompointdiscseq_from_base(const GSERIALIZED *gs, const TSequence *seq)
-{
-  return tdiscseq_from_base(PointerGetDatum(gs), T_TGEOMPOINT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point discrete sequence from a point
- * and a timestamp set.
- */
-TSequence *
-tgeogpointdiscseq_from_base(const GSERIALIZED *gs, const TSequence *seq)
-{
-  return tdiscseq_from_base(PointerGetDatum(gs), T_TGEOGPOINT, seq);
-}
-#endif /* MEOS */
-
-/*****************************************************************************/
 
 /**
  * @ingroup libmeos_int_temporal_constructor
@@ -1796,7 +1725,7 @@ tdiscseq_from_base_time(Datum value, mobdbType temptype,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    instants[i] = tinstant_make(value, temptype, timestampset_time_n(ts, i));
+    instants[i] = tinstant_make(value, temptype, timestampset_time_n(ts, i));  
   return tsequence_make_free(instants, ts->count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
@@ -1885,8 +1814,10 @@ TSequence *
 tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq,
   int interp)
 {
-  return tsequence_from_base_time(value, temptype,
-    (const Period *) &seq->period, interp);
+  return MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+    tdiscseq_from_base(value, temptype, seq) :
+    tsequence_from_base_time(value, temptype,
+      &seq->period, interp);
 }
 
 #if MEOS
@@ -1974,7 +1905,7 @@ TSequence *
 tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p,
   int interp)
 {
-  int count;
+  int count = 1;
   TInstant *instants[2];
   instants[0] = tinstant_make(value, temptype, p->lower);
   if (p->lower != p->upper)
@@ -1982,12 +1913,10 @@ tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p,
     instants[1] = tinstant_make(value, temptype, p->upper);
     count = 2;
   }
-  else
-    count = 1;
   TSequence *result = tsequence_make((const TInstant **) instants, count,
     p->lower_inc, p->upper_inc, interp, NORMALIZE_NO);
   pfree(instants[0]);
-  if (p->lower != p->upper)
+  if (count == 2)
     pfree(instants[1]);
   return result;
 }
@@ -2175,9 +2104,9 @@ tsequenceset_to_tsequence(const TSequenceSet *ss)
  * Return a temporal sequence with continuous base type transformed from
  * stepwise to linear interpolation
  *
+ * @param[in] seq Temporal sequence
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
- * @param[in] seq Temporal sequence
  * @return Number of resulting sequences returned
  */
 int
@@ -2380,9 +2309,9 @@ tfloatseq_span(const TSequence *seq)
 /**
  * Return the float spans of a temporal float
  *
+ * @param[in] seq Temporal sequence
  * @param[out] result Array on which the pointers of the newly constructed
  * spans are stored
- * @param[in] seq Temporal sequence
  * @result Number of spans in the result
  */
 int
@@ -2755,7 +2684,7 @@ tsequence_timestamps(const TSequence *seq, int *count)
  * timestamp
  *
  * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] linear True when the segment has linear interpolation
+ * @param[in] linear True if the segment has linear interpolation
  * @param[in] t Timestamp
  * @pre The timestamp t satisfies inst1->t <= t <= inst2->t
  * @note The function creates a new value that must be freed
@@ -2843,7 +2772,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
  *
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
- * @param[in] strict True when inclusive/exclusive bounds are taken into account
+ * @param[in] strict True if inclusive/exclusive bounds are taken into account
  * @param[out] result Base value
  * @result Return true if the timestamp is contained in the temporal sequence
  * @sqlfunc valueAtTimestamp()
@@ -3189,7 +3118,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
  *
  * @param[in] seq Temporal sequence
  * @param[in] value Base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @note There is no bounding box test in this function, it is done in the
  * dispatch function for all temporal types.
  * @sqlfunc atValue(), minusValue()
@@ -3233,7 +3162,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @param[in] seq Temporal sequence
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
  */
@@ -3273,13 +3202,13 @@ tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
  * Restrict a segment of a temporal sequence to (the complement of) a base
  * value.
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequence is stored
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] interp Interpolation
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
  * @param[in] value Base value
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequence is stored
  * @return Number of resulting sequences returned
  */
 static int
@@ -3405,11 +3334,11 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
 /**
  * Restrict a temporal sequence to (the complement of) a base value
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] value Base value
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set.
  * For this reason the bounding box and the instantaneous sequence sets are
@@ -3469,7 +3398,7 @@ tcontseq_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
  *
  * @param[in] seq Temporal sequence
  * @param[in] value Base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @note There is no bounding box or instantaneous test in this function,
  * they are done in the atValue and minusValue functions since the latter are
  * called for each sequence in a sequence set or for each element in the array
@@ -3493,11 +3422,11 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 /**
  * Restrict a temporal sequence to an array of base values
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @pre There are no duplicates values in the array
  * @note This function is called for each sequence of a temporal sequence set
@@ -3558,7 +3487,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
  * @param[in] seq Temporal sequence
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal sequence set.
  * @note A bounding box test and an instantaneous sequence test are done in
  * the function tsequence_at_values1 since the latter is called
@@ -3602,7 +3531,7 @@ tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count,
  *
  * @param[in] seq Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpan(), minusSpan()
@@ -3638,7 +3567,7 @@ tdiscseq_restrict_span(const TSequence *seq, const Span *span,
  * @param[in] seq Temporal number
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
@@ -3679,13 +3608,13 @@ tdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
 /**
  * Restrict a segment of a temporal number to (the complement of) a span
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequence is stored
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] lower_inclu,upper_inclu Upper and lower bounds of the segment
- * @param[in] linear True when the segment has linear interpolation
+ * @param[in] linear True if the segment has linear interpolation
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequence is stored
  * @return Resulting temporal sequence
  */
 static int
@@ -3926,11 +3855,11 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
 /**
  * Restrict a temporal number to (the complement of) a span
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set
  */
@@ -3992,7 +3921,7 @@ tnumberseq_restrict_span2(const TSequence *seq, const Span *span, bool atfunc,
  *
  * @param[in] seq Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
@@ -4016,13 +3945,13 @@ tnumberseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc)
  * Restrict a temporal number to (the complement of) an array of spans
  * of base values
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal number
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
- * @param[in] bboxtest True when the bounding box test should be performed
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] bboxtest True if the bounding box test should be performed
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @pre The array of spans is normalized
  * @note This function is called for each sequence of a temporal sequence set
@@ -4139,8 +4068,8 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
  * @param[in] seq Temporal number
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus
- * @param[in] bboxtest True when the bounding box test should be performed
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] bboxtest True if the bounding box test should be performed
  * @return Resulting temporal number
  * @pre The array of spans is normalized
  * @note A bounding box test and an instantaneous sequence test are done in
@@ -4171,9 +4100,9 @@ tnumberseq_restrict_spans(const TSequence *seq, Span **normspans,
  * minimum/maximum base value
  *
  * @param[in] seq Temporal sequence
- * @param[in] min True when restricted to the minumum value, false for the
+ * @param[in] min True if restricted to the minumum value, false for the
  * maximum value
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
 TSequence *
@@ -4189,9 +4118,9 @@ tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
  * minimum/maximum base value.
  *
  * @param[in] seq Temporal sequence
- * @param[in] min True when restricted to the minumum value, false for the
+ * @param[in] min True if restricted to the minumum value, false for the
  * maximum value
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
 TSequenceSet *
@@ -4539,10 +4468,10 @@ tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
 /**
  * Restrict a temporal sequence to the complement of a timestamp
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set
  */
@@ -4700,10 +4629,10 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 /**
  * Restrict a temporal sequence to the complement of a timestamp set
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] ts Timestampset
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  */
 int
@@ -4917,10 +4846,10 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 /**
  * Restrict a temporal sequence to the complement of a period.
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] p Period
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  */
 int
@@ -4975,10 +4904,10 @@ tcontseq_minus_period(const TSequence *seq, const Period *p)
 /**
  * Restrict a temporal sequence to a period set
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @note This function is not called for each sequence of a temporal sequence
  * set but is called when computing tpointseq minus geometry
@@ -5028,11 +4957,11 @@ tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
 /**
  * Restrict a temporal sequence to the complement of a period set
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
  * @param[in] from Index from which the processing starts
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set
  * @sqlfunc minusPeriodSet()
@@ -5088,7 +5017,7 @@ tcontseq_minus_periodset1(const TSequence *seq, const PeriodSet *ps, int from,
  *
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal sequence set
  * @sqlfunc atPeriodSet(), minusPeriodSet()
  */

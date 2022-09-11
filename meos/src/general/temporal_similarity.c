@@ -98,10 +98,10 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
  * Linear space computation of the similarity distance between two temporal
  * values. Only two rows of the full matrix are used.
  *
- * @param[out] dist Array keeping the distances
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[out] dist Array keeping the distances
  */
 static double
 tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
@@ -339,14 +339,14 @@ tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
  * Computing the similarity distance between two temporal values using a
  * full matrix.
  *
- * @param[out] dist Matrix keeping the distances
  * @param[in] instants1,instants2 Instants of the temporal values
  * @param[in] count1,count2 Number of instants of the temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[out] dist Matrix keeping the distances
  */
 static void
-tinstarr_similarity_matrix1(double *dist, const TInstant **instants1,
-  int count1, const TInstant **instants2, int count2, SimFunc simfunc)
+tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, SimFunc simfunc, double *dist)
 {
   for (int i = 0; i < count1; i++)
   {
@@ -406,12 +406,12 @@ tinstarr_similarity_matrix1(double *dist, const TInstant **instants1,
  *
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
- * @param[out] count Number of elements in the resulting array
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @param[out] count Number of elements in the resulting array
  */
 Match *
 tinstarr_similarity_matrix(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, int *count, SimFunc simfunc)
+  const TInstant **instants2, int count2, SimFunc simfunc, int *count)
 {
   /* Allocate memory for dist */
   double *dist = palloc(sizeof(double) * count1 * count2);
@@ -419,8 +419,8 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
   for (int i = 0; i < count1 * count2; i++)
     *(dist + i) = -1.0;
   /* Call the iterative computation of the similarity distance */
-  tinstarr_similarity_matrix1(dist, instants1, count1, instants2, count2,
-    simfunc);
+  tinstarr_similarity_matrix1(instants1, count1, instants2, count2, simfunc,
+    dist);
   /* Compute the path */
   Match *result = tinstarr_similarity_path(dist, count1, count2, count);
   /* Free memory */
@@ -444,9 +444,9 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   const TInstant **instants2 = temporal_instants(temp2, &count2);
   Match *result = count1 > count2 ?
     tinstarr_similarity_matrix(instants1, count1, instants2, count2,
-      count, simfunc) :
+      simfunc, count) :
     tinstarr_similarity_matrix(instants2, count2, instants1, count1,
-      count, simfunc);
+      simfunc, count);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;

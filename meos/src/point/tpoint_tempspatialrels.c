@@ -450,7 +450,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[in] restr True when the atValue function is applied to the result
+ * @param[in] restr True if the atValue function is applied to the result
  * @param[in] atvalue Value to be used for the atValue function
  * @pre The geometry is NOT empty. This should be ensured by the calling
  * function

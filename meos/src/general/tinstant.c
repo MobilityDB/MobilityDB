@@ -752,7 +752,7 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  *
  * @param[in] inst Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @note This function is called for each composing instant in a temporal
  * discrete sequence.
@@ -774,7 +774,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
  *
  * @param[in] inst Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @sqlfunc atSpan(), minusSpan()
  */

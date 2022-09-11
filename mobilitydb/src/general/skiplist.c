@@ -366,8 +366,7 @@ skiplist_tailval(SkipList *list)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the
- * when aggregating temporal segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 void
 skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,

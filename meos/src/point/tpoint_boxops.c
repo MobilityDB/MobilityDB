@@ -80,9 +80,9 @@ tpointinst_set_stbox(const TInstant *inst, STBOX *box)
 /**
  * Set the spatiotemporal box from an array of temporal instant points
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
@@ -103,6 +103,7 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
  *
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
+ * @param[in] interp Interpolation
  * @param[out] box Resulting bounding box
  */
 static void
@@ -133,9 +134,10 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count, int interp,
  * there is no verification of the input in this function, in particular
  * for geographies it is supposed that the composing points are geodetic
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[in] interp Interpolation
+ * @param[out] box Spatiotemporal box
  * @note In the current PostGIS version the difference when computing the
  * gbox for a MultiPoint and a Linestring is around 2e-7
  */
@@ -162,9 +164,9 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count, int interp,
 /**
  * Set the spatiotemporal box from an array of temporal sequence points
  *
- * @param[out] box Spatiotemporal box
  * @param[in] sequences Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
  */
 void
 tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
@@ -188,8 +190,8 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
  * Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point
  *
- * @param[out] result Spatiotemporal box
  * @param[in] seq Temporal value
+ * @param[out] result Spatiotemporal box
  * @return Number of elements in the array
  */
 static int
@@ -291,7 +293,7 @@ tpoint_stboxes(const Temporal *temp, int *count)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] func Bounding box function
- * @param[in] invert True when the geometry is the first argument of the
+ * @param[in] invert True if the geometry is the first argument of the
  * function
  */
 int
@@ -314,7 +316,7 @@ boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal point
  * @param[in] box Box
  * @param[in] func Bounding box function
- * @param[in] invert True when the geometry is the first argument of the
+ * @param[in] invert True if the geometry is the first argument of the
  */
 Datum
 boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,

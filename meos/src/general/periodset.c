@@ -155,7 +155,7 @@ periodset_out(const PeriodSet *ps)
  *
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized
+ * @param[in] normalize True if the resulting value should be normalized
  * @sqlfunc periodset()
  */
 PeriodSet *
@@ -203,7 +203,7 @@ periodset_make(const Period **periods, int count, bool normalize)
  *
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be normalized.
+ * @param[in] normalize True if the resulting value should be normalized.
  * @see periodset_make
  * @sqlfunc periodset()
  */

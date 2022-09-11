@@ -1466,7 +1466,7 @@ tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
  * @param[in] ratio Value in [0,1] representing the duration of the
  * timestamps associated to `value1` and `value2` divided by the duration
  * of the timestamps associated to `value1` and `value3`
- * @param[in] hasz True when the points have Z coordinates
+ * @param[in] hasz True if the points have Z coordinates
  * @param[in] geodetic True for geography, false for geometry
  */
 bool
@@ -2051,7 +2051,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
  * @brief Convert a temporal point to a geometry/geography point.
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
- * false otherwie
+ * false otherwise
  * @see tgeompointinst_tgeogpointinst
  * @see tgeompointseq_tgeogpointseq
  * @see tgeompointseqset_tgeogpointseqset
@@ -2581,9 +2581,9 @@ geog_azimuth(Datum geog1, Datum geog2)
 /**
  * Return the temporal azimuth of a temporal geometry point.
  *
+ * @param[in] seq Temporal value
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
- * @param[in] seq Temporal value
  */
 static int
 tpointseq_azimuth1(const TSequence *seq, TSequence **result)
@@ -3576,7 +3576,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  *
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
@@ -3599,7 +3599,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
  *
  * @param[in] seq Temporal discrete sequence point
  * @param[in] gs Geometry
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
@@ -4113,7 +4113,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
  *
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @note The test for instantaneous sequences is done at the function
@@ -4144,7 +4144,7 @@ tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] ss Temporal sequence set point
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the geometry
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
@@ -4208,7 +4208,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
@@ -4478,7 +4478,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
  *
  * @param[in] temp Temporal point
  * @param[in] box Box
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
  * @sqlfunc atStbox(), minusStbox()
  */

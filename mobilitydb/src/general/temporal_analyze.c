@@ -118,10 +118,9 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] tnumber True when statistics are collected for temporal numbers
- * dimension, that is, it is true for temporal numbers. Otherwise, statistics
- * are collected only for the temporal dimension, that is, in the case of
- * temporal boolean and temporal text.
+ * @param[in] tnumber True when collecting statistics for temporal numbers. 
+ * Otherwise, statistics are collected only for the temporal dimension, that
+ * is, for temporal boolean and temporal text.
  * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
  */
 static void

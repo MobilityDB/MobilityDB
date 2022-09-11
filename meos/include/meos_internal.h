@@ -274,7 +274,6 @@ extern TSequenceSet *ttextseqset_in(char *str);
 extern Temporal *temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp, int interp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, mobdbType temptype, TimestampTz t);
-extern TSequence *tdiscseq_from_base(Datum value, mobdbType temptype, const TSequence *seq);
 extern TSequence *tdiscseq_from_base_time(Datum value, mobdbType temptype, const TimestampSet *ss);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq, int interp);

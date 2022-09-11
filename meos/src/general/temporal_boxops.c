@@ -394,7 +394,7 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] func Bounding box function
- * @param[in] invert True when the timestamp is the first argument of the
+ * @param[in] invert True if the timestamp is the first argument of the
  * function
  */
 Datum
@@ -415,7 +415,7 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
  * @param[in] temp Temporal value
  * @param[in] ts Timestamp set
  * @param[in] func Bounding box function
- * @param[in] invert True when the timestamp set is the first argument of the
+ * @param[in] invert True if the timestamp set is the first argument of the
  * function
  */
 Datum
@@ -434,7 +434,7 @@ boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
  * @param[in] temp Temporal value
  * @param[in] p Period
  * @param[in] func Bounding box function
- * @param[in] invert True when the period is the first argument of the
+ * @param[in] invert True if the period is the first argument of the
  * function
  */
 Datum
@@ -453,7 +453,7 @@ boxop_temporal_period(const Temporal *temp, const Period *p,
  * @param[in] temp Temporal value
  * @param[in] ps Period set
  * @param[in] func Bounding box function
- * @param[in] invert True when the period set is the first argument of the
+ * @param[in] invert True if the period set is the first argument of the
  * function
  */
 bool
@@ -494,7 +494,7 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @param[in] number Type
  * @param[in] basetype Base type value
  * @param[in] func Bounding box function
- * @param[in] invert True when the base value is the first argument of the
+ * @param[in] invert True if the base value is the first argument of the
  * function
  */
 bool
@@ -514,7 +514,7 @@ boxop_tnumber_number(const Temporal *temp, Datum number, mobdbType basetype,
  * @param[in] temp Temporal number
  * @param[in] span Span
  * @param[in] func Bounding box function
- * @param[in] invert True when the span is the first argument of the function.
+ * @param[in] invert True if the span is the first argument of the function.
  */
 bool
 boxop_tnumber_span(const Temporal *temp, const Span *span,
@@ -532,7 +532,7 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
  *
  * @param[in] temp Temporal number
  * @param[in] box Bounding box
- * @param[in] invert True when the bounding box is the first argument of the
+ * @param[in] invert True if the bounding box is the first argument of the
  * function
  * @param[in] func Bounding box function
  */
