@@ -205,6 +205,7 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from date.c
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a date in internal date format.
@@ -293,11 +294,13 @@ pg_date_out(DateADT date)
   result = pstrdup(buf);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  *   Time ADT
  *****************************************************************************/
 
+#if MEOS
 /* AdjustTimeForTypmod()
  * Force the precision of the time value to a specified value.
  * Uses *exactly* the same code as in AdjustTimestampForTypmod()
@@ -390,6 +393,7 @@ pg_time_out(TimeADT time)
   result = pstrdup(buf);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
@@ -597,6 +601,7 @@ pg_timestamp_out(Timestamp dt)
 
 /*****************************************************************************/
 
+#if MEOS
 /*
  *  Adjust interval for specified precision, in both YEAR to SECOND
  *  range and sub-second precision.
@@ -880,6 +885,7 @@ pg_interval_out(Interval *span)
   result = pstrdup(buf);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 

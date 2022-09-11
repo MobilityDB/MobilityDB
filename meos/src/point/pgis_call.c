@@ -1432,6 +1432,7 @@ gserialized_out(const GSERIALIZED *geom)
   return lwgeom_to_hexwkb_buffer(lwgeom, WKB_EXTENDED);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation (and optionally a SRID)
@@ -1672,6 +1673,7 @@ gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   pfree(lwgeom1); pfree(lwgeom2);
   return (result == LW_TRUE);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from geography_inout.c

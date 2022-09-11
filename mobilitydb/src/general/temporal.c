@@ -1044,7 +1044,6 @@ PGDLLEXPORT Datum
 Temporal_num_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // ensure_seq_subtypes(temp->subtype);
   int result = temporal_num_sequences(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -1557,7 +1556,6 @@ PGDLLEXPORT Datum
 Tempstep_to_templinear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // ensure_seq_subtypes(temp->subtype);
   Temporal *result = temporal_step_to_linear(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1592,7 +1590,6 @@ Temporal_tscale(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale(temp, NULL, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1610,7 +1607,6 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale(temp, shift, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

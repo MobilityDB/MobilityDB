@@ -89,7 +89,7 @@ void
 ensure_continuous(const Temporal *temp)
 {
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-    elog(ERROR, "Input must be a temporal continuous value");
+    elog(ERROR, "Input must be a temporal continuous sequence (set)");
   return;
 }
 
@@ -107,6 +107,7 @@ ensure_tinstarr(const TInstant **instants, int count)
   return;
 }
 
+#if 0 /* Not used */
 /**
  * Ensure that a temporal value has linear interpolation
  */
@@ -117,6 +118,7 @@ ensure_linear_interpolation(int16 flags)
     elog(ERROR, "The temporal value must have linear interpolation");
   return;
 }
+#endif /* Not used */
 
 /**
  * Ensure that two temporal values have at least one common dimension based on
@@ -1275,6 +1277,9 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
