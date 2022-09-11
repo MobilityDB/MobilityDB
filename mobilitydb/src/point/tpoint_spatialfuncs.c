@@ -243,8 +243,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
       Int32GetDatum(srid));
-    TSequence *result = tsequence_make((const TInstant **) &inst, 1,
-      true, true, interp, NORMALIZE_NO);
+    TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
   }
@@ -284,7 +283,6 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    // TSequence *seq1 = tpointcontseq_transform(tsequenceset_seq_n(ss, 0),
     TSequence *seq1 = tpointseq_transform(tsequenceset_seq_n(ss, 0),
       Int32GetDatum(srid));
     TSequenceSet *result = tsequence_to_tsequenceset(seq1);
@@ -355,10 +353,7 @@ tpoint_transform(const Temporal *temp, int srid)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
   else if (temp->subtype == TSEQUENCE)
-    result = // MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      // (Temporal *) tpointdiscseq_transform((TSequence *) temp, srid) :
-      // (Temporal *) tpointcontseq_transform((TSequence *) temp, srid);
-      (Temporal *) tpointseq_transform((TSequence *) temp, srid);
+    result =  (Temporal *) tpointseq_transform((TSequence *) temp, srid);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
   return result;

@@ -35,7 +35,6 @@
 #include "general/temporal_catalog.h"
 
 /* PostgreSQL */
-// #include <postgres.h>
 /* MobilityDB */
 #include <meos.h>
 #include "general/temporaltypes.h"

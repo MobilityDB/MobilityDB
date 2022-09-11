@@ -125,8 +125,8 @@ datum_sum_float8(Datum l, Datum r)
 Datum
 datum_sum_double2(Datum l, Datum r)
 {
-  return PointerGetDatum(double2_add((double2 *)DatumGetPointer(l),
-    (double2 *)DatumGetPointer(r)));
+  return PointerGetDatum(double2_add((double2 *) DatumGetPointer(l),
+    (double2 *) DatumGetPointer(r)));
 }
 
 /**
@@ -135,8 +135,8 @@ datum_sum_double2(Datum l, Datum r)
 Datum
 datum_sum_double3(Datum l, Datum r)
 {
-  return PointerGetDatum(double3_add((double3 *)DatumGetPointer(l),
-    (double3 *)DatumGetPointer(r)));
+  return PointerGetDatum(double3_add((double3 *) DatumGetPointer(l),
+    (double3 *) DatumGetPointer(r)));
 }
 
 /**
@@ -145,8 +145,8 @@ datum_sum_double3(Datum l, Datum r)
 Datum
 datum_sum_double4(Datum l, Datum r)
 {
-  return PointerGetDatum(double4_add((double4 *)DatumGetPointer(l),
-    (double4 *)DatumGetPointer(r)));
+  return PointerGetDatum(double4_add((double4 *) DatumGetPointer(l),
+    (double4 *) DatumGetPointer(r)));
 }
 
 /*****************************************************************************
@@ -1273,7 +1273,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     TInstant *inst = instants[i];
-    double2 *value = (double2 *)DatumGetPointer(&inst->value);
+    double2 *value = (double2 * )DatumGetPointer(&inst->value);
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
@@ -1294,7 +1294,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      double2 *value2 = (double2 *)DatumGetPointer(&inst->value);
+      double2 *value2 = (double2 *) DatumGetPointer(&inst->value);
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }

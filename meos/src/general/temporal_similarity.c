@@ -38,7 +38,6 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
-// #include <postgres.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>

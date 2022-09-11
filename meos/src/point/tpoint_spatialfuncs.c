@@ -740,7 +740,6 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
     /* Test point on segment */
     else if (point_on_segment(value1, value2, value))
       return true;
-    inst1 = inst2;
     value1 = value2;
     lower_inc = true;
   }
@@ -1349,14 +1348,14 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     }
     /* If intersection occurs at different timestamps on each dimension */
     if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-      fabsl(xfraction - yfraction) > MOBDB_EPSILON &&
-      fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
+        fabsl(xfraction - yfraction) > MOBDB_EPSILON &&
+        fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-      fabsl(yfraction - zfraction) > MOBDB_EPSILON) ||
+        fabsl(yfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-      fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
+        fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-      fabsl(xfraction - yfraction) > MOBDB_EPSILON))
+        fabsl(xfraction - yfraction) > MOBDB_EPSILON))
       return false;
     if (xdenum != 0)
       fraction = xfraction;
@@ -1392,7 +1391,8 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
         return false;
     }
     /* If intersection occurs at different timestamps on each dimension */
-    if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > MOBDB_EPSILON)
+    if (xdenum != 0 && ydenum != 0 &&
+        fabsl(xfraction - yfraction) > MOBDB_EPSILON)
       return false;
     fraction = xdenum != 0 ? xfraction : yfraction;
   }
@@ -2264,7 +2264,7 @@ tpoint_length(const Temporal *temp)
 TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -2273,12 +2273,12 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     inst1 = tsequence_inst_n(seq, 0);
     TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
       inst1->t);
-    TSequence *result = tinstant_to_tsequence(inst, linear ? LINEAR : STEPWISE);
+    TSequence *result = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
     return result;
   }
 
-  /* Linear interpolation */
+  /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   datum_func2 func = pt_distance_fn(seq->flags);
   inst1 = tsequence_inst_n(seq, 0);
@@ -2292,11 +2292,10 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     if (! datum_point_eq(value1, value2))
       length += DatumGetFloat8(func(value1, value2));
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
-    inst1 = inst2;
     value1 = value2;
   }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, linear ? LINEAR : STEPWISE, NORMALIZE);
+    seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
 /**
@@ -2330,7 +2329,7 @@ tpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT ||! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp,
       MOBDB_FLAGS_GET_INTERP(temp->flags));
   else if (temp->subtype == TSEQUENCE)
@@ -3398,45 +3397,6 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
- * @brief Split a temporal discrete sequence point into an array of non
- * self-intersecting pieces.
- *
- * @param[in] seq Temporal discrete sequence point
- * @param[in] count Number of elements in the resulting array
- * @sqlfunc makeSimple()
- */
-TSequence **
-tpointdiscseq_make_simple(const TSequence *seq, int *count)
-{
-  TSequence **result;
-  /* Special case when the input discrete sequence has 1 instant */
-  if (seq->count == 1)
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    *count = 1;
-    return result;
-  }
-
-  int numsplits;
-  bool *splits = tpointseq_discstep_find_splits(seq, &numsplits);
-  if (numsplits == 0)
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    pfree(splits);
-    *count = 1;
-    return result;
-  }
-
-  result = tpointdiscseq_split(seq, splits, numsplits + 1);
-  pfree(splits);
-  *count = numsplits + 1;
-  return result;
-}
-
-/**
  * Split a temporal point into an array of non self-intersecting pieces
  *
  * @param[in] seq Temporal sequence point
@@ -3445,7 +3405,7 @@ tpointdiscseq_make_simple(const TSequence *seq, int *count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointseq_split(const TSequence *seq, bool *splits, int count)
+tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
@@ -3510,12 +3470,13 @@ tpointseq_split(const TSequence *seq, bool *splits, int count)
  * @sqlfunc makeSimple()
  */
 TSequence **
-tpointcontseq_make_simple(const TSequence *seq, int *count)
+tpointseq_make_simple(const TSequence *seq, int *count)
 {
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence **result;
   /* Special cases when the input sequence has 1 or 2 instants */
-  if (seq->count <= 2)
+  if ((interp == DISCRETE && seq->count == 1) ||
+      (interp != DISCRETE && seq->count <= 2))
   {
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_copy(seq);
@@ -3524,7 +3485,7 @@ tpointcontseq_make_simple(const TSequence *seq, int *count)
   }
 
   int numsplits;
-  bool *splits = linear ?
+  bool *splits = (interp == LINEAR) ?
     tpointseq_linear_find_splits(seq, &numsplits) :
     tpointseq_discstep_find_splits(seq, &numsplits);
   if (numsplits == 0)
@@ -3536,7 +3497,9 @@ tpointcontseq_make_simple(const TSequence *seq, int *count)
     return result;
   }
 
-  result = tpointseq_split(seq, splits, numsplits + 1);
+  result = (interp == DISCRETE) ?
+    tpointdiscseq_split(seq, splits, numsplits + 1) :
+    tpointcontseq_split(seq, splits, numsplits + 1);
   pfree(splits);
   *count = numsplits + 1;
   return result;
@@ -3556,7 +3519,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointcontseq_make_simple(tsequenceset_seq_n(ss, 0), count);
+    return tpointseq_make_simple(tsequenceset_seq_n(ss, 0), count);
 
   /* General case */
   TSequence ***sequences = palloc0(sizeof(TSequence **) * ss->count);
@@ -3565,14 +3528,12 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tpointcontseq_make_simple(seq, &countseqs[i]);
+    sequences[i] = tpointseq_make_simple(seq, &countseqs[i]);
     totalcount += countseqs[i];
   }
   assert(totalcount > 0);
-  TSequence **result = tseqarr2_to_tseqarr(sequences, countseqs, ss->count,
-    totalcount);
   *count = totalcount;
-  return result;
+  return tseqarr2_to_tseqarr(sequences, countseqs, ss->count, totalcount);
 }
 
 /**
@@ -3581,8 +3542,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
  *
  * @param[in] temp Temporal point
  * @param[out] count Number of elements in the output array
- * @see tpointdiscseq_make_simple
- * @see tpointcontseq_make_simple
+ * @see tpointseq_make_simple
  * @see tpointseqset_make_simple
  * @sqlfunc makeSimple()
  */
@@ -3598,9 +3558,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
     *count = 1;
   }
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal **) tpointdiscseq_make_simple((TSequence *) temp, count) :
-      (Temporal **) tpointcontseq_make_simple((TSequence *) temp, count);
+    result = (Temporal **) tpointseq_make_simple((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal **) tpointseqset_make_simple((TSequenceSet *) temp, count);
   return result;
@@ -3711,7 +3669,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int countsimple;
-  TSequence **simpleseqs = tpointcontseq_make_simple(seq, &countsimple);
+  TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
   /* Allocate memory for the intersection points */
   Datum *points = palloc(sizeof(Datum) * countsimple * seq->count);
   int k = 0;
@@ -3999,7 +3957,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int countsimple;
-  TSequence **simpleseqs = tpointcontseq_make_simple(seq, &countsimple);
+  TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
   Period **allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
 

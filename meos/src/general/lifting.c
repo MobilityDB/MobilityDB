@@ -371,7 +371,8 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
       instants[k++] = tinstant_make(intervalue, lfinfo->restype, intertime);
       DATUM_FREE(intervalue, resbasetype);
     }
-    inst1 = inst2; value1 = value2;
+    inst1 = inst2;
+    value1 = value2;
   }
   instants[k++] = tfunc_tinstant_base(inst1, value, lfinfo);
   result[0] = tsequence_make_free(instants, k, seq->period.lower_inc,

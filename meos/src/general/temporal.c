@@ -1190,7 +1190,7 @@ temporal_to_tdiscseq(const Temporal *temp)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_to_tdiscseq((TInstant *) temp);
+    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, DISCRETE);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_to_tdiscseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

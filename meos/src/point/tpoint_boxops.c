@@ -45,8 +45,7 @@
 
 /* C */
 #include <assert.h>
-// /* PostgreSQL */
-// #include <utils/timestamp.h>
+/* PostgreSQL */
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */

@@ -2112,18 +2112,6 @@ tfloatseq_to_tintseq(const TSequence *seq)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant transformed into a temporal discrete sequence.
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
- * etc.
- */
-TSequence *
-tinstant_to_tdiscseq(const TInstant *inst)
-{
-  return tsequence_make(&inst, 1, true, true, DISCRETE, NORMALIZE_NO);
-}
-
-/**
- * @ingroup libmeos_int_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence.
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
@@ -2166,7 +2154,7 @@ tsequence_to_tdiscseq(const TSequence *seq)
     elog(ERROR, "Cannot transform input to a temporal discrete sequence");
 
   const TInstant *inst = tsequence_inst_n(seq, 0);
-  return tinstant_to_tdiscseq(inst);
+  return tinstant_to_tsequence(inst, DISCRETE);
 }
 
 /**
@@ -4321,10 +4309,8 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
     if (temp == NULL || ! atfunc)
       return (TSequence *) temp;
     /* Transform the result of tdiscseq_at_timestamp into a sequence */
-    TInstant *inst1 = (TInstant *) temp;
-    result = tsequence_make((const TInstant **) &inst1, 1, true, true,
-      DISCRETE, NORMALIZE_NO);
-    pfree(inst1);
+    result = tinstant_to_tsequence((const TInstant *) temp, DISCRETE);
+    pfree(temp);
     return result;
   }
 
@@ -4674,8 +4660,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
     inst = tsequence_at_timestamp(seq, timestampset_time_n(ts, 0));
     if (inst == NULL)
       return NULL;
-    TSequence *result = tsequence_make((const TInstant **) &inst, 1,
-      true, true, DISCRETE, NORMALIZE_NO);
+    TSequence *result = tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
     pfree(inst);
     return result;
   }
@@ -4691,8 +4676,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   {
     if (! contains_timestampset_timestamp(ts, inst->t))
       return NULL;
-    return tsequence_make((const TInstant **) &inst, 1, true, true, DISCRETE,
-      NORMALIZE_NO);
+    return tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
   }
 
   /* General case */

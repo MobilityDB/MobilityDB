@@ -1692,8 +1692,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumberseq_restrict_span(tsequenceset_seq_n(ss, 0), span,
-      atfunc);
+    return tnumberseq_restrict_span(tsequenceset_seq_n(ss, 0), span, atfunc);
 
   /* General case */
   int count = ss->totalcount;
@@ -1837,10 +1836,9 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
       timestampset_time_n(ts, 0), atfunc);
     if (atfunc && temp != NULL)
     {
-      TInstant *inst = (TInstant *) temp;
-      Temporal *result = (Temporal *) tsequence_make((const TInstant **) &inst,
-        1, true, true, DISCRETE, NORMALIZE_NO);
-      pfree(inst);
+      Temporal *result = (Temporal *) tinstant_to_tsequence(
+        (const TInstant *) temp, DISCRETE);
+      pfree(temp);
       return result;
     }
     return temp;

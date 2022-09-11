@@ -72,7 +72,6 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
-// #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -193,9 +192,9 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
   bool lower_inc1 = seq->period.lower_inc;
   int k = 0;
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst1 = tsequence_inst_n(seq, i);
     const TInstant *inst2 = (i < seq->count - 1) ?
       tsequence_inst_n(seq, i + 1) : NULL;
     /* If last instant exclusive upper bound */
@@ -371,7 +370,7 @@ tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBOX *box
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int newcount;
-  TSequence **simpleseqs = tpointcontseq_make_simple(seq, &newcount);
+  TSequence **simpleseqs = tpointseq_make_simple(seq, &newcount);
   TSequence ***sequences = palloc(sizeof(TSequence *) * newcount);
   /* palloc0 used due to initialize the counters to 0 */
   int *countseqs = palloc0(sizeof(int) * newcount);

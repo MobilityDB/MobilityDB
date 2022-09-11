@@ -130,29 +130,6 @@ ensure_has_T_stbox(const STBOX *box)
  * Input/ouput functions in string format
  *****************************************************************************/
 
- /**
- * @ingroup libmeos_box_in_out
- * @brief Return a spatial box from its Well-Known Text (WKT) representation.
- *
- * Examples of input:
- * @code
- * GBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
- * GBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * SRID=xxxx;GBOX... (any of the above)
- * GEODGBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * SRID=xxxx;GEODGBOX... (any of the above)
- * @endcode
- * where the commas are optional and the SRID is optional. If the SRID is not
- * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
- */
-// GBOX *
-// GBOX_in(char *str)
-// {
-  // return GBOX_parse(&str);
-// }
-
-/*****************************************************************************/
-
 /**
  * @ingroup libmeos_box_in_out
  * @brief Return a spatiotemporal box from its Well-Known Text (WKT) representation.
@@ -929,14 +906,14 @@ stbox_expand_spatial(const STBOX *box, double d)
 {
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
-  result->xmin = box->xmin - d;
-  result->xmax = box->xmax + d;
-  result->ymin = box->ymin - d;
-  result->ymax = box->ymax + d;
+  result->xmin -= d;
+  result->ymin -= d;
+  result->xmax += d;
+  result->ymax += d;
   if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
-    result->zmin = box->zmin - d;
-    result->zmax = box->zmax + d;
+    result->zmin -= d;
+    result->zmax += d;
   }
   return result;
 }

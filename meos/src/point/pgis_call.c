@@ -42,7 +42,6 @@
 /* GEOS */
 #include <geos_c.h>
 /* PostgreSQL */
-// #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>

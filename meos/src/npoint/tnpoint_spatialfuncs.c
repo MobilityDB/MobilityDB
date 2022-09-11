@@ -412,59 +412,45 @@ tnpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * Cumulative length traversed by a temporal network point
+ * @ingroup libmeos_int_temporal_spatial_accessor
+ * @brief Return the cumulative length traversed by a temporal point.
+ * @pre The sequence has linear interpolation
+ * @sqlfunc cumulativeLength()
  */
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT, inst1->t);
+    TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
+      inst1->t);
     TSequence *result = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
     return result;
   }
 
+  /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  /* Stepwise interpolation */
-  if (! linear)
-  {
-    Datum length = Float8GetDatum(0.0);
-    for (int i = 0; i < seq->count; i++)
-    {
-      inst1 = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(length, T_TFLOAT, inst1->t);
-    }
-  }
-  else
-  /* Linear interpolation */
-  {
-    inst1 = tsequence_inst_n(seq, 0);
-    Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
-    double rlength = route_length(np1->rid);
-    double length = prevlength;
-    instants[0] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst1->t);
-    for (int i = 1; i < seq->count; i++)
-    {
-      const TInstant *inst2 = tsequence_inst_n(seq, i);
-      Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
-      length += fabs(np2->pos - np1->pos) * rlength;
-      instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
-      np1 = np2;
-    }
-  }
-  TSequence *result = tsequence_make((const TInstant **) instants,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc, LINEAR, false);
-
+  inst1 = tsequence_inst_n(seq, 0);
+  Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
+  double rlength = route_length(np1->rid);
+  double length = prevlength;
+  instants[0] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst1->t);
   for (int i = 1; i < seq->count; i++)
-    pfree(instants[i]);
-  pfree(instants);
-  return result;
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
+    length += fabs(np2->pos - np1->pos) * rlength;
+    instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
+    np1 = np2;
+  }
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
 /**
@@ -482,13 +468,7 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
     const TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
     length += DatumGetFloat8(tinstant_value(end));
   }
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    ss->count, false);
-
-  for (int i = 1; i < ss->count; i++)
-    pfree(sequences[i]);
-  pfree(sequences);
-  return result;
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
 /**
@@ -500,7 +480,8 @@ tnpoint_cumulative_length(const Temporal *temp)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp, false);
+    result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp,
+      MOBDB_FLAGS_GET_INTERP(temp->flags));
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == TSEQUENCESET */

@@ -37,8 +37,6 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-// #include <utils/float.h>
-// #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
@@ -936,8 +934,8 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
   if (r > 1) /* If the second vertex B is closest to the point p */
     return dist3d_pt_pt(p, B);
 
-  /* else if the point p is closer to some point between a and b
-  then we find that point and send it to dist3d_pt_pt */
+  /* If the point p is closer to some point between a and b, then we find that
+     point and send it to dist3d_pt_pt */
   c.x = A->x + r * (B->x - A->x);
   c.y = A->y + r * (B->y - A->y);
   c.z = A->z + r * (B->z - A->z);
@@ -1043,6 +1041,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   uint32_t i;
   double dist;
 
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
@@ -1089,9 +1088,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make((const TInstant **) instants, outn,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE, NORMALIZE);
+  TSequence *result = tsequence_make(instants, outn, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
 
   /* Only free if arrays are on heap */
@@ -1604,44 +1602,6 @@ tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
  *
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] seq Temporal point
- * @param[out] timesarr Array of timestamps encoded in Unix epoch
- * @param[out] count Number of elements in the output array
- */
-static GSERIALIZED *
-tpointdiscseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
-{
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return tpointinst_decouple(tsequence_inst_n(seq, 0), timesarr, count);
-
-  /* General case */
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-  int64 *times = palloc(sizeof(int64) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    points[i] = lwgeom_from_gserialized(gs);
-    times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
-  }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(lwgeom);
-  *timesarr = times;
-  *count = seq->count;
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
-  return result;
-}
-
-/**
- * Decouple the points and the timestamps of a temporal point.
- *
- * @note The function does not remove consecutive points/instants that are equal.
- * @param[in] seq Temporal point
  * @param[out] times Array of timestamps
  * @note The timestamps are returned in Unix epoch
  */
@@ -1745,9 +1705,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
   if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      tpointdiscseq_decouple((TSequence *) temp, timesarr, count) :
-      tpointseq_decouple((TSequence *) temp, timesarr, count);
+    result = tpointseq_decouple((TSequence *) temp, timesarr, count);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_decouple((TSequenceSet *) temp, timesarr, count);
   return result;

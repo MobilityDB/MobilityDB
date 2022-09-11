@@ -702,10 +702,9 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   /* General case */
   TInstant **tofree = palloc(sizeof(TInstant *) * count * seq->count);
   int l = 0;   /* counter for the instants to free */
-  const TInstant *inst1;
-  for (int i = 1; i < seq->count; i++)
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+for (int i = 1; i < seq->count; i++)
   {
-    inst1 = tsequence_inst_n(seq, i - 1);
     value = tinstant_value(inst1);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
@@ -869,7 +868,6 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         }
         else
         {
-          // elog(ERROR, "Unexpected error");
           lower_inc1 = upper_inc1 = false;
         }
       }

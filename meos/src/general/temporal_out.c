@@ -1337,8 +1337,6 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     size = tinstant_to_wkb_size((TInstant *) temp, variant);
-  // else if (temp->subtype == TINSTANTSET)
-    // size = tdiscseq_to_wkb_size((TSequence *) temp, variant);
   else if (temp->subtype == TSEQUENCE)
     size = tsequence_to_wkb_size((TSequence *) temp, variant);
   else /* temp->subtype == TSEQUENCESET */
@@ -2155,8 +2153,6 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     buf = tinstant_to_wkb_buf((TInstant *) temp, buf, variant);
-  // else if (temp->subtype == TINSTANTSET)
-    // buf = tdiscseq_to_wkb_buf((TSequence *) temp, buf, variant);
   else if (temp->subtype == TSEQUENCE)
     buf = tsequence_to_wkb_buf((TSequence *) temp, buf, variant);
   else /* temp->subtype == TSEQUENCESET */

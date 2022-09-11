@@ -440,37 +440,6 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * Return the nearest approach instant between the temporal discrete sequence
- * point and a geometry/geography
- *
- * @param[in] seq Temporal point
- * @param[in] geo Geometry/geography
- */
-static TInstant *
-NAI_tpointdiscseq_geo(const TSequence *seq, const LWGEOM *geo)
-{
-  double mindist = DBL_MAX;
-  int number = 0; /* keep compiler quiet */
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    LWGEOM *point = lwgeom_from_gserialized(gs);
-    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
-    if (dist < mindist)
-    {
-      mindist = dist;
-      number = i;
-    }
-    lwgeom_free(point);
-  }
-  return tinstant_copy(tsequence_inst_n(seq, number));
-}
-
-/*****************************************************************************/
-
-/**
  * Return the new current nearest approach instant between the temporal
  * sequence point with stepwise interpolation and a geometry/geography
  *
@@ -483,7 +452,7 @@ NAI_tpointdiscseq_geo(const TSequence *seq, const LWGEOM *geo)
  * @result Minimum distance
  */
 static double
-NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
+NAI_tpointseq_discstep_geo1(const TSequence *seq, const LWGEOM *geo,
   double mindist, const TInstant **result)
 {
   for (int i = 0; i < seq->count; i++)
@@ -511,10 +480,10 @@ NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
  * @param[in] geo Geometry/geography
  */
 static TInstant *
-NAI_tpointseq_step_geo(const TSequence *seq, const LWGEOM *geo)
+NAI_tpointseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
 {
   const TInstant *inst;
-  NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, &inst);
+  NAI_tpointseq_discstep_geo1(seq, geo, DBL_MAX, &inst);
   return tinstant_copy(inst);
 }
 
@@ -533,7 +502,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, &inst);
+    mindist = NAI_tpointseq_discstep_geo1(seq, geo, mindist, &inst);
   }
   assert(inst != NULL);
   return tinstant_copy(inst);
@@ -711,14 +680,9 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (temp->subtype == TINSTANT)
     result = tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-      result = NAI_tpointdiscseq_geo((TSequence *) temp, geo);
-    else
-      result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-        NAI_tpointseq_linear_geo((TSequence *) temp, geo) :
-        NAI_tpointseq_step_geo((TSequence *) temp, geo);
-  }
+    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+      NAI_tpointseq_linear_geo((TSequence *) temp, geo) :
+      NAI_tpointseq_discstep_geo((TSequence *) temp, geo);
   else /* temp->subtype == TSEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :

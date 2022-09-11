@@ -41,7 +41,6 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-// #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>

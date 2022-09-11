@@ -40,7 +40,6 @@
 /* C */
 #include <float.h>
 /* PostgreSQL */
-// #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>

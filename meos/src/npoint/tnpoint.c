@@ -60,10 +60,10 @@
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
-  Npoint *np = DatumGetNpointP(tinstant_value(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_value(inst));
   GSERIALIZED *geom = npoint_geom(np);
-  TInstant *result = 
-    tinstant_make(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
+  TInstant *result = tinstant_make(PointerGetDatum(geom), T_TGEOMPOINT,
+    inst->t);
   pfree(geom);
   return result;
 }
@@ -80,9 +80,8 @@ tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tnpointinst_tgeompointinst(inst);
   }
-  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
-    DISCRETE, NORMALIZE_NO);
-  return result;
+  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -92,7 +91,7 @@ TSequence *
 tnpointcontseq_tgeompointcontseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, 0)));
+  const Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, 0)));
   /* We are sure line is not empty */
   GSERIALIZED *line = route_geom(np->rid);
   int srid = gserialized_get_srid(line);
@@ -107,13 +106,14 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
     lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
     instants[i] = tinstant_make(point, T_TGEOMPOINT, inst->t);
+    lwpoint_free((LWPOINT *) lwpoint);
     pfree(DatumGetPointer(point));
   }
-  TSequence *result = tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+
   pfree(DatumGetPointer(line));
-  return result;
+  lwline_free(lwline);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -128,9 +128,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     sequences[i] = tnpointcontseq_tgeompointcontseq(seq);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
-    NORMALIZE_NO);
-  return result;
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
 /**

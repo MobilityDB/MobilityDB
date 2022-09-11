@@ -325,7 +325,7 @@ doublen_to_point(const TInstant *inst, int srid)
   LWPOINT *point;
   if (inst->temptype == T_TDOUBLE3)
   { 
-    double3 *value3 = (double3 *)DatumGetPointer(&inst->value);
+    double3 *value3 = (double3 *) DatumGetPointer(&inst->value);
     assert(value3->c != 0);
     double valuea = value3->a / value3->c;
     double valueb = value3->b / value3->c;
@@ -333,7 +333,7 @@ doublen_to_point(const TInstant *inst, int srid)
   }
   else /* inst->temptype == T_TDOUBLE4 */
   {
-    double4 *value4 = (double4 *)DatumGetPointer(&inst->value);
+    double4 *value4 = (double4 *) DatumGetPointer(&inst->value);
     assert(value4->d != 0);
     double valuea = value4->a / value4->d;
     double valueb = value4->b / value4->d;

@@ -347,7 +347,7 @@ skiplist_headval(SkipList *list)
 void *
 skiplist_tailval(SkipList *list)
 {
-  // Despite the look, this is pretty much O(1)
+  /* Despite the look, this is pretty much O(1) */
   int cur = 0;
   SkipListElem *e = &list->elems[cur];
   int height = e->height;
