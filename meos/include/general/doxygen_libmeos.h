@@ -51,9 +51,13 @@
  */
 
 /**
- * @defgroup libmeos_base Functions for base types
+ * @defgroup libmeos_pg_types Functions for PostgreSQL types
  * @ingroup libmeos_api
- * @brief Functions for base types.
+ * @brief Functions for PostgreSQL types.
+
+ * @defgroup libmeos_pgis_types Functions for PostGIS types
+ * @ingroup libmeos_api
+ * @brief Functions for PostGIS types.
 
  * @defgroup libmeos_spantime Functions for span and time types
  * @ingroup libmeos_api

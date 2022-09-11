@@ -45,7 +45,7 @@ DROP TABLE tbl_tnpoint_tmp;
 SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
 
 WITH test(temp) as (
-SELECT tnpoint_instset(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY k%10 )
+SELECT tnpoint_discseq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY k%10 )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) as (
@@ -71,28 +71,28 @@ DROP TABLE tbl_tnpointinst_test;
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint_inst(inst)) FROM tbl_tnpoint_inst;
-SELECT DISTINCT tempSubtype(tnpoint_instset(inst)) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(tnpoint_discseq(inst)) FROM tbl_tnpoint_inst;
 SELECT DISTINCT tempSubtype(tnpoint_seq(inst)) FROM tbl_tnpoint_inst;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint_inst(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_instset(ti)) FROM tbl_tnpoint_instset;
-SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_instset;
+SELECT DISTINCT tempSubtype(tnpoint_inst(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_discseq(ti)) FROM tbl_tnpoint_discseq;
+SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_discseq;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint_inst(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_instset(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_discseq(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seq(seq)) FROM tbl_tnpoint_seq;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint_inst(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_instset(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tnpoint_discseq(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
 SELECT DISTINCT tempSubtype(tnpoint_seq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
 

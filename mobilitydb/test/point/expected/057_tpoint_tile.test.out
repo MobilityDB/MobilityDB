@@ -1,17 +1,17 @@
 SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
-        multidimgrid        
-----------------------------
- (1,"STBOX X((2,2),(4,4))")
- (2,"STBOX X((4,2),(6,4))")
- (3,"STBOX X((6,2),(8,4))")
+         multidimgrid         
+------------------------------
+ (1,"STBOX X(((2,2),(4,4)))")
+ (2,"STBOX X(((4,2),(6,4)))")
+ (3,"STBOX X(((6,2),(8,4)))")
 (3 rows)
 
 SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
-             multidimgrid             
---------------------------------------
- (1,"SRID=3812;STBOX X((3,3),(5,5))")
- (2,"SRID=3812;STBOX X((5,3),(7,5))")
- (3,"SRID=3812;STBOX X((7,3),(9,5))")
+              multidimgrid              
+----------------------------------------
+ (1,"SRID=3812;STBOX X(((3,3),(5,5)))")
+ (2,"SRID=3812;STBOX X(((5,3),(7,5)))")
+ (3,"SRID=3812;STBOX X(((7,3),(9,5)))")
 (3 rows)
 
 SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
@@ -46,9 +46,9 @@ ERROR:  Operation on mixed SRID
 SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0);
 ERROR:  Only planar coordinates supported
 SELECT multidimTile(geometry 'Point(3 3)', 2.0);
-     multidimtile     
-----------------------
- STBOX X((0,0),(2,2))
+      multidimtile      
+------------------------
+ STBOX X(((0,0),(2,2)))
 (1 row)
 
 SELECT multidimTile(geometry 'Point(3 3 3)', 2.0);

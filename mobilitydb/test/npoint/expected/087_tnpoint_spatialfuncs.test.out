@@ -40,10 +40,10 @@ SELECT ST_AsText(round(trajectory(tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
  POINT(48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(round(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
-                      st_astext                      
------------------------------------------------------
- MULTIPOINT(48.718663 77.764071,62.786633 80.143556)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6))) AS t(dp);
+                          array_agg                          
+-------------------------------------------------------------
+ {"POINT(48.718663 77.764071)","POINT(62.786633 80.143556)"}
 (1 row)
 
 SELECT ST_AsText(round(trajectory(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
@@ -58,16 +58,16 @@ SELECT ST_AsText(round(trajectory(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1
  GEOMETRYCOLLECTION(POINT(27.252917 77.656661),LINESTRING(69.790369 81.452098,69.080715 81.20815,48.718663 77.764071))
 (1 row)
 
-SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'), 6));
-                      st_astext                      
------------------------------------------------------
- MULTIPOINT(48.718663 77.764071,69.790369 81.452098)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'), 6))) AS t(dp);
+                          array_agg                          
+-------------------------------------------------------------
+ {"POINT(48.718663 77.764071)","POINT(69.790369 81.452098)"}
 (1 row)
 
-SELECT ST_AsText(round(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
-                                st_astext                                
--------------------------------------------------------------------------
- MULTIPOINT(27.252917 77.656661,48.718663 77.764071,69.790369 81.452098)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6))) AS t(dp);
+                                        array_agg                                         
+------------------------------------------------------------------------------------------
+ {"POINT(27.252917 77.656661)","POINT(48.718663 77.764071)","POINT(69.790369 81.452098)"}
 (1 row)
 
 SELECT ST_AsText(round(trajectory(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02}'), 6));

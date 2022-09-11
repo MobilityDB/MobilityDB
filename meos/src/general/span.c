@@ -301,29 +301,6 @@ spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
   return result;
 }
 
-/**
- * Get the bounds of a span as double values.
- *
- * @param[in] s Input span
- * @param[out] xmin, xmax Lower and upper bounds
- */
-void
-span_bounds(const Span *s, double *xmin, double *xmax)
-{
-  ensure_tnumber_spantype(s->spantype);
-  if (s->spantype == T_INTSPAN)
-  {
-    *xmin = (double)(DatumGetInt32(s->lower));
-    /* intspans are in canonical form so their upper bound is exclusive */
-    *xmax = (double)(DatumGetInt32(s->upper) - 1);
-  }
-  else /* s->spantype == T_FLOATSPAN */
-  {
-    *xmin = DatumGetFloat8(s->lower);
-    *xmax = DatumGetFloat8(s->upper);
-  }
-}
-
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

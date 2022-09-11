@@ -57,12 +57,12 @@ tsequence_recv(StringInfo buf, mobdbType temptype)
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);
   bool upper_inc = (char) pq_getmsgbyte(buf);
-  bool linear = (char) pq_getmsgbyte(buf);
+  int interp = (char) pq_getmsgbyte(buf);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
     instants[i] = tinstant_recv(buf, temptype);
   return tsequence_make_free(instants, count, lower_inc,
-    upper_inc, linear, NORMALIZE);
+    upper_inc, interp, NORMALIZE);
 }
 
 /**
@@ -77,7 +77,7 @@ tsequence_write(const TSequence *seq, StringInfo buf)
   pq_sendint32(buf, seq->count);
   pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, (uint8) MOBDB_FLAGS_GET_INTERP(seq->flags));
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);

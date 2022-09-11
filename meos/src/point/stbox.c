@@ -99,27 +99,6 @@ stbox_shift_tscale(const Interval *shift, const Interval *duration, STBOX *box)
   return;
 }
 
-/**
- * Set the values of a GBOX
- */
-static void
-gbox_set(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
-  double ymin, double ymax, double zmin, double zmax, GBOX *box)
-{
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(GBOX));
-  box->xmin = xmin;
-  box->xmax = xmax;
-  box->ymin = ymin;
-  box->ymax = ymax;
-  box->zmin = zmin;
-  box->zmax = zmax;
-  FLAGS_SET_Z(box->flags, hasz);
-  FLAGS_SET_M(box->flags, hasm);
-  FLAGS_SET_GEODETIC(box->flags, geodetic);
-  return;
-}
-
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -150,29 +129,6 @@ ensure_has_T_stbox(const STBOX *box)
 /*****************************************************************************
  * Input/ouput functions in string format
  *****************************************************************************/
-
- /**
- * @ingroup libmeos_box_in_out
- * @brief Return a spatial box from its Well-Known Text (WKT) representation.
- *
- * Examples of input:
- * @code
- * GBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
- * GBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * SRID=xxxx;GBOX... (any of the above)
- * GEODGBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * SRID=xxxx;GEODGBOX... (any of the above)
- * @endcode
- * where the commas are optional and the SRID is optional. If the SRID is not
- * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
- */
-// GBOX *
-// GBOX_in(char *str)
-// {
-  // return GBOX_parse(&str);
-// }
-
-/*****************************************************************************/
 
 /**
  * @ingroup libmeos_box_in_out
@@ -258,7 +214,7 @@ stbox_out(const STBOX *box, int maxdd)
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
     }
     else
-      snprintf(str, size, "%s%s X((%s,%s),(%s,%s))",
+      snprintf(str, size, "%s%s X(((%s,%s),(%s,%s)))",
         srid, boxtype, xmin, ymin, xmax, ymax);
   }
   else /* hast */
@@ -365,11 +321,22 @@ stbox_copy(const STBOX *box)
 void
 stbox_set_gbox(const STBOX *box, GBOX *gbox)
 {
-  assert(MOBDB_FLAGS_GET_X(box->flags));
+  ensure_has_X_stbox(box);
+  /* Note: zero-fill is required here, just as in heap tuples */
   memset(gbox, 0, sizeof(GBOX));
-  gbox_set(MOBDB_FLAGS_GET_Z(box->flags), false,
-    MOBDB_FLAGS_GET_GEODETIC(box->flags), box->xmin, box->xmax,
-    box->ymin, box->ymax, box->zmin, box->zmax, gbox);
+  /* Initialize existing dimensions */
+  gbox->xmin = box->xmin;
+  gbox->xmax = box->xmax;
+  gbox->ymin = box->ymin;
+  gbox->ymax = box->ymax;
+  if (MOBDB_FLAGS_GET_Z(box->flags))
+  {
+    gbox->zmin = box->zmin;
+    gbox->zmax = box->zmax;
+  }
+  FLAGS_SET_Z(gbox->flags, MOBDB_FLAGS_GET_Z(box->flags));
+  FLAGS_SET_M(gbox->flags, false);
+  FLAGS_SET_GEODETIC(gbox->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
   return;
 }
 
@@ -395,6 +362,7 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
     box3d->zmax = box->zmax;
   }
   box3d->srid = box->srid;
+  /* box3d does not have a flags attribute */
   return;
 }
 
@@ -905,7 +873,7 @@ stbox_tmax(const STBOX *box, TimestampTz *result)
  * @pymeosfunc srid()
  */
 int32
-stbox_get_srid(const STBOX *box)
+stbox_srid(const STBOX *box)
 {
   return box->srid;
 }
@@ -938,14 +906,14 @@ stbox_expand_spatial(const STBOX *box, double d)
 {
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
-  result->xmin = box->xmin - d;
-  result->xmax = box->xmax + d;
-  result->ymin = box->ymin - d;
-  result->ymax = box->ymax + d;
+  result->xmin -= d;
+  result->ymin -= d;
+  result->xmax += d;
+  result->ymax += d;
   if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
-    result->zmin = box->zmin - d;
-    result->zmax = box->zmax + d;
+    result->zmin -= d;
+    result->zmax += d;
   }
   return result;
 }

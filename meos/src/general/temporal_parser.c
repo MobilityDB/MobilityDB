@@ -482,13 +482,13 @@ tinstant_parse(char **str, mobdbType temptype, bool end, bool make)
 }
 
 /**
- * @brief Parse a temporal instant set value from the buffer.
+ * @brief Parse a temporal discrete sequence from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Base type
  */
-TInstantSet *
-tinstantset_parse(char **str, mobdbType temptype)
+TSequence *
+tdiscseq_parse(char **str, mobdbType temptype)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -518,7 +518,7 @@ tinstantset_parse(char **str, mobdbType temptype)
     instants[i] = tinstant_parse(str, temptype, false, true);
   }
   p_cbrace(str);
-  return tinstantset_make_free(instants, count, MERGE_NO);
+  return tsequence_make_free(instants, count, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -526,13 +526,13 @@ tinstantset_parse(char **str, mobdbType temptype)
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single sequence to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
-tsequence_parse(char **str, mobdbType temptype, bool linear, bool end,
+tcontseq_parse(char **str, mobdbType temptype, int interp, bool end,
   bool make)
 {
   p_whitespace(str);
@@ -574,8 +574,8 @@ tsequence_parse(char **str, mobdbType temptype, bool linear, bool end,
   }
   p_cbracket(str);
   p_cparen(str);
-  return tsequence_make_free(instants, count, lower_inc, upper_inc,
-    linear, NORMALIZE);
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    NORMALIZE);
 }
 
 /**
@@ -583,10 +583,10 @@ tsequence_parse(char **str, mobdbType temptype, bool linear, bool end,
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_parse(char **str, mobdbType temptype, bool linear)
+tsequenceset_parse(char **str, mobdbType temptype, int interp)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -595,12 +595,12 @@ tsequenceset_parse(char **str, mobdbType temptype, bool linear)
 
   /* First parsing */
   char *bak = *str;
-  tsequence_parse(str, temptype, linear, false, false);
+  tcontseq_parse(str, temptype, interp, false, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tsequence_parse(str, temptype, linear, false, false);
+    tcontseq_parse(str, temptype, interp, false, false);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse temporal value: Missing closing brace");
@@ -613,7 +613,7 @@ tsequenceset_parse(char **str, mobdbType temptype, bool linear)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tsequence_parse(str, temptype, linear, false, true);
+    sequences[i] = tcontseq_parse(str, temptype, interp, false, true);
   }
   p_cbrace(str);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -630,18 +630,18 @@ temporal_parse(char **str, mobdbType temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  bool linear = temptype_continuous(temptype);
+  int interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   /* Starts with "Interp=Stepwise;" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
     /* Move str after the semicolon */
     *str += 16;
-    linear = false;
+    interp = STEPWISE;
   }
   if (**str != '{' && **str != '[' && **str != '(')
     result = (Temporal *) tinstant_parse(str, temptype, true, true);
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tsequence_parse(str, temptype, linear, true, true);
+    result = (Temporal *) tcontseq_parse(str, temptype, interp, true, true);
   else if (**str == '{')
   {
     char *bak = *str;
@@ -650,12 +650,12 @@ temporal_parse(char **str, mobdbType temptype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *) tsequenceset_parse(str, temptype, linear);
+      result = (Temporal *) tsequenceset_parse(str, temptype, interp);
     }
     else
     {
       *str = bak;
-      result = (Temporal *) tinstantset_parse(str, temptype);
+      result = (Temporal *) tdiscseq_parse(str, temptype);
     }
   }
   return result;

@@ -80,12 +80,14 @@ extern void EncodeSpecialDate(DateADT dt, char *str);
 extern DateADT GetSQLCurrentDate(void);
 extern TimeTzADT *GetSQLCurrentTime(int32 typmod);
 extern TimeADT GetSQLLocalTime(int32 typmod);
-extern int	time2tm(TimeADT time, struct pg_tm *tm, fsec_t *fsec);
-extern int	timetz2tm(TimeTzADT *time, struct pg_tm *tm, fsec_t *fsec, int *tzp);
-extern int	tm2time(struct pg_tm *tm, fsec_t fsec, TimeADT *result);
-extern int	tm2timetz(struct pg_tm *tm, fsec_t fsec, int tz, TimeTzADT *result);
+extern int interval2tm(Interval span, struct pg_tm *tm, fsec_t *fsec);
+extern int tm2interval(struct pg_tm *tm, fsec_t fsec, Interval *span);
+extern int time2tm(TimeADT time, struct pg_tm *tm, fsec_t *fsec);
+extern int timetz2tm(TimeTzADT *time, struct pg_tm *tm, fsec_t *fsec, int *tzp);
+extern int tm2time(struct pg_tm *tm, fsec_t fsec, TimeADT *result);
+extern int tm2timetz(struct pg_tm *tm, fsec_t fsec, int tz, TimeTzADT *result);
 extern bool time_overflows(int hour, int min, int sec, fsec_t fsec);
 extern bool float_time_overflows(int hour, int min, double sec);
 extern void AdjustTimeForTypmod(TimeADT *time, int32 typmod);
 
-#endif							/* DATE_H */
+#endif /* DATE_H */

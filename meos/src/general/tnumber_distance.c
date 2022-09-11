@@ -144,7 +144,7 @@ static bool
 tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  if (! tsegment_intersection(start1, end1, LINEAR, start2, end2, LINEAR,
+  if (! tsegment_intersection(start1, end1, true, start2, end2, true,
       NULL, NULL, t))
     return false;
   *value = (Datum) 0;

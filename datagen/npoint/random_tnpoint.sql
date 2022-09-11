@@ -124,7 +124,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random temporal network point of instant set subtype
+ * Generate a random temporal network point of discrete sequence subtype
  *
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
@@ -132,7 +132,7 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  */
-CREATE OR REPLACE FUNCTION random_tnpoint_instset(lown integer, highn integer,
+CREATE OR REPLACE FUNCTION random_tnpoint_discseq(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int,
   maxcard int)
   RETURNS tnpoint AS $$
@@ -148,12 +148,12 @@ BEGIN
     result[i] = tnpoint_inst(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpoint_instset(result);
+  RETURN tnpoint_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_instset(0, 1000, '2001-01-01', '2001-12-31', 10, 10) AS ti
+SELECT k, random_tnpoint_discseq(0, 1000, '2001-01-01', '2001-12-31', 10, 10) AS ti
 FROM generate_series(1,10) k;
 */
 

@@ -264,7 +264,7 @@ textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.restype = T_TTEXT;
-  lfinfo.reslinear = STEP;
+  lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
@@ -284,7 +284,7 @@ textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.restype = T_TTEXT;
-  lfinfo.reslinear = STEP;
+  lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;

@@ -11,7 +11,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 
-<!ENTITY last_release_version "1.0">
+<!ENTITY last_release_version "1.1">
 
 <!ENTITY introduction SYSTEM "introduction.xml">
 <!ENTITY span_time_types SYSTEM "span_time_types.xml">
@@ -70,7 +70,7 @@
 		<pubdate><?dbtimestamp format="Y-m-d"?></pubdate>
 		<abstract>
 			<para>
-				MobilityDB es una extensión del sistema de base de datos <ulink url="https://www.postgresql.org/">PostgreSQL</ulink> y su extensión espacial <ulink url="http://postgis.net/">PostGIS</ulink>. Permite almacenar en la base de datos objetos temporales y espacio-temporales, es decir, objetos cuyos valores de atributo y/o ubicación evolucionan en el tiempo. MobilityDB incluye funciones para el análisis y procesamiento de objetos temporales y espacio-temporales y proporciona soporte para índices GiST y SP-GiST. MobilityDB es de código abierto y su código está disponible en <ulink url="https://github.com/MobilityDB/MobilityDB"> Github</ulink>. También está disponible un adaptador para el lenguaje de programación Python en <ulink url="https://github.com/MobilityDB/python-mobilityDB">Github</ulink>.
+				MobilityDB es una extensión del sistema de base de datos <ulink url="https://www.postgresql.org/">PostgreSQL</ulink> y su extensión espacial <ulink url="http://postgis.net/">PostGIS</ulink>. Permite almacenar en la base de datos objetos temporales y espacio-temporales, es decir, objetos cuyos valores de atributo y/o ubicación evolucionan en el tiempo. MobilityDB incluye funciones para el análisis y procesamiento de objetos temporales y espacio-temporales y proporciona soporte para índices GiST y SP-GiST. MobilityDB es de código abierto y su código está disponible en <ulink url="https://github.com/MobilityDB/MobilityDB"> Github</ulink>. También está disponible un adaptador para el lenguaje de programación Python en <ulink url="https://github.com/MobilityDB/MobilityDB-python">Github</ulink>.
 			</para>
 
 			<para>
@@ -94,7 +94,7 @@
 			</para>
 
 			<para>
-				Este es el manual de MobilityDB v1.0. El manual de MobilityDB tiene una licencia <ulink url="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License 3</ulink>. No dude en utilizar este material como desee, pero le pedimos que atribuya crédito al proyecto MobilityDB y, siempre que sea posible, un enlace a <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink>.
+				El manual de MobilityDB tiene una licencia <ulink url="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License 3</ulink>. No dude en utilizar este material como desee, pero le pedimos que atribuya crédito al proyecto MobilityDB y, siempre que sea posible, un enlace a <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink>.
 			</para>
 
 			<para>

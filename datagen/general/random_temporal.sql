@@ -813,8 +813,8 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_tbool_instset;
-CREATE FUNCTION random_tbool_instset(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tbool_discseq;
+CREATE FUNCTION random_tbool_discseq(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
   RETURNS tbool AS $$
 DECLARE
@@ -829,12 +829,12 @@ BEGIN
   LOOP
     result[i] = tbool_inst(random_bool(), tsarr[i]);
   END LOOP;
-  RETURN tbool_instset(result);
+  RETURN tbool_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tbool_instset('2001-01-01', '2002-01-01', 10, 5, 10) AS ti
+SELECT k, random_tbool_discseq('2001-01-01', '2002-01-01', 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -849,8 +849,8 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_tint_instset;
-CREATE FUNCTION random_tint_instset(lowvalue int, highvalue int, lowtime timestamptz,
+DROP FUNCTION IF EXISTS random_tint_discseq;
+CREATE FUNCTION random_tint_discseq(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int)
   RETURNS tint AS $$
 DECLARE
@@ -867,12 +867,12 @@ BEGIN
   LOOP
     result[i] = tint_inst(intarr[i], tsarr[i]);
   END LOOP;
-  RETURN tint_instset(result);
+  RETURN tint_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tint_instset(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tint_discseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -887,8 +887,8 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_tfloat_instset;
-CREATE FUNCTION random_tfloat_instset(lowvalue float, highvalue float,
+DROP FUNCTION IF EXISTS random_tfloat_discseq;
+CREATE FUNCTION random_tfloat_discseq(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
   mincard int, maxcard int)
   RETURNS tfloat AS $$
@@ -907,12 +907,12 @@ BEGIN
   LOOP
     result[i] = tfloat_inst(floatarr[i], tsarr[i]);
   END LOOP;
-  RETURN tfloat_instset(result);
+  RETURN tfloat_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tfloat_instset(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tfloat_discseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -926,8 +926,8 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_ttext_instset;
-CREATE FUNCTION random_ttext_instset(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_ttext_discseq;
+CREATE FUNCTION random_ttext_discseq(lowtime timestamptz, hightime timestamptz,
   maxlength int, maxminutes int, mincard int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
@@ -942,12 +942,12 @@ BEGIN
   LOOP
     result[i] = ttext_inst(random_text(maxlength), tsarr[i]);
   END LOOP;
-  RETURN ttext_instset(result);
+  RETURN ttext_discseq(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_ttext_instset('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_ttext_discseq('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 

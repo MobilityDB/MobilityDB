@@ -41,7 +41,6 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-// #include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -116,11 +115,11 @@ npointarr_geom(Npoint **points, int count)
   {
     int newcount;
     LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
-    LWGEOM *lwgeom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
+    LWGEOM *lwgeom = lwpointarr_make_trajectory(newgeoms, newcount, STEPWISE);
     result = geo_serialize(lwgeom);
     pfree(newgeoms);
   }
-  pfree_array((void **) geoms, count);
+  pfree_array((void **) geoms, count);  
   return result;
 }
 

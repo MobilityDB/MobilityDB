@@ -91,6 +91,12 @@ add_subdirectory("src")
 # Build MEOS library
 #--------------------------------
 
+# Customize the meos.h file for external include with MEOS library
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.in.h" MEOS_H_IN)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/pg_ext_defs.in.h" PG_EXT_DEFS_H)
+string(REGEX REPLACE @POSTGRES_DEFS@ "${PG_EXT_DEFS_H}" MEOS_EXP_H "${MEOS_H_IN}")
+file(WRITE "${CMAKE_SOURCE_DIR}/meos/include/meos_export.h" "${MEOS_EXP_H}")
+
 # MEOS
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
@@ -129,8 +135,9 @@ target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 #--------------------------------
 
 install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos.h"
-  DESTINATION "/usr/local/include")
+  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_export.h"
+  DESTINATION "/usr/local/include"
+  RENAME "meos.h")
 install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
 message(STATUS "Building MEOS:")
 message(STATUS "  Library file: '/usr/local/lib'")

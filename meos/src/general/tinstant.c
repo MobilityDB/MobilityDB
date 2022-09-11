@@ -319,7 +319,6 @@ tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = temptype_continuous(temptype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))
@@ -482,7 +481,7 @@ tinstant_sequences(const TInstant *inst, int *count)
 {
   TSequence **result = palloc(sizeof(TSequence *));
   result[0] = tinstant_to_tsequence(inst,
-    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE);
   *count = 1;
   return result;
 }
@@ -549,7 +548,7 @@ tintinst_to_tfloatinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TFLOAT;
-  MOBDB_FLAGS_SET_LINEAR(result->flags, true);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
   result->value = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
   return result;
 }
@@ -564,7 +563,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TINT;
-  MOBDB_FLAGS_SET_LINEAR(result->flags, true);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
   result->value = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
   return result;
 }
@@ -572,20 +571,6 @@ tfloatinst_to_tintinst(const TInstant *inst)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_transf
- * @brief Return a temporal instant set transformed into a temporal instant.
- * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
- */
-TInstant *
-tinstantset_to_tinstant(const TInstantSet *ti)
-{
-  if (ti->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal instant");
-
-  return tinstant_copy(tinstantset_inst_n(ti, 0));
-}
 
 /**
  * @ingroup libmeos_int_temporal_transf
@@ -732,7 +717,7 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
  *
  * @pre There are no duplicates values in the array
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
@@ -767,10 +752,10 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  *
  * @param[in] inst Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
@@ -789,7 +774,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
  *
  * @param[in] inst Temporal number
  * @param[in] span Span of base values
- * @param[in] atfunc True when the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @sqlfunc atSpan(), minusSpan()
  */
@@ -807,7 +792,7 @@ tnumberinst_restrict_span(const TInstant *inst, const Span *span,
  * (the complement of) an array of spans of base values
  * @pre The spans are normalized
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
@@ -861,7 +846,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * (the complement of) a timestamp set.
  *
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts,
@@ -906,7 +891,7 @@ tinstant_restrict_period(const TInstant *inst, const Period *period,
  * Return true if a temporal instant satisfies the restriction to
  * (the complement of) a timestamp set.
  * @note This function is called for each composing instant in a temporal
- * instant set.
+ * discrete sequence.
  */
 bool
 tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
@@ -961,14 +946,15 @@ tinstant_merge_array(const TInstant **instants, int count)
   assert(count > 1);
   tinstarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments */
-  ensure_valid_tinstarr(instants, count, MERGE, TINSTANT);
+  ensure_valid_tinstarr(instants, count, MERGE, DISCRETE);
 
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);
   int newcount = tinstarr_remove_duplicates(newinstants, count);
   Temporal *result = (newcount == 1) ?
     (Temporal *) tinstant_copy(newinstants[0]) :
-    (Temporal *) tinstantset_make1(newinstants, newcount);
+    (Temporal *) tsequence_make1(newinstants, newcount, true, true, DISCRETE,
+      NORMALIZE_NO);
   pfree(newinstants);
   return result;
 }

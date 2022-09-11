@@ -60,12 +60,12 @@
 /**
  * @brief Return the size in bytes to read from toast to get the basic
  * information from a temporal: Temporal struct (i.e., TInstant,
- * TInstantSet, TSequence, or TSequenceSet) and bounding box size
+ * TSequence, TSequence, or TSequenceSet) and bounding box size
 */
 uint32_t
 temporal_max_header_size(void)
 {
-  size_t sz1 = Max(sizeof(TInstant), sizeof(TInstantSet));
+  size_t sz1 = Max(sizeof(TInstant), sizeof(TSequence));
   size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
   return double_pad(Max(sz1, sz2)) + double_pad(sizeof(bboxunion));
 }

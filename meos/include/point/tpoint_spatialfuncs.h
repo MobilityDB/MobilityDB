@@ -146,14 +146,14 @@ extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
 extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
   int *newcount);
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
-  bool linear);
+  int interp);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
 
 /* Functions for spatial reference systems */
 
 extern TInstant *tpointinst_transform(const TInstant *inst, int srid);
-extern TInstantSet *tpointinstset_transform(const TInstantSet *is, int srid);
-extern TSequence *tpointseq_transform(const TSequence *seq, int srid);
+extern TSequence *tpointdiscseq_transform(const TSequence *is, int srid);
+extern TSequence *tpointcontseq_transform(const TSequence *seq, int srid);
 extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int srid);
 extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 

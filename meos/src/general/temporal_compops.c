@@ -58,7 +58,7 @@ tcomp_temporal_base(const Temporal *temp, Datum value, mobdbType basetype,
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = STEP;
+  lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.tpfunc_base = NULL;
@@ -86,7 +86,7 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = STEP;
+  lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);

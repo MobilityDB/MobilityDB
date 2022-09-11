@@ -727,7 +727,7 @@ minus_span_span(const Span *s1, const Span *s2)
    * s1         |----|
    * s2  |----|
    * s2                 |----|
-   * result      |----|
+   * result     |----|
    */
   if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
     return span_copy(s1);
@@ -745,12 +745,9 @@ minus_span_span(const Span *s1, const Span *s2)
    * s2      |----|
    * result       |---|
    */
-  else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
+  else /* cmp_l1l2 >= 0 && cmp_u1u2 >= 0 */
     return span_make(s2->upper, s1->upper, !(s2->upper_inc), s1->upper_inc,
       s1->basetype);
-
-  elog(ERROR, "unexpected case in span_minus");
-  return NULL;
 }
 
 /******************************************************************************
@@ -776,11 +773,9 @@ distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer)
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
   /* Distance in seconds if the base type is TimestampTz */
-  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+  else /* typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ */
     return (double) labs((DatumGetTimestampTz(l) - DatumGetTimestampTz(r))) /
       USECS_PER_SEC;
-  elog(ERROR, "unknown distance_elem_elem function for span base type: %d",
-    typel);
 }
 
 /**

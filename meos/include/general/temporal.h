@@ -113,9 +113,6 @@ extern char *text_to_cstring(const text *t);
 #define NORMALIZE       true
 #define NORMALIZE_NO    false
 
-#define LINEAR          true
-#define STEP            false
-
 /** Symbolic constants for the normalizing spans */
 #define SORT            true
 #define SORT_NO         false
@@ -153,50 +150,57 @@ typedef enum
  */
 #define ANYTEMPSUBTYPE  0
 #define TINSTANT        1
-#define TINSTANTSET     2
-#define TSEQUENCE       3
-#define TSEQUENCESET    4
+#define TSEQUENCE       2
+#define TSEQUENCESET    3
+
+/*****************************************************************************
+ * Interpolation functions
+ *****************************************************************************/
+
+/**
+ * Enumeration for the interpolation functions for temporal types
+ */
+#define INTERP_NONE     0
+#define DISCRETE        1
+#define STEPWISE        2
+#define LINEAR          3
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
- * bits are GTZXLCB, where
+ * bits are GTZXIICB, where
  *   G: coordinates are geodetic
  *   T: has T coordinate,
  *   Z: has Z coordinate
  *   X: has value or X coordinate
- *   L: linear interpolation
+ *   II: interpolation
  *   C: continuous base type
  *   B: base type passed by value
- * Notice that formally speaking the Linear interpolation flag is only needed
- * for sequence and sequence set subtypes. To facilate the transformation from
- * one subtype to another, the linear flag for instant and instant set is set
- * to the value of the continuous subtype flag.
+ * Notice that formally speaking the interpolation flags are only needed
+ * for sequence and sequence set subtypes.
  *****************************************************************************/
 
-#define MOBDB_FLAG_BYVAL      0x0001
-#define MOBDB_FLAG_CONTINUOUS 0x0002
-#define MOBDB_FLAG_LINEAR     0x0004
-#define MOBDB_FLAG_X          0x0008
-#define MOBDB_FLAG_Z          0x0010
-#define MOBDB_FLAG_T          0x0020
-#define MOBDB_FLAG_GEODETIC   0x0040
+/* The following two flags are only used for TInstant */
+#define MOBDB_FLAG_BYVAL      0x0001  // 1
+#define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
+/* The following two interpolation flags are only used for TSequence and TSequenceSet */
+#define MOBDB_FLAGS_INTERP    0x000C  // 4 or 8
+/* The following two flags are used for bounding boxes and temporal types */
+#define MOBDB_FLAG_X          0x0010  // 16
+#define MOBDB_FLAG_Z          0x0020  // 32
+#define MOBDB_FLAG_T          0x0040  // 64
+#define MOBDB_FLAG_GEODETIC   0x0080  // 128
 
-/* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_FLAG_LINEAR)>>2))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>3))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>4))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>5))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>6))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>7))
 
-/* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
-#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_LINEAR) : ((flags) & ~MOBDB_FLAG_LINEAR))
 #define MOBDB_FLAGS_SET_X(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
@@ -205,6 +209,13 @@ typedef enum
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
+
+#define MOBDB_FLAGS_GET_INTERP(flags) (((flags) & MOBDB_FLAGS_INTERP) >> 2)
+#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
+
+#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE))
+#define MOBDB_FLAGS_GET_STEPWISE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEPWISE))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR))
 
 /*****************************************************************************
  * Well-Known Binary (WKB)
@@ -219,50 +230,47 @@ typedef enum
 #define MOBDB_WKB_BYTE_SIZE        1
 
 /* MobilityDB Types */
-#define MOBDB_WKB_T_BOOL           1   /**< boolean type */
-#define MOBDB_WKB_T_DOUBLE2        2   /**< double2 type */
-#define MOBDB_WKB_T_DOUBLE3        3   /**< double3 type */
-#define MOBDB_WKB_T_DOUBLE4        4   /**< double4 type */
-#define MOBDB_WKB_T_FLOAT8         5   /**< float8 type */
-#define MOBDB_WKB_T_FLOATSPAN      6   /**< float8 span type */
-#define MOBDB_WKB_T_INT4           7   /**< int4 type */
-#define MOBDB_WKB_T_INTSPAN        8   /**< int4 span type */
-#define MOBDB_WKB_T_INT8           9   /**< int8 type */
-#define MOBDB_WKB_T_PERIOD         10  /**< period type */
-#define MOBDB_WKB_T_PERIODSET      11  /**< period set type */
-#define MOBDB_WKB_T_STBOX          12  /**< spatiotemporal box type */
-#define MOBDB_WKB_T_TBOOL          13  /**< temporal boolean type */
-#define MOBDB_WKB_T_TBOX           14  /**< temporal box type */
-#define MOBDB_WKB_T_TDOUBLE2       15  /**< temporal double2 type */
-#define MOBDB_WKB_T_TDOUBLE3       16  /**< temporal double3 type */
-#define MOBDB_WKB_T_TDOUBLE4       17  /**< temporal double4 type */
-#define MOBDB_WKB_T_TEXT           18  /**< text type */
-#define MOBDB_WKB_T_TFLOAT         19  /**< temporal float type */
-#define MOBDB_WKB_T_TIMESTAMPSET   20  /**< timestamp set type */
-#define MOBDB_WKB_T_TIMESTAMPTZ    21  /**< timestamp with time zone type */
-#define MOBDB_WKB_T_TINT           22  /**< temporal integer type */
-#define MOBDB_WKB_T_TTEXT          23  /**< temporal text type */
-#define MOBDB_WKB_T_GEOMETRY       24  /**< geometry type */
-#define MOBDB_WKB_T_GEOGRAPHY      25  /**< geography type */
-#define MOBDB_WKB_T_TGEOMPOINT     26  /**< temporal geometry point type */
-#define MOBDB_WKB_T_TGEOGPOINT     27  /**< temporal geography point type */
-#define MOBDB_WKB_T_NPOINT         28  /**< network point type */
-#define MOBDB_WKB_T_NSEGMENT       29  /**< network segment type */
-#define MOBDB_WKB_T_TNPOINT        30  /**< temporal network point type */
+enum MOBDB_WKB_TYPE
+{
+  MOBDB_WKB_T_BOOL =           1,   /**< boolean type */
+  MOBDB_WKB_T_DOUBLE2 =        2,   /**< double2 type */
+  MOBDB_WKB_T_DOUBLE3 =        3,   /**< double3 type */
+  MOBDB_WKB_T_DOUBLE4 =        4,   /**< double4 type */
+  MOBDB_WKB_T_FLOAT8 =         5,   /**< float8 type */
+  MOBDB_WKB_T_FLOATSPAN =      6,   /**< float8 span type */
+  MOBDB_WKB_T_INT4 =           7,   /**< int4 type */
+  MOBDB_WKB_T_INTSPAN =        8,   /**< int4 span type */
+  MOBDB_WKB_T_INT8 =           9,   /**< int8 type */
+  MOBDB_WKB_T_PERIOD =         10,  /**< period type */
+  MOBDB_WKB_T_PERIODSET =      11,  /**< period set type */
+  MOBDB_WKB_T_STBOX =          12,  /**< spatiotemporal box type */
+  MOBDB_WKB_T_TBOOL =          13,  /**< temporal boolean type */
+  MOBDB_WKB_T_TBOX =           14,  /**< temporal box type */
+  MOBDB_WKB_T_TDOUBLE2 =       15,  /**< temporal double2 type */
+  MOBDB_WKB_T_TDOUBLE3 =       16,  /**< temporal double3 type */
+  MOBDB_WKB_T_TDOUBLE4 =       17,  /**< temporal double4 type */
+  MOBDB_WKB_T_TEXT =           18,  /**< text type */
+  MOBDB_WKB_T_TFLOAT =         19,  /**< temporal float type */
+  MOBDB_WKB_T_TIMESTAMPSET =   20,  /**< timestamp set type */
+  MOBDB_WKB_T_TIMESTAMPTZ =    21,  /**< timestamp with time zone type */
+  MOBDB_WKB_T_TINT =           22,  /**< temporal integer type */
+  MOBDB_WKB_T_TTEXT =          23,  /**< temporal text type */
+  MOBDB_WKB_T_GEOMETRY =       24,  /**< geometry type */
+  MOBDB_WKB_T_GEOGRAPHY =      25,  /**< geography type */
+  MOBDB_WKB_T_TGEOMPOINT =     26,  /**< temporal geometry point type */
+  MOBDB_WKB_T_TGEOGPOINT =     27,  /**< temporal geography point type */
+  MOBDB_WKB_T_NPOINT =         28,  /**< network point type */
+  MOBDB_WKB_T_NSEGMENT =       29,  /**< network segment type */
+  MOBDB_WKB_T_TNPOINT =        30,  /**< temporal network point type */
+};
 
 /* Temporal subtype */
 enum MOBDB_WKB_TSUBTYPE
 {
-  MOBDB_WKB_TINSTANT = 1,
-  MOBDB_WKB_TINSTANTSET = 2,
-  MOBDB_WKB_TSEQUENCE = 3,
-  MOBDB_WKB_TSEQUENCESET = 4,
+  MOBDB_WKB_TINSTANT =         1,  /**< temporal instant subtype */
+  MOBDB_WKB_TSEQUENCE =        2,  /**< temporal sequence subtype */
+  MOBDB_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
 };
-
-// #define MOBDB_WKB_TINSTANT          1
-// #define MOBDB_WKB_TINSTANTSET       2
-// #define MOBDB_WKB_TSEQUENCE         3
-// #define MOBDB_WKB_TSEQUENCESET      4
 
 /* Period bounds */
 #define MOBDB_WKB_LOWER_INC        0x01
@@ -276,14 +284,19 @@ enum MOBDB_WKB_TSUBTYPE
  * The first byte of the variation flag depends on the type we are sending
  * - Box types: xxTX where X and T state whether the corresponding dimensions
  *   are present and x are unused
- * - Temporal types: xSSS where SSS correspond to the subtype and x is unused
+ * - Temporal types: xxSS where SS correspond to the subtype and x is unused
  */
-#define MOBDB_WKB_XFLAG            0x01
-#define MOBDB_WKB_TFLAG            0x02
-#define MOBDB_WKB_ZFLAG            0x10
-#define MOBDB_WKB_GEODETICFLAG     0x20
-#define MOBDB_WKB_SRIDFLAG         0x40
-#define MOBDB_WKB_LINEAR_INTERP    0x80
+#define MOBDB_WKB_XFLAG            0x01  // 1
+#define MOBDB_WKB_TFLAG            0x02  // 2
+#define MOBDB_WKB_INTERPFLAGS      0x0C  // 4 + 8
+#define MOBDB_WKB_ZFLAG            0x10  // 16
+#define MOBDB_WKB_GEODETICFLAG     0x20  // 32
+#define MOBDB_WKB_SRIDFLAG         0x40  // 64
+
+#define MOBDB_WKB_GET_INTERP(flags) (((flags) & MOBDB_WKB_INTERPFLAGS) >> 2)
+#define MOBDB_WKB_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_WKB_INTERPFLAGS) | ((value & 0x0003) << 2)))
+
+// #define MOBDB_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_WKB_LINEARFLAG)>>3))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling
@@ -423,7 +436,7 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
-extern void ensure_seq_subtypes(int16 subtype);
+extern void ensure_continuous(const Temporal *temp);
 extern void ensure_tinstarr(const TInstant **instants, int count);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
@@ -434,9 +447,9 @@ extern void ensure_same_interpolation(const Temporal *temp1,
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, int16 subtype);
+  bool merge, int interp);
 extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
-  bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
+  bool merge, int interp, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, mobdbType basetype);
@@ -449,7 +462,6 @@ extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
-extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 
 /* Version functions */
 

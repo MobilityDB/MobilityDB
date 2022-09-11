@@ -125,8 +125,8 @@ datum_sum_float8(Datum l, Datum r)
 Datum
 datum_sum_double2(Datum l, Datum r)
 {
-  return PointerGetDatum(double2_add((double2 *)DatumGetPointer(l),
-    (double2 *)DatumGetPointer(r)));
+  return PointerGetDatum(double2_add((double2 *) DatumGetPointer(l),
+    (double2 *) DatumGetPointer(r)));
 }
 
 /**
@@ -135,8 +135,8 @@ datum_sum_double2(Datum l, Datum r)
 Datum
 datum_sum_double3(Datum l, Datum r)
 {
-  return PointerGetDatum(double3_add((double3 *)DatumGetPointer(l),
-    (double3 *)DatumGetPointer(r)));
+  return PointerGetDatum(double3_add((double3 *) DatumGetPointer(l),
+    (double3 *) DatumGetPointer(r)));
 }
 
 /**
@@ -145,8 +145,8 @@ datum_sum_double3(Datum l, Datum r)
 Datum
 datum_sum_double4(Datum l, Datum r)
 {
-  return PointerGetDatum(double4_add((double4 *)DatumGetPointer(l),
-    (double4 *)DatumGetPointer(r)));
+  return PointerGetDatum(double4_add((double4 *) DatumGetPointer(l),
+    (double4 *) DatumGetPointer(r)));
 }
 
 /*****************************************************************************
@@ -157,7 +157,7 @@ datum_sum_double4(Datum l, Datum r)
  * Generic aggregate function for temporal instants
  *
  * @param[in] instants1 Accumulated state
- * @param[in] instants2 instants of the input temporal instant set value
+ * @param[in] instants2 Instants of the input temporal discrete sequence
  * @note Return new sequences that must be freed by the calling function.
  */
 TInstant **
@@ -204,7 +204,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  *
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
  * @note Return new sequences that must be freed by the calling function
@@ -276,13 +276,13 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
       lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq1, &period);
+    sequences[k++] = tcontseq_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
       lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq2, &period);
+    sequences[k++] = tcontseq_at_period(seq2, &period);
   }
 
   /*
@@ -300,7 +300,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
       inst1->t);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
-    lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
+    lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
   /* Compute the aggregation on the period after the intersection
@@ -311,13 +311,13 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
       ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq1, &period);
+    sequences[k++] = tcontseq_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
       ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tsequence_at_period(seq2, &period);
+    sequences[k++] = tcontseq_at_period(seq2, &period);
   }
 
   /* Normalization */
@@ -343,7 +343,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
  * @param[in] sequences2 Sequences of a temporal sequence set value
  * @param[in] count2 Number of elements in the temporal sequence set value
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @param[out] newcount Number of elements in the result
  * @note Return new sequences that must be freed by the calling function.
  */
@@ -471,27 +471,26 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic transition function for aggregating temporal values
- * of instant set subtype
+ * Generic transition function for aggregating temporal discrete sequence values
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[inout] state Skiplist containing the state
- * @param[in] is Temporal value
+ * @param[in] seq Temporal value
  * @param[in] func Function
  */
 static SkipList *
-tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TInstantSet *is, datum_func2 func)
+tdiscseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
+  const TSequence *seq, datum_func2 func)
 {
   int count;
-  const TInstant **instants = tinstantset_instants(is, &count);
+  const TInstant **instants = tsequence_instants(seq, &count);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) instants, is->count, TEMPORAL);
+    result = skiplist_make(fcinfo, (void **) instants, seq->count, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) instants[0]);
-    skiplist_splice(fcinfo, state, (void **) instants, is->count, func, false);
+    skiplist_splice(fcinfo, state, (void **) instants, seq->count, func, false);
     result = state;
   }
   pfree(instants);
@@ -506,7 +505,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[inout] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
 tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
@@ -532,7 +531,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[inout] state Skiplist containing the state
  * @param[in] ss Temporal value
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 static SkipList *
 tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
@@ -562,7 +561,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
 temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
@@ -575,12 +574,10 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   SkipList *result;
   if (temp->subtype == TINSTANT)
     result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp, func);
-  else if (temp->subtype == TINSTANTSET)
-    result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *) temp,
-      func);
   else if (temp->subtype == TSEQUENCE)
-    result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *) temp,
-      func, crossings);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tdiscseq_tagg_transfn(fcinfo, state, (TSequence *) temp, func) :
+      tsequence_tagg_transfn(fcinfo, state, (TSequence *) temp, func, crossings);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *) temp,
       func, crossings);
@@ -594,7 +591,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] state1, state2 State values
  * @param[in] func Aggregate function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @note This function is called for aggregating temporal points and thus
  * after checking the dimensionality and the SRID of the values
  */
@@ -621,7 +618,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
 temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
@@ -650,8 +647,8 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
   Temporal *result;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tinstantset_make((const TInstant **) values,
-      state->length, MERGE_NO);
+    result = (Temporal *) tsequence_make((const TInstant **) values,
+      state->length, true, true, DISCRETE, NORMALIZE_NO);
   else /* values[0]->subtype == TSEQUENCE */
     result = (Temporal *) tsequenceset_make((const TSequence **) values,
       state->length, NORMALIZE);
@@ -667,16 +664,16 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Transform a temporal instant set value for aggregation
+ * Transform a temporal discrete sequence value for aggregation
  */
 TInstant **
-tinstantset_transform_tagg(const TInstantSet *is,
+tdiscseq_transform_tagg(const TSequence *seq,
   TInstant *(*func)(const TInstant *))
 {
-  TInstant **result = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  TInstant **result = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = func(inst);
   }
   return result;
@@ -686,7 +683,7 @@ tinstantset_transform_tagg(const TInstantSet *is,
  * Transform a temporal sequence value for aggregation
  */
 TSequence *
-tsequence_transform_tagg(const TSequence *seq,
+tcontseq_transform_tagg(const TSequence *seq,
   TInstant *(*func)(const TInstant *))
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -695,9 +692,8 @@ tsequence_transform_tagg(const TSequence *seq,
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = func(inst);
   }
-  return tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -711,7 +707,7 @@ tsequenceset_transform_tagg(const TSequenceSet *ss,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    result[i] = tsequence_transform_tagg(seq, func);
+    result[i] = tcontseq_transform_tagg(seq, func);
   }
   return result;
 }
@@ -730,23 +726,26 @@ temporal_transform_tagg(const Temporal *temp, int *count,
     result[0] = (Temporal *)func((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    result = (Temporal **) tinstantset_transform_tagg((
-      TInstantSet *) temp, func);
-    *count = ((TInstantSet *) temp)->count;
-  }
   else if (temp->subtype == TSEQUENCE)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tsequence_transform_tagg(
-      (TSequence *) temp, func);
-    *count = 1;
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    {
+      result = (Temporal **) tdiscseq_transform_tagg((TSequence *) temp,
+        func);
+      *count = ((TSequence *) temp)->count;
+    }
+    else
+    {
+      result = palloc(sizeof(Temporal *));
+      result[0] = (Temporal *) tcontseq_transform_tagg((TSequence *) temp,
+        func);
+      *count = 1;
+    }
   }
   else /* temp->subtype == TSEQUENCESET */
   {
-    result = (Temporal **) tsequenceset_transform_tagg(
-      (TSequenceSet *) temp, func);
+    result = (Temporal **) tsequenceset_transform_tagg((TSequenceSet *) temp,
+      func);
     *count = ((TSequenceSet *) temp)->count;
   }
   assert(result != NULL);
@@ -761,7 +760,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @param[in] transform Transform function
  */
 Datum
@@ -803,17 +802,17 @@ tinstant_transform_tcount(const TInstant *inst)
 }
 
 /**
- * Transform a temporal instant set value into a temporal integer value for
- * performing temporal count aggregation
+ * Transform a temporal discrete sequence value into a temporal integer value
+ * for performing temporal count aggregation
  */
 static TInstant **
-tinstantset_transform_tcount(const TInstantSet *is)
+tdiscseq_transform_tcount(const TSequence *seq)
 {
-  TInstant **result = palloc(sizeof(TInstant *) * is->count);
+  TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   Datum datum_one = Int32GetDatum(1);
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = tinstant_make(datum_one, T_TINT, inst->t);
   }
   return result;
@@ -824,14 +823,14 @@ tinstantset_transform_tcount(const TInstantSet *is)
  * performing temporal count aggregation
  */
 static TSequence *
-tsequence_transform_tcount(const TSequence *seq)
+tcontseq_transform_tcount(const TSequence *seq)
 {
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(datum_one, T_TINT, seq->period.lower);
-    result = tinstant_to_tsequence(inst, STEP);
+    result = tinstant_to_tsequence(inst, STEPWISE);
     pfree(inst);
     return result;
   }
@@ -840,7 +839,7 @@ tsequence_transform_tcount(const TSequence *seq)
   instants[0] = tinstant_make(datum_one, T_TINT, seq->period.lower);
   instants[1] = tinstant_make(datum_one, T_TINT, seq->period.upper);
   result = tsequence_make((const TInstant **) instants, 2,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
+    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }
@@ -856,7 +855,7 @@ tsequenceset_transform_tcount(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    result[i] = tsequence_transform_tcount(seq);
+    result[i] = tcontseq_transform_tcount(seq);
   }
   return result;
 }
@@ -875,16 +874,19 @@ temporal_transform_tcount(const Temporal *temp, int *count)
     result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    result = (Temporal **) tinstantset_transform_tcount((TInstantSet *) temp);
-    *count = ((TInstantSet *) temp)->count;
-  }
   else if (temp->subtype == TSEQUENCE)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tsequence_transform_tcount((TSequence *) temp);
-    *count = 1;
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    {
+      result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp);
+      *count = ((TSequence *) temp)->count;
+    }
+    else
+    {
+      result = palloc(sizeof(Temporal *));
+      result[0] = (Temporal *) tcontseq_transform_tcount((TSequence *) temp);
+      *count = 1;
+    }
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -1264,18 +1266,18 @@ Tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 /**
  * Final function for temporal average aggregation of temporal instat values
  */
-static TInstantSet *
+static TSequence *
 tinstant_tavg_finalfn(TInstant **instants, int count)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
   {
     TInstant *inst = instants[i];
-    double2 *value = (double2 *)DatumGetPointer(&inst->value);
+    double2 *value = (double2 * )DatumGetPointer(&inst->value);
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
-  return tinstantset_make_free(newinstants, count, MERGE_NO);
+  return tsequence_make_free(newinstants, count, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -1292,13 +1294,13 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      double2 *value2 = (double2 *)DatumGetPointer(&inst->value);
+      double2 *value2 = (double2 *) DatumGetPointer(&inst->value);
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+      MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }

@@ -284,50 +284,20 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
 }
 
 /**
- * Set a bounding box from an array of temporal instants
- *
- * @param[in] box Box
- * @param[in] instants Temporal instants
- * @param[in] count Number of elements in the array
- */
-void
-tinstantset_compute_bbox(const TInstant **instants, int count, void *box)
-{
-  /* Only external types have bounding box */
-  ensure_temporal_type(instants[0]->temptype);
-  if (talpha_type(instants[0]->temptype))
-    span_set(TimestampTzGetDatum(instants[0]->t),
-      TimestampTzGetDatum(instants[count - 1]->t), true, true, T_TIMESTAMPTZ,
-      (Span *) box);
-  else if (tnumber_type(instants[0]->temptype))
-    tnumberinstarr_set_tbox(instants, count, (TBOX *) box);
-  else if (tgeo_type(instants[0]->temptype))
-    tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
-#if NPOINT
-  else if (instants[0]->temptype == T_TNPOINT)
-    tnpointinstarr_set_stbox(instants, count, (STBOX *) box);
-#endif
-  else
-    elog(ERROR, "unknown bounding box function for temporal type: %d",
-      instants[0]->temptype);
-  return;
-}
-
-/**
  * Set a bounding box from an array of temporal instant values
  *
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc Period bounds
- * @param[in] linear True when the interpolation is linear
+ * @param[in] interp Interpolation
  * @param[out] box Bounding box
  */
 void
 tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 #if NPOINT
-  bool upper_inc, bool linear, void *box)
+  bool upper_inc, int interp, void *box)
 #else
-  bool upper_inc, bool linear __attribute__((unused)), void *box)
+  bool upper_inc, int interp __attribute__((unused)), void *box)
 #endif
 {
   /* Only external types have bounding box */
@@ -341,10 +311,10 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else if (instants[0]->temptype == T_TGEOMPOINT)
     tgeompointinstarr_set_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->temptype == T_TGEOGPOINT)
-    tgeogpointinstarr_set_stbox(instants, count, (STBOX *) box);
+    tgeogpointinstarr_set_stbox(instants, count, interp, (STBOX *) box);
 #if NPOINT
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointseq_set_stbox(instants, count, linear, (STBOX *) box);
+    tnpointseq_set_stbox(instants, count, interp, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -424,7 +394,7 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] func Bounding box function
- * @param[in] invert True when the timestamp is the first argument of the
+ * @param[in] invert True if the timestamp is the first argument of the
  * function
  */
 Datum
@@ -445,7 +415,7 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
  * @param[in] temp Temporal value
  * @param[in] ts Timestamp set
  * @param[in] func Bounding box function
- * @param[in] invert True when the timestamp set is the first argument of the
+ * @param[in] invert True if the timestamp set is the first argument of the
  * function
  */
 Datum
@@ -464,7 +434,7 @@ boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
  * @param[in] temp Temporal value
  * @param[in] p Period
  * @param[in] func Bounding box function
- * @param[in] invert True when the period is the first argument of the
+ * @param[in] invert True if the period is the first argument of the
  * function
  */
 Datum
@@ -483,7 +453,7 @@ boxop_temporal_period(const Temporal *temp, const Period *p,
  * @param[in] temp Temporal value
  * @param[in] ps Period set
  * @param[in] func Bounding box function
- * @param[in] invert True when the period set is the first argument of the
+ * @param[in] invert True if the period set is the first argument of the
  * function
  */
 bool
@@ -524,7 +494,7 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @param[in] number Type
  * @param[in] basetype Base type value
  * @param[in] func Bounding box function
- * @param[in] invert True when the base value is the first argument of the
+ * @param[in] invert True if the base value is the first argument of the
  * function
  */
 bool
@@ -544,7 +514,7 @@ boxop_tnumber_number(const Temporal *temp, Datum number, mobdbType basetype,
  * @param[in] temp Temporal number
  * @param[in] span Span
  * @param[in] func Bounding box function
- * @param[in] invert True when the span is the first argument of the function.
+ * @param[in] invert True if the span is the first argument of the function.
  */
 bool
 boxop_tnumber_span(const Temporal *temp, const Span *span,
@@ -562,7 +532,7 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
  *
  * @param[in] temp Temporal number
  * @param[in] box Bounding box
- * @param[in] invert True when the bounding box is the first argument of the
+ * @param[in] invert True if the bounding box is the first argument of the
  * function
  * @param[in] func Bounding box function
  */

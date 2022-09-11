@@ -427,8 +427,8 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
       }
     }
   }
-  TSequence *result = tsequence_make((const TInstant **) instants, l, true, true,
-    LINEAR, NORMALIZE);
+  TSequence *result = tsequence_make((const TInstant **) instants, l,
+    true, true, LINEAR, NORMALIZE);
 
   /* Display the statistics of the trip */
   if (verbosity >= 2)

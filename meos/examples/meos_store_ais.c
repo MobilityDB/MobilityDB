@@ -58,7 +58,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/include/postgresql -o meos_store_ais meos_store_ais.c -L/usr/local/lib -lmeos -lpq
+ * gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o meos_store_ais meos_store_ais.c -L/usr/local/lib -lmeos -lpq
  * @endcode
  */
 
@@ -173,7 +173,7 @@ main(int argc, char **argv)
   printf("Start processing the file\n");
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", buffer);
+  fscanf(file, "%1023s\n", buffer);
 
   /* Continue reading the file */
   int len;

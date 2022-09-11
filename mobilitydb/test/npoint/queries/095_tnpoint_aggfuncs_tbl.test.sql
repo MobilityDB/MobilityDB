@@ -51,12 +51,12 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER
 SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 
-SELECT numInstants(tcount(ti)) FROM tbl_tnpoint_instset;
-SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpoint_instset;
-SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset;
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+SELECT numInstants(tcount(ti)) FROM tbl_tnpoint_discseq;
+SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpoint_discseq;
+SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_discseq;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_discseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_discseq GROUP BY k%10 ORDER BY k%10;
 
 SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
 SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;

@@ -281,9 +281,9 @@ coord_print(int *coords, int numdims)
  * @brief Set in the bit matrix the bits of the tiles connecting with a line the
  * two input tiles
  *
- * @param[out] bm Bit matrix
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] numdims Number of dimensions of the grid
+ * @param[out] bm Bit matrix
  */
 static void
 bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
@@ -392,13 +392,13 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 /**
  * @brief Generate a tile from the current state of the multidimensional grid
  *
- * @param[out] result Box representing the tile
  * @param[in] x,y,z,t Lower coordinates of the tile to output
  * @param[in] size Tile size for the spatial dimensions in the units of the SRID
  * @param[in] tunits Tile size for the temporal dimension in PostgreSQL time units
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] srid SRID of the spatial coordinates
+ * @param[out] result Box representing the tile
  */
 static void
 stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
@@ -781,9 +781,9 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
 /**
  * @brief Transform the minimum values of a tile into matrix coordinates
  *
- * @param[out] coords Matrix coordinates
  * @param[in] x,y,z,t Minimum values of the tile
  * @param[in] state Grid information
+ * @param[out] coords Matrix coordinates
  */
 static void
 tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
@@ -804,11 +804,11 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
 /**
  * @brief Get the coordinates of the tile corresponding the temporal instant point
  *
- * @param[out] coords Tile coordinates
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
+ * @param[out] coords Tile coordinates
  */
 static void
 tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
@@ -833,15 +833,15 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
- * @param[out] bm Bit matrix
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
+ * @param[out] bm Bit matrix
  */
 static void
-tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz, bool hast,
-  const STboxGridState *state)
+tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
+  const STboxGridState *state, BitMatrix *bm)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
@@ -855,22 +855,22 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz, bool hast,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
- * @param[out] bm Bit matrix
- * @param[in] is Temporal point
+ * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
+ * @param[out] bm Bit matrix
  */
 static void
-tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *is, bool hasz,
-  bool hast, const STboxGridState *state)
+tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
+  const STboxGridState *state, BitMatrix *bm)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
   memset(coords, 0, sizeof(coords));
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
     bitmatrix_set_cell(bm, coords, true);
   }
@@ -880,15 +880,15 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *is, bool hasz,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
- * @param[out] bm Bit matrix
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
+ * @param[out] bm Bit matrix
  */
 static void
-tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz, bool hast,
-  const STboxGridState *state)
+tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
+  const STboxGridState *state, BitMatrix *bm)
 {
   int numdims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
   int coords1[MAXDIMS], coords2[MAXDIMS];
@@ -908,20 +908,20 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz, bool hast,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
- * @param[out] bm Bit matrix
  * @param[in] ss Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
+ * @param[out] bm Bit matrix
  */
 static void
-tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ss, bool hasz,
-  bool hast, const STboxGridState *state)
+tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
+  const STboxGridState *state, BitMatrix *bm)
 {
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    tpointseq_set_tiles(bm, seq, hasz, hast, state);
+    tcontseq_set_tiles(seq, hasz, hast, state, bm);
   }
   return;
 }
@@ -929,25 +929,28 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ss, bool hasz,
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
  *
- * @param[out] bm Bit matrix
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
+ * @param[out] bm Bit matrix
  */
 static void
-tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
-  const STboxGridState *state)
+tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
+  BitMatrix *bm)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    tpointinst_set_tiles(bm, (TInstant *) temp, hasz, hast, state);
-  else if (temp->subtype == TINSTANTSET)
-    tpointinstset_set_tiles(bm, (TInstantSet *) temp, hasz, hast, state);
+    tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
   else if (temp->subtype == TSEQUENCE)
-    tpointseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+      tdiscseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
+    else
+      tcontseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
+  }
   else /* temp->subtype == TSEQUENCESET */
-    tpointseqset_set_tiles(bm, (TSequenceSet *) temp, hasz, hast, state);
+    tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
   return;
 }
 
@@ -1046,7 +1049,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
         count[numdims++] = ( (DatumGetTimestampTz(state->box.period.upper) -
           DatumGetTimestampTz(state->box.period.lower)) / state->tunits ) + 1;
       state->bm = bitmatrix_make(count, numdims);
-      tpoint_set_tiles(state->bm, temp, state);
+      tpoint_set_tiles(temp, state, state->bm);
     }
     funcctx->user_fctx = state;
 

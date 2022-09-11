@@ -33,6 +33,8 @@
 
 #include "npoint/tnpoint.h"
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
 #include <meos.h>
 #include "general/temporal_parser.h"

@@ -214,12 +214,12 @@ datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, mobdbType type,
     text *txt = PG_GETARG_TEXT_P(1);
     variant = get_endian_variant(txt);
   }
+  if (extended)
+    variant |= (uint8_t) WKB_EXTENDED;
 
   /* Create WKB string */
   size_t wkb_size;
-  uint8_t *wkb = extended ?
-    datum_as_wkb(value, type, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
-    datum_as_wkb(value, type, variant, &wkb_size);
+  uint8_t *wkb = datum_as_wkb(value, type, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
 
   /* Clean up and return */

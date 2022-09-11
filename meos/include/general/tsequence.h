@@ -44,11 +44,12 @@
 
 /* General functions */
 
-extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
+extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);
+extern int tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t);
 extern void tsequence_make_valid1(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear);
+  bool lower_inc, bool upper_inc, int interp);
 extern TSequence *tsequence_make1(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear, bool normalize);
+  bool lower_inc, bool upper_inc, int interp, bool normalize);
 extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
   int *countseqs, int count, int totalseqs);
 
@@ -75,14 +76,17 @@ extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
   TimestampTz *t);
 
+extern bool intersection_tdiscseq_tdiscseq(const TSequence *is1,
+  const TSequence *is2, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tcontseq_tdiscseq(const TSequence *seq1,
+  const TSequence *seq2, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tdiscseq_tcontseq(const TSequence *is,
+  const TSequence *seq2, TSequence **inter1, TSequence **inter2);
+
 extern bool intersection_tsequence_tinstant(const TSequence *seq,
   const TInstant *inst, TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstant_tsequence(const TInstant *inst,
   const TSequence *seq, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequence_tinstantset(const TSequence *seq,
-  const TInstantSet *is, TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequence(const TInstantSet *is,
-  const TSequence *seq, TInstantSet **inter1, TInstantSet **inter2);
 
 /* Input/output functions */
 
@@ -104,7 +108,7 @@ extern Datum tsegment_value_at_timestamp(const TInstant *inst1,
 
 /* Restriction Functions */
 
-extern int tsequence_restrict_value1(const TSequence *seq, Datum value,
+extern int tcontseq_restrict_value1(const TSequence *seq, Datum value,
   bool atfunc, TSequence **result);
 extern int tsequence_at_values1(const TSequence *seq, const Datum *values,
   int count, TSequence **result);
@@ -114,15 +118,15 @@ extern int tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
   int count, bool atfunc, bool bboxtest, TSequence **result);
 extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);
-extern int tsequence_minus_timestamp1(const TSequence *seq, TimestampTz t,
+extern int tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
-extern int tsequence_minus_timestampset1(const TSequence *seq,
+extern int tcontseq_minus_timestampset1(const TSequence *seq,
   const TimestampSet *ss, TSequence **result);
-extern int tsequence_minus_period1(const TSequence *seq, const Period *p,
+extern int tcontseq_minus_period1(const TSequence *seq, const Period *p,
   TSequence **result);
-extern int tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
+extern int tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
   TSequence **result);
-extern int tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps,
+extern int tcontseq_minus_periodset1(const TSequence *seq, const PeriodSet *ps,
   int from, TSequence **result);
 
 /*****************************************************************************/

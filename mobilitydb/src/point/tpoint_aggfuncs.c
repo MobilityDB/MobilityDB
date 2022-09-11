@@ -121,16 +121,16 @@ tpointinst_transform_tcentroid(const TInstant *inst)
 }
 
 /**
- * Transform a temporal point value of instant set type into a temporal
+ * Transform a temporal point discrete sequence into a temporal
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TInstant **
-tpointinstset_transform_tcentroid(const TInstantSet *ti)
+tpointdiscseq_transform_tcentroid(const TSequence *seq)
 {
-  TInstant **result = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  TInstant **result = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     result[i] = tpointinst_transform_tcentroid(inst);
   }
   return result;
@@ -143,15 +143,9 @@ tpointinstset_transform_tcentroid(const TInstantSet *ti)
 static TSequence *
 tpointseq_transform_tcentroid(const TSequence *seq)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    instants[i] = tpointinst_transform_tcentroid(inst);
-  }
-  return tsequence_make_free(instants,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+  TInstant **instants = tpointdiscseq_transform_tcentroid(seq);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -184,16 +178,20 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
     result[0] = (Temporal *) tpointinst_transform_tcentroid((TInstant *) temp);
     *count = 1;
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    result = (Temporal **) tpointinstset_transform_tcentroid((TInstantSet *) temp);
-    *count = ((TInstantSet *) temp)->count;
-  }
   else if (temp->subtype == TSEQUENCE)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tpointseq_transform_tcentroid((TSequence *) temp);
-    *count = 1;
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    {
+      result = (Temporal **) tpointdiscseq_transform_tcentroid((TSequence *) temp);
+      *count = ((TSequence *) temp)->count;
+    }
+    else
+    {
+      result = palloc(sizeof(Temporal *));
+      result[0] = (Temporal *) tpointseq_transform_tcentroid((TSequence *) temp);
+      *count = 1;
+    }
+
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -327,7 +325,7 @@ doublen_to_point(const TInstant *inst, int srid)
   LWPOINT *point;
   if (inst->temptype == T_TDOUBLE3)
   { 
-    double3 *value3 = (double3 *)DatumGetPointer(&inst->value);
+    double3 *value3 = (double3 *) DatumGetPointer(&inst->value);
     assert(value3->c != 0);
     double valuea = value3->a / value3->c;
     double valueb = value3->b / value3->c;
@@ -335,7 +333,7 @@ doublen_to_point(const TInstant *inst, int srid)
   }
   else /* inst->temptype == T_TDOUBLE4 */
   {
-    double4 *value4 = (double4 *)DatumGetPointer(&inst->value);
+    double4 *value4 = (double4 *) DatumGetPointer(&inst->value);
     assert(value4->d != 0);
     double valuea = value4->a / value4->d;
     double valueb = value4->b / value4->d;
@@ -356,7 +354,7 @@ doublen_to_point(const TInstant *inst, int srid)
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
  */
-static TInstantSet *
+static TSequence *
 tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);
@@ -367,7 +365,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(value));
   }
-  return tinstantset_make_free(newinstants, count, MERGE_NO);
+  return tsequence_make_free(newinstants, count, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -395,7 +393,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+      MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }

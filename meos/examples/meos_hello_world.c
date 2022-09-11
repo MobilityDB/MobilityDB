@@ -33,14 +33,8 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I. -o meos_hello_world meos_hello_world.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_hello_world meos_hello_world.c -L/usr/local/lib -lmeos
  * @endcode
- */
-
-
-/* meos_hello_world.c
- * To build the program run the following command
- * cc meos_hello_world.c -o meos_hello_world -l meos
  */
 
 #include <stdio.h>  /* for printf */
@@ -50,7 +44,7 @@
 
 int main()
 {
-  /* Initialize session_timezone */
+  /* Initialize MEOS */
   meos_initialize();
 
   /* Input temporal points in WKT format */

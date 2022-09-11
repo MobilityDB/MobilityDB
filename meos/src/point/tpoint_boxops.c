@@ -45,8 +45,7 @@
 
 /* C */
 #include <assert.h>
-// /* PostgreSQL */
-// #include <utils/timestamp.h>
+/* PostgreSQL */
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
@@ -81,9 +80,9 @@ tpointinst_set_stbox(const TInstant *inst, STBOX *box)
 /**
  * Set the spatiotemporal box from an array of temporal instant points
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
@@ -100,38 +99,29 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 }
 
 /**
- * Set the GBOX bounding box from an array of temporal point instants
+ * Set the GBOX bounding box from an array of temporal geographic point instants
  *
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
+ * @param[in] interp Interpolation
  * @param[out] box Resulting bounding box
  */
 static void
-tpointinstarr_set_gbox(const TInstant **instants, int count, GBOX *box)
+tgeogpointinstarr_set_gbox(const TInstant **instants, int count, int interp,
+  GBOX *box)
 {
-  assert(box);
-  assert(count > 0);
-  const POINT2D *p;
-  POINT3D A1, A2;
-  GBOX edge_gbox;
-  gbox_init(&edge_gbox);
-  edge_gbox.flags = box->flags;
-
-  /* Initialization with the first instant */
-  p = datum_point2d_p(tinstant_value(instants[0]));
-  ll2cart(p, &A1);
-  box->xmin = box->xmax = A1.x;
-  box->ymin = box->ymax = A1.y;
-  box->zmin = box->zmax = A1.z;
-  for (int i = 1; i < count; i++)
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
+  for (int i = 0; i < count; i++)
   {
-    p = datum_point2d_p(tinstant_value(instants[i]));
-    ll2cart(p, &A2);
-    edge_calculate_gbox(&A1, &A2, &edge_gbox);
-    /* Expand the box where necessary */
-    gbox_merge(&edge_gbox, box);
-    A1 = A2;
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(instants[i]));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, count,
+    interp);
+  lwgeom_calculate_gbox_geodetic(lwgeom, box);
+
+  lwgeom_free(lwgeom);
+  /* We cannot pfree(points); */
   return;
 }
 
@@ -144,21 +134,23 @@ tpointinstarr_set_gbox(const TInstant **instants, int count, GBOX *box)
  * there is no verification of the input in this function, in particular
  * for geographies it is supposed that the composing points are geodetic
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[in] interp Interpolation
+ * @param[out] box Spatiotemporal box
  * @note In the current PostGIS version the difference when computing the
  * gbox for a MultiPoint and a Linestring is around 2e-7
  */
 void
-tgeogpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
+tgeogpointinstarr_set_stbox(const TInstant **instants, int count, int interp,
+  STBOX *box)
 {
   GBOX gbox;
   gbox_init(&gbox);
   FLAGS_SET_Z(gbox.flags, 1);
   FLAGS_SET_M(gbox.flags, 0);
   FLAGS_SET_GEODETIC(gbox.flags, 1);
-  tpointinstarr_set_gbox(instants, count, &gbox);
+  tgeogpointinstarr_set_gbox(instants, count, interp, &gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   int32 srid = tpointinst_srid(instants[0]);
   Period period;
@@ -172,9 +164,9 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 /**
  * Set the spatiotemporal box from an array of temporal sequence points
  *
- * @param[out] box Spatiotemporal box
  * @param[in] sequences Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
  */
 void
 tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
@@ -198,8 +190,8 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
  * Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point
  *
- * @param[out] result Spatiotemporal box
  * @param[in] seq Temporal value
+ * @param[out] result Spatiotemporal box
  * @return Number of elements in the array
  */
 static int
@@ -254,18 +246,18 @@ tpointseq_stboxes(const TSequence *seq, int *count)
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
  *
- * @param[in] ts Temporal value
+ * @param[in] ss Temporal value
  * @param[out] count Number of elements in the output array
  */
 STBOX *
-tpointseqset_stboxes(const TSequenceSet *ts, int *count)
+tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
-  assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
-  STBOX *result = palloc(sizeof(STBOX) * ts->totalcount);
+  assert(MOBDB_FLAGS_GET_LINEAR(ss->flags));
+  STBOX *result = palloc(sizeof(STBOX) * ss->totalcount);
   int k = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     k += tpointseq_stboxes1(seq, &result[k]);
   }
   *count = k;
@@ -282,7 +274,7 @@ tpoint_stboxes(const Temporal *temp, int *count)
 {
   STBOX *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_stboxes((TSequence *)temp, count);
@@ -301,7 +293,7 @@ tpoint_stboxes(const Temporal *temp, int *count)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] func Bounding box function
- * @param[in] invert True when the geometry is the first argument of the
+ * @param[in] invert True if the geometry is the first argument of the
  * function
  */
 int
@@ -324,7 +316,7 @@ boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal point
  * @param[in] box Box
  * @param[in] func Bounding box function
- * @param[in] invert True when the geometry is the first argument of the
+ * @param[in] invert True if the geometry is the first argument of the
  */
 Datum
 boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,

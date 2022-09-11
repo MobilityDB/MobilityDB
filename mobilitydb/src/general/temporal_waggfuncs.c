@@ -79,29 +79,29 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), inst->temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
-    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags), NORMALIZE_NO);
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
   pfree(instants[1]);
   return 1;
 }
 
 /**
- * Extend the temporal instant set value by the time interval
+ * Extend the temporal discrete sequence value by the time interval
  *
- * @param[in] is Temporal value
+ * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
  * values are stored
  */
 static int
-tinstantset_extend(const TInstantSet *is, const Interval *interval,
+tdiscseq_extend(const TSequence *seq, const Interval *interval,
   TSequence **result)
 {
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     tinstant_extend(inst, interval, &result[i]);
   }
-  return is->count;
+  return seq->count;
 }
 
 /**
@@ -111,11 +111,10 @@ tinstantset_extend(const TInstantSet *is, const Interval *interval,
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise.
  * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
- * This parameter is only used for linear interpolation.
+ * values are stored. This parameter is only used for linear interpolation.
  */
 static int
-tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
+tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
   TSequence **result)
 {
   if (seq->count == 1)
@@ -124,7 +123,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
   TInstant *instants[3];
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   mobdbType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
@@ -134,13 +133,13 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 
     /* Stepwise interpolation or constant segment */
-    if (! linear || datum_eq(value1, value2, basetype))
+    if (interp != LINEAR || datum_eq(value1, value2, basetype))
     {
       TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
       instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make(value1, inst1->temptype, upper);
       result[i] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, upper_inc, linear, NORMALIZE_NO);
+        lower_inc, upper_inc, interp, NORMALIZE_NO);
       pfree(instants[1]);
     }
     else
@@ -157,7 +156,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
         instants[1] = tinstant_make(value1, inst1->temptype, lower);
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
         result[i] = tsequence_make((const TInstant **) instants, 3,
-          lower_inc, upper_inc, linear, NORMALIZE_NO);
+          lower_inc, upper_inc, interp, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
       }
       else
@@ -169,7 +168,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
         instants[1] = inst2;
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
         result[i] = tsequence_make((const TInstant**) instants, 3,
-          lower_inc, upper_inc, linear, NORMALIZE_NO);
+          lower_inc, upper_inc, interp, NORMALIZE_NO);
         pfree(instants[2]);
       }
     }
@@ -183,25 +182,22 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
 /**
  * Extend the temporal sequence set value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ss Temporal value
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise.
  * This parameter is only used for linear interpolation.
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
 tsequenceset_extend(const TSequenceSet *ss, const Interval *interval, bool min,
   TSequence **result)
 {
-  if (ss->count == 1)
-    return tsequence_extend(tsequenceset_seq_n(ss, 0), interval, min, result);
-
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tsequence_extend(seq, interval, min, &result[k]);
+    k += tcontseq_extend(seq, interval, min, &result[k]);
   }
   return k;
 }
@@ -225,17 +221,13 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
     result = palloc(sizeof(TSequence *));
     *count = tinstant_extend(inst, interval, result);
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    TInstantSet *is = (TInstantSet *) temp;
-    result = palloc(sizeof(TSequence *) * is->count);
-    *count = tinstantset_extend(is, interval, result);
-  }
   else if (temp->subtype == TSEQUENCE)
   {
     TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = tsequence_extend(seq, interval, min, result);
+    *count = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+      tdiscseq_extend(seq, interval, result) :
+      tcontseq_extend(seq, interval, min, result);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -264,7 +256,7 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
   instants[0] = tinstant_make(Int32GetDatum(1), T_TINT, lower);
   instants[1] = tinstant_make(Int32GetDatum(1), T_TINT, upper1);
   TSequence *result = tsequence_make((const TInstant **) instants, 2,
-    lower_inc, upper_inc, STEP, NORMALIZE_NO);
+    lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }
@@ -272,10 +264,10 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
 /**
  * Transform the temporal number instant value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] inst Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
 tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
@@ -287,23 +279,23 @@ tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
 }
 
 /**
- * Transform the temporal number instant set value by the time interval
+ * Transform the temporal number discrete sequence value by the time interval
  *
- * @param[in] is Temporal value
+ * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
  * values are stored
  */
 static int
-tinstantset_transform_wcount(const TInstantSet *is, const Interval *interval,
+tdiscseq_transform_wcount(const TSequence *seq, const Interval *interval,
   TSequence **result)
 {
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     tinstant_transform_wcount(inst, interval, &result[i]);
   }
-  return is->count;
+  return seq->count;
 }
 
 /**
@@ -315,7 +307,7 @@ tinstantset_transform_wcount(const TInstantSet *is, const Interval *interval,
  * values are stored
  */
 static int
-tsequence_transform_wcount(const TSequence *seq, const Interval *interval,
+tcontseq_transform_wcount(const TSequence *seq, const Interval *interval,
   TSequence **result)
 {
   if (seq->count == 1)
@@ -352,7 +344,7 @@ tsequenceset_transform_wcount(const TSequenceSet *ss, const Interval *interval,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tsequence_transform_wcount(seq, interval, &result[k]);
+    k += tcontseq_transform_wcount(seq, interval, &result[k]);
   }
   return k;
 }
@@ -376,17 +368,13 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
     result = palloc(sizeof(TSequence *));
     *count = tinstant_transform_wcount(inst, interval, result);
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    TInstantSet *is = (TInstantSet *) temp;
-    result = palloc(sizeof(TSequence *) * is->count);
-    *count = tinstantset_transform_wcount(is, interval, result);
-  }
   else if (temp->subtype == TSEQUENCE)
   {
     TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = tsequence_transform_wcount(seq, interval, result);
+    *count = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tdiscseq_transform_wcount(seq, interval, result) :
+      tcontseq_transform_wcount(seq, interval, result);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -412,8 +400,7 @@ static int
 tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
   TSequence **result)
 {
-  /* Should be additional attribute */
-  bool linear = true;
+  /* TODO: Should be an additional attribute */
   float8 value = 0.0;
   ensure_tnumber_type(inst->temptype);
   if (inst->temptype == T_TINT)
@@ -427,7 +414,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
   instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
   result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
-    linear, NORMALIZE_NO);
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return 1;
 }
@@ -436,21 +423,21 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
  * Transform the temporal number into a temporal double and extend it
  * by the time interval
  *
- * @param[in] is Temporal value
+ * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
  * values are stored
  */
 static int
-tnumberinstset_transform_wavg(const TInstantSet *is, const Interval *interval,
+tnumberdiscseq_transform_wavg(const TSequence *seq, const Interval *interval,
   TSequence **result)
 {
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     tnumberinst_transform_wavg(inst, interval, &result[i]);
   }
-  return is->count;
+  return seq->count;
 }
 
 /**
@@ -468,10 +455,9 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
   TSequence **result)
 {
   const TInstant *inst1;
-
-  /* Should be additional attribute */
-  bool linear = true;
   TInstant *instants[2];
+
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
@@ -479,6 +465,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     return 1;
   }
 
+  /* General case */
   inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
@@ -492,7 +479,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst1->t);
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
     result[i] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, upper_inc, linear, NORMALIZE_NO);
+      lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
     lower_inc = true;
@@ -544,17 +531,13 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
     result = palloc(sizeof(TSequence *));
     *count = tnumberinst_transform_wavg(inst, interval, result);
   }
-  else if (temp->subtype == TINSTANTSET)
-  {
-    TInstantSet *is = (TInstantSet *) temp;
-    result = palloc(sizeof(TSequence *) * is->count);
-    *count = tnumberinstset_transform_wavg(is, interval, result);
-  }
   else if (temp->subtype == TSEQUENCE)
   {
     TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = tintseq_transform_wavg(seq, interval, result);
+    *count = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+      tnumberdiscseq_transform_wavg(seq, interval, result) :
+      tintseq_transform_wavg(seq, interval, result);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -578,7 +561,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
  * @param[in] interval Interval
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  * @note This function is directly called by the window sum aggregation for
  * temporal floats after verifying since the operation is not supported for
  * sequence (set) type
@@ -605,7 +588,7 @@ temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
- * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] crossings True if turning points are added in the segments
  */
 Datum
 temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
@@ -615,10 +598,10 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   INPUT_AGG_TRANS_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
-  if ((temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET) &&
-    temp->temptype == T_TFLOAT && func == &datum_sum_float8)
+  if ( temp->subtype != TINSTANT && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags) && 
+      temp->temptype == T_TFLOAT && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Operation not supported for temporal float sequences")));
+      errmsg("Operation not supported for temporal continuous float sequences")));
 
   SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval,
     func, min, crossings);

@@ -4,10 +4,10 @@ SELECT ST_AsText(tgeompoint 'Point(1 1)@2000-01-01'::geometry);
  POINT M (1 1 946684800)
 (1 row)
 
-SELECT ST_AsText(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::geometry);
-                        st_astext                         
-----------------------------------------------------------
- MULTIPOINT M (1 1 946684800,2 2 946771200,1 1 946857600)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::geometry)) AS t(dp);
+                                    array_agg                                    
+---------------------------------------------------------------------------------
+ {"POINT M (1 1 946684800)","POINT M (2 2 946771200)","POINT M (1 1 946857600)"}
 (1 row)
 
 SELECT ST_AsText(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::geometry);
@@ -28,10 +28,10 @@ SELECT ST_AsText(tgeogpoint 'Point(1.5 1.5)@2000-01-01'::geography);
  POINT M (1.5 1.5 946684800)
 (1 row)
 
-SELECT ST_AsText(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'::geography);
-                              st_astext                               
-----------------------------------------------------------------------
- MULTIPOINT M (1.5 1.5 946684800,2.5 2.5 946771200,1.5 1.5 946857600)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'::geography)::geometry)) AS t(dp);
+                                          array_agg                                          
+---------------------------------------------------------------------------------------------
+ {"POINT M (1.5 1.5 946684800)","POINT M (2.5 2.5 946771200)","POINT M (1.5 1.5 946857600)"}
 (1 row)
 
 SELECT ST_AsText(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'::geography);
@@ -52,10 +52,10 @@ SELECT ST_AsText(tgeompoint 'Point(1 1 1)@2000-01-01'::geometry);
  POINT ZM (1 1 1 946684800)
 (1 row)
 
-SELECT ST_AsText(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'::geometry);
-                            st_astext                            
------------------------------------------------------------------
- MULTIPOINT ZM (1 1 1 946684800,2 2 2 946771200,1 1 1 946857600)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'::geometry)) AS t(dp);
+                                        array_agg                                         
+------------------------------------------------------------------------------------------
+ {"POINT ZM (1 1 1 946684800)","POINT ZM (2 2 2 946771200)","POINT ZM (1 1 1 946857600)"}
 (1 row)
 
 SELECT ST_AsText(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'::geometry);
@@ -76,10 +76,10 @@ SELECT ST_AsText(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01'::geography);
  POINT ZM (1.5 1.5 1.5 946684800)
 (1 row)
 
-SELECT ST_AsText(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'::geography);
-                                     st_astext                                     
------------------------------------------------------------------------------------
- MULTIPOINT ZM (1.5 1.5 1.5 946684800,2.5 2.5 2.5 946771200,1.5 1.5 1.5 946857600)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'::geography)::geometry)) AS t(dp);
+                                                 array_agg                                                  
+------------------------------------------------------------------------------------------------------------
+ {"POINT ZM (1.5 1.5 1.5 946684800)","POINT ZM (2.5 2.5 2.5 946771200)","POINT ZM (1.5 1.5 1.5 946857600)"}
 (1 row)
 
 SELECT ST_AsText(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'::geography);
@@ -94,10 +94,10 @@ SELECT ST_AsText(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
  MULTILINESTRING ZM ((1.5 1.5 1.5 946684800,2.5 2.5 2.5 946771200,1.5 1.5 1.5 946857600),(3.5 3.5 3.5 946944000,3.5 3.5 3.5 947030400))
 (1 row)
 
-SELECT ST_AsText(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]'::geometry);
-                 st_astext                  
---------------------------------------------
- MULTIPOINT M (0 0 946684800,1 1 946771200)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]'::geometry)) AS t(dp);
+                       array_agg                       
+-------------------------------------------------------
+ {"POINT M (0 0 946684800)","POINT M (1 1 946771200)"}
 (1 row)
 
 SELECT ST_AsText(asGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true));
@@ -275,10 +275,10 @@ SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-01'))
  POINT M (1 1 5)
 (1 row)
 
-SELECT ST_AsText(geoMeasure(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{5@2000-01-01, 7@2000-01-02, 5@2000-01-03}'));
-            st_astext             
-----------------------------------
- MULTIPOINT M (1 1 5,2 2 7,1 1 5)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geoMeasure(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{5@2000-01-01, 7@2000-01-02, 5@2000-01-03}'))) AS t(dp);
+                        array_agg                        
+---------------------------------------------------------
+ {"POINT M (1 1 5)","POINT M (2 2 7)","POINT M (1 1 5)"}
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]'));
@@ -299,10 +299,10 @@ SELECT ST_AsText(geoMeasure(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '5.5@2000-01
  POINT M (1.5 1.5 5.5)
 (1 row)
 
-SELECT ST_AsText(geoMeasure(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '{5.5@2000-01-01, 7.5@2000-01-02, 5@2000-01-03}'));
-                    st_astext                     
---------------------------------------------------
- MULTIPOINT M (1.5 1.5 5.5,2.5 2.5 7.5,1.5 1.5 5)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geoMeasure(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '{5.5@2000-01-01, 7.5@2000-01-02, 5@2000-01-03}')::geometry)) AS t(dp);
+                                array_agg                                
+-------------------------------------------------------------------------
+ {"POINT M (1.5 1.5 5.5)","POINT M (2.5 2.5 7.5)","POINT M (1.5 1.5 5)"}
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '[5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03]'));
@@ -335,10 +335,10 @@ SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1 1)@2000-01-01', '5@2000-01-01'
  POINT ZM (1 1 1 5)
 (1 row)
 
-SELECT ST_AsText(geoMeasure(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', '{5@2000-01-01, 7@2000-01-02, 5@2000-01-03}'));
-                st_astext                
------------------------------------------
- MULTIPOINT ZM (1 1 1 5,2 2 2 7,1 1 1 5)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geoMeasure(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', '{5@2000-01-01, 7@2000-01-02, 5@2000-01-03}'))) AS t(dp);
+                            array_agg                             
+------------------------------------------------------------------
+ {"POINT ZM (1 1 1 5)","POINT ZM (2 2 2 7)","POINT ZM (1 1 1 5)"}
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]'));
@@ -359,10 +359,10 @@ SELECT ST_AsText(geoMeasure(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', '5.5@200
  POINT ZM (1.5 1.5 1.5 5.5)
 (1 row)
 
-SELECT ST_AsText(geoMeasure(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', '{5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03}'));
-                            st_astext                            
------------------------------------------------------------------
- MULTIPOINT ZM (1.5 1.5 1.5 5.5,2.5 2.5 2.5 7.5,1.5 1.5 1.5 5.5)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geoMeasure(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', '{5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03}')::geometry)) AS t(dp);
+                                        array_agg                                         
+------------------------------------------------------------------------------------------
+ {"POINT ZM (1.5 1.5 1.5 5.5)","POINT ZM (2.5 2.5 2.5 7.5)","POINT ZM (1.5 1.5 1.5 5.5)"}
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', '[5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03]'));
@@ -377,16 +377,16 @@ SELECT ST_AsText(geoMeasure(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2
  GEOMETRYCOLLECTION ZM (LINESTRING ZM (1.5 1.5 1.5 5.5,2.5 2.5 2.5 7.5,1.5 1.5 1.5 5.5),POINT ZM (3.5 3.5 3.5 5.5))
 (1 row)
 
-SELECT ST_AsText(geoMeasure(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]'));
-            st_astext             
-----------------------------------
- MULTIPOINT M (1 1 5,2 2 7,1 1 5)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geoMeasure(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]'))) AS t(dp);
+                        array_agg                        
+---------------------------------------------------------
+ {"POINT M (1 1 5)","POINT M (2 2 7)","POINT M (1 1 5)"}
 (1 row)
 
-SELECT ST_AsText(geoMeasure(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[5@2000-01-01, 7@2000-01-02]'));
-         st_astext          
-----------------------------
- MULTIPOINT M (1 1 5,2 2 7)
+SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(geoMeasure(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[5@2000-01-01, 7@2000-01-02]'))) AS t(dp);
+               array_agg               
+---------------------------------------
+ {"POINT M (1 1 5)","POINT M (2 2 7)"}
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01]', '[5@2000-01-01]', true));

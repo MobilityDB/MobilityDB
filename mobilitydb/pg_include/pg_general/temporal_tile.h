@@ -75,7 +75,7 @@ typedef struct TboxGridState
  */
 typedef struct ValueTimeSplitState
 {
-  bool done;           /**< True when all the tiles have been processed */
+  bool done;           /**< True when all tiles have been processed */
   int i;               /**< Number of current tile */
   Datum size;
   int64 tunits;

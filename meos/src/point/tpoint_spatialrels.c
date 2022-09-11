@@ -295,7 +295,7 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = STEP;
+  lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
@@ -365,27 +365,6 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
 }
 
 /**
- * @brief Return true if a temporal point instant set and a geometry are ever
- * disjoint
- *
- * @param[in] is Temporal point
- * @param[in] geo Geometry
- * @param[in] func PostGIS function to be called
- */
-bool
-disjoint_tpointinstset_geo(const TInstantSet *is, Datum geo,
-  Datum (*func)(Datum, ...))
-{
-  for (int i = 0; i < is->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    if (DatumGetBool(func(tinstant_value(inst), geo)))
-      return true;
-  }
-  return false;
-}
-
-/**
  * @brief Return true if a temporal sequence point and a geometry are ever
  * disjoint
  *
@@ -446,14 +425,11 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = disjoint_tpointinst_geo((TInstant *) temp,
-      PointerGetDatum(gs), func);
-  else if (temp->subtype == TINSTANTSET)
-    result = disjoint_tpointinstset_geo((TInstantSet *) temp,
-      PointerGetDatum(gs), func);
+    result = disjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
+      func);
   else if (temp->subtype == TSEQUENCE)
-    result = disjoint_tpointseq_geo((TSequence *) temp,
-      PointerGetDatum(gs), func);
+    result = disjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
+      func);
   else /* temp->subtype == TSEQUENCESET */
     result = disjoint_tpointseqset_geo((TSequenceSet *) temp,
       PointerGetDatum(gs), func);
@@ -559,19 +535,19 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 /**
  * Return true if the temporal points are ever within the given distance
  *
- * @param[in] is1,is2 Temporal points
+ * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointinstset_tpointinstset(const TInstantSet *is1,
-  const TInstantSet *is2, double dist, datum_func3 func)
+dwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
+  const TSequence *seq2, double dist, datum_func3 func)
 {
-  for (int i = 0; i < is1->count; i++)
+  for (int i = 0; i < seq1->count; i++)
   {
-    const TInstant *inst1 = tinstantset_inst_n(is1, i);
-    const TInstant *inst2 = tinstantset_inst_n(is2, i);
+    const TInstant *inst1 = tsequence_inst_n(seq1, i);
+    const TInstant *inst2 = tsequence_inst_n(seq2, i);
     if (dwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
       return true;
   }
@@ -689,12 +665,12 @@ dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   if (sync1->subtype == TINSTANT)
     result = dwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
-  else if (sync1->subtype == TINSTANTSET)
-    result = dwithin_tpointinstset_tpointinstset((TInstantSet *) sync1,
-      (TInstantSet *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
-    result = dwithin_tpointseq_tpointseq((TSequence *) sync1,
-      (TSequence *) sync2, dist, func);
+    result = MOBDB_FLAGS_GET_DISCRETE(sync1->flags) ?
+      dwithin_tpointdiscseq_tpointdiscseq((TSequence *) sync1,
+        (TSequence *) sync2, dist, func) :
+      dwithin_tpointseq_tpointseq((TSequence *) sync1, (TSequence *) sync2,
+        dist, func);
   else /* sync1->subtype == TSEQUENCESET */
     result = dwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
       (TSequenceSet *) sync2, dist, func);

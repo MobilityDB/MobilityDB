@@ -38,8 +38,7 @@
 #include <float.h>
 #include <math.h>
 /* PostgreSQL */
-// #include <utils/timestamp.h>
-// #include <utils/float.h>
+
 /* PostGIS */
 #include <lwgeodetic_tree.h>
 #include <measures.h>
@@ -285,8 +284,8 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
   *value = hasz ?
     geom_distance3d(value1, value2) : geom_distance2d(value1, value2);
   return true;
@@ -441,37 +440,6 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * Return the nearest approach instant between the temporal instant set point
- * and a geometry/geography
- *
- * @param[in] is Temporal point
- * @param[in] geo Geometry/geography
- */
-static TInstant *
-NAI_tpointinstset_geo(const TInstantSet *is, const LWGEOM *geo)
-{
-  double mindist = DBL_MAX;
-  int number = 0; /* keep compiler quiet */
-  for (int i = 0; i < is->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    LWGEOM *point = lwgeom_from_gserialized(gs);
-    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
-    if (dist < mindist)
-    {
-      mindist = dist;
-      number = i;
-    }
-    lwgeom_free(point);
-  }
-  return tinstant_copy(tinstantset_inst_n(is, number));
-}
-
-/*****************************************************************************/
-
-/**
  * Return the new current nearest approach instant between the temporal
  * sequence point with stepwise interpolation and a geometry/geography
  *
@@ -484,7 +452,7 @@ NAI_tpointinstset_geo(const TInstantSet *is, const LWGEOM *geo)
  * @result Minimum distance
  */
 static double
-NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
+NAI_tpointseq_discstep_geo1(const TSequence *seq, const LWGEOM *geo,
   double mindist, const TInstant **result)
 {
   for (int i = 0; i < seq->count; i++)
@@ -512,10 +480,10 @@ NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
  * @param[in] geo Geometry/geography
  */
 static TInstant *
-NAI_tpointseq_step_geo(const TSequence *seq, const LWGEOM *geo)
+NAI_tpointseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
 {
   const TInstant *inst;
-  NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, &inst);
+  NAI_tpointseq_discstep_geo1(seq, geo, DBL_MAX, &inst);
   return tinstant_copy(inst);
 }
 
@@ -534,7 +502,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, &inst);
+    mindist = NAI_tpointseq_discstep_geo1(seq, geo, mindist, &inst);
   }
   assert(inst != NULL);
   return tinstant_copy(inst);
@@ -711,12 +679,10 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = NAI_tpointinstset_geo((TInstantSet *) temp, geo);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *) temp, geo) :
-      NAI_tpointseq_step_geo((TSequence *) temp, geo);
+      NAI_tpointseq_discstep_geo((TSequence *) temp, geo);
   else /* temp->subtype == TSEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :

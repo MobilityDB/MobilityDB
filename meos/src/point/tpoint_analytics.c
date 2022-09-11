@@ -37,8 +37,6 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-// #include <utils/float.h>
-// #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
@@ -127,22 +125,22 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal instant set
- * point and the temporal float.
+ * Construct a geometry/geography with M measure from the temporal discrete
+ * sequence point and the temporal float.
  *
- * @param[in] is Temporal point
+ * @param[in] seq Temporal point
  * @param[in] measure Temporal float
  */
 static GSERIALIZED *
-tpointinstset_to_geo_measure(const TInstantSet *is, const TInstantSet *measure)
+tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * is->count);
-  for (int i = 0; i < is->count; i++)
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(is, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     if (measure)
     {
-      const TInstant *m = tinstantset_inst_n(measure, i);
+      const TInstant *m = tsequence_inst_n(measure, i);
       points[i] = (LWGEOM *) point_measure_to_lwpoint(tinstant_value(inst),
           tinstant_value(m));
     }
@@ -150,16 +148,16 @@ tpointinstset_to_geo_measure(const TInstantSet *is, const TInstantSet *measure)
       points[i] = (LWGEOM *) tpointinst_to_lwpoint(inst);
   }
   GSERIALIZED *result;
-  if (is->count == 1)
+  if (seq->count == 1)
     result = geo_serialize(points[0]);
   else
   {
     LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      points[0]->srid, NULL, (uint32_t) is->count, points);
+      points[0]->srid, NULL, (uint32_t) seq->count, points);
     result = geo_serialize(mpoint);
     pfree(mpoint);
   }
-  for (int i = 0; i < is->count; i++)
+  for (int i = 0; i < seq->count; i++)
     lwgeom_free (points[i]);
   pfree(points);
   return result;
@@ -530,15 +528,18 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
   if (sync1->subtype == TINSTANT)
     *result = tpointinst_to_geo_measure(
       (TInstant *) sync1, (TInstant *) sync2);
-  else if (sync1->subtype == TINSTANTSET)
-    *result = tpointinstset_to_geo_measure(
-      (TInstantSet *) sync1, (TInstantSet *) sync2);
   else if (sync1->subtype == TSEQUENCE)
-    *result = segmentize ?
-      tpointseq_to_geo_measure_segmentize(
-        (TSequence *) sync1, (TSequence *) sync2) :
-      tpointseq_to_geo_measure(
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(sync1->flags))
+      *result = tpointdiscseq_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
+    else
+      *result = segmentize ?
+        tpointseq_to_geo_measure_segmentize(
+          (TSequence *) sync1, (TSequence *) sync2) :
+        tpointseq_to_geo_measure(
+          (TSequence *) sync1, (TSequence *) sync2);
+  }
   else /* sync1->subtype == TSEQUENCESET */
     *result = segmentize ?
       tpointseqset_to_geo_measure_segmentize(
@@ -605,10 +606,10 @@ geo_to_tpointinst(const GSERIALIZED *geo)
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal instant set point.
+ * encode the timestamps in Unix epoch into a temporal discrete sequence point.
  */
-static TInstantSet *
-geo_to_tpointinstset(const GSERIALIZED *geo)
+static TSequence *
+geo_to_tpointdiscseq(const GSERIALIZED *geo)
 {
   /* Geometry is a MULTIPOINT */
   LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
@@ -642,7 +643,8 @@ geo_to_tpointinstset(const GSERIALIZED *geo)
     instants[i] = trajpoint_to_tpointinst((LWPOINT *) lwcoll->geoms[i]);
   lwgeom_free(lwgeom);
 
-  return tinstantset_make_free(instants, npoints, MERGE_NO);
+  return tsequence_make_free(instants, npoints, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -693,8 +695,7 @@ geo_to_tpointseq(const GSERIALIZED *geo)
   }
   lwgeom_free(lwgeom);
   /* The resulting sequence assumes linear interpolation */
-  return tsequence_make_free(instants, npoints, true, true,
-    LINEAR, NORMALIZE);
+  return tsequence_make_free(instants, npoints, true, true, LINEAR, NORMALIZE);
 }
 
 /**
@@ -756,7 +757,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
   if (geomtype == POINTTYPE)
     result = (Temporal *) geo_to_tpointinst(geo);
   else if (geomtype == MULTIPOINTTYPE)
-    result = (Temporal *) geo_to_tpointinstset(geo);
+    result = (Temporal *) geo_to_tpointdiscseq(geo);
   else if (geomtype == LINETYPE)
     result = (Temporal *) geo_to_tpointseq(geo);
   else if (geomtype == MULTILINETYPE || geomtype == COLLECTIONTYPE)
@@ -920,7 +921,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
   POINT3DZ c;
   double r;
   /* If start==end, then use pt distance */
-  if (A->x == B->x && A->y == B->y && A->z == B->z)
+  if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y) && FP_EQUALS(A->z, B->z))
     return dist3d_pt_pt(p, A);
 
   r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
@@ -933,8 +934,8 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
   if (r > 1) /* If the second vertex B is closest to the point p */
     return dist3d_pt_pt(p, B);
 
-  /* else if the point p is closer to some point between a and b
-  then we find that point and send it to dist3d_pt_pt */
+  /* If the point p is closer to some point between a and b, then we find that
+     point and send it to dist3d_pt_pt */
   c.x = A->x + r * (B->x - A->x);
   c.y = A->y + r * (B->y - A->y);
   c.z = A->z + r * (B->z - A->z);
@@ -1040,6 +1041,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   uint32_t i;
   double dist;
 
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
@@ -1086,9 +1088,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make((const TInstant **) instants, outn,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+  TSequence *result = tsequence_make(instants, outn, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
 
   /* Only free if arrays are on heap */
@@ -1106,6 +1107,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
  *
  * @param[in] ss Temporal point
  * @param[in] eps_dist Epsilon speed
+ * @param[in] synchronized True when computing the Synchronized Euclidean
+ * Distance (SED), false when computing the spatial only Douglas-Peucker
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
@@ -1132,8 +1135,7 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET ||
-    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
@@ -1147,69 +1149,6 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
 /*****************************************************************************
  * Mapbox Vector Tile functions for temporal points.
  *****************************************************************************/
-
-/**
- * Return a temporal point with consecutive equal points removed.
- * Equality test only on x and y dimensions of input.
- */
-static TInstantSet *
-tpointinstset_remove_repeated_points(const TInstantSet *is, double tolerance,
-  int min_points)
-{
-  /* No-op on short inputs */
-  if (is->count <= min_points)
-    return tinstantset_copy(is);
-
-  double tolsq = tolerance * tolerance;
-  double dsq = FLT_MAX;
-
-  const TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  instants[0] = tinstantset_inst_n(is, 0);
-  const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
-  int k = 1;
-  for (int i = 1; i < is->count; i++)
-  {
-    bool last_point = (i == is->count - 1);
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
-
-    /* Don't drop points if we are running short of points */
-    if (is->count - k > min_points + i)
-    {
-      if (tolerance > 0.0)
-      {
-        /* Only drop points that are within our tolerance */
-        dsq = distance2d_sqr_pt_pt(last, pt);
-        /* Allow any point but the last one to be dropped */
-        if (! last_point && dsq <= tolsq)
-          continue;
-      }
-      else
-      {
-        /* At tolerance zero, only skip exact dupes */
-        if (FP_EQUALS(pt->x, last->x) && FP_EQUALS(pt->y, last->y))
-          continue;
-      }
-
-      /* Got to last point, and it's not very different from
-       * the point that preceded it. We want to keep the last
-       * point, not the second-to-last one, so we pull our write
-       * index back one value */
-      if (last_point && k > 1 && tolerance > 0.0 && dsq <= tolsq)
-      {
-        k--;
-      }
-    }
-
-    /* Save the point */
-    instants[k++] = inst;
-    last = pt;
-  }
-  /* Construct the result */
-  TInstantSet *result = tinstantset_make(instants, is->count, MERGE_NO);
-  pfree(instants);
-  return result;
-}
 
 /**
  * Return a temporal point with consecutive equal points removed.
@@ -1270,7 +1209,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   }
   /* Construct the result */
   TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   pfree(instants);
   return result;
 }
@@ -1334,9 +1273,6 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_remove_repeated_points(
-      (TInstantSet *) temp, tolerance, min_points);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_remove_repeated_points(
       (TSequence *) temp, tolerance, min_points);
@@ -1403,24 +1339,6 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 /**
  * Affine transform a temporal point.
  */
-static TInstantSet *
-tpointinstset_affine(const TInstantSet *is, const AFFINE *a)
-{
-  int srid = tpointinstset_srid(is);
-  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
-  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  for (int i = 0; i < is->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
-  }
-  TInstantSet *result = tinstantset_make_free(instants, is->count, MERGE_NO);
-  return result;
-}
-
-/**
- * Affine transform a temporal point.
- */
 static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
@@ -1434,7 +1352,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   }
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -1462,8 +1380,6 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_affine((TInstant *) temp, a);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_affine((TInstantSet *) temp, a);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_affine((TSequence *) temp, a);
   else /* temp->subtype == TSEQUENCESET */
@@ -1517,40 +1433,6 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 /**
  * Stick a temporal point to the given grid specification.
  */
-static TInstantSet *
-tpointinstset_grid(const TInstantSet *is, const gridspec *grid)
-{
-  bool hasz = MOBDB_FLAGS_GET_Z(is->flags);
-  int srid = tpointinstset_srid(is);
-  TInstant **instants = palloc(sizeof(TInstant *) * is->count);
-  int k = 0;
-  for (int i = 0; i < is->count; i++)
-  {
-    POINT4D p, prev_p;
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    Datum value = tinstant_value(inst);
-    point_grid(value, hasz, grid, &p);
-    /* Skip duplicates */
-    if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
-      (hasz ? prev_p.z == p.z : 1))
-      continue;
-
-    /* Write rounded values into the next instant */
-    LWPOINT *lwpoint = hasz ?
-      lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
-    GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-    lwpoint_free(lwpoint);
-    pfree(gs);
-    memcpy(&prev_p, &p, sizeof(POINT4D));
-  }
-  /* Construct the result */
-  return tinstantset_make_free(instants, k, MERGE_NO);
-}
-
-/**
- * Stick a temporal point to the given grid specification.
- */
 static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
@@ -1586,7 +1468,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
   /* Construct the result */
   return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
-    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_LINEAR(seq->flags),
+    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_INTERP(seq->flags),
     NORMALIZE);
 }
 
@@ -1621,8 +1503,6 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_grid((TInstant *) temp, grid);
-  else if (temp->subtype == TINSTANTSET)
-    result = (Temporal *) tpointinstset_grid((TInstantSet *) temp, grid);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
   else /* temp->subtype == TSEQUENCESET */
@@ -1677,7 +1557,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   /* Snap to integer precision, removing duplicate and single points */
   Temporal *tpoint4 = tpoint_grid(tpoint3, &grid, true);
   pfree(tpoint3);
-  if (tpoint4 == NULL || !clip_geom)
+  if (tpoint4 == NULL || ! clip_geom)
     return tpoint4;
 
   /* Clip temporal point taking into account the buffer */
@@ -1721,44 +1601,6 @@ tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
  * Decouple the points and the timestamps of a temporal point.
  *
  * @note The function does not remove consecutive points/instants that are equal.
- * @param[in] is Temporal point
- * @param[out] timesarr Array of timestamps encoded in Unix epoch
- * @param[out] count Number of elements in the output array
- */
-static GSERIALIZED *
-tpointinstset_decouple(const TInstantSet *is, int64 **timesarr, int *count)
-{
-  /* Instantaneous sequence */
-  if (is->count == 1)
-    return tpointinst_decouple(tinstantset_inst_n(is, 0), timesarr, count);
-
-  /* General case */
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * is->count);
-  int64 *times = palloc(sizeof(int64) * is->count);
-  for (int i = 0; i < is->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(is, i);
-    Datum value = tinstant_value(inst);
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    points[i] = lwgeom_from_gserialized(gs);
-    times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
-  }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, is->count,
-    MOBDB_FLAGS_GET_LINEAR(is->flags));
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(lwgeom);
-  *timesarr = times;
-  *count = is->count;
-  for (int i = 0; i < is->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
-  return result;
-}
-
-/**
- * Decouple the points and the timestamps of a temporal point.
- *
- * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] seq Temporal point
  * @param[out] times Array of timestamps
  * @note The timestamps are returned in Unix epoch
@@ -1777,7 +1619,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags));
+    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE);
   for (int i = 0; i < seq->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);
@@ -1862,8 +1704,6 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
-  else if (temp->subtype == TINSTANTSET)
-    result = tpointinstset_decouple((TInstantSet *) temp, timesarr, count);
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_decouple((TSequence *) temp, timesarr, count);
   else /* temp->subtype == TSEQUENCESET */

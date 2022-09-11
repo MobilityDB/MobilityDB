@@ -113,8 +113,8 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 {
   if (! tnumber_arithop_tp_at_timestamp1(start1, end1, start2, end2, t))
     return false;
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
     datum_mult(value1, value2, start1->temptype, start2->temptype) :
@@ -162,8 +162,8 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[in] basetype Base type
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
- * @param[in] invert True when the base value is the first argument
- * of the function
+ * @param[in] invert True if the base value is the first argument of the
+ * function
  */
 Temporal *
 arithop_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype,
@@ -318,7 +318,7 @@ tnumberseq_derivative(const TSequence *seq)
     T_TFLOAT, seq->period.upper);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE);
   pfree_array((void **) instants, seq->count - 1);
   return result;
 }
@@ -329,13 +329,13 @@ tnumberseq_derivative(const TSequence *seq)
  * @sqlfunc derivative()
  */
 TSequenceSet *
-tnumberseqset_derivative(const TSequenceSet *ts)
+tnumberseqset_derivative(const TSequenceSet *ss)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int k = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (seq->count > 1)
       sequences[k++] = tnumberseq_derivative(seq);
   }
@@ -354,9 +354,8 @@ Temporal *
 tnumber_derivative(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT || temp->subtype == TINSTANTSET)
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);

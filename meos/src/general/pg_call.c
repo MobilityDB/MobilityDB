@@ -53,7 +53,7 @@
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
- 
+
 /* Definitions taken from miscadmin.h */
 
 /* valid DateStyle values */
@@ -63,17 +63,28 @@
 #define USE_GERMAN_DATES   3
 #define USE_XSD_DATES      4
 
-#define MAXTZLEN           0  /* max TZ name len, not counting tr. null */
-
 /* valid DateOrder values taken */
 #define DATEORDER_YMD      0
 #define DATEORDER_DMY      1
 #define DATEORDER_MDY      2
 
+/*
+ * IntervalStyles
+ *   INTSTYLE_POSTGRES         Like Postgres < 8.4 when DateStyle = 'iso'
+ *   INTSTYLE_POSTGRES_VERBOSE     Like Postgres < 8.4 when DateStyle != 'iso'
+ *   INTSTYLE_SQL_STANDARD       SQL standard interval literals
+ *   INTSTYLE_ISO_8601         ISO-8601-basic formatted intervals
+ */
+#define INTSTYLE_POSTGRES      0
+#define INTSTYLE_POSTGRES_VERBOSE  1
+#define INTSTYLE_SQL_STANDARD    2
+#define INTSTYLE_ISO_8601      3
+
 /* Definitions from globals.c */
 
 int DateStyle = USE_ISO_DATES;
 int DateOrder = DATEORDER_MDY;
+int IntervalStyle = INTSTYLE_POSTGRES;
 
 /*****************************************************************************
  * Functions adapted from float.c
@@ -194,8 +205,9 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from date.c
  *****************************************************************************/
 
+#if MEOS
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a string to a date in internal date format.
  * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
@@ -259,7 +271,7 @@ pg_date_in(char *str)
  * Given internal format date, convert to text string.
  */
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a date in internal date format to a string.
  * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
@@ -282,45 +294,110 @@ pg_date_out(DateADT date)
   result = pstrdup(buf);
   return result;
 }
+#endif /* MEOS */
+
+/*****************************************************************************
+ *   Time ADT
+ *****************************************************************************/
+
+#if MEOS
+/* AdjustTimeForTypmod()
+ * Force the precision of the time value to a specified value.
+ * Uses *exactly* the same code as in AdjustTimestampForTypmod()
+ * but we make a separate copy because those types do not
+ * have a fundamental tie together but rather a coincidence of
+ * implementation. - thomas
+ */
+void
+AdjustTimeForTypmod(TimeADT *time, int32 typmod)
+{
+  static const int64 TimeScales[MAX_TIME_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
+
+  static const int64 TimeOffsets[MAX_TIME_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
+
+  if (typmod >= 0 && typmod <= MAX_TIME_PRECISION)
+  {
+    if (*time >= INT64CONST(0))
+      *time = ((*time + TimeOffsets[typmod]) / TimeScales[typmod]) *
+        TimeScales[typmod];
+    else
+      *time = -((((-*time) + TimeOffsets[typmod]) / TimeScales[typmod]) *
+            TimeScales[typmod]);
+  }
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a string to a time.
+ * @note PostgreSQL function: Datum time_in(PG_FUNCTION_ARGS)
+ */
+TimeADT
+pg_time_in(char *str, int32 typmod)
+{
+  TimeADT result;
+  fsec_t fsec;
+  struct pg_tm tt, *tm = &tt;
+  int tz;
+  int nf;
+  int dterr;
+  char workbuf[MAXDATELEN + 1];
+  char *field[MAXDATEFIELDS];
+  int dtype;
+  int ftype[MAXDATEFIELDS];
+
+  dterr = ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
+    MAXDATEFIELDS, &nf);
+  if (dterr == 0)
+    dterr = DecodeTimeOnly(field, ftype, nf, &dtype, tm, &fsec, &tz);
+  if (dterr != 0)
+    DateTimeParseError(dterr, str, "time");
+
+  tm2time(tm, fsec, &result);
+  AdjustTimeForTypmod(&result, typmod);
+
+  return result;
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a time to a string.
+ * @note PostgreSQL function: Datum time_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_time_out(TimeADT time)
+{
+  char *result;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  char buf[MAXDATELEN + 1];
+
+  time2tm(time, tm, &fsec);
+  EncodeTimeOnly(tm, fsec, false, 0, DateStyle, buf);
+
+  result = pstrdup(buf);
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from timestamp.c
  *****************************************************************************/
-
-/*
- * Report an error detected by one of the datetime input processing routines.
- *
- * dterr is the error code, str is the original input string, datatype is
- * the name of the datatype we were trying to accept.
- *
- * Note: it might seem useless to distinguish DTERR_INTERVAL_OVERFLOW and
- * DTERR_TZDISP_OVERFLOW from DTERR_FIELD_OVERFLOW, but SQL99 mandates three
- * separate SQLSTATE codes, so ...
- */
-void
-DateTimeParseError(int dterr, const char *str, const char *datatype)
-{
-  switch (dterr)
-  {
-    case DTERR_FIELD_OVERFLOW:
-      elog(ERROR, "date/time field value out of range: \"%s\"", str);
-      break;
-    case DTERR_MD_FIELD_OVERFLOW:
-      /* <nanny>same as above, but add hint about DateStyle</nanny> */
-      elog(ERROR, "date/time field value out of range: \"%s\"", str);
-      break;
-    case DTERR_INTERVAL_OVERFLOW:
-      elog(ERROR, "interval field value out of range: \"%s\"", str);
-      break;
-    case DTERR_TZDISP_OVERFLOW:
-      elog(ERROR, "time zone displacement out of range: \"%s\"", str);
-      break;
-    case DTERR_BAD_FORMAT:
-    default:
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
-      break;
-  }
-}
 
 /*
  * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
@@ -383,20 +460,6 @@ void
 AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
   (void) AdjustTimestampForTypmodError(time, typmod, NULL);
-}
-
-/* EncodeSpecialTimestamp()
- * Convert reserved timestamp data type to string.
- */
-void
-EncodeSpecialTimestamp(Timestamp dt, char *str)
-{
-  if (TIMESTAMP_IS_NOBEGIN(dt))
-    strcpy(str, EARLY);
-  else if (TIMESTAMP_IS_NOEND(dt))
-    strcpy(str, LATE);
-  else            /* shouldn't happen */
-    elog(ERROR, "invalid argument for EncodeSpecialTimestamp");
 }
 
 /**
@@ -466,7 +529,7 @@ timestamp_in_common(char *str, int32 typmod, bool withtz)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp with time zone.
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
@@ -477,7 +540,7 @@ pg_timestamptz_in(char *str, int32 typmod)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
  * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
  */
@@ -515,7 +578,7 @@ timestamp_out_common(TimestampTz dt, bool withtz)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a timestamp with timezone to a string.
  * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
  */
@@ -526,7 +589,7 @@ pg_timestamptz_out(TimestampTz dt)
 }
 
 /**
- * @ingroup libmeos_base
+ * @ingroup libmeos_pg_types
  * @brief Convert a timestamp without timezone to a string.
  * @note PostgreSQL function: Datum timestamp_out(PG_FUNCTION_ARGS)
  */
@@ -538,9 +601,298 @@ pg_timestamp_out(Timestamp dt)
 
 /*****************************************************************************/
 
+#if MEOS
+/*
+ *  Adjust interval for specified precision, in both YEAR to SECOND
+ *  range and sub-second precision.
+ */
+static void
+AdjustIntervalForTypmod(Interval *interval, int32 typmod)
+{
+  static const int64 IntervalScales[MAX_INTERVAL_PRECISION + 1] = {
+    INT64CONST(1000000),
+    INT64CONST(100000),
+    INT64CONST(10000),
+    INT64CONST(1000),
+    INT64CONST(100),
+    INT64CONST(10),
+    INT64CONST(1)
+  };
+
+  static const int64 IntervalOffsets[MAX_INTERVAL_PRECISION + 1] = {
+    INT64CONST(500000),
+    INT64CONST(50000),
+    INT64CONST(5000),
+    INT64CONST(500),
+    INT64CONST(50),
+    INT64CONST(5),
+    INT64CONST(0)
+  };
+
+  /*
+   * Unspecified range and precision? Then not necessary to adjust. Setting
+   * typmod to -1 is the convention for all data types.
+   */
+  if (typmod >= 0)
+  {
+    int      range = INTERVAL_RANGE(typmod);
+    int      precision = INTERVAL_PRECISION(typmod);
+
+    /*
+     * Our interpretation of intervals with a limited set of fields is
+     * that fields to the right of the last one specified are zeroed out,
+     * but those to the left of it remain valid.  Thus for example there
+     * is no operational difference between INTERVAL YEAR TO MONTH and
+     * INTERVAL MONTH.  In some cases we could meaningfully enforce that
+     * higher-order fields are zero; for example INTERVAL DAY could reject
+     * nonzero "month" field.  However that seems a bit pointless when we
+     * can't do it consistently.  (We cannot enforce a range limit on the
+     * highest expected field, since we do not have any equivalent of
+     * SQL's <interval leading field precision>.)  If we ever decide to
+     * revisit this, interval_support will likely require adjusting.
+     *
+     * Note: before PG 8.4 we interpreted a limited set of fields as
+     * actually causing a "modulo" operation on a given value, potentially
+     * losing high-order as well as low-order information.  But there is
+     * no support for such behavior in the standard, and it seems fairly
+     * undesirable on data consistency grounds anyway.  Now we only
+     * perform truncation or rounding of low-order fields.
+     */
+    if (range == INTERVAL_FULL_RANGE)
+    {
+      /* Do nothing... */
+    }
+    else if (range == INTERVAL_MASK(YEAR))
+    {
+      interval->month = (interval->month / MONTHS_PER_YEAR) * MONTHS_PER_YEAR;
+      interval->day = 0;
+      interval->time = 0;
+    }
+    else if (range == INTERVAL_MASK(MONTH))
+    {
+      interval->day = 0;
+      interval->time = 0;
+    }
+    /* YEAR TO MONTH */
+    else if (range == (INTERVAL_MASK(YEAR) | INTERVAL_MASK(MONTH)))
+    {
+      interval->day = 0;
+      interval->time = 0;
+    }
+    else if (range == INTERVAL_MASK(DAY))
+    {
+      interval->time = 0;
+    }
+    else if (range == INTERVAL_MASK(HOUR))
+    {
+      interval->time = (interval->time / USECS_PER_HOUR) *
+        USECS_PER_HOUR;
+    }
+    else if (range == INTERVAL_MASK(MINUTE))
+    {
+      interval->time = (interval->time / USECS_PER_MINUTE) *
+        USECS_PER_MINUTE;
+    }
+    else if (range == INTERVAL_MASK(SECOND))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    /* DAY TO HOUR */
+    else if (range == (INTERVAL_MASK(DAY) |
+               INTERVAL_MASK(HOUR)))
+    {
+      interval->time = (interval->time / USECS_PER_HOUR) *
+        USECS_PER_HOUR;
+    }
+    /* DAY TO MINUTE */
+    else if (range == (INTERVAL_MASK(DAY) |
+               INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE)))
+    {
+      interval->time = (interval->time / USECS_PER_MINUTE) *
+        USECS_PER_MINUTE;
+    }
+    /* DAY TO SECOND */
+    else if (range == (INTERVAL_MASK(DAY) |
+               INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE) |
+               INTERVAL_MASK(SECOND)))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    /* HOUR TO MINUTE */
+    else if (range == (INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE)))
+    {
+      interval->time = (interval->time / USECS_PER_MINUTE) *
+        USECS_PER_MINUTE;
+    }
+    /* HOUR TO SECOND */
+    else if (range == (INTERVAL_MASK(HOUR) |
+               INTERVAL_MASK(MINUTE) |
+               INTERVAL_MASK(SECOND)))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    /* MINUTE TO SECOND */
+    else if (range == (INTERVAL_MASK(MINUTE) |
+               INTERVAL_MASK(SECOND)))
+    {
+      /* fractional-second rounding will be dealt with below */
+    }
+    else
+      elog(ERROR, "unrecognized interval typmod: %d", typmod);
+
+    /* Need to adjust sub-second precision? */
+    if (precision != INTERVAL_FULL_PRECISION)
+    {
+      if (precision < 0 || precision > MAX_INTERVAL_PRECISION)
+        elog(ERROR, "interval(%d) precision must be between %d and %d",
+                precision, 0, MAX_INTERVAL_PRECISION);
+
+      if (interval->time >= INT64CONST(0))
+      {
+        interval->time = ((interval->time +
+                   IntervalOffsets[precision]) /
+                  IntervalScales[precision]) *
+          IntervalScales[precision];
+      }
+      else
+      {
+        interval->time = -(((-interval->time +
+                   IntervalOffsets[precision]) /
+                  IntervalScales[precision]) *
+                   IntervalScales[precision]);
+      }
+    }
+  }
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a string to an interval.
+ * @note PostgreSQL function: Datum interval_in(PG_FUNCTION_ARGS)
+ */
+Interval *
+pg_interval_in(char *str, int32 typmod)
+{
+  Interval *result;
+  fsec_t fsec;
+  struct pg_tm tt, *tm = &tt;
+  int dtype;
+  int nf;
+  int range;
+  int dterr;
+  char *field[MAXDATEFIELDS];
+  int ftype[MAXDATEFIELDS];
+  char workbuf[256];
+
+  tm->tm_year = 0;
+  tm->tm_mon = 0;
+  tm->tm_mday = 0;
+  tm->tm_hour = 0;
+  tm->tm_min = 0;
+  tm->tm_sec = 0;
+  fsec = 0;
+
+  if (typmod >= 0)
+    range = INTERVAL_RANGE(typmod);
+  else
+    range = INTERVAL_FULL_RANGE;
+
+  dterr = ParseDateTime(str, workbuf, sizeof(workbuf), field,
+              ftype, MAXDATEFIELDS, &nf);
+  if (dterr == 0)
+    dterr = DecodeInterval(field, ftype, nf, range, &dtype, tm, &fsec);
+
+  /* if those functions think it's a bad format, try ISO8601 style */
+  if (dterr == DTERR_BAD_FORMAT)
+    dterr = DecodeISO8601Interval(str, &dtype, tm, &fsec);
+
+  if (dterr != 0)
+  {
+    if (dterr == DTERR_FIELD_OVERFLOW)
+      dterr = DTERR_INTERVAL_OVERFLOW;
+    DateTimeParseError(dterr, str, "interval");
+  }
+
+  result = (Interval *) palloc(sizeof(Interval));
+
+  switch (dtype)
+  {
+    case DTK_DELTA:
+      if (tm2interval(tm, fsec, result) != 0)
+        elog(ERROR, "interval out of range");
+      break;
+
+    default:
+      elog(ERROR, "unexpected dtype %d while parsing interval \"%s\"",
+         dtype, str);
+  }
+
+  AdjustIntervalForTypmod(result, typmod);
+
+  return result;
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Interval constructor
+ * @note PostgreSQL function: Datum make_interval(PG_FUNCTION_ARGS)
+ */
+Interval *
+pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours,
+  int32 mins, double secs)
+{
+  Interval *result;
+
+  /*
+   * Reject out-of-range inputs.  We really ought to check the integer
+   * inputs as well, but it's not entirely clear what limits to apply.
+   */
+  if (isinf(secs) || isnan(secs))
+    elog(ERROR, "interval out of range");
+
+  result = (Interval *) palloc(sizeof(Interval));
+  result->month = years * MONTHS_PER_YEAR + months;
+  result->day = weeks * 7 + days;
+
+  secs = rint(secs * USECS_PER_SEC);
+  result->time = hours * ((int64) SECS_PER_HOUR * USECS_PER_SEC) +
+    mins * ((int64) SECS_PER_MINUTE * USECS_PER_SEC) + (int64) secs;
+
+  return result;
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a time span to external form.
+ * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_interval_out(Interval *span)
+{
+  char *result;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  char buf[MAXDATELEN + 1];
+
+  if (interval2tm(*span, tm, &fsec) != 0)
+    elog(ERROR, "could not convert interval to tm");
+
+  EncodeInterval(tm, fsec, IntervalStyle, buf);
+
+  result = pstrdup(buf);
+  return result;
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+
 #define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
  * @note PostgreSQL function: Datum interval_pl(PG_FUNCTION_ARGS)
  */
@@ -569,6 +921,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
  *
  * Note that interval has provisions for qualitative year/month and day
@@ -648,6 +1001,7 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
  * @note PostgreSQL function: Datum timestamp_pl_interval(PG_FUNCTION_ARGS)
  */
@@ -661,7 +1015,7 @@ pg_timestamp_mi_interval(TimestampTz timestamp, const Interval *span)
   return pg_timestamp_pl_interval(timestamp, &tspan);
 }
 
-/*
+/**
  * @brief Add an interval to a timestamp data type.
  *
  *  Adjust interval so 'time' contains less than a whole day, adding
@@ -696,7 +1050,8 @@ pg_interval_justify_hours(const Interval *span)
   return result;
 }
 
-/*
+/**
+ * @ingroup libmeos_pg_types
  * @brief Compute the difference of two timestamps
  * @note PostgreSQL function: Datum timestamp_mi(PG_FUNCTION_ARGS)
  * The original code from PostgreSQL has `Timestamp` as arguments
@@ -750,7 +1105,8 @@ interval_cmp_value(const Interval *interval)
   return span;
 }
 
-/*
+/**
+ * @ingroup libmeos_pg_types
  * @brief Compare the two intervals
  * @note PostgreSQL function: Datum interval_cmp(PG_FUNCTION_ARGS)
  */
@@ -773,12 +1129,12 @@ pg_interval_cmp(const Interval *interval1, const Interval *interval2)
 
 #define mix(a,b,c) \
 { \
-  a -= c;  a ^= rot(c, 4);	c += b; \
-  b -= a;  b ^= rot(a, 6);	a += c; \
-  c -= b;  c ^= rot(b, 8);	b += a; \
-  a -= c;  a ^= rot(c,16);	c += b; \
-  b -= a;  b ^= rot(a,19);	a += c; \
-  c -= b;  c ^= rot(b, 4);	b += a; \
+  a -= c;  a ^= rot(c, 4);  c += b; \
+  b -= a;  b ^= rot(a, 6);  a += c; \
+  c -= b;  c ^= rot(b, 8);  b += a; \
+  a -= c;  a ^= rot(c,16);  c += b; \
+  b -= a;  b ^= rot(a,19);  a += c; \
+  c -= b;  c ^= rot(b, 4);  b += a; \
 }
 
 #define final(a,b,c) \
@@ -843,7 +1199,7 @@ hash_bytes_uint32_extended(uint32 k, uint64 seed)
 
 #endif /* POSTGRESQL_VERSION_NUMBER < 130000 */
 
-/*
+/**
  * @brief Get the 32-bit hash value of an int64 value.
  * @note PostgreSQL function: Datum hashint8(PG_FUNCTION_ARGS)
  */
@@ -864,7 +1220,7 @@ pg_hashint8(int64 val)
   return DatumGetUInt32(hash_uint32(lohalf));
 }
 
-/*
+/**
  * @brief Get the 64-bit hash value of an int64 value.
  * @note PostgreSQL function: Datum hashint8extended(PG_FUNCTION_ARGS)
  */
@@ -878,7 +1234,7 @@ pg_hashint8extended(int64 val, uint64 seed)
   return hash_uint32_extended(lohalf, seed);
 }
 
-/*
+/**
  * @brief Get the 32-bit hash value of an float64 value.
  * @note PostgreSQL function: Datum hashfloat8(PG_FUNCTION_ARGS)
  */
@@ -903,7 +1259,7 @@ pg_hashfloat8(float8 key)
 }
 
 #if 0 /* not used */
-/*
+/**
  * @brief Get the 64-bit hash value of a float64 value.
  * @note PostgreSQL function: Datum hashfloat8extended(PG_FUNCTION_ARGS)
  */
@@ -920,7 +1276,7 @@ pg_hashfloat8extended(float8 key, uint64 seed)
 }
 #endif /* not used */
 
-/*
+/**
  * @brief Get the 32-bit hash value of an text value.
  * @note PostgreSQL function: Datum hashtext(PG_FUNCTION_ARGS)
  * We simulate what would happen using DEFAULT_COLLATION_OID

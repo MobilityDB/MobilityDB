@@ -57,7 +57,7 @@ typedef struct
  */
 typedef struct STboxGridState
 {
-  bool done;           /**< True when all the tiles have been processed */
+  bool done;           /**< True when all tiles have been processed */
   int i;               /**< Number of current tile */
   double size;         /**< Size of the x, y, and z dimension */
   int64 tunits;        /**< Size of the time dimension */

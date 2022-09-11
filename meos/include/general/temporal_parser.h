@@ -65,11 +65,11 @@ extern Span *span_parse(char **str, mobdbType spantype, bool end, bool make);
 
 extern TInstant *tinstant_parse(char **str, mobdbType temptype, bool end,
   bool make);
-extern TInstantSet *tinstantset_parse(char **str, mobdbType temptype);
-extern TSequence *tsequence_parse(char **str, mobdbType temptype, bool linear,
+extern TSequence *tdiscseq_parse(char **str, mobdbType temptype);
+extern TSequence *tcontseq_parse(char **str, mobdbType temptype, int interp,
   bool end, bool make);
 extern TSequenceSet *tsequenceset_parse(char **str, mobdbType temptype,
-  bool linear);
+  int interp);
 extern Temporal *temporal_parse(char **str, mobdbType temptype);
 
 /*****************************************************************************/

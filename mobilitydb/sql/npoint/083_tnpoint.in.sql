@@ -127,12 +127,12 @@ CREATE FUNCTION tnpoint_inst(val npoint, t timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_instset(tnpoint[])
+CREATE FUNCTION tnpoint_discseq(tnpoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(tnpoint[], lower_inc boolean DEFAULT true,
-    upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
+    upper_inc boolean DEFAULT true, linear bool DEFAULT true)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -141,9 +141,9 @@ CREATE FUNCTION tnpoint_seqset(tnpoint[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnpoint_instset(npoint, timestampset)
+CREATE FUNCTION tnpoint_discseq(npoint, timestampset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tinstantset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, period, boolean DEFAULT true)
   RETURNS tnpoint
@@ -154,7 +154,7 @@ CREATE FUNCTION tnpoint_seqset(npoint, periodset, boolean DEFAULT true)
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear boolean DEFAULT true,
+CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear bool DEFAULT true,
     maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
@@ -189,9 +189,9 @@ CREATE FUNCTION tnpoint_inst(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_instset(tnpoint)
+CREATE FUNCTION tnpoint_discseq(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstantset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(tnpoint)
   RETURNS tnpoint

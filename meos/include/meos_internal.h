@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * This MobilityDB code is provided under The PostgreSQL License.
+ * This MobilityDB code seq provided under The PostgreSQL License.
  * Copyright(c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -10,7 +10,7 @@
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
- * agreement is hereby granted, provided that the above copyright notice and
+ * agreement seq hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
@@ -198,12 +198,9 @@ extern char **geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool ext
 extern char *tboolinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *tboolinst_from_mfjson(json_object *mfjson);
 extern TInstant *tboolinst_in(char *str);
-extern char *tboolinstset_as_mfjson(const TInstantSet *is, bool with_bbox);
-extern TInstantSet *tboolinstset_from_mfjson(json_object *mfjson);
-extern TInstantSet *tboolinstset_in(char *str);
 extern char *tboolseq_as_mfjson(const TSequence *seq, bool with_bbox);
 extern TSequence *tboolseq_from_mfjson(json_object *mfjson);
-extern TSequence *tboolseq_in(char *str);
+extern TSequence *tboolseq_in(char *str, int interp);
 extern char *tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(char *str);
@@ -213,77 +210,59 @@ extern char **temporalarr_out(const Temporal **temparr, int count, Datum arg);
 extern char *tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
 extern TInstant *tfloatinst_in(char *str);
-extern char *tfloatinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision);
-extern TInstantSet *tfloatinstset_from_mfjson(json_object *mfjson);
-extern TInstantSet *tfloatinstset_in(char *str);
 extern char *tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision);
-extern TSequence *tfloatseq_from_mfjson(json_object *mfjson, bool linear);
-extern TSequence *tfloatseq_in(char *str);
+extern TSequence *tfloatseq_from_mfjson(json_object *mfjson, int interp);
+extern TSequence *tfloatseq_in(char *str, int interp);
 extern char *tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision);
-extern TSequenceSet *tfloatseqset_from_mfjson(json_object *mfjson, bool linear);
+extern TSequenceSet *tfloatseqset_from_mfjson(json_object *mfjson, int interp);
 extern TSequenceSet *tfloatseqset_in(char *str);
 extern char *tgeogpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision, char *srs);
 extern TInstant *tgeogpointinst_from_mfjson(json_object *mfjson, int srid);
 extern TInstant *tgeogpointinst_in(char *str);
-extern char *tgeogpointinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision, char *srs);
-extern TInstantSet *tgeogpointinstset_from_mfjson(json_object *mfjson, int srid);
-extern TInstantSet *tgeogpointinstset_in(char *str);
 extern char *tgeogpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision, char *srs);
-extern TSequence *tgeogpointseq_from_mfjson(json_object *mfjson, int srid, bool linear);
-extern TSequence *tgeogpointseq_in(char *str);
+extern TSequence *tgeogpointseq_from_mfjson(json_object *mfjson, int srid, int interp);
+extern TSequence *tgeogpointseq_in(char *str, int interp);
 extern char *tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision, char *srs);
-extern TSequenceSet *tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear);
+extern TSequenceSet *tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, int interp);
 extern TSequenceSet *tgeogpointseqset_in(char *str);
 extern char *tgeompointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision, char *srs);
 extern TInstant *tgeompointinst_from_mfjson(json_object *mfjson, int srid);
 extern TInstant *tgeompointinst_in(char *str);
-extern char *tgeompointinstset_as_mfjson(const TInstantSet *is, bool with_bbox, int precision, char *srs);
-extern TInstantSet *tgeompointinstset_from_mfjson(json_object *mfjson, int srid);
-extern TInstantSet *tgeompointinstset_in(char *str);
 extern char *tgeompointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision, char *srs);
-extern TSequence *tgeompointseq_from_mfjson(json_object *mfjson, int srid, bool linear);
-extern TSequence *tgeompointseq_in(char *str);
+extern TSequence *tgeompointseq_from_mfjson(json_object *mfjson, int srid, int interp);
+extern TSequence *tgeompointseq_in(char *str, int interp);
 extern char *tgeompointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision, char *srs);
-extern TSequenceSet *tgeompointseqset_from_mfjson(json_object *mfjson, int srid, bool linear);
+extern TSequenceSet *tgeompointseqset_from_mfjson(json_object *mfjson, int srid, int interp);
 extern TSequenceSet *tgeompointseqset_in(char *str);
 extern char *tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox, char *srs);
 extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
 extern TInstant *tinstant_in(char *str, mobdbType temptype);
 extern char *tinstant_out(const TInstant *inst, Datum arg);
-extern char *tinstantset_as_mfjson(const TInstantSet *is, int precision, bool with_bbox, char *srs);
-extern TInstantSet *tinstantset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
-extern TInstantSet *tinstantset_in(char *str, mobdbType temptype);
-extern char *tinstantset_out(const TInstantSet *is, Datum arg);
+extern TSequence *tdiscseq_in(char *str, mobdbType temptype);
 extern char *tintinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *tintinst_from_mfjson(json_object *mfjson);
 extern TInstant *tintinst_in(char *str);
-extern char *tintinstset_as_mfjson(const TInstantSet *is, bool with_bbox);
-extern TInstantSet *tintinstset_from_mfjson(json_object *mfjson);
-extern TInstantSet *tintinstset_in(char *str);
 extern char *tintseq_as_mfjson(const TSequence *seq, bool with_bbox);
 extern TSequence *tintseq_from_mfjson(json_object *mfjson);
-extern TSequence *tintseq_in(char *str);
+extern TSequence *tintseq_in(char *str, int interp);
 extern char *tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *tintseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tintseqset_in(char *str);
 extern char **tpointarr_as_text(const Temporal **temparr, int count, int maxdd, bool extended);
 extern char *tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox, char *srs);
-extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, bool linear);
-extern TSequence *tsequence_in(char *str, mobdbType temptype, bool linear);
+extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, int interp);
+extern TSequence *tsequence_in(char *str, mobdbType temptype, int interp);
 extern char *tsequence_out(const TSequence *seq, Datum arg);
 extern char *tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox, char *srs);
-extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, bool linear);
-extern TSequenceSet *tsequenceset_in(char *str, mobdbType temptype, bool linear);
+extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, int interp);
+extern TSequenceSet *tsequenceset_in(char *str, mobdbType temptype, int interp);
 extern char *tsequenceset_out(const TSequenceSet *ss, Datum arg);
 extern char *ttextinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *ttextinst_from_mfjson(json_object *mfjson);
 extern TInstant *ttextinst_in(char *str);
-extern char *ttextinstset_as_mfjson(const TInstantSet *is, bool with_bbox);
-extern TInstantSet *ttextinstset_from_mfjson(json_object *mfjson);
-extern TInstantSet *ttextinstset_in(char *str);
 extern char *ttextseq_as_mfjson(const TSequence *seq, bool with_bbox);
 extern TSequence *ttextseq_from_mfjson(json_object *mfjson);
-extern TSequence *ttextseq_in(char *str);
+extern TSequence *ttextseq_in(char *str, int interp);
 extern char *ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *ttextseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *ttextseqset_in(char *str);
@@ -292,18 +271,16 @@ extern TSequenceSet *ttextseqset_in(char *str);
 
 /* Constructor functions for temporal types */
 
-extern Temporal *temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp, bool linear);
+extern Temporal *temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp, int interp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, mobdbType temptype, TimestampTz t);
-extern TInstantSet *tinstantset_copy(const TInstantSet *is);;
-extern TInstantSet *tinstantset_from_base(Datum value, mobdbType temptype, const TInstantSet *is);
-extern TInstantSet *tinstantset_from_base_time(Datum value, mobdbType temptype, const TimestampSet *ss);
+extern TSequence *tdiscseq_from_base_time(Datum value, mobdbType temptype, const TimestampSet *ss);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq, bool linear);
-extern TSequence *tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p, bool linear);
+extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq, int interp);
+extern TSequence *tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p, int interp);
 extern TSequenceSet *tsequenceset_copy (const TSequenceSet *ss);
-extern TSequenceSet *tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss, bool linear);
-extern TSequenceSet *tsequenceset_from_base_time(Datum value, mobdbType temptype, const PeriodSet *ps, bool linear);
+extern TSequenceSet *tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss, int interp);
+extern TSequenceSet *tsequenceset_from_base_time(Datum value, mobdbType temptype, const PeriodSet *ps, int interp);
 
 /*****************************************************************************/
 
@@ -311,13 +288,10 @@ extern TSequenceSet *tsequenceset_from_base_time(Datum value, mobdbType temptype
 
 extern void temporal_set_period(const Temporal *temp, Period *p);
 extern TInstant *tfloatinst_to_tintinst(const TInstant *inst);
-extern TInstantSet *tfloatinstset_to_tintinstset(const TInstantSet *is);
 extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
 extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ss);
 extern void tinstant_set_period(const TInstant *inst, Period *p);
-extern void tinstantset_set_period(const TInstantSet *is, Period *p);
 extern TInstant *tintinst_to_tfloatinst(const TInstant *inst);
-extern TInstantSet *tintinstset_to_tfloatinstset(const TInstantSet *is);
 extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
 extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ss);
 extern void tsequence_set_period(const TSequence *seq, Period *p);
@@ -334,7 +308,6 @@ extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern Datum temporal_start_value(const Temporal *temp);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern Span **tfloatinst_spans(const TInstant *inst, int *count);
-extern Span **tfloatinstset_spans(const TInstantSet *is, int *count);
 extern Span *tfloatseq_span(const TSequence *seq);
 extern Span **tfloatseq_spans(const TSequence *seq, int *count);
 extern Span *tfloatseqset_span(const TSequenceSet *ss);
@@ -349,22 +322,9 @@ extern Datum tinstant_value(const TInstant *inst);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result);
 extern Datum tinstant_value_copy(const TInstant *inst);
 extern Datum *tinstant_values(const TInstant *inst, int *count);
-extern TimestampTz tinstantset_end_timestamp(const TInstantSet *is);
-extern uint32 tinstantset_hash(const TInstantSet *is);
-extern const TInstant *tinstantset_inst_n(const TInstantSet *is, int index);
-extern const TInstant **tinstantset_instants(const TInstantSet *is, int *count);
-extern const TInstant *tinstantset_max_instant(const TInstantSet *is);
-extern Datum tinstantset_max_value(const TInstantSet *is);
-extern const TInstant *tinstantset_min_instant(const TInstantSet *is);
-extern Datum tinstantset_min_value(const TInstantSet *is);
-extern TSequence **tinstantset_sequences(const TInstantSet *is, int *count);
-extern void tinstantset_set_bbox(const TInstantSet *is, void *box);
-extern TimestampTz tinstantset_start_timestamp(const TInstantSet *is);
-extern PeriodSet *tinstantset_time(const TInstantSet *is);
-extern Interval *tinstantset_timespan(const TInstantSet *is);
-extern TimestampTz *tinstantset_timestamps(const TInstantSet *is, int *count);
-extern bool tinstantset_value_at_timestamp(const TInstantSet *is, TimestampTz t, Datum *result);
-extern Datum *tinstantset_values(const TInstantSet *is, int *count);
+extern uint32 tdiscseq_hash(const TSequence *seq);
+extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
+extern bool tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
 extern Interval *tsequence_duration(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
 extern uint32 tsequence_hash(const TSequence *seq);
@@ -374,6 +334,7 @@ extern const TInstant *tsequence_max_instant(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern const TInstant *tsequence_min_instant(const TSequence *seq);
 extern Datum tsequence_min_value(const TSequence *seq);
+extern size_t *tsequence_offsets_ptr(const TSequence *seq);
 extern TSequence **tsequence_segments(const TSequence *seq, int *count);
 extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
 extern TSequence **tsequence_sequences(const TSequence *seq, int *count);
@@ -418,23 +379,19 @@ extern Datum *tsequenceset_values(const TSequenceSet *ss, int *count);
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 extern TInstant *tinstant_shift(const TInstant *inst, const Interval *interval);
-extern TInstantSet *tinstant_to_tinstantset(const TInstant *inst);
-extern TSequence *tinstant_to_tsequence(const TInstant *inst, bool linear);
-extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, bool linear);
-extern TInstantSet *tinstantset_append_tinstant(const TInstantSet *is, const TInstant *inst);
-extern Temporal *tinstantset_merge(const TInstantSet *is1, const TInstantSet *is2);
-extern Temporal *tinstantset_merge_array(const TInstantSet **instsets, int count);
-extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *is, const Interval *start, const Interval *duration);
-extern TInstant *tinstantset_to_tinstant(const TInstantSet *ti);
-extern TSequence *tinstantset_to_tsequence(const TInstantSet *is, bool linear);
-extern TSequenceSet *tinstantset_to_tsequenceset(const TInstantSet *is, bool linear);
+extern TSequence *tinstant_to_tsequence(const TInstant *inst, int interp);
+extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, int interp);
+extern Temporal *tdiscseq_merge(const TSequence *is1, const TSequence *is2);
+extern Temporal *tdiscseq_merge_array(const TSequence **sequences, int count);
+extern TSequence *tdiscseq_to_tsequence(const TSequence *seq, int interp);
+extern TSequenceSet *tdiscseq_to_tsequenceset(const TSequence *seq, int interp);
 extern Temporal *tsequence_append_tinstant(const TSequence *seq, const TInstant *inst);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
 extern Temporal *tsequence_merge_array(const TSequence **sequences, int count);
 extern TSequence *tsequence_shift_tscale(const TSequence *seq, const Interval *start, const Interval *duration);
 extern TSequenceSet *tsequence_step_to_linear(const TSequence *seq);
 extern TInstant *tsequence_to_tinstant(const TSequence *seq);
-extern TInstantSet *tsequence_to_tinstantset(const TSequence *seq);
+extern TSequence *tsequence_to_tdiscseq(const TSequence *seq);
 extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
 extern TSequenceSet *tsequenceset_append_tinstant(const TSequenceSet *ss, const TInstant *inst);
 extern TSequenceSet *tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2);
@@ -442,7 +399,7 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **seqsets, int 
 extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start, const Interval *duration);
 extern TSequenceSet *tsequenceset_step_to_linear(const TSequenceSet *ss);
 extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ts);
-extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
+extern TSequence *tsequenceset_to_tdiscseq(const TSequenceSet *ts);
 extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
 
 /*****************************************************************************/
@@ -466,28 +423,37 @@ extern TInstant *tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t
 extern TInstant *tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ss, bool atfunc);
 extern TInstant *tinstant_restrict_period(const TInstant *inst, const Period *period, bool atfunc);
 extern TInstant *tinstant_restrict_periodset(const TInstant *inst, const PeriodSet *ps, bool atfunc);
-extern TInstantSet *tinstantset_restrict_value(const TInstantSet *is, Datum value, bool atfunc);
-extern TInstantSet *tinstantset_restrict_values(const TInstantSet *is, const Datum *values, int count, bool atfunc);
-extern TInstantSet *tnumberinstset_restrict_span(const TInstantSet *is, const Span *span, bool atfunc);
-extern TInstantSet *tnumberinstset_restrict_spans(const TInstantSet *is, Span **normspans, int count, bool atfunc);
-extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *is, bool min, bool atfunc);
-extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *is, TimestampTz t, bool atfunc);
-extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *is, const TimestampSet *ss, bool atfunc);
-extern TInstantSet *tinstantset_restrict_period(const TInstantSet *is, const Period *period, bool atfunc);
-extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *is, const PeriodSet *ps, bool atfunc);
-extern bool tinstantset_value_at_timestamp(const TInstantSet *is, TimestampTz t, Datum *result);
-extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc);
-extern TSequenceSet *tsequence_restrict_values(const TSequence *seq, const Datum *values, int count, bool atfunc);
+extern TSequence *tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc);
+extern TSequence *tdiscseq_restrict_values(const TSequence *seq, const Datum *values, int count, bool atfunc);
+extern TSequence *tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc);
+extern TSequence *tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans, int count, bool atfunc);
+extern TSequence *tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
+extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);
+extern Temporal *tsequence_minus_timestamp(const TSequence *seq, TimestampTz t);
+extern TSequence *tsequence_restrict_timestampset(const TSequence *seq, const TimestampSet *ss, bool atfunc);
+extern TSequence *tsequence_restrict_period(const TSequence *seq, const Period *period, bool atfunc);
+extern TSequence *tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atfunc);
+extern bool tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
+extern TSequenceSet *tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc);
+extern TSequenceSet *tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_spans(const TSequence *seq, Span **normspans, int count, bool atfunc, bool bboxtest);
-extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
-extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);
-extern TSequenceSet *tsequence_minus_timestamp(const TSequence *seq, TimestampTz t);
-extern TInstantSet *tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ss);
-extern TSequenceSet *tsequence_minus_timestampset(const TSequence *seq, const TimestampSet *ss);
-extern TSequence *tsequence_at_period(const TSequence *seq, const Period *p);
-extern TSequenceSet *tsequence_minus_period(const TSequence *seq, const Period *p);
-extern TSequenceSet *tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atfunc);
+extern TSequenceSet *tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
+
+extern TInstant *tdiscseq_at_timestamp(const TSequence *seq, TimestampTz t);
+extern TSequence *tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t);
+extern TSequence *tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts, bool atfunc);
+extern TSequence *tdiscseq_at_period(const TSequence *seq, const Period *period);
+extern TSequence *tdiscseq_minus_period(const TSequence *seq, const Period *period);
+extern TSequence *tdiscseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atfunc);
+
+extern TInstant *tcontseq_at_timestamp(const TSequence *seq, TimestampTz t);
+extern TSequenceSet *tcontseq_minus_timestamp(const TSequence *seq, TimestampTz t);
+extern TSequence *tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ss);
+extern TSequenceSet *tcontseq_minus_timestampset(const TSequence *seq, const TimestampSet *ss);
+extern TSequence *tcontseq_at_period(const TSequence *seq, const Period *p);
+extern TSequenceSet *tcontseq_minus_period(const TSequence *seq, const Period *p);
+extern TSequenceSet *tcontseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const Datum *values, int count, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span, bool atfunc);
@@ -498,7 +464,7 @@ extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ss1, con
 extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps, bool atfunc);
 extern TInstant *tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs, bool atfunc);
-extern TInstantSet *tpointinstset_restrict_geometry(const TInstantSet *is, const GSERIALIZED *gs, bool atfunc);
+extern TSequence *tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs, const STBOX *box, bool atfunc);
 extern Temporal *tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
@@ -573,18 +539,10 @@ extern bool tinstant_always_lt(const TInstant *inst, Datum value);
 extern bool tinstant_ever_eq(const TInstant *inst, Datum value);
 extern bool tinstant_ever_le(const TInstant *inst, Datum value);
 extern bool tinstant_ever_lt(const TInstant *inst, Datum value);
-extern bool tinstantset_always_eq(const TInstantSet *is, Datum value);
-extern bool tinstantset_always_le(const TInstantSet *is, Datum value);
-extern bool tinstantset_always_lt(const TInstantSet *is, Datum value);
-extern bool tinstantset_ever_eq(const TInstantSet *is, Datum value);
-extern bool tinstantset_ever_le(const TInstantSet *is, Datum value);
-extern bool tinstantset_ever_lt(const TInstantSet *is, Datum value);
 extern bool tpoint_always_eq(const Temporal *temp, Datum value);
 extern bool tpoint_ever_eq(const Temporal *temp, Datum value);
 extern bool tpointinst_always_eq(const TInstant *inst, Datum value);
 extern bool tpointinst_ever_eq(const TInstant *inst, Datum value);
-extern bool tpointinstset_always_eq(const TInstantSet *is, Datum value);
-extern bool tpointinstset_ever_eq(const TInstantSet *is, Datum value);
 extern bool tpointseq_always_eq(const TSequence *seq, Datum value);
 extern bool tpointseq_ever_eq(const TSequence *seq, Datum value);
 extern bool tpointseqset_always_eq(const TSequenceSet *ss, Datum value);
@@ -621,8 +579,8 @@ extern Temporal *tge_temporal_base(const Temporal *temp, Datum base, mobdbType b
 
 extern int tinstant_cmp(const TInstant *inst1, const TInstant *inst2);
 extern bool tinstant_eq(const TInstant *inst1, const TInstant *inst2);
-extern int tinstantset_cmp(const TInstantSet *is1, const TInstantSet *is2);
-extern bool tinstantset_eq(const TInstantSet *is1, const TInstantSet *is2);
+extern int tdiscseq_cmp(const TSequence *is1, const TSequence *is2);
+extern bool tdiscseq_eq(const TSequence *is1, const TSequence *is2);
 extern int tsequence_cmp(const TSequence *seq1, const TSequence *seq2);
 extern bool tsequence_eq(const TSequence *seq1, const TSequence *seq2);
 extern int tsequenceset_cmp(const TSequenceSet *ss1, const TSequenceSet *ss2);
@@ -635,9 +593,9 @@ extern bool tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2);
 /* Spatial accessor functions for temporal point types */
 
 extern int tpointinst_srid(const TInstant *inst);
-extern bool tpointinstset_is_simple(const TInstantSet *is);
-extern int tpointinstset_srid(const TInstantSet *is);
-extern GSERIALIZED *tpointinstset_trajectory(const TInstantSet *is);
+extern bool tpointdiscseq_is_simple(const TSequence *seq);
+extern GSERIALIZED *tpointcontseq_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointdiscseq_trajectory(const TSequence *seq);
 extern TSequenceSet *tpointseq_azimuth(const TSequence *seq);
 extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevlength);
 extern bool tpointseq_is_simple(const TSequence *seq);
@@ -645,7 +603,6 @@ extern double tpointseq_length(const TSequence *seq);
 extern TSequence *tpointseq_speed(const TSequence *seq);
 extern int tpointseq_srid(const TSequence *seq);
 extern STBOX *tpointseq_stboxes(const TSequence *seq, int *count);
-extern GSERIALIZED *tpointseq_trajectory(const TSequence *seq);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
@@ -660,12 +617,9 @@ extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
 /* Spatial transformation functions for temporal point types */
 
 extern TInstant *tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper);
-extern TInstantSet *tgeompointinstset_tgeogpointinstset(const TInstantSet *is, bool oper);
 extern TSequence *tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper);
 extern TSequenceSet *tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper);
 extern TInstant *tpointinst_set_srid(const TInstant *inst, int32 srid);
-extern TInstantSet **tpointinstset_make_simple(const TInstantSet *is, int *count);
-extern TInstantSet *tpointinstset_set_srid(const TInstantSet *is, int32 srid);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
 extern TSequence *tpointseq_set_srid(const TSequence *seq, int32 srid);
 extern TSequence **tpointseqset_make_simple(const TSequenceSet *ss, int *count);
@@ -684,10 +638,6 @@ extern bool tinstant_intersects_period(const TInstant *inst, const Period *p);
 extern bool tinstant_intersects_periodset(const TInstant *inst, const PeriodSet *ps);
 extern bool tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t);
 extern bool tinstant_intersects_timestampset(const TInstant *inst, const TimestampSet *ss);
-extern bool tinstantset_intersects_period(const TInstantSet *is, const Period *period);
-extern bool tinstantset_intersects_periodset(const TInstantSet *is, const PeriodSet *ps);
-extern bool tinstantset_intersects_timestamp(const TInstantSet *is, TimestampTz t);
-extern bool tinstantset_intersects_timestampset(const TInstantSet *is, const TimestampSet *ss);
 extern bool tsequence_intersects_period(const TSequence *seq, const Period *p);
 extern bool tsequence_intersects_periodset(const TSequence *seq, const PeriodSet *ps);
 extern bool tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t);
@@ -701,12 +651,11 @@ extern bool tsequenceset_intersects_timestampset(const TSequenceSet *ss, const T
 
 /* Local aggregate functions for temporal types */
 
-extern double tnumberinstset_twavg(const TInstantSet *is);
 extern double tnumberseq_integral(const TSequence *seq);
-extern double tnumberseq_twavg(const TSequence *seq);
+extern double tnumbercontseq_twavg(const TSequence *seq);
+extern double tnumberdiscseq_twavg(const TSequence *seq);
 extern double tnumberseqset_integral(const TSequenceSet *ss);
 extern double tnumberseqset_twavg(const TSequenceSet *ss);
-extern GSERIALIZED *tpointinstset_twcentroid(const TInstantSet *is);
 extern GSERIALIZED *tpointseq_twcentroid(const TSequence *seq);
 extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 

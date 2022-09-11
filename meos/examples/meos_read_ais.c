@@ -39,7 +39,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I. -o meos_read_ais meos_read_ais.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_read_ais meos_read_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -76,7 +76,7 @@ int main(void)
   char buffer[1024];
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", buffer);
+  fscanf(file, "%1023s\n", buffer);
 
   /* Continue reading the file */
   do
