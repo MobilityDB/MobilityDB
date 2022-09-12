@@ -450,7 +450,7 @@ ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp)
  * of instant subtype
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Skiplist containing the state
+ * @param[in,out] state Skiplist containing the state
  * @param[in] inst Temporal value
  * @param[in] func Function
  */
@@ -474,7 +474,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * Generic transition function for aggregating temporal discrete sequence values
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Skiplist containing the state
+ * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
  */
@@ -502,7 +502,7 @@ tdiscseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * of sequence subtype
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Skiplist containing the state
+ * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
@@ -528,7 +528,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * of sequence set subtype
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Skiplist containing the state
+ * @param[in,out] state Skiplist containing the state
  * @param[in] ss Temporal value
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments

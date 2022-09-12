@@ -112,9 +112,9 @@ extern int tcontseq_restrict_value1(const TSequence *seq, Datum value,
   bool atfunc, TSequence **result);
 extern int tsequence_at_values1(const TSequence *seq, const Datum *values,
   int count, TSequence **result);
-extern int tnumberseq_restrict_span2(const TSequence *seq,
+extern int tnumbercontseq_restrict_span2(const TSequence *seq,
   const Span *span, bool atfunc, TSequence **result);
-extern int tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
+extern int tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
   int count, bool atfunc, bool bboxtest, TSequence **result);
 extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);

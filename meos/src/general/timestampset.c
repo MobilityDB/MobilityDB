@@ -123,7 +123,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  * @brief Return a timestampt set from its Well-Known Text (WKT) representation.
  */
 TimestampSet *
-timestampset_in(char *str)
+timestampset_in(const char *str)
 {
   return timestampset_parse(&str);
 }

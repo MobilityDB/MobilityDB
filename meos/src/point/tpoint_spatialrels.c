@@ -67,7 +67,7 @@
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_inter_contains(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), false));
 }
 
@@ -106,7 +106,7 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(PGIS_inter_contains(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_inter_contains(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), true));
 }
 
@@ -116,7 +116,7 @@ geom_intersects2d(Datum geom1, Datum geom2)
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(PGIS_ST_3DIntersects(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_3Dintersects(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -126,7 +126,7 @@ geom_intersects3d(Datum geom1, Datum geom2)
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
-  return BoolGetDatum(PGIS_geography_dwithin(DatumGetGserializedP(geog1),
+  return BoolGetDatum(gserialized_geog_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), 0.0, true));
 }
 
@@ -136,7 +136,7 @@ geog_intersects(Datum geog1, Datum geog2)
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(PGIS_touches(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_touches(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -166,7 +166,7 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-  return BoolGetDatum(PGIS_geography_dwithin(DatumGetGserializedP(geog1),
+  return BoolGetDatum(gserialized_geog_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
 }
 
@@ -321,9 +321,9 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 static Datum
 geom_ever_contains(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
+  return BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
       DatumGetGserializedP(geom2), "T********")) ||
-    BoolGetDatum(PGIS_relate_pattern(DatumGetGserializedP(geom1),
+    BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
       DatumGetGserializedP(geom2), "***T*****"));
 }
 
@@ -477,7 +477,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  GSERIALIZED *gsbound = PGIS_boundary(gs);
+  GSERIALIZED *gsbound = gserialized_boundary(gs);
   bool result = false;
   if (! gserialized_is_empty(gsbound))
   {

@@ -59,7 +59,7 @@ PG_FUNCTION_INFO_V1(Periodset_in);
 PGDLLEXPORT Datum
 Periodset_in(PG_FUNCTION_ARGS)
 {
-  char *input = PG_GETARG_CSTRING(0);
+  const char *input = PG_GETARG_CSTRING(0);
   PeriodSet *result = periodset_in(input);
   PG_RETURN_POINTER(result);
 }

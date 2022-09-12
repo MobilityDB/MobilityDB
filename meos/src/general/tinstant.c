@@ -138,7 +138,7 @@ tnumberinst_double(const TInstant *inst)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_in(char *str, mobdbType temptype)
+tinstant_in(const char *str, mobdbType temptype)
 {
   return tinstant_parse(&str, temptype, true, true);
 }
@@ -149,7 +149,7 @@ tinstant_in(char *str, mobdbType temptype)
  * representation.
  */
 TInstant *
-tboolinst_in(char *str)
+tboolinst_in(const char *str)
 {
   return tinstant_parse(&str, T_TBOOL, true, true);
 }
@@ -160,7 +160,7 @@ tboolinst_in(char *str)
  * representation.
  */
 TInstant *
-tintinst_in(char *str)
+tintinst_in(const char *str)
 {
   return tinstant_parse(&str, T_TINT, true, true);
 }
@@ -171,7 +171,7 @@ tintinst_in(char *str)
  * representation.
  */
 TInstant *
-tfloatinst_in(char *str)
+tfloatinst_in(const char *str)
 {
   return tinstant_parse(&str, T_TFLOAT, true, true);
 }
@@ -182,7 +182,7 @@ tfloatinst_in(char *str)
  * representation.
  */
 TInstant *
-ttextinst_in(char *str)
+ttextinst_in(const char *str)
 {
   return tinstant_parse(&str, T_TTEXT, true, true);
 }
@@ -193,7 +193,7 @@ ttextinst_in(char *str)
  * (WKT) representation.
  */
 TInstant *
-tgeompointinst_in(char *str)
+tgeompointinst_in(const char *str)
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
@@ -207,7 +207,7 @@ tgeompointinst_in(char *str)
  * (WKT) representation.
  */
 TInstant *
-tgeogpointinst_in(char *str)
+tgeogpointinst_in(const char *str)
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);

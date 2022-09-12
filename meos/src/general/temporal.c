@@ -535,7 +535,7 @@ mobilitydb_full_version(void)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_in(char *str, mobdbType temptype)
+temporal_in(const char *str, mobdbType temptype)
 {
   return temporal_parse(&str, temptype);
 }
@@ -547,7 +547,7 @@ temporal_in(char *str, mobdbType temptype)
  * representation.
  */
 Temporal *
-tbool_in(char *str)
+tbool_in(const char *str)
 {
   return temporal_parse(&str, T_TBOOL);
 }
@@ -558,7 +558,7 @@ tbool_in(char *str)
  * representation.
  */
 Temporal *
-tint_in(char *str)
+tint_in(const char *str)
 {
   return temporal_parse(&str, T_TINT);
 }
@@ -568,7 +568,7 @@ tint_in(char *str)
  * @brief Return a temporal float from its Well-Known Text (WKT) representation.
  */
 Temporal *
-tfloat_in(char *str)
+tfloat_in(const char *str)
 {
   return temporal_parse(&str, T_TFLOAT);
 }
@@ -578,7 +578,7 @@ tfloat_in(char *str)
  * @brief Return a temporal text from its Well-Known Text (WKT) representation.
  */
 Temporal *
-ttext_in(char *str)
+ttext_in(const char *str)
 {
   return temporal_parse(&str, T_TTEXT);
 }
@@ -589,7 +589,7 @@ ttext_in(char *str)
  * representation.
  */
 Temporal *
-tgeompoint_in(char *str)
+tgeompoint_in(const char *str)
 {
   return temporal_parse(&str, T_TGEOMPOINT);
 }
@@ -599,7 +599,7 @@ tgeompoint_in(char *str)
  * representation.
  */
 Temporal *
-tgeogpoint_in(char *str)
+tgeogpoint_in(const char *str)
 {
   return temporal_parse(&str, T_TGEOGPOINT);
 }
@@ -2886,85 +2886,6 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal discrete number sequence to (the complement of) a
- * span of base values.
- *
- * @param[in] seq Temporal number
- * @param[in] span Span of base values
- * @param[in] atfunc True if the restriction is at, false for minus
- * @note A bounding box test has been done in the dispatch function.
- * @sqlfunc atSpan(), minusSpan()
- */
-TSequence *
-tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
-  bool atfunc)
-{
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return atfunc ? tsequence_copy(seq) : NULL;
-
-  /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int count = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    if (tnumberinst_restrict_span_test(inst, span, atfunc))
-      instants[count++] = inst;
-  }
-  TSequence *result = (count == 0) ? NULL :
-    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
-  pfree(instants);
-  return result;
-}
-
-/**
- * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal discrete sequence number to (the complement of) an
- * array of spans of base values.
- *
- * @param[in] seq Temporal number
- * @param[in] normspans Array of spans of base values
- * @param[in] count Number of elements in the input array
- * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The array of spans is normalized
- * @note A bounding box test has been done in the dispatch function.
- * @sqlfunc atSpans(), minusSpans()
- */
-TSequence *
-tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
-  int count, bool atfunc)
-{
-  const TInstant *inst;
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    inst = tsequence_inst_n(seq, 0);
-    if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
-      return tsequence_copy(seq);
-    return NULL;
-  }
-
-  /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int newcount = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    inst = tsequence_inst_n(seq, i);
-    if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
-      instants[newcount++] = inst;
-  }
-  TSequence *result = (newcount == 0) ? NULL :
-    tsequence_make(instants, newcount, true, true, DISCRETE, NORMALIZE_NO);
-  pfree(instants);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span of base values.
  * @sqlfunc atSpan(), minusSpan()
  */
@@ -2990,8 +2911,10 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
       span, atfunc);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tnumberdiscseq_restrict_span((TSequence *) temp, span, atfunc) :
-      (Temporal *) tnumberseq_restrict_span((TSequence *) temp, span, atfunc);
+      (Temporal *) tnumberdiscseq_restrict_span((TSequence *) temp, span,
+        atfunc) :
+      (Temporal *) tnumbercontseq_restrict_span((TSequence *) temp, span,
+        atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tnumberseqset_restrict_span((TSequenceSet *) temp,
       span, atfunc);
@@ -3038,7 +2961,7 @@ tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tnumberdiscseq_restrict_spans((TSequence *) temp, newspans,
         newcount, atfunc) :
-      (Temporal *) tnumberseq_restrict_spans((TSequence *) temp, newspans,
+      (Temporal *) tnumbercontseq_restrict_spans((TSequence *) temp, newspans,
         newcount, atfunc, BBOX_TEST_NO);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tnumberseqset_restrict_spans((TSequenceSet *) temp,

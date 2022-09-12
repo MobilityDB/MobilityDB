@@ -151,7 +151,7 @@ ensure_has_T_stbox(const STBOX *box)
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
  */
 STBOX *
-stbox_in(char *str)
+stbox_in(const char *str)
 {
   return stbox_parse(&str);
 }
@@ -381,13 +381,13 @@ stbox_to_geo(const STBOX *box)
   {
     BOX3D box3d;
     stbox_set_box3d(box, &box3d);
-    geo = PGIS_BOX3D_to_LWGEOM(&box3d);
+    geo = box3d_to_lwgeom(&box3d);
   }
   else
   {
     GBOX box2d;
     stbox_set_gbox(box, &box2d);
-    geo = PGIS_BOX2D_to_LWGEOM(&box2d, box->srid);
+    geo = box2d_to_lwgeom(&box2d, box->srid);
   }
   FLAGS_SET_GEODETIC(geo->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
   result = geo_serialize(geo);

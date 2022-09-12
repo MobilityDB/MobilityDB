@@ -1692,7 +1692,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumberseq_restrict_span(tsequenceset_seq_n(ss, 0), span, atfunc);
+    return tnumbercontseq_restrict_span(tsequenceset_seq_n(ss, 0), span, atfunc);
 
   /* General case */
   int count = ss->totalcount;
@@ -1704,7 +1704,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tnumberseq_restrict_span2(seq, span, atfunc, &sequences[k]);
+    k += tnumbercontseq_restrict_span2(seq, span, atfunc, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1729,7 +1729,7 @@ tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumberseq_restrict_spans(tsequenceset_seq_n(ss, 0),
+    return tnumbercontseq_restrict_spans(tsequenceset_seq_n(ss, 0),
       normspans, count, atfunc, BBOX_TEST_NO);
 
   /* General case */
@@ -1742,7 +1742,7 @@ tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tnumberseq_restrict_spans1(seq, normspans, count, atfunc,
+    k += tnumbercontseq_restrict_spans1(seq, normspans, count, atfunc,
       BBOX_TEST, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -2395,7 +2395,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_in(char *str, mobdbType temptype, int interp)
+tsequenceset_in(const char *str, mobdbType temptype, int interp)
 {
   return tsequenceset_parse(&str, temptype, interp);
 }
@@ -2405,7 +2405,7 @@ tsequenceset_in(char *str, mobdbType temptype, int interp)
  * representation.
  */
 TSequenceSet *
-tboolseqset_in(char *str)
+tboolseqset_in(const char *str)
 {
   return tsequenceset_parse(&str, T_TBOOL, true);
 }
@@ -2416,7 +2416,7 @@ tboolseqset_in(char *str)
  * representation.
  */
 TSequenceSet *
-tintseqset_in(char *str)
+tintseqset_in(const char *str)
 {
   return tsequenceset_parse(&str, T_TINT, true);
 }
@@ -2427,7 +2427,7 @@ tintseqset_in(char *str)
  * representation.
  */
 TSequenceSet *
-tfloatseqset_in(char *str)
+tfloatseqset_in(const char *str)
 {
   /* Call the superclass function to read the interpolation at the beginning (if any) */
   Temporal *temp = temporal_parse(&str, T_TFLOAT);
@@ -2441,7 +2441,7 @@ tfloatseqset_in(char *str)
  * representation.
  */
 TSequenceSet *
-ttextseqset_in(char *str)
+ttextseqset_in(const char *str)
 {
   return tsequenceset_parse(&str, T_TTEXT, true);
 }
@@ -2452,7 +2452,7 @@ ttextseqset_in(char *str)
  * (WKT) representation.
  */
 TSequenceSet *
-tgeompointseqset_in(char *str)
+tgeompointseqset_in(const char *str)
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
@@ -2466,7 +2466,7 @@ tgeompointseqset_in(char *str)
  * (WKT) representation.
  */
 TSequenceSet *
-tgeogpointseqset_in(char *str)
+tgeogpointseqset_in(const char *str)
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);

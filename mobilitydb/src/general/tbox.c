@@ -70,7 +70,7 @@ PG_FUNCTION_INFO_V1(Tbox_in);
 PGDLLEXPORT Datum
 Tbox_in(PG_FUNCTION_ARGS)
 {
-  char *input = PG_GETARG_CSTRING(0);
+  const char *input = PG_GETARG_CSTRING(0);
   PG_RETURN_POINTER(tbox_in(input));
 }
 

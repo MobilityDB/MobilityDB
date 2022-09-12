@@ -269,7 +269,7 @@ pt_distance_fn(int16 flags)
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
-  return Float8GetDatum(PGIS_ST_Distance(DatumGetGserializedP(geom1),
+  return Float8GetDatum(gserialized_distance(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -279,7 +279,7 @@ geom_distance2d(Datum geom1, Datum geom2)
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
-  return Float8GetDatum(PGIS_ST_3DDistance(DatumGetGserializedP(geom1),
+  return Float8GetDatum(gserialized_3Ddistance(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -289,7 +289,7 @@ geom_distance3d(Datum geom1, Datum geom2)
 Datum
 geog_distance(Datum geog1, Datum geog2)
 {
-  return Float8GetDatum(PGIS_geography_distance(DatumGetGserializedP(geog1),
+  return Float8GetDatum(gserialized_geog_distance(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2)));
 }
 
@@ -321,7 +321,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 Datum
 geom_intersection2d(Datum geom1, Datum geom2)
 {
-  return PointerGetDatum(PGIS_ST_Intersection(DatumGetGserializedP(geom1),
+  return PointerGetDatum(gserialized_intersection(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -1969,8 +1969,8 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
   Datum point = (oper == GEOM_TO_GEOG) ?
-    PointerGetDatum(PGIS_geography_from_geometry(gs)) :
-    PointerGetDatum(PGIS_geometry_from_geography(gs));
+    PointerGetDatum(gserialized_geog_from_geom(gs)) :
+    PointerGetDatum(gserialized_geom_from_geog(gs));
   TInstant *result = tinstant_make(point, (oper == GEOM_TO_GEOG) ?
     T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
   pfree(DatumGetPointer(point));
@@ -2007,8 +2007,8 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   pfree(points);
   /* Convert the multipoint geometry/geography */
   gs = (oper == GEOM_TO_GEOG) ?
-    PGIS_geography_from_geometry(mpoint_orig) :
-    PGIS_geometry_from_geography(mpoint_orig);
+    gserialized_geog_from_geom(mpoint_orig) :
+    gserialized_geom_from_geog(mpoint_orig);
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -2213,7 +2213,7 @@ tpointseq_length(const TSequence *seq)
   {
     /* We are sure that the trajectory is a line */
     GSERIALIZED *traj = tpointcontseq_trajectory(seq);
-    double result = PGIS_geography_length(traj, true);
+    double result = gserialized_geog_length(traj, true);
     pfree(traj);
     return result;
   }

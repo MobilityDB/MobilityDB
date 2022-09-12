@@ -197,7 +197,7 @@ bool_out(bool b)
  * @note PostgreSQL function: Datum int4in(PG_FUNCTION_ARGS)
  */
 int32
-int4_in(char *str)
+int4_in(const char *str)
 {
   return pg_strtoint32(str);
 }
@@ -259,7 +259,7 @@ int4_out(int32 val)
  * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
  */
 int64
-int8_in(char *str)
+int8_in(const char *str)
 {
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   int64 result = pg_strtoint64(str);
@@ -454,9 +454,9 @@ float8_in_opt_error(char *num, const char *type_name, const char *orig_string)
  * Interface to float8in_internal_opt_error().
  */
 double
-float8_in(char *num, const char *type_name, const char *orig_string)
+float8_in(const char *num, const char *type_name, const char *orig_string)
 {
-  double result = float8_in_opt_error(num, type_name, orig_string);
+  double result = float8_in_opt_error((char *) num, type_name, orig_string);
   return result;
 }
 

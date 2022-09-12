@@ -362,7 +362,7 @@ skiplist_tailval(SkipList *list)
  * function
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] list Skiplist
+ * @param[in,out] list Skiplist
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] func Function

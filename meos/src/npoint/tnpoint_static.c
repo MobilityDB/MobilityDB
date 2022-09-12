@@ -137,9 +137,9 @@ nsegmentarr_geom(Nsegment **segments, int count)
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
       geoms[i] = gserialized_copy(line);
     else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = PGIS_LWGEOM_line_interpolate_point(line, segments[i]->pos1, 0);
+      geoms[i] = gserialized_line_interpolate_point(line, segments[i]->pos1, 0);
     else
-      geoms[i] = PGIS_LWGEOM_line_substring(line, segments[i]->pos1,
+      geoms[i] = gserialized_line_substring(line, segments[i]->pos1,
         segments[i]->pos2);
     pfree(line);
   }
@@ -148,7 +148,7 @@ nsegmentarr_geom(Nsegment **segments, int count)
     result = geoms[0];
   else
   {
-    result = PGIS_union_geometry_array(geoms, count);
+    result = gserialized_array_union(geoms, count);
     pfree_array((void **) geoms, count);
   }
   return result;
@@ -248,7 +248,7 @@ npoint_remove_duplicates(Npoint **values, int count)
  * @brief Return a network point from its string representation.
  */
 Npoint *
-npoint_in(char *str, bool end)
+npoint_in(const char *str, bool end)
 {
   return npoint_parse(&str, end);
 }
@@ -273,7 +273,7 @@ npoint_out(const Npoint *np, int maxdd)
  * @brief Return a network point from its string representation.
  */
 Nsegment *
-nsegment_in(char *str)
+nsegment_in(const char *str)
 {
   return nsegment_parse(&str);
 }
@@ -545,7 +545,7 @@ GSERIALIZED *
 npoint_geom(const Npoint *np)
 {
   GSERIALIZED *line = route_geom(np->rid);
-  GSERIALIZED *result = PGIS_LWGEOM_line_interpolate_point(line, np->pos, 0);
+  GSERIALIZED *result = gserialized_line_interpolate_point(line, np->pos, 0);
   pfree(line);
   return result;
 }
@@ -604,9 +604,9 @@ nsegment_geom(const Nsegment *ns)
   GSERIALIZED *line = route_geom(ns->rid);
   GSERIALIZED *result;
   if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
-    result = PGIS_LWGEOM_line_interpolate_point(line, ns->pos1, 0);
+    result = gserialized_line_interpolate_point(line, ns->pos1, 0);
   else
-    result = PGIS_LWGEOM_line_substring(line, ns->pos1, ns->pos2);
+    result = gserialized_line_substring(line, ns->pos1, ns->pos2);
   pfree(line);
   return result;
 }
@@ -635,12 +635,12 @@ geom_nsegment(const GSERIALIZED *gs)
   }
   else /* geomtype == LINETYPE */
   {
-    int numpoints = PGIS_LWGEOM_numpoints_linestring(gs);
+    int numpoints = gserialized_numpoints_linestring(gs);
     points = palloc0(sizeof(Npoint *) * numpoints);
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      GSERIALIZED *point = PGIS_LWGEOM_pointn_linestring(gs, i + 1);
+      GSERIALIZED *point = gserialized_pointn_linestring(gs, i + 1);
       np = geom_npoint(point);
       if (np != NULL)
         points[k++] = np;

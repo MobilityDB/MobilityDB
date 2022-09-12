@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Npoint_in);
 PGDLLEXPORT Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
-  char *str = PG_GETARG_CSTRING(0);
+  const char *str = PG_GETARG_CSTRING(0);
   PG_RETURN_POINTER(npoint_in(str, true));
 }
 
@@ -229,7 +229,7 @@ PG_FUNCTION_INFO_V1(Nsegment_in);
 PGDLLEXPORT Datum
 Nsegment_in(PG_FUNCTION_ARGS)
 {
-  char *str = PG_GETARG_CSTRING(0);
+  const char *str = PG_GETARG_CSTRING(0);
   PG_RETURN_POINTER(nsegment_in(str));
 }
 

@@ -50,7 +50,7 @@
  * Input a white space from the buffer
  */
 void
-p_whitespace(char **str)
+p_whitespace(const char **str)
 {
   while (**str == ' ' || **str == '\n' || **str == '\r' || **str == '\t')
     *str += 1;
@@ -61,7 +61,7 @@ p_whitespace(char **str)
  * Ensure there is no more input excepted white spaces
  */
 void
-ensure_end_input(char **str, bool end, const char *type)
+ensure_end_input(const char **str, bool end, const char *type)
 {
   if (end)
   {
@@ -76,7 +76,7 @@ ensure_end_input(char **str, bool end, const char *type)
  * Input an opening brace from the buffer
  */
 bool
-p_obrace(char **str)
+p_obrace(const char **str)
 {
   p_whitespace(str);
   if (**str == '{')
@@ -91,7 +91,7 @@ p_obrace(char **str)
  * Input a closing brace from the buffer
  */
 bool
-p_cbrace(char **str)
+p_cbrace(const char **str)
 {
   p_whitespace(str);
   if (**str == '}')
@@ -106,7 +106,7 @@ p_cbrace(char **str)
  * Input an opening bracket from the buffer
  */
 bool
-p_obracket(char **str)
+p_obracket(const char **str)
 {
   p_whitespace(str);
   if (**str == '[')
@@ -121,7 +121,7 @@ p_obracket(char **str)
  * Input a closing bracket from the buffer
  */
 bool
-p_cbracket(char **str)
+p_cbracket(const char **str)
 {
   p_whitespace(str);
   if (**str == ']')
@@ -136,7 +136,7 @@ p_cbracket(char **str)
  * Input an opening parenthesis from the buffer
  */
 bool
-p_oparen(char **str)
+p_oparen(const char **str)
 {
   p_whitespace(str);
   if (**str == '(')
@@ -151,7 +151,7 @@ p_oparen(char **str)
  * Input a closing parenthesis from the buffer
  */
 bool
-p_cparen(char **str)
+p_cparen(const char **str)
 {
   p_whitespace(str);
   if (**str == ')')
@@ -166,7 +166,7 @@ p_cparen(char **str)
  * Input a comma from the buffer
  */
 bool
-p_comma(char **str)
+p_comma(const char **str)
 {
   p_whitespace(str);
   if (**str == ',')
@@ -180,13 +180,13 @@ p_comma(char **str)
 /**
  * Input a double from the buffer
  *
- * @param[inout] str Pointer to the current position of the input buffer
+ * @param[in,out] str Pointer to the current position of the input buffer
  */
 
 double
-double_parse(char **str)
+double_parse(const char **str)
 {
-  char *nextstr = *str;
+  char *nextstr = (char *) *str;
   double result = strtod(*str, &nextstr);
   if (*str == nextstr)
     elog(ERROR, "Invalid input syntax for type double");
@@ -198,7 +198,7 @@ double_parse(char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(char **str, mobdbType basetype)
+basetype_parse(const char **str, mobdbType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -222,7 +222,7 @@ basetype_parse(char **str, mobdbType basetype)
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_input(basetype, str1, false);
+  Datum result = basetype_input(str1, basetype, false);
   pfree(str1);
   /* since there's an @ here, let's take it with us */
   *str += delim + 1;
@@ -235,7 +235,7 @@ basetype_parse(char **str, mobdbType basetype)
  * @brief Parse a temporal box value from the buffer.
  */
 TBOX *
-tbox_parse(char **str)
+tbox_parse(const char **str)
 {
   bool hasx = false, hast = false;
   Span *span = NULL;
@@ -312,7 +312,7 @@ tbox_parse(char **str)
  * Parse a timestamp value from the buffer.
  */
 TimestampTz
-timestamp_parse(char **str)
+timestamp_parse(const char **str)
 {
   p_whitespace(str);
   int delim = 0;
@@ -334,13 +334,13 @@ timestamp_parse(char **str)
  * @brief Parse a timestamp set value from the buffer.
  */
 TimestampSet *
-timestampset_parse(char **str)
+timestampset_parse(const char **str)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse timestamp set");
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   timestamp_parse(str);
   int count = 1;
   while (p_comma(str))
@@ -366,13 +366,13 @@ timestampset_parse(char **str)
  * @brief Parse a period set value from the buffer.
  */
 PeriodSet *
-periodset_parse(char **str)
+periodset_parse(const char **str)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse period set");
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   span_parse(str, T_PERIOD, false, false);
   int count = 1;
   while (p_comma(str))
@@ -403,7 +403,7 @@ periodset_parse(char **str)
  * Parse a timestamp value from the buffer.
  */
 Datum
-elem_parse(char **str, mobdbType basetype)
+elem_parse(const char **str, mobdbType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -413,7 +413,7 @@ elem_parse(char **str, mobdbType basetype)
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_input(basetype, str1, false);
+  Datum result = basetype_input(str1, basetype, false);
   pfree(str1);
   *str += delim;
   return result;
@@ -423,7 +423,7 @@ elem_parse(char **str, mobdbType basetype)
  * @brief Parse a span value from the buffer.
  */
 Span *
-span_parse(char **str, mobdbType spantype, bool end, bool make)
+span_parse(const char **str, mobdbType spantype, bool end, bool make)
 {
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
@@ -467,7 +467,7 @@ span_parse(char **str, mobdbType spantype, bool end, bool make)
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 TInstant *
-tinstant_parse(char **str, mobdbType temptype, bool end, bool make)
+tinstant_parse(const char **str, mobdbType temptype, bool end, bool make)
 {
   p_whitespace(str);
   mobdbType basetype = temptype_basetype(temptype);
@@ -488,7 +488,7 @@ tinstant_parse(char **str, mobdbType temptype, bool end, bool make)
  * @param[in] temptype Base type
  */
 TSequence *
-tdiscseq_parse(char **str, mobdbType temptype)
+tdiscseq_parse(const char **str, mobdbType temptype)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -496,7 +496,7 @@ tdiscseq_parse(char **str, mobdbType temptype)
   p_obrace(str);
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   tinstant_parse(str, temptype, false, false);
   int count = 1;
   while (p_comma(str))
@@ -532,7 +532,7 @@ tdiscseq_parse(char **str, mobdbType temptype)
  * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
-tcontseq_parse(char **str, mobdbType temptype, int interp, bool end,
+tcontseq_parse(const char **str, mobdbType temptype, int interp, bool end,
   bool make)
 {
   p_whitespace(str);
@@ -545,7 +545,7 @@ tcontseq_parse(char **str, mobdbType temptype, int interp, bool end,
     lower_inc = false;
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   tinstant_parse(str, temptype, false, false);
   int count = 1;
   while (p_comma(str))
@@ -586,7 +586,7 @@ tcontseq_parse(char **str, mobdbType temptype, int interp, bool end,
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_parse(char **str, mobdbType temptype, int interp)
+tsequenceset_parse(const char **str, mobdbType temptype, int interp)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -594,7 +594,7 @@ tsequenceset_parse(char **str, mobdbType temptype, int interp)
   p_obrace(str);
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   tcontseq_parse(str, temptype, interp, false, false);
   int count = 1;
   while (p_comma(str))
@@ -626,7 +626,7 @@ tsequenceset_parse(char **str, mobdbType temptype, int interp)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_parse(char **str, mobdbType temptype)
+temporal_parse(const char **str, mobdbType temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
@@ -644,7 +644,7 @@ temporal_parse(char **str, mobdbType temptype)
     result = (Temporal *) tcontseq_parse(str, temptype, interp, true, true);
   else if (**str == '{')
   {
-    char *bak = *str;
+    const char *bak = *str;
     p_obrace(str);
     p_whitespace(str);
     if (**str == '[' || **str == '(')

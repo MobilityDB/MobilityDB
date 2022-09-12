@@ -583,6 +583,7 @@ create_trip(PG_FUNCTION_ARGS)
     msg = 2;
   else if (strcmp(msgstr, "debug") == 0)
     msg = 3;
+  pfree(msgstr);
 
   TSequence *result = create_trip_internal(lines, maxSpeeds, categories,
     (uint32_t) count, t, disturbData, msg);

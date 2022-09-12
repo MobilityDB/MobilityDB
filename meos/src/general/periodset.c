@@ -110,7 +110,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  * @brief Return a period set from its Well-Known Text (WKT) representation.
  */
 PeriodSet *
-periodset_in(char *str)
+periodset_in(const char *str)
 {
   return periodset_parse(&str);
 }

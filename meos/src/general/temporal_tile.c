@@ -670,8 +670,8 @@ tdiscseq_value_split(const TSequence *seq, Datum start_bucket,
 /**
  * Split a temporal value into an array of fragments according to value buckets.
  *
- * @param[inout] result Array containing the fragments of each bucket
- * @param[inout] numseqs Number of fragments for each bucket
+ * @param[in,out] result Array containing the fragments of each bucket
+ * @param[in,out] numseqs Number of fragments for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
  *    seq->count for sequences or ss->totalcount for sequence sets
  * @param[in] seq Temporal value
@@ -744,8 +744,8 @@ for (int i = 1; i < seq->count; i++)
 /**
  * Split a temporal value into an array of fragments according to value buckets.
  *
- * @param[inout] result Array containing the fragments of each bucket
- * @param[inout] numseqs Number of fragments for each bucket
+ * @param[in,out] result Array containing the fragments of each bucket
+ * @param[in,out] numseqs Number of fragments for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
  *    seq->count for sequences or ss->totalcount for sequence sets
  * @param[in] seq Temporal value

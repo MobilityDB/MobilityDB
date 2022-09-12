@@ -694,7 +694,7 @@ text2cstring(const text *textptr)
   size_t size = VARSIZE_ANY_EXHDR(textptr);
   char *str = palloc(size + 1);
   memcpy(str, VARDATA(textptr), size);
-  str[size]='\0';
+  str[size] = '\0';
   return str;
 }
 
@@ -923,9 +923,9 @@ hypot4d(double x, double y, double z, double m)
  */
 Datum
 #if NPOINT
-basetype_input(mobdbType basetype, char *str, bool end)
+basetype_input(const char *str, mobdbType basetype, bool end)
 #else
-basetype_input(mobdbType basetype, char *str, bool end __attribute__((unused)))
+basetype_input(const char *str, mobdbType basetype, bool end __attribute__((unused)))
 #endif
 {
   ensure_temporal_basetype(basetype);
@@ -944,9 +944,9 @@ basetype_input(mobdbType basetype, char *str, bool end __attribute__((unused)))
     case T_TEXT:
       return PointerGetDatum(cstring2text(str));
     case T_GEOMETRY:
-      return PointerGetDatum(gserialized_in(str, -1));
+      return PointerGetDatum(gserialized_in((char *) str, -1));
     case T_GEOGRAPHY:
-      return PointerGetDatum(PGIS_geography_in(str, -1));
+      return PointerGetDatum(gserialized_geog_in((char *) str, -1));
 #if NPOINT
     case T_NPOINT:
       return PointerGetDatum(npoint_parse(&str, end));
@@ -983,7 +983,7 @@ basetype_output(mobdbType basetype, Datum value, Datum arg)
     case T_GEOMETRY:
     return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
-      return PGIS_geography_out(DatumGetGserializedP(value));
+      return gserialized_geog_out(DatumGetGserializedP(value));
 #if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), DatumGetInt32(arg));
