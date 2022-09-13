@@ -670,18 +670,18 @@ tdiscseq_value_split(const TSequence *seq, Datum start_bucket,
 /**
  * Split a temporal value into an array of fragments according to value buckets.
  *
- * @param[in,out] result Array containing the fragments of each bucket
- * @param[in,out] numseqs Number of fragments for each bucket
- * @param[in] numcols Number of columns in the 2D pointer array. It can be
- *    seq->count for sequences or ss->totalcount for sequence sets
  * @param[in] seq Temporal value
  * @param[in] start_bucket Value of the start bucket
  * @param[in] size Size of the value buckets
  * @param[in] count Number of buckets
+ * @param[in,out] result Array containing the fragments of each bucket
+ * @param[in,out] numseqs Number of fragments for each bucket
+ * @param[in] numcols Number of columns in the 2D pointer array. It can be
+ *    seq->count for sequences or ss->totalcount for sequence sets
  */
 static void
-tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
-  const TSequence *seq, Datum start_bucket, Datum size, int count)
+tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
+  Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
   mobdbType basetype = temptype_basetype(seq->temptype);
@@ -744,18 +744,18 @@ for (int i = 1; i < seq->count; i++)
 /**
  * Split a temporal value into an array of fragments according to value buckets.
  *
- * @param[in,out] result Array containing the fragments of each bucket
- * @param[in,out] numseqs Number of fragments for each bucket
- * @param[in] numcols Number of columns in the 2D pointer array. It can be
- *    seq->count for sequences or ss->totalcount for sequence sets
  * @param[in] seq Temporal value
  * @param[in] start_bucket Value of the start bucket
  * @param[in] size Size of the value buckets
  * @param[in] count Number of buckets
+ * @param[in,out] result Array containing the fragments of each bucket
+ * @param[in,out] numseqs Number of fragments for each bucket
+ * @param[in] numcols Number of columns in the 2D pointer array. It can be
+ *    seq->count for sequences or ss->totalcount for sequence sets
  */
 static void
-tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
-  const TSequence *seq, Datum start_bucket, Datum size, int count)
+tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
+  Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   mobdbType basetype = temptype_basetype(seq->temptype);
@@ -935,11 +935,11 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-    tnumberseq_linear_value_split(sequences, numseqs, seq->count, seq,
-      start_bucket, size, count);
+    tnumberseq_linear_value_split(seq, start_bucket, size, count, sequences,
+      numseqs, seq->count);
   else
-    tnumberseq_step_value_split(sequences, numseqs, seq->count, seq,
-      start_bucket, size, count);
+    tnumberseq_step_value_split(seq, start_bucket, size, count, sequences,
+      numseqs, seq->count);
   /* Assemble the result for each value bucket */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   Datum *values = palloc(sizeof(Datum) * count);
@@ -991,11 +991,11 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
-      tnumberseq_linear_value_split(bucketseqs, numseqs, ss->totalcount, seq,
-        start_bucket, size, count);
+      tnumberseq_linear_value_split(seq, start_bucket, size, count, bucketseqs,
+        numseqs, ss->totalcount);
     else
-      tnumberseq_step_value_split(bucketseqs, numseqs, ss->totalcount, seq,
-        start_bucket, size, count);
+      tnumberseq_step_value_split(seq, start_bucket, size, count, bucketseqs,
+        numseqs, ss->totalcount);
   }
   /* Assemble the result for each value bucket */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
