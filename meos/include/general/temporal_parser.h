@@ -42,35 +42,35 @@
 
 /*****************************************************************************/
 
-extern void ensure_end_input(char **str, bool end, const char *type);
+extern void ensure_end_input(const char **str, bool end, const char *type);
 
-extern void p_whitespace(char **str);
-extern bool p_obrace(char **str);
-extern bool p_cbrace(char **str);
-extern bool p_obracket(char **str);
-extern bool p_cbracket(char **str);
-extern bool p_oparen(char **str);
-extern bool p_cparen(char **str);
-extern bool p_comma(char **str);
-extern Datum basetype_parse(char **str, mobdbType basetypid);
-extern double double_parse(char **str);
-extern TimestampTz timestamp_parse(char **str);
+extern void p_whitespace(const char **str);
+extern bool p_obrace(const char **str);
+extern bool p_cbrace(const char **str);
+extern bool p_obracket(const char **str);
+extern bool p_cbracket(const char **str);
+extern bool p_oparen(const char **str);
+extern bool p_cparen(const char **str);
+extern bool p_comma(const char **str);
+extern Datum basetype_parse(const char **str, mobdbType basetypid);
+extern double double_parse(const char **str);
+extern TimestampTz timestamp_parse(const char **str);
 
-extern TBOX *tbox_parse(char **str);
-extern TimestampSet *timestampset_parse(char **str);
-extern Period *period_parse(char **str, bool make);
-extern PeriodSet *periodset_parse(char **str);
-extern Datum elem_parse(char **str, mobdbType basetype);
-extern Span *span_parse(char **str, mobdbType spantype, bool end, bool make);
+extern TBOX *tbox_parse(const char **str);
+extern TimestampSet *timestampset_parse(const char **str);
+extern Period *period_parse(const char **str, bool make);
+extern PeriodSet *periodset_parse(const char **str);
+extern Datum elem_parse(const char **str, mobdbType basetype);
+extern Span *span_parse(const char **str, mobdbType spantype, bool end, bool make);
 
-extern TInstant *tinstant_parse(char **str, mobdbType temptype, bool end,
+extern TInstant *tinstant_parse(const char **str, mobdbType temptype, bool end,
   bool make);
-extern TSequence *tdiscseq_parse(char **str, mobdbType temptype);
-extern TSequence *tcontseq_parse(char **str, mobdbType temptype, int interp,
+extern TSequence *tdiscseq_parse(const char **str, mobdbType temptype);
+extern TSequence *tcontseq_parse(const char **str, mobdbType temptype, int interp,
   bool end, bool make);
-extern TSequenceSet *tsequenceset_parse(char **str, mobdbType temptype,
+extern TSequenceSet *tsequenceset_parse(const char **str, mobdbType temptype,
   int interp);
-extern Temporal *temporal_parse(char **str, mobdbType temptype);
+extern Temporal *temporal_parse(const char **str, mobdbType temptype);
 
 /*****************************************************************************/
 

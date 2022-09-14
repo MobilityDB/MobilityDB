@@ -47,17 +47,17 @@ extern char *bool_out(bool b);
 
 /* Functions adapted from int.c */
 
-extern int32 int4_in(char *str);
+extern int32 int4_in(const char *str);
 extern char *int4_out(int32 val);
 
 /* Functions adapted from int8.c */
 
-extern int64 int8_in(char *str);
+extern int64 int8_in(const char *str);
 extern char *int8_out(int64 val);
 
 /* Functions adapted from float.c */
 
-extern float8 float8_in(char *num, const char *type_name,
+extern float8 float8_in(const char *num, const char *type_name,
   const char *orig_string);
 extern char *float8_out(double num, int maxdd);
 extern float8 pg_dsin(float8 arg1);
@@ -67,7 +67,7 @@ extern float8 pg_datan2(float8 arg1, float8 arg2);
 
 /* Functions adadpted from timestamp.c */
 
-extern TimestampTz pg_timestamptz_in(char *str, int32 typmod);
+extern TimestampTz pg_timestamptz_in(const char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
 
 extern Interval *pg_interval_pl(const Interval *span1, const Interval *span2);

@@ -683,7 +683,7 @@ ensure_temptype_mfjson(const char *typestr)
  * @brief Return a temporal point from its MF-JSON representation
  */
 Temporal *
-temporal_from_mfjson(char *mfjson)
+temporal_from_mfjson(const char *mfjson)
 {
   char *srs = NULL;
   int srid = 0;
@@ -1591,7 +1591,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
  * @brief Return a value from its Well-Known Binary (WKB) representation.
  */
 Datum
-datum_from_wkb(uint8_t *wkb, int size, mobdbType type)
+datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
@@ -1675,7 +1675,7 @@ datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
  */
 Span *
-span_from_wkb(uint8_t *wkb, int size)
+span_from_wkb(const uint8_t *wkb, int size)
 {
   /* We pass ANY span type to the dispatch function but the actual span type
    * will be read from the byte string */
@@ -1705,7 +1705,7 @@ span_from_hexwkb(const char *hexwkb)
  * @sqlfunc timestampsetFromBinary()
  */
 TimestampSet *
-timestampset_from_wkb(uint8_t *wkb, int size)
+timestampset_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetTimestampSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
 }
@@ -1732,7 +1732,7 @@ timestampset_from_hexwkb(const char *hexwkb)
  * @sqlfunc periodsetFromBinary()
  */
 PeriodSet *
-periodset_from_wkb(uint8_t *wkb, int size)
+periodset_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetPeriodSetP(datum_from_wkb(wkb, size, T_PERIODSET));
 }
@@ -1758,7 +1758,7 @@ periodset_from_hexwkb(const char *hexwkb)
  * @sqlfunc tboxFromBinary()
  */
 TBOX *
-tbox_from_wkb(uint8_t *wkb, int size)
+tbox_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
 }
@@ -1784,7 +1784,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * @sqlfunc stboxFromBinary()
  */
 STBOX *
-stbox_from_wkb(uint8_t *wkb, int size)
+stbox_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
 }
@@ -1812,7 +1812,7 @@ stbox_from_hexwkb(const char *hexwkb)
  * ttextFromBinary(), etc.
  */
 Temporal *
-temporal_from_wkb(uint8_t *wkb, int size)
+temporal_from_wkb(const uint8_t *wkb, int size)
 {
   /* We pass ANY temporal type to the dispatch function but the actual temporal
    * type will be read from the byte string */

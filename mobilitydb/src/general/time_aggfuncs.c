@@ -151,7 +151,7 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
  * Generic transition function for aggregating timestamp sets
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Timestamp array containing the state
+ * @param[in,out] state Timestamp array containing the state
  * @param[in] ts Timestamp set value
  */
 static SkipList *
@@ -178,7 +178,7 @@ timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * of sequence subtype
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Skiplist containing the state
+ * @param[in,out] state Skiplist containing the state
  * @param[in] p Period
  */
 static SkipList *
@@ -200,7 +200,7 @@ period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state, const Period *p)
  * Generic transition function for aggregating period set values
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[inout] state Skiplist containing the state
+ * @param[in,out] state Skiplist containing the state
  * @param[in] ps Period set value
  */
 static SkipList *

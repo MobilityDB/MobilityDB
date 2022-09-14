@@ -357,7 +357,7 @@ PG_FUNCTION_INFO_V1(Temporal_in);
 PGDLLEXPORT Datum
 Temporal_in(PG_FUNCTION_ARGS)
 {
-  char *input = PG_GETARG_CSTRING(0);
+  const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
   Temporal *result = temporal_in(input, oid_type(temptypid));
   int32 temp_typmod = -1;

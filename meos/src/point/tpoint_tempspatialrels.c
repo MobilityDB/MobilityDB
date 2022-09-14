@@ -1099,7 +1099,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
-  GSERIALIZED *gsbound = PGIS_boundary(gs);
+  GSERIALIZED *gsbound = gserialized_boundary(gs);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {
@@ -1143,7 +1143,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
-  GSERIALIZED *gsbound = PGIS_boundary(gs);
+  GSERIALIZED *gsbound = gserialized_boundary(gs);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
   {

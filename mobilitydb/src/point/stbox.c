@@ -65,7 +65,7 @@ PG_FUNCTION_INFO_V1(Stbox_in);
 PGDLLEXPORT Datum
 Stbox_in(PG_FUNCTION_ARGS)
 {
-  char *input = PG_GETARG_CSTRING(0);
+  const char *input = PG_GETARG_CSTRING(0);
   PG_RETURN_POINTER(stbox_in(input));
 }
 

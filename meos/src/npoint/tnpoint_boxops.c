@@ -133,7 +133,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 
   GSERIALIZED *line = route_geom(rid);
   GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
-    PGIS_LWGEOM_line_substring(line, posmin, posmax);
+    gserialized_line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
     true, true, T_TIMESTAMPTZ, &box->period);

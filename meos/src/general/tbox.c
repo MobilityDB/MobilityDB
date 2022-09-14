@@ -93,7 +93,7 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
  * @brief Return a temporal box from its Well-Known Text (WKT) representation.
  */
 TBOX *
-tbox_in(char *str)
+tbox_in(const char *str)
 {
   return tbox_parse(&str);
 }

@@ -46,7 +46,7 @@
  * @brief Parse a network point from its string representation.
  */
 Npoint *
-npoint_parse(char **str, bool end)
+npoint_parse(const char **str, bool end)
 {
   p_whitespace(str);
 
@@ -87,7 +87,7 @@ npoint_parse(char **str, bool end)
  * @brief Parse a network segment from its string representation.
  */
 Nsegment *
-nsegment_parse(char **str)
+nsegment_parse(const char **str)
 {
   p_whitespace(str);
 

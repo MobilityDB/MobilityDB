@@ -59,7 +59,7 @@ PG_FUNCTION_INFO_V1(Timestampset_in);
 PGDLLEXPORT Datum
 Timestampset_in(PG_FUNCTION_ARGS)
 {
-  char *input = PG_GETARG_CSTRING(0);
+  const char *input = PG_GETARG_CSTRING(0);
   TimestampSet *result = timestampset_in(input);
   PG_RETURN_POINTER(result);
 }

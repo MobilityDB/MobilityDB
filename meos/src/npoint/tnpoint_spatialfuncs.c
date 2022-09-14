@@ -316,10 +316,10 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 
   GSERIALIZED *traj;
   if (np1->pos < np2->pos)
-    traj = PGIS_LWGEOM_line_substring(line, np1->pos, np2->pos);
+    traj = gserialized_line_substring(line, np1->pos, np2->pos);
   else /* np1->pos >= np2->pos */
   {
-    GSERIALIZED *traj2 = PGIS_LWGEOM_line_substring(line, np2->pos, np1->pos);
+    GSERIALIZED *traj2 = gserialized_line_substring(line, np2->pos, np1->pos);
     traj = gserialized_reverse(traj2);
     pfree(traj2);
   }
@@ -616,18 +616,18 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2, int *count)
 
 /* Find all vertices in the segment */
   Datum traj = tnpointseqsegm_trajectory(np1, np2);
-  int countVertices = PGIS_LWGEOM_numpoints_linestring(
+  int countVertices = gserialized_numpoints_linestring(
     DatumGetGserializedP(traj));
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
-  GSERIALIZED *vertex1 = PGIS_LWGEOM_pointn_linestring(
+  GSERIALIZED *vertex1 = gserialized_pointn_linestring(
     DatumGetGserializedP(traj), 1); /* 1-based */
   double azimuth;
   TimestampTz time = inst1->t;
   for (int i = 0; i < countVertices - 1; i++)
   {
-    GSERIALIZED *vertex2 = PGIS_LWGEOM_pointn_linestring(
+    GSERIALIZED *vertex2 = gserialized_pointn_linestring(
       DatumGetGserializedP(traj), i + 2); /* 1-based */
-    double fraction = PGIS_LWGEOM_line_locate_point(DatumGetGserializedP(traj),
+    double fraction = gserialized_line_locate_point(DatumGetGserializedP(traj),
       vertex2);
     bool found = gserialized_azimuth(vertex1, vertex2, &azimuth);
     assert(found);

@@ -1446,7 +1446,7 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_in(char *str, mobdbType temptype, int interp)
+tsequence_in(const char *str, mobdbType temptype, int interp)
 {
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, temptype);
@@ -1459,7 +1459,7 @@ tsequence_in(char *str, mobdbType temptype, int interp)
  * representation.
  */
 TSequence *
-tboolseq_in(char *str, int interp)
+tboolseq_in(const char *str, int interp)
 {
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TBOOL);
@@ -1473,7 +1473,7 @@ tboolseq_in(char *str, int interp)
  * representation.
  */
 TSequence *
-tintseq_in(char *str, int interp)
+tintseq_in(const char *str, int interp)
 {
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TINT);
@@ -1487,7 +1487,7 @@ tintseq_in(char *str, int interp)
  * representation.
  */
 TSequence *
-tfloatseq_in(char *str, int interp)
+tfloatseq_in(const char *str, int interp)
 {
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TFLOAT);
@@ -1501,7 +1501,7 @@ tfloatseq_in(char *str, int interp)
  * representation.
  */
 TSequence *
-ttextseq_in(char *str, int interp)
+ttextseq_in(const char *str, int interp)
 {
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TTEXT);
@@ -1515,7 +1515,7 @@ ttextseq_in(char *str, int interp)
  * (WKT) representation.
  */
 TSequence *
-tgeompointseq_in(char *str, int interp __attribute__((unused)))
+tgeompointseq_in(const char *str, int interp __attribute__((unused)))
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
@@ -1529,7 +1529,7 @@ tgeompointseq_in(char *str, int interp __attribute__((unused)))
  * (WKT) representation.
  */
 TSequence *
-tgeogpointseq_in(char *str, int interp __attribute__((unused)))
+tgeogpointseq_in(const char *str, int interp __attribute__((unused)))
 {
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
@@ -3524,20 +3524,21 @@ tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count,
   return result;
 }
 
+/*****************************************************************************/
+
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal discrete sequence number to (the complement of) a
+ * @brief Restrict a temporal discrete number sequence to (the complement of) a
  * span of base values.
  *
  * @param[in] seq Temporal number
  * @param[in] span Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
- * @return Resulting temporal number
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpan(), minusSpan()
  */
 TSequence *
-tdiscseq_restrict_span(const TSequence *seq, const Span *span,
+tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
   bool atfunc)
 {
   /* Instantaneous sequence */
@@ -3568,13 +3569,12 @@ tdiscseq_restrict_span(const TSequence *seq, const Span *span,
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True if the restriction is at, false for minus
- * @return Resulting temporal number
  * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
  * @sqlfunc atSpans(), minusSpans()
  */
 TSequence *
-tdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
+tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
   int count, bool atfunc)
 {
   const TInstant *inst;
@@ -3853,7 +3853,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Restrict a temporal number to (the complement of) a span
+ * @brief Restrict a temporal number to (the complement of) a span
  *
  * @param[in] seq temporal number
  * @param[in] span Span of base values
@@ -3864,8 +3864,8 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumberseq_restrict_span2(const TSequence *seq, const Span *span, bool atfunc,
-  TSequence **result)
+tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
+  bool atfunc, TSequence **result)
 {
   /* Bounding box test */
   TBOX box1, box2;
@@ -3928,14 +3928,15 @@ tnumberseq_restrict_span2(const TSequence *seq, const Span *span, bool atfunc,
  * @sqlfunc atSpan(), minusSpan()
  */
 TSequenceSet *
-tnumberseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc)
+tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
+  bool atfunc)
 {
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
   if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tnumberseq_restrict_span2(seq, span, atfunc, sequences);
+  int newcount = tnumbercontseq_restrict_span2(seq, span, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3957,7 +3958,7 @@ tnumberseq_restrict_span(const TSequence *seq, const Span *span, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
+tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
   int count, bool atfunc, bool bboxtest, TSequence **result)
 {
   Span **newspans;
@@ -4038,7 +4039,7 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
      * since we kept the span values instead of the projected values when
      * computing atSpans
      */
-    TSequenceSet *ss = tnumberseq_restrict_spans(seq, newspans, newcount,
+    TSequenceSet *ss = tnumbercontseq_restrict_spans(seq, newspans, newcount,
       REST_AT, bboxtest);
     if (ss == NULL)
     {
@@ -4073,12 +4074,12 @@ tnumberseq_restrict_spans1(const TSequence *seq, Span **normspans,
  * @return Resulting temporal number
  * @pre The array of spans is normalized
  * @note A bounding box test and an instantaneous sequence test are done in
- * the function @ref tnumberseq_restrict_spans1 since the latter is called
+ * the function @ref tnumbercontseq_restrict_spans1 since the latter is called
  * for each composing sequence of a temporal sequence set number.
  * @sqlfunc atSpans(), minusSpans()
  */
 TSequenceSet *
-tnumberseq_restrict_spans(const TSequence *seq, Span **normspans,
+tnumbercontseq_restrict_spans(const TSequence *seq, Span **normspans,
   int count, bool atfunc, bool bboxtest)
 {
   /* General case */
@@ -4087,7 +4088,7 @@ tnumberseq_restrict_spans(const TSequence *seq, Span **normspans,
   if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-  int newcount = tnumberseq_restrict_spans1(seq, normspans, count, atfunc,
+  int newcount = tnumbercontseq_restrict_spans1(seq, normspans, count, atfunc,
     bboxtest, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }

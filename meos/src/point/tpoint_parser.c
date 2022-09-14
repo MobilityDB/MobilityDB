@@ -45,7 +45,7 @@
  * @brief Parse a spatiotemporal box from the buffer.
  */
 STBOX *
-stbox_parse(char **str)
+stbox_parse(const char **str)
 {
   /* make compiler quiet */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
@@ -215,10 +215,10 @@ stbox_parse(char **str)
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
- * @param[inout] tpoint_srid SRID of the temporal point
+ * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TInstant *
-tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
+tpointinst_parse(const char **str, mobdbType temptype, bool end, bool make,
   int *tpoint_srid)
 {
   p_whitespace(str);
@@ -255,10 +255,10 @@ tpointinst_parse(char **str, mobdbType temptype, bool end, bool make,
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[inout] tpoint_srid SRID of the temporal point
+ * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequence *
-tpointdiscseq_parse(char **str, mobdbType temptype, int *tpoint_srid)
+tpointdiscseq_parse(const char **str, mobdbType temptype, int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -266,7 +266,7 @@ tpointdiscseq_parse(char **str, mobdbType temptype, int *tpoint_srid)
   p_obrace(str);
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   tpointinst_parse(str, temptype, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
@@ -299,10 +299,10 @@ tpointdiscseq_parse(char **str, mobdbType temptype, int *tpoint_srid)
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
- * @param[inout] tpoint_srid SRID of the temporal point
+ * @param[in,out] tpoint_srid SRID of the temporal point
 */
 TSequence *
-tpointseq_parse(char **str, mobdbType temptype, int interp, bool end,
+tpointseq_parse(const char **str, mobdbType temptype, int interp, bool end,
   bool make, int *tpoint_srid)
 {
   p_whitespace(str);
@@ -315,7 +315,7 @@ tpointseq_parse(char **str, mobdbType temptype, int interp, bool end,
     lower_inc = false;
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   tpointinst_parse(str, temptype, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
@@ -354,10 +354,10 @@ tpointseq_parse(char **str, mobdbType temptype, int interp, bool end,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
- * @param[inout] tpoint_srid SRID of the temporal point
+ * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequenceSet *
-tpointseqset_parse(char **str, mobdbType temptype, int interp,
+tpointseqset_parse(const char **str, mobdbType temptype, int interp,
   int *tpoint_srid)
 {
   p_whitespace(str);
@@ -366,7 +366,7 @@ tpointseqset_parse(char **str, mobdbType temptype, int interp,
   p_obrace(str);
 
   /* First parsing */
-  char *bak = *str;
+  const char *bak = *str;
   tpointseq_parse(str, temptype, interp, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
@@ -398,7 +398,7 @@ tpointseqset_parse(char **str, mobdbType temptype, int interp,
  * @param[in] temptype Temporal type
  */
 Temporal *
-tpoint_parse(char **str, mobdbType temptype)
+tpoint_parse(const char **str, mobdbType temptype)
 {
   int tpoint_srid = 0;
   p_whitespace(str);
@@ -408,7 +408,7 @@ tpoint_parse(char **str, mobdbType temptype)
    * because this requires a string terminated by '\0' and we cannot
    * modify the string in case it must be passed to the tpointinst_parse
    * function. */
-  char *bak = *str;
+  const char *bak = *str;
   if (strncasecmp(*str, "SRID=", 5) == 0)
   {
     /* Move str to the start of the number part */

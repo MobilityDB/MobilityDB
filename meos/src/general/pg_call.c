@@ -212,7 +212,7 @@ pg_datan2(float8 arg1, float8 arg2)
  * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
 DateADT
-pg_date_in(char *str)
+pg_date_in(const char *str)
 {
   DateADT date;
   fsec_t fsec;
@@ -348,7 +348,7 @@ AdjustTimeForTypmod(TimeADT *time, int32 typmod)
  * @note PostgreSQL function: Datum time_in(PG_FUNCTION_ARGS)
  */
 TimeADT
-pg_time_in(char *str, int32 typmod)
+pg_time_in(const char *str, int32 typmod)
 {
   TimeADT result;
   fsec_t fsec;
@@ -468,7 +468,7 @@ AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
  * when calling the function with the last argument to false
  */
 TimestampTz
-timestamp_in_common(char *str, int32 typmod, bool withtz)
+timestamp_in_common(const char *str, int32 typmod, bool withtz)
 {
   TimestampTz result;
   fsec_t    fsec;
@@ -534,7 +534,7 @@ timestamp_in_common(char *str, int32 typmod, bool withtz)
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
-pg_timestamptz_in(char *str, int32 typmod)
+pg_timestamptz_in(const char *str, int32 typmod)
 {
   return timestamp_in_common(str, typmod, true);
 }
@@ -545,7 +545,7 @@ pg_timestamptz_in(char *str, int32 typmod)
  * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
-pg_timestamp_in(char *str, int32 typmod)
+pg_timestamp_in(const char *str, int32 typmod)
 {
   return (Timestamp) timestamp_in_common(str, typmod, false);
 }
@@ -774,7 +774,7 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
  * @note PostgreSQL function: Datum interval_in(PG_FUNCTION_ARGS)
  */
 Interval *
-pg_interval_in(char *str, int32 typmod)
+pg_interval_in(const char *str, int32 typmod)
 {
   Interval *result;
   fsec_t fsec;

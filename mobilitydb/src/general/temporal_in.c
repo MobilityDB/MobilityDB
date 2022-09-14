@@ -57,6 +57,7 @@ Temporal_from_mfjson(PG_FUNCTION_ARGS)
   text *mfjson_txt = PG_GETARG_TEXT_P(0);
   char *mfjson = text2cstring(mfjson_txt);
   Temporal *result = temporal_from_mfjson(mfjson);
+  pfree(mfjson);
   PG_RETURN_POINTER(result);
 }
 

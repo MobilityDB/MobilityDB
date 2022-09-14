@@ -291,7 +291,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 /**
  * Expand the first box to include the second one
  *
- * @param[inout] bbox1 Resulting box
+ * @param[in,out] bbox1 Resulting box
  * @param[in] bbox2 Add-on box
  * @note This function is similar to tbox_expand in file tbox.c but uses
  *   NaN-aware comparisons for the value dimension

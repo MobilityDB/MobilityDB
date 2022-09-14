@@ -40,8 +40,8 @@
 
 /*****************************************************************************/
 
-extern Npoint *npoint_parse(char **str, bool end);
-extern Nsegment *nsegment_parse(char **str);
+extern Npoint *npoint_parse(const char **str, bool end);
+extern Nsegment *nsegment_parse(const char **str);
 
 /*****************************************************************************/
 

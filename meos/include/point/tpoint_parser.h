@@ -41,10 +41,10 @@
 
 /*****************************************************************************/
 
-extern STBOX *stbox_parse(char **str);
-extern TSequence *tpointseq_parse(char **str, mobdbType temptype, int interp,
-  bool end, bool make, int *tpoint_srid);
-extern Temporal *tpoint_parse(char **str, mobdbType temptype);
+extern STBOX *stbox_parse(const char **str);
+extern TSequence *tpointseq_parse(const char **str, mobdbType temptype,
+  int interp, bool end, bool make, int *tpoint_srid);
+extern Temporal *tpoint_parse(const char **str, mobdbType temptype);
 
 /*****************************************************************************/
 

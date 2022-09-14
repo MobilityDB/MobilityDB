@@ -236,7 +236,7 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
 PGDLLEXPORT Datum
 Tpoint_in(PG_FUNCTION_ARGS)
 {
-  char *input = PG_GETARG_CSTRING(0);
+  const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
   Temporal *result = tpoint_parse(&input, oid_type(temptypid));
   PG_RETURN_POINTER(result);
