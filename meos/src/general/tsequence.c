@@ -613,6 +613,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   if (inst1->temptype == T_TNPOINT && interp != DISCRETE)
     ensure_same_rid_tnpointinst(inst, inst1);
 #endif
+
   /* Notice that we cannot call ensure_increasing_timestamps since we must
    * take into account the inclusive/exclusive bounds */
   if (inst1->t > inst->t)
@@ -621,17 +622,18 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
     char *t2 = pg_timestamptz_out(inst->t);
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
   }
+
+  bool eqvalue = datum_eq(tinstant_value(inst1), tinstant_value(inst),
+    basetype);
   if (inst1->t == inst->t)
   {
-    bool seqresult = datum_eq(tinstant_value(inst1), tinstant_value(inst),
-      basetype);
-    if (seq->period.upper_inc && ! seqresult)
+    if (seq->period.upper_inc && ! eqvalue)
     {
       char *t1 = pg_timestamptz_out(inst1->t);
       elog(ERROR, "The temporal values have different value at their common instant %s", t1);
     }
     /* The result is a sequence set */
-    if (interp == LINEAR && ! seqresult)
+    if (interp == LINEAR && ! eqvalue)
     {
       TSequence *sequences[2];
       sequences[0] = (TSequence *) seq;
@@ -650,8 +652,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
     if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
     {
       /* Do not add the point if it is equal */
-      inst1 = tsequence_inst_n(seq, seq->count - 1);
-      if (tinstant_eq(inst1, inst))
+      if (eqvalue && inst1->t == inst->t)
         return (Temporal *) tsequence_copy(seq);
     }
     else

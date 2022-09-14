@@ -395,6 +395,9 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 #endif /* MEOS */
 
 #define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TINSTANT_P(X)    ((TInstant *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCE_P(X)    ((TSequence *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCESET_P(X)    ((TSequenceSet *) PG_GETARG_VARLENA_P(X))
 
 #define DATUM_FREE(value, basetype) \
   do { \

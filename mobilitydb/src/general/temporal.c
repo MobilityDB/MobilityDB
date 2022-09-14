@@ -830,14 +830,13 @@ PG_FUNCTION_INFO_V1(Tinstant_get_value);
 PGDLLEXPORT Datum
 Tinstant_get_value(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  if (temp->subtype != TINSTANT)
+   TInstant *inst = PG_GETARG_TINSTANT_P(0);
+  if (inst->subtype != TINSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must be of subtype instant")));
 
-  TInstant *inst = (TInstant *) temp;
   Datum result = tinstant_value_copy(inst);
-  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(inst, 0);
   PG_RETURN_DATUM(result);
 }
 
@@ -979,13 +978,13 @@ PG_FUNCTION_INFO_V1(Tinstant_timestamp);
 PGDLLEXPORT Datum
 Tinstant_timestamp(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  if (temp->subtype != TINSTANT)
+  TInstant *inst = PG_GETARG_TINSTANT_P(0);
+  if (inst->subtype != TINSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must be of subtype instant")));
 
-  TimestampTz result = ((TInstant *) temp)->t;
-  PG_FREE_IF_COPY(temp, 0);
+  TimestampTz result = inst->t;
+  PG_FREE_IF_COPY(inst, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
@@ -1626,7 +1625,7 @@ PGDLLEXPORT Datum
 Temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *inst = PG_GETARG_TEMPORAL_P(1);
+  TInstant *inst = PG_GETARG_TINSTANT_P(1);
   Temporal *result = temporal_append_tinstant(temp, (TInstant *) inst);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
