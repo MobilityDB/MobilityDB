@@ -212,7 +212,7 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
       instants[l++] = tinstant_make(datum_res, T_TBOOL, inst2->t);
     else
       upper_inc1 = true;
-    result[k++] = tsequence_make((const TInstant **) instants, l, 1,
+    result[k++] = tsequence_make((const TInstant **) instants, l, l,
       lower_inc1, upper_inc1, STEPWISE, NORMALIZE_NO);
     pfree(instants[0]);
     if (inst2 != NULL)

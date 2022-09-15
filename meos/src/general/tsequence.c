@@ -368,6 +368,8 @@ TSequence *
 tsequence_make1(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, int interp, bool normalize)
 {
+  assert(maxcount >= count);
+
   /* Normalize the array of instants */
   TInstant **norminsts = (TInstant **) instants;
   int newcount = count;
@@ -380,17 +382,32 @@ tsequence_make1(const TInstant **instants, int count, int maxcount,
   size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
 
   /* Compute the size of the temporal sequence */
-  size_t memsize = bboxsize_extra;
+  size_t insts_size = 0;
   /* Size of composing instants */
   for (int i = 0; i < newcount; i++)
-    memsize += double_pad(VARSIZE(norminsts[i]));
-  /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TSequence)) + newcount * sizeof(size_t);
+    insts_size += double_pad(VARSIZE(norminsts[i]));
+  /* Compute the total size for maxcount instants as a proportion of the size
+   * of the count instants provided. Note that this is only an initial
+   * estimation. The functions adding instants to a sequence must verify both
+   * the maximum number of instants and the remaining space for adding an
+   * additional variable-length instant or arbitrary size */
+  int totalcount;
+  if (count != maxcount)
+  {
+    insts_size *= maxcount / count;
+    totalcount = maxcount;
+  }
+  else
+    totalcount = newcount;
+  /* Total size of the struct, the offset array */
+  size_t memsize = double_pad(sizeof(TSequence)) + bboxsize_extra +
+    totalcount * sizeof(size_t) + insts_size;
+
   /* Create the temporal sequence */
   TSequence *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
-  result->count = result->maxcount = newcount;
-  result->maxcount = maxcount;
+  result->count = newcount;
+  result->maxcount = totalcount;
   result->temptype = instants[0]->temptype;
   result->subtype = TSEQUENCE;
   result->bboxsize = bboxsize;
@@ -425,7 +442,7 @@ tsequence_make1(const TInstant **instants, int count, int maxcount,
   }
   /* Store the composing instants */
   size_t pdata = double_pad(sizeof(TSequence)) + bboxsize_extra +
-    newcount * sizeof(size_t);
+    totalcount * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
@@ -600,10 +617,12 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
 /**
  * @ingroup libmeos_int_temporal_transf
  * @brief Append an instant to a temporal sequence.
+ * @param[in,out] seq Temporal sequence
+ * @param[in] inst Temporal instant
  * @sqlfunc appendInstant()
  */
 Temporal *
-tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
+tsequence_append_tinstant(TSequence *seq, const TInstant *inst)
 {
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);

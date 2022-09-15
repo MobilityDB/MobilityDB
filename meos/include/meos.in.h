@@ -908,7 +908,7 @@ extern text **ttext_values(const Temporal *temp, int *count);
 
 /* Transformation functions for temporal types */
 
-extern Temporal *temporal_append_tinstant(const Temporal *temp, const TInstant *inst);
+extern Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 extern Temporal *temporal_shift_tscale(const Temporal *temp, const Interval *shift, const Interval *duration);

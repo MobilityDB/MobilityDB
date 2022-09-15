@@ -2078,13 +2078,15 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
 /**
  * @ingroup libmeos_int_temporal_transf
  * @brief Append an instant to a temporal sequence set.
+ * @param[in,out] ss Temporal sequence set
+ * @param[in] inst Temporal instant
  * @sqlfunc appendInstant()
  */
 TSequenceSet *
-tsequenceset_append_tinstant(const TSequenceSet *ss, const TInstant *inst)
+tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst)
 {
   assert(ss->temptype == inst->temptype);
-  const TSequence *seq = tsequenceset_seq_n(ss, ss->count - 1);
+  TSequence *seq = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
   Temporal *temp = tsequence_append_tinstant(seq, inst);
   const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count + 1);
   int k = 0;

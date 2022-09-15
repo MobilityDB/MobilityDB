@@ -792,10 +792,12 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, int interp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Append an instant to the end of a temporal value.
+ * @param[in,out] temp Temporal value
+ * @param[in] inst Temporal instant
  * @sqlfunc appendInstant()
  */
 Temporal *
-temporal_append_tinstant(const Temporal *temp, const TInstant *inst)
+temporal_append_tinstant(Temporal *temp, const TInstant *inst)
 {
   /* Validity tests */
   if (inst->subtype != TINSTANT)
@@ -809,7 +811,7 @@ temporal_append_tinstant(const Temporal *temp, const TInstant *inst)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_merge((TInstant *) temp, inst);
+    result = (Temporal *) tinstant_merge((const TInstant *) temp, inst);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_append_tinstant((TSequence *) temp, inst);
   else /* temp->subtype == TSEQUENCESET */
@@ -1130,7 +1132,7 @@ tnumber_to_span(const Temporal *temp)
     if (temp->temptype == T_TINT)
     {
       Span s;
-      floatspan_set_intspan(&box->span, &s);      
+      floatspan_set_intspan(&box->span, &s);
       result = span_copy(&s);
     }
     else
@@ -2259,7 +2261,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     temporal_set_bbox(temp, &box);
     Datum dvalue = (temp->temptype == T_TINT) ?
       Float8GetDatum(DatumGetInt32(value)) : value;
-    return (ever && 
+    return (ever &&
         datum_le(box.span.lower, dvalue, box.span.basetype) &&
         datum_le(dvalue, box.span.upper, box.span.basetype)) ||
       (!ever && box.span.lower == dvalue &&
@@ -2898,7 +2900,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype == TSEQUENCE && 
+      return (temp->subtype == TSEQUENCE &&
           ! MOBDB_FLAGS_GET_DISCRETE(temp->flags)) ?
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp) :
         temporal_copy(temp);
