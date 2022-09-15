@@ -267,8 +267,8 @@ tpointseq_transform(const TSequence *seq, int srid)
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
-  return tsequence_make_free(instants, seq->count, true, true, interp,
-    NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->count, true, true,
+    interp, NORMALIZE_NO);
 }
 
 /**
@@ -328,11 +328,13 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
       pfree(DatumGetPointer(point));
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
+      seq->count, seq->period.lower_inc, seq->period.upper_inc, interp,
+      NORMALIZE_NO);
     for (int j = 0; j < seq->count; j++)
       pfree(instants[j]);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
+    NORMALIZE_NO);
   for (int i = 0; i < ss->totalcount; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points); pfree(instants);

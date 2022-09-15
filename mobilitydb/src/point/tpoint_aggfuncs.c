@@ -144,8 +144,9 @@ static TSequence *
 tpointseq_transform_tcentroid(const TSequence *seq)
 {
   TInstant **instants = tpointdiscseq_transform_tcentroid(seq);
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -324,7 +325,7 @@ doublen_to_point(const TInstant *inst, int srid)
   assert(inst->temptype == T_TDOUBLE3 || inst->temptype == T_TDOUBLE4);
   LWPOINT *point;
   if (inst->temptype == T_TDOUBLE3)
-  { 
+  {
     double3 *value3 = (double3 *) DatumGetPointer(&inst->value);
     assert(value3->c != 0);
     double valuea = value3->a / value3->c;
@@ -365,7 +366,8 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(value));
   }
-  return tsequence_make_free(newinstants, count, true, true, DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(newinstants, count, count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -391,7 +393,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
       instants[j] = tinstant_make(value, T_TGEOMPOINT, inst->t);
       pfree(DatumGetPointer(value));
     }
-    newsequences[i] = tsequence_make_free(instants, seq->count,
+    newsequences[i] = tsequence_make_free(instants, seq->count, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
       MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }

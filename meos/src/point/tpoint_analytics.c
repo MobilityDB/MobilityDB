@@ -643,7 +643,7 @@ geo_to_tpointdiscseq(const GSERIALIZED *geo)
     instants[i] = trajpoint_to_tpointinst((LWPOINT *) lwcoll->geoms[i]);
   lwgeom_free(lwgeom);
 
-  return tsequence_make_free(instants, npoints, true, true, DISCRETE,
+  return tsequence_make_free(instants, npoints, npoints, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -695,7 +695,8 @@ geo_to_tpointseq(const GSERIALIZED *geo)
   }
   lwgeom_free(lwgeom);
   /* The resulting sequence assumes linear interpolation */
-  return tsequence_make_free(instants, npoints, true, true, LINEAR, NORMALIZE);
+  return tsequence_make_free(instants, npoints, npoints, true, true, LINEAR,
+    NORMALIZE);
 }
 
 /**
@@ -1088,8 +1089,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make(instants, outn, seq->period.lower_inc,
-    seq->period.upper_inc, LINEAR, NORMALIZE);
+  TSequence *result = tsequence_make(instants, outn, outn,
+    seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
 
   /* Only free if arrays are on heap */
@@ -1208,7 +1209,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
     last = pt;
   }
   /* Construct the result */
-  TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
+  TSequence *result = tsequence_make(instants, k, k, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   pfree(instants);
   return result;
@@ -1351,8 +1352,9 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
     tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
   }
   /* Construct the result */
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+  return tsequence_make_free(instants, seq->count, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -1467,7 +1469,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   }
 
   /* Construct the result */
-  return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
+  return tsequence_make_free(instants, k, k, k > 1 ? seq->period.lower_inc : true,
     k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_INTERP(seq->flags),
     NORMALIZE);
 }

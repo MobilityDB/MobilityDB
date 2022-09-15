@@ -1436,7 +1436,7 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT tbool_discseq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
 ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT tbool_discseq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-ERROR:  Cannot transform input to a temporal instant set
+ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT tbool_seq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT tint_inst(tint '1@2000-01-01');
@@ -1509,7 +1509,7 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT tint_discseq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT tint_discseq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-ERROR:  Cannot transform input to a temporal instant set
+ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT tint_seq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT tfloat_inst(tfloat '1.5@2000-01-01');
@@ -1636,7 +1636,7 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT tfloat_discseq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
 ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT tfloat_discseq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-ERROR:  Cannot transform input to a temporal instant set
+ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT ttext_inst(ttext 'AAA@2000-01-01');
@@ -1709,7 +1709,7 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT ttext_discseq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT ttext_discseq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-ERROR:  Cannot transform input to a temporal instant set
+ERROR:  Cannot transform input to a temporal discrete sequence
 SELECT ttext_seq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT toLinear(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]');
@@ -2621,19 +2621,19 @@ SELECT memSize(tbool 't@2000-01-01');
 SELECT memSize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
  memsize 
 ---------
-     136
+     144
 (1 row)
 
 SELECT memSize(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
  memsize 
 ---------
-     136
+     144
 (1 row)
 
 SELECT memSize(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
  memsize 
 ---------
-     304
+     320
 (1 row)
 
 SELECT memSize(tint '1@2000-01-01');
@@ -2645,19 +2645,19 @@ SELECT memSize(tint '1@2000-01-01');
 SELECT memSize(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
  memsize 
 ---------
-     168
+     176
 (1 row)
 
 SELECT memSize(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
  memsize 
 ---------
-     168
+     176
 (1 row)
 
 SELECT memSize(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
  memsize 
 ---------
-     400
+     416
 (1 row)
 
 SELECT memSize(tfloat '1.5@2000-01-01');
@@ -2669,31 +2669,31 @@ SELECT memSize(tfloat '1.5@2000-01-01');
 SELECT memSize(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
  memsize 
 ---------
-     168
+     176
 (1 row)
 
 SELECT memSize(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
  memsize 
 ---------
-     168
+     176
 (1 row)
 
 SELECT memSize(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
  memsize 
 ---------
-     168
+     176
 (1 row)
 
 SELECT memSize(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
  memsize 
 ---------
-     400
+     416
 (1 row)
 
 SELECT memSize(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
  memsize 
 ---------
-     400
+     416
 (1 row)
 
 SELECT memSize(ttext 'AAA@2000-01-01');
@@ -2705,19 +2705,19 @@ SELECT memSize(ttext 'AAA@2000-01-01');
 SELECT memSize(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
  memsize 
 ---------
-     136
+     144
 (1 row)
 
 SELECT memSize(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
  memsize 
 ---------
-     136
+     144
 (1 row)
 
 SELECT memSize(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
  memsize 
 ---------
-     304
+     320
 (1 row)
 
 /*
@@ -3982,21 +3982,21 @@ SELECT numSequences(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 
 /* Errors */
 SELECT numSequences(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(tint '1@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numSequences(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
                                  startsequence                                  
 --------------------------------------------------------------------------------
@@ -4059,21 +4059,21 @@ SELECT startSequence(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 
 /* Errors */
 SELECT startSequence(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(tint '1@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT startSequence(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
                                   endsequence                                   
 --------------------------------------------------------------------------------
@@ -4136,21 +4136,21 @@ SELECT endSequence(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
 
 /* Errors */
 SELECT endSequence(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(tint '1@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT endSequence(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 1);
                                    sequencen                                    
 --------------------------------------------------------------------------------
@@ -4261,21 +4261,21 @@ SELECT sequenceN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
 
 /* Errors */
 SELECT sequenceN(tbool 't@2000-01-01', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(tint '1@2000-01-01', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(tfloat '1.5@2000-01-01', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(ttext 'AAA@2000-01-01', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequenceN(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 1);
-ERROR:  Input must be a temporal continuous value
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT sequences(tbool 't@2000-01-01');
            sequences            
 --------------------------------

@@ -492,7 +492,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
   /* Construct the temporal point */
-  return tsequence_make_free(instants, count, lower_inc, upper_inc,
+  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
     interp, NORMALIZE);
 }
 
@@ -1515,7 +1515,7 @@ tsequence_from_wkb_state(wkb_parse_state *s)
   bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
-  return tsequence_make_free(instants, count, lower_inc, upper_inc,
+  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
     s->interp, NORMALIZE);
 }
 
@@ -1549,8 +1549,8 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
       if (! basetype_byvalue(s->basetype))
         pfree(DatumGetPointer(value));
     }
-    sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
-      upper_inc, s->interp, NORMALIZE);
+    sequences[i] = tsequence_make_free(instants, countinst, countinst,
+      lower_inc, upper_inc, s->interp, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }

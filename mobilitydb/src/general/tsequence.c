@@ -61,8 +61,8 @@ tsequence_recv(StringInfo buf, mobdbType temptype)
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
     instants[i] = tinstant_recv(buf, temptype);
-  return tsequence_make_free(instants, count, lower_inc,
-    upper_inc, interp, NORMALIZE);
+  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
+    interp, NORMALIZE);
 }
 
 /**
