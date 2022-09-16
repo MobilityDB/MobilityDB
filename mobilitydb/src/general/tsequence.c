@@ -57,7 +57,7 @@ tsequence_recv(StringInfo buf, mobdbType temptype)
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);
   bool upper_inc = (char) pq_getmsgbyte(buf);
-  int interp = (char) pq_getmsgbyte(buf);
+  interpType interp = (char) pq_getmsgbyte(buf);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
     instants[i] = tinstant_recv(buf, temptype);

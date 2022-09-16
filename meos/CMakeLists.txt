@@ -138,6 +138,9 @@ install(
   FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_export.h"
   DESTINATION "/usr/local/include"
   RENAME "meos.h")
+install(
+  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h"
+  DESTINATION "/usr/local/include")
 install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
 message(STATUS "Building MEOS:")
 message(STATUS "  Library file: '/usr/local/lib'")

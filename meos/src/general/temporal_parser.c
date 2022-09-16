@@ -533,7 +533,7 @@ tdiscseq_parse(const char **str, mobdbType temptype)
  * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
-tcontseq_parse(const char **str, mobdbType temptype, int interp, bool end,
+tcontseq_parse(const char **str, mobdbType temptype, interpType interp, bool end,
   bool make)
 {
   p_whitespace(str);
@@ -587,7 +587,7 @@ tcontseq_parse(const char **str, mobdbType temptype, int interp, bool end,
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_parse(const char **str, mobdbType temptype, int interp)
+tsequenceset_parse(const char **str, mobdbType temptype, interpType interp)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -631,7 +631,7 @@ temporal_parse(const char **str, mobdbType temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  int interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   /* Starts with "Interp=Stepwise;" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {

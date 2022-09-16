@@ -487,7 +487,7 @@ tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_bounds,
   bool lower_inc = (! get_bounds) ? true : PG_GETARG_BOOL(1);
   bool upper_inc = (! get_bounds) ? true : PG_GETARG_BOOL(2);
   bool linear = get_linear ? PG_GETARG_BOOL(3) : false;
-  int interp = (! get_bounds) ? DISCRETE : (linear ? LINEAR : STEPWISE);
+  interpType interp = (! get_bounds) ? DISCRETE : (linear ? LINEAR : STEPWISE);
   ensure_non_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
@@ -567,7 +567,7 @@ tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
-  int interp;
+  interpType interp;
   float maxdist;
   Interval *maxt;
   if (get_linear)
@@ -652,7 +652,7 @@ Tsequence_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  int interp = LINEAR;
+  interpType interp = LINEAR;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
@@ -672,7 +672,7 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  int interp = LINEAR;
+  interpType interp = LINEAR;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
   mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
@@ -1626,7 +1626,7 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *inst = PG_GETARG_TINSTANT_P(1);
-  Temporal *result = temporal_append_tinstant(temp, (TInstant *) inst);
+  Temporal *result = temporal_append_tinstant(temp, (TInstant *) inst, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
   PG_RETURN_POINTER(result);

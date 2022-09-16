@@ -160,10 +160,10 @@ typedef enum
 /**
  * Enumeration for the interpolation functions for temporal types
  */
-#define INTERP_NONE     0
-#define DISCRETE        1
-#define STEPWISE        2
-#define LINEAR          3
+// #define INTERP_NONE     0
+// #define DISCRETE        1
+// #define STEPWISE        2
+// #define LINEAR          3
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
@@ -450,9 +450,9 @@ extern void ensure_same_interpolation(const Temporal *temp1,
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, int interp);
+  bool merge, interpType interp);
 extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
-  bool merge, int interp, double maxdist, Interval *maxt, int *countsplits);
+  bool merge, interpType interp, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, mobdbType basetype);

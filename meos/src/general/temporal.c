@@ -150,8 +150,8 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
-  int interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
-  int interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
   if ((interp1 == STEPWISE && interp2 == LINEAR) ||
       (interp2 == STEPWISE && interp1 == LINEAR))
     elog(ERROR, "The temporal values must have the same continuous interpolation");
@@ -197,9 +197,9 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 void
 ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
 #if NPOINT
-  bool merge, int interp)
+  bool merge, interpType interp)
 #else
-  bool merge, int interp __attribute__((unused)))
+  bool merge, interpType interp __attribute__((unused)))
 #endif
 {
   ensure_increasing_timestamps(inst1, inst2, merge);
@@ -224,7 +224,7 @@ ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
  */
 void
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  int interp)
+  interpType interp)
 {
   for (int i = 1; i < count; i++)
     ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
@@ -251,7 +251,7 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
  */
 int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
-  int interp, double maxdist, Interval *maxt, int *countsplits)
+  interpType interp, double maxdist, Interval *maxt, int *countsplits)
 {
   mobdbType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
@@ -701,7 +701,7 @@ temporal_copy(const Temporal *temp)
  */
 Temporal *
 temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
-  int interp)
+  interpType interp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -746,7 +746,7 @@ tint_from_base(int i, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tfloat_from_base(bool b, const Temporal *temp, int interp)
+tfloat_from_base(bool b, const Temporal *temp, interpType interp)
 {
   return temporal_from_base(BoolGetDatum(b), T_TFLOAT, temp, interp);
 }
@@ -768,7 +768,7 @@ ttext_from_base(const text *txt, const Temporal *temp)
  * of another temporal value.
  */
 Temporal *
-tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, int interp)
+tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType interp)
 {
   return temporal_from_base(PointerGetDatum(gs), T_TGEOMPOINT, temp, interp);
 }
@@ -779,7 +779,7 @@ tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, int interp)
  * of another temporal value.
  */
 Temporal *
-tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, int interp)
+tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType interp)
 {
   return temporal_from_base(PointerGetDatum(gs), T_TGEOGPOINT, temp, interp);
 }
@@ -797,7 +797,7 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, int interp)
  * @sqlfunc appendInstant()
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst)
+temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
 {
   /* Validity tests */
   if (inst->subtype != TINSTANT)
@@ -813,10 +813,11 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_merge((const TInstant *) temp, inst);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_append_tinstant((TSequence *) temp, inst);
+    result = (Temporal *) tsequence_append_tinstant((TSequence *) temp, inst,
+      expand);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
-      inst);
+      inst, expand);
   return result;
 }
 
@@ -870,7 +871,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   Temporal *new;
   if (new1->subtype == TINSTANT)
   {
-    int interp = MOBDB_FLAGS_GET_INTERP(new2->flags);
+    interpType interp = MOBDB_FLAGS_GET_INTERP(new2->flags);
     if (new2->subtype == TSEQUENCE)
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1, interp);
     else /* new2->subtype == TSEQUENCESET */
@@ -947,7 +948,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
  */
 static Temporal **
 temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
-  int interp)
+  interpType interp)
 {
   ensure_valid_tempsubtype(subtype);
   Temporal **result = palloc(sizeof(Temporal *) * count);
@@ -991,18 +992,18 @@ temporal_merge_array(Temporal **temparr, int count)
    * the result */
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
-  int interp = MOBDB_FLAGS_GET_INTERP(temparr[0]->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temparr[0]->flags);
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation(temparr[0], temparr[i]);
     uint8 subtype1 = temparr[i]->subtype;
-    int interp1 = MOBDB_FLAGS_GET_INTERP(temparr[i]->flags);
+    interpType interp1 = MOBDB_FLAGS_GET_INTERP(temparr[i]->flags);
     if (subtype != subtype1 || interp != interp1)
     {
       convert = true;
       int16 newsubtype = Max(subtype, subtype1);
-      int newinterp = Max(interp, interp1);
+      interpType newinterp = Max(interp, interp1);
       /* A discrete TSequence cannot be converted to a continuous TSequence */
       if (subtype == TSEQUENCE && subtype1 == TSEQUENCE && interp != newinterp)
         newsubtype = TSEQUENCESET;

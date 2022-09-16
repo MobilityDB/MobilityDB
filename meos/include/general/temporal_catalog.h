@@ -56,7 +56,7 @@ typedef enum
   T_FLOATSPAN,     /**< float8 span type */
   T_INT4,          /**< int4 type */
 #if ! MEOS
-  T_INT4RANGE,     /**< int4 range type */
+  T_INT4RANGE,     /**< PostgreSQL int4 range type */
 #endif
   T_INTSPAN,       /**< int4 span type */
   T_INT8,          /**< int8 type */
@@ -74,7 +74,7 @@ typedef enum
   T_TIMESTAMPTZ,   /**< timestamp with time zone type */
   T_TINT,          /**< temporal integer type */
 #if ! MEOS
-  T_TSTZRANGE,     /**< timestamp with time zone rabge type */
+  T_TSTZRANGE,     /**< PostgreSQL timestamp with time zone range type */
 #endif
   T_TTEXT,         /**< temporal text type */
   T_GEOMETRY,      /**< geometry type */

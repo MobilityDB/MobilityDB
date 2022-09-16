@@ -303,8 +303,8 @@ tpointdiscseq_parse(const char **str, mobdbType temptype, int *tpoint_srid)
  * @param[in,out] tpoint_srid SRID of the temporal point
 */
 TSequence *
-tpointseq_parse(const char **str, mobdbType temptype, int interp, bool end,
-  bool make, int *tpoint_srid)
+tpointseq_parse(const char **str, mobdbType temptype, interpType interp,
+  bool end, bool make, int *tpoint_srid)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -358,7 +358,7 @@ tpointseq_parse(const char **str, mobdbType temptype, int interp, bool end,
  * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequenceSet *
-tpointseqset_parse(const char **str, mobdbType temptype, int interp,
+tpointseqset_parse(const char **str, mobdbType temptype, interpType interp,
   int *tpoint_srid)
 {
   p_whitespace(str);
@@ -432,7 +432,7 @@ tpoint_parse(const char **str, mobdbType temptype)
   // if (temptype == T_TGEOGPOINT)
     // srid_is_latlong(fcinfo, tpoint_srid);
 
-  int interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   /* Starts with "Interp=Stepwise" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {

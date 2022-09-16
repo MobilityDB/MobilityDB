@@ -107,8 +107,8 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
  * @param[out] box Resulting bounding box
  */
 static void
-tgeogpointinstarr_set_gbox(const TInstant **instants, int count, int interp,
-  GBOX *box)
+tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
+  interpType interp, GBOX *box)
 {
   LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
   for (int i = 0; i < count; i++)
@@ -142,8 +142,8 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count, int interp,
  * gbox for a MultiPoint and a Linestring is around 2e-7
  */
 void
-tgeogpointinstarr_set_stbox(const TInstant **instants, int count, int interp,
-  STBOX *box)
+tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
+  interpType interp, STBOX *box)
 {
   GBOX gbox;
   gbox_init(&gbox);

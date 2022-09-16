@@ -353,7 +353,7 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {
@@ -1025,7 +1025,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     /* We cannot DATUM_FREE(value, lfinfo->restype); */
   }
   pfree_array((void **) tofree, l);
-  int interp = Min(MOBDB_FLAGS_GET_INTERP(seq1->flags),
+  interpType interp = Min(MOBDB_FLAGS_GET_INTERP(seq1->flags),
     MOBDB_FLAGS_GET_INTERP(seq2->flags));
   result[0] = tsequence_make_free(instants, k, k, inter->lower_inc,
     inter->upper_inc, interp, NORMALIZE);
@@ -1081,7 +1081,7 @@ tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
     basetype2 = temptype_basetype(seq2->temptype);
   }
   mobdbType resbasetype = temptype_basetype(lfinfo->restype);
-  int interp = lfinfo->reslinear ? LINEAR : STEPWISE;
+  interpType interp = lfinfo->reslinear ? LINEAR : STEPWISE;
   /* Each iteration of the loop adds
    * - one sequence when the interpolations of the temporal values are different
    * - between one and three sequences for functions with discontinuities
@@ -1265,7 +1265,7 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
     tsequence_value_at_timestamp(seq2, inter.lower, true, &value2);
     Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
     TInstant *inst = tinstant_make(resvalue, lfinfo->restype, inter.lower);
-    int interp = lfinfo->reslinear ? LINEAR : STEPWISE;
+    interpType interp = lfinfo->reslinear ? LINEAR : STEPWISE;
     result[0] = tinstant_to_tsequence(inst, interp);
     DATUM_FREE(value1, temptype_basetype(seq1->temptype));
     DATUM_FREE(value2, temptype_basetype(seq2->temptype));
@@ -1468,7 +1468,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   else if (temp1->subtype == TSEQUENCE)
   {
     TSequence *seq1 = (TSequence *) temp1;
-    int interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+    interpType interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
     if (temp2->subtype == TINSTANT)
       result = (interp1 == DISCRETE) ?
         (Temporal *) tfunc_tdiscseq_tinstant(
@@ -1478,7 +1478,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     else if (temp2->subtype == TSEQUENCE)
     {
       TSequence *seq2 = (TSequence *) temp2;
-      int interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+      interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
       if (interp1 == DISCRETE && interp2 == DISCRETE)
         result = (Temporal *) tfunc_tdiscseq_tdiscseq(seq1, seq2, lfinfo);
       else if (interp1 == DISCRETE && interp2 != DISCRETE)
@@ -2064,8 +2064,8 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
     {
-      int interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
-      int interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+      interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
+      interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
       if (interp1 == DISCRETE && interp2 == DISCRETE )
         result = efunc_tdiscseq_tdiscseq((TSequence *) temp1,
           (TSequence *) temp2, lfinfo);

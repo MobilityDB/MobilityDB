@@ -1587,7 +1587,7 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
  * @param[in] interp Interpolation
  */
 LWGEOM *
-lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, int interp)
+lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, interpType interp)
 {
   if (count == 1)
     return lwpoint_as_lwgeom(lwpoint_clone(lwgeom_as_lwpoint(lwpoints[0])));
@@ -2434,7 +2434,7 @@ tpoint_speed(const Temporal *temp)
  * each of its coordinates
  */
 void
-tpointseq_twcentroid1(const TSequence *seq, bool hasz, int interp,
+tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
   TSequence **seqx, TSequence **seqy, TSequence **seqz)
 {
   TInstant **instantsx = palloc(sizeof(TInstant *) * seq->count);
@@ -2472,7 +2472,7 @@ tpointseq_twcentroid(const TSequence *seq)
 {
   int srid = tpointseq_srid(seq);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
   tpointseq_twcentroid1(seq, hasz, interp, &seqx, &seqy, &seqz);
   double twavgx = (interp == DISCRETE) ?
@@ -2500,7 +2500,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 {
   int srid = tpointseqset_srid(ss);
   bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
-  int interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ss->count);
   TSequence **sequencesy = palloc(sizeof(TSequence *) * ss->count);
   TSequence **sequencesz = hasz ?
@@ -3476,7 +3476,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 TSequence **
 tpointseq_make_simple(const TSequence *seq, int *count)
 {
-  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence **result;
   /* Special cases when the input sequence has 1 or 2 instants */
   if ((interp == DISCRETE && seq->count == 1) ||

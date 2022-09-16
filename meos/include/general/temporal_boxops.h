@@ -64,7 +64,7 @@ extern void temporal_bbox_shift_tscale(const Interval *start,
 extern size_t temporal_bbox_size(mobdbType tempype);
 extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
 extern void tsequence_compute_bbox(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, int interp, void *bbox);
+  bool lower_inc, bool upper_inc, interpType interp, void *bbox);
 extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
   void *bbox);
 

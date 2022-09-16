@@ -51,7 +51,7 @@ extern void tpointinst_set_stbox(const TInstant *inst, STBOX *box);
 extern void tgeompointinstarr_set_stbox(const TInstant **inst, int count,
   STBOX *box);
 extern void tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
-  int interp, STBOX *box);
+  interpType interp, STBOX *box);
 extern void tpointseqarr_set_stbox(const TSequence **seq, int count,
   STBOX *box);
 
