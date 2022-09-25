@@ -179,12 +179,12 @@ typedef enum
  * for sequence and sequence set subtypes.
  *****************************************************************************/
 
-/* The following two flags are only used for TInstant */
+/* The following flag is only used for TInstant */
 #define MOBDB_FLAG_BYVAL      0x0001  // 1
 #define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
 #define MOBDB_FLAGS_INTERP    0x000C  // 4 or 8
-/* The following two flags are used for bounding boxes and temporal types */
+/* The following two flags are used for both bounding boxes and temporal types */
 #define MOBDB_FLAG_X          0x0010  // 16
 #define MOBDB_FLAG_Z          0x0020  // 32
 #define MOBDB_FLAG_T          0x0040  // 64

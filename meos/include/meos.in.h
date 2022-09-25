@@ -188,6 +188,7 @@ typedef struct
   int32         count;        /**< Number of TSequence elements */
   int32         totalcount;   /**< Total number of TInstant elements in all
                                    composing TSequence elements */
+  int32         maxcount;     /**< Maximum number of TSequence elements */
   int16         bboxsize;     /**< Size of the bounding box */
   Period        period;       /**< Time span (24 bytes). All bounding boxes
                                    start with a period so actually it is also

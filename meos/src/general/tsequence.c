@@ -1582,7 +1582,8 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
   size_t outlen = 0;
   char prefix[20];
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  if (! component && interp == STEPWISE)
+  if (! component && MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) &&
+      interp == STEPWISE)
     sprintf(prefix, "Interp=Stepwise;");
   else
     prefix[0] = '\0';
