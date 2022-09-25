@@ -68,7 +68,7 @@ typedef struct
   bool hast;           /**< T? */
   bool geodetic;       /**< Geodetic? */
   bool has_srid;       /**< SRID? */
-  int interp;          /**< Interpolation */
+  interpType interp;   /**< Interpolation */
   const uint8_t *pos;  /**< Current parse position */
 } wkb_parse_state;
 
@@ -470,7 +470,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  mobdbType temptype, int interp)
+  mobdbType temptype, interpType interp)
 {
   /* Get the array of temporal instant points */
   int count;
@@ -492,7 +492,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
   /* Construct the temporal point */
-  return tsequence_make_free(instants, count, lower_inc, upper_inc,
+  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
     interp, NORMALIZE);
 }
 
@@ -525,7 +525,7 @@ tintseq_from_mfjson(json_object *mfjson)
  * @sqlfunc tfloattFromMFJSON()
  */
 TSequence *
-tfloatseq_from_mfjson(json_object *mfjson, int interp)
+tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
 }
@@ -548,7 +548,7 @@ ttextseq_from_mfjson(json_object *mfjson)
  * @sqlfunc tgeompointFromMFJSON()
  */
 TSequence *
-tgeompointseq_from_mfjson(json_object *mfjson, int srid, int interp)
+tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
@@ -560,7 +560,7 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, int interp)
  * @sqlfunc tgeogpointFromMFJSON()
  */
 TSequence *
-tgeogpointseq_from_mfjson(json_object *mfjson, int srid, int interp)
+tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
@@ -572,7 +572,7 @@ tgeogpointseq_from_mfjson(json_object *mfjson, int srid, int interp)
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
-  mobdbType temptype, int interp)
+  mobdbType temptype, interpType interp)
 {
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
@@ -626,7 +626,7 @@ tintseqset_from_mfjson(json_object *mfjson)
  * @sqlfunc tfloatFromMFJSON()
  */
 TSequenceSet *
-tfloatseqset_from_mfjson(json_object *mfjson, int interp)
+tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
 }
@@ -649,7 +649,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
  * @sqlfunc tgeompointFromMFJSON()
  */
 TSequenceSet *
-tgeompointseqset_from_mfjson(json_object *mfjson, int srid, int interp)
+tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
@@ -661,7 +661,7 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, int interp)
  * @sqlfunc tgeogpointFromMFJSON()
  */
 TSequenceSet *
-tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, int interp)
+tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
@@ -805,7 +805,7 @@ temporal_from_mfjson(const char *mfjson)
     else if (strcmp(pszInterp, "Stepwise") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
     {
-      int interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEPWISE;
+      interpType interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEPWISE;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
         result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
@@ -1515,7 +1515,7 @@ tsequence_from_wkb_state(wkb_parse_state *s)
   bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
-  return tsequence_make_free(instants, count, lower_inc, upper_inc,
+  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
     s->interp, NORMALIZE);
 }
 
@@ -1549,8 +1549,8 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
       if (! basetype_byvalue(s->basetype))
         pfree(DatumGetPointer(value));
     }
-    sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
-      upper_inc, s->interp, NORMALIZE);
+    sequences[i] = tsequence_make_free(instants, countinst, countinst,
+      lower_inc, upper_inc, s->interp, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }

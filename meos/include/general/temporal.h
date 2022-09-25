@@ -160,10 +160,10 @@ typedef enum
 /**
  * Enumeration for the interpolation functions for temporal types
  */
-#define INTERP_NONE     0
-#define DISCRETE        1
-#define STEPWISE        2
-#define LINEAR          3
+// #define INTERP_NONE     0
+// #define DISCRETE        1
+// #define STEPWISE        2
+// #define LINEAR          3
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
@@ -179,12 +179,12 @@ typedef enum
  * for sequence and sequence set subtypes.
  *****************************************************************************/
 
-/* The following two flags are only used for TInstant */
+/* The following flag is only used for TInstant */
 #define MOBDB_FLAG_BYVAL      0x0001  // 1
 #define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
 #define MOBDB_FLAGS_INTERP    0x000C  // 4 or 8
-/* The following two flags are used for bounding boxes and temporal types */
+/* The following two flags are used for both bounding boxes and temporal types */
 #define MOBDB_FLAG_X          0x0010  // 16
 #define MOBDB_FLAG_Z          0x0020  // 32
 #define MOBDB_FLAG_T          0x0040  // 64
@@ -395,6 +395,9 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 #endif /* MEOS */
 
 #define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TINSTANT_P(X)    ((TInstant *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCE_P(X)    ((TSequence *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCESET_P(X)    ((TSequenceSet *) PG_GETARG_VARLENA_P(X))
 
 #define DATUM_FREE(value, basetype) \
   do { \
@@ -447,9 +450,9 @@ extern void ensure_same_interpolation(const Temporal *temp1,
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, int interp);
+  bool merge, interpType interp);
 extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
-  bool merge, int interp, double maxdist, Interval *maxt, int *countsplits);
+  bool merge, interpType interp, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, mobdbType basetype);

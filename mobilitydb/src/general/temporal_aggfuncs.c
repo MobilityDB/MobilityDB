@@ -300,7 +300,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
       inst1->t);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
-    lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
+    syncseq1->count, lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags),
+    NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
   /* Compute the aggregation on the period after the intersection
@@ -648,7 +649,7 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
     result = (Temporal *) tsequence_make((const TInstant **) values,
-      state->length, true, true, DISCRETE, NORMALIZE_NO);
+      state->length, state->length, true, true, DISCRETE, NORMALIZE_NO);
   else /* values[0]->subtype == TSEQUENCE */
     result = (Temporal *) tsequenceset_make((const TSequence **) values,
       state->length, NORMALIZE);
@@ -692,8 +693,9 @@ tcontseq_transform_tagg(const TSequence *seq,
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = func(inst);
   }
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -838,7 +840,7 @@ tcontseq_transform_tcount(const TSequence *seq)
   TInstant *instants[2];
   instants[0] = tinstant_make(datum_one, T_TINT, seq->period.lower);
   instants[1] = tinstant_make(datum_one, T_TINT, seq->period.upper);
-  result = tsequence_make((const TInstant **) instants, 2,
+  result = tsequence_make((const TInstant **) instants, 2, 2,
     seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
@@ -1277,7 +1279,8 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
-  return tsequence_make_free(newinstants, count, true, true, DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(newinstants, count, count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -1298,7 +1301,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
-    newsequences[i] = tsequence_make_free(instants, seq->count,
+    newsequences[i] = tsequence_make_free(instants, seq->count, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
       MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }

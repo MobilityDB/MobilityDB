@@ -41,12 +41,15 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_process_ais meos_process_ais.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_assemble_ais meos_assemble_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
 #include <stdio.h>
 #include "meos.h"
+
+#define MAX_INSTANTS 50000
+#define MAX_TRIPS 5
 
 typedef struct
 {
@@ -60,17 +63,17 @@ typedef struct
 typedef struct
 {
   long int MMSI;
-  TInstant *instants[50000];
+  TInstant *instants[MAX_INSTANTS];
 } MMSI_instants;
 
 /* Main program */
 int main(void)
 {
   /* Allocate space to build the instants for each trip and the trips */
-  MMSI_instants trip_instants[5];
-  TSequence *trips[5];
+  MMSI_instants trip_instants[MAX_TRIPS];
+  TSequence *trips[MAX_TRIPS];
   /* Number of instants for each trip */
-  int numinstants[5] = {0};
+  int numinstants[MAX_TRIPS] = {0};
   /* Number of ships */
   int numships = 0;
   /* Iterator variables */
@@ -158,7 +161,7 @@ int main(void)
   for (i = 0; i < numships; i++)
   {
     trips[i] = tsequence_make((const TInstant **) trip_instants[i].instants,
-      numinstants[i], true, true, true, true);
+      numinstants[i], numinstants[i], true, true, true, true);
     printf("MMSI: %ld, Number of input instants: %d, Number of instants: %d, "
       "Distance travelled %lf\n", trip_instants[i].MMSI, numinstants[i],
       trips[i]->count, tpoint_length((Temporal *) trips[i]));

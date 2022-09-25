@@ -295,9 +295,9 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
 void
 tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 #if NPOINT
-  bool upper_inc, int interp, void *box)
+  bool upper_inc, interpType interp, void *box)
 #else
-  bool upper_inc, int interp __attribute__((unused)), void *box)
+  bool upper_inc, interpType interp __attribute__((unused)), void *box)
 #endif
 {
   /* Only external types have bounding box */

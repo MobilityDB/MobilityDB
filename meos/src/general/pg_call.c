@@ -807,7 +807,7 @@ pg_interval_in(const char *str, int32 typmod)
 
   /* if those functions think it's a bad format, try ISO8601 style */
   if (dterr == DTERR_BAD_FORMAT)
-    dterr = DecodeISO8601Interval(str, &dtype, tm, &fsec);
+    dterr = DecodeISO8601Interval((char *) str, &dtype, tm, &fsec);
 
   if (dterr != 0)
   {

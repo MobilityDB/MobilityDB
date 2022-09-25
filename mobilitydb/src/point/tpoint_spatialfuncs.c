@@ -236,7 +236,7 @@ tpointinst_transform(const TInstant *inst, int srid)
 TSequence *
 tpointseq_transform(const TSequence *seq, int srid)
 {
-  int interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -267,8 +267,8 @@ tpointseq_transform(const TSequence *seq, int srid)
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
-  return tsequence_make_free(instants, seq->count, true, true, interp,
-    NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->count, true, true,
+    interp, NORMALIZE_NO);
 }
 
 /**
@@ -315,7 +315,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
-  int interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   k = 0;
   for (int i = 0; i < ss->count; i++)
   {
@@ -328,11 +328,13 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
       pfree(DatumGetPointer(point));
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
+      seq->count, seq->period.lower_inc, seq->period.upper_inc, interp,
+      NORMALIZE_NO);
     for (int j = 0; j < seq->count; j++)
       pfree(instants[j]);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
+    NORMALIZE_NO);
   for (int i = 0; i < ss->totalcount; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points); pfree(instants);
