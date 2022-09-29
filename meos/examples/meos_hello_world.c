@@ -49,16 +49,21 @@ int main()
 
   /* Input temporal points in WKT format */
   char *inst_wkt = "POINT(1 1)@2000-01-01";
-  char *is_wkt = "{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}";
-  char *seq_wkt = "[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
-  char *ss_wkt = "{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
+  char *seq_disc_wkt = "{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}";
+  char *seq_linear_wkt = "[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
+  char *seq_step_wkt = "Interp=Stepwise;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
+  char *ss_linear_wkt = "{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
+    "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
+  char *ss_step_wkt = "Interp=Stepwise;{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
     "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
 
   /* Read WKT into temporal point object */
   Temporal *inst = tgeompoint_in(inst_wkt);
-  Temporal *is = tgeompoint_in(is_wkt);
-  Temporal *seq = tgeompoint_in(seq_wkt);
-  Temporal *ss = tgeompoint_in(ss_wkt);
+  Temporal *seq_disc = tgeompoint_in(seq_disc_wkt);
+  Temporal *seq_linear = tgeompoint_in(seq_linear_wkt);
+  Temporal *seq_step = tgeompoint_in(seq_step_wkt);
+  Temporal *ss_linear = tgeompoint_in(ss_linear_wkt);
+  Temporal *ss_step = tgeompoint_in(ss_step_wkt);
 
   /* Convert result to MF-JSON */
   char *inst_mfjson = temporal_as_mfjson(inst, true, 3, 6, NULL);
@@ -70,39 +75,59 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", inst_wkt, inst_mfjson);
-  char *is_mfjson = temporal_as_mfjson(is, true, 3, 6, NULL);
+  char *seq_disc_mfjson = temporal_as_mfjson(seq_disc, true, 3, 6, NULL);
   printf("\n"
-    "------------------------\n"
-    "| Temporal Instant Set |\n"
-    "------------------------\n\n"
+    "-------------------------------------------------\n"
+    "| Temporal Sequence with Discrete Interpolation |\n"
+    "-------------------------------------------------\n"
     "WKT:\n"
     "----\n%s\n\n"
     "MF-JSON:\n"
-    "--------\n%s\n", is_wkt, is_mfjson);
-  char *seq_mfjson = temporal_as_mfjson(seq, true, 3, 6, NULL);
+    "--------\n%s\n", seq_disc_wkt, seq_disc_mfjson);
+  char *seq_linear_mfjson = temporal_as_mfjson(seq_linear, true, 3, 6, NULL);
   printf("\n"
-    "---------------------\n"
-    "| Temporal Sequence |\n"
-    "---------------------\n\n"
+    "-----------------------------------------------\n"
+    "| Temporal Sequence with Linear Interpolation |\n"
+    "-----------------------------------------------\n"
     "WKT:\n"
     "----\n%s\n\n"
     "MF-JSON:\n"
-    "--------\n%s\n", seq_wkt, seq_mfjson);
-  char *ss_mfjson = temporal_as_mfjson(ss, true, 3, 6, NULL);
+    "--------\n%s\n", seq_linear_wkt, seq_linear_mfjson);
+  char *seq_step_mfjson = temporal_as_mfjson(seq_step, true, 3, 6, NULL);
   printf("\n"
-    "-------------------------\n"
-    "| Temporal Sequence Set |\n"
-    "-------------------------\n\n"
+    "-------------------------------------------------\n"
+    "| Temporal Sequence with Stepwise Interpolation |\n"
+    "-------------------------------------------------\n"
     "WKT:\n"
     "----\n%s\n\n"
     "MF-JSON:\n"
-    "--------\n%s\n", ss_wkt, ss_mfjson);
+    "--------\n%s\n", seq_step_wkt, seq_step_mfjson);
+  char *ss_linear_mfjson = temporal_as_mfjson(ss_linear, true, 3, 6, NULL);
+  printf("\n"
+    "---------------------------------------------------\n"
+    "| Temporal Sequence Set with Linear Interpolation |\n"
+    "---------------------------------------------------\n"
+    "WKT:\n"
+    "----\n%s\n\n"
+    "MF-JSON:\n"
+    "--------\n%s\n", ss_linear_wkt, ss_linear_mfjson);
+  char *ss_step_mfjson = temporal_as_mfjson(ss_step, true, 3, 6, NULL);
+  printf("\n"
+    "-----------------------------------------------------\n"
+    "| Temporal Sequence Set with Stepwise Interpolation |\n"
+    "-----------------------------------------------------\n"
+    "WKT:\n"
+    "----\n%s\n\n"
+    "MF-JSON:\n"
+    "--------\n%s\n", ss_step_wkt, ss_step_mfjson);
 
   /* Clean up allocated objects */
   free(inst); free(inst_mfjson);
-  free(is); free(is_mfjson);
-  free(seq); free(seq_mfjson);
-  free(ss); free(ss_mfjson);
+  free(seq_disc); free(seq_disc_mfjson);
+  free(seq_linear); free(seq_linear_mfjson);
+  free(seq_step); free(seq_step_mfjson);
+  free(ss_linear); free(ss_linear_mfjson);
+  free(ss_step); free(ss_step_mfjson);
 
   /* Finalize MEOS */
   meos_finish();
