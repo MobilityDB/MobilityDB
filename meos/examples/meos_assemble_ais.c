@@ -80,7 +80,7 @@ int main(void)
   int i, j;
 
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");

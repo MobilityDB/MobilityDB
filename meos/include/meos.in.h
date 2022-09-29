@@ -212,7 +212,7 @@ typedef struct
  * Initialization of the MEOS library
  *****************************************************************************/
 
-extern void meos_initialize(void);
+extern void meos_initialize(const char *tz_str);
 extern void meos_finish(void);
 
 /*****************************************************************************

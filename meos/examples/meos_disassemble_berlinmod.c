@@ -78,7 +78,7 @@ char date_buffer[12];
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");

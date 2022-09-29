@@ -56,7 +56,8 @@
 
 typedef struct
 {
-  int vehicle;
+  int tripId;
+  int vehId;
   DateADT day;
   int seq;
   Temporal *trip;
@@ -84,7 +85,7 @@ int main(void)
   int i = 0;
 
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");
@@ -102,8 +103,8 @@ int main(void)
   i = 0;
   do
   {
-    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &trips[i].vehicle, date_buffer, &trips[i].seq, trip_buffer,
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
+      &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq, trip_buffer,
       geo_buffer);
     /* Transform the string representing the date into a date value */
     trips[i].day = pg_date_in(date_buffer);
@@ -141,7 +142,7 @@ int main(void)
     char *day_str = pg_date_out(trips[i].day);
     printf("Vehicle: %d, Date: %s, Seq: %d, No. of instants: %d, "
       "No. of instants DP: %d, No. of instants SED: %d\n",
-      trips[i].vehicle, day_str, trips[i].seq,
+      trips[i].vehId, day_str, trips[i].seq,
       temporal_num_instants(trips[i].trip),
       temporal_num_instants(trips_dp[i]),
       temporal_num_instants(trips_sed[i]));
