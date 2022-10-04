@@ -63,6 +63,7 @@
 
 gsl_rng *_aggregation_rng = NULL;
 
+#if ! MEOS
 /**
  * Switch to the memory context for aggregation
  */
@@ -85,6 +86,7 @@ unset_aggregation_context(MemoryContext ctx)
   MemoryContextSwitchTo(ctx);
   return;
 }
+#endif /* ! MEOS */
 
 #ifdef NO_FFSL
 static int
@@ -143,9 +145,13 @@ skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
         list->capacity = floor(MaxAllocSize / sizeof(SkipListElem));
       else
         list->capacity <<= SKIPLIST_GROW;
+#if ! MEOS
       MemoryContext ctx = set_aggregation_context(fcinfo);
+#endif /* ! MEOS */
       list->elems = repalloc(list->elems, sizeof(SkipListElem) * list->capacity);
+#if ! MEOS
       unset_aggregation_context(ctx);
+#endif /* ! MEOS */
     }
     list->next ++;
     return list->next - 1;
@@ -166,16 +172,24 @@ skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
   if (! list->freed)
   {
     list->freecap = SKIPLIST_INITIAL_FREELIST;
+#if ! MEOS
     MemoryContext ctx = set_aggregation_context(fcinfo);
+#endif /* ! MEOS */
     list->freed = palloc(sizeof(int) * list->freecap);
+#if ! MEOS
     unset_aggregation_context(ctx);
+#endif /* ! MEOS */
   }
   else if (list->freecount == list->freecap)
   {
     list->freecap <<= 1;
+#if ! MEOS
     MemoryContext ctx = set_aggregation_context(fcinfo);
+#endif /* ! MEOS */
     list->freed = repalloc(list->freed, sizeof(int) * list->freecap);
+#if ! MEOS
     unset_aggregation_context(ctx);
+#endif /* ! MEOS */
   }
   list->freed[list->freecount ++] = cur;
   list->length --;
@@ -282,7 +296,9 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
   assert(count > 0);
   //FIXME: tail should be a constant (e.g. 1) but is not, for ease of construction
 
+#if ! MEOS
   MemoryContext oldctx = set_aggregation_context(fcinfo);
+#endif /* ! MEOS */
   int capacity = SKIPLIST_INITIAL_CAPACITY;
   count += 2; /* Account for head and tail */
   while (capacity <= count)
@@ -330,7 +346,9 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
       }
     }
   }
+#if ! MEOS
   unset_aggregation_context(oldctx);
+#endif /* ! MEOS */
   return result;
 }
 
@@ -465,7 +483,9 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
         prev->next[level] = list->elems[cur].next[level];
       }
       spliced[spliced_count++] = list->elems[cur].value;
+#if ! MEOS
       skiplist_free(fcinfo, list, cur);
+#endif /* ! MEOS */
       cur = list->elems[cur].next[0];
     }
   }
@@ -532,14 +552,18 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
     }
     int new = skiplist_alloc(fcinfo, list);
     SkipListElem *newelm = &list->elems[new];
+#if ! MEOS
     MemoryContext ctx = set_aggregation_context(fcinfo);
+#endif /* ! MEOS */
     if (list->elemtype == TIMESTAMPTZ)
       newelm->value = values[i];
     else if (list->elemtype == PERIOD)
       newelm->value = span_copy(values[i]);
     else /* list->elemtype == TEMPORAL */
       newelm->value = temporal_copy(values[i]);
+#if ! MEOS
     unset_aggregation_context(ctx);
+#endif /* ! MEOS */
     newelm->height = rheight;
 
     for (int level = 0; level < rheight; level ++)
@@ -678,13 +702,17 @@ void
 aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
   size_t size)
 {
+#if ! MEOS
   MemoryContext ctx;
   assert(AggCheckCallContext(fcinfo, &ctx));
   MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+#endif /* ! MEOS */
   state->extra = palloc(size);
   state->extrasize = size;
   memcpy(state->extra, data, size);
+#if ! MEOS
   MemoryContextSwitchTo(oldctx);
+#endif /* ! MEOS */
 }
 
 PG_FUNCTION_INFO_V1(Tagg_serialize);
