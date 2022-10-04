@@ -4,6 +4,7 @@ add_library(general OBJECT
   lifting.c
   periodset.c
   pg_call.c
+  skiplist.c
   span.c
   span_ops.c
   tbool_boolops.c

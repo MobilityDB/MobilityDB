@@ -37,8 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
+#include "general/skiplist.h"
 #include "general/temporal.h"
-#include "pg_general/skiplist.h"
 
 /*****************************************************************************/
 

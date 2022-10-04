@@ -31,7 +31,7 @@
  * @brief Aggregate functions for time types.
  */
 
-#include "pg_general/time_aggfuncs.h"
+#include "general/time_aggfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -39,11 +39,13 @@
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "pg_general/skiplist.h"
+#include "general/skiplist.h"
 #include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/skiplist.h"
 
 /*****************************************************************************
  * Aggregate functions for time types
@@ -155,18 +157,16 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
  * @param[in] ts Timestamp set value
  */
 static SkipList *
-timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TimestampSet *ts)
+timestampset_agg_transfn(SkipList *state, const TimestampSet *ts)
 {
   TimestampTz *times = timestampset_timestamps(ts);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) times, ts->count, TIMESTAMPTZ);
+    result = skiplist_make((void **) times, ts->count, TIMESTAMPTZ);
   else
   {
     assert(state->elemtype == TIMESTAMPTZ);
-    skiplist_splice(fcinfo, state, (void **) times, ts->count, NULL,
-      CROSSINGS_NO);
+    skiplist_splice(state, (void **) times, ts->count, NULL, CROSSINGS_NO);
     result = state;
   }
   pfree(times);
@@ -182,15 +182,15 @@ timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] p Period
  */
 static SkipList *
-period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state, const Period *p)
+period_agg_transfn(SkipList *state, const Period *p)
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) &p, 1, PERIOD);
+    result = skiplist_make((void **) &p, 1, PERIOD);
   else
   {
     assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) &p, 1, NULL, CROSSINGS_NO);
+    skiplist_splice(state, (void **) &p, 1, NULL, CROSSINGS_NO);
     result = state;
   }
   return result;
@@ -204,20 +204,18 @@ period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state, const Period *p)
  * @param[in] ps Period set value
  */
 static SkipList *
-periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const PeriodSet *ps)
+periodset_agg_transfn(SkipList *state, const PeriodSet *ps)
 {
   int count;
   const Period **periods = periodset_periods(ps, &count);
   SkipList *result;
   if (! state)
     /* Periods are copied while constructing the skiplist */
-    result = skiplist_make(fcinfo, (void **) periods, ps->count, PERIOD);
+    result = skiplist_make((void **) periods, ps->count, PERIOD);
   else
   {
     assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) periods, ps->count, NULL,
-      CROSSINGS_NO);
+    skiplist_splice(state, (void **) periods, ps->count, NULL, CROSSINGS_NO);
     result = state;
   }
   pfree(periods);
@@ -235,8 +233,7 @@ periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] state1, state2 State values
  */
 SkipList *
-time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
-  SkipList *state2)
+time_agg_combinefn(SkipList *state1, SkipList *state2)
 {
   if (! state1)
     return state2;
@@ -254,8 +251,7 @@ time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
     smallest = state2; largest = state1;
   }
   void **values = skiplist_values(smallest);
-  skiplist_splice(fcinfo, largest, values, smallest->length, NULL,
-    CROSSINGS_NO);
+  skiplist_splice(largest, values, smallest->length, NULL, CROSSINGS_NO);
   /* Delete the new aggregate values */
   if (smallest->elemtype == TIMESTAMPTZ)
     pfree(values);
@@ -352,7 +348,7 @@ Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  SkipList *result = timestampset_agg_transfn(fcinfo, state, ts);
+  SkipList *result = timestampset_agg_transfn(state, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
@@ -367,7 +363,7 @@ Period_tunion_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Period *p = PG_GETARG_SPAN_P(1);
-  SkipList *result = period_agg_transfn(fcinfo, state, p);
+  SkipList *result = period_agg_transfn(state, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -381,7 +377,7 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  SkipList *result = periodset_agg_transfn(fcinfo, state, ps);
+  SkipList *result = periodset_agg_transfn(state, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
 }
@@ -472,12 +468,12 @@ Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_timetype_skiplist(state, TINSTANT);
-    skiplist_splice(fcinfo, state, (void **) instants, ts->count,
-      &datum_sum_int32, CROSSINGS_NO);
+    skiplist_splice(state, (void **) instants, ts->count, &datum_sum_int32,
+      CROSSINGS_NO);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) instants, ts->count, TEMPORAL);
+    state = skiplist_make((void **) instants, ts->count, TEMPORAL);
   }
 
   pfree_array((void **) instants, ts->count);
@@ -499,12 +495,12 @@ Period_tcount_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_timetype_skiplist(state, TSEQUENCE);
-    skiplist_splice(fcinfo, state, (void **) &seq, 1, &datum_sum_int32,
+    skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
       CROSSINGS_NO);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
+    state = skiplist_make((void **) &seq, 1, TEMPORAL);
   }
 
   pfree(seq);
@@ -525,12 +521,12 @@ Periodset_tcount_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_timetype_skiplist(state, TSEQUENCE);
-    skiplist_splice(fcinfo, state, (void **) sequences, ps->count,
+    skiplist_splice(state, (void **) sequences, ps->count,
       &datum_sum_int32, CROSSINGS_NO);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) sequences, ps->count, TEMPORAL);
+    state = skiplist_make((void **) sequences, ps->count, TEMPORAL);
   }
 
   pfree_array((void **) sequences, ps->count);
@@ -551,7 +547,7 @@ Time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(state1, state2);
-  SkipList *result = time_agg_combinefn(fcinfo, state1, state2);
+  SkipList *result = time_agg_combinefn(state1, state2);
   PG_RETURN_POINTER(result);
 }
 

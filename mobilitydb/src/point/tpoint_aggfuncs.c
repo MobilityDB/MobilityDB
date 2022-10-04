@@ -37,15 +37,17 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/doublen.h"
-#include "pg_general/skiplist.h"
-#include "pg_general/temporal_aggfuncs.h"
+#include "general/skiplist.h"
+#include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/skiplist.h"
 
 /*****************************************************************************
  * Generic functions
@@ -61,11 +63,9 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
     return;
   struct GeoAggregateState *extra = state->extra;
   if (extra && extra->srid != srid)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Geometries must have the same SRID for temporal aggregation")));
+    elog(ERROR, "Geometries must have the same SRID for temporal aggregation");
   if (extra && extra->hasz != hasz)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Geometries must have the same dimensionality for temporal aggregation")));
+    elog(ERROR, "Geometries must have the same dimensionality for temporal aggregation");
   return;
 }
 
@@ -268,11 +268,11 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
+    skiplist_splice(state, (void **) temparr, count, func, false);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid(temp),
@@ -308,8 +308,7 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
     extra = state2->extra;
   assert(extra != NULL);
   datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
-  SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2,
-    func, false);
+  SkipList *result = temporal_tagg_combinefn1(state1, state2, func, false);
 
   PG_RETURN_POINTER(result);
 }

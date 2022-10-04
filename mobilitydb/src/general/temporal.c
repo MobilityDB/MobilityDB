@@ -83,6 +83,37 @@ _PG_init(void)
 }
 
 /*****************************************************************************
+ * PostgreSQL cache functions
+ *****************************************************************************/
+
+/**
+ * Global variable that saves the PostgreSQL fcinfo. In PostgreSQL this is
+ * needed when doing aggregation and we need to change the context, in PostGIS
+ * when functions such as transform, geography_distance, or geography_azimuth
+ * need to access the proj cache */
+FunctionCallInfo _FCINFO;
+
+/**
+ * Fetch from the cache the fcinfo of the external function
+ */
+FunctionCallInfo
+fetch_fcinfo()
+{
+  assert(_FCINFO);
+  return _FCINFO;
+}
+
+/**
+ * Store in the cache the fcinfo of the external function
+ */
+void
+store_fcinfo(FunctionCallInfo fcinfo)
+{
+  _FCINFO = fcinfo;
+  return;
+}
+
+/*****************************************************************************
  * Parameter tests
  *****************************************************************************/
 

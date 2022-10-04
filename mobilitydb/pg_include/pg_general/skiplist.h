@@ -31,63 +31,17 @@
  * @brief Skiplist data structure used for performing aggregates
  */
 
-#ifndef __SKIPLIST_H__
-#define __SKIPLIST_H__
+#ifndef __PG_SKIPLIST_H__
+#define __PG_SKIPLIST_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/palloc.h>
 #include <fmgr.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /*****************************************************************************/
-
-/* Constants defining the behaviour of skip lists which are internal types
-   for computing aggregates */
-
-#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
-#define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
-#define SKIPLIST_INITIAL_FREELIST 32
-
-/*****************************************************************************/
-
-/**
- * Structure to represent elements in the skiplists
- */
-
-typedef struct
-{
-  void *value;
-  int height;
-  int next[SKIPLIST_MAXLEVEL];
-} SkipListElem;
-
-typedef enum
-{
-  TIMESTAMPTZ,
-  PERIOD,
-  TEMPORAL
-} SkipListElemType;
-
-/**
- * Structure to represent skiplists that keep the current state of an aggregation
- */
-typedef struct
-{
-  SkipListElemType elemtype;
-  int capacity;
-  int next;
-  int length;
-  int *freed;
-  int freecount;
-  int freecap;
-  int tail;
-  void *extra;
-  size_t extrasize;
-  SkipListElem *elems;
-} SkipList;
 
 /**
  * Helper macros to input the current aggregate state
@@ -113,16 +67,10 @@ typedef struct
     (SkipList *) PG_GETARG_POINTER(1);  \
   if (state1 == NULL && state2 == NULL)  \
     PG_RETURN_NULL();  \
-   } while (0) 
+   } while (0)
 
 /*****************************************************************************/
 
-extern SkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,
-  int count, SkipListElemType elemtype);
-extern void *skiplist_headval(SkipList *list);
-extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list,
-  void **values, int count, datum_func2 func, bool crossings);
-extern void **skiplist_values(SkipList *list);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state,
   void *data, size_t size);
 

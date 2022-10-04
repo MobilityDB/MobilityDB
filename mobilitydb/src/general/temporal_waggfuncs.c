@@ -38,9 +38,8 @@
 #include <meos_internal.h>
 #include "general/pg_call.h"
 #include "general/doublen.h"
-/* MobilityDB */
-#include "pg_general/time_aggfuncs.h"
-#include "pg_general/temporal_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
+#include "general/time_aggfuncs.h"
 
 /*****************************************************************************
  * Generic functions
@@ -555,7 +554,6 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
 /**
  * Generic moving window transition function for min, max, and sum aggregation
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -567,16 +565,15 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
  * sequence (set) type
  */
 static SkipList *
-temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
-  Temporal *temp, Interval *interval, datum_func2 func,
-  bool min, bool crossings)
+temporal_wagg_transfn1(SkipList *state, Temporal *temp, Interval *interval,
+  datum_func2 func, bool min, bool crossings)
 {
   int count;
   TSequence **sequences = temporal_extend(temp, interval, min, &count);
-  SkipList *result = tsequence_tagg_transfn(fcinfo, state, sequences[0],
+  SkipList *result = tsequence_tagg_transfn(state, sequences[0],
     func, crossings);
   for (int i = 1; i < count; i++)
-    result = tsequence_tagg_transfn(fcinfo, result, sequences[i],
+    result = tsequence_tagg_transfn(result, sequences[i],
       func, crossings);
   pfree_array((void **) sequences, count);
   return result;
@@ -585,14 +582,13 @@ temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
 /**
  * Generic moving window transition function for min, max, and sum aggregation
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
  * @param[in] crossings True if turning points are added in the segments
  */
 Datum
-temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
-  bool min, bool crossings)
+temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
+  bool crossings)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE_ARG(state);
@@ -603,7 +599,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal continuous float sequences")));
 
-  SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval,
+  SkipList *result = temporal_wagg_transfn1(state, temp, interval,
     func, min, crossings);
 
   PG_FREE_IF_COPY(temp, 1);
@@ -624,10 +620,10 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   int count;
   TSequence **sequences = transform(temp, interval, &count);
-  SkipList *result = tsequence_tagg_transfn(fcinfo, state, sequences[0],
+  SkipList *result = tsequence_tagg_transfn(state, sequences[0],
     func, false);
   for (int i = 1; i < count; i++)
-    result = tsequence_tagg_transfn(fcinfo, result, sequences[i],
+    result = tsequence_tagg_transfn(result, sequences[i],
       func, false);
   pfree_array((void **) sequences, count);
   PG_FREE_IF_COPY(temp, 1);

@@ -37,11 +37,13 @@
 #include <assert.h>
 /* MobilityDB */
 #include <meos.h>
-#include "pg_general/temporal_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "pg_point/tpoint_aggfuncs.h"
 #include "npoint/tnpoint.h"
+/* MobilityDB */
+#include "pg_general/skiplist.h"
+#include "pg_point/tpoint_aggfuncs.h"
 
 /*****************************************************************************/
 
@@ -67,11 +69,11 @@ Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
+    skiplist_splice(state, (void **) temparr, count, func, false);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid(temp1),

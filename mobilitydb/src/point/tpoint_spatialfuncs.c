@@ -47,39 +47,10 @@
 #include "general/lifting.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
 #include "pg_point/postgis.h"
-
-/*****************************************************************************
- * PostGIS cache functions
- *****************************************************************************/
-
-/**
- * Global variable to save the fcinfo when PostGIS functions need to access
- * the proj cache such as transform, geography_distance, or geography_azimuth
- */
-FunctionCallInfo _FCINFO;
-
-/**
- * Fetch from the cache the fcinfo of the external function
- */
-FunctionCallInfo
-fetch_fcinfo()
-{
-  assert(_FCINFO);
-  return _FCINFO;
-}
-
-/**
- * Store in the cache the fcinfo of the external function
- */
-void
-store_fcinfo(FunctionCallInfo fcinfo)
-{
-  _FCINFO = fcinfo;
-  return;
-}
 
 /*****************************************************************************
  * Ever/always functions

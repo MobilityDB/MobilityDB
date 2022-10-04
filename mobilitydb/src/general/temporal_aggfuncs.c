@@ -31,7 +31,7 @@
  * @brief General aggregate functions for temporal types.
  */
 
-#include "pg_general/temporal_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -45,12 +45,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "pg_general/skiplist.h"
+#include "general/skiplist.h"
 #include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
 #include "general/doublen.h"
+#include "general/time_aggfuncs.h"
 /* MobilityDB */
-#include "pg_general/time_aggfuncs.h"
+#include "pg_general/skiplist.h"
 
 /*****************************************************************************
  * Aggregate functions on datums
@@ -450,22 +451,20 @@ ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp)
  * Generic transition function for aggregating temporal values
  * of instant subtype
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] inst Temporal value
  * @param[in] func Function
  */
 static SkipList *
-tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TInstant *inst, datum_func2 func)
+tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) &inst, 1, TEMPORAL);
+    result = skiplist_make((void **) &inst, 1, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) inst);
-    skiplist_splice(fcinfo, state, (void **) &inst, 1, func, false);
+    skiplist_splice(state, (void **) &inst, 1, func, false);
     result = state;
   }
   return result;
@@ -474,24 +473,22 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 /**
  * Generic transition function for aggregating temporal discrete sequence values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
  */
 static SkipList *
-tdiscseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TSequence *seq, datum_func2 func)
+tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   int count;
   const TInstant **instants = tsequence_instants(seq, &count);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) instants, seq->count, TEMPORAL);
+    result = skiplist_make((void **) instants, seq->count, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) instants[0]);
-    skiplist_splice(fcinfo, state, (void **) instants, seq->count, func, false);
+    skiplist_splice(state, (void **) instants, seq->count, func, false);
     result = state;
   }
   pfree(instants);
@@ -502,23 +499,22 @@ tdiscseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * Generic transition function for aggregating temporal values
  * of sequence subtype
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
-tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
+tsequence_tagg_transfn(SkipList *state,
   TSequence *seq, datum_func2 func, bool crossings)
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
+    result = skiplist_make((void **) &seq, 1, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) seq);
-    skiplist_splice(fcinfo, state, (void **) &seq, 1, func, crossings);
+    skiplist_splice(state, (void **) &seq, 1, func, crossings);
     result = state;
   }
   return result;
@@ -528,24 +524,23 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * Generic transition function for aggregating temporal values
  * of sequence set subtype
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] ss Temporal value
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
  */
 static SkipList *
-tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TSequenceSet *ss, datum_func2 func, bool crossings)
+tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
+  datum_func2 func, bool crossings)
 {
   const TSequence **sequences = tsequenceset_sequences_p(ss);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **)sequences, ss->count, TEMPORAL);
+    result = skiplist_make((void **)sequences, ss->count, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) sequences[0]);
-    skiplist_splice(fcinfo, state, (void **) sequences, ss->count, func,
+    skiplist_splice(state, (void **) sequences, ss->count, func,
       crossings);
     result = state;
   }
@@ -560,13 +555,11 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 /**
  * Generic transition function for aggregating temporal values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
-temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
-  bool crossings)
+temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
@@ -574,13 +567,13 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   ensure_valid_tempsubtype(temp->subtype);
   SkipList *result;
   if (temp->subtype == TINSTANT)
-    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp, func);
+    result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      tdiscseq_tagg_transfn(fcinfo, state, (TSequence *) temp, func) :
-      tsequence_tagg_transfn(fcinfo, state, (TSequence *) temp, func, crossings);
+      tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
+      tsequence_tagg_transfn(state, (TSequence *) temp, func, crossings);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *) temp,
+    result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp,
       func, crossings);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -589,7 +582,6 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
 /**
  * Generic combine function for aggregating temporal values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] state1, state2 State values
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
@@ -597,8 +589,8 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
  * after checking the dimensionality and the SRID of the values
  */
 SkipList *
-temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
-  SkipList *state2, datum_func2 func, bool crossings)
+temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,
+  datum_func2 func, bool crossings)
 {
   if (! state1)
     return state2;
@@ -609,7 +601,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
   ensure_same_tempsubtype_skiplist(state1, head2);
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
-  skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
+  skiplist_splice(state1, values2, count2, func, crossings);
   pfree_array(values2, count2);
   return state1;
 }
@@ -617,17 +609,15 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
 /**
  * Generic combine function for aggregating temporal alphanumeric values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
-temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
-  bool crossings)
+temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 {
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(state1, state2);
-  SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2, func,
+  SkipList *result = temporal_tagg_combinefn1(state1, state2, func,
     crossings);
   PG_RETURN_POINTER(result);
 }
@@ -760,7 +750,6 @@ temporal_transform_tagg(const Temporal *temp, int *count,
  * Transition function for aggregating temporal values that require a
  * transformation to each composing instant/sequence
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @param[in] transform Transform function
@@ -777,11 +766,11 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   if (state)
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(fcinfo, state, (void **) temparr, count, func, crossings);
+    skiplist_splice(state, (void **) temparr, count, func, crossings);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
   }
 
   pfree_array((void **) temparr, count);
@@ -914,12 +903,12 @@ Temporal_tcount_transfn(PG_FUNCTION_ARGS)
   if (state)
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32,
+    skiplist_splice(state, (void **) temparr, count, &datum_sum_int32,
       false);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
   }
 
   pfree_array((void **) temparr, count);
