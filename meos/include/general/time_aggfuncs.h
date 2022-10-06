@@ -28,68 +28,34 @@
  *****************************************************************************/
 
 /**
- * @brief Aggregate functions for temporal network points.
- *
- * The only function currently provided is temporal centroid.
+ * @brief Aggregate functions for time types
  */
 
-/* C */
-#include <assert.h>
-/* PostgreSQL */
-#include <postgres.h>
+#ifndef __TIME_AGGFUNCS_H__
+#define __TIME_AGGFUNCS_H__
+
 /* MobilityDB */
-#include <meos.h>
-#include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint.h"
-/* MobilityDB */
-#include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
-#include "pg_point/tpoint_aggfuncs.h"
+#include "general/span.h"
+#include "general/skiplist.h"
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
-/**
- * Transition function for temporal centroid aggregation of temporal network
- * points
- */
-PGDLLEXPORT Datum
-Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
-{
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *temp1 = tnpoint_tgeompoint(temp);
+extern Datum datum_sum_int32(Datum l, Datum r);
+extern TimestampTz *timestamp_agg(TimestampTz *times1, int count1,
+  TimestampTz *times2, int count2, int *newcount);
+extern Period **period_agg(Period **periods1, int count1, Period **periods2,
+  int count2, int *newcount);
 
-  store_fcinfo(fcinfo);
-  geoaggstate_check_temp(state, temp1);
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
-    &datum_sum_double4 : &datum_sum_double3;
-
-  int count;
-  Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
-  if (state)
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(state, (void **) temparr, count, func, false);
-  }
-  else
-  {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
-    struct GeoAggregateState extra =
-    {
-      .srid = tpoint_srid(temp1),
-      .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
-    };
-    aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
-  }
-
-  pfree_array((void **) temparr, count);
-  pfree(temp1);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
-}
+extern SkipList *timestampset_agg_transfn(SkipList *state,
+  const TimestampSet *ts);
+extern SkipList *period_agg_transfn(SkipList *state, const Period *p);
+extern SkipList *periodset_agg_transfn(SkipList *state, const PeriodSet *ps);
+extern TInstant **timestampset_transform_tcount(const TimestampSet *ts);
+extern TSequence *period_transform_tcount(const Period *p);
+extern TSequence **periodset_transform_tcount(const PeriodSet *ps);
+extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
+extern SkipList *time_agg_combinefn(SkipList *state1, SkipList *state2);
 
 /*****************************************************************************/
+
+#endif

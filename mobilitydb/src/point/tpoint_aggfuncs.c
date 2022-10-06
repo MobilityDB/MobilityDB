@@ -48,6 +48,7 @@
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
+#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Generic functions
@@ -263,6 +264,7 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   datum_func2 func = MOBDB_FLAGS_GET_Z(temp->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
+  store_fcinfo(fcinfo);
   int count;
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
   if (state)
@@ -300,6 +302,7 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
   SkipList *state2 = PG_ARGISNULL(1) ? NULL :
     (SkipList *) PG_GETARG_POINTER(1);
 
+  store_fcinfo(fcinfo);
   geoaggstate_check_state(state1, state2);
   struct GeoAggregateState *extra = NULL;
   if (state1 && state1->extra)

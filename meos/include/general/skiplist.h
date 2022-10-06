@@ -28,68 +28,76 @@
  *****************************************************************************/
 
 /**
- * @brief Aggregate functions for temporal network points.
- *
- * The only function currently provided is temporal centroid.
+ * @brief Skiplist data structure used for performing aggregates
  */
 
-/* C */
-#include <assert.h>
+#ifndef __SKIPLIST_H__
+#define __SKIPLIST_H__
+
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/palloc.h>
+#include <fmgr.h>
 /* MobilityDB */
-#include <meos.h>
-#include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint.h"
-/* MobilityDB */
-#include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
-#include "pg_point/tpoint_aggfuncs.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
+/* Constants defining the behaviour of skip lists which are internal types
+   for computing aggregates */
+
+#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
+#define SKIPLIST_INITIAL_CAPACITY 1024
+#define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
+#define SKIPLIST_INITIAL_FREELIST 32
+
+/*****************************************************************************/
+
 /**
- * Transition function for temporal centroid aggregation of temporal network
- * points
+ * Structure to represent elements in the skiplists
  */
-PGDLLEXPORT Datum
-Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
+
+typedef struct
 {
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *temp1 = tnpoint_tgeompoint(temp);
+  void *value;
+  int height;
+  int next[SKIPLIST_MAXLEVEL];
+} SkipListElem;
 
-  store_fcinfo(fcinfo);
-  geoaggstate_check_temp(state, temp1);
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
-    &datum_sum_double4 : &datum_sum_double3;
+typedef enum
+{
+  TIMESTAMPTZ,
+  PERIOD,
+  TEMPORAL
+} SkipListElemType;
 
-  int count;
-  Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
-  if (state)
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(state, (void **) temparr, count, func, false);
-  }
-  else
-  {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
-    struct GeoAggregateState extra =
-    {
-      .srid = tpoint_srid(temp1),
-      .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
-    };
-    aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
-  }
-
-  pfree_array((void **) temparr, count);
-  pfree(temp1);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
-}
+/**
+ * Structure to represent skiplists that keep the current state of an aggregation
+ */
+typedef struct
+{
+  SkipListElemType elemtype;
+  int capacity;
+  int next;
+  int length;
+  int *freed;
+  int freecount;
+  int freecap;
+  int tail;
+  void *extra;
+  size_t extrasize;
+  SkipListElem *elems;
+} SkipList;
 
 /*****************************************************************************/
+
+extern SkipList *skiplist_make(void **values, int count,
+  SkipListElemType elemtype);
+extern void *skiplist_headval(SkipList *list);
+extern void skiplist_splice(SkipList *list, void **values, int count,
+  datum_func2 func, bool crossings);
+extern void **skiplist_values(SkipList *list);
+
+/*****************************************************************************/
+
+#endif

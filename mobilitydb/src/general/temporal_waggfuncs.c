@@ -40,6 +40,8 @@
 #include "general/doublen.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/time_aggfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Generic functions
@@ -599,6 +601,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal continuous float sequences")));
 
+  store_fcinfo(fcinfo);
   SkipList *result = temporal_wagg_transfn1(state, temp, interval,
     func, min, crossings);
 
@@ -618,6 +621,7 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   INPUT_AGG_TRANS_STATE_ARG(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
+  store_fcinfo(fcinfo);
   int count;
   TSequence **sequences = transform(temp, interval, &count);
   SkipList *result = tsequence_tagg_transfn(state, sequences[0],
