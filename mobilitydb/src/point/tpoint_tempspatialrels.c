@@ -113,7 +113,7 @@ tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *result = tinterrel_tpoint_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -138,7 +138,7 @@ tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *result = tinterrel_tpoint_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -169,7 +169,7 @@ Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
   Temporal *result = tcontains_geo_tpoint(gs, temp, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -261,7 +261,7 @@ Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
   Temporal *result = ttouches_tpoint_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -288,7 +288,7 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
   Temporal *result = ttouches_tpoint_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -323,7 +323,7 @@ Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
   Temporal *result = tdwithin_tpoint_geo(temp, gs, dist, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -353,7 +353,7 @@ Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
   Temporal *result = tdwithin_tpoint_geo(temp, gs, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -386,7 +386,7 @@ Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
     atvalue);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

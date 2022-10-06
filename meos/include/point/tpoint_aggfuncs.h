@@ -53,11 +53,18 @@ struct GeoAggregateState
   bool hasz;
 };
 
-extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
-
 /*****************************************************************************/
 
+extern void geoaggstate_check(const SkipList *state, int32_t srid, bool hasz);
+extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
+extern void geoaggstate_check_state(const SkipList *state1,
+  const SkipList *state2);
+
 extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
+extern TSequence *tpointinst_tcentroid_finalfn(TInstant **instants, int count,
+  int srid);
+extern TSequenceSet *tpointseq_tcentroid_finalfn(TSequence **sequences,
+  int count, int srid);
 
 /*****************************************************************************/
 

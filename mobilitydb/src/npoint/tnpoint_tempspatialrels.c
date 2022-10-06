@@ -66,7 +66,7 @@ tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
   }
   Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -89,7 +89,7 @@ tinterrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
   }
   Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -113,7 +113,7 @@ tinterrel_geo_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *result = tinterrel_tnpoint_geo(temp, geo, tinter, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -137,7 +137,7 @@ tinterrel_tnpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
   Temporal *result = tinterrel_tnpoint_geo(temp, geo, tinter, restr, atvalue);
   PG_FREE_IF_COPY(geo, 1);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -168,7 +168,7 @@ Tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
   Temporal *result = tcontains_geo_tnpoint(geo, temp, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -311,7 +311,7 @@ Ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
   Temporal *result = ttouches_geo_tnpoint(geo, temp, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
-   if (result == NULL)
+   if (! result)
     PG_RETURN_NULL();
  PG_RETURN_POINTER(result);
 }
@@ -337,7 +337,7 @@ Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
   }
   Temporal *result = ttouches_npoint_tnpoint(np, temp, restr, atvalue);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -364,7 +364,7 @@ Ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
   Temporal *result = ttouches_tnpoint_geo(temp, geo, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -390,7 +390,7 @@ Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
   }
   Temporal *result = ttouches_tnpoint_npoint(temp, np, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -422,7 +422,7 @@ Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
   Temporal *result = tdwithin_geo_tnpoint(geo, temp, dist, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -450,7 +450,7 @@ Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
   Temporal *result = tdwithin_tnpoint_geo(temp, geo, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -477,7 +477,7 @@ Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   }
   Temporal *result = tdwithin_npoint_tnpoint(np, temp, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -504,7 +504,7 @@ Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   }
   Temporal *result = tdwithin_tnpoint_npoint(temp, np, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -533,7 +533,7 @@ Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     atvalue);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

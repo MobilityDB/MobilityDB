@@ -87,6 +87,29 @@ unset_aggregation_context(MemoryContext ctx)
  *****************************************************************************/
 
 /**
+ * Reads the state value from the buffer
+ *
+ * @param[in] state State
+ * @param[in] data Structure containing the data
+ * @param[in] size Size of the structure
+ */
+void
+aggstate_set_extra(SkipList *state, void *data, size_t size)
+{
+#if ! MEOS
+  MemoryContext ctx;
+  assert(AggCheckCallContext(fetch_fcinfo(), &ctx));
+  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+#endif /* ! MEOS */
+  state->extra = palloc(size);
+  state->extrasize = size;
+  memcpy(state->extra, data, size);
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif /* ! MEOS */
+}
+
+/**
  * Writes the state value into the buffer
  *
  * @param[in] state State
@@ -133,30 +156,10 @@ aggstate_write(SkipList *state, StringInfo buf)
 /**
  * Reads the state value from the buffer
  *
- * @param[in] state State
- * @param[in] data Structure containing the data
- * @param[in] size Size of the structure
- */
-void
-aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
-  size_t size)
-{
-  MemoryContext ctx;
-  assert(AggCheckCallContext(fcinfo, &ctx));
-  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-  state->extra = palloc(size);
-  state->extrasize = size;
-  memcpy(state->extra, data, size);
-  MemoryContextSwitchTo(oldctx);
-}
-
-/**
- * Reads the state value from the buffer
- *
  * @param[in] buf Buffer
  */
 static SkipList *
-aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
+aggstate_read(StringInfo buf)
 {
   SkipListElemType elemtype = (SkipListElemType) pq_getmsgint(buf, 4);
   int length = pq_getmsgint(buf, 4);
@@ -185,7 +188,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     if (extrasize)
     {
       const char *extra = pq_getmsgbytes(buf, (int) extrasize);
-      aggstate_set_extra(fcinfo, result, (void *) extra, extrasize);
+      aggstate_set_extra(result, (void *) extra, extrasize);
     }
     pfree_array(values, length);
   }
@@ -221,7 +224,7 @@ Tagg_deserialize(PG_FUNCTION_ARGS)
     .len = VARSIZE(data),
     .maxlen = VARSIZE(data)
   };
-  SkipList *result = aggstate_read(fcinfo, &buf);
+  SkipList *result = aggstate_read(&buf);
   PG_RETURN_POINTER(result);
 }
 

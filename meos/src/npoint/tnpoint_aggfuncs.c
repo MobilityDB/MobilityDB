@@ -28,47 +28,58 @@
  *****************************************************************************/
 
 /**
- * @brief Skiplist data structure used for performing aggregates
+ * @brief Aggregate functions for temporal network points.
+ *
+ * The only function currently provided is temporal centroid.
  */
 
-#ifndef __PG_SKIPLIST_H__
-#define __PG_SKIPLIST_H__
-
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
-#include <fmgr.h>
-/* MEOS */
-#include "general/temporal.h"
+/* MobilityDB */
+#include <meos.h>
+#include "general/temporal_aggfuncs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_aggfuncs.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 
 /**
- * Helper macros to input the current aggregate state
+ * Transition function for temporal centroid aggregation of temporal network
+ * points
  */
-#define INPUT_AGG_TRANS_STATE(state)  \
-  do {  \
-    state = PG_ARGISNULL(0) ? NULL :  \
-     (SkipList *) PG_GETARG_POINTER(0);  \
-    if (PG_ARGISNULL(1))  \
-    {  \
-      if (state)  \
-        PG_RETURN_POINTER(state);  \
-      else  \
-        PG_RETURN_NULL();  \
-    }  \
-  } while (0)
+SkipList *
+tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
+{
+  Temporal *temp1 = tnpoint_tgeompoint(temp);
+  geoaggstate_check_temp(state, temp1);
+  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
+    &datum_sum_double4 : &datum_sum_double3;
 
-#define INPUT_AGG_COMB_STATE(state1, state2)  \
-  do {  \
-  state1 = PG_ARGISNULL(0) ? NULL :  \
-    (SkipList *) PG_GETARG_POINTER(0);  \
-  state2 = PG_ARGISNULL(1) ? NULL :  \
-    (SkipList *) PG_GETARG_POINTER(1);  \
-  if (state1 == NULL && state2 == NULL)  \
-    PG_RETURN_NULL();  \
-   } while (0)
+  int count;
+  Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
+  if (state)
+  {
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
+    skiplist_splice(state, (void **) temparr, count, func, false);
+  }
+  else
+  {
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+    struct GeoAggregateState extra =
+    {
+      .srid = tpoint_srid(temp1),
+      .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
+    };
+    aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
+  }
+
+  pfree_array((void **) temparr, count);
+  pfree(temp1);
+  return state;
+}
 
 /*****************************************************************************/
-
-#endif

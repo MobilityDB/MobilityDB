@@ -65,52 +65,15 @@
  * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
-temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
+Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
-  ensure_valid_tempsubtype(temp->subtype);
-  SkipList *result;
-  if (temp->subtype == TINSTANT)
-    result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);
-  else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
-      tsequence_tagg_transfn(state, (TSequence *) temp, func, crossings);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp,
-      func, crossings);
+  SkipList *result = temporal_tagg_transfn(state, temp, func, crossings);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
-}
-
-/**
- * Generic combine function for aggregating temporal values
- *
- * @param[in] state1, state2 State values
- * @param[in] func Aggregate function
- * @param[in] crossings True if turning points are added in the segments
- * @note This function is called for aggregating temporal points and thus
- * after checking the dimensionality and the SRID of the values
- */
-SkipList *
-temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,
-  datum_func2 func, bool crossings)
-{
-  if (! state1)
-    return state2;
-  if (! state2)
-    return state1;
-
-  Temporal *head2 = (Temporal *) skiplist_headval(state2);
-  ensure_same_tempsubtype_skiplist(state1, head2);
-  int count2 = state2->length;
-  void **values2 = skiplist_values(state2);
-  skiplist_splice(state1, values2, count2, func, crossings);
-  pfree_array(values2, count2);
-  return state1;
 }
 
 /**
@@ -120,12 +83,12 @@ temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,
  * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
-temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
+Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 {
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(state1, state2);
   store_fcinfo(fcinfo);
-  SkipList *result = temporal_tagg_combinefn1(state1, state2, func,
+  SkipList *result = temporal_tagg_combinefn(state1, state2, func,
     crossings);
   PG_RETURN_POINTER(result);
 }
@@ -137,21 +100,10 @@ PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
 PGDLLEXPORT Datum
 Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 {
-  /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
+  Temporal *result = temporal_tagg_finalfn(state);
+  if (! result)
     PG_RETURN_NULL();
-
-  Temporal **values = (Temporal **) skiplist_values(state);
-  Temporal *result;
-  assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
-  if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tsequence_make((const TInstant **) values,
-      state->length, state->length, true, true, DISCRETE, NORMALIZE_NO);
-  else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tsequenceset_make((const TSequence **) values,
-      state->length, NORMALIZE);
-  pfree(values);
   PG_RETURN_POINTER(result);
 }
 
@@ -166,26 +118,15 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  * @param[in] transform Transform function
  */
 Datum
-temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
+Temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings, TInstant *(*transform)(const TInstant *))
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
-  int count;
-  Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
-  if (state)
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(state, (void **) temparr, count, func, crossings);
-  }
-  else
-  {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
-  }
-
-  pfree_array((void **) temparr, count);
+  state = temporal_tagg_transform_transfn(state, temp, func, crossings,
+    transform);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }
@@ -204,22 +145,8 @@ Temporal_tcount_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-
   store_fcinfo(fcinfo);
-  int count;
-  Temporal **temparr = temporal_transform_tcount(temp, &count);
-  if (state)
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(state, (void **) temparr, count, &datum_sum_int32,
-      false);
-  }
-  else
-  {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
-  }
-
-  pfree_array((void **) temparr, count);
+  state = temporal_tcount_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }
@@ -231,7 +158,7 @@ PG_FUNCTION_INFO_V1(Temporal_tcount_combinefn);
 PGDLLEXPORT Datum
 Temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
+  return Temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
 }
 
 /*****************************************************************************
@@ -248,31 +175,10 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  Period *result;
-
-  /* Can't do anything with null inputs */
-  if (! p && ! temp)
-    PG_RETURN_NULL();
-  /* Null period and non-null temporal, return the bbox of the temporal */
-  if (! p)
-  {
-    result = palloc0(sizeof(Period));
-    temporal_set_bbox(temp, result);
-    PG_RETURN_POINTER(result);
-  }
-  /* Non-null period and null temporal, return the period */
-  if (! temp)
-  {
-    result = palloc0(sizeof(Period));
-    memcpy(result, p, sizeof(Period));
-    PG_RETURN_POINTER(result);
-  }
-
-  Period p1;
-  temporal_set_bbox(temp, &p1);
-  result = union_span_span(p, &p1, false);
-
+  Period *result = temporal_extent_transfn(p, temp);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -287,28 +193,10 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-
-  /* Can't do anything with null inputs */
-  if (!box && !temp)
-    PG_RETURN_NULL();
-  TBOX *result = palloc0(sizeof(TBOX));
-  /* Null box and non-null temporal, return the bbox of the temporal */
-  if (!box)
-  {
-    temporal_set_bbox(temp, result);
-    PG_RETURN_POINTER(result);
-  }
-  /* Non-null box and null temporal, return the box */
-  if (!temp)
-  {
-    memcpy(result, box, sizeof(TBOX));
-    PG_RETURN_POINTER(result);
-  }
-
-  /* Both box and temporal are not null */
-  temporal_set_bbox(temp, result);
-  tbox_expand(box, result);
+  TBOX *result = tnumber_extent_transfn(box, temp);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -323,7 +211,7 @@ PG_FUNCTION_INFO_V1(Tbool_tand_transfn);
 PGDLLEXPORT Datum
 Tbool_tand_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_and, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_and, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tbool_tand_combinefn);
@@ -333,7 +221,7 @@ PG_FUNCTION_INFO_V1(Tbool_tand_combinefn);
 PGDLLEXPORT Datum
 Tbool_tand_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_and, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_and, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tbool_tor_transfn);
@@ -343,7 +231,7 @@ PG_FUNCTION_INFO_V1(Tbool_tor_transfn);
 PGDLLEXPORT Datum
 Tbool_tor_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_or, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_or, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tbool_tor_combinefn);
@@ -353,7 +241,7 @@ PG_FUNCTION_INFO_V1(Tbool_tor_combinefn);
 PGDLLEXPORT Datum
 Tbool_tor_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_or, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_or, CROSSINGS_NO);
 }
 
 /*****************************************************************************/
@@ -365,7 +253,7 @@ PG_FUNCTION_INFO_V1(Tint_tmin_transfn);
 PGDLLEXPORT Datum
 Tint_tmin_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_min_int32, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_min_int32, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tint_tmin_combinefn);
@@ -375,7 +263,7 @@ PG_FUNCTION_INFO_V1(Tint_tmin_combinefn);
 PGDLLEXPORT Datum
 Tint_tmin_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_min_int32, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_min_int32, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_tmin_transfn);
@@ -385,7 +273,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tmin_transfn);
 PGDLLEXPORT Datum
 Tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_min_float8, CROSSINGS);
+  return Temporal_tagg_transfn(fcinfo, &datum_min_float8, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_tmin_combinefn);
@@ -395,7 +283,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tmin_combinefn);
 PGDLLEXPORT Datum
 Tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_min_float8, CROSSINGS);
+  return Temporal_tagg_combinefn(fcinfo, &datum_min_float8, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(Tint_tmax_transfn);
@@ -405,7 +293,7 @@ PG_FUNCTION_INFO_V1(Tint_tmax_transfn);
 PGDLLEXPORT Datum
 Tint_tmax_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_max_int32, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_max_int32, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tint_tmax_combinefn);
@@ -415,7 +303,7 @@ PG_FUNCTION_INFO_V1(Tint_tmax_combinefn);
 PGDLLEXPORT Datum
 Tint_tmax_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_max_int32, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_max_int32, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_tmax_transfn);
@@ -425,7 +313,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tmax_transfn);
 PGDLLEXPORT Datum
 Tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_max_float8, CROSSINGS);
+  return Temporal_tagg_transfn(fcinfo, &datum_max_float8, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_tmax_combinefn);
@@ -435,7 +323,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tmax_combinefn);
 PGDLLEXPORT Datum
 Tfloat_tmax_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_max_float8, CROSSINGS);
+  return Temporal_tagg_combinefn(fcinfo, &datum_max_float8, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(Tint_tsum_transfn);
@@ -445,7 +333,7 @@ PG_FUNCTION_INFO_V1(Tint_tsum_transfn);
 PGDLLEXPORT Datum
 Tint_tsum_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_sum_int32, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_sum_int32, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tint_tsum_combinefn);
@@ -455,7 +343,7 @@ PG_FUNCTION_INFO_V1(Tint_tsum_combinefn);
 PGDLLEXPORT Datum
 Tint_tsum_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_sum_int32, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_tsum_transfn);
@@ -465,7 +353,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tsum_transfn);
 PGDLLEXPORT Datum
 Tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_sum_float8, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_sum_float8, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Tfloat_tsum_combinefn);
@@ -475,7 +363,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tsum_combinefn);
 PGDLLEXPORT Datum
 Tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_sum_float8, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_sum_float8, CROSSINGS_NO);
 }
 
 /*****************************************************************************/
@@ -487,7 +375,7 @@ PG_FUNCTION_INFO_V1(Ttext_tmin_transfn);
 PGDLLEXPORT Datum
 Ttext_tmin_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_min_text, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_min_text, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Ttext_tmin_combinefn);
@@ -497,7 +385,7 @@ PG_FUNCTION_INFO_V1(Ttext_tmin_combinefn);
 PGDLLEXPORT Datum
 Ttext_tmin_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_min_text, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_min_text, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Ttext_tmax_transfn);
@@ -507,7 +395,7 @@ PG_FUNCTION_INFO_V1(Ttext_tmax_transfn);
 PGDLLEXPORT Datum
 Ttext_tmax_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, &datum_max_text, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, &datum_max_text, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Ttext_tmax_combinefn);
@@ -517,7 +405,7 @@ PG_FUNCTION_INFO_V1(Ttext_tmax_combinefn);
 PGDLLEXPORT Datum
 Ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_max_text, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, &datum_max_text, CROSSINGS_NO);
 }
 
 /*****************************************************************************
@@ -531,7 +419,7 @@ PG_FUNCTION_INFO_V1(Tnumber_tavg_transfn);
 PGDLLEXPORT Datum
 Tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transform_transfn(fcinfo, &datum_sum_double2,
+  return Temporal_tagg_transform_transfn(fcinfo, &datum_sum_double2,
     CROSSINGS_NO, &tnumberinst_transform_tavg);
 }
 
@@ -542,7 +430,7 @@ PG_FUNCTION_INFO_V1(Tnumber_tavg_combinefn);
 PGDLLEXPORT Datum
 Tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, &datum_sum_double2, false);
+  return Temporal_tagg_combinefn(fcinfo, &datum_sum_double2, false);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_tavg_finalfn);
@@ -579,7 +467,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_transfn);
 PGDLLEXPORT Datum
 Temporal_merge_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_transfn(fcinfo, NULL, CROSSINGS_NO);
+  return Temporal_tagg_transfn(fcinfo, NULL, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_merge_combinefn);
@@ -589,7 +477,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_combinefn);
 PGDLLEXPORT Datum
 Temporal_merge_combinefn(PG_FUNCTION_ARGS)
 {
-  return temporal_tagg_combinefn(fcinfo, NULL, CROSSINGS_NO);
+  return Temporal_tagg_combinefn(fcinfo, NULL, CROSSINGS_NO);
 }
 
 /*****************************************************************************/

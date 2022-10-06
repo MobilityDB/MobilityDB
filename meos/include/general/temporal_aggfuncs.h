@@ -80,6 +80,18 @@ extern SkipList *tsequenceset_tagg_transfn(SkipList *state,
 extern SkipList *tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func);
 
+extern SkipList *temporal_tagg_transfn(SkipList *state, Temporal *temp,
+  datum_func2, bool crossings);
+extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
+  datum_func2 func, bool crossings);
+extern Temporal *temporal_tagg_finalfn(SkipList *state);
+extern SkipList *temporal_tagg_transform_transfn(SkipList *state, Temporal *temp,
+  datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *));
+extern SkipList *temporal_tcount_transfn(SkipList *state, Temporal *temp);
+
+extern Period *temporal_extent_transfn(Period *p, Temporal *temp);
+extern TBOX *tnumber_extent_transfn(TBOX *box, Temporal *temp);
+
 /*****************************************************************************/
 
 #endif

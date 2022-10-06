@@ -454,7 +454,7 @@ Geom_to_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Npoint *result = geom_npoint(gs);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -484,7 +484,7 @@ Geom_to_nsegment(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Nsegment *result = geom_nsegment(gs);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

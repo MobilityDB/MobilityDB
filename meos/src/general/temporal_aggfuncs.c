@@ -436,12 +436,10 @@ ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
   if (state->elemtype != TEMPORAL || head->subtype != temp->subtype)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Cannot aggregate temporal values of different type")));
+    elog(ERROR, "Cannot aggregate temporal values of different type");
   if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
     MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Cannot aggregate temporal values of different interpolation")));
+    elog(ERROR, "Cannot aggregate temporal values of different interpolation");
   return;
 }
 
@@ -546,6 +544,84 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   return result;
 }
 
+/**
+ * Generic transition function for aggregating temporal values
+ * of sequence set subtype
+ *
+ * @param[in,out] state Skiplist containing the state
+ * @param[in] ss Temporal value
+ * @param[in] func Function
+ * @param[in] crossings True if turning points are added in the segments
+ */
+SkipList *
+temporal_tagg_transfn(SkipList *state, Temporal *temp, datum_func2 func,
+  bool crossings)
+{
+  ensure_valid_tempsubtype(temp->subtype);
+  SkipList *result;
+  if (temp->subtype == TINSTANT)
+    result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);
+  else if (temp->subtype == TSEQUENCE)
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
+      tsequence_tagg_transfn(state, (TSequence *) temp, func, crossings);
+  else /* temp->subtype == TSEQUENCESET */
+    result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp,
+      func, crossings);
+  return result;
+}
+
+/**
+ * Generic combine function for aggregating temporal values
+ *
+ * @param[in] state1, state2 State values
+ * @param[in] func Aggregate function
+ * @param[in] crossings True if turning points are added in the segments
+ * @note This function is called for aggregating temporal points and thus
+ * after checking the dimensionality and the SRID of the values
+ */
+SkipList *
+temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
+  datum_func2 func, bool crossings)
+{
+  if (! state1)
+    return state2;
+  if (! state2)
+    return state1;
+
+  Temporal *head2 = (Temporal *) skiplist_headval(state2);
+  ensure_same_tempsubtype_skiplist(state1, head2);
+  int count2 = state2->length;
+  void **values2 = skiplist_values(state2);
+  skiplist_splice(state1, values2, count2, func, crossings);
+  pfree_array(values2, count2);
+  return state1;
+}
+
+/**
+ * Generic final function for aggregating temporal values
+ *
+ * @param[in] state State values
+ */
+Temporal *
+temporal_tagg_finalfn(SkipList *state)
+{
+  if (state == NULL || state->length == 0)
+    return NULL;
+
+  Temporal **values = (Temporal **) skiplist_values(state);
+  Temporal *result;
+  assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
+  if (values[0]->subtype == TINSTANT)
+    result = (Temporal *) tsequence_make((const TInstant **) values,
+      state->length, state->length, true, true, DISCRETE, NORMALIZE_NO);
+  else /* values[0]->subtype == TSEQUENCE */
+    result = (Temporal *) tsequenceset_make((const TSequence **) values,
+      state->length, NORMALIZE);
+  pfree(values);
+  return result;
+}
+
 /*****************************************************************************
  * Generic functions for aggregating temporal values that require a
  * transformation to be applied to each composing instant/sequence
@@ -641,6 +717,36 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   }
   assert(result != NULL);
   return result;
+}
+
+/**
+ * Transition function for aggregating temporal values that require a
+ * transformation to each composing instant/sequence
+ *
+ * @param[in] state Current state
+ * @param[in] temp New temporal value
+ * @param[in] func Aggregate function
+ * @param[in] crossings True if turning points are added in the segments
+ * @param[in] transform Transform function
+ */
+SkipList *
+temporal_tagg_transform_transfn(SkipList *state, Temporal *temp,
+  datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *))
+{
+  int count;
+  Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
+  if (state)
+  {
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
+    skiplist_splice(state, (void **) temparr, count, func, crossings);
+  }
+  else
+  {
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+  }
+
+  pfree_array((void **) temparr, count);
+  return state;
 }
 
 /*****************************************************************************
@@ -753,6 +859,28 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   return result;
 }
 
+/**
+ * Generic transition function for temporal aggregation
+ */
+SkipList *
+temporal_tcount_transfn(SkipList *state, Temporal *temp)
+{
+  int count;
+  Temporal **temparr = temporal_transform_tcount(temp, &count);
+  if (state)
+  {
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
+    skiplist_splice(state, (void **) temparr, count, &datum_sum_int32,
+      false);
+  }
+  else
+  {
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+  }
+  pfree_array((void **) temparr, count);
+  return state;
+}
+
 /*****************************************************************************
  * Temporal average
  *****************************************************************************/
@@ -813,6 +941,69 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
+}
+
+/*****************************************************************************/
+
+/**
+ * Transition function for temporal extent aggregation of temporal values
+ * with period bounding box
+ */
+Period *
+temporal_extent_transfn(Period *p, Temporal *temp)
+{
+  Period *result;
+
+  /* Can't do anything with null inputs */
+  if (! p && ! temp)
+    return NULL;
+  /* Null period and non-null temporal, return the bbox of the temporal */
+  if (! p)
+  {
+    result = palloc0(sizeof(Period));
+    temporal_set_bbox(temp, result);
+    return result;
+  }
+  /* Non-null period and null temporal, return the period */
+  if (! temp)
+  {
+    result = palloc0(sizeof(Period));
+    memcpy(result, p, sizeof(Period));
+    return result;
+  }
+
+  Period p1;
+  temporal_set_bbox(temp, &p1);
+  result = union_span_span(p, &p1, false);
+  return result;
+}
+
+/**
+ * Transition function for temporal extent aggregation for temporal numbers
+ */
+TBOX *
+tnumber_extent_transfn(TBOX *box, Temporal *temp)
+{
+  /* Can't do anything with null inputs */
+  if (!box && !temp)
+    return NULL;
+  TBOX *result = palloc0(sizeof(TBOX));
+  /* Null box and non-null temporal, return the bbox of the temporal */
+  if (! box)
+  {
+    temporal_set_bbox(temp, result);
+    return result;
+  }
+  /* Non-null box and null temporal, return the box */
+  if (! temp)
+  {
+    memcpy(result, box, sizeof(TBOX));
+    return result;
+  }
+  /* Both box and temporal are not null */
+  temporal_set_bbox(temp, result);
+  tbox_expand(box, result);
+  return result;
 }
 
 /*****************************************************************************/

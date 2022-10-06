@@ -1122,7 +1122,7 @@ Temporal_sequence_n(PG_FUNCTION_ARGS)
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TSequence *result = temporal_sequence_n(temp, n);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1223,7 +1223,7 @@ Temporal_instant_n(PG_FUNCTION_ARGS)
   const TInstant *inst = temporal_instant_n(temp, n);
   TInstant *result = (inst == NULL) ? NULL : tinstant_copy(inst);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1719,7 +1719,7 @@ temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *result = temporal_restrict_value(temp, value, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1795,7 +1795,7 @@ temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
   pfree(values);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(array, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1833,7 +1833,7 @@ tnumber_restrict_span_ext(FunctionCallInfo fcinfo, bool atfunc)
   Span *span = PG_GETARG_SPAN_P(1);
   Temporal *result = tnumber_restrict_span(temp, span, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1880,7 +1880,7 @@ tnumber_restrict_spans_ext(FunctionCallInfo fcinfo, bool atfunc)
   pfree(spans);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(array, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1924,7 +1924,7 @@ Temporal_at_min(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1941,7 +1941,7 @@ Temporal_minus_min(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1957,7 +1957,7 @@ Temporal_at_max(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_AT);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1973,7 +1973,7 @@ Temporal_minus_max(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1991,7 +1991,7 @@ tnumber_restrict_tbox_ext(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *result = atfunc ? tnumber_at_tbox(temp, box) :
     tnumber_minus_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -2032,7 +2032,7 @@ temporal_restrict_timestamp_ext(FunctionCallInfo fcinfo, bool atfunc)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Temporal *result = temporal_restrict_timestamp(temp, t, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -2098,7 +2098,7 @@ Temporal_at_timestampset(PG_FUNCTION_ARGS)
   Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -2117,7 +2117,7 @@ Temporal_minus_timestampset(PG_FUNCTION_ARGS)
   Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -2131,7 +2131,7 @@ temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
   Period *p = PG_GETARG_SPAN_P(1);
   Temporal *result = temporal_restrict_period(temp, p, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -2176,7 +2176,7 @@ Temporal_at_periodset(PG_FUNCTION_ARGS)
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -2195,7 +2195,7 @@ Temporal_minus_periodset(PG_FUNCTION_ARGS)
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

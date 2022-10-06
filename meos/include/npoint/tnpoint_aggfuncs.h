@@ -28,47 +28,22 @@
  *****************************************************************************/
 
 /**
- * @brief Skiplist data structure used for performing aggregates
+ * @brief Functions for temporal network points.
  */
 
-#ifndef __PG_SKIPLIST_H__
-#define __PG_SKIPLIST_H__
+#ifndef __TNPOINT_AGGFUNCS_H__
+#define __TNPOINT_AGGFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
-#include <fmgr.h>
 /* MEOS */
-#include "general/temporal.h"
+#include "meos.h"
+#include "general/skiplist.h"
 
 /*****************************************************************************/
 
-/**
- * Helper macros to input the current aggregate state
- */
-#define INPUT_AGG_TRANS_STATE(state)  \
-  do {  \
-    state = PG_ARGISNULL(0) ? NULL :  \
-     (SkipList *) PG_GETARG_POINTER(0);  \
-    if (PG_ARGISNULL(1))  \
-    {  \
-      if (state)  \
-        PG_RETURN_POINTER(state);  \
-      else  \
-        PG_RETURN_NULL();  \
-    }  \
-  } while (0)
-
-#define INPUT_AGG_COMB_STATE(state1, state2)  \
-  do {  \
-  state1 = PG_ARGISNULL(0) ? NULL :  \
-    (SkipList *) PG_GETARG_POINTER(0);  \
-  state2 = PG_ARGISNULL(1) ? NULL :  \
-    (SkipList *) PG_GETARG_POINTER(1);  \
-  if (state1 == NULL && state2 == NULL)  \
-    PG_RETURN_NULL();  \
-   } while (0)
+extern SkipList *tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TNPOINT_AGGFUNCS_H__ */

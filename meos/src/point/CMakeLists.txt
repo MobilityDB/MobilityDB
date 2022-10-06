@@ -3,6 +3,7 @@ add_library(point OBJECT
   pgis_call.c
   stbox.c
   tpoint.c
+  tpoint_aggfuncs.c
   tpoint_analytics.c
   tpoint_boxops.c
   tpoint_boxops_meos.c

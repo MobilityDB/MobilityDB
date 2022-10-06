@@ -91,6 +91,8 @@ typedef struct
 
 /*****************************************************************************/
 
+extern void aggstate_set_extra(SkipList *state, void *data, size_t size);
+
 extern SkipList *skiplist_make(void **values, int count,
   SkipListElemType elemtype);
 extern void *skiplist_headval(SkipList *list);

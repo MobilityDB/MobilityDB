@@ -114,7 +114,7 @@ arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
   Temporal *result = arithop_tnumber_tnumber(temp1, temp2, oper, func, tpfunc);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -386,7 +386,7 @@ Tnumber_derivative(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnumber_derivative(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

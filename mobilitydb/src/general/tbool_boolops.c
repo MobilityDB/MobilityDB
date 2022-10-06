@@ -89,7 +89,7 @@ Tand_tbool_tbool(PG_FUNCTION_ARGS)
   Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_and);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -147,7 +147,7 @@ Tor_tbool_tbool(PG_FUNCTION_ARGS)
   Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_or);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
