@@ -72,6 +72,8 @@
  *    defined by the two segments are equal.
  *
  * Examples
+ *   - `tfloat_degrees => tfunc_temporal`
+ *     applies the `degrees` function to each instant.
  *   - `tfloatseq * base => tfunc_tsequence_base`
  *     applies the `*` operator to each instant and results in a `tfloatseq`.
  *   - `tfloatseq < base => tfunc_tlinearseq_base_discont`

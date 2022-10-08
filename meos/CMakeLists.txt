@@ -53,6 +53,10 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 # Other dependencies
 #--------------------------------
 
+# GSL (GNU Scientific Library) (used for skiplists)
+find_package(GSL REQUIRED)
+include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
+
 # Proj reprojection library
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
@@ -129,6 +133,8 @@ endif()
 target_link_libraries(${MEOS_LIB_NAME} ${JSON-C_LIBRARIES})
 target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
+target_link_libraries(${MEOS_LIB_NAME} ${GSL_LIBRARY})
+target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 
 #--------------------------------
 # Belongs to MEOS

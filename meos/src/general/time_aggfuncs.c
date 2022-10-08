@@ -36,8 +36,9 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <libpq/pqformat.h>
-#include <utils/memutils.h>
+#include <postgres.h>
+// #include <libpq/pqformat.h>
+// #include <utils/memutils.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>

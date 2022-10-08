@@ -263,7 +263,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
  * @sqlfunc degrees()
  */
 Temporal *
-tnumber_degrees(const Temporal *temp)
+tfloat_degrees(const Temporal *temp)
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -289,7 +289,7 @@ tnumber_degrees(const Temporal *temp)
  * @sqlfunc derivative()
  */
 TSequence *
-tnumberseq_derivative(const TSequence *seq)
+tfloatseq_derivative(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 
@@ -330,7 +330,7 @@ tnumberseq_derivative(const TSequence *seq)
  * @sqlfunc derivative()
  */
 TSequenceSet *
-tnumberseqset_derivative(const TSequenceSet *ss)
+tfloatseqset_derivative(const TSequenceSet *ss)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int k = 0;
@@ -338,7 +338,7 @@ tnumberseqset_derivative(const TSequenceSet *ss)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     if (seq->count > 1)
-      sequences[k++] = tnumberseq_derivative(seq);
+      sequences[k++] = tfloatseq_derivative(seq);
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -347,21 +347,21 @@ tnumberseqset_derivative(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the derivative of a temporal number
- * @see tnumberseq_derivative
- * @see tnumberseqset_derivative
+ * @see tfloatseq_derivative
+ * @see tfloatseqset_derivative
  * @sqlfunc derivative()
  */
 Temporal *
-tnumber_derivative(const Temporal *temp)
+tfloat_derivative(const Temporal *temp)
 {
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
+    result = (Temporal *) tfloatseq_derivative((TSequence *)temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
+    result = (Temporal *) tfloatseqset_derivative((TSequenceSet *)temp);
   return result;
 }
 

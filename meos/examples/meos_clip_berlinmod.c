@@ -54,10 +54,20 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "meos.h"
 
+/* Maximum length in characters of a trip in the input data */
+#define MAX_LENGTH_TRIP 250000
+/* Maximum length in characters of a geometry in the input data */
+#define MAX_LENGTH_GEOM 100000
+/* Maximum length in characters of a name in the input data */
 #define MAX_LENGTH_NAME 100
+/* Maximum length in characters of a date in the input data */
+#define MAX_LENGTH_DATE 12
+/* Number of vehicles */
 #define NO_VEHICLES 5
+/* Number of communes */
 #define NO_COMMUNES 19
 
 typedef struct
@@ -76,22 +86,21 @@ typedef struct
 
 typedef struct
 {
-  int vehicle;
+  int tripid;
+  int vehid;
   int seq;
   Temporal *trip;
 } trip_record;
 
 /* Arrays to compute the results */
-commune_record communes[19];
-region_record brussels_region;
+commune_record communes[NO_COMMUNES];
 double distance[NO_VEHICLES + 1][NO_COMMUNES + 3] = {0};
 
-/* Maximum length in characters of a trip in the input data */
-char trip_buffer[160000];
-/* Maximum length in characters of a geometry in the input data */
-char geo_buffer[100000];
-/* Maximum length in characters of a date in the input data */
-char date_buffer[12];
+char trip_buffer[MAX_LENGTH_TRIP];
+char geo_buffer[MAX_LENGTH_GEOM];
+char date_buffer[MAX_LENGTH_DATE];
+
+region_record brussels_region;
 
 /* Read communes from file */
 int read_communes(void)
@@ -132,7 +141,7 @@ int read_communes(void)
     }
   } while (!feof(file));
 
-  printf("\n%d commune records read.", records);
+  printf("%d commune records read\n", records);
 
   /* Close the file */
   fclose(file);
@@ -175,7 +184,7 @@ int read_brussels_region(void)
     return 1;
   }
 
-  printf("\nBrussels region record read.");
+  printf("Brussels region record read\n");
 
   /* Close the file */
   fclose(file);
@@ -302,13 +311,18 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &trip_rec.vehicle, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%250000[^,],%100000[^\n]\n",
+      &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
+    printf("Trip input with %ld characters\n", strlen(trip_buffer));
+
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     if (read == 5)
+    {
       records++;
+      printf("Trip record read successfully\n");
+    }
 
     if (read != 5 && !feof(file))
     {
@@ -327,7 +341,7 @@ int main(void)
     /* Compute the total distance */
     double d = tpoint_length(trip_rec.trip) / 1000;
     /* Add to the vehicle total and the column total */
-    distance[trip_rec.vehicle - 1][0] += d;
+    distance[trip_rec.vehid - 1][0] += d;
     distance[NO_VEHICLES][0] += d;
     /* Loop for each commune */
     for (int i = 0; i < 19; i ++)
@@ -338,9 +352,9 @@ int main(void)
         /* Compute the length of the trip projected to the commune */
         d = tpoint_length(atgeom) / 1000;
         /* Add to the cell */
-        distance[trip_rec.vehicle - 1][i + 1] += d;
+        distance[trip_rec.vehid - 1][i + 1] += d;
         /* Add to the row total, the commune total, and inside total */
-        distance[trip_rec.vehicle - 1][NO_COMMUNES + 2] += d;
+        distance[trip_rec.vehid - 1][NO_COMMUNES + 2] += d;
         distance[NO_VEHICLES][i + 1] += d;
         distance[NO_VEHICLES][NO_COMMUNES + 2] += d;
       }
@@ -352,7 +366,7 @@ int main(void)
     {
       d = tpoint_length(minusgeom) / 1000;
       /* Add to the row */
-      distance[trip_rec.vehicle - 1][NO_COMMUNES + 1] += d;
+      distance[trip_rec.vehid - 1][NO_COMMUNES + 1] += d;
       /* Add to the column total */
       distance[NO_VEHICLES][NO_COMMUNES + 1] += d;
     }

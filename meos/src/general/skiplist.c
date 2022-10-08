@@ -37,10 +37,14 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
-#include <executor/spi.h>
-#include <libpq/pqformat.h>
-#include <utils/memutils.h>
-#include <utils/timestamp.h>
+#include <postgres.h>
+#if MEOS
+  #define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */
+#else
+  #include <utils/memutils.h>
+#endif /* MEOS */
+// #include <libpq/pqformat.h>
+// #include <utils/timestamp.h>
 /* GSL */
 #include <gsl/gsl_rng.h>
 /* MobilityDB */

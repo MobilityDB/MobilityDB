@@ -746,9 +746,9 @@ tint_from_base(int i, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tfloat_from_base(bool b, const Temporal *temp, interpType interp)
+tfloat_from_base(double d, const Temporal *temp, interpType interp)
 {
-  return temporal_from_base(BoolGetDatum(b), T_TFLOAT, temp, interp);
+  return temporal_from_base(Float8GetDatum(d), T_TFLOAT, temp, interp);
 }
 
 /**

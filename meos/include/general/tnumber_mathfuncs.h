@@ -71,11 +71,11 @@ extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *));
 
-extern Temporal *tnumber_degrees(const Temporal *temp);
+extern Temporal *tfloat_degrees(const Temporal *temp);
 
-extern TSequence *tnumberseq_derivative(const TSequence *seq);
-extern TSequenceSet *tnumberseqset_derivative(const TSequenceSet *ts);
-extern Temporal *tnumber_derivative(const Temporal *temp);
+extern TSequence *tfloatseq_derivative(const TSequence *seq);
+extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ts);
+extern Temporal *tfloat_derivative(const Temporal *temp);
 
 /*****************************************************************************/
 

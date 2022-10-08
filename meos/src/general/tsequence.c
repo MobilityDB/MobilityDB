@@ -1784,9 +1784,9 @@ tintdiscseq_from_base_time(int i, const TimestampSet *ts)
  * timestamp set.
  */
 TSequence *
-tfloatdiscseq_from_base_time(bool b, const TimestampSet *ts)
+tfloatdiscseq_from_base_time(double d, const TimestampSet *ts)
 {
-  return tdiscseq_from_base_time(BoolGetDatum(b), T_TFLOAT, ts);
+  return tdiscseq_from_base_time(Float8GetDatum(d), T_TFLOAT, ts);
 }
 
 /**
@@ -1841,8 +1841,7 @@ tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq,
 {
   return MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
     tdiscseq_from_base(value, temptype, seq) :
-    tsequence_from_base_time(value, temptype,
-      &seq->period, interp);
+    tsequence_from_base_time(value, temptype, &seq->period, interp);
 }
 
 #if MEOS
@@ -1874,9 +1873,9 @@ tintseq_from_base(int i, const TSequence *seq)
  * of another temporal sequence.
  */
 TSequence *
-tfloatseq_from_base(bool b, const TSequence *seq, interpType interp)
+tfloatseq_from_base(double d, const TSequence *seq, interpType interp)
 {
-  return tsequence_from_base(BoolGetDatum(b), T_TFLOAT, seq, interp);
+  return tsequence_from_base(Float8GetDatum(d), T_TFLOAT, seq, interp);
 }
 
 /**
@@ -1972,9 +1971,9 @@ tintseq_from_base_time(int i, const Period *p)
  * @brief Construct a temporal float sequence from a float and a period.
  */
 TSequence *
-tfloatseq_from_base_time(bool b, const Period *p, interpType interp)
+tfloatseq_from_base_time(double d, const Period *p, interpType interp)
 {
-  return tsequence_from_base_time(BoolGetDatum(b), T_TFLOAT, p, interp);
+  return tsequence_from_base_time(Float8GetDatum(d), T_TFLOAT, p, interp);
 }
 
 /**

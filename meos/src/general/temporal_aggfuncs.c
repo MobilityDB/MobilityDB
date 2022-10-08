@@ -38,9 +38,10 @@
 #include <math.h>
 #include <string.h>
 /* PostgreSQL */
-#include <catalog/pg_collation.h>
-#include <libpq/pqformat.h>
-#include <utils/memutils.h>
+#include <postgres.h>
+// #include <catalog/pg_collation.h>
+// #include <libpq/pqformat.h>
+// #include <utils/memutils.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>

@@ -472,9 +472,9 @@ tintseqset_from_base(int i, const TSequenceSet *ss)
  * frame of another temporal sequence set.
  */
 TSequenceSet *
-tfloatseqset_from_base(bool b, const TSequenceSet *ss, interpType interp)
+tfloatseqset_from_base(double d, const TSequenceSet *ss, interpType interp)
 {
-  return tsequenceset_from_base(BoolGetDatum(b), T_TFLOAT, ss, interp);
+  return tsequenceset_from_base(Float8GetDatum(d), T_TFLOAT, ss, interp);
 }
 
 /**
@@ -565,9 +565,9 @@ tintseqset_from_base_time(int i, const PeriodSet *ps)
  * @brief Construct a temporal float sequence set from a float and a period set.
  */
 TSequenceSet *
-tfloatseqset_from_base_time(bool b, const PeriodSet *ps, interpType interp)
+tfloatseqset_from_base_time(double d, const PeriodSet *ps, interpType interp)
 {
-  return tsequenceset_from_base_time(BoolGetDatum(b), T_TFLOAT, ps, interp);
+  return tsequenceset_from_base_time(Float8GetDatum(d), T_TFLOAT, ps, interp);
 }
 
 /**
