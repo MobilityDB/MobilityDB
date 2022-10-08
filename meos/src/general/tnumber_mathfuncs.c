@@ -29,8 +29,8 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees)
- * for temporal number.
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,...)
+ * for temporal numbers.
  */
 
 #include "general/tnumber_mathfuncs.h"
@@ -60,6 +60,16 @@ datum_degrees(Datum value)
 {
   return Float8GetDatum(float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE));
 }
+
+/**
+ * Convert a number from degrees to radians
+ */
+static Datum
+datum_radians(Datum value)
+{
+  return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
+}
+
 
 /**
  * Find the single timestamptz at which the operation of two temporal
@@ -269,6 +279,28 @@ tfloat_degrees(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_degrees;
+  lfinfo.numparam = 0;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Convert a temporal number from degrees to radians
+ * @sqlfunc radians()
+ */
+Temporal *
+tfloat_radians(const Temporal *temp)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_radians;
   lfinfo.numparam = 0;
   lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);

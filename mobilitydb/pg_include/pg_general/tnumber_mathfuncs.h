@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal mathematical operators (+, -, *, /) and functions (round,
- * degrees).
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
+ * for temporal numbers.
  */
 
 #ifndef __PG_TEMPORAL_MATHFUNCS_H__

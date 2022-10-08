@@ -2144,6 +2144,16 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 </programlisting>
 			</listitem>
 
+			<listitem id="radians">
+				<indexterm><primary><varname>radians</varname></primary></indexterm>
+				<para>Convert from degrees to radians</para>
+				<para><varname>radians(tfloat): tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT radians(tfloat '[45@2000-01-01, 135@2000-01-02]');
+-- [0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]
+</programlisting>
+			</listitem>
+
 			<listitem id="derivative">
 				<indexterm><primary><varname>derivative</varname></primary></indexterm>
 				<para>Get the derivative over time of the temporal float in units per second</para>

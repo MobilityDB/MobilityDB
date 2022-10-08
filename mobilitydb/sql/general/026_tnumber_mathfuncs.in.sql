@@ -481,6 +481,11 @@ CREATE FUNCTION degrees(tfloat)
   AS 'MODULE_PATHNAME', 'Tfloat_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION radians(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_radians'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION derivative(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tfloat_derivative'

@@ -29,7 +29,7 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees)
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
  * for temporal number.
  */
 
@@ -358,13 +358,27 @@ PG_FUNCTION_INFO_V1(Tfloat_degrees);
  * @ingroup mobilitydb_temporal_math
  * @brief Convert a temporal number from radians to degrees
  * @sqlfunc degrees()
- * @sqlop @p
  */
 PGDLLEXPORT Datum
 Tfloat_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_degrees(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tfloat_radians);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Convert a temporal number from degrees to radians
+ * @sqlfunc radians()
+ */
+PGDLLEXPORT Datum
+Tfloat_radians(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_radians(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

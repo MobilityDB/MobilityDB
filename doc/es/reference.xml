@@ -1128,6 +1128,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="radians"><varname>radians</varname></link>: Convertir de grados a radianes</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="derivative"><varname>derivative</varname></link>: Obtener la derivada sobre el tiempo del número temporal en unidades por segundo</para>
 				</listitem>
 			</itemizedlist>
