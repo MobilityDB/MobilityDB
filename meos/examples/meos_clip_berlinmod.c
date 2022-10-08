@@ -58,7 +58,7 @@
 #include "meos.h"
 
 /* Maximum length in characters of a trip in the input data */
-#define MAX_LENGTH_TRIP 250000
+#define MAX_LENGTH_TRIP 160000
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_GEOM 100000
 /* Maximum length in characters of a name in the input data */
@@ -311,7 +311,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%250000[^,],%100000[^\n]\n",
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
     printf("Trip input with %ld characters\n", strlen(trip_buffer));
 
