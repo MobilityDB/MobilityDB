@@ -1914,11 +1914,11 @@ SELECT appendInstant(tfloat 'Interp=Stepwise;{[1@2000-01-01, 1@2000-01-02)}', '2
 SELECT appendInstant(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '2@2000-01-01');
 ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-01 00:00:00+00
 SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', '2@2000-01-02');
-ERROR:  The temporal values have different value at their common instant 2000-01-02 00:00:00+00
+ERROR:  The temporal values have different value at their common timestamp 2000-01-02 00:00:00+00
 SELECT appendInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-04, 1@2000-01-05]');
 ERROR:  The second argument must be of instant subtype
 SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02]}', '2@2000-01-02');
-ERROR:  The temporal values have different value at their common instant 2000-01-02 00:00:00+00
+ERROR:  The temporal values have different value at their common timestamp 2000-01-02 00:00:00+00
 SELECT appendInstant(tfloat '[1@2000-01-01, 2@2000-01-03]', '1@2000-01-02');
 ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT merge(tbool 't@2000-01-01', tbool 't@2000-01-02');
@@ -7429,36 +7429,6 @@ SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
  t
 (1 row)
 
-SELECT atValues(tbool 't@2000-01-01', ARRAY[true]);
-         atvalues         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT atValues(tbool '{t@2000-01-01}', ARRAY[true]);
-          atvalues          
-----------------------------
- {t@2000-01-01 00:00:00+00}
-(1 row)
-
-SELECT atValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', ARRAY[true]);
-                       atvalues                       
-------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT atValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', ARRAY[true]);
-                                      atvalues                                      
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00), [t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT atValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', ARRAY[true]);
-                                                                 atvalues                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00), [t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
 SELECT atValues(tint '1@2000-01-01', ARRAY[1]);
          atvalues         
 --------------------------
@@ -7561,12 +7531,6 @@ SELECT atValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@20
  {["AAA"@2000-01-01 00:00:00+00, "AAA"@2000-01-02 00:00:00+00), ["AAA"@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT atValues(tbool '{t@2000-01-01}', '{}'::bool[]);
- atvalues 
-----------
- 
-(1 row)
-
 SELECT atValues(tint '{1@2000-01-01}', '{}'::int[]);
  atvalues 
 ----------
@@ -7583,36 +7547,6 @@ SELECT atValues(ttext '{1@2000-01-01}', '{}'::text[]);
  atvalues 
 ----------
  
-(1 row)
-
-SELECT minusValues(tbool 't@2000-01-01', ARRAY[true]);
- minusvalues 
--------------
- 
-(1 row)
-
-SELECT minusValues(tbool '{t@2000-01-01}', ARRAY[true]);
- minusvalues 
--------------
- 
-(1 row)
-
-SELECT minusValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', ARRAY[true]);
-        minusvalues         
-----------------------------
- {f@2000-01-02 00:00:00+00}
-(1 row)
-
-SELECT minusValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', ARRAY[true]);
-                      minusvalues                       
---------------------------------------------------------
- {[f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00)}
-(1 row)
-
-SELECT minusValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', ARRAY[true]);
-                      minusvalues                       
---------------------------------------------------------
- {[f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00)}
 (1 row)
 
 SELECT minusValues(tint '1@2000-01-01', ARRAY[1]);
@@ -7717,12 +7651,6 @@ SELECT minusValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
  {["BBB"@2000-01-02 00:00:00+00, "BBB"@2000-01-03 00:00:00+00), ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT minusValues(tbool '{t@2000-01-01}', '{}'::bool[]);
-        minusvalues         
-----------------------------
- {t@2000-01-01 00:00:00+00}
-(1 row)
-
 SELECT minusValues(tint '{1@2000-01-01}', '{}'::int[]);
         minusvalues         
 ----------------------------
@@ -7739,12 +7667,6 @@ SELECT minusValues(ttext '{1@2000-01-01}', '{}'::text[]);
          minusvalues          
 ------------------------------
  {"1"@2000-01-01 00:00:00+00}
-(1 row)
-
-SELECT minusValues(tbool '{[t@2000-01-01, t@2000-01-03],[f@2000-01-04, f@2000-01-05]}', ARRAY[true, false]);
- minusvalues 
--------------
- 
 (1 row)
 
 SELECT minusValues(tint '{[1@2000-01-01, 1@2000-01-03],[2@2000-01-04, 2@2000-01-05]}', ARRAY[1, 2]);

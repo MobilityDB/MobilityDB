@@ -937,9 +937,7 @@ extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
 /* Restriction functions for temporal types */
 
 extern Temporal *tbool_at_value(const Temporal *temp, bool b);
-extern Temporal *tbool_at_values(const Temporal *temp, bool *values, int count);
 extern Temporal *tbool_minus_value(const Temporal *temp, bool b);
-extern Temporal *tbool_minus_values(const Temporal *temp, bool *values, int count);
 extern bool tbool_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, bool *value);
 extern Temporal *temporal_at_max(const Temporal *temp);
 extern Temporal *temporal_at_min(const Temporal *temp);

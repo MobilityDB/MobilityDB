@@ -166,43 +166,6 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal boolean to (the complement of) an array of booleans.
- * @sqlfunc atValues()
- */
-static Temporal *
-tbool_restrict_values(const Temporal *temp, bool *values, int count, bool atfunc)
-{
-  Datum *datumarr = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i ++)
-    datumarr[i] = BoolGetDatum(values[i]);
-  Temporal *result = temporal_restrict_values(temp, datumarr, count, atfunc);
-  pfree(datumarr);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal boolean to an array of booleans.
- * @sqlfunc atValues()
- */
-Temporal *
-tbool_at_values(const Temporal *temp, bool *values, int count)
-{
-  return tbool_restrict_values(temp, values, count, REST_AT);
-}
-
-/**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal boolean to the complement of an array of booleans.
- * @sqlfunc minusValues()
- */
-Temporal *
-tbool_minus_values(const Temporal *temp, bool *values, int count)
-{
-  return tbool_restrict_values(temp, values, count, REST_MINUS);
-}
-
-/**
  * @brief Restrict a temporal integer to (the complement of) an array of integers.
  * @sqlfunc atValues()
  */
