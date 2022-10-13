@@ -58,14 +58,14 @@ CREATE FUNCTION periodset_extent_transfn(period, periodset)
 CREATE AGGREGATE extent(timestampset) (
   SFUNC = timestampset_extent_transfn,
   STYPE = period,
-  COMBINEFUNC = span_extent_combinefn
-  -- , PARALLEL = safe
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE extent(periodset) (
   SFUNC = periodset_extent_transfn,
   STYPE = period,
-  COMBINEFUNC = span_extent_combinefn
-  -- , PARALLEL = safe
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/
@@ -99,8 +99,8 @@ CREATE AGGREGATE tcount(timestampset) (
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize
-  -- , PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
 );
 
 CREATE AGGREGATE tcount(period) (
@@ -109,8 +109,8 @@ CREATE AGGREGATE tcount(period) (
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize
-  -- , PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
 );
 
 CREATE AGGREGATE tcount(periodset) (
@@ -119,8 +119,8 @@ CREATE AGGREGATE tcount(periodset) (
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize
-  -- , PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
 );
 
 /*****************************************************************************/
@@ -158,8 +158,8 @@ CREATE AGGREGATE tunion(timestampset) (
   COMBINEFUNC = time_tunion_combinefn,
   FINALFUNC = timestamp_tunion_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize
-  -- , PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
 );
 
 CREATE AGGREGATE tunion(period) (
@@ -168,8 +168,8 @@ CREATE AGGREGATE tunion(period) (
   COMBINEFUNC = time_tunion_combinefn,
   FINALFUNC = period_tunion_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize
-  -- , PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
 );
 
 CREATE AGGREGATE tunion(periodset) (
@@ -178,8 +178,8 @@ CREATE AGGREGATE tunion(periodset) (
   COMBINEFUNC = time_tunion_combinefn,
   FINALFUNC = period_tunion_finalfn,
   SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize
-  -- , PARALLEL = SAFE
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
 );
 
 

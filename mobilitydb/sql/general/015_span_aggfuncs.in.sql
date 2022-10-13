@@ -64,20 +64,20 @@ CREATE FUNCTION span_extent_combinefn(period, period)
 CREATE AGGREGATE extent(intspan) (
   SFUNC = span_extent_transfn,
   STYPE = intspan,
-  COMBINEFUNC = span_extent_combinefn
-  -- , PARALLEL = safe
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatspan) (
   SFUNC = span_extent_transfn,
   STYPE = floatspan,
-  COMBINEFUNC = span_extent_combinefn
-  -- , PARALLEL = safe
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE extent(period) (
   SFUNC = span_extent_transfn,
   STYPE = period,
-  COMBINEFUNC = span_extent_combinefn
-  -- , PARALLEL = safe
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/
