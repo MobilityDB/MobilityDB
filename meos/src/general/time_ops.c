@@ -52,37 +52,6 @@ typedef enum
   MINUS
 } SetOper;
 
-/*****************************************************************************/
-
-/**
- * Determine the relative position of the two timestamps
- */
-RelativeTimePos
-pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  int32 cmp = timestamptz_cmp_internal(t1, t2);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp < 0)
-    return AFTER;
-  return DURING;
-}
-
-/**
- * Determine the relative position of a period and a timestamp
- */
-RelativeTimePos
-pos_period_timestamp(const Period *p, TimestampTz t)
-{
-  int32 cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
-  if (cmp > 0 || (cmp == 0 && !(p->lower_inc)))
-    return BEFORE;
-  cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
-  if (cmp < 0 || (cmp == 0 && !(p->upper_inc)))
-    return AFTER;
-  return DURING;
-}
-
 /*****************************************************************************
  * Generic operations
  *****************************************************************************/

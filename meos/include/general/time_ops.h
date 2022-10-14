@@ -42,26 +42,9 @@
 
 /*****************************************************************************/
 
-/**
- * Enumeration for the relative position of a given element into a skiplist
- */
-typedef enum
-{
-  BEFORE,
-  DURING,
-  AFTER
-} RelativeTimePos;
-
-/*****************************************************************************/
-
 /* Miscellaneous */
 
 extern uint32_t time_max_header_size(void);
-
-/* Functions for aggregations */
-
-extern RelativeTimePos pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
-extern RelativeTimePos pos_period_timestamp(const Period *p, TimestampTz t);
 
 /*****************************************************************************/
 

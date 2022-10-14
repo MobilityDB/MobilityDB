@@ -51,7 +51,7 @@ SELECT tint '[10@2018-01-01 08:00:00]';
 	<para>
 		Sequence values must be <emphasis>uniform</emphasis>, that is, they must be composed of instant values of the same base type. Sequence values with stepwise or linear interpolation are referred to as <emphasis>continuous sequences</emphasis>.
 	</para>
-  
+
 	<para>
 		The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
 	</para>
@@ -123,7 +123,7 @@ CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequen
 	</para>
 
 	<para>
-		On the other hand, in the case of temporal point types (that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>) the type modifier may be used to specify specify the subtype, the dimensionality, and/or the spatial reference identifier (SRID). For example, in the following table definition:
+		On the other hand, in the case of temporal point types (that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>) the type modifier may be used to specify the subtype, the dimensionality, and/or the spatial reference identifier (SRID). For example, in the following table definition:
 	</para>
 	<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));

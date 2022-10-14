@@ -314,7 +314,7 @@ Period_tunion_finalfn(PG_FUNCTION_ARGS)
 
   assert(state->elemtype == PERIOD);
   const Period **values = (const Period **) skiplist_values(state);
-  PeriodSet *result = periodset_make(values, state->length, NORMALIZE_NO);
+  PeriodSet *result = periodset_make(values, state->length, NORMALIZE);
   pfree(values);
   PG_RETURN_POINTER(result);
 }
