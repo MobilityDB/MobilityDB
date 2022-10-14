@@ -397,7 +397,6 @@ pos_period_timestamp(const Period *p, TimestampTz t)
   return DURING;
 }
 
-
 /**
  * Comparison function used for skiplists
  */
@@ -420,6 +419,57 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
       return pos_timestamp_timestamp(((TInstant *) temp)->t, t);
     else /* temp->subtype == SEQUENCE */
       return pos_period_timestamp(&((TSequence *) temp)->period, t);
+  }
+}
+
+/**
+ * Determine the relative position of the two timestamps
+ */
+RelativeTimePos
+pos_timestamp_period(TimestampTz t, const Period *p)
+{
+  if (before_timestamp_period(t, p))
+    return AFTER;
+  if (after_timestamp_period(t, p))
+    return BEFORE;
+  return DURING;
+}
+
+/**
+ * Determine the relative position of a period and a timestamp
+ */
+RelativeTimePos
+pos_period_period(const Period *p1, const Period *p2)
+{
+  if (left_span_span(p1, p2))
+    return AFTER;
+  if (right_span_span(p1, p2))
+    return BEFORE;
+  return DURING;
+}
+
+/**
+ * Comparison function used for skiplists
+ */
+static RelativeTimePos
+skiplist_elmpos_new(const SkipList *list, int cur, Period *p)
+{
+  if (cur == 0)
+    return AFTER; /* Head is -inf */
+  else if (cur == -1 || cur == list->tail)
+    return BEFORE; /* Tail is +inf */
+  else
+  {
+    if (list->elemtype == TIMESTAMPTZ)
+      return pos_timestamp_period((TimestampTz) list->elems[cur].value, p);
+    if (list->elemtype == PERIOD)
+      return pos_period_period((Period *) list->elems[cur].value, p);
+    /* list->elemtype == TEMPORAL */
+    Temporal *temp = (Temporal *) list->elems[cur].value;
+    if (temp->subtype == TINSTANT)
+      return pos_timestamp_period(((TInstant *) temp)->t, p);
+    else /* temp->subtype == SEQUENCE */
+      return pos_period_period(&((TSequence *) temp)->period, p);
   }
 }
 
@@ -490,6 +540,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     t = DatumGetTimestampTz(p.lower);
     while (e->next[level] != -1 &&
       skiplist_elmpos(list, e->next[level], t) == AFTER)
+      // skiplist_elmpos_new(list, e->next[level], &p) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -504,6 +555,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   int spliced_count = 0;
   t = DatumGetTimestampTz(p.upper);
   while (skiplist_elmpos(list, cur, t) == AFTER)
+  // while (skiplist_elmpos_new(list, cur, &p) == AFTER)
   {
     cur = e->next[0];
     e = &list->elems[cur];
@@ -511,6 +563,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   }
   int upper = cur;
   if (upper >= 0 && skiplist_elmpos(list, upper, t) == DURING)
+  // if (upper >= 0 && skiplist_elmpos_new(list, upper, &p) == DURING)
   {
     upper = e->next[0]; /* if found upper, one more to remove */
     spliced_count++;
@@ -552,16 +605,16 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   if (spliced_count != 0)
   {
     int newcount = 0;
-    void **newtemps;
+    void **newvalues;
     if (list->elemtype == TIMESTAMPTZ)
     {
-      newtemps = (void **) timestamp_agg((TimestampTz *) spliced,
+      newvalues = (void **) timestamp_agg((TimestampTz *) spliced,
         spliced_count, (TimestampTz *) values, count, &newcount);
       pfree(spliced);
     }
     else if (list->elemtype == PERIOD)
     {
-      newtemps = (void **) period_agg((Period **) spliced, spliced_count,
+      newvalues = (void **) period_agg((Period **) spliced, spliced_count,
         (Period **) values, count, &newcount);
       /* Delete the spliced-out period values */
       pfree_array(spliced, spliced_count);
@@ -569,16 +622,16 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     else /* list->elemtype == TEMPORAL */
     {
       if (subtype == TINSTANT)
-        newtemps = (void **) tinstant_tagg((TInstant **) spliced,
+        newvalues = (void **) tinstant_tagg((TInstant **) spliced,
           spliced_count, (TInstant **) values, count, func, &newcount);
       else /* subtype == TSEQUENCE */
-        newtemps = (void **) tsequence_tagg((TSequence **) spliced,
+        newvalues = (void **) tsequence_tagg((TSequence **) spliced,
           spliced_count, (TSequence **) values, count, func, crossings,
           &newcount);
       /* We need to delete the spliced-out temporal values */
       pfree_array(spliced, spliced_count);
     }
-    values = newtemps;
+    values = newvalues;
     count = newcount;
   }
 
