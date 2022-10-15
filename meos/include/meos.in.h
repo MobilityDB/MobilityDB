@@ -208,6 +208,46 @@ typedef struct
   int j;
 } Match;
 
+/*****************************************************************************/
+
+/**
+ * Structure to represent skiplist elements
+ */
+
+#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
+
+typedef struct
+{
+  void *value;
+  int height;
+  int next[SKIPLIST_MAXLEVEL];
+} SkipListElem;
+
+typedef enum
+{
+  TIMESTAMPTZ,
+  PERIOD,
+  TEMPORAL
+} SkipListElemType;
+
+/**
+ * Structure to represent skiplists that keep the current state of an aggregation
+ */
+typedef struct
+{
+  SkipListElemType elemtype;
+  int capacity;
+  int next;
+  int length;
+  int *freed;
+  int freecount;
+  int freecap;
+  int tail;
+  void *extra;
+  size_t extrasize;
+  SkipListElem *elems;
+} SkipList;
+
 /*****************************************************************************
  * Initialization of the MEOS library
  *****************************************************************************/
@@ -1504,6 +1544,13 @@ extern bool temporal_intersects_timestampset(const Temporal *temp, const Timesta
 extern double tnumber_integral(const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
+
+/*****************************************************************************/
+
+/* Temporal aggregate functions for temporal types */
+
+extern SkipList *temporal_tcount_transfn(SkipList *state, Temporal *temp);
+extern Temporal *temporal_tagg_finalfn(SkipList *state);
 
 /*****************************************************************************/
 

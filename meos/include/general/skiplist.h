@@ -36,7 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 
 /*****************************************************************************/
@@ -44,48 +45,9 @@
 /* Constants defining the behaviour of skip lists which are internal types
    for computing aggregates */
 
-#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
 #define SKIPLIST_INITIAL_CAPACITY 1024
 #define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
 #define SKIPLIST_INITIAL_FREELIST 32
-
-/*****************************************************************************/
-
-/**
- * Structure to represent elements in the skiplists
- */
-
-typedef struct
-{
-  void *value;
-  int height;
-  int next[SKIPLIST_MAXLEVEL];
-} SkipListElem;
-
-typedef enum
-{
-  TIMESTAMPTZ,
-  PERIOD,
-  TEMPORAL
-} SkipListElemType;
-
-/**
- * Structure to represent skiplists that keep the current state of an aggregation
- */
-typedef struct
-{
-  SkipListElemType elemtype;
-  int capacity;
-  int next;
-  int length;
-  int *freed;
-  int freecount;
-  int freecap;
-  int tail;
-  void *extra;
-  size_t extrasize;
-  SkipListElem *elems;
-} SkipList;
 
 /*****************************************************************************/
 
