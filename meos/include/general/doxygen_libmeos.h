@@ -103,6 +103,10 @@
  * @ingroup libmeos_spantime
  * @brief Distance functions for span and time types.
  *
+ * @defgroup libmeos_spantime_agg Temporal aggregate functions
+ * @ingroup libmeos_spantime
+ * @brief Temporal aggregate functions for span and time types.
+ *
  * @defgroup libmeos_spantime_comp Comparison functions
  * @ingroup libmeos_spantime
  * @brief Comparison functions for span and time types.
@@ -235,9 +239,9 @@
  * @ingroup libmeos_temporal
  * @brief Time functions for temporal types.
  *
- * @defgroup libmeos_temporal_agg Local aggregate functions
+ * @defgroup libmeos_temporal_agg Local and temporal aggregate functions
  * @ingroup libmeos_temporal
- * @brief Local aggregate functions for temporal types.
+ * @brief Local and temporal aggregate functions for temporal types.
  *
  * @defgroup libmeos_temporal_tile Tile functions
  * @ingroup libmeos_temporal

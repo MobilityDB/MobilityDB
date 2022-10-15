@@ -61,6 +61,7 @@
 /**
  * Generic transition function for aggregating temporal values
  *
+ * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
  */
@@ -79,6 +80,7 @@ Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 /**
  * Generic combine function for aggregating temporal alphanumeric values
  *
+ * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
  */
@@ -113,6 +115,7 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  * Transition function for aggregating temporal values that require a
  * transformation to each composing instant/sequence
  *
+ * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @param[in] transform Transform function
@@ -440,21 +443,10 @@ PG_FUNCTION_INFO_V1(Tnumber_tavg_finalfn);
 PGDLLEXPORT Datum
 Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 {
-  /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
+  Temporal *result = tnumber_tavg_finalfn(state);
+  if (! result)
     PG_RETURN_NULL();
-
-  Temporal **values = (Temporal **) skiplist_values(state);
-  Temporal *result;
-  assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
-  if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tavg_finalfn((TInstant **) values,
-      state->length);
-  else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tsequence_tavg_finalfn((TSequence **) values,
-      state->length);
-  pfree(values);
   PG_RETURN_POINTER(result);
 }
 

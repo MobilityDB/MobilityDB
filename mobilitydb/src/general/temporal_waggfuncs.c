@@ -584,6 +584,7 @@ temporal_wagg_transfn1(SkipList *state, Temporal *temp, Interval *interval,
 /**
  * Generic moving window transition function for min, max, and sum aggregation
  *
+ * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
  * @param[in] crossings True if turning points are added in the segments

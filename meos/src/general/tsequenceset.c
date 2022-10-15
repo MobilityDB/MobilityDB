@@ -2081,6 +2081,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
  * @brief Append an instant to a temporal sequence set.
  * @param[in,out] ss Temporal sequence set
  * @param[in] inst Temporal instant
+ * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
  */
 TSequenceSet *

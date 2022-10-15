@@ -794,6 +794,7 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  * @brief Append an instant to the end of a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
+ * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
  */
 Temporal *

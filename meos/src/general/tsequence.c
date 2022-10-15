@@ -620,6 +620,7 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
  * @brief Append an instant to a temporal sequence.
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
+ * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
  */
 Temporal *
@@ -1628,6 +1629,7 @@ tsequence_out(const TSequence *seq, Datum arg)
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
@@ -1649,6 +1651,7 @@ tsequence_make(const TInstant **instants, int count, int maxcount,
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized

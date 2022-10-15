@@ -550,7 +550,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
  * of sequence set subtype
  *
  * @param[in,out] state Skiplist containing the state
- * @param[in] ss Temporal value
+ * @param[in] temp Temporal value
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
  */
@@ -600,7 +600,8 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
 }
 
 /**
- * Generic final function for aggregating temporal values
+ * @brief Generic final function for aggregating temporal values
+ * @ingroup libmeos_temporal_agg
  *
  * @param[in] state State values
  */
@@ -622,6 +623,131 @@ temporal_tagg_finalfn(SkipList *state)
   pfree(values);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal and of temporal booleans.
+ * @sqlfunc tand()
+ */
+SkipList *
+tbool_tand_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal booleans.
+ * @sqlfunc tor()
+ */
+SkipList *
+tbool_tor_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal values.
+ * @sqlfunc tmin()
+ */
+SkipList *
+tint_tmin_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal values.
+ * @sqlfunc tmin()
+ */
+SkipList *
+tfloat_tmin_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal values.
+ * @sqlfunc tmax()
+ */
+SkipList *
+tint_tmax_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal values.
+ * @sqlfunc tmax()
+ */
+SkipList *
+tfloat_tmax_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal values.
+ * @sqlfunc tsum()
+ */
+SkipList *
+tint_tsum_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal count of temporal values.
+ * @sqlfunc tsum()
+ */
+SkipList *
+tfloat_tsum_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal average of temporal numbers.
+ * @sqlfunc tavg()
+ */
+SkipList *
+tnumber_tavg_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transform_transfn(state, temp, &datum_sum_double2,
+    CROSSINGS_NO, &tnumberinst_transform_tavg);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal min of temporal text values.
+ * @sqlfunc tmin()
+ */
+SkipList *
+ttext_tmin_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal max of temporal text values.
+ * @sqlfunc tmax()
+ */
+SkipList *
+ttext_tmax_transfn(SkipList *state, Temporal *temp)
+{
+  return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
+}
+
+#endif /* MEOS */
 
 /*****************************************************************************
  * Generic functions for aggregating temporal values that require a
@@ -861,7 +987,8 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 }
 
 /**
- * Generic transition function for temporal aggregation
+ * @ingroup libmeos_temporal_agg
+ * @brief Generic transition function for temporal aggregation
  */
 SkipList *
 temporal_tcount_transfn(SkipList *state, Temporal *temp)
@@ -942,6 +1069,28 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
+}
+
+/**
+ * @brief Final function for temporal average aggregation
+ */
+Temporal *
+tnumber_tavg_finalfn(SkipList *state)
+{
+  if (state->length == 0)
+    return NULL;
+
+  Temporal **values = (Temporal **) skiplist_values(state);
+  Temporal *result;
+  assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
+  if (values[0]->subtype == TINSTANT)
+    result = (Temporal *) tinstant_tavg_finalfn((TInstant **) values,
+      state->length);
+  else /* values[0]->subtype == TSEQUENCE */
+    result = (Temporal *) tsequence_tavg_finalfn((TSequence **) values,
+      state->length);
+  pfree(values);
+  return result;
 }
 
 /*****************************************************************************/

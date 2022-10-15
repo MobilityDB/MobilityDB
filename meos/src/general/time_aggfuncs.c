@@ -149,9 +149,9 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
  *****************************************************************************/
 
 /**
- * Generic transition function for aggregating timestamp sets
+ * @ingroup libmeos_spantime_agg
+ * @brief Generic transition function for aggregating timestamp sets
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Timestamp array containing the state
  * @param[in] ts Timestamp set value
  */
@@ -173,10 +173,9 @@ timestampset_agg_transfn(SkipList *state, const TimestampSet *ts)
 }
 
 /**
- * Generic transition function for aggregating temporal values
- * of sequence subtype
+ * @ingroup libmeos_spantime_agg
+ * @brief Generic transition function for aggregating period values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] p Period
  */
@@ -196,9 +195,9 @@ period_agg_transfn(SkipList *state, const Period *p)
 }
 
 /**
- * Generic transition function for aggregating period set values
+ * @ingroup libmeos_spantime_agg
+ * @brief Generic transition function for aggregating period set values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in,out] state Skiplist containing the state
  * @param[in] ps Period set value
  */
@@ -228,7 +227,6 @@ periodset_agg_transfn(SkipList *state, const PeriodSet *ps)
 /**
  * Generic combine function for aggregating time values
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] state1, state2 State values
  */
 SkipList *

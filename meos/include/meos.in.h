@@ -617,6 +617,14 @@ extern double distance_timestampset_timestampset(const TimestampSet *ts1, const 
 
 /*****************************************************************************/
 
+/* Temporal aggregate functions for span and time types */
+
+extern SkipList *timestampset_agg_transfn(SkipList *state, const TimestampSet *ts);
+extern SkipList *period_agg_transfn(SkipList *state, const Period *p);
+extern SkipList *periodset_agg_transfn(SkipList *state, const PeriodSet *ps);
+
+/*****************************************************************************/
+
 /* Comparison functions for span and time types */
 
 extern bool periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2);
@@ -1549,8 +1557,24 @@ extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 
 /* Temporal aggregate functions for temporal types */
 
+extern Period *temporal_extent_transfn(Period *p, Temporal *temp);
+extern TBOX *tnumber_extent_transfn(TBOX *box, Temporal *temp);
+
 extern SkipList *temporal_tcount_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tbool_tand_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tbool_tor_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tint_tmin_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tfloat_tmin_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tint_tmax_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tfloat_tmax_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tint_tsum_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tfloat_tsum_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tnumber_tavg_transfn(SkipList *state, Temporal *temp);
+extern SkipList *ttext_tmin_transfn(SkipList *state, Temporal *temp);
+extern SkipList *ttext_tmax_transfn(SkipList *state, Temporal *temp);
+
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
+extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 
 /*****************************************************************************/
 

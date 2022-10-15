@@ -303,8 +303,8 @@ skiplist_tailval(SkipList *list)
  * Constructs a skiplist from the array of values values
  *
  * @param[in] values Array of values
- * @param[in] elemtype Type of the elements
  * @param[in] count Number of elements in the array
+ * @param[in] elemtype Type of the elements
  */
 SkipList *
 skiplist_make(void **values, int count, SkipListElemType elemtype)
