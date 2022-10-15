@@ -125,7 +125,7 @@ int main(void)
 
     /* Find the place to store the new instant */
     int ship = -1;
-    for (i = 0; i < 5; i++)
+    for (i = 0; i < MAX_TRIPS; i++)
     {
       if (trip_instants[i].MMSI == rec.MMSI)
       {
@@ -161,7 +161,7 @@ int main(void)
   for (i = 0; i < numships; i++)
   {
     trips[i] = tsequence_make((const TInstant **) trip_instants[i].instants,
-      numinstants[i], numinstants[i], true, true, true, true);
+      numinstants[i], numinstants[i], true, true, LINEAR, true);
     printf("MMSI: %ld, Number of input instants: %d, Number of instants: %d, "
       "Distance travelled %lf\n", trip_instants[i].MMSI, numinstants[i],
       trips[i]->count, tpoint_length((Temporal *) trips[i]));

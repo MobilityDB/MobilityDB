@@ -61,7 +61,6 @@ typedef struct
   DateADT day;
   int seq;
   Temporal *trip;
-  GSERIALIZED *trajectory;
 } trip_record;
 
 /* Maximum length in characters of a trip in the input data */
@@ -103,15 +102,13 @@ int main(void)
   i = 0;
   do
   {
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq, trip_buffer,
-      geo_buffer);
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+      &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq,
+        trip_buffer);
     /* Transform the string representing the date into a date value */
     trips[i].day = pg_date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     trips[i].trip = temporal_from_hexwkb(trip_buffer);
-    /* Transform the string representing the trajectory into a geometry value */
-    trips[i].trajectory = gserialized_in(geo_buffer, -1);
 
     if (read == 5)
       i++;
@@ -153,7 +150,6 @@ int main(void)
   for (i = 0; i < records; i++)
   {
     free(trips[i].trip);
-    free(trips[i].trajectory);
     free(trips_dp[i]);
     free(trips_sed[i]);
   }

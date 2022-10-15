@@ -307,13 +307,13 @@ int main(void)
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1024s\n", geo_buffer);
+  printf("Reading trip records ");
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
-    printf("Trip input with %ld characters\n", strlen(trip_buffer));
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+      &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer);
 
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
@@ -321,7 +321,8 @@ int main(void)
     if (read == 5)
     {
       records++;
-      printf("Trip record read successfully\n");
+      printf("*");
+      fflush(stdout);
     }
 
     if (read != 5 && !feof(file))

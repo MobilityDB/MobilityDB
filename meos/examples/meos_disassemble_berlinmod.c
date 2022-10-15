@@ -57,7 +57,8 @@
 
 typedef struct
 {
-  int vehicle;
+  int tripid;
+  int vehid;
   DateADT day;
   int seq;
   Temporal *trip;
@@ -97,16 +98,17 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int vehicle, seq;
-    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &vehicle, date_buffer, &seq, trip_buffer, geo_buffer);
+    int tripid, vehid, seq;
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
+      &tripid, &vehid, date_buffer, &seq, trip_buffer, geo_buffer);
     /* Transform the string representing the date into a date value */
     DateADT day = pg_date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     Temporal *trip = temporal_from_hexwkb(trip_buffer);
 
     /* Save the trip record */
-    trips[i].vehicle = vehicle;
+    trips[i].vehid = vehid;
+    trips[i].tripid = tripid;
     trips[i].seq = seq;
     trips[i].day = day;
     trips[i].trip = trip;
@@ -138,7 +140,7 @@ int main(void)
   file = fopen("trip_instants.csv", "w+");
 
   /* Write the header line */
-  fprintf(file,"vehicle,day,seq,geom,t\n");
+  fprintf(file,"tripid,vehid,day,seq,geom,t\n");
 
   /* Initialize the current instant for each trip to the first one */
   for (i = 0; i < NO_TRIPS; i++)
@@ -176,8 +178,8 @@ int main(void)
     char *date_str = pg_date_out(trips[min_trip].day);
     char *geom_str = gserialized_as_text((GSERIALIZED *)&min_inst->value, 6);
     char *time_str = pg_timestamptz_out(min_inst->t);
-    fprintf(file,"%d,%s,%d,%s,%s\n", trips[min_trip].vehicle, date_str,
-      trips[min_trip].seq, geom_str, time_str);
+    fprintf(file,"%d,%d,%s,%d,%s,%s\n", trips[min_trip].vehid,
+      trips[min_trip].vehid, date_str, trips[min_trip].seq, geom_str, time_str);
     free(date_str); free(geom_str); free(time_str);
     records_out++;
 
