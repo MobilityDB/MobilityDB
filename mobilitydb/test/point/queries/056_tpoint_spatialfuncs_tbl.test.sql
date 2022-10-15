@@ -165,10 +165,8 @@ SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;
 SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
 
 -------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE
 -- Modulo used to reduce time needed for the tests
-t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
 
 SELECT COUNT(*)  FROM tbl_tgeompoint t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
 SELECT COUNT(*)  FROM tbl_tgeogpoint t1, tbl_geodstbox3d t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));

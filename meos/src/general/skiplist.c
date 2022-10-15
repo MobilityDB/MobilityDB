@@ -371,80 +371,26 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
 /**
  * Determine the relative position of the two timestamps
  */
-RelativeTimePos
-pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  int32 cmp = timestamptz_cmp_internal(t1, t2);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp < 0)
-    return AFTER;
-  return DURING;
-}
-
-/**
- * Determine the relative position of a period and a timestamp
- */
-RelativeTimePos
+static RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
 {
-  int32 cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
-  if (cmp > 0 || (cmp == 0 && !(p->lower_inc)))
+  if (before_period_timestamp(p, t))
     return BEFORE;
-  cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
-  if (cmp < 0 || (cmp == 0 && !(p->upper_inc)))
+  if (after_period_timestamp(p, t))
     return AFTER;
-  return DURING;
-}
-
-/**
- * Comparison function used for skiplists
- */
-static RelativeTimePos
-skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
-{
-  if (cur == 0)
-    return AFTER; /* Head is -inf */
-  else if (cur == -1 || cur == list->tail)
-    return BEFORE; /* Tail is +inf */
-  else
-  {
-    if (list->elemtype == TIMESTAMPTZ)
-      return pos_timestamp_timestamp((TimestampTz) list->elems[cur].value, t);
-    if (list->elemtype == PERIOD)
-      return pos_period_timestamp((Period *) list->elems[cur].value, t);
-    /* list->elemtype == TEMPORAL */
-    Temporal *temp = (Temporal *) list->elems[cur].value;
-    if (temp->subtype == TINSTANT)
-      return pos_timestamp_timestamp(((TInstant *) temp)->t, t);
-    else /* temp->subtype == SEQUENCE */
-      return pos_period_timestamp(&((TSequence *) temp)->period, t);
-  }
-}
-
-/**
- * Determine the relative position of the two timestamps
- */
-RelativeTimePos
-pos_timestamp_period(TimestampTz t, const Period *p)
-{
-  if (before_timestamp_period(t, p))
-    return AFTER;
-  if (after_timestamp_period(t, p))
-    return BEFORE;
   return DURING;
 }
 
 /**
  * Determine the relative position of a period and a timestamp
  */
-RelativeTimePos
+static RelativeTimePos
 pos_period_period(const Period *p1, const Period *p2)
 {
   if (left_span_span(p1, p2))
-    return AFTER;
-  if (right_span_span(p1, p2))
     return BEFORE;
+  if (right_span_span(p1, p2))
+    return AFTER;
   return DURING;
 }
 
@@ -452,7 +398,7 @@ pos_period_period(const Period *p1, const Period *p2)
  * Comparison function used for skiplists
  */
 static RelativeTimePos
-skiplist_elmpos_new(const SkipList *list, int cur, Period *p)
+skiplist_elmpos(const SkipList *list, Period *p, int cur)
 {
   if (cur == 0)
     return AFTER; /* Head is -inf */
@@ -461,15 +407,15 @@ skiplist_elmpos_new(const SkipList *list, int cur, Period *p)
   else
   {
     if (list->elemtype == TIMESTAMPTZ)
-      return pos_timestamp_period((TimestampTz) list->elems[cur].value, p);
+      return pos_period_timestamp(p, (TimestampTz) list->elems[cur].value);
     if (list->elemtype == PERIOD)
-      return pos_period_period((Period *) list->elems[cur].value, p);
+      return pos_period_period(p, (Period *) list->elems[cur].value);
     /* list->elemtype == TEMPORAL */
     Temporal *temp = (Temporal *) list->elems[cur].value;
     if (temp->subtype == TINSTANT)
-      return pos_timestamp_period(((TInstant *) temp)->t, p);
+      return pos_period_timestamp(p, ((TInstant *) temp)->t);
     else /* temp->subtype == SEQUENCE */
-      return pos_period_period(&((TSequence *) temp)->period, p);
+      return pos_period_period(p, &((TSequence *) temp)->period);
   }
 }
 
@@ -534,13 +480,10 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   int cur = 0;
   int height = list->elems[cur].height;
   SkipListElem *e = &list->elems[cur];
-  TimestampTz t;
   for (int level = height - 1; level >= 0; level --)
   {
-    t = DatumGetTimestampTz(p.lower);
     while (e->next[level] != -1 &&
-      skiplist_elmpos(list, e->next[level], t) == AFTER)
-      // skiplist_elmpos_new(list, e->next[level], &p) == AFTER)
+      skiplist_elmpos(list, &p, e->next[level]) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -553,21 +496,13 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
   /* Count the number of elements that will be merged with the new values */
   int spliced_count = 0;
-  t = DatumGetTimestampTz(p.upper);
-  while (skiplist_elmpos(list, cur, t) == AFTER)
-  // while (skiplist_elmpos_new(list, cur, &p) == AFTER)
+  while (skiplist_elmpos(list, &p, cur) == DURING)
   {
     cur = e->next[0];
     e = &list->elems[cur];
     spliced_count++;
   }
   int upper = cur;
-  if (upper >= 0 && skiplist_elmpos(list, upper, t) == DURING)
-  // if (upper >= 0 && skiplist_elmpos_new(list, upper, &p) == DURING)
-  {
-    upper = e->next[0]; /* if found upper, one more to remove */
-    spliced_count++;
-  }
 
   /* Delete spliced-out elements (if any) but remember their values for later */
   void **spliced = NULL;

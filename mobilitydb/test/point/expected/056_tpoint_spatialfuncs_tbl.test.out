@@ -700,9 +700,7 @@ SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
  t
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE
-
-t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
  count 
 -------
      0
