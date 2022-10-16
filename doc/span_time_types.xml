@@ -860,7 +860,7 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 				<listitem id="time_overlaps">
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>Do the values overlap (have values in common)?</para>
-					<para><varname>{numrange,number} &amp;&amp; {numrange,number}: boolean</varname></para>
+					<para><varname>{numspan,number} &amp;&amp; {numspan,number}: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} &amp;&amp; {timestampset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' &amp;&amp; intspan '[2, 4)';
@@ -875,7 +875,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 				<listitem id="time_contains">
 					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>Does the first value contain the second one?</para>
-					<para><varname>numrange @&gt; {numrange,number}: boolean</varname></para>
+					<para><varname>numspan @&gt; {numspan,number}: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} @&gt; time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[1, 5]' @&gt; floatspan '[2, 5)';
@@ -888,7 +888,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 				<listitem id="time_containedby">
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>Is the first value contained by the second one?</para>
-					<para><varname> {numrange,number}&lt;@ numrange: boolean</varname></para>
+					<para><varname> {numspan,number}&lt;@ numspan: boolean</varname></para>
 					<para><varname>time &lt;@ {timestampset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
@@ -903,7 +903,7 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 				<listitem id="time_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
 					<para>Is the first value adjacent to the second one?</para>
-					<para><varname>{numrange,number} -|- {numrange,number}: boolean</varname></para>
+					<para><varname>{numspan,number} -|- {numspan,number}: boolean</varname></para>
 					<para><varname>time -|- time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';

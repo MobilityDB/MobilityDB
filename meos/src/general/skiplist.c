@@ -182,7 +182,7 @@ skiplist_alloc(SkipList *list)
 }
 
 /**
- * Free memory for the skiplist
+ * Free element of the skiplist
  */
 static void
 skiplist_free(SkipList *list, int cur)
@@ -398,7 +398,7 @@ pos_period_period(const Period *p1, const Period *p2)
  * Comparison function used for skiplists
  */
 static RelativeTimePos
-skiplist_elmpos(const SkipList *list, Period *p, int cur)
+skiplist_elempos(const SkipList *list, Period *p, int cur)
 {
   if (cur == 0)
     return AFTER; /* Head is -inf */
@@ -438,9 +438,9 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
    * O(n+count*log(n)) worst case (when period spans the whole list so
    * everything has to be deleted)
    */
+  assert(list->length > 0);
 
   /* Compute the span of the new values */
-  assert(list->length > 0);
   Period p;
   uint8 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
@@ -483,7 +483,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   for (int level = height - 1; level >= 0; level --)
   {
     while (e->next[level] != -1 &&
-      skiplist_elmpos(list, &p, e->next[level]) == AFTER)
+      skiplist_elempos(list, &p, e->next[level]) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -496,7 +496,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
   /* Count the number of elements that will be merged with the new values */
   int spliced_count = 0;
-  while (skiplist_elmpos(list, &p, cur) == DURING)
+  while (skiplist_elempos(list, &p, cur) == DURING)
   {
     cur = e->next[0];
     e = &list->elems[cur];
@@ -607,9 +607,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       newelm->next[level] = list->elems[update[level]].next[level];
       list->elems[update[level]].next[level] = new;
       if (level >= height && update[0] != list->tail)
-      {
         newelm->next[level] = list->tail;
-      }
     }
     if (rheight > height)
       height = rheight;
