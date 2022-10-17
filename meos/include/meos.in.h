@@ -1557,6 +1557,8 @@ extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 
 /* Temporal aggregate functions for temporal types */
 
+extern void skiplist_free(SkipList *list);
+
 extern Period *temporal_extent_transfn(Period *p, Temporal *temp);
 extern TBOX *tnumber_extent_transfn(TBOX *box, Temporal *temp);
 

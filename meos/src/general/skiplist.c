@@ -182,10 +182,12 @@ skiplist_alloc(SkipList *list)
 }
 
 /**
- * Free element of the skiplist
+ * @brief Delete element of the skiplist
+ * @note It is the responsibility of the calling function to delete the
+ * value pointed by the skiplist element
  */
 static void
-skiplist_free(SkipList *list, int cur)
+skiplist_delete(SkipList *list, int cur)
 {
   if (! list->freed)
   {
@@ -209,13 +211,45 @@ skiplist_free(SkipList *list, int cur)
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
   }
+  /* Mark the element as free */
   list->freed[list->freecount ++] = cur;
   list->length --;
   return;
 }
 
 /**
- *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes
+ * @ingroup libmeos_spantime_agg
+ * @brief Free the skiplist
+ */
+void
+skiplist_free(SkipList *list)
+{
+  assert(list);
+#if ! MEOS
+  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+  if (list->extra)
+    pfree(list->extra);
+  if (list->freed)
+    pfree(list->freed);
+  if (list->elems)
+  {
+    /* Free the element values of the skiplist if they are not NULL */
+    for (int i = 0; i < list->length; i ++)
+      if (list->elems[i].value)
+        pfree(list->elems[i].value);
+    /* Free the element list */
+    pfree(list->elems);
+  }
+  pfree(list);
+#if ! MEOS
+  unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+  return;
+}
+
+/**
+ * Output the skiplist in graphviz dot format for visualisation and debugging purposes
  */
 #ifdef DEBUG_BUILD
 void
@@ -521,7 +555,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
         prev->next[level] = list->elems[cur].next[level];
       }
       spliced[spliced_count++] = list->elems[cur].value;
-      skiplist_free(list, cur);
+      skiplist_delete(list, cur);
       cur = list->elems[cur].next[0];
     }
   }

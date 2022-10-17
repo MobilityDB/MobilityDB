@@ -49,6 +49,12 @@
 #include <stdio.h>
 #include "meos.h"
 
+/* Maximum length in characters of a trip in the input data */
+#define MAX_LENGTH_TRIP 160000
+/* Maximum length in characters of a geometry in the input data */
+#define MAX_LENGTH_GEOM 100000
+/* Maximum length in characters of a date in the input data */
+#define MAX_LENGTH_DATE 12
 /* Epsilon distance used for the simplification */
 #define DELTA_DISTANCE 1
 /* Maximum number of trips */
@@ -63,12 +69,10 @@ typedef struct
   Temporal *trip;
 } trip_record;
 
-/* Maximum length in characters of a trip in the input data */
-char trip_buffer[160000];
-/* Maximum length in characters of a geometry in the input data */
-char geo_buffer[100000];
-/* Maximum length in characters of a date in the input data */
-char date_buffer[12];
+/* Variables to read the input CSV file */
+char trip_buffer[MAX_LENGTH_TRIP];
+char geo_buffer[MAX_LENGTH_GEOM];
+char date_buffer[MAX_LENGTH_DATE];
 
 /* Main program */
 int main(void)

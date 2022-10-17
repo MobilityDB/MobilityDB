@@ -63,12 +63,17 @@ typedef struct
 
 trip_record trip_rec;
 
-/* Maximum length in characters of a csv header file */
-char text_buffer[124];
+/* Maximum length in characters of a header in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
-char date_buffer[12];
+#define MAX_LENGTH_DATE 12
 /* Maximum length in characters of a trip in the input data */
-char trip_buffer[160000];
+#define MAX_LENGTH_TRIP 160000
+
+/* Variables to read the input CSV file */
+char text_buffer[MAX_LENGTH_HEADER];
+char date_buffer[MAX_LENGTH_DATE];
+char trip_buffer[MAX_LENGTH_TRIP];
 
 /* Main program */
 int main(void)
@@ -136,9 +141,11 @@ int main(void)
   Temporal *tcount = temporal_tagg_finalfn(state);
   Temporal **tcount_seqs = (Temporal **) temporal_sequences(tcount, &seqcount);
   for (int i = 0; i < seqcount; i++)
-  {
     printf("\%s\n", tint_out(tcount_seqs[i]));
-  }
+
+  /* Free memory */
+  skiplist_free(state);
+  free(tcount_seqs);
 
   /* Close the input file */
   fclose(file);
