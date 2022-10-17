@@ -111,4 +111,14 @@ CREATE OPERATOR ~ (
   PROCEDURE = temporal_not, RIGHTARG = tbool
 );
 
+/*****************************************************************************
+ * Temporal when
+ *****************************************************************************/
+
+-- when is a reserved word in SQL
+CREATE FUNCTION whenTrue(tbool)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Tbool_when'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

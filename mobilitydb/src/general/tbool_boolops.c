@@ -33,7 +33,9 @@
 
 #include "general/tbool_boolops.h"
 
-/* MobilityDB */
+/* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
 #include "general/temporaltypes.h"
 
 /*****************************************************************************
@@ -169,6 +171,27 @@ Tnot_tbool(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnot_tbool(temp);
   PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Temporal when
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tbool_when);
+/**
+ * @ingroup mobilitydb_temporal_bool
+ * @brief Return the period set in which a temporal boolean takes value true
+ * @sqlfunc when()
+ */
+PGDLLEXPORT Datum
+Tbool_when(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PeriodSet *result = tbool_when_true(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

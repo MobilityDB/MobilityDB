@@ -1134,7 +1134,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Boolean Operators</title>
+			<title>Boolean Functions and Operators</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal and</para>
@@ -1146,6 +1146,10 @@
 
 				<listitem>
 					<para><link linkend="tbool_not"><varname>~</varname></link>: Temporal not</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Time when the temporal Boolean takes the value true</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

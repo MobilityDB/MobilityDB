@@ -47,3 +47,7 @@ SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp | t2.temp IS NOT N
 SELECT COUNT(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
 
 -------------------------------------------------------------------------------
+
+SELECT MAX(duration(whenTrue(temp #> 5))) FROM tbl_tfloat;
+
+-------------------------------------------------------------------------------

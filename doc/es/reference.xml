@@ -1138,7 +1138,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Operadores booleanos</title>
+			<title>Funciones y operadores booleanos</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Y temporal</para>
@@ -1150,6 +1150,10 @@
 
 				<listitem>
 					<para><link linkend="tbool_not"><varname>~</varname></link>: No temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Tiempo cuando el booleano temporal toma el valor verdadero</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

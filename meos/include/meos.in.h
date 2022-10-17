@@ -1041,6 +1041,7 @@ extern Temporal *tnot_tbool(const Temporal *temp);
 extern Temporal *tor_bool_tbool(bool b, const Temporal *temp);
 extern Temporal *tor_tbool_bool(const Temporal *temp, bool b);
 extern Temporal *tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2);
+extern PeriodSet *tbool_when_true(const Temporal *temp);
 
 /*****************************************************************************/
 
