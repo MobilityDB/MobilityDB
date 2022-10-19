@@ -87,9 +87,5 @@ typedef struct ValueTimeSplitState
 
 /*****************************************************************************/
 
-extern int64 get_interval_units(Interval *interval);
-
-/*****************************************************************************/
-
 #endif /* __PG_TEMPORAL_TILE_H__ */
 

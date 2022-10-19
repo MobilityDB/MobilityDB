@@ -35,8 +35,8 @@
 
 /*****************************************************************************/
 
-extern double float_bucket(double value, double size, double origin);
-extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+extern int64 interval_units(Interval *interval);
+extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
   mobdbType basetype);

@@ -913,6 +913,7 @@ extern TSequenceSet *ttextseqset_from_base_time(const text *txt, const PeriodSet
 extern Temporal *tfloat_to_tint(const Temporal *temp);
 extern Temporal *tint_to_tfloat(const Temporal *temp);
 extern Span *tnumber_to_span(const Temporal *temp);
+extern Period *temporal_to_period(const Temporal *temp);
 
 /*****************************************************************************/
 
@@ -1582,6 +1583,10 @@ extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 /*****************************************************************************/
 
 /* Tile functions for temporal types */
+
+extern int int_bucket(int value, int size, int origin);
+extern double float_bucket(double value, double size, double origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, Interval *duration, TimestampTz origin);
 
 extern Temporal **temporal_time_split(const Temporal *temp, TimestampTz start,
   TimestampTz end, int64 tunits, TimestampTz torigin, int count,

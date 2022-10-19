@@ -68,7 +68,6 @@ Number_bucket(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  ensure_positive_datum(size, basetype);
   Datum result = datum_bucket(value, size, origin, basetype);
   PG_RETURN_DATUM(result);
 }
@@ -77,15 +76,6 @@ Number_bucket(PG_FUNCTION_ARGS)
  * Timestamp bucket functions
  *****************************************************************************/
 
-/**
- * Return the interval in the same representation as Postgres timestamps.
- */
-int64
-get_interval_units(Interval *interval)
-{
-  return interval->time + (interval->day * USECS_PER_DAY);
-}
-
 PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.
@@ -93,14 +83,10 @@ PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 PGDLLEXPORT Datum
 Timestamptz_bucket(PG_FUNCTION_ARGS)
 {
-  TimestampTz timestamp = PG_GETARG_TIMESTAMPTZ(0);
-  if (TIMESTAMP_NOT_FINITE(timestamp))
-    PG_RETURN_TIMESTAMPTZ(timestamp);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  ensure_valid_duration(duration);
-  int64 tunits = get_interval_units(duration);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz result = timestamptz_bucket(timestamp, tunits, origin);
+  TimestampTz result = timestamptz_bucket(t, duration, origin);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
@@ -209,7 +195,7 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
       TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
       origin = TimestampTzGetDatum(torigin);
       ensure_valid_duration(duration);
-      size = Int64GetDatum(get_interval_units(duration));
+      size = Int64GetDatum(interval_units(duration));
     }
 
     /* Initialize the FuncCallContext */
@@ -286,9 +272,8 @@ Span_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
-  mobdbType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_positive_datum(size, type);
   Datum origin = PG_GETARG_DATUM(2);
+  mobdbType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum value_bucket = datum_bucket(value, size, origin, type);
   Span *result = span_bucket_get(value_bucket, size, type);
   PG_RETURN_POINTER(result);
@@ -303,10 +288,9 @@ Period_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  ensure_valid_duration(duration);
-  int64 tunits = get_interval_units(duration);
-  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz time_bucket = timestamptz_bucket(t, tunits, torigin);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  TimestampTz time_bucket = timestamptz_bucket(t, duration, origin);
+  int64 tunits = interval_units(duration);
   Period *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
     Int64GetDatum(tunits), T_TIMESTAMPTZ);
   PG_RETURN_POINTER(result);
@@ -350,9 +334,10 @@ tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits)
  * @pre Both xsize and tunits must be greater than 0.
  */
 static TboxGridState *
-tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
-  TimestampTz torigin)
+tbox_tile_state_make(TBOX *box, double xsize, Interval *duration,
+  double xorigin, TimestampTz torigin)
 {
+  int64 tunits = interval_units(duration);
   assert(xsize > 0 || tunits > 0);
   TboxGridState *state = palloc0(sizeof(TboxGridState));
 
@@ -371,9 +356,9 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   if (tunits)
   {
     state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket(
-      DatumGetTimestampTz(box->period.lower), tunits, torigin));
+      DatumGetTimestampTz(box->period.lower), duration, torigin));
     state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket(
-      DatumGetTimestampTz(box->period.upper), tunits, torigin));
+      DatumGetTimestampTz(box->period.upper), duration, torigin));
   }
   state->value = DatumGetFloat8(state->box.span.lower);
   state->t = DatumGetTimestampTz(state->box.period.lower);
@@ -437,14 +422,13 @@ Tbox_multidim_grid(PG_FUNCTION_ARGS)
     ensure_has_T_tbox(bounds);
     ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
     ensure_valid_duration(duration);
-    int64 tunits = get_interval_units(duration);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_make(bounds, xsize, tunits, xorigin, torigin);
+    funcctx->user_fctx = tbox_tile_state_make(bounds, xsize, duration, xorigin, torigin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -494,11 +478,11 @@ Tbox_multidim_tile(PG_FUNCTION_ARGS)
   ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
   Interval *duration = PG_GETARG_INTERVAL_P(3);
   ensure_valid_duration(duration);
-  int64 tunits = get_interval_units(duration);
+  int64 tunits = interval_units(duration);
   double xorigin = PG_GETARG_FLOAT8(4);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   double value_bucket = float_bucket(value, xsize, xorigin);
-  TimestampTz time_bucket = timestamptz_bucket(t, tunits, torigin);
+  TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
   TBOX *result = tbox_tile_get(value_bucket, time_bucket, xsize, tunits);
   PG_RETURN_POINTER(result);
 }
@@ -561,7 +545,7 @@ value_time_split_state_next(ValueTimeSplitState *state)
  * temporal grid.
  */
 Datum
-Tnumber_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
+Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
   bool timesplit)
 {
   assert(valuesplit || timesplit);
@@ -592,7 +576,7 @@ Tnumber_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
     {
       duration = PG_GETARG_INTERVAL_P(i++);
       ensure_valid_duration(duration);
-      tunits = get_interval_units(duration);
+      tunits = interval_units(duration);
     }
     if (valuesplit)
       origin = PG_GETARG_DATUM(i++);
@@ -633,9 +617,9 @@ Tnumber_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
       temporal_set_period(temp, &p);
       TimestampTz start_time = p.lower;
       TimestampTz end_time = p.upper;
-      start_time_bucket = timestamptz_bucket(start_time, tunits, torigin);
+      start_time_bucket = timestamptz_bucket(start_time, duration, torigin);
       /* We need to add tunits to obtain the end timestamp of the last bucket */
-      end_time_bucket = timestamptz_bucket(end_time, tunits, torigin) + tunits;
+      end_time_bucket = timestamptz_bucket(end_time, duration, torigin) + tunits;
       time_count =
         (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
     }
@@ -746,7 +730,7 @@ PG_FUNCTION_INFO_V1(Temporal_time_split);
 PGDLLEXPORT Datum
 Temporal_time_split(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_split_ext(fcinfo, false, true);
+  return Temporal_value_time_split_ext(fcinfo, false, true);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_value_split);
@@ -756,7 +740,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_split);
 PGDLLEXPORT Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_split_ext(fcinfo, true, false);
+  return Temporal_value_time_split_ext(fcinfo, true, false);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
@@ -766,7 +750,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 PGDLLEXPORT Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_split_ext(fcinfo, true, true);
+  return Temporal_value_time_split_ext(fcinfo, true, true);
 }
 
 /*****************************************************************************/

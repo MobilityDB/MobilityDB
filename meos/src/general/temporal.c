@@ -349,18 +349,24 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
 void
 ensure_positive_datum(Datum size, mobdbType basetype)
 {
-  ensure_tnumber_basetype(basetype);
+  ensure_span_basetype(basetype);
   if (basetype == T_INT4)
   {
     int isize = DatumGetInt32(size);
     if (isize <= 0)
       elog(ERROR, "The value must be positive: %d", isize);
   }
-  else /* basetype == T_FLOAT8 */
+  else if (basetype == T_FLOAT8)
   {
     double dsize = DatumGetFloat8(size);
     if (dsize <= 0.0)
       elog(ERROR, "The value must be positive: %f", dsize);
+  }
+  else /* basetype == T_TIMESTAMPTZ */
+  {
+    int64 isize = DatumGetInt64(size);
+    if (isize <= 0)
+      elog(ERROR, "The value must be positive: %ld", isize);
   }
   return;
 }

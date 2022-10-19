@@ -34,8 +34,6 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
-#include "general/temporal_tile.h"
-
 /* C */
 #include <assert.h>
 #include <float.h>
@@ -54,31 +52,32 @@
  *****************************************************************************/
 
 /**
- * Return the initial value of the bucket in which an integer value falls.
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the initial value of the bucket in which an integer value falls.
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
- * @param[in] offset Origin of the buckets
+ * @param[in] origin Origin of the buckets
  */
-static int
-int_bucket(int value, int size, int offset)
+int
+int_bucket(int value, int size, int origin)
 {
   assert(size > 0);
-  if (offset != 0)
+  if (origin != 0)
   {
     /*
-     * We need to ensure that the value is in span _after_ the offset is
-     * applied: when the offset is positive we need to make sure the resultant
+     * We need to ensure that the value is in span _after_ the origin is
+     * applied: when the origin is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
      */
-    offset = offset % size;
-    if ((offset > 0 && value < PG_INT32_MIN + offset) ||
-      (offset < 0 && value > PG_INT32_MAX + offset))
+    origin = origin % size;
+    if ((origin > 0 && value < PG_INT32_MIN + origin) ||
+      (origin < 0 && value > PG_INT32_MAX + origin))
     {
       elog(ERROR, "number out of span");
     }
-    value -= offset;
+    value -= origin;
   }
   int result = (value / size) * size;
   if (value < 0 && value % size)
@@ -96,41 +95,51 @@ int_bucket(int value, int size, int offset)
     else
       result -= size;
   }
-  result += offset;
+  result += origin;
   return result;
 }
 
 /**
- * Return the initial value of the bucket in which a float value falls.
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the initial value of the bucket in which a float value falls.
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] offset Origin of the buckets
  */
 double
-float_bucket(double value, double size, double offset)
+float_bucket(double value, double size, double origin)
 {
   assert(size > 0.0);
-  if (offset != 0)
+  if (origin != 0)
   {
     /*
-     * We need to ensure that the value is in span _after_ the offset is
-     * applied: when the offset is positive we need to make sure the resultant
+     * We need to ensure that the value is in span _after_ the origin is
+     * applied: when the origin is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
      */
-    offset = fmod(offset, size);
-    if ((offset > 0 && value < -1 * DBL_MAX + offset) ||
-      (offset < 0 && value > DBL_MAX + offset))
+    origin = fmod(origin, size);
+    if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
+      (origin < 0 && value > DBL_MAX + origin))
       elog(ERROR, "number out of span");
-    value -= offset;
+    value -= origin;
   }
   float result = floor(value / size) * size;
   /* Notice that by using the floor function above we remove the need to
    * add the additional if needed for the integer case to take into account
    * that integer division truncates toward 0 in C99 */
-  result += offset;
+  result += origin;
   return result;
+}
+
+/**
+ * Return the interval in the same representation as Postgres timestamps.
+ */
+int64
+interval_units(Interval *interval)
+{
+  return interval->time + (interval->day * USECS_PER_DAY);
 }
 
 /**
@@ -138,28 +147,29 @@ float_bucket(double value, double size, double offset)
  *
  * @param[in] timestamp Input timestamp
  * @param[in] size Size of the time buckets in PostgreSQL time units
- * @param[in] offset Origin of the buckets
+ * @param[in] origin Origin of the buckets
  */
 TimestampTz
-timestamptz_bucket(TimestampTz timestamp, int64 size, TimestampTz offset)
+timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
 {
-  assert(size > 0);
-  if (offset != 0)
+  if (TIMESTAMP_NOT_FINITE(t))
+    elog(ERROR, "timestamp out of span");
+  if (origin != 0)
   {
     /*
-     * We need to ensure that the timestamp is in span _after_ the offset is
-     * applied: when the offset is positive we need to make sure the resultant
+     * We need to ensure that the timestamp is in span _after_ the origin is
+     * applied: when the origin is positive we need to make sure the resultant
      * time is at least the minimum time value value (DT_NOBEGIN) and when
      * negative that it is less than the maximum time value (DT_NOEND)
      */
-    offset = offset % size;
-    if ((offset > 0 && timestamp < DT_NOBEGIN + offset) ||
-      (offset < 0 && timestamp > DT_NOEND + offset))
+    origin = origin % size;
+    if ((origin > 0 && t < DT_NOBEGIN + origin) ||
+      (origin < 0 && t > DT_NOEND + origin))
       elog(ERROR, "timestamp out of span");
-    timestamp -= offset;
+    t -= origin;
   }
-  TimestampTz result = (timestamp / size) * size;
-  if (timestamp < 0 && timestamp % size)
+  TimestampTz result = (t / size) * size;
+  if (t < 0 && t % size)
   {
     /*
      * We need to subtract another size if remainder < 0 this only happens
@@ -174,8 +184,24 @@ timestamptz_bucket(TimestampTz timestamp, int64 size, TimestampTz offset)
     else
       result -= size;
   }
-  result += offset;
+  result += origin;
   return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the initial timestamp of the bucket in which a timestamp falls.
+ *
+ * @param[in] timestamp Input timestamp
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] origin Origin of the buckets
+ */
+TimestampTz
+timestamptz_bucket(TimestampTz t, Interval *duration, TimestampTz origin)
+{
+  ensure_valid_duration(duration);
+  int64 size = interval_units(duration);
+  return timestamptz_bucket1(t, size, origin);
 }
 
 /**
@@ -183,22 +209,23 @@ timestamptz_bucket(TimestampTz timestamp, int64 size, TimestampTz offset)
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
- * @param[in] offset Origin of the buckets
+ * @param[in] origin Origin of the buckets
  * @param[in] basetype Data type of the arguments
  */
 Datum
-datum_bucket(Datum value, Datum size, Datum offset, mobdbType basetype)
+datum_bucket(Datum value, Datum size, Datum origin, mobdbType basetype)
 {
+  ensure_positive_datum(size, basetype);
   ensure_span_basetype(basetype);
   if (basetype == T_INT4)
     return Int32GetDatum(int_bucket(DatumGetInt32(value),
-      DatumGetInt32(size), DatumGetInt32(offset)));
+      DatumGetInt32(size), DatumGetInt32(origin)));
   else if (basetype == T_FLOAT8)
     return Float8GetDatum(float_bucket(DatumGetFloat8(value),
-      DatumGetFloat8(size), DatumGetFloat8(offset)));
+      DatumGetFloat8(size), DatumGetFloat8(origin)));
   else /* basetype == T_TIMESTAMPTZ */
-    return TimestampTzGetDatum(timestamptz_bucket(DatumGetTimestampTz(value),
-      DatumGetInt64(size), DatumGetTimestampTz(offset)));
+    return TimestampTzGetDatum(timestamptz_bucket1(DatumGetTimestampTz(value),
+      DatumGetInt64(size), DatumGetTimestampTz(origin)));
 }
 
 /*****************************************************************************
@@ -225,7 +252,7 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
   TInstant **result = palloc(sizeof(TInstant *));
   TimestampTz *times = palloc(sizeof(TimestampTz));
   result[0] = tinstant_copy(inst);
-  times[0] = timestamptz_bucket(inst->t, tunits, torigin);
+  times[0] = timestamptz_bucket1(inst->t, tunits, torigin);
   *buckets = times;
   *newcount = 1;
   return result;
@@ -244,7 +271,7 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tdiscseq_time_split(const TSequence *seq, TimestampTz start,
+tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   TSequence **result = palloc(sizeof(TSequence *) * count);
@@ -539,7 +566,7 @@ temporal_time_split(const Temporal *temp, TimestampTz start, TimestampTz end,
       tunits, torigin, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
     fragments = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal **) tdiscseq_time_split((const TSequence *) temp,
+      (Temporal **) tnumberseq_disc_time_split((const TSequence *) temp,
         start, tunits, count, buckets, newcount) :
       (Temporal **) tsequence_time_split((const TSequence *) temp,
         start, end, tunits, count, buckets, newcount);
@@ -610,7 +637,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
  * @param[out] newcount Number of values in the output arrays
  */
 static TSequence **
-tdiscseq_value_split(const TSequence *seq, Datum start_bucket,
+tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount)
 {
   mobdbType basetype = temptype_basetype(seq->temptype);
@@ -1039,7 +1066,7 @@ tnumber_value_split(const Temporal *temp, Datum start_bucket, Datum size,
       start_bucket, size, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
     fragments = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal **) tdiscseq_value_split((const TSequence *) temp,
+      (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
         start_bucket, size, count, buckets, newcount) :
       (Temporal **) tnumberseq_value_split((const TSequence *) temp,
         start_bucket, size, count, buckets, newcount);

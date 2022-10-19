@@ -420,7 +420,7 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
   {
     tmin = t;
     tmax = tmin + tunits;
-    span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax), true, 
+    span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax), true,
       (tmin == tmax), T_TIMESTAMPTZ, &p);
   }
   return stbox_set(hast ? &p : NULL, true, hasz, false, srid, xmin, xmax,
@@ -461,9 +461,9 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
   state->box.zmax = float_bucket(box->zmax, size, sorigin.z);
   if (tunits)
   {
-    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket(
+    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
       DatumGetTimestampTz(box->period.lower), tunits, torigin));
-    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket(
+    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket1(
       DatumGetTimestampTz(box->period.upper), tunits, torigin));
   }
   state->box.srid = box->srid;
@@ -628,7 +628,7 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
       ensure_has_T_stbox(bounds);
       Interval *duration = PG_GETARG_INTERVAL_P(2);
       ensure_valid_duration(duration);
-      tunits = get_interval_units(duration);
+      tunits = interval_units(duration);
       sorigin = PG_GETARG_GSERIALIZED_P(3);
       torigin = PG_GETARG_TIMESTAMPTZ(4);
     }
@@ -729,7 +729,7 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
     size = PG_GETARG_FLOAT8(2);
     Interval *duration = PG_GETARG_INTERVAL_P(3);
     ensure_valid_duration(duration);
-    tunits = get_interval_units(duration);
+    tunits = interval_units(duration);
     sorigin = PG_GETARG_GSERIALIZED_P(4);
     torigin = PG_GETARG_TIMESTAMPTZ(5);
     hast = true;
@@ -767,7 +767,7 @@ Stbox_multidim_tile(PG_FUNCTION_ARGS)
   double zmin = float_bucket(pt.z, size, ptorig.z);
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
-    tmin = timestamptz_bucket(t, tunits, torigin);
+    tmin = timestamptz_bucket1(t, tunits, torigin);
   STBOX *result = palloc0(sizeof(STBOX));
   stbox_tile_set(xmin, ymin, zmin, tmin, size, tunits, hasz, hast, srid,
     result);
@@ -824,7 +824,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   if (hasz)
     z = float_bucket(p.z, state->size, state->box.zmin);
   if (hast)
-    t = timestamptz_bucket(inst->t, state->tunits, state->box.ymin);
+    t = timestamptz_bucket1(inst->t, state->tunits, state->box.ymin);
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(coords, x, y, z, t, state);
   return;
@@ -985,7 +985,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     {
       duration = PG_GETARG_INTERVAL_P(i++);
       ensure_valid_duration(duration);
-      tunits = get_interval_units(duration);
+      tunits = interval_units(duration);
     }
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
     if (timesplit)
