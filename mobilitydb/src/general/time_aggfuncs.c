@@ -176,18 +176,25 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of timestamp sets
  */
-PGDLLEXPORT Datum
-Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
+Datum
+Timestampset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
+  {
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
+  }
   store_fcinfo(fcinfo);
-  TInstant **instants = timestampset_transform_tcount(ts);
+  TInstant **instants = timestampset_transform_tcount(ts, interval, origin);
   if (state)
   {
     ensure_same_timetype_skiplist(state, TINSTANT);
@@ -204,18 +211,45 @@ Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Period_tcount_transfn);
+PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamp sets
+ */
+PGDLLEXPORT Datum
+Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestampset_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamp sets
+ */
+PGDLLEXPORT Datum
+Timestampset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestampset_tcount_transfn_ext(fcinfo, true);
+}
+
 /**
  * Transition function for temporal count aggregate of periods
  */
-PGDLLEXPORT Datum
-Period_tcount_transfn(PG_FUNCTION_ARGS)
+Datum
+Period_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Period *p = PG_GETARG_SPAN_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
+  {
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
+  }
   store_fcinfo(fcinfo);
-  TSequence *seq = period_transform_tcount(p);
+  TSequence *seq = period_transform_tcount(p, interval, origin);
   if (state)
   {
     ensure_same_timetype_skiplist(state, TSEQUENCE);
@@ -231,18 +265,45 @@ Period_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
+PG_FUNCTION_INFO_V1(Period_tcount_transfn);
+/**
+ * Transition function for temporal count aggregate of periods
+ */
+PGDLLEXPORT Datum
+Period_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  return Period_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Period_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of periods
+ */
+PGDLLEXPORT Datum
+Period_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Period_tcount_transfn_ext(fcinfo, true);
+}
+
 /**
  * Transition function for temporal count aggregate of period sets
  */
-PGDLLEXPORT Datum
-Periodset_tcount_transfn(PG_FUNCTION_ARGS)
+Datum
+Periodset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
+  {
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
+  }
   store_fcinfo(fcinfo);
-  TSequence **sequences = periodset_transform_tcount(ps);
+  TSequence **sequences = periodset_transform_tcount(ps, interval, origin);
   if (state)
   {
     ensure_same_timetype_skiplist(state, TSEQUENCE);
@@ -257,6 +318,26 @@ Periodset_tcount_transfn(PG_FUNCTION_ARGS)
   pfree_array((void **) sequences, ps->count);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
+/**
+ * Transition function for temporal count aggregate of period sets
+ */
+PGDLLEXPORT Datum
+Periodset_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  return Periodset_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of period sets
+ */
+PGDLLEXPORT Datum
+Periodset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Periodset_tcount_transfn_ext(fcinfo, true);
 }
 
 /*****************************************************************************

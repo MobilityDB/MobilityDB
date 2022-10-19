@@ -84,6 +84,23 @@ CREATE FUNCTION tcount_transfn(internal, periodset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Periodset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION tcount_bucket_transfn(internal, timestampset, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Timestampset_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, period, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Period_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, periodset, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Periodset_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION tcount_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
@@ -102,6 +119,15 @@ CREATE AGGREGATE tcount(timestampset) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
+CREATE AGGREGATE tcount(timestampset, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
 
 CREATE AGGREGATE tcount(period) (
   SFUNC = tcount_transfn,
@@ -112,9 +138,27 @@ CREATE AGGREGATE tcount(period) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
+CREATE AGGREGATE tcount(period, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
 
 CREATE AGGREGATE tcount(periodset) (
   SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(periodset, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,

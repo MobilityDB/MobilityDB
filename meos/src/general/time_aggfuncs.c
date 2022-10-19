@@ -44,6 +44,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/skiplist.h"
+#include "general/temporal_tile.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************
@@ -266,13 +267,16 @@ time_agg_combinefn(SkipList *state1, SkipList *state2)
  * performing temporal count aggregation
  */
 TInstant **
-timestampset_transform_tcount(const TimestampSet *ts)
+timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
+  TimestampTz origin)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
   Datum datum_one = Int32GetDatum(1);
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
+    if (interval)
+      t = timestamptz_bucket(t, interval, origin);
     result[i] = tinstant_make(datum_one, T_TINT, t);
   }
   return result;
@@ -283,12 +287,16 @@ timestampset_transform_tcount(const TimestampSet *ts)
  * performing temporal count aggregation
  */
 TSequence *
-period_transform_tcount(const Period *p)
+period_transform_tcount(const Period *p, const Interval *interval,
+  TimestampTz origin)
 {
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, T_TINT, p->lower);
+  TimestampTz lower = p->lower;
+  if (interval)
+    lower = timestamptz_bucket(lower, interval, origin);
+  instants[0] = tinstant_make(datum_one, T_TINT, lower);
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1, 1,
@@ -296,7 +304,14 @@ period_transform_tcount(const Period *p)
   }
   else
   {
-    instants[1] = tinstant_make(datum_one, T_TINT, p->upper);
+    TimestampTz upper = p->upper;
+    /* The upper timestamp must be gridded to the next bucket */
+    if (interval)
+    {
+      int64 size = interval_units(interval);
+      upper = timestamptz_bucket(upper, interval, origin) + size;
+    }
+    instants[1] = tinstant_make(datum_one, T_TINT, upper);
     result = tsequence_make((const TInstant **) instants, 2, 2,
       p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
     pfree(instants[1]);
@@ -310,13 +325,14 @@ period_transform_tcount(const Period *p)
  * performing temporal count aggregation
  */
 TSequence **
-periodset_transform_tcount(const PeriodSet *ps)
+periodset_transform_tcount(const PeriodSet *ps, const Interval *interval,
+  TimestampTz origin)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    result[i] = period_transform_tcount(p);
+    result[i] = period_transform_tcount(p, interval, origin);
   }
   return result;
 }

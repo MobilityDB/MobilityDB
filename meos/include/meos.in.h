@@ -1587,7 +1587,7 @@ extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 
 extern int int_bucket(int value, int size, int origin);
 extern double float_bucket(double value, double size, double origin);
-extern TimestampTz timestamptz_bucket(TimestampTz timestamp, Interval *duration, TimestampTz origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, const Interval *duration, TimestampTz origin);
 
 extern Temporal **temporal_time_split(const Temporal *temp, TimestampTz start,
   TimestampTz end, int64 tunits, TimestampTz torigin, int count,

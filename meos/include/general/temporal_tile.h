@@ -35,7 +35,7 @@
 
 /*****************************************************************************/
 
-extern int64 interval_units(Interval *interval);
+extern int64 interval_units(const Interval *interval);
 extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,

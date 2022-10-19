@@ -137,7 +137,7 @@ float_bucket(double value, double size, double origin)
  * Return the interval in the same representation as Postgres timestamps.
  */
 int64
-interval_units(Interval *interval)
+interval_units(const Interval *interval)
 {
   return interval->time + (interval->day * USECS_PER_DAY);
 }
@@ -197,7 +197,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
  * @param[in] origin Origin of the buckets
  */
 TimestampTz
-timestamptz_bucket(TimestampTz t, Interval *duration, TimestampTz origin)
+timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
 {
   ensure_valid_duration(duration);
   int64 size = interval_units(duration);

@@ -140,7 +140,7 @@ int main(void)
 
   printf("Temporal extent\n");
   printf("---------------\n\n");
-  printf("\%s\n", stbox_out(extent, 6));
+  printf("\%s\n\n", stbox_out(extent, 6));
 
   printf("Temporal count\n");
   printf("--------------\n\n");
