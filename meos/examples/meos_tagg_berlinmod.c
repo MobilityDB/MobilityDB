@@ -44,7 +44,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_tcount_berlinmod meos_tcount_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_tagg_berlinmod meos_tagg_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -97,6 +97,7 @@ int main(void)
 
   /* Variable keeping the current aggregate state */
   SkipList *state = NULL;
+  STBOX *extent = NULL;
 
   /* Continue reading the file */
   do
@@ -130,11 +131,17 @@ int main(void)
     }
 
     /* Add the current value to the running aggregate state */
+    extent = tpoint_extent_transfn(extent, trip);
     state = temporal_tcount_transfn(state, trip);
 
   } while (!feof(file));
 
   printf("\n%d trip records read\n\n", i);
+
+  printf("Temporal extent\n");
+  printf("---------------\n\n");
+  printf("\%s\n", stbox_out(extent, 6));
+
   printf("Temporal count\n");
   printf("--------------\n\n");
   int seqcount;
