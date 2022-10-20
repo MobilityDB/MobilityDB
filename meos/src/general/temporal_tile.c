@@ -539,7 +539,6 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_tiling
  * @brief Split a temporal value into fragments with respect to period buckets
  *
  * @param[in] temp Temporal value
@@ -552,7 +551,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @sqlfunc timeSplit()
  */
 Temporal **
-temporal_time_split(const Temporal *temp, TimestampTz start, TimestampTz end,
+temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
   int64 tunits, TimestampTz torigin, int count, TimestampTz **buckets,
   int *newcount)
 {
@@ -574,6 +573,173 @@ temporal_time_split(const Temporal *temp, TimestampTz start, TimestampTz end,
     fragments = (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
       start, end, tunits, count, buckets, newcount);
   return fragments;
+}
+
+/**
+ * @brief Split a temporal value with respect to a base value and possibly a
+ * temporal grid.
+ */
+Temporal **
+temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
+  Datum vorigin, TimestampTz torigin, bool valuesplit, bool timesplit,
+  Datum **value_buckets, TimestampTz **time_buckets, int *newcount)
+{
+  mobdbType basetype = temptype_basetype(temp->temptype);
+  int64 tunits = 0;
+  if (valuesplit)
+    ensure_positive_datum(size, basetype);
+  if (timesplit)
+  {
+    ensure_valid_duration(duration);
+    tunits = interval_units(duration);
+  }
+
+  /* Compute the value bounds, if any */
+  Datum start_bucket = Float8GetDatum(0);
+  Datum end_bucket = Float8GetDatum(0);
+  int value_count = 1;
+  if (valuesplit)
+  {
+    Span *span = tnumber_to_span((const Temporal *) temp);
+    Datum start_value = span->lower;
+    /* We need to add size to obtain the end value of the last bucket */
+    Datum end_value = datum_add(span->upper, size, basetype, basetype);
+    start_bucket = datum_bucket(start_value, size, vorigin, basetype);
+    end_bucket = datum_bucket(end_value, size, vorigin, basetype);
+    value_count = (basetype == T_INT4) ?
+      (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) /
+        DatumGetInt32(size) :
+      floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
+        DatumGetFloat8(size));
+  }
+
+  /* Compute the time bounds, if any */
+  TimestampTz start_time_bucket = 0, end_time_bucket = 0;
+  int time_count = 1;
+  if (timesplit)
+  {
+    Period p;
+    temporal_set_period(temp, &p);
+    TimestampTz start_time = p.lower;
+    TimestampTz end_time = p.upper;
+    start_time_bucket = timestamptz_bucket(start_time, duration, torigin);
+    /* We need to add tunits to obtain the end timestamp of the last bucket */
+    end_time_bucket = timestamptz_bucket(end_time, duration, torigin) + tunits;
+    time_count =
+      (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
+  }
+
+  /* Adjust the number of tiles */
+  int tilecount = value_count * time_count;
+
+  /* Split the temporal value */
+  Datum *v_buckets = NULL;
+  TimestampTz *t_buckets = NULL;
+  Temporal **fragments;
+  int count = 0;
+  if (valuesplit && ! timesplit)
+  {
+    fragments = tnumber_value_split(temp, start_bucket, size, tilecount,
+      &v_buckets, &count);
+  }
+  else if (! valuesplit && timesplit)
+  {
+    fragments = temporal_time_split1(temp, start_time_bucket, end_time_bucket,
+      tunits, torigin, tilecount, &t_buckets, &count);
+  }
+  else /* valuesplit && timesplit */
+  {
+    v_buckets = palloc(sizeof(Datum) * tilecount);
+    t_buckets = palloc(sizeof(TimestampTz) * tilecount);
+    fragments = palloc(sizeof(Temporal *) * tilecount);
+    int k = 0;
+    Datum lower_value = start_bucket;
+    while (datum_lt(lower_value, end_bucket, basetype))
+    {
+      Datum upper_value = datum_add(lower_value, size, basetype, basetype);
+      Span s;
+      span_set(lower_value, upper_value, true, false, basetype, &s);
+      Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
+      if (atspan != NULL)
+      {
+        int num_time_splits;
+        TimestampTz *times;
+        Temporal **time_splits = temporal_time_split1(atspan,
+          start_time_bucket, end_time_bucket, tunits, torigin, time_count,
+          &times, &num_time_splits);
+        for (int i = 0; i < num_time_splits; i++)
+        {
+          v_buckets[i + k] = lower_value;
+          t_buckets[i + k] = times[i];
+          fragments[i + k] = time_splits[i];
+        }
+        k += num_time_splits;
+        pfree(time_splits);
+        pfree(times);
+        pfree(atspan);
+      }
+      lower_value = upper_value;
+    }
+    count = k;
+  }
+  *newcount = count;
+  if (value_buckets)
+    *value_buckets = v_buckets;
+  if (time_buckets)
+    *time_buckets = t_buckets;
+  return fragments;
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Split a temporal integer into fragments with respect to value buckets
+ *
+ * @param[in] temp Temporal value
+ * @param[in] size Size of the value buckets
+ * @param[in] origin Time origin of the buckets
+ * @param[out] newcount Number of values in the output array
+ * @sqlfunc valueSplit()
+ */
+Temporal **
+tint_value_split(Temporal *temp, int size, int origin, int *newcount)
+{
+  return temporal_value_time_split1(temp, Int32GetDatum(size), NULL,
+    Int32GetDatum(origin), 0, true, false, NULL, NULL, newcount);
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Split a temporal float into fragments with respect to value buckets
+ *
+ * @param[in] temp Temporal value
+ * @param[in] size Size of the value buckets
+ * @param[in] origin Time origin of the buckets
+ * @param[out] newcount Number of values in the output array
+ * @sqlfunc valueSplit()
+ */
+Temporal **
+tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
+{
+  return temporal_value_time_split1(temp, Float8GetDatum(size), NULL,
+    Float8GetDatum(origin), 0, true, false, NULL, NULL, newcount);
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Split a temporal value into fragments with respect to period buckets
+ *
+ * @param[in] temp Temporal value
+ * @param[in] interval Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ * @param[out] newcount Number of values in the output array
+ * @sqlfunc timeSplit()
+ */
+Temporal **
+temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
+  int *newcount)
+{
+  return temporal_value_time_split1(temp, Float8GetDatum(0), duration,
+    Float8GetDatum(0), torigin, false, true, NULL, NULL, newcount);
 }
 
 /*****************************************************************************/

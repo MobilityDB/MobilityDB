@@ -41,6 +41,15 @@ extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
   mobdbType basetype);
 
+extern Temporal **temporal_time_split1(const Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
+
+Temporal **
+temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
+  Datum vorigin, TimestampTz torigin, bool valuesplit, bool timesplit,
+  Datum **value_buckets, TimestampTz **time_buckets, int *newcount);
+
 /*****************************************************************************/
 
 #endif /* __TEMPORAL_TILE_H__ */

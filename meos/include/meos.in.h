@@ -1589,13 +1589,9 @@ extern int int_bucket(int value, int size, int origin);
 extern double float_bucket(double value, double size, double origin);
 extern TimestampTz timestamptz_bucket(TimestampTz timestamp, const Interval *duration, TimestampTz origin);
 
-extern Temporal **temporal_time_split(const Temporal *temp, TimestampTz start,
-  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
-  TimestampTz **buckets, int *newcount);
-extern Temporal **tint_value_split(const Temporal *temp, int start_bucket,
-  int size, int count, int **buckets, int *newcount);
-extern Temporal **tfloat_value_split(const Temporal *temp, double start_bucket,
-  double size, int count, float **buckets, int *newcount);
+extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int *newcount);
+extern Temporal **tfloat_value_split(Temporal *temp, double size, double origin, int *newcount);
+extern Temporal **temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin, int *newcount);
 
 /*****************************************************************************/
 

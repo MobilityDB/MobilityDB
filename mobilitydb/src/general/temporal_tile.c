@@ -561,28 +561,18 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
   {
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    mobdbType basetype = temptype_basetype(temp->temptype);
-    Datum size, origin;
+    Datum size, vorigin;
     Interval *duration = NULL;
     TimestampTz torigin = 0;
-    int64 tunits = 0;
     int i = 1;
     if (valuesplit)
-    {
       size = PG_GETARG_DATUM(i++);
-      ensure_positive_datum(size, basetype);
-    }
     if (timesplit)
-    {
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_valid_duration(duration);
-      tunits = interval_units(duration);
-    }
     if (valuesplit)
-      origin = PG_GETARG_DATUM(i++);
+      vorigin = PG_GETARG_DATUM(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
-
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
@@ -590,98 +580,21 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-    /* Compute the value bounds, if any */
-    Datum start_bucket = Float8GetDatum(0), end_bucket = Float8GetDatum(0);
-    int value_count = 1;
-    if (valuesplit)
-    {
-      Span *span = tnumber_to_span((const Temporal *) temp);
-      Datum start_value = span->lower;
-      /* We need to add size to obtain the end value of the last bucket */
-      Datum end_value = datum_add(span->upper, size, basetype, basetype);
-      start_bucket = datum_bucket(start_value, size, origin, basetype);
-      end_bucket = datum_bucket(end_value, size, origin, basetype);
-      value_count = (basetype == T_INT4) ?
-        (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) /
-          DatumGetInt32(size) :
-        floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
-          DatumGetFloat8(size));
-    }
-
-    /* Compute the time bounds, if any */
-    TimestampTz start_time_bucket = 0, end_time_bucket = 0;
-    int time_count = 1;
-    if (timesplit)
-    {
-      Period p;
-      temporal_set_period(temp, &p);
-      TimestampTz start_time = p.lower;
-      TimestampTz end_time = p.upper;
-      start_time_bucket = timestamptz_bucket(start_time, duration, torigin);
-      /* We need to add tunits to obtain the end timestamp of the last bucket */
-      end_time_bucket = timestamptz_bucket(end_time, duration, torigin) + tunits;
-      time_count =
-        (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
-    }
-
-    /* Adjust the number of tiles */
-    int count = value_count * time_count;
-
-    /* Split the temporal value */
     Datum *value_buckets = NULL;
     TimestampTz *time_buckets = NULL;
-    Temporal **fragments;
-    int newcount = 0;
-    if (valuesplit && ! timesplit)
-    {
-      fragments = tnumber_value_split(temp, start_bucket, size, count,
-        &value_buckets, &newcount);
-    }
-    else if (! valuesplit && timesplit)
-    {
-      fragments = temporal_time_split(temp, start_time_bucket, end_time_bucket,
-        tunits, torigin, count, &time_buckets, &newcount);
-    }
-    else /* valuesplit && timesplit */
-    {
-      value_buckets = palloc(sizeof(Datum) * count);
-      time_buckets = palloc(sizeof(TimestampTz) * count);
-      fragments = palloc(sizeof(Temporal *) * count);
-      int k = 0;
-      Datum lower_value = start_bucket;
-      while (datum_lt(lower_value, end_bucket, basetype))
-      {
-        Datum upper_value = datum_add(lower_value, size, basetype, basetype);
-        Span s;
-        span_set(lower_value, upper_value, true, false, basetype, &s);
-        Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
-        if (atspan != NULL)
-        {
-          int num_time_splits;
-          TimestampTz *times;
-          Temporal **time_splits = temporal_time_split(atspan,
-            start_time_bucket, end_time_bucket, tunits, torigin, time_count,
-            &times, &num_time_splits);
-          for (int i = 0; i < num_time_splits; i++)
-          {
-            value_buckets[i + k] = lower_value;
-            time_buckets[i + k] = times[i];
-            fragments[i + k] = time_splits[i];
-          }
-          k += num_time_splits;
-          pfree(time_splits);
-          pfree(times);
-          pfree(atspan);
-        }
-        lower_value = upper_value;
-      }
-      newcount = k;
-    }
+    int count;
+    Temporal **fragments = temporal_value_time_split1(temp, size, duration,
+      vorigin, torigin, valuesplit, timesplit, &value_buckets, &time_buckets,
+      &count);
 
-    assert(newcount > 0);
+    assert(count > 0);
+    int64 tunits = 0;
+    if (timesplit)
+      tunits = interval_units(duration);
+
     /* Create function state */
     funcctx->user_fctx = value_time_split_state_make(size, tunits,
-      value_buckets, time_buckets, fragments, newcount);
+      value_buckets, time_buckets, fragments, count);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
