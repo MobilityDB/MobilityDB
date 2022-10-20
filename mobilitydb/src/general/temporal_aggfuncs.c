@@ -138,6 +138,29 @@ Temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
  * Temporal count
  *****************************************************************************/
 
+/**
+ * Generic transition function for temporal aggregation
+ */
+PGDLLEXPORT Datum
+Temporal_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(state);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
+  {
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
+  }
+  store_fcinfo(fcinfo);
+  state = temporal_tcount_transfn(state, temp, interval, origin);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_POINTER(state);
+}
+
 PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
 /**
  * Generic transition function for temporal aggregation
@@ -145,13 +168,17 @@ PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
 PGDLLEXPORT Datum
 Temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  store_fcinfo(fcinfo);
-  state = temporal_tcount_transfn(state, temp);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  return Temporal_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamp sets
+ */
+PGDLLEXPORT Datum
+Temporal_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tcount_transfn_ext(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_tcount_combinefn);

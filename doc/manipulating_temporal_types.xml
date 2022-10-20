@@ -2357,7 +2357,7 @@ SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="multidimensional_tiling">
 		<title>Multidimensional Tiling</title>
 		<para>Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented according to a multidimensional grid defined over the underlying domain.</para>
 
@@ -2733,6 +2733,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Temporal count</para>
 				<para><varname>tcount(ttype): {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(ttype, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tcount(NoEmps) FROM Department;
 -- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}

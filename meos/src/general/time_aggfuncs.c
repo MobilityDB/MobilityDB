@@ -263,6 +263,21 @@ time_agg_combinefn(SkipList *state1, SkipList *state2)
  *****************************************************************************/
 
 /**
+ * Transform a timestamp value into a temporal integer value for
+ * performing temporal count aggregation
+ */
+TInstant **
+timestamp_transform_tcount(TimestampTz t, const Interval *interval,
+  TimestampTz origin)
+{
+  TInstant **result = palloc(sizeof(TInstant *));
+  if (interval)
+    t = timestamptz_bucket(t, interval, origin);
+  result[0] = tinstant_make(Int32GetDatum(1), T_TINT, t);
+  return result;
+}
+
+/**
  * Transform a timestamp set value into a temporal integer value for
  * performing temporal count aggregation
  */
@@ -293,10 +308,10 @@ period_transform_tcount(const Period *p, const Interval *interval,
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
-  TimestampTz lower = p->lower;
+  TimestampTz t = p->lower;
   if (interval)
-    lower = timestamptz_bucket(lower, interval, origin);
-  instants[0] = tinstant_make(datum_one, T_TINT, lower);
+    t = timestamptz_bucket(t, interval, origin);
+  instants[0] = tinstant_make(datum_one, T_TINT, t);
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1, 1,
@@ -304,14 +319,14 @@ period_transform_tcount(const Period *p, const Interval *interval,
   }
   else
   {
-    TimestampTz upper = p->upper;
+    t = p->upper;
     /* The upper timestamp must be gridded to the next bucket */
     if (interval)
     {
       int64 size = interval_units(interval);
-      upper = timestamptz_bucket(upper, interval, origin) + size;
+      t = timestamptz_bucket(t, interval, origin) + size;
     }
-    instants[1] = tinstant_make(datum_one, T_TINT, upper);
+    instants[1] = tinstant_make(datum_one, T_TINT, t);
     result = tsequence_make((const TInstant **) instants, 2, 2,
       p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
     pfree(instants[1]);

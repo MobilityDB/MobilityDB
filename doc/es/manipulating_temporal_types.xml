@@ -2353,7 +2353,7 @@ SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="multidimensional_tiling">
 		<title>Mosaicos multidimensionales</title>
 		<para>Los mosaicos multidimensionales es el mecanismo que se utiliza para dividir el dominio de valores temporales en intervalos o mosaicos de un número variable de dimensiones. En el caso de una sola dimensión, el dominio se puede dividir por valor o por tiempo utilizando intervalos del mismo ancho o la misma duración, respectivamente. Para los números temporales, el dominio se puede dividir en mosaicos bidimensionales del mismo ancho para la dimensión de valor y la misma duración para la dimensión de tiempo. Para los puntos temporales, el dominio se puede dividir en el espacio en mosaicos bidimensionales o tridimensionales, dependiendo del número de dimensiones de las coordenadas espaciales. Finalmente, para los puntos temporales, el dominio se puede dividir por espacio y por tiempo usando mosaicos tridimensionales o tetradimensionales. Además, los valores temporales también se pueden fragmentar de acuerdo con una malla multidimensional definida sobre el dominio subyacente.</para>
 
@@ -2729,6 +2729,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
 				<para><varname>tcount(ttype): {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(ttype, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tcount(NoEmps) FROM Department;
 -- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}

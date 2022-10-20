@@ -177,6 +177,60 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
+ * Transition function for temporal count aggregate of timestamps
+ */
+Datum
+Timestamp_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(state);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
+  {
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
+  }
+  store_fcinfo(fcinfo);
+  TInstant **instants = timestamp_transform_tcount(t, interval, origin);
+  if (state)
+  {
+    ensure_same_timetype_skiplist(state, TINSTANT);
+    skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+  else
+  {
+    state = skiplist_make((void **) instants, 1, TEMPORAL);
+  }
+
+  pfree_array((void **) instants, 1);
+  PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamps
+ */
+PGDLLEXPORT Datum
+Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestamp_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Timestamp_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamps
+ */
+PGDLLEXPORT Datum
+Timestamp_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestamp_tcount_transfn_ext(fcinfo, true);
+}
+
+/**
  * Transition function for temporal count aggregate of timestamp sets
  */
 Datum

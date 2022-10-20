@@ -1048,7 +1048,7 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 
 			<para>The temporal aggregate functions are the following ones:</para>
 			<itemizedlist>
-				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
+				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="multidimensional_tiling" />).</para></listitem>
 				<listitem><para>Function <varname>extent</varname> returns a bounding span or period that encloses a set of span or time values.</para></listitem>
 			</itemizedlist>
 
@@ -1059,7 +1059,8 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<listitem id="time_tcount">
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Temporal count</para>
-					<para><varname>tcount({timestampset,period,periodset}): {tint_seq,tint_seqset}</varname></para>
+					<para><varname>tcount(time): {tint_seq,tint_seqset}</varname></para>
+					<para><varname>tcount(time, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
@@ -1070,13 +1071,19 @@ SELECT tcount(ts) FROM times;
 -- {2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}
 
 WITH periods(ps) AS (
-  SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
-  SELECT periodset '{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06]}' UNION
-  SELECT periodset '{[2000-01-02, 2000-01-06]}'
+  SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
+  SELECT periodset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
+  SELECT periodset '{[2000-01-02, 2000-01-06)}'
 )
 SELECT tcount(ps) FROM periods;
-/* {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
-   (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]} */
+-- {[2@2000-01-01, 3@2000-01-03, 1@2000-01-04, 2@2000-01-05, 2@2000-01-06)}
+WITH periods(ps) AS (
+  SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
+  SELECT periodset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
+  SELECT periodset '{[2000-01-02, 2000-01-06)}'
+)
+SELECT tcount(ps, '2 days', '2000-01-01') FROM periods;
+-- {[3@2000-01-01, 2@2000-01-05, 2@2000-01-07)}
 </programlisting>
 				</listitem>
 

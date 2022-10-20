@@ -36,9 +36,23 @@ CREATE FUNCTION tcount_transfn(internal, tnpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, tnpoint, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(tnpoint) (
   SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(tnpoint, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,

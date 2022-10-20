@@ -50,6 +50,7 @@ extern SkipList *timestampset_agg_transfn(SkipList *state,
   const TimestampSet *ts);
 extern SkipList *period_agg_transfn(SkipList *state, const Period *p);
 extern SkipList *periodset_agg_transfn(SkipList *state, const PeriodSet *ps);
+extern TInstant **timestamp_transform_tcount(TimestampTz t, const Interval *interval, TimestampTz origin);
 extern TInstant **timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval, TimestampTz origin);
 extern TSequence *period_transform_tcount(const Period *p, const Interval *interval, TimestampTz origin);
 extern TSequence **periodset_transform_tcount(const PeriodSet *ps, const Interval *interval, TimestampTz origin);

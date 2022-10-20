@@ -90,6 +90,12 @@ CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, tbool, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION tbool_tand_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tand_transfn'
@@ -120,6 +126,16 @@ CREATE AGGREGATE tcount(tbool) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
+CREATE AGGREGATE tcount(tbool, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+
 CREATE AGGREGATE tand(tbool) (
   SFUNC = tbool_tand_transfn,
   STYPE = internal,
@@ -140,6 +156,16 @@ CREATE AGGREGATE tor(tbool) (
 );
 
 /*****************************************************************************/
+
+CREATE FUNCTION tcount_transfn(internal, tint)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, tint, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tint_tmin_transfn(internal, tint)
   RETURNS internal
@@ -165,10 +191,7 @@ CREATE FUNCTION tint_tsum_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_transfn(internal, tint)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION tavg_transfn(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
@@ -181,6 +204,25 @@ CREATE FUNCTION tavg_finalfn(internal)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE tcount(tint) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(tint, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
 
 CREATE AGGREGATE tmin(tint) (
   SFUNC = tint_tmin_transfn,
@@ -209,15 +251,6 @@ CREATE AGGREGATE tsum(tint) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(tint) (
-  SFUNC = tcount_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
 CREATE AGGREGATE tavg(tint) (
   SFUNC = tavg_transfn,
   STYPE = internal,
@@ -227,6 +260,17 @@ CREATE AGGREGATE tavg(tint) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
+
+CREATE FUNCTION tcount_transfn(internal, tfloat)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, tfloat, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 
 CREATE FUNCTION tfloat_tmin_transfn(internal, tfloat)
   RETURNS internal
@@ -252,10 +296,6 @@ CREATE FUNCTION tfloat_tsum_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_transfn(internal, tfloat)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tagg_finalfn(internal)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
@@ -264,6 +304,25 @@ CREATE FUNCTION tavg_transfn(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE tcount(tfloat) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(tfloat, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
 
 CREATE AGGREGATE tmin(tfloat) (
   SFUNC = tfloat_tmin_transfn,
@@ -292,15 +351,6 @@ CREATE AGGREGATE tsum(tfloat) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(tfloat) (
-  SFUNC = tcount_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
 CREATE AGGREGATE tavg(tfloat) (
   SFUNC = tavg_transfn,
   STYPE = internal,
@@ -312,6 +362,16 @@ CREATE AGGREGATE tavg(tfloat) (
 );
 
 /*****************************************************************************/
+
+CREATE FUNCTION tcount_transfn(internal, ttext)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, ttext, interval DEFAULT NULL,
+    timestamptz DEFAULT '2000-01-03')
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION ttext_tmin_transfn(internal, ttext)
   RETURNS internal
@@ -329,14 +389,29 @@ CREATE FUNCTION ttext_tmax_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_transfn(internal, ttext)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_tagg_finalfn(internal)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE tcount(ttext) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(ttext, interval, timestamptz) (
+  SFUNC = tcount_bucket_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
 
 CREATE AGGREGATE tmin(ttext) (
   SFUNC = ttext_tmin_transfn,
@@ -352,15 +427,6 @@ CREATE AGGREGATE tmax(ttext) (
   STYPE = internal,
   COMBINEFUNC = ttext_tmax_combinefn,
   FINALFUNC = ttext_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(ttext) (
-  SFUNC = tcount_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
