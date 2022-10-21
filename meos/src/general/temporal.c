@@ -1344,15 +1344,13 @@ temporal_interpolation(const Temporal *temp)
 {
   char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
+  if (interp == DISCRETE)
     strcpy(result, "Discrete");
-  else if (temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET)
-  {
-    if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
-      strcpy(result, "Linear");
-    else
-      strcpy(result, "Stepwise");
-  }
+  else if (interp == STEPWISE)
+    strcpy(result, "Stepwise");
+  else
+    strcpy(result, "Linear");
   return result;
 }
 
