@@ -44,6 +44,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/skiplist.h"
+#include "general/temporal_aggfuncs.h"
 #include "general/temporal_tile.h"
 #include "general/temporal_util.h"
 
@@ -146,83 +147,7 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
 }
 
 /*****************************************************************************
- * Generic aggregate transition functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_spantime_agg
- * @brief Generic transition function for aggregating timestamp sets
- *
- * @param[in,out] state Timestamp array containing the state
- * @param[in] ts Timestamp set value
- */
-SkipList *
-timestampset_agg_transfn(SkipList *state, const TimestampSet *ts)
-{
-  TimestampTz *times = timestampset_timestamps(ts);
-  SkipList *result;
-  if (! state)
-    result = skiplist_make((void **) times, ts->count, TIMESTAMPTZ);
-  else
-  {
-    assert(state->elemtype == TIMESTAMPTZ);
-    skiplist_splice(state, (void **) times, ts->count, NULL, CROSSINGS_NO);
-    result = state;
-  }
-  pfree(times);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_agg
- * @brief Generic transition function for aggregating period values
- *
- * @param[in,out] state Skiplist containing the state
- * @param[in] p Period
- */
-SkipList *
-period_agg_transfn(SkipList *state, const Period *p)
-{
-  SkipList *result;
-  if (! state)
-    result = skiplist_make((void **) &p, 1, PERIOD);
-  else
-  {
-    assert(state->elemtype == PERIOD);
-    skiplist_splice(state, (void **) &p, 1, NULL, CROSSINGS_NO);
-    result = state;
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_agg
- * @brief Generic transition function for aggregating period set values
- *
- * @param[in,out] state Skiplist containing the state
- * @param[in] ps Period set value
- */
-SkipList *
-periodset_agg_transfn(SkipList *state, const PeriodSet *ps)
-{
-  int count;
-  const Period **periods = periodset_periods(ps, &count);
-  SkipList *result;
-  if (! state)
-    /* Periods are copied while constructing the skiplist */
-    result = skiplist_make((void **) periods, ps->count, PERIOD);
-  else
-  {
-    assert(state->elemtype == PERIOD);
-    skiplist_splice(state, (void **) periods, ps->count, NULL, CROSSINGS_NO);
-    result = state;
-  }
-  pfree(periods);
-  return result;
-}
-
-/*****************************************************************************
- * Combine function
+ * Generic combine function
  *****************************************************************************/
 
 /**
@@ -259,14 +184,211 @@ time_agg_combinefn(SkipList *state1, SkipList *state2)
 }
 
 /*****************************************************************************
- * Aggregate transition functions for time types
+ * extent
+ * N.B. transition function for extent of periods is defined in span_aggfuncs.c
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for extent aggregate of timestamp set values
+ */
+Period *
+timestamp_extent_transfn(Period *p, TimestampTz t)
+{
+  /* Null period: return the period of the timestamp */
+  if (! p)
+    return span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
+      true, T_TIMESTAMPTZ);
+
+  Period p1;
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
+      true, T_TIMESTAMPTZ, &p1);
+  span_expand(&p1, p);
+  return p;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for extent aggregate of timestamp set values
+ */
+Period *
+timestampset_extent_transfn(Period *p, const TimestampSet *ts)
+{
+  /* Can't do anything with null inputs */
+  if (! p && ! ts)
+    return NULL;
+  /* Null period and non-null timestampset, return the bbox of the timestampset */
+  if (! p)
+    return span_copy(&ts->period);
+  /* Non-null period and null timestampset, return the period */
+  if (! ts)
+    return span_copy(p);
+
+  span_expand(&ts->period, p);
+  return p;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for extent aggregate of period set values
+ */
+Period *
+periodset_extent_transfn(Period *p, const PeriodSet *ps)
+{
+  /* Can't do anything with null inputs */
+  if (! p && ! ps)
+    return NULL;
+  /* Null period and non-null period set, return the bbox of the period set */
+  if (! p)
+    return span_copy(&ps->period);
+  /* Non-null period and null temporal, return the period */
+  if (! ps)
+    return span_copy(p);
+
+  span_expand(&ps->period, p);
+  return p;
+}
+
+/*****************************************************************************
+ * tunion
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for tunion aggregate of timestamps
+ *
+ * @param[in,out] state Timestamp array containing the state
+ * @param[in] t Timestamp value
+ */
+SkipList *
+timestamp_tunion_transfn(SkipList *state, TimestampTz t)
+{
+  SkipList *result;
+  if (! state)
+    result = skiplist_make((void **) &t, 1, TIMESTAMPTZ);
+  else
+  {
+    assert(state->elemtype == TIMESTAMPTZ);
+    skiplist_splice(state, (void **) &t, 1, NULL, CROSSINGS_NO);
+    result = state;
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for aggregating timestamp sets
+ *
+ * @param[in,out] state Timestamp array containing the state
+ * @param[in] ts Timestamp set value
+ */
+SkipList *
+timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts)
+{
+  TimestampTz *times = timestampset_timestamps(ts);
+  SkipList *result;
+  if (! state)
+    result = skiplist_make((void **) times, ts->count, TIMESTAMPTZ);
+  else
+  {
+    assert(state->elemtype == TIMESTAMPTZ);
+    skiplist_splice(state, (void **) times, ts->count, NULL, CROSSINGS_NO);
+    result = state;
+  }
+  pfree(times);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Generic transition function for aggregating period values
+ *
+ * @param[in,out] state Skiplist containing the state
+ * @param[in] p Period
+ */
+SkipList *
+period_tunion_transfn(SkipList *state, const Period *p)
+{
+  SkipList *result;
+  if (! state)
+    result = skiplist_make((void **) &p, 1, PERIOD);
+  else
+  {
+    assert(state->elemtype == PERIOD);
+    skiplist_splice(state, (void **) &p, 1, NULL, CROSSINGS_NO);
+    result = state;
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Generic transition function for aggregating period set values
+ *
+ * @param[in,out] state Skiplist containing the state
+ * @param[in] ps Period set value
+ */
+SkipList *
+periodset_tunion_transfn(SkipList *state, const PeriodSet *ps)
+{
+  int count;
+  const Period **periods = periodset_periods(ps, &count);
+  SkipList *result;
+  if (! state)
+    /* Periods are copied while constructing the skiplist */
+    result = skiplist_make((void **) periods, ps->count, PERIOD);
+  else
+  {
+    assert(state->elemtype == PERIOD);
+    skiplist_splice(state, (void **) periods, ps->count, NULL, CROSSINGS_NO);
+    result = state;
+  }
+  pfree(periods);
+  return result;
+}
+
+/*****************************************************************************/
+ 
+/**
+ * Final function for union aggregation of timestamp set values
+ */
+TimestampSet *
+timestamp_tunion_finalfn(SkipList *state)
+{
+  if (! state || state->length == 0)
+    return NULL;
+
+  assert(state->elemtype == TIMESTAMPTZ);
+  TimestampTz *values = (TimestampTz *) skiplist_values(state);
+  TimestampSet *result = timestampset_make(values, state->length);
+  pfree(values);
+  return result;
+}
+
+/**
+ * Final function for union aggregation of period (set) values
+ */
+PeriodSet *
+period_tunion_finalfn(SkipList *state)
+{
+  if (! state || state->length == 0)
+
+  assert(state->elemtype == PERIOD);
+  const Period **values = (const Period **) skiplist_values(state);
+  PeriodSet *result = periodset_make(values, state->length, NORMALIZE);
+  pfree(values);
+  return result;
+}
+
+/*****************************************************************************
+ * tcount
  *****************************************************************************/
 
 /**
  * Transform a timestamp value into a temporal integer value for
  * performing temporal count aggregation
  */
-TInstant **
+static TInstant **
 timestamp_transform_tcount(TimestampTz t, const Interval *interval,
   TimestampTz origin)
 {
@@ -281,19 +403,32 @@ timestamp_transform_tcount(TimestampTz t, const Interval *interval,
  * Transform a timestamp set value into a temporal integer value for
  * performing temporal count aggregation
  */
-TInstant **
+static TInstant **
 timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
-  TimestampTz origin)
+  TimestampTz origin, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
-  Datum datum_one = Int32GetDatum(1);
-  for (int i = 0; i < ts->count; i++)
+
+  TimestampTz t = timestampset_time_n(ts, 0);
+  if (interval)
+    t = timestamptz_bucket(t, interval, origin);
+  int k = 0, count = 1;
+  for (int i = 1; i < ts->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t1 = timestampset_time_n(ts, i);
     if (interval)
-      t = timestamptz_bucket(t, interval, origin);
-    result[i] = tinstant_make(datum_one, T_TINT, t);
+      t1 = timestamptz_bucket(t1, interval, origin);
+    if (timestamptz_cmp_internal(t, t1) == 0)
+      count++;
+    else
+    {
+      result[k++] = tinstant_make(Int32GetDatum(count), T_TINT, t);
+      count = 1;
+      t = t1;
+    }
   }
+  result[k++] = tinstant_make(Int32GetDatum(count), T_TINT, t);
+  *newcount = k;
   return result;
 }
 
@@ -301,7 +436,7 @@ timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
  * Transform a period value into a temporal integer value for
  * performing temporal count aggregation
  */
-TSequence *
+static TSequence *
 period_transform_tcount(const Period *p, const Interval *interval,
   TimestampTz origin)
 {
@@ -339,7 +474,7 @@ period_transform_tcount(const Period *p, const Interval *interval,
  * Transform a period set value into a temporal integer value for
  * performing temporal count aggregation
  */
-TSequence **
+static TSequence **
 periodset_transform_tcount(const PeriodSet *ps, const Interval *interval,
   TimestampTz origin)
 {
@@ -359,6 +494,111 @@ ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
   if (head->subtype != subtype)
     elog(ERROR, "Cannot aggregate temporal values of different type");
   return;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for temporal count aggregate of timestamps
+ */
+SkipList *
+timestamp_tcount_transfn(SkipList *state, TimestampTz t,
+  const Interval *interval, TimestampTz origin)
+{
+  TInstant **instants = timestamp_transform_tcount(t, interval, origin);
+  if (state)
+  {
+    ensure_same_timetype_skiplist(state, TINSTANT);
+    skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+  else
+  {
+    state = skiplist_make((void **) instants, 1, TEMPORAL);
+  }
+
+  pfree_array((void **) instants, 1);
+  return state;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for temporal count aggregate of timestamp sets
+ */
+SkipList *
+timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts,
+  const Interval *interval, TimestampTz origin)
+{
+  int count;
+  TInstant **instants = timestampset_transform_tcount(ts, interval, origin,
+    &count);
+  /* Due to the bucketing, it is possible that count < ts->count */
+
+  if (state)
+  {
+    ensure_same_timetype_skiplist(state, TINSTANT);
+    skiplist_splice(state, (void **) instants, count, &datum_sum_int32,
+      CROSSINGS_NO);
+  } 
+  else
+  {
+    state = skiplist_make((void **) instants, count, TEMPORAL);
+  }
+
+  pfree_array((void **) instants, count);
+  return state;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for temporal count aggregate of periods
+ */
+SkipList *
+period_tcount_transfn(SkipList *state, const Period *p,
+  const Interval *interval, TimestampTz origin)
+{
+  TSequence *seq = period_transform_tcount(p, interval, origin);
+  if (state)
+  {
+    ensure_same_timetype_skiplist(state, TSEQUENCE);
+    skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+  else
+  {
+    state = skiplist_make((void **) &seq, 1, TEMPORAL);
+  }
+
+  pfree(seq);
+  return state;
+}
+
+/**
+ * @ingroup libmeos_spantime_agg
+ * @brief Transition function for temporal count aggregate of period sets
+ */
+SkipList *
+periodset_tcount_transfn(SkipList *state, const PeriodSet *ps,
+  const Interval *interval, TimestampTz origin)
+{
+  TSequence **sequences = periodset_transform_tcount(ps, interval, origin);
+  int start = 0;
+  if (state)
+    ensure_same_timetype_skiplist(state, TSEQUENCE);
+  else
+  {
+    state = skiplist_make((void **) &sequences[0], 1, TEMPORAL);
+    start++;
+  }
+  for (int i = start; i < ps->count; i++)
+  {
+    skiplist_splice(state, (void **) &sequences[i], 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+
+  pfree_array((void **) sequences, ps->count);
+  return state;
 }
 
 /*****************************************************************************/

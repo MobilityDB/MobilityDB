@@ -61,6 +61,12 @@ SELECT extent(temp) FROM (VALUES
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
 
+SELECT extent(t) FROM tbl_timestamptz;
+                      extent                      
+--------------------------------------------------
+ [2001-01-01 02:36:00+00, 2001-12-26 07:12:00+00]
+(1 row)
+
 SELECT extent(ts) FROM tbl_timestampset;
                       extent                      
 --------------------------------------------------
@@ -176,6 +182,12 @@ SELECT tcount(temp) FROM (VALUES
  {[1@2000-01-01 00:00:00+00, 1@2000-01-02 00:00:00+00]}
 (1 row)
 
+SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
+ numinstants 
+-------------
+          99
+(1 row)
+
 SELECT numInstants(tcount(ts)) FROM tbl_timestampset;
  numinstants 
 -------------
@@ -192,6 +204,30 @@ SELECT numInstants(tcount(ps)) FROM tbl_periodset;
  numinstants 
 -------------
          906
+(1 row)
+
+SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
+ numinstants 
+-------------
+          43
+(1 row)
+
+SELECT numInstants(tcount(ts, '1 week', '2001-01-01')) FROM tbl_timestampset;
+ numinstants 
+-------------
+          44
+(1 row)
+
+SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_period;
+ numinstants 
+-------------
+          81
+(1 row)
+
+SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_periodset;
+ numinstants 
+-------------
+          84
 (1 row)
 
 SELECT tunion(temp) FROM (VALUES
@@ -302,6 +338,12 @@ SELECT startTimestamp(tunion(ts)) FROM Temp;
      starttimestamp     
 ------------------------
  2000-01-01 00:00:00+00
+(1 row)
+
+SELECT numTimestamps(tunion(t)) FROM tbl_timestamptz;
+ numtimestamps 
+---------------
+            99
 (1 row)
 
 SELECT numTimestamps(tunion(ts)) FROM tbl_timestampset;

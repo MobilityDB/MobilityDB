@@ -46,15 +46,28 @@ CREATE FUNCTION tagg_deserialize(bytea, internal)
 
 /*****************************************************************************/
 
+-- extent for periods is already defined for span aggregate functions
+
+CREATE FUNCTION timestamp_extent_transfn(period, timestamptz)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Timestamp_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION timestampset_extent_transfn(period, timestampset)
   RETURNS period
   AS 'MODULE_PATHNAME', 'Timestampset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION periodset_extent_transfn(period, periodset)
   RETURNS period
   AS 'MODULE_PATHNAME', 'Periodset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE AGGREGATE extent(timestamptz) (
+  SFUNC = timestamp_extent_transfn,
+  STYPE = period,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
 CREATE AGGREGATE extent(timestampset) (
   SFUNC = timestampset_extent_transfn,
   STYPE = period,
@@ -67,6 +80,7 @@ CREATE AGGREGATE extent(periodset) (
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
+
 
 /*****************************************************************************/
 
@@ -197,6 +211,10 @@ CREATE AGGREGATE tcount(periodset, interval, timestamptz) (
 
 /*****************************************************************************/
 
+CREATE FUNCTION timestamp_tunion_transfn(internal, timestamptz)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Timestamp_tunion_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION timestampset_tunion_transfn(internal, timestampset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Timestampset_tunion_transfn'
@@ -223,6 +241,16 @@ CREATE FUNCTION period_tunion_finalfn(internal)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Period_tunion_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE tunion(timestamptz) (
+  SFUNC = timestamp_tunion_transfn,
+  STYPE = internal,
+  COMBINEFUNC = time_tunion_combinefn,
+  FINALFUNC = timestamp_tunion_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
 
 CREATE AGGREGATE tunion(timestampset) (
   SFUNC = timestampset_tunion_transfn,

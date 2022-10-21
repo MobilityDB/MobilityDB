@@ -45,6 +45,9 @@ set(PROJECT_SUPPORTED_LANGUAGES_STRING "Spanish")
 set(PROJECT_ENGLISH "en")
 set(PROJECT_ENGLISH_STRING "English")
 
+# TODO OLD->NEW and solve the problem
+cmake_policy(SET CMP0121 OLD)
+
 #---------------------------------------------
 # Language options
 #---------------------------------------------

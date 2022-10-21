@@ -48,6 +48,7 @@ SELECT extent(temp) FROM (VALUES
 SELECT extent(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
 
+SELECT extent(t) FROM tbl_timestamptz;
 SELECT extent(ts) FROM tbl_timestampset;
 SELECT extent(p) FROM tbl_period;
 SELECT extent(ps) FROM tbl_periodset;
@@ -91,9 +92,15 @@ SELECT tcount(temp) FROM (VALUES
 SELECT tcount(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
 
+SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
 SELECT numInstants(tcount(ts)) FROM tbl_timestampset;
 SELECT numInstants(tcount(p)) FROM tbl_period;
 SELECT numInstants(tcount(ps)) FROM tbl_periodset;
+
+SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
+SELECT numInstants(tcount(ts, '1 week', '2001-01-01')) FROM tbl_timestampset;
+SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_period;
+SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_periodset;
 
 -------------------------------------------------------------------------------
 
@@ -149,6 +156,7 @@ SELECT startTimestamp(tunion(ts)) FROM Temp;
 
 -------------------------------------------------------------------------------
 
+SELECT numTimestamps(tunion(t)) FROM tbl_timestamptz;
 SELECT numTimestamps(tunion(ts)) FROM tbl_timestampset;
 SELECT numPeriods(tunion(p)) FROM tbl_period;
 SELECT numPeriods(tunion(ps)) FROM tbl_periodset;
