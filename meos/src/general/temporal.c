@@ -1345,7 +1345,7 @@ temporal_interpolation(const Temporal *temp)
   char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
   ensure_valid_tempsubtype(temp->subtype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
-  if (interp == DISCRETE)
+  if (temp->subtype == TINSTANT || interp == DISCRETE)
     strcpy(result, "Discrete");
   else if (interp == STEPWISE)
     strcpy(result, "Stepwise");
