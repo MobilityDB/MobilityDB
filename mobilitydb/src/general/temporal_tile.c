@@ -34,8 +34,6 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
-#include "pg_general/temporal_tile.h"
-
 /* C */
 #include <assert.h>
 #include <float.h>
@@ -90,80 +88,6 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/*****************************************************************************
- * Span bucket functions
- *****************************************************************************/
-
-/**
- * Generate an integer or float span bucket from a bucket list
- *
- * @param[in] lower Start value of the bucket
- * @param[in] size Size of the buckets
- * @param[in] basetype Type of the arguments
- */
-static Span *
-span_bucket_get(Datum lower, Datum size, mobdbType basetype)
-{
-  Datum upper = (basetype == T_TIMESTAMPTZ) ?
-    TimestampTzGetDatum(DatumGetTimestampTz(lower) + DatumGetInt64(size)) :
-    datum_add(lower, size, basetype, basetype);
-  return span_make(lower, upper, true, false, basetype);
-}
-
-/**
- * Create the initial state that persists across multiple calls of the function
- *
- * @param[in] temp Temporal number to split
- * @param[in] s Bounds for generating the bucket list
- * @param[in] size Size of the buckets
- * @param[in] origin Origin of the buckets
- *
- * @pre The size argument must be greater to 0.
- * @note The first argument is NULL when generating the bucket list, otherwise
- * it is a temporal number to be split and in this case s is the value span
- * of the temporal number
- */
-static SpanBucketState *
-span_bucket_state_make(Temporal *temp, Span *s, Datum size, Datum origin)
-{
-  SpanBucketState *state = palloc0(sizeof(SpanBucketState));
-  /* Fill in state */
-  state->done = false;
-  state->i = 1;
-  state->temp = temp;
-  state->basetype = s->basetype;
-  state->size = size;
-  state->origin = origin;
-  /* intspans are in canonical form so their upper bound is exclusive */
-  Datum upper = (s->basetype == T_INT4) ?
-    Int32GetDatum(DatumGetInt32(s->upper) - 1) : s->upper;
-  state->minvalue = state->value =
-    datum_bucket(s->lower, size, origin, state->basetype);
-  state->maxvalue = datum_bucket(upper, size, origin, state->basetype);
-  return state;
-}
-
-/**
- * Increment the current state to the next bucket of the bucket list
- *
- * @param[in] state State to increment
- */
-static void
-span_bucket_state_next(SpanBucketState *state)
-{
-  if (!state || state->done)
-    return;
-  /* Move to the next bucket */
-  state->i++;
-  state->value = (state->basetype == T_TIMESTAMPTZ) ?
-    TimestampTzGetDatum(DatumGetTimestampTz(state->value) +
-      DatumGetInt64(state->size)) :
-    datum_add(state->value, state->size, state->basetype, state->basetype);
-  if (datum_gt(state->value, state->maxvalue, state->basetype))
-    state->done = true;
-  return;
-}
-
 /*****************************************************************************/
 
 Datum
@@ -204,7 +128,7 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = span_bucket_state_make(NULL, bounds, size, origin);
+    funcctx->user_fctx = span_bucket_state_make(bounds, size, origin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);

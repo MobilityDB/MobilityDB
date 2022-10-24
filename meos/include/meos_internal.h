@@ -668,7 +668,7 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 extern Temporal **temporal_time_split1(const Temporal *temp, TimestampTz start,
   TimestampTz end, int64 tunits, TimestampTz torigin, int count,
   TimestampTz **buckets, int *newcount);
-extern Temporal **tnumber_value_split(const Temporal *temp, Datum start_bucket,
+extern Temporal **tnumber_value_split1(const Temporal *temp, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount);
 
 /*****************************************************************************/

@@ -35,6 +35,64 @@
 
 /*****************************************************************************/
 
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the bucket list
+ */
+typedef struct SpanBucketState
+{
+  bool done;
+  int i;
+  mobdbType basetype;
+  Temporal *temp; /* NULL when generating bucket list, used for splitting */
+  Datum size;
+  Datum origin;
+  Datum minvalue;
+  Datum maxvalue;
+  Datum value;
+} SpanBucketState;
+
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the multidimensional grid
+ */
+typedef struct TboxGridState
+{
+  bool done;
+  int i;
+  double xsize;
+  int64 tunits;
+  TBOX box;
+  double value;
+  TimestampTz t;
+} TboxGridState;
+
+/*****************************************************************************/
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal fragments
+ */
+typedef struct ValueTimeSplitState
+{
+  bool done;           /**< True when all tiles have been processed */
+  int i;               /**< Number of current tile */
+  Datum size;
+  int64 tunits;
+  Datum *value_buckets;
+  TimestampTz *time_buckets;
+  Temporal **fragments;
+  int count;
+} ValueTimeSplitState;
+
+/*****************************************************************************/
+
+extern Span *span_bucket_get(Datum lower, Datum size, mobdbType basetype);
+extern SpanBucketState *span_bucket_state_make(Span *s, Datum size, Datum origin);
+extern void span_bucket_state_next(SpanBucketState *state);
+
+/*****************************************************************************/
+
 extern int64 interval_units(const Interval *interval);
 extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
