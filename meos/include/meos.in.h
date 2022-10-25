@@ -869,7 +869,6 @@ extern char *ttext_out(const Temporal *temp);
 
 extern Temporal *tbool_from_base(bool b, const Temporal *temp);
 extern TInstant *tboolinst_make(bool b, TimestampTz t);
-extern TSequence *tboolseq_from_base(bool b, const TSequence *is);
 extern TSequence *tbooldiscseq_from_base_time(bool b, const TimestampSet *ts);
 extern TSequence *tboolseq_from_base(bool b, const TSequence *seq);
 extern TSequence *tboolseq_from_base_time(bool b, const Period *p);
