@@ -56,7 +56,7 @@
 /* Maximum length in characters of a date in the input data */
 #define MAX_LENGTH_DATE 12
 /* Epsilon distance used for the simplification */
-#define DELTA_DISTANCE 1
+#define DELTA_DISTANCE 2
 /* Maximum number of trips */
 #define MAX_NO_TRIPS 64
 
@@ -139,7 +139,7 @@ int main(void)
   for (i = 0; i < records; i++)
   {
     trips_dp[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, false);
-    trips_sed[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, false);
+    trips_sed[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, true);
     char *day_str = pg_date_out(trips[i].day);
     printf("Vehicle: %d, Date: %s, Seq: %d, No. of instants: %d, "
       "No. of instants DP: %d, No. of instants SED: %d\n",

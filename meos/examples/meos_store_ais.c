@@ -163,8 +163,8 @@ main(int argc, char **argv)
 
   /* Create the table that will hold the data */
   printf("Creating the table in the database\n");
-  exec_sql(conn, "DROP TABLE IF EXISTS public.MEOS_demo;", PGRES_COMMAND_OK);
-  exec_sql(conn, "CREATE TABLE public.MEOS_demo(MMSI integer, "
+  exec_sql(conn, "DROP TABLE IF EXISTS public.AISInstants;", PGRES_COMMAND_OK);
+  exec_sql(conn, "CREATE TABLE public.AISInstants(MMSI integer, "
     "location public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
 
   /* Start a transaction block */
@@ -203,7 +203,7 @@ main(int argc, char **argv)
     /* Create the INSERT command with the values read */
     if ((records - 1) % NO_BULK_INSERT == 0)
       len = sprintf(insert_buffer,
-        "INSERT INTO public.MEOS_demo(MMSI, location, SOG) VALUES ");
+        "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
     char *t_out = pg_timestamp_out(rec.T);
     len += sprintf(insert_buffer + len,
@@ -230,7 +230,7 @@ main(int argc, char **argv)
   printf("%d records read.\n%d incomplete records ignored.\n",
     records, nulls);
 
-  sprintf(buffer, "SELECT COUNT(*) FROM public.MEOS_demo;");
+  sprintf(buffer, "SELECT COUNT(*) FROM public.AISInstants;");
   PGresult *res = PQexec(conn, buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
@@ -239,7 +239,7 @@ main(int argc, char **argv)
     exit_nicely(conn);
   }
 
-  printf("Query 'SELECT COUNT(*) FROM public.MEOS_demo' returned %s\n",
+  printf("Query 'SELECT COUNT(*) FROM public.AISInstants' returned %s\n",
     PQgetvalue(res, 0, 0));
 
   /* End the transaction */

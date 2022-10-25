@@ -39,7 +39,7 @@
  *   OSM and publicly available statistical data
  * - `brussels_region.csv`: geometry of the Brussels region obtained from OSM.
  *   It is the spatial union of the 19 communes
- * - `trips.csv`: 64 trips from 5 cars during 4 days obtained from the
+ * - `trips.csv`: 55 trips from 5 cars during 4 days obtained from the
  *   generator at scale factor 0.005
  * In the above files, the coordinates are given in the 3857 coordinate system,
  * https://epsg.io/3857
@@ -223,7 +223,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
     if (all_communes || distance[NO_VEHICLES][j] != 0)
       len += sprintf(buf+len, "   %2d   ", j);
   }
-  len += sprintf(buf+len, "| Outside | Inside\n");
+  len += sprintf(buf+len, "|  Inside | Outside\n");
   for (j = 0; j < NO_COMMUNES + 3; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
@@ -307,7 +307,7 @@ int main(void)
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1024s\n", geo_buffer);
-  printf("Reading trip records ");
+  printf("Reading trip records\n");
 
   /* Continue reading the file */
   do
@@ -355,9 +355,9 @@ int main(void)
         /* Add to the cell */
         distance[trip_rec.vehid - 1][i + 1] += d;
         /* Add to the row total, the commune total, and inside total */
-        distance[trip_rec.vehid - 1][NO_COMMUNES + 2] += d;
+        distance[trip_rec.vehid - 1][NO_COMMUNES + 1] += d;
         distance[NO_VEHICLES][i + 1] += d;
-        distance[NO_VEHICLES][NO_COMMUNES + 2] += d;
+        distance[NO_VEHICLES][NO_COMMUNES + 1] += d;
       }
     }
     /* Compute the distance outside Brussels Region */
@@ -367,9 +367,9 @@ int main(void)
     {
       d = tpoint_length(minusgeom) / 1000;
       /* Add to the row */
-      distance[trip_rec.vehid - 1][NO_COMMUNES + 1] += d;
+      distance[trip_rec.vehid - 1][NO_COMMUNES + 2] += d;
       /* Add to the column total */
-      distance[NO_VEHICLES][NO_COMMUNES + 1] += d;
+      distance[NO_VEHICLES][NO_COMMUNES + 2] += d;
     }
 
   } while (!feof(file));
