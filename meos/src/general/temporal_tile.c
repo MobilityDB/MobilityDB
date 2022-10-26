@@ -83,7 +83,7 @@ span_bucket_get(Datum lower, Datum size, mobdbType basetype)
  * of the temporal number
  */
 SpanBucketState *
-span_bucket_state_make(Span *s, Datum size, Datum origin)
+span_bucket_state_make(const Span *s, Datum size, Datum origin)
 {
   SpanBucketState *state = palloc0(sizeof(SpanBucketState));
   /* Fill in state */
@@ -302,6 +302,93 @@ datum_bucket(Datum value, Datum size, Datum origin, mobdbType basetype)
     return TimestampTzGetDatum(timestamptz_bucket1(DatumGetTimestampTz(value),
       DatumGetInt64(size), DatumGetTimestampTz(origin)));
 }
+
+/*****************************************************************************
+ * Bucket list functions
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @brief Return the bucket list from a span.
+ *
+ * @param[in] bounds Input span to split
+ * @param[in] size Bucket size
+ * @param[in] origin Origin of the buckets
+ * @param[out] newcount Number of elements in the output array
+ */
+
+Span **
+span_bucket_list(const Span *bounds, Datum size, Datum origin, int *newcount)
+{
+  SpanBucketState *state = span_bucket_state_make(bounds, size, origin);
+  Span **buckets = palloc0(sizeof(SpanBucketState) * *newcount);
+  int i = 0;
+  while (! state->done)
+  {
+    buckets[i++] = span_bucket_get(state->value, state->size, state->basetype);
+    span_bucket_state_next(state);
+  }
+  return buckets;
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the bucket list from an integer span.
+ *
+ * @param[in] bounds Input span to split
+ * @param[in] size Size of the buckets
+ * @param[in] origin Origin of the buckets
+ * @param[out] newcount Number of elements in the output array
+ */
+Span **
+intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount)
+{
+  *newcount = ceil((DatumGetInt32(bounds->upper) -
+    DatumGetInt32(bounds->lower)) / size);
+  return span_bucket_list(bounds, Int32GetDatum(size), Int32GetDatum(origin),
+    newcount);
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the bucket list from an integer span.
+ *
+ * @param[in] bounds Input span to split
+ * @param[in] size Size of the buckets
+ * @param[in] offset Origin of the buckets
+ * @param[out] newcount Number of elements in the output array
+ */
+Span **
+floatspan_bucket_list(const Span *bounds, double size, double origin,
+  int *newcount)
+{
+  *newcount = ceil((DatumGetFloat8(bounds->upper) -
+     DatumGetFloat8(bounds->lower)) / size);
+  return span_bucket_list(bounds, Float8GetDatum(size),
+    Float8GetDatum(origin), newcount);
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the bucket list from a period.
+ *
+ * @param[in] bounds Input span to split
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] origin Origin of the buckets
+ * @param[out] newcount Number of elements in the output array
+ */
+Span **
+period_bucket_list(const Span *bounds, const Interval *duration,
+  TimestampTz origin, int *newcount)
+{
+  ensure_valid_duration(duration);
+  int64 size = interval_units(duration);
+  *newcount = ceil((DatumGetTimestampTz(bounds->upper) -
+    DatumGetTimestampTz(bounds->lower)) / size);
+  return span_bucket_list(bounds, Int64GetDatum(size),
+    TimestampTzGetDatum(origin), newcount);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Time split functions for temporal numbers
