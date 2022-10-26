@@ -455,6 +455,7 @@ extern bool overlaps_span_span(const Span *s1, const Span *s2);
 extern bool overlaps_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool overlaps_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+
 /*****************************************************************************/
 
 /* Position functions for span and time types */
@@ -617,11 +618,11 @@ extern double distance_timestampset_timestampset(const TimestampSet *ts1, const 
 
 /*****************************************************************************/
 
-/* Temporal aggregate functions for span and time types */
+/* Aggregate functions for span and time types */
 
 extern Period *timestamp_extent_transfn(Period *p, TimestampTz t);
 extern Period *timestampset_extent_transfn(Period *p, const TimestampSet *ts);
-extern Period *period_extent_transfn(Period *p1, const Period *p2);
+extern Period *span_extent_transfn(Span *p1, const Span *p2);
 extern Period *periodset_extent_transfn(Period *p, const PeriodSet *ps);
 
 extern SkipList *timestamp_tunion_transfn(SkipList *state, TimestampTz t);

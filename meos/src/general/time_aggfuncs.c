@@ -230,23 +230,23 @@ timestampset_extent_transfn(Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_agg
- * @brief Transition function for extent aggregate of period set values
+ * @brief Transition function for extent aggregate of span values
  */
-Period *
-period_extent_transfn(Period *p1, const Period *p2)
+Span *
+span_extent_transfn(Span *s1, const Span *s2)
 {
   /* Can't do anything with null inputs */
-  if (! p1 && ! p2)
+  if (! s1 && ! s2)
     return NULL;
-  /* Null period and non-null period set, return the bbox of the period set */
-  if (! p1)
-    return span_copy(p2);
-  /* Non-null period and null temporal, return the period */
-  if (! p2)
-    return span_copy(p1);
+  /* Null span and non-null span, return the span */
+  if (! s1)
+    return span_copy(s2);
+  /* Non-null span and null span, return the span */
+  if (! s2)
+    return span_copy(s1);
 
-  span_expand(p2, p1);
-  return p1;
+  span_expand(s2, s1);
+  return s1;
 }
 
 /**

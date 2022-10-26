@@ -49,20 +49,9 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Span *s2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPAN_P(1);
-  Span *result;
-
-  /* Can't do anything with null inputs */
-  if (! s1 && ! s2)
+  Span *result = span_extent_transfn(s1, s2);
+  if (! result)
     PG_RETURN_NULL();
-  /* Null span and non-null span, return the span */
-  else if (! s1)
-    result = span_copy(s2);
-  /* Non-null span and null span, return the span */
-  else if (! s2)
-    result = span_copy(s1);
-  else
-    /* Non-strict union */
-    result = union_span_span(s1, s2, false);
   PG_RETURN_POINTER(result);
 }
 
