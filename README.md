@@ -32,7 +32,7 @@ Benefits
 
 *   Compatible with the PostgreSQL ecosystem
 
-<img src="doc/images/mobilitydb_ecosystem.png" width="200" alt="MobilityDB Ecosystem" />
+    <img src="doc/images/mobilitydb_ecosystem.png" width="500" alt="MobilityDB Ecosystem" />
 
 *   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC)
 
