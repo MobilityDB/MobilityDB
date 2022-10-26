@@ -32,6 +32,8 @@ Benefits
 
 *   Compatible with the PostgreSQL ecosystem
 
+<img src="doc/images/mobilitydb-ecosystem.svg" width="200" alt="MobilityDB Ecostystem" />
+
 *   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC)
 
 *   Adopted by the [Open Source Geospatial Foundation](https://www.osgeo.org/) (OSGeo) as a [community project](https://www.osgeo.org/projects/mobilitydb/)

@@ -1568,7 +1568,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  *
  * @param[in] seq Temporal sequence
- * @param[in] arg Maximum number of decimal digits to output for floating point
+ * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
  * @param[in] component True if the output string is a component of a
  * temporal sequence set and thus no interpolation string at the begining of
@@ -1576,7 +1576,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] value_out Function called to output the base value
  */
 char *
-tsequence_to_string(const TSequence *seq, Datum arg, bool component,
+tsequence_to_string(const TSequence *seq, Datum maxdd, bool component,
   char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
@@ -1591,7 +1591,7 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    strings[i] = tinstant_to_string(inst, arg, value_out);
+    strings[i] = tinstant_to_string(inst, maxdd, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   char open, close;
@@ -1614,9 +1614,9 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  */
 char *
-tsequence_out(const TSequence *seq, Datum arg)
+tsequence_out(const TSequence *seq, Datum maxdd)
 {
-  return tsequence_to_string(seq, arg, false, &basetype_output);
+  return tsequence_to_string(seq, maxdd, false, &basetype_output);
 }
 
 /*****************************************************************************

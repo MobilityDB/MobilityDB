@@ -616,16 +616,16 @@ tgeogpoint_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  */
 char *
-temporal_out(const Temporal *temp, Datum arg)
+temporal_out(const Temporal *temp, Datum maxdd)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_out((TInstant *) temp, arg);
+    result = tinstant_out((TInstant *) temp, maxdd);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_out((TSequence *) temp, arg);
+    result = tsequence_out((TSequence *) temp, maxdd);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_out((TSequenceSet *) temp, arg);
+    result = tsequenceset_out((TSequenceSet *) temp, maxdd);
   return result;
 }
 

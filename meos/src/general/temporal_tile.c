@@ -862,6 +862,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   mobdbType basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
+  Span segspan;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -881,19 +882,21 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   value1 = tinstant_value(inst1);
   bucket_value1 = datum_bucket(value1, size, start_bucket, basetype);
   bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetype);
+  /* For each segment */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     Datum bucket_value2 = datum_bucket(value2, size, start_bucket, basetype);
     int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, basetype);
-    /* Take into account on whether the segment seq increasing or decreasing */
+    /* Determine whether the segment is constant, increasing, or decreasing */
     Datum min_value, max_value;
     int first_bucket, last_bucket, first, last;
     bool lower_inc1, upper_inc1, lower_inc_def, upper_inc_def;
-    bool incr = datum_lt(value1, value2, basetype);
-    if (incr)
+    int incr = datum_cmp(value1, value2, basetype);
+    if (incr <= 0)
     {
+      /* Both for constant and increasing segments */
       min_value = value1;
       max_value = value2;
       first_bucket = bucket_no1;
@@ -922,11 +925,12 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
     {
       lower_inc1 = upper_inc1 = true;
     }
-    Span *segspan = span_make(min_value, max_value, lower_inc1, upper_inc1,
-      basetype);
+    /* Split the segment into buckets */
+    span_set(min_value, max_value, lower_inc1, (incr != 0) ? upper_inc1 : true,
+      basetype, &segspan);
     TInstant *bounds[2];
-    bounds[first] = incr ? (TInstant *) inst1 : (TInstant *) inst2;
-    Datum bucket_lower = incr ? bucket_value1 : bucket_value2;
+    bounds[first] = (incr <= 0) ? (TInstant *) inst1 : (TInstant *) inst2;
+    Datum bucket_lower = (incr <= 0) ? bucket_value1 : bucket_value2;
     Datum bucket_upper = datum_add(bucket_lower, size, basetype, basetype);
     for (int j = first_bucket; j <= last_bucket; j++)
     {
@@ -945,7 +949,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
           tinstant_make(projvalue, seq->temptype, t);
       }
       else
-        bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
+        bounds[last] = (incr <= 0) ? (TInstant *) inst2 : (TInstant *) inst1;
       /* Determine the bounds of the resulting sequence */
       if (j == first_bucket || j == last_bucket)
       {
@@ -953,16 +957,17 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         span_set(bucket_lower, bucket_upper, true, false, basetype,
           &bucketspan);
         Span inter;
-        bool found = inter_span_span(segspan, &bucketspan, &inter);
-        if (found)
+        bool found = inter_span_span(&segspan, &bucketspan, &inter);
+        if (found && incr != 0)
         {
-          if (incr)
+          if (incr < 0)
           {
             lower_inc1 = inter.lower_inc;
             upper_inc1 = inter.upper_inc;
           }
           else
           {
+            /* Both for constant and decreasing segments */
             lower_inc1 = inter.upper_inc;
             upper_inc1 = inter.lower_inc;
           }
@@ -991,7 +996,6 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
       bucket_lower = bucket_upper;
       bucket_upper = datum_add(bucket_upper, size, basetype, basetype);
     }
-    pfree(segspan);
     inst1 = inst2;
     value1 = value2;
     bucket_value1 = bucket_value2;
@@ -1368,8 +1372,8 @@ tfloat_value_time_split(Temporal *temp, double size, double vorigin,
 {
   Datum *value_buckets;
   TimestampTz *time_buckets;
-  return temporal_value_time_split1(temp, Int32GetDatum(size), duration,
-    Int32GetDatum(vorigin), torigin, true, true, &value_buckets, &time_buckets,
+  return temporal_value_time_split1(temp, Float8GetDatum(size), duration,
+    Float8GetDatum(vorigin), torigin, true, true, &value_buckets, &time_buckets,
     newcount);
 }
 #endif /* MEOS */

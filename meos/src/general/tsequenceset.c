@@ -2485,12 +2485,12 @@ tgeogpointseqset_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  *
  * @param[in] ss Temporal sequence set
- * @param[in] arg Maximum number of decimal digits to output for floating point
+ * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
  * @param[in] value_out Function called to output the base value
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
+tsequenceset_to_string(const TSequenceSet *ss, Datum maxdd,
   char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * ss->count);
@@ -2504,7 +2504,7 @@ tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    strings[i] = tsequence_to_string(seq, arg, true, value_out);
+    strings[i] = tsequence_to_string(seq, maxdd, true, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}');
@@ -2515,9 +2515,9 @@ tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  */
 char *
-tsequenceset_out(const TSequenceSet *ss, Datum arg)
+tsequenceset_out(const TSequenceSet *ss, Datum maxdd)
 {
-  return tsequenceset_to_string(ss, arg,  &basetype_output);
+  return tsequenceset_to_string(ss, maxdd,  &basetype_output);
 }
 
 /*****************************************************************************

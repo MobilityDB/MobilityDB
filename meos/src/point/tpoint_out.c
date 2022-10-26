@@ -56,12 +56,12 @@
  * @note The parameter type is not needed for temporal points
  */
 static char *
-wkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum arg)
+wkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum maxdd)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DatumGetInt32(arg), &len);
+  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DatumGetInt32(maxdd), &len);
   char *result = palloc(len);
   strcpy(result, wkt);
   lwgeom_free(geom);
@@ -70,18 +70,17 @@ wkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum arg)
 }
 
 /**
- * Output a geometry in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID.
- *
- * @note The parameter type is not needed for temporal points
+ * @brief Output a geometry in Extended Well-Known Text (EWKT) format, that is,
+ * in WKT format prefixed with the SRID.
+ * @note The parameter basetype is not needed for temporal points
  */
 char *
-ewkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum arg)
+ewkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum maxdd)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DatumGetInt32(arg), &len);
+  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DatumGetInt32(maxdd), &len);
   char *result = palloc(len);
   strcpy(result, wkt);
   lwgeom_free(geom);
@@ -123,7 +122,7 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
   int srid = tpoint_srid(temp);
   char str1[20];
   if (srid > 0)
-    sprintf(str1, "SRID=%d%c", srid, 
+    sprintf(str1, "SRID=%d%c", srid,
       (MOBDB_FLAGS_GET_INTERP(temp->flags) == STEPWISE) ? ',' : ';');
   else
     str1[0] = '\0';
@@ -152,11 +151,11 @@ char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 {
   char **result = palloc(sizeof(char *) * count);
-  Datum arg = Int32GetDatum(maxdd);
+  Datum d_maxdd = Int32GetDatum(maxdd);
   for (int i = 0; i < count; i++)
     /* The wkt_out and ewkt_out functions do not use the first argument */
     result[i] = extended ?
-      ewkt_out(0, geoarr[i], arg) : wkt_out(0, geoarr[i], arg);
+      ewkt_out(0, geoarr[i], d_maxdd) : wkt_out(0, geoarr[i], d_maxdd);
   return result;
 }
 

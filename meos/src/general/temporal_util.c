@@ -961,7 +961,7 @@ basetype_input(const char *str, mobdbType basetype, bool end __attribute__((unus
  * Call output function of the base type
  */
 char *
-basetype_output(mobdbType basetype, Datum value, Datum arg)
+basetype_output(mobdbType basetype, Datum value, Datum maxdd)
 {
   ensure_temporal_basetype(basetype);
   switch (basetype)
@@ -977,7 +977,7 @@ basetype_output(mobdbType basetype, Datum value, Datum arg)
       return int8_out(DatumGetInt64(value));
   #endif /* not used */
     case T_FLOAT8:
-      return float8_out(DatumGetFloat8(value), DatumGetInt32(arg));
+      return float8_out(DatumGetFloat8(value), DatumGetInt32(maxdd));
     case T_TEXT:
       return text2cstring(DatumGetTextP(value));
     case T_GEOMETRY:
@@ -986,7 +986,7 @@ basetype_output(mobdbType basetype, Datum value, Datum arg)
       return gserialized_geog_out(DatumGetGserializedP(value));
 #if NPOINT
     case T_NPOINT:
-      return npoint_out(DatumGetNpointP(value), DatumGetInt32(arg));
+      return npoint_out(DatumGetNpointP(value), DatumGetInt32(maxdd));
 #endif
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
