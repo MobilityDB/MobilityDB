@@ -41,7 +41,7 @@
  * https://epsg.io/3857
  * and the timestamps are given in the Europe/Brussels time zone.
  * This simple program does not cope with erroneous inputs, such as missing
- * fields or invalid timestamp values.
+ * fields or invalid values.
  *
  * The program can be build as follows
  * @code

@@ -33,14 +33,8 @@
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  * and performs a temporal count aggregation.
  *
- * The input file is
- * - `trips.csv`: 55 trips from 5 cars during 4 days obtained from the
- *   generator at scale factor 0.005
- * In the above file, the coordinates are given in the 3857 coordinate system,
- * https://epsg.io/3857
- * and the timestamps are given in the Europe/Brussels time zone.
- * This simple program does not cope with erroneous inputs, such as missing
- * fields or invalid timestamp values.
+ * Please read the assumptions made about the input file `trips.csv` in the
+ * file `meos_disassemble_berlinmod.c` in the same directory.
  *
  * The program can be build as follows
  * @code

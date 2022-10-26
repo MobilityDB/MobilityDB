@@ -889,12 +889,15 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
     Datum value2 = tinstant_value(inst2);
     Datum bucket_value2 = datum_bucket(value2, size, start_bucket, basetype);
     int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, basetype);
-    /* Determine whether the segment is constant, increasing, or decreasing */
+
+    /* Set variables depending on whether the segment is constant, increasing,
+     * or decreasing */
     Datum min_value, max_value;
     int first_bucket, last_bucket, first, last;
-    bool lower_inc1, upper_inc1, lower_inc_def, upper_inc_def;
-    int incr = datum_cmp(value1, value2, basetype);
-    if (incr <= 0)
+    bool lower_inc1, upper_inc1; /* Lower/upper bound inclusion of the segment */
+    bool lower_inc_def, upper_inc_def; /* Default lower/upper bound inclusion */
+    int cmp = datum_cmp(value1, value2, basetype);
+    if (cmp <= 0)
     {
       /* Both for constant and increasing segments */
       min_value = value1;
@@ -921,16 +924,13 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
       lower_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
       upper_inc1 = (i == 1) ? seq->period.lower_inc : true;
     }
-    if (datum_eq(min_value, max_value, basetype))
-    {
-      lower_inc1 = upper_inc1 = true;
-    }
+
     /* Split the segment into buckets */
-    span_set(min_value, max_value, lower_inc1, (incr != 0) ? upper_inc1 : true,
+    span_set(min_value, max_value, lower_inc1, (cmp != 0) ? upper_inc1 : true,
       basetype, &segspan);
     TInstant *bounds[2];
-    bounds[first] = (incr <= 0) ? (TInstant *) inst1 : (TInstant *) inst2;
-    Datum bucket_lower = (incr <= 0) ? bucket_value1 : bucket_value2;
+    bounds[first] = (cmp <= 0) ? (TInstant *) inst1 : (TInstant *) inst2;
+    Datum bucket_lower = (cmp <= 0) ? bucket_value1 : bucket_value2;
     Datum bucket_upper = datum_add(bucket_lower, size, basetype, basetype);
     for (int j = first_bucket; j <= last_bucket; j++)
     {
@@ -949,7 +949,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
           tinstant_make(projvalue, seq->temptype, t);
       }
       else
-        bounds[last] = (incr <= 0) ? (TInstant *) inst2 : (TInstant *) inst1;
+        bounds[last] = (cmp <= 0) ? (TInstant *) inst2 : (TInstant *) inst1;
       /* Determine the bounds of the resulting sequence */
       if (j == first_bucket || j == last_bucket)
       {
@@ -958,16 +958,16 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
           &bucketspan);
         Span inter;
         bool found = inter_span_span(&segspan, &bucketspan, &inter);
-        if (found && incr != 0)
+        if (found)
         {
-          if (incr < 0)
+          /* Do nothing for constant segments */
+          if (cmp < 0)
           {
             lower_inc1 = inter.lower_inc;
             upper_inc1 = inter.upper_inc;
           }
-          else
+          else if (cmp > 0)
           {
-            /* Both for constant and decreasing segments */
             lower_inc1 = inter.upper_inc;
             upper_inc1 = inter.lower_inc;
           }

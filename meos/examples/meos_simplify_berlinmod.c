@@ -37,8 +37,7 @@
  * instants of the two simplified trips.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `meos_clip_berlinmod.c` in the same directory. Also, the program does
- * not cope with erroneous inputs, such as invalid trips or trajectories.
+ * file `meos_disassemble_berlinmod.c` in the same directory.
  *
  * The program can be build as follows
  * @code
