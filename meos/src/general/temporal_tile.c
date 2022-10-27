@@ -338,10 +338,9 @@ span_bucket_list(const Span *bounds, Datum size, Datum origin, int count)
 {
   SpanBucketState *state = span_bucket_state_make(bounds, size, origin);
   Span *buckets = palloc0(sizeof(Span) * count);
-  int i = 0;
-  while (! state->done)
+  for (int i = 0; i < count; i++)
   {
-    span_bucket_set(state->value, state->size, state->basetype, &buckets[i++]);
+    span_bucket_set(state->value, state->size, state->basetype, &buckets[i]);
     span_bucket_state_next(state);
   }
   return buckets;
@@ -371,7 +370,7 @@ intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount)
  *
  * @param[in] bounds Input span to split
  * @param[in] size Size of the buckets
- * @param[in] offset Origin of the buckets
+ * @param[in] origin Origin of the buckets
  * @param[out] newcount Number of elements in the output array
  */
 Span *
@@ -393,7 +392,7 @@ floatspan_bucket_list(const Span *bounds, double size, double origin,
  * @param[in] origin Origin of the buckets
  * @param[out] newcount Number of elements in the output array
  */
-Span **
+Span *
 period_bucket_list(const Span *bounds, const Interval *duration,
   TimestampTz origin, int *newcount)
 {
@@ -403,6 +402,178 @@ period_bucket_list(const Span *bounds, const Interval *duration,
     DatumGetTimestampTz(bounds->lower)) / size);
   return span_bucket_list(bounds, Int64GetDatum(size),
     TimestampTzGetDatum(origin), *newcount);
+}
+#endif /* MEOS */
+
+/*****************************************************************************
+ * TBOX tile functions
+ *****************************************************************************/
+
+/**
+ * Generate a tile from the a multidimensional grid
+ *
+ * @param[in] value Start value of the tile to output
+ * @param[in] t Start timestamp of the tile to output
+ * @param[in] xsize Value size of the tiles
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ */
+void
+tbox_tile_set(double value, TimestampTz t, double xsize, int64 tunits,
+  TBOX *box)
+{
+  Datum xmin = Float8GetDatum(value);
+  Datum xmax = Float8GetDatum(value + xsize);
+  Datum tmin = TimestampTzGetDatum(t);
+  Datum tmax = TimestampTzGetDatum(t + tunits);
+  Period period;
+  Span span;
+  span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, &period);
+  span_set(xmin, xmax, true, false, T_FLOAT8, &span);
+  tbox_set(&period, &span, box);
+  return;
+}
+
+/**
+ * Generate a tile from the a multidimensional grid
+ *
+ * @param[in] value Start value of the tile to output
+ * @param[in] t Start timestamp of the tile to output
+ * @param[in] xsize Value size of the tiles
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ */
+TBOX *
+tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits)
+{
+  TBOX *result = palloc(sizeof(TBOX));
+  tbox_tile_set(value, t, xsize, tunits, result);
+  return result;
+}
+
+/**
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] box Bounds of the multidimensional grid
+ * @param[in] xsize Value size of the tiles
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[in] xorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ *
+ * @pre Both xsize and tunits must be greater than 0.
+ */
+TboxGridState *
+tbox_tile_state_make(const TBOX *box, double xsize, const Interval *duration,
+  double xorigin, TimestampTz torigin)
+{
+  int64 tunits = interval_units(duration);
+  assert(xsize > 0 || tunits > 0);
+  TboxGridState *state = palloc0(sizeof(TboxGridState));
+
+  /* Fill in state */
+  state->done = false;
+  state->i = 1;
+  state->xsize = xsize;
+  state->tunits = tunits;
+  if (xsize)
+  {
+    state->box.span.lower = Float8GetDatum(float_bucket(
+      DatumGetFloat8(box->span.lower), xsize, xorigin));
+    state->box.span.upper = Float8GetDatum(float_bucket(
+      DatumGetFloat8(box->span.upper), xsize, xorigin));
+  }
+  if (tunits)
+  {
+    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.lower), duration, torigin));
+    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket(
+      DatumGetTimestampTz(box->period.upper), duration, torigin));
+  }
+  state->value = DatumGetFloat8(state->box.span.lower);
+  state->t = DatumGetTimestampTz(state->box.period.lower);
+  return state;
+}
+
+/**
+ * Increment the current state to the next tile of the multidimensional grid
+ *
+ * @param[in] state State to increment
+ */
+void
+tbox_tile_state_next(TboxGridState *state)
+{
+  if (!state || state->done)
+      return;
+  /* Move to the next tile */
+  state->i++;
+  state->value += state->xsize;
+  if (state->value > DatumGetFloat8(state->box.span.upper))
+  {
+    state->value = DatumGetFloat8(state->box.span.lower);
+    state->t += state->tunits;
+    if (state->t > DatumGetTimestampTz(state->box.period.upper))
+    {
+      state->done = true;
+      return;
+    }
+  }
+  return;
+}
+
+/*****************************************************************************
+ * Multidimensional tile list functions
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @brief Return the bucket list from a span.
+ *
+ * @param[in] bounds Input span to split
+ * @param[in] size Bucket size
+ * @param[in] origin Origin of the buckets
+ * @param[out] newcount Number of elements in the output array
+ */
+
+TBOX *
+tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
+  double xorigin, TimestampTz torigin, int *rows, int *columns)
+{
+  // TODO: generalize for intspan
+  ensure_positive_datum(Float8GetDatum(xsize), bounds->span.basetype);
+  ensure_valid_duration(duration);
+  int64 tsize = interval_units(duration);
+  TboxGridState *state = tbox_tile_state_make(bounds, xsize, duration,
+    xorigin, torigin);
+  int no_rows = ceil((DatumGetFloat8(bounds->span.upper) -
+    DatumGetFloat8(bounds->span.lower)) / xsize);
+  int no_cols = ceil((DatumGetTimestampTz(bounds->period.upper) -
+    DatumGetTimestampTz(bounds->period.lower)) / tsize);
+  TBOX *tiles = palloc0(sizeof(TBOX) * no_rows * no_cols);
+  for (int i = 0; i < no_rows * no_cols; i++)
+  {
+    tbox_tile_set(state->value, state->t, state->xsize, state->tunits,
+      &tiles[i]);
+    tbox_tile_state_next(state);
+  }
+  *rows = no_rows;
+  *columns = no_cols;
+  return tiles;
+}
+
+/**
+ * @ingroup libmeos_temporal_tiling
+ * @brief Return the grid list from a span and a period.
+ *
+ * @param[in] bounds Input value span to split
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] origin Origin of the buckets
+ * @param[out] newcount Number of elements in the output array
+ */
+TBOX *
+floatspan_period_tile_list(const TBOX *bounds, double xsize,
+  const Interval *duration, double xorigin, TimestampTz torigin, int *rows,
+  int *columns)
+{
+  return tbox_tile_list(bounds, Float8GetDatum(xsize), duration,
+    Float8GetDatum(xorigin), torigin, rows, columns);
 }
 #endif /* MEOS */
 

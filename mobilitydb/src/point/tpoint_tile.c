@@ -47,7 +47,6 @@
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
-#include "pg_point/tpoint_tile.h"
 
 /*****************************************************************************
  * Bit Matrix implementation based on

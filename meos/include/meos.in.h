@@ -1606,6 +1606,8 @@ extern Span *intspan_bucket_list(const Span *bounds, int size, int origin, int *
 extern Span *floatspan_bucket_list(const Span *bounds, double size, double origin, int *newcount);
 extern Span *period_bucket_list(const Span *bounds, const Interval *duration, TimestampTz origin, int *newcount);
 
+extern TBOX *tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration, double xorigin, TimestampTz torigin, int *rows, int *columns);
+
 extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int *newcount);
 extern Temporal **tfloat_value_split(Temporal *temp, double size, double origin, int *newcount);
 extern Temporal **temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin, int *newcount);
