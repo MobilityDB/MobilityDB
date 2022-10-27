@@ -50,6 +50,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h> 
 #include <meos.h>
 
 /* Maximum length in characters of a header in the input CSV file */

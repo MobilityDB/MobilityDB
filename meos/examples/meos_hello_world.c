@@ -38,6 +38,7 @@
  */
 
 #include <stdio.h>  /* for printf */
+#include <stdlib.h>   /* for free */
 
 /* Include the MEOS API header */
 #include "meos.h"

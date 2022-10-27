@@ -46,7 +46,9 @@
  */
 
 #include <stdio.h>
-#include "meos.h"
+#include <stdlib.h>
+#include <string.h>
+#include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 160000
@@ -69,6 +71,12 @@ typedef struct
   Temporal *speed;
 } trip_record;
 
+typedef struct
+{
+  int count;
+  Interval duration;
+} split_record;
+
 /* Variables to read the input CSV file */
 char trip_buffer[MAX_LENGTH_TRIP];
 char geo_buffer[MAX_LENGTH_GEOM];
@@ -79,11 +87,9 @@ int main(void)
 {
   /* Allocate space for the trips and their speed */
   trip_record trips[MAX_NO_TRIPS];
-  Temporal *value_splits[MAX_NO_BUCKETS][MAX_NO_TRIPS] = {0};
-  Temporal *time_splits[MAX_NO_BUCKETS][MAX_NO_TRIPS] = {0};
-  int count_value_splits[MAX_NO_BUCKETS] = {0};
-  int count_time_splits[MAX_NO_BUCKETS] = {0};
-  // Temporal *value_time_buckets[MAX_NO_BUCKETS][MAX_NO_BUCKETS];
+  split_record value_splits[MAX_NO_BUCKETS] = {0};
+  split_record time_splits[MAX_NO_BUCKETS] = {0};
+  // double value_time_buckets[MAX_NO_BUCKETS] = {0};
 
   /* Number of records */
   int records = 0;
@@ -166,7 +172,13 @@ int main(void)
     {
       Temporal *split = tnumber_at_span(trips[i].speed, value_buckets[j]);
       if (split != NULL)
-        value_splits[j][count_value_splits[j]++] = split;
+      {
+        value_splits[j].count++;
+        Interval *dur1 = temporal_duration(split);
+        Interval *dur2 = pg_interval_pl(dur1, &value_splits[j].duration);
+        memcpy(&value_splits[j].duration, dur2, sizeof(Interval));
+        free(split); free(dur1); free(dur2);
+      }
     }
   }
 
@@ -175,10 +187,42 @@ int main(void)
   {
     for (j = 0; j < no_time_buckets; j++)
     {
-      Temporal *split = tnumber_at_span(trips[i].speed, time_buckets[j]);
+      Temporal *split = temporal_at_period(trips[i].speed, time_buckets[j]);
       if (split != NULL)
-        time_splits[j][count_time_splits[j]++] = split;
+      {
+        time_splits[j].count++;
+        Interval *dur1 = temporal_duration(split);
+        Interval *dur2 = pg_interval_pl(dur1, &time_splits[j].duration);
+        memcpy(&time_splits[j].duration, dur2, sizeof(Interval));
+        free(split); free(dur1); free(dur2);
+      }
     }
+  }
+
+  /* Print results */
+  printf("--------------------\n");
+  printf("Speed: Value buckets\n");
+  printf("--------------------\n");
+  for (i = 0; i < no_value_buckets; i++)
+  {
+    char *span_str = span_out(value_buckets[i], 0);
+    char *interval_str = pg_interval_out(&value_splits[i].duration);
+    printf("Bucket: %d, Span: %s, Count: %d, Duration : %s\n",
+      i, span_str, value_splits[i].count, interval_str);
+    free(span_str); free(interval_str);
+  }
+
+  /* Print results */
+  printf("-------------------\n");
+  printf("Speed: Time buckets\n");
+  printf("-------------------\n");
+  for (i = 0; i < no_time_buckets; i++)
+  {
+    char *span_str = span_out(time_buckets[i], 0);
+    char *interval_str = pg_interval_out(&time_splits[i].duration);
+    printf("Bucket: %d, Period: %s, Count: %d, Duration : %s\n",
+      i, span_str, time_splits[i].count, interval_str);
+    free(span_str); free(interval_str);
   }
 
   /* Free memory */

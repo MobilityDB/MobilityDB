@@ -65,8 +65,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libpq-fe.h>
-
-#include "meos.h"
+#include <meos.h>
 
 #define NO_BULK_INSERT 20
 

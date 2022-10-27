@@ -46,7 +46,8 @@
  */
 
 #include <stdio.h>
-#include "meos.h"
+#include <stdlib.h> 
+#include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 160000

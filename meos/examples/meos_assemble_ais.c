@@ -46,7 +46,8 @@
  */
 
 #include <stdio.h>
-#include "meos.h"
+#include <stdlib.h> 
+#include <meos.h>
 
 #define MAX_INSTANTS 50000
 #define MAX_TRIPS 5

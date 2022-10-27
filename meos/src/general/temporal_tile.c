@@ -60,14 +60,30 @@
  * @param[in] size Size of the buckets
  * @param[in] basetype Type of the arguments
  */
-Span *
-span_bucket_get(Datum lower, Datum size, mobdbType basetype)
+void
+span_bucket_set(Datum lower, Datum size, mobdbType basetype, Span *span)
 {
   Datum upper = (basetype == T_TIMESTAMPTZ) ?
     TimestampTzGetDatum(DatumGetTimestampTz(lower) + DatumGetInt64(size)) :
     datum_add(lower, size, basetype, basetype);
-  return span_make(lower, upper, true, false, basetype);
+  return span_set(lower, upper, true, false, basetype, span);
 }
+
+/**
+ * Generate an integer or float span bucket from a bucket list
+ *
+ * @param[in] lower Start value of the bucket
+ * @param[in] size Size of the buckets
+ * @param[in] basetype Type of the arguments
+ */
+Span *
+span_bucket_get(Datum lower, Datum size, mobdbType basetype)
+{
+  Span *result = palloc(sizeof(Span));
+  span_bucket_set(lower, size, basetype, result);
+  return result;
+}
+
 
 /**
  * Create the initial state that persists across multiple calls of the function
@@ -317,15 +333,15 @@ datum_bucket(Datum value, Datum size, Datum origin, mobdbType basetype)
  * @param[out] newcount Number of elements in the output array
  */
 
-Span **
-span_bucket_list(const Span *bounds, Datum size, Datum origin, int *newcount)
+Span *
+span_bucket_list(const Span *bounds, Datum size, Datum origin, int count)
 {
   SpanBucketState *state = span_bucket_state_make(bounds, size, origin);
-  Span **buckets = palloc0(sizeof(SpanBucketState) * *newcount);
+  Span *buckets = palloc0(sizeof(Span) * count);
   int i = 0;
   while (! state->done)
   {
-    buckets[i++] = span_bucket_get(state->value, state->size, state->basetype);
+    span_bucket_set(state->value, state->size, state->basetype, &buckets[i++]);
     span_bucket_state_next(state);
   }
   return buckets;
@@ -340,13 +356,13 @@ span_bucket_list(const Span *bounds, Datum size, Datum origin, int *newcount)
  * @param[in] origin Origin of the buckets
  * @param[out] newcount Number of elements in the output array
  */
-Span **
+Span *
 intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount)
 {
   *newcount = ceil((DatumGetInt32(bounds->upper) -
     DatumGetInt32(bounds->lower)) / size);
   return span_bucket_list(bounds, Int32GetDatum(size), Int32GetDatum(origin),
-    newcount);
+    *newcount);
 }
 
 /**
@@ -358,14 +374,14 @@ intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount)
  * @param[in] offset Origin of the buckets
  * @param[out] newcount Number of elements in the output array
  */
-Span **
+Span *
 floatspan_bucket_list(const Span *bounds, double size, double origin,
   int *newcount)
 {
   *newcount = ceil((DatumGetFloat8(bounds->upper) -
      DatumGetFloat8(bounds->lower)) / size);
   return span_bucket_list(bounds, Float8GetDatum(size),
-    Float8GetDatum(origin), newcount);
+    Float8GetDatum(origin), *newcount);
 }
 
 /**
@@ -386,7 +402,7 @@ period_bucket_list(const Span *bounds, const Interval *duration,
   *newcount = ceil((DatumGetTimestampTz(bounds->upper) -
     DatumGetTimestampTz(bounds->lower)) / size);
   return span_bucket_list(bounds, Int64GetDatum(size),
-    TimestampTzGetDatum(origin), newcount);
+    TimestampTzGetDatum(origin), *newcount);
 }
 #endif /* MEOS */
 

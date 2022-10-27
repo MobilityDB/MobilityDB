@@ -87,6 +87,7 @@ typedef struct ValueTimeSplitState
 
 /*****************************************************************************/
 
+extern void span_bucket_set(Datum lower, Datum size, mobdbType basetype, Span *span);
 extern Span *span_bucket_get(Datum lower, Datum size, mobdbType basetype);
 extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size, Datum origin);
 extern void span_bucket_state_next(SpanBucketState *state);
