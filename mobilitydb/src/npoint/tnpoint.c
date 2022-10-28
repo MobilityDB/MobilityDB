@@ -131,7 +131,7 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tnpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

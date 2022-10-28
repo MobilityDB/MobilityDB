@@ -39,13 +39,13 @@
  *   OSM and publicly available statistical data
  * - `brussels_region.csv`: geometry of the Brussels region obtained from OSM.
  *   It is the spatial union of the 19 communes
- * - `trips.csv`: 64 trips from 5 cars during 4 days obtained from the
+ * - `trips.csv`: 55 trips from 5 cars during 4 days obtained from the
  *   generator at scale factor 0.005
  * In the above files, the coordinates are given in the 3857 coordinate system,
  * https://epsg.io/3857
  * and the timestamps are given in the Europe/Brussels time zone.
  * This simple program does not cope with erroneous inputs, such as missing
- * fields or invalid timestamp values.
+ * fields or invalid values.
  *
  * The program can be build as follows
  * @code
@@ -54,10 +54,22 @@
  */
 
 #include <stdio.h>
-#include "meos.h"
+#include <string.h>
+#include <meos.h>
 
+/* Maximum length in characters of a trip in the input data */
+#define MAX_LENGTH_TRIP 160000
+/* Maximum length in characters of a geometry in the input data */
+#define MAX_LENGTH_GEOM 100000
+/* Maximum length in characters of a header record in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
+/* Maximum length in characters of a name in the input data */
 #define MAX_LENGTH_NAME 100
+/* Maximum length in characters of a date in the input data */
+#define MAX_LENGTH_DATE 12
+/* Number of vehicles */
 #define NO_VEHICLES 5
+/* Number of communes */
 #define NO_COMMUNES 19
 
 typedef struct
@@ -76,22 +88,22 @@ typedef struct
 
 typedef struct
 {
-  int vehicle;
+  int tripid;
+  int vehid;
   int seq;
   Temporal *trip;
 } trip_record;
 
 /* Arrays to compute the results */
-commune_record communes[19];
-region_record brussels_region;
+commune_record communes[NO_COMMUNES];
 double distance[NO_VEHICLES + 1][NO_COMMUNES + 3] = {0};
 
-/* Maximum length in characters of a trip in the input data */
-char trip_buffer[160000];
-/* Maximum length in characters of a geometry in the input data */
-char geo_buffer[100000];
-/* Maximum length in characters of a date in the input data */
-char date_buffer[12];
+char trip_buffer[MAX_LENGTH_TRIP];
+char geo_buffer[MAX_LENGTH_GEOM];
+char header_buffer[MAX_LENGTH_HEADER];
+char date_buffer[MAX_LENGTH_DATE];
+
+region_record brussels_region;
 
 /* Read communes from file */
 int read_communes(void)
@@ -105,19 +117,19 @@ int read_communes(void)
     return 1;
   }
 
-  int records = 0;
+  int no_records = 0;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
     int read = fscanf(file, "%d,%100[^,],%d,%100000[^\n]\n",
-      &communes[records].id, communes[records].name,
-      &communes[records].population, geo_buffer);
+      &communes[no_records].id, communes[no_records].name,
+      &communes[no_records].population, geo_buffer);
     /* Transform the string representing the geometry into a geometry value */
-    communes[records++].geom = gserialized_in(geo_buffer, -1);
+    communes[no_records++].geom = gserialized_in(geo_buffer, -1);
 
     if (read != 4 && !feof(file))
     {
@@ -132,7 +144,7 @@ int read_communes(void)
     }
   } while (!feof(file));
 
-  printf("\n%d commune records read.", records);
+  printf("%d commune records read\n", no_records);
 
   /* Close the file */
   fclose(file);
@@ -153,7 +165,7 @@ int read_brussels_region(void)
   }
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   int read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
@@ -175,7 +187,7 @@ int read_brussels_region(void)
     return 1;
   }
 
-  printf("\nBrussels region record read.");
+  printf("Brussels region record read\n");
 
   /* Close the file */
   fclose(file);
@@ -214,7 +226,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
     if (all_communes || distance[NO_VEHICLES][j] != 0)
       len += sprintf(buf+len, "   %2d   ", j);
   }
-  len += sprintf(buf+len, "| Outside | Inside\n");
+  len += sprintf(buf+len, "|  Inside | Outside\n");
   for (j = 0; j < NO_COMMUNES + 3; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
@@ -276,7 +288,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL);
 
   /* Read communes file */
   read_communes();
@@ -294,21 +306,27 @@ int main(void)
   }
 
   trip_record trip_rec;
-  int records = 0;
+  int no_records = 0, i;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
+  printf("Reading trip records\n");
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &trip_rec.vehicle, date_buffer, &trip_rec.seq, trip_buffer, geo_buffer);
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+      &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq,
+      trip_buffer);
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     if (read == 5)
-      records++;
+    {
+      no_records++;
+      printf("*");
+      fflush(stdout);
+    }
 
     if (read != 5 && !feof(file))
     {
@@ -327,10 +345,10 @@ int main(void)
     /* Compute the total distance */
     double d = tpoint_length(trip_rec.trip) / 1000;
     /* Add to the vehicle total and the column total */
-    distance[trip_rec.vehicle - 1][0] += d;
+    distance[trip_rec.vehid - 1][0] += d;
     distance[NO_VEHICLES][0] += d;
     /* Loop for each commune */
-    for (int i = 0; i < 19; i ++)
+    for (i = 0; i < NO_COMMUNES; i ++)
     {
       Temporal *atgeom = tpoint_at_geometry(trip_rec.trip, communes[i].geom);
       if (atgeom)
@@ -338,11 +356,12 @@ int main(void)
         /* Compute the length of the trip projected to the commune */
         d = tpoint_length(atgeom) / 1000;
         /* Add to the cell */
-        distance[trip_rec.vehicle - 1][i + 1] += d;
+        distance[trip_rec.vehid - 1][i + 1] += d;
         /* Add to the row total, the commune total, and inside total */
-        distance[trip_rec.vehicle - 1][NO_COMMUNES + 2] += d;
+        distance[trip_rec.vehid - 1][NO_COMMUNES + 1] += d;
         distance[NO_VEHICLES][i + 1] += d;
-        distance[NO_VEHICLES][NO_COMMUNES + 2] += d;
+        distance[NO_VEHICLES][NO_COMMUNES + 1] += d;
+        free(atgeom);
       }
     }
     /* Compute the distance outside Brussels Region */
@@ -352,17 +371,26 @@ int main(void)
     {
       d = tpoint_length(minusgeom) / 1000;
       /* Add to the row */
-      distance[trip_rec.vehicle - 1][NO_COMMUNES + 1] += d;
+      distance[trip_rec.vehid - 1][NO_COMMUNES + 2] += d;
       /* Add to the column total */
-      distance[NO_VEHICLES][NO_COMMUNES + 1] += d;
+      distance[NO_VEHICLES][NO_COMMUNES + 2] += d;
+      free(minusgeom);
     }
+
+    /* Free memory */
+    free(trip_rec.trip);
 
   } while (!feof(file));
 
-  printf("\n%d trip records read.\n\n", records);
+  printf("\n%d trip records read.\n\n", no_records);
   /* The last argument states whether all communes, including those that have
      a zero value, are printed */
   matrix_print(distance, false);
+
+  /* Free memory */
+  for (i = 0; i < NO_COMMUNES; i++)
+    free(communes[i].geom);
+  free(brussels_region.geom);
 
   /* Close the file */
   fclose(file);

@@ -40,7 +40,7 @@
 #include <stdio.h>  /* for printf */
 
 /* Include the MEOS API header */
-#include "meos.h"
+#include <meos.h>
 
 #define MAX_COUNT 20
 

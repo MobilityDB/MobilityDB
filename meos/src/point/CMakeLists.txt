@@ -3,6 +3,7 @@ add_library(point OBJECT
   pgis_call.c
   stbox.c
   tpoint.c
+  tpoint_aggfuncs.c
   tpoint_analytics.c
   tpoint_boxops.c
   tpoint_boxops_meos.c
@@ -16,4 +17,5 @@ add_library(point OBJECT
   tpoint_spatialrels_meos.c
   tpoint_tempspatialrels.c
   tpoint_tempspatialrels_meos.c
+  tpoint_tile.c
 )

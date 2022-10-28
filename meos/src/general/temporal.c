@@ -349,18 +349,24 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
 void
 ensure_positive_datum(Datum size, mobdbType basetype)
 {
-  ensure_tnumber_basetype(basetype);
+  ensure_span_basetype(basetype);
   if (basetype == T_INT4)
   {
     int isize = DatumGetInt32(size);
     if (isize <= 0)
       elog(ERROR, "The value must be positive: %d", isize);
   }
-  else /* basetype == T_FLOAT8 */
+  else if (basetype == T_FLOAT8)
   {
     double dsize = DatumGetFloat8(size);
     if (dsize <= 0.0)
       elog(ERROR, "The value must be positive: %f", dsize);
+  }
+  else /* basetype == T_TIMESTAMPTZ */
+  {
+    int64 isize = DatumGetInt64(size);
+    if (isize <= 0)
+      elog(ERROR, "The value must be positive: %ld", isize);
   }
   return;
 }
@@ -610,16 +616,16 @@ tgeogpoint_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  */
 char *
-temporal_out(const Temporal *temp, Datum arg)
+temporal_out(const Temporal *temp, Datum maxdd)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_out((TInstant *) temp, arg);
+    result = tinstant_out((TInstant *) temp, maxdd);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_out((TSequence *) temp, arg);
+    result = tsequence_out((TSequence *) temp, maxdd);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_out((TSequenceSet *) temp, arg);
+    result = tsequenceset_out((TSequenceSet *) temp, maxdd);
   return result;
 }
 
@@ -746,9 +752,9 @@ tint_from_base(int i, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tfloat_from_base(bool b, const Temporal *temp, interpType interp)
+tfloat_from_base(double d, const Temporal *temp, interpType interp)
 {
-  return temporal_from_base(BoolGetDatum(b), T_TFLOAT, temp, interp);
+  return temporal_from_base(Float8GetDatum(d), T_TFLOAT, temp, interp);
 }
 
 /**
@@ -794,6 +800,7 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  * @brief Append an instant to the end of a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
+ * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
  */
 Temporal *
@@ -1337,15 +1344,13 @@ temporal_interpolation(const Temporal *temp)
 {
   char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
+  if (temp->subtype == TINSTANT || interp == DISCRETE)
     strcpy(result, "Discrete");
-  else if (temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET)
-  {
-    if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
-      strcpy(result, "Linear");
-    else
-      strcpy(result, "Stepwise");
-  }
+  else if (interp == STEPWISE)
+    strcpy(result, "Stepwise");
+  else
+    strcpy(result, "Linear");
   return result;
 }
 

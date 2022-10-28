@@ -148,7 +148,7 @@ Tnpoint_speed(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnpoint_speed(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -188,7 +188,7 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnpoint_azimuth(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -208,7 +208,7 @@ tnpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *result = tnpoint_restrict_geometry(temp, gs, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

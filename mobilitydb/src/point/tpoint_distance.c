@@ -194,7 +194,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
   TInstant *result = nai_tpoint_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

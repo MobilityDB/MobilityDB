@@ -4,12 +4,14 @@ add_library(general OBJECT
   lifting.c
   periodset.c
   pg_call.c
+  skiplist.c
   span.c
   span_ops.c
   tbool_boolops.c
   tbool_boolops_meos.c
   tbox.c
   temporal.c
+  temporal_aggfuncs.c
   temporal_boxops.c
   temporal_boxops_meos.c
   temporal_catalog.c
@@ -23,6 +25,7 @@ add_library(general OBJECT
   temporal_similarity.c
   temporal_tile.c
   temporal_util.c
+  time_aggfuncs.c
   time_ops.c
   timestampset.c
   tinstant.c

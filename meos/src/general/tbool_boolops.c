@@ -34,6 +34,8 @@
 #include "general/tbool_boolops.h"
 
 /* MobilityDB */
+#include <meos.h>
+#include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 
@@ -125,6 +127,22 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_bool
+ * @brief Return the time when the temporal boolean has value true.
+ */
+PeriodSet *
+tbool_when_true(const Temporal *temp)
+{
+  Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
+  if (! temp1)
+    return NULL;
+  PeriodSet *result = temporal_time(temp1);
+  return result;
 }
 
 /*****************************************************************************/

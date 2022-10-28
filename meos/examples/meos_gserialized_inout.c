@@ -38,9 +38,8 @@
  */
 
 #include <stdio.h>  /* for printf */
-
 /* Include the MEOS API header */
-#include "meos.h"
+#include <meos.h>
 
 int main()
 {
@@ -164,7 +163,7 @@ int main()
   free(point_text); free(point_geojson); free(point_hexwkb);
   free(linestring); free(linestring1); free(linestring2); free(linestring3);
   free(linestring_text); free(linestring_geojson); free(linestring_hexwkb);
-  free(polygon); free(polygon1); free(polygon2); free(polygon3); 
+  free(polygon); free(polygon1); free(polygon2); free(polygon3);
   free(polygon_text); free(polygon_geojson); free(polygon_hexwkb);
 
   /* Finalize MEOS */

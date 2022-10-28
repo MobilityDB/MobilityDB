@@ -151,6 +151,11 @@ struct tempsubtype_struct
 
 extern void _PG_init(void);
 
+/* PostgreSQL cache functions */
+
+extern FunctionCallInfo fetch_fcinfo();
+extern void store_fcinfo(FunctionCallInfo fcinfo);
+
 /* Typmod functions */
 
 extern const char *tempsubtype_name(int16 subtype);

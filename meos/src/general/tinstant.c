@@ -220,18 +220,18 @@ tgeogpointinst_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  *
  * @param[in] inst Temporal instant
- * @param[in] arg Maximum number of decimal digits to output for floating point
+ * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */
 char *
-tinstant_to_string(const TInstant *inst, Datum arg,
+tinstant_to_string(const TInstant *inst, Datum maxdd,
   char *(*value_out)(mobdbType, Datum, Datum))
 {
   char *t = pg_timestamptz_out(inst->t);
   mobdbType basetype = temptype_basetype(inst->temptype);
-  char *value = value_out(basetype, tinstant_value(inst), arg);
+  char *value = value_out(basetype, tinstant_value(inst), maxdd);
   char *result;
   if (inst->temptype == T_TTEXT)
   {
@@ -253,9 +253,9 @@ tinstant_to_string(const TInstant *inst, Datum arg,
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  */
 char *
-tinstant_out(const TInstant *inst, Datum arg)
+tinstant_out(const TInstant *inst, Datum maxdd)
 {
-  return tinstant_to_string(inst, arg, &basetype_output);
+  return tinstant_to_string(inst, maxdd, &basetype_output);
 }
 
 /*****************************************************************************
@@ -319,6 +319,7 @@ tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = temptype_continuous(temptype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  // MOBDB_FLAGS_SET_INTERP(result->flags, DISCRETE);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))

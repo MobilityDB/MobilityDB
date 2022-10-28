@@ -65,9 +65,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libpq-fe.h>
+#include <meos.h>
 
-#include "meos.h"
-
+/* Maximum length in characters of a header record in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
+/* Maximum length for a SQL output query */
+#define MAX_LENGTH_SQL 16384
+/* Number of inserts that are sent in bulk */
 #define NO_BULK_INSERT 20
 
 typedef struct
@@ -105,12 +109,11 @@ main(int argc, char **argv)
   const char *conninfo;
   PGconn *conn;
   AIS_record rec;
-  int records = 0;
-  int nulls = 0;
-  /* Maximum length in characters of a line in the input data */
-  char buffer[1024];
+  int no_records = 0;
+  int no_nulls = 0;
+  char text_buffer[MAX_LENGTH_HEADER];
   /* Maximum length in characters of the string for the bulk insert */
-  char insert_buffer[16384];
+  char insert_buffer[MAX_LENGTH_SQL];
 
   /***************************************************************************
    * Section 1: Connexion to the database
@@ -145,7 +148,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");
@@ -163,8 +166,8 @@ main(int argc, char **argv)
 
   /* Create the table that will hold the data */
   printf("Creating the table in the database\n");
-  exec_sql(conn, "DROP TABLE IF EXISTS public.MEOS_demo;", PGRES_COMMAND_OK);
-  exec_sql(conn, "CREATE TABLE public.MEOS_demo(MMSI integer, "
+  exec_sql(conn, "DROP TABLE IF EXISTS public.AISInstants;", PGRES_COMMAND_OK);
+  exec_sql(conn, "CREATE TABLE public.AISInstants(MMSI integer, "
     "location public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
 
   /* Start a transaction block */
@@ -173,24 +176,24 @@ main(int argc, char **argv)
   printf("Start processing the file\n");
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", buffer);
+  fscanf(file, "%1023s\n", text_buffer);
 
   /* Continue reading the file */
   int len;
   do
   {
     int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
-      buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
+      text_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = pg_timestamp_in(buffer, -1);
+    rec.T = pg_timestamp_in(text_buffer, -1);
 
     if (read == 5)
-      records++;
+      no_records++;
 
     if (read != 5 && ! feof(file))
     {
       printf("Record with missing values ignored\n");
-      nulls++;
+      no_nulls++;
     }
 
     if (ferror(file))
@@ -201,9 +204,9 @@ main(int argc, char **argv)
     }
 
     /* Create the INSERT command with the values read */
-    if ((records - 1) % NO_BULK_INSERT == 0)
+    if ((no_records - 1) % NO_BULK_INSERT == 0)
       len = sprintf(insert_buffer,
-        "INSERT INTO public.MEOS_demo(MMSI, location, SOG) VALUES ");
+        "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
     char *t_out = pg_timestamp_out(rec.T);
     len += sprintf(insert_buffer + len,
@@ -211,7 +214,7 @@ main(int argc, char **argv)
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);
     free(t_out);
 
-    if ((records - 1) % NO_BULK_INSERT == NO_BULK_INSERT - 1)
+    if ((no_records - 1) % NO_BULK_INSERT == NO_BULK_INSERT - 1)
     {
       /* Replace the last comma with a semicolon */
       insert_buffer[len - 1] = ';';
@@ -228,18 +231,18 @@ main(int argc, char **argv)
   }
 
   printf("%d records read.\n%d incomplete records ignored.\n",
-    records, nulls);
+    no_records, no_nulls);
 
-  sprintf(buffer, "SELECT COUNT(*) FROM public.MEOS_demo;");
-  PGresult *res = PQexec(conn, buffer);
+  sprintf(text_buffer, "SELECT COUNT(*) FROM public.AISInstants;");
+  PGresult *res = PQexec(conn, text_buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
-    fprintf(stderr, "SQL command failed:\n%s %s", buffer, PQerrorMessage(conn));
+    fprintf(stderr, "SQL command failed:\n%s %s", text_buffer, PQerrorMessage(conn));
     PQclear(res);
     exit_nicely(conn);
   }
 
-  printf("Query 'SELECT COUNT(*) FROM public.MEOS_demo' returned %s\n",
+  printf("Query 'SELECT COUNT(*) FROM public.AISInstants' returned %s\n",
     PQgetvalue(res, 0, 0));
 
   /* End the transaction */

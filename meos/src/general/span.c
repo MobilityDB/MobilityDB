@@ -373,10 +373,10 @@ unquote(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
-span_out(const Span *s, Datum arg)
+span_out(const Span *s, Datum maxdd)
 {
-  char *lower = unquote(basetype_output(s->basetype, s->lower, arg));
-  char *upper = unquote(basetype_output(s->basetype, s->upper, arg));
+  char *lower = unquote(basetype_output(s->basetype, s->lower, maxdd));
+  char *upper = unquote(basetype_output(s->basetype, s->upper, maxdd));
   char open = s->lower_inc ? (char) '[' : (char) '(';
   char close = s->upper_inc ? (char) ']' : (char) ')';
   char *result = palloc(strlen(lower) + strlen(upper) + 5);

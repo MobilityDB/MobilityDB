@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal mathematical operators (+, -, *, /) and functions (round,
- * degrees).
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
+ * for temporal numbers.
  */
 
 #ifndef __TEMPORAL_MATHFUNCS_H__
@@ -71,11 +71,8 @@ extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *));
 
-extern Temporal *tnumber_degrees(const Temporal *temp);
-
-extern TSequence *tnumberseq_derivative(const TSequence *seq);
-extern TSequenceSet *tnumberseqset_derivative(const TSequenceSet *ts);
-extern Temporal *tnumber_derivative(const Temporal *temp);
+extern TSequence *tfloatseq_derivative(const TSequence *seq);
+extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ts);
 
 /*****************************************************************************/
 

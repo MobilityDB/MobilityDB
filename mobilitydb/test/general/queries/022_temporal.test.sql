@@ -1701,11 +1701,6 @@ WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-12, 2 - 1e-15, 2 + 1e-1
   temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
 SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
 
-SELECT atValues(tbool 't@2000-01-01', ARRAY[true]);
-SELECT atValues(tbool '{t@2000-01-01}', ARRAY[true]);
-SELECT atValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', ARRAY[true]);
-SELECT atValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', ARRAY[true]);
-SELECT atValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', ARRAY[true]);
 SELECT atValues(tint '1@2000-01-01', ARRAY[1]);
 SELECT atValues(tint '{1@2000-01-01}', ARRAY[1]);
 SELECT atValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[1]);
@@ -1724,16 +1719,10 @@ SELECT atValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', ARRAY[
 SELECT atValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', ARRAY[text 'AAA']);
 SELECT atValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', ARRAY[text 'AAA']);
 
-SELECT atValues(tbool '{t@2000-01-01}', '{}'::bool[]);
 SELECT atValues(tint '{1@2000-01-01}', '{}'::int[]);
 SELECT atValues(tfloat '{1@2000-01-01}', '{}'::float[]);
 SELECT atValues(ttext '{1@2000-01-01}', '{}'::text[]);
 
-SELECT minusValues(tbool 't@2000-01-01', ARRAY[true]);
-SELECT minusValues(tbool '{t@2000-01-01}', ARRAY[true]);
-SELECT minusValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', ARRAY[true]);
-SELECT minusValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', ARRAY[true]);
-SELECT minusValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', ARRAY[true]);
 SELECT minusValues(tint '1@2000-01-01', ARRAY[1]);
 SELECT minusValues(tint '{1@2000-01-01}', ARRAY[1]);
 SELECT minusValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[1]);
@@ -1752,11 +1741,9 @@ SELECT minusValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', ARR
 SELECT minusValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', ARRAY[text 'AAA']);
 SELECT minusValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', ARRAY[text 'AAA']);
 
-SELECT minusValues(tbool '{t@2000-01-01}', '{}'::bool[]);
 SELECT minusValues(tint '{1@2000-01-01}', '{}'::int[]);
 SELECT minusValues(tfloat '{1@2000-01-01}', '{}'::float[]);
 SELECT minusValues(ttext '{1@2000-01-01}', '{}'::text[]);
-SELECT minusValues(tbool '{[t@2000-01-01, t@2000-01-03],[f@2000-01-04, f@2000-01-05]}', ARRAY[true, false]);
 SELECT minusValues(tint '{[1@2000-01-01, 1@2000-01-03],[2@2000-01-04, 2@2000-01-05]}', ARRAY[1, 2]);
 SELECT minusValues(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[2.5@2000-01-04, 2.5@2000-01-05]}', ARRAY[1.5, 2.5]);
 SELECT minusValues(ttext '{[AA@2000-01-01, AA@2000-01-03],[BB@2000-01-04, BB@2000-01-05]}', ARRAY[text 'AA', 'BB']);

@@ -63,14 +63,14 @@ SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FR
 
 -------------------------------------------------------------------------------
 
-SELECT multidimGrid(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT multidimGrid(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT multidimGrid(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week')) FROM
+SELECT extent(tile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
-SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
+SELECT extent(tile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 

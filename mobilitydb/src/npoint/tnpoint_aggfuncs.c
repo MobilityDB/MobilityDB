@@ -35,13 +35,19 @@
 
 /* C */
 #include <assert.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MobilityDB */
 #include <meos.h>
-#include "pg_general/temporal_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "pg_point/tpoint_aggfuncs.h"
+#include "point/tpoint_aggfuncs.h"
 #include "npoint/tnpoint.h"
+#include "npoint/tnpoint_aggfuncs.h"
+/* MobilityDB */
+#include "pg_general/skiplist.h"
+#include "pg_general/temporal.h"
 
 /*****************************************************************************/
 
@@ -56,34 +62,11 @@ Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *temp1 = tnpoint_tgeompoint(temp);
-
-  geoaggstate_check_temp(state, temp1);
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
-    &datum_sum_double4 : &datum_sum_double3;
-
-  int count;
-  Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
-  if (state)
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
-  }
-  else
-  {
-    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
-    struct GeoAggregateState extra =
-    {
-      .srid = tpoint_srid(temp1),
-      .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
-    };
-    aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
-  }
-
-  pfree_array((void **) temparr, count);
-  pfree(temp1);
+  store_fcinfo(fcinfo);
+  state = tnpoint_tcentroid_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }
+
 
 /*****************************************************************************/

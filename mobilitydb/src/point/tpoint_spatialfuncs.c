@@ -47,39 +47,10 @@
 #include "general/lifting.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
 #include "pg_point/postgis.h"
-
-/*****************************************************************************
- * PostGIS cache functions
- *****************************************************************************/
-
-/**
- * Global variable to save the fcinfo when PostGIS functions need to access
- * the proj cache such as transform, geography_distance, or geography_azimuth
- */
-FunctionCallInfo _FCINFO;
-
-/**
- * Fetch from the cache the fcinfo of the external function
- */
-FunctionCallInfo
-fetch_fcinfo()
-{
-  assert(_FCINFO);
-  return _FCINFO;
-}
-
-/**
- * Store in the cache the fcinfo of the external function
- */
-void
-store_fcinfo(FunctionCallInfo fcinfo)
-{
-  _FCINFO = fcinfo;
-  return;
-}
 
 /*****************************************************************************
  * Ever/always functions
@@ -899,7 +870,7 @@ Tpoint_speed(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_speed(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -941,7 +912,7 @@ Tpoint_azimuth(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_azimuth(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1033,7 +1004,7 @@ Bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *result = bearing_tpoint_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1091,7 +1062,7 @@ tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *result = tpoint_restrict_geometry(temp, geo, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1135,7 +1106,7 @@ Tpoint_at_stbox(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(1);
   Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -1153,7 +1124,7 @@ Tpoint_minus_stbox(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(1);
   Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

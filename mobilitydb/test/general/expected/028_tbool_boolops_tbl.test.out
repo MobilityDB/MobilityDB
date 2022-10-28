@@ -40,3 +40,9 @@ SELECT COUNT(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
     96
 (1 row)
 
+SELECT MAX(duration(whenTrue(temp #> 5))) FROM tbl_tfloat;
+       max       
+-----------------
+ 03:36:45.567922
+(1 row)
+

@@ -27,69 +27,64 @@
  *
  *****************************************************************************/
 
-#ifndef __PG_TEMPORAL_TILE_H__
-#define __PG_TEMPORAL_TILE_H__
+/**
+ * @brief Functions for spatiotemporal bounding boxes.
+ */
+
+#ifndef __TPOINT_TILE_H__
+#define __TPOINT_TILE_H__
 
 /* MobilityDB */
 #include "general/temporal.h"
 
-/*****************************************************************************/
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the bucket list
- */
-typedef struct SpanBucketState
-{
-  bool done;
-  int i;
-  mobdbType basetype;
-  Temporal *temp; /* NULL when generating bucket list, used for splitting */
-  Datum size;
-  Datum origin;
-  Datum minvalue;
-  Datum maxvalue;
-  Datum value;
-} SpanBucketState;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the multidimensional grid
- */
-typedef struct TboxGridState
-{
-  bool done;
-  int i;
-  double xsize;
-  int64 tunits;
-  TBOX box;
-  double value;
-  TimestampTz t;
-} TboxGridState;
+#define MAXDIMS 4
 
 /*****************************************************************************/
 
 /**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
+ * Structure for storing a bit matrix
  */
-typedef struct ValueTimeSplitState
+typedef struct
+{
+  int numdims;           /**< Number of dimensions */
+  int count[MAXDIMS];    /**< Number of elements in each dimension */
+  uint8_t byte[1];       /**< beginning of variable-length data */
+} BitMatrix;
+
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * a multidimensional grid
+ */
+typedef struct STboxGridState
 {
   bool done;           /**< True when all tiles have been processed */
   int i;               /**< Number of current tile */
-  Datum size;
-  int64 tunits;
-  Datum *value_buckets;
-  TimestampTz *time_buckets;
-  Temporal **fragments;
-  int count;
-} ValueTimeSplitState;
+  double size;         /**< Size of the x, y, and z dimension */
+  int64 tunits;        /**< Size of the time dimension */
+  STBOX box;           /**< Bounding box of the grid */
+  Temporal *temp;      /**< Optional temporal point to be split */
+  BitMatrix *bm;       /**< Optional bit matrix for speeding up
+                            the computation of the split functions */
+  double x;            /**< Minimum x value of the current tile */
+  double y;            /**< Minimum y value of the current tile */
+  double z;            /**< Minimum z value of the current tile */
+  TimestampTz t;       /**< Minimum t value of the current tile */
+  int coords[MAXDIMS]; /**< Coordinates of the current tile */
+} STboxGridState;
 
 /*****************************************************************************/
 
-extern int64 get_interval_units(Interval *interval);
+extern BitMatrix *bitmatrix_make(int *count, int numdims);
+extern void tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
+  BitMatrix *bm);
+  
+extern void stbox_tile_set(double x, double y, double z, TimestampTz t,
+  double size, int64 tunits, bool hasz, bool hast, int32 srid, STBOX *result);
+extern STboxGridState *stbox_tile_state_make(Temporal *temp, STBOX *box,
+  double size, int64 tunits, POINT3DZ sorigin, TimestampTz torigin);
+extern void stbox_tile_state_next(STboxGridState *state);
+extern bool stbox_tile_state_get(STboxGridState *state, STBOX *box);
 
 /*****************************************************************************/
 
-#endif /* __PG_TEMPORAL_TILE_H__ */
-
+#endif

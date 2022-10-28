@@ -323,7 +323,7 @@ Periodset_period_n(PG_FUNCTION_ARGS)
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
   Period *result = periodset_period_n(ps, i);
   PG_FREE_IF_COPY(ps, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

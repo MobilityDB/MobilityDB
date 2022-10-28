@@ -620,6 +620,7 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
  * @brief Append an instant to a temporal sequence.
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
+ * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
  */
 Temporal *
@@ -1567,7 +1568,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  *
  * @param[in] seq Temporal sequence
- * @param[in] arg Maximum number of decimal digits to output for floating point
+ * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
  * @param[in] component True if the output string is a component of a
  * temporal sequence set and thus no interpolation string at the begining of
@@ -1575,7 +1576,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] value_out Function called to output the base value
  */
 char *
-tsequence_to_string(const TSequence *seq, Datum arg, bool component,
+tsequence_to_string(const TSequence *seq, Datum maxdd, bool component,
   char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * seq->count);
@@ -1590,7 +1591,7 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    strings[i] = tinstant_to_string(inst, arg, value_out);
+    strings[i] = tinstant_to_string(inst, maxdd, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   char open, close;
@@ -1613,9 +1614,9 @@ tsequence_to_string(const TSequence *seq, Datum arg, bool component,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  */
 char *
-tsequence_out(const TSequence *seq, Datum arg)
+tsequence_out(const TSequence *seq, Datum maxdd)
 {
-  return tsequence_to_string(seq, arg, false, &basetype_output);
+  return tsequence_to_string(seq, maxdd, false, &basetype_output);
 }
 
 /*****************************************************************************
@@ -1628,6 +1629,7 @@ tsequence_out(const TSequence *seq, Datum arg)
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
@@ -1649,6 +1651,7 @@ tsequence_make(const TInstant **instants, int count, int maxcount,
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
@@ -1784,9 +1787,9 @@ tintdiscseq_from_base_time(int i, const TimestampSet *ts)
  * timestamp set.
  */
 TSequence *
-tfloatdiscseq_from_base_time(bool b, const TimestampSet *ts)
+tfloatdiscseq_from_base_time(double d, const TimestampSet *ts)
 {
-  return tdiscseq_from_base_time(BoolGetDatum(b), T_TFLOAT, ts);
+  return tdiscseq_from_base_time(Float8GetDatum(d), T_TFLOAT, ts);
 }
 
 /**
@@ -1841,8 +1844,7 @@ tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq,
 {
   return MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
     tdiscseq_from_base(value, temptype, seq) :
-    tsequence_from_base_time(value, temptype,
-      &seq->period, interp);
+    tsequence_from_base_time(value, temptype, &seq->period, interp);
 }
 
 #if MEOS
@@ -1874,9 +1876,9 @@ tintseq_from_base(int i, const TSequence *seq)
  * of another temporal sequence.
  */
 TSequence *
-tfloatseq_from_base(bool b, const TSequence *seq, interpType interp)
+tfloatseq_from_base(double d, const TSequence *seq, interpType interp)
 {
-  return tsequence_from_base(BoolGetDatum(b), T_TFLOAT, seq, interp);
+  return tsequence_from_base(Float8GetDatum(d), T_TFLOAT, seq, interp);
 }
 
 /**
@@ -1972,9 +1974,9 @@ tintseq_from_base_time(int i, const Period *p)
  * @brief Construct a temporal float sequence from a float and a period.
  */
 TSequence *
-tfloatseq_from_base_time(bool b, const Period *p, interpType interp)
+tfloatseq_from_base_time(double d, const Period *p, interpType interp)
 {
-  return tsequence_from_base_time(BoolGetDatum(b), T_TFLOAT, p, interp);
+  return tsequence_from_base_time(Float8GetDatum(d), T_TFLOAT, p, interp);
 }
 
 /**

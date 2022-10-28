@@ -472,9 +472,9 @@ tintseqset_from_base(int i, const TSequenceSet *ss)
  * frame of another temporal sequence set.
  */
 TSequenceSet *
-tfloatseqset_from_base(bool b, const TSequenceSet *ss, interpType interp)
+tfloatseqset_from_base(double d, const TSequenceSet *ss, interpType interp)
 {
-  return tsequenceset_from_base(BoolGetDatum(b), T_TFLOAT, ss, interp);
+  return tsequenceset_from_base(Float8GetDatum(d), T_TFLOAT, ss, interp);
 }
 
 /**
@@ -565,9 +565,9 @@ tintseqset_from_base_time(int i, const PeriodSet *ps)
  * @brief Construct a temporal float sequence set from a float and a period set.
  */
 TSequenceSet *
-tfloatseqset_from_base_time(bool b, const PeriodSet *ps, interpType interp)
+tfloatseqset_from_base_time(double d, const PeriodSet *ps, interpType interp)
 {
-  return tsequenceset_from_base_time(BoolGetDatum(b), T_TFLOAT, ps, interp);
+  return tsequenceset_from_base_time(Float8GetDatum(d), T_TFLOAT, ps, interp);
 }
 
 /**
@@ -2081,6 +2081,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
  * @brief Append an instant to a temporal sequence set.
  * @param[in,out] ss Temporal sequence set
  * @param[in] inst Temporal instant
+ * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
  */
 TSequenceSet *
@@ -2484,12 +2485,12 @@ tgeogpointseqset_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  *
  * @param[in] ss Temporal sequence set
- * @param[in] arg Maximum number of decimal digits to output for floating point
+ * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
  * @param[in] value_out Function called to output the base value
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
+tsequenceset_to_string(const TSequenceSet *ss, Datum maxdd,
   char *(*value_out)(mobdbType, Datum, Datum))
 {
   char **strings = palloc(sizeof(char *) * ss->count);
@@ -2503,7 +2504,7 @@ tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    strings[i] = tsequence_to_string(seq, arg, true, value_out);
+    strings[i] = tsequence_to_string(seq, maxdd, true, value_out);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}');
@@ -2514,9 +2515,9 @@ tsequenceset_to_string(const TSequenceSet *ss, Datum arg,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
  */
 char *
-tsequenceset_out(const TSequenceSet *ss, Datum arg)
+tsequenceset_out(const TSequenceSet *ss, Datum maxdd)
 {
-  return tsequenceset_to_string(ss, arg,  &basetype_output);
+  return tsequenceset_to_string(ss, maxdd,  &basetype_output);
 }
 
 /*****************************************************************************

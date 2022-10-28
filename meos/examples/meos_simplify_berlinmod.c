@@ -37,8 +37,7 @@
  * instants of the two simplified trips.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `meos_clip_berlinmod.c` in the same directory. Also, the program does
- * not cope with erroneous inputs, such as invalid trips or trajectories.
+ * file `meos_disassemble_berlinmod.c` in the same directory.
  *
  * The program can be build as follows
  * @code
@@ -47,44 +46,48 @@
  */
 
 #include <stdio.h>
-#include "meos.h"
+#include <stdlib.h>
+#include <meos.h>
 
+/* Maximum length in characters of a trip in the input data */
+#define MAX_LENGTH_TRIP 160000
+/* Maximum length in characters of a header record in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
+/* Maximum length in characters of a date in the input data */
+#define MAX_LENGTH_DATE 12
 /* Epsilon distance used for the simplification */
-#define DELTA_DISTANCE 1
+#define DELTA_DISTANCE 2
 /* Maximum number of trips */
 #define MAX_NO_TRIPS 64
 
 typedef struct
 {
-  int vehicle;
+  int tripId;
+  int vehId;
   DateADT day;
   int seq;
   Temporal *trip;
-  GSERIALIZED *trajectory;
 } trip_record;
-
-/* Maximum length in characters of a trip in the input data */
-char trip_buffer[160000];
-/* Maximum length in characters of a geometry in the input data */
-char geo_buffer[100000];
-/* Maximum length in characters of a date in the input data */
-char date_buffer[12];
 
 /* Main program */
 int main(void)
 {
+  /* Variables to read the input CSV file */
+  char trip_buffer[MAX_LENGTH_TRIP];
+  char header_buffer[MAX_LENGTH_HEADER];
+  char date_buffer[MAX_LENGTH_DATE];
   /* Allocate space for the trips and their simplified versions */
   trip_record trips[MAX_NO_TRIPS];
   Temporal *trips_dp[MAX_NO_TRIPS];
   Temporal *trips_sed[MAX_NO_TRIPS];
-  /* Number of records */
-  int records = 0;
+  /* Number of records and records with null values */
+  int no_records = 0;
   int nulls = 0;
-  /* Iterator variable */
-  int i = 0;
+  /* Iterator variables */
+  int i = 0, j;
 
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");
@@ -96,21 +99,19 @@ int main(void)
   }
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   i = 0;
   do
   {
-    int read = fscanf(file, "%d,%10[^,],%d,%160000[^,],%100000[^\n]\n",
-      &trips[i].vehicle, date_buffer, &trips[i].seq, trip_buffer,
-      geo_buffer);
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+      &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq,
+        trip_buffer);
     /* Transform the string representing the date into a date value */
     trips[i].day = pg_date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     trips[i].trip = temporal_from_hexwkb(trip_buffer);
-    /* Transform the string representing the trajectory into a geometry value */
-    trips[i].trajectory = gserialized_in(geo_buffer, -1);
 
     if (read == 5)
       i++;
@@ -125,23 +126,26 @@ int main(void)
     {
       printf("Error reading file\n");
       fclose(file);
+      /* Free memory */
+      for (j = 0; j < i; j++)
+        free(trips[j].trip);
       return 1;
     }
   } while (!feof(file));
 
-  records = i;
+  no_records = i;
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    records, nulls);
+    no_records, nulls);
 
   /* Simplify the trips */
-  for (i = 0; i < records; i++)
+  for (i = 0; i < no_records; i++)
   {
     trips_dp[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, false);
-    trips_sed[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, false);
+    trips_sed[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, true);
     char *day_str = pg_date_out(trips[i].day);
     printf("Vehicle: %d, Date: %s, Seq: %d, No. of instants: %d, "
       "No. of instants DP: %d, No. of instants SED: %d\n",
-      trips[i].vehicle, day_str, trips[i].seq,
+      trips[i].vehId, day_str, trips[i].seq,
       temporal_num_instants(trips[i].trip),
       temporal_num_instants(trips_dp[i]),
       temporal_num_instants(trips_sed[i]));
@@ -149,10 +153,9 @@ int main(void)
   }
 
   /* Free memory */
-  for (i = 0; i < records; i++)
+  for (i = 0; i < no_records; i++)
   {
     free(trips[i].trip);
-    free(trips[i].trajectory);
     free(trips_dp[i]);
     free(trips_sed[i]);
   }

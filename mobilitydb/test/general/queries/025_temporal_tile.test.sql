@@ -78,11 +78,11 @@ SELECT periodBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
 
 -------------------------------------------------------------------------------
 
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5) LIMIT 3;
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5, '2000-01-15') LIMIT 3;
-SELECT multidimTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week');
-SELECT multidimTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
+SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
+SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5) LIMIT 3;
+SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5, '2000-01-15') LIMIT 3;
+SELECT tile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week');
+SELECT tile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
 
 -------------------------------------------------------------------------------
 -- valueSplit

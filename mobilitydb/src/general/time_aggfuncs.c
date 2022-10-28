@@ -31,7 +31,7 @@
  * @brief Aggregate functions for time types.
  */
 
-#include "pg_general/time_aggfuncs.h"
+#include "general/time_aggfuncs.h"
 
 /* C */
 #include <assert.h>
@@ -39,308 +39,85 @@
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "pg_general/skiplist.h"
+#include "general/skiplist.h"
 #include "general/temporal_util.h"
-
-/*****************************************************************************
- * Aggregate functions for time types
- *****************************************************************************/
-
-/**
- * Return the sum of the two arguments
- */
-Datum
-datum_sum_int32(Datum l, Datum r)
-{
-  return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-}
-
-/*
- * Generic aggregate function for timestamp set values
- *
- * @param[in] times1 Accumulated state
- * @param[in] count1 Number of elements in the accumulated state
- * @param[in] times2 Timestamps of the input timestamp set value
- * @param[in] count2 Number of elements in the timestamp set value
- * @note Return new timestamps that must be freed by the calling function.
- */
-TimestampTz *
-timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
-  int count2, int *newcount)
-{
-  TimestampTz *result = palloc(sizeof(TimestampTz) * (count1 + count2));
-  int i = 0, j = 0, count = 0;
-  while (i < count1 && j < count2)
-  {
-    TimestampTz t1 = times1[i];
-    TimestampTz t2 = times2[j];
-    int cmp = timestamptz_cmp_internal(t1, t2);
-    if (cmp == 0)
-    {
-      result[count++] = t1;
-      i++;
-      j++;
-    }
-    else if (cmp < 0)
-    {
-      result[count++] = t1;
-      i++;
-    }
-    else
-    {
-      result[count++] = t2;
-      j++;
-    }
-  }
-  /* Copy the timetamps from state1 or state2 that are after the end of the
-     other state */
-  while (i < count1)
-    result[count++] = times1[i++];
-  while (j < count2)
-    result[count++] = times2[j++];
-  *newcount = count;
-  return result;
-}
-
-/**
- * Generic aggregate function for periods.
- *
- * @param[in] periods1 Accumulated state
- * @param[in] count1 Number of elements in the accumulated state
- * @param[in] periods2 Periods of a period (set) value
- * @param[in] count2 Number of elements in the period set value
- * @param[out] newcount Number of elements in the result
- * @note Return new periods that must be freed by the calling function.
- */
-Period **
-period_agg(Period **periods1, int count1, Period **periods2, int count2,
-  int *newcount)
-{
-  Period **periods = palloc(sizeof(Period *) * (count1 + count2));
-  int i = 0, j = 0, k = 0;
-  while (i < count1 && j < count2)
-  {
-    int cmp = span_cmp(periods1[i], periods2[j]);
-    if (cmp == 0)
-    {
-      periods[k++] = periods1[i++];
-      j++;
-    }
-    else if (cmp < 0)
-      periods[k++] = periods1[i++];
-    else
-      periods[k++] = periods2[j++];
-  }
-  while (i < count1)
-    periods[k++] = periods1[i++];
-  while (j < count2)
-    periods[k++] = periods2[j++];
-  Period **result = spanarr_normalize(periods, k, SORT_NO, newcount);
-  pfree(periods);
-  return result;
-}
-
-/*****************************************************************************
- * Generic aggregate transition functions
- *****************************************************************************/
-
-/**
- * Generic transition function for aggregating timestamp sets
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in,out] state Timestamp array containing the state
- * @param[in] ts Timestamp set value
- */
-static SkipList *
-timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TimestampSet *ts)
-{
-  TimestampTz *times = timestampset_timestamps(ts);
-  SkipList *result;
-  if (! state)
-    result = skiplist_make(fcinfo, (void **) times, ts->count, TIMESTAMPTZ);
-  else
-  {
-    assert(state->elemtype == TIMESTAMPTZ);
-    skiplist_splice(fcinfo, state, (void **) times, ts->count, NULL,
-      CROSSINGS_NO);
-    result = state;
-  }
-  pfree(times);
-  return result;
-}
-
-/**
- * Generic transition function for aggregating temporal values
- * of sequence subtype
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in,out] state Skiplist containing the state
- * @param[in] p Period
- */
-static SkipList *
-period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state, const Period *p)
-{
-  SkipList *result;
-  if (! state)
-    result = skiplist_make(fcinfo, (void **) &p, 1, PERIOD);
-  else
-  {
-    assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) &p, 1, NULL, CROSSINGS_NO);
-    result = state;
-  }
-  return result;
-}
-
-/**
- * Generic transition function for aggregating period set values
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in,out] state Skiplist containing the state
- * @param[in] ps Period set value
- */
-static SkipList *
-periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const PeriodSet *ps)
-{
-  int count;
-  const Period **periods = periodset_periods(ps, &count);
-  SkipList *result;
-  if (! state)
-    /* Periods are copied while constructing the skiplist */
-    result = skiplist_make(fcinfo, (void **) periods, ps->count, PERIOD);
-  else
-  {
-    assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) periods, ps->count, NULL,
-      CROSSINGS_NO);
-    result = state;
-  }
-  pfree(periods);
-  return result;
-}
-
-/*****************************************************************************
- * Combine function
- *****************************************************************************/
-
-/**
- * Generic combine function for aggregating time values
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] state1, state2 State values
- */
-SkipList *
-time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
-  SkipList *state2)
-{
-  if (! state1)
-    return state2;
-  if (! state2)
-    return state1;
-
-  assert(state1->elemtype == state2->elemtype);
-  SkipList *smallest, *largest;
-  if (state1->length < state2->length)
-  {
-    smallest = state1; largest = state2;
-  }
-  else
-  {
-    smallest = state2; largest = state1;
-  }
-  void **values = skiplist_values(smallest);
-  skiplist_splice(fcinfo, largest, values, smallest->length, NULL,
-    CROSSINGS_NO);
-  /* Delete the new aggregate values */
-  if (smallest->elemtype == TIMESTAMPTZ)
-    pfree(values);
-  else
-    pfree_array(values, smallest->length);
-  return largest;
-}
+#include "general/time_aggfuncs.h"
+/* MobilityDB */
+#include "pg_general/skiplist.h"
+#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Aggregate transition functions for time types
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Timestamp_extent_transfn);
+/**
+ * Transition function for extent aggregation of timestamp values
+ */
+PGDLLEXPORT Datum
+Timestamp_extent_transfn(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  if (PG_ARGISNULL(1))
+    PG_RETURN_POINTER(p);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  p = timestamp_extent_transfn(p, t);
+  if (! p)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(p);
+}
+
 PG_FUNCTION_INFO_V1(Timestampset_extent_transfn);
 /**
- * Transition function for temporal extent aggregation of timestamp set values
- * with period bounding box
+ * Transition function for extent aggregation of timestamp set values
  */
 PGDLLEXPORT Datum
 Timestampset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   TimestampSet *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_TIMESTAMPSET_P(1);
-  Period *result;
-
-  /* Can't do anything with null inputs */
-  if (! p && ! ts)
-    PG_RETURN_NULL();
-  /* Null period and non-null timestampset, return the bbox of the timestampset */
-  if (! p)
-  {
-    result = palloc0(sizeof(Period));
-    memcpy(result, &ts->period, sizeof(Period));
-    PG_RETURN_POINTER(result);
-  }
-  /* Non-null period and null timestampset, return the period */
-  if (! ts)
-  {
-    result = palloc0(sizeof(Period));
-    memcpy(result, p, sizeof(Period));
-    PG_RETURN_POINTER(result);
-  }
-
-  result = union_span_span(p, &ts->period, false);
-
+  p = timestampset_extent_transfn(p, ts);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
+  if (! p)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(p);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_extent_transfn);
 /**
- * Transition function for temporal extent aggregation of period set values
- * with period bounding box
+ * Transition function for extent aggregation of period set values
  */
 PGDLLEXPORT Datum
 Periodset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   PeriodSet *ps = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIODSET_P(1);
-  Period *result;
-
-  /* Can't do anything with null inputs */
-  if (! p && ! ps)
-    PG_RETURN_NULL();
-  /* Null period and non-null period set, return the bbox of the period set */
-  if (! p)
-  {
-    result = palloc0(sizeof(Period));
-    memcpy(result, &ps->period, sizeof(Period));
-    PG_RETURN_POINTER(result);
-  }
-  /* Non-null period and null temporal, return the period */
-  if (! ps)
-  {
-    result = palloc0(sizeof(Period));
-    memcpy(result, p, sizeof(Period));
-    PG_RETURN_POINTER(result);
-  }
-
-  result = union_span_span(p, &ps->period, false);
-
+  p = periodset_extent_transfn(p, ps);
   PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
+  if (! p)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(p);
 }
 
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);
+/**
+ * Transition function for union aggregate of timestamp sets
+ */
+PGDLLEXPORT Datum
+Timestamp_tunion_transfn(PG_FUNCTION_ARGS)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(state);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  store_fcinfo(fcinfo);
+  SkipList *result = timestamp_tunion_transfn(state, t);
+  PG_RETURN_POINTER(result);
+}
 
 PG_FUNCTION_INFO_V1(Timestampset_tunion_transfn);
 /**
@@ -352,7 +129,8 @@ Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  SkipList *result = timestampset_agg_transfn(fcinfo, state, ts);
+  store_fcinfo(fcinfo);
+  SkipList *result = timestampset_tunion_transfn(state, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
@@ -367,7 +145,8 @@ Period_tunion_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   Period *p = PG_GETARG_SPAN_P(1);
-  SkipList *result = period_agg_transfn(fcinfo, state, p);
+  store_fcinfo(fcinfo);
+  SkipList *result = period_tunion_transfn(state, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -381,7 +160,8 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  SkipList *result = periodset_agg_transfn(fcinfo, state, ps);
+  store_fcinfo(fcinfo);
+  SkipList *result = periodset_tunion_transfn(state, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
 }
@@ -389,73 +169,68 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Transform a timestamp set value into a temporal integer value for
- * performing temporal count aggregation
+ * Transition function for temporal count aggregate of timestamps
  */
-static TInstant **
-timestampset_transform_tcount(const TimestampSet *ts)
+Datum
+Timestamp_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
-  TInstant **result = palloc(sizeof(TInstant *) * ts->count);
-  Datum datum_one = Int32GetDatum(1);
-  for (int i = 0; i < ts->count; i++)
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(state);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
-    result[i] = tinstant_make(datum_one, T_TINT, t);
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
   }
-  return result;
+  store_fcinfo(fcinfo);
+  state = timestamp_tcount_transfn(state, t, interval, origin);
+  PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamps
+ */
+PGDLLEXPORT Datum
+Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestamp_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Timestamp_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamps
+ */
+PGDLLEXPORT Datum
+Timestamp_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestamp_tcount_transfn_ext(fcinfo, true);
 }
 
 /**
- * Transform a period value into a temporal integer value for
- * performing temporal count aggregation
+ * Transition function for temporal count aggregate of timestamp sets
  */
-static TSequence *
-period_transform_tcount(const Period *p)
+Datum
+Timestampset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
-  TSequence *result;
-  Datum datum_one = Int32GetDatum(1);
-  TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, T_TINT, p->lower);
-  if (p->lower == p->upper)
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(state);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
   {
-    result = tsequence_make((const TInstant **) instants, 1, 1,
-      p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
   }
-  else
-  {
-    instants[1] = tinstant_make(datum_one, T_TINT, p->upper);
-    result = tsequence_make((const TInstant **) instants, 2, 2,
-      p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
-    pfree(instants[1]);
-  }
-  pfree(instants[0]);
-  return result;
-}
-
-/**
- * Transform a period set value into a temporal integer value for
- * performing temporal count aggregation
- */
-static TSequence **
-periodset_transform_tcount(const PeriodSet *ps)
-{
-  TSequence **result = palloc(sizeof(TSequence *) * ps->count);
-  for (int i = 0; i < ps->count; i++)
-  {
-    const Period *p = periodset_per_n(ps, i);
-    result[i] = period_transform_tcount(p);
-  }
-  return result;
-}
-
-static void
-ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
-{
-  Temporal *head = (Temporal *) skiplist_headval(state);
-  if (head->subtype != subtype)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Cannot aggregate temporal values of different type")));
-  return;
+  store_fcinfo(fcinfo);
+  state = timestampset_tcount_transfn(state, ts, interval, origin);
+  PG_FREE_IF_COPY(ts, 1);
+  PG_RETURN_POINTER(state);
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
@@ -465,23 +240,38 @@ PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
 PGDLLEXPORT Datum
 Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
 {
+  return Timestampset_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of timestamp sets
+ */
+PGDLLEXPORT Datum
+Timestampset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Timestampset_tcount_transfn_ext(fcinfo, true);
+}
+
+/**
+ * Transition function for temporal count aggregate of periods
+ */
+Datum
+Period_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
+{
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TInstant **instants = timestampset_transform_tcount(ts);
-  if (state)
+  Period *p = PG_GETARG_SPAN_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
   {
-    ensure_same_timetype_skiplist(state, TINSTANT);
-    skiplist_splice(fcinfo, state, (void **) instants, ts->count,
-      &datum_sum_int32, CROSSINGS_NO);
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
   }
-  else
-  {
-    state = skiplist_make(fcinfo, (void **) instants, ts->count, TEMPORAL);
-  }
-
-  pfree_array((void **) instants, ts->count);
-  PG_FREE_IF_COPY(ts, 1);
+  store_fcinfo(fcinfo);
+  state = period_tcount_transfn(state, p, interval, origin);
   PG_RETURN_POINTER(state);
 }
 
@@ -492,22 +282,39 @@ PG_FUNCTION_INFO_V1(Period_tcount_transfn);
 PGDLLEXPORT Datum
 Period_tcount_transfn(PG_FUNCTION_ARGS)
 {
+  return Period_tcount_transfn_ext(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(Period_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of periods
+ */
+PGDLLEXPORT Datum
+Period_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Period_tcount_transfn_ext(fcinfo, true);
+}
+
+/**
+ * Transition function for temporal count aggregate of period sets
+ */
+Datum
+Periodset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
+{
   SkipList *state;
   INPUT_AGG_TRANS_STATE(state);
-  Period *p = PG_GETARG_SPAN_P(1);
-  TSequence *seq = period_transform_tcount(p);
-  if (state)
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  Interval *interval = NULL;
+  TimestampTz origin = 0;
+  if (bucket)
   {
-    ensure_same_timetype_skiplist(state, TSEQUENCE);
-    skiplist_splice(fcinfo, state, (void **) &seq, 1, &datum_sum_int32,
-      CROSSINGS_NO);
+    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
+      interval = PG_GETARG_INTERVAL_P(2);
+    origin = PG_GETARG_TIMESTAMPTZ(3);
   }
-  else
-  {
-    state = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
-  }
-
-  pfree(seq);
+  store_fcinfo(fcinfo);
+  state = periodset_tcount_transfn(state, ps, interval, origin);
+  PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(state);
 }
 
@@ -518,24 +325,17 @@ PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
 PGDLLEXPORT Datum
 Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  TSequence **sequences = periodset_transform_tcount(ps);
-  if (state)
-  {
-    ensure_same_timetype_skiplist(state, TSEQUENCE);
-    skiplist_splice(fcinfo, state, (void **) sequences, ps->count,
-      &datum_sum_int32, CROSSINGS_NO);
-  }
-  else
-  {
-    state = skiplist_make(fcinfo, (void **) sequences, ps->count, TEMPORAL);
-  }
+  return Periodset_tcount_transfn_ext(fcinfo, false);
+}
 
-  pfree_array((void **) sequences, ps->count);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(state);
+PG_FUNCTION_INFO_V1(Periodset_tcount_bucket_transfn);
+/**
+ * Transition function for temporal count aggregate of period sets
+ */
+PGDLLEXPORT Datum
+Periodset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+{
+  return Periodset_tcount_transfn_ext(fcinfo, true);
 }
 
 /*****************************************************************************
@@ -551,7 +351,8 @@ Time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(state1, state2);
-  SkipList *result = time_agg_combinefn(fcinfo, state1, state2);
+  store_fcinfo(fcinfo);
+  SkipList *result = time_agg_combinefn(state1, state2);
   PG_RETURN_POINTER(result);
 }
 
@@ -568,13 +369,7 @@ Timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
-    PG_RETURN_NULL();
-
-  assert(state->elemtype == TIMESTAMPTZ);
-  TimestampTz *values = (TimestampTz *) skiplist_values(state);
-  TimestampSet *result = timestampset_make(values, state->length);
-  pfree(values);
+  TimestampSet *result = timestamp_tunion_finalfn(state);
   PG_RETURN_POINTER(result);
 }
 
@@ -587,13 +382,7 @@ Period_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
-    PG_RETURN_NULL();
-
-  assert(state->elemtype == PERIOD);
-  const Period **values = (const Period **) skiplist_values(state);
-  PeriodSet *result = periodset_make(values, state->length, NORMALIZE_NO);
-  pfree(values);
+  PeriodSet *result = period_tunion_finalfn(state);
   PG_RETURN_POINTER(result);
 }
 

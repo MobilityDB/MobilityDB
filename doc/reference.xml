@@ -1134,7 +1134,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Boolean Operators</title>
+			<title>Boolean Functions and Operators</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal and</para>
@@ -1146,6 +1146,10 @@
 
 				<listitem>
 					<para><link linkend="tbool_not"><varname>~</varname></link>: Temporal not</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Get the time when the temporal Boolean takes the value true</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1297,7 +1301,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="isSimple"><varname>isSimple</varname></link>: Returns true if the temporal point does not spatially self-intersect</para>
+						<para><link linkend="isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect</para>
 					</listitem>
 
 					<listitem>
@@ -1330,7 +1334,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="makeSimple"><varname>makeSimple</varname></link>:  Returns an array of fragments of the temporal point which are simple</para>
+						<para><link linkend="makeSimple"><varname>makeSimple</varname></link>:  Return an array of fragments of the temporal point which are simple</para>
 					</listitem>
 
 					<listitem>
@@ -1450,23 +1454,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the span or period with buckets of the same width or duration aligned with the origin</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Return a set of couples (index, bucket) that cover the span or period with buckets of the same width or duration aligned with the origin</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input number.</para>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Return the start value of the bucket that contains the input number.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Returns the span in the bucket space that contains the input number</para>
+						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Return the span in the bucket space that contains the input number</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start timestamp of the bucket that contains the input timestamp.</para>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Return the start timestamp of the bucket that contains the input timestamp.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Returns a period in the bucket space that contains the input timestamp</para>
+						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Return a period in the bucket space that contains the input timestamp</para>
 					</listitem>
 
 				</itemizedlist>
@@ -1477,11 +1481,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration.</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Return a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="multidimTile"><varname>multidimTile</varname></link>: Returns the tile of the multidimensional grid that contains the value and the timestamp</para>
+						<para><link linkend="tile"><varname>tile</varname></link>: Return the tile of the multidimensional grid that contains the value and the timestamp</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>

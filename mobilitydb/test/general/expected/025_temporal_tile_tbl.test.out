@@ -130,31 +130,31 @@ SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FR
  [2001-05-10 00:00:00+00, 2001-05-12 00:00:00+00) |     3
 (3 rows)
 
-SELECT multidimGrid(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                multidimgrid                                | count 
+SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                  tilelist                                  | count 
 ----------------------------------------------------------------------------+-------
  (1,"TBOX XT([10, 12.5),[2001-01-08 00:00:00+00, 2001-01-15 00:00:00+00))") |     2
  (1,"TBOX XT([5, 7.5),[2001-05-28 00:00:00+00, 2001-06-04 00:00:00+00))")   |     2
  (1,"TBOX XT([7.5, 10),[2001-12-03 00:00:00+00, 2001-12-10 00:00:00+00))")  |     2
 (3 rows)
 
-SELECT multidimGrid(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                multidimgrid                                | count 
+SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                  tilelist                                  | count 
 ----------------------------------------------------------------------------+-------
  (1,"TBOX XT([34, 36.5),[2001-11-26 00:00:00+00, 2001-12-03 00:00:00+00))") |     2
  (1,"TBOX XT([6.5, 9),[2001-12-03 00:00:00+00, 2001-12-10 00:00:00+00))")   |     2
  (2,"TBOX XT([36.5, 39),[2001-11-26 00:00:00+00, 2001-12-03 00:00:00+00))") |     2
 (3 rows)
 
-SELECT multidimGrid(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                multidimgrid                                | count 
+SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                  tilelist                                  | count 
 ----------------------------------------------------------------------------+-------
  (1,"TBOX XT([11.5, 14),[2001-01-12 00:00:00+00, 2001-01-19 00:00:00+00))") |     2
  (1,"TBOX XT([34, 36.5),[2001-11-23 00:00:00+00, 2001-11-30 00:00:00+00))") |     2
  (1,"TBOX XT([6.5, 9),[2001-11-30 00:00:00+00, 2001-12-07 00:00:00+00))")   |     2
 (3 rows)
 
-SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week')) FROM
+SELECT extent(tile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
                               extent                               
@@ -162,7 +162,7 @@ SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week')) FROM
  TBOX XT([5, 85),[2001-01-22 00:00:00+00, 2001-12-10 00:00:00+00))
 (1 row)
 
-SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
+SELECT extent(tile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
                                extent                                

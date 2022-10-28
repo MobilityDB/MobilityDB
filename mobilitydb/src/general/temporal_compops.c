@@ -73,7 +73,7 @@ tcomp_base_temporal_ext(FunctionCallInfo fcinfo,
   }
   DATUM_FREE_IF_COPY(value, basetype, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -107,7 +107,7 @@ tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
   }
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -138,7 +138,7 @@ tcomp_temporal_temporal_ext(FunctionCallInfo fcinfo,
   }
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

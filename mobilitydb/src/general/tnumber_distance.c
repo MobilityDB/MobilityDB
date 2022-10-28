@@ -107,7 +107,7 @@ Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
     oid_type(temptypid));
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

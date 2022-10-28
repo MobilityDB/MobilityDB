@@ -29,7 +29,7 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees)
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
  * for temporal number.
  */
 
@@ -114,7 +114,7 @@ arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
   Temporal *result = arithop_tnumber_tnumber(temp1, temp2, oper, func, tpfunc);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -319,7 +319,7 @@ datum_round_float(Datum value, Datum prec)
  * @brief Round a temporal number to a given number of decimal places
  */
 Temporal *
-tnumber_round(const Temporal *temp, Datum digits)
+tfloat_round(const Temporal *temp, Datum digits)
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -337,34 +337,48 @@ tnumber_round(const Temporal *temp, Datum digits)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_round);
+PG_FUNCTION_INFO_V1(Tfloat_round);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Round a temporal number to a given number of decimal places
  * @sqlfunc round()
  */
 PGDLLEXPORT Datum
-Tnumber_round(PG_FUNCTION_ARGS)
+Tfloat_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum digits = PG_GETARG_DATUM(1);
-  Temporal *result = tnumber_round(temp, digits);
+  Temporal *result = tfloat_round(temp, digits);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_degrees);
+PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Convert a temporal number from radians to degrees
  * @sqlfunc degrees()
- * @sqlop @p
  */
 PGDLLEXPORT Datum
-Tnumber_degrees(PG_FUNCTION_ARGS)
+Tfloat_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnumber_degrees(temp);
+  Temporal *result = tfloat_degrees(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tfloat_radians);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Convert a temporal number from degrees to radians
+ * @sqlfunc radians()
+ */
+PGDLLEXPORT Datum
+Tfloat_radians(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_radians(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -373,7 +387,7 @@ Tnumber_degrees(PG_FUNCTION_ARGS)
  * Derivative functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tnumber_derivative);
+PG_FUNCTION_INFO_V1(Tfloat_derivative);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the derivative of a temporal number
@@ -381,12 +395,12 @@ PG_FUNCTION_INFO_V1(Tnumber_derivative);
  * @sqlop @p
  */
 PGDLLEXPORT Datum
-Tnumber_derivative(PG_FUNCTION_ARGS)
+Tfloat_derivative(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnumber_derivative(temp);
+  Temporal *result = tfloat_derivative(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

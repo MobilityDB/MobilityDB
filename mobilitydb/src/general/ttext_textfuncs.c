@@ -90,7 +90,7 @@ Textcat_ttext_ttext(PG_FUNCTION_ARGS)
   Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

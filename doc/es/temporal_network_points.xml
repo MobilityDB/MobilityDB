@@ -889,6 +889,7 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)'
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
 				<para><varname>tcount(tnpoint): {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(tnpoint, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH Temp(temp) AS (
 SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)' UNION

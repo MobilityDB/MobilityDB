@@ -403,9 +403,11 @@ meos_timezone_initialize(const char *name)
  * Initialize timezone library
  */
 void
-meos_initialize(void)
+meos_initialize(const char *tz_str)
 {
-  const char *tz_str = select_default_timezone(NULL);
+  if (tz_str == NULL)
+    /* fetch local timezone */
+    tz_str = select_default_timezone(NULL);
   if (tz_str == NULL)
     meos_timezone_initialize("GMT");
   else

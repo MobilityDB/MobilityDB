@@ -36,6 +36,7 @@
 
 /* MobilityDB */
 #include "general/span.h"
+#include "general/skiplist.h"
 
 /*****************************************************************************/
 
@@ -44,6 +45,13 @@ extern TimestampTz *timestamp_agg(TimestampTz *times1, int count1,
   TimestampTz *times2, int count2, int *newcount);
 extern Period **period_agg(Period **periods1, int count1, Period **periods2,
   int count2, int *newcount);
+
+extern SkipList *timestampset_agg_transfn(SkipList *state,
+  const TimestampSet *ts);
+extern SkipList *period_agg_transfn(SkipList *state, const Period *p);
+extern SkipList *periodset_agg_transfn(SkipList *state, const PeriodSet *ps);
+extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
+extern SkipList *time_agg_combinefn(SkipList *state1, SkipList *state2);
 
 /*****************************************************************************/
 

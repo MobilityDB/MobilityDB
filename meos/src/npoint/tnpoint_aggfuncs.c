@@ -28,37 +28,58 @@
  *****************************************************************************/
 
 /**
- * @brief Aggregate functions for temporal points.
+ * @brief Aggregate functions for temporal network points.
+ *
+ * The only function currently provided is temporal centroid.
  */
 
-#ifndef __TPOINT_AGGFUNCS_H__
-#define __TPOINT_AGGFUNCS_H__
-
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include "general/temporal.h"
-#include "pg_general/skiplist.h"
+#include <meos.h>
+#include "general/temporal_aggfuncs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_aggfuncs.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 
 /**
- * Structure storing the SRID and the dimensionality of the temporal point
- * values for aggregation. Notice that for the moment we do not aggregate
- * temporal geographic points.
+ * Transition function for temporal centroid aggregation of temporal network
+ * points
  */
-struct GeoAggregateState
+SkipList *
+tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
-  int32_t srid;
-  bool hasz;
-};
+  Temporal *temp1 = tnpoint_tgeompoint(temp);
+  geoaggstate_check_temp(state, temp1);
+  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
+    &datum_sum_double4 : &datum_sum_double3;
 
-extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
+  int count;
+  Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
+  if (state)
+  {
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
+    skiplist_splice(state, (void **) temparr, count, func, false);
+  }
+  else
+  {
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+    struct GeoAggregateState extra =
+    {
+      .srid = tpoint_srid(temp1),
+      .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
+    };
+    aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
+  }
+
+  pfree_array((void **) temparr, count);
+  pfree(temp1);
+  return state;
+}
 
 /*****************************************************************************/
-
-extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
-
-/*****************************************************************************/
-
-#endif

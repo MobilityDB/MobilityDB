@@ -122,6 +122,8 @@ extern bool span_type(mobdbType spantype);
 extern void ensure_span_type(mobdbType spantype);
 extern bool span_basetype(mobdbType basetype);
 extern void ensure_span_basetype(mobdbType basetype);
+extern bool numspan_basetype(mobdbType basetype);
+extern void ensure_numspan_basetype(mobdbType basetype);
 extern bool temporal_type(mobdbType temptype);
 extern void ensure_temporal_type(mobdbType temptype);
 extern void ensure_temporal_basetype(mobdbType basetype);

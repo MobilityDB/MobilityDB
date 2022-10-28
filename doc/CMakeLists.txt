@@ -45,6 +45,11 @@ set(PROJECT_SUPPORTED_LANGUAGES_STRING "Spanish")
 set(PROJECT_ENGLISH "en")
 set(PROJECT_ENGLISH_STRING "English")
 
+# TODO OLD->NEW and solve the problem
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.21.0")
+  cmake_policy(SET CMP0121 OLD)
+endif()
+
 #---------------------------------------------
 # Language options
 #---------------------------------------------

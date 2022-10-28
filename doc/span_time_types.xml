@@ -860,7 +860,7 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 				<listitem id="time_overlaps">
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>Do the values overlap (have values in common)?</para>
-					<para><varname>{numrange,number} &amp;&amp; {numrange,number}: boolean</varname></para>
+					<para><varname>{numspan,number} &amp;&amp; {numspan,number}: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} &amp;&amp; {timestampset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' &amp;&amp; intspan '[2, 4)';
@@ -875,7 +875,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 				<listitem id="time_contains">
 					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>Does the first value contain the second one?</para>
-					<para><varname>numrange @&gt; {numrange,number}: boolean</varname></para>
+					<para><varname>numspan @&gt; {numspan,number}: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} @&gt; time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[1, 5]' @&gt; floatspan '[2, 5)';
@@ -888,7 +888,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 				<listitem id="time_containedby">
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>Is the first value contained by the second one?</para>
-					<para><varname> {numrange,number}&lt;@ numrange: boolean</varname></para>
+					<para><varname> {numspan,number}&lt;@ numspan: boolean</varname></para>
 					<para><varname>time &lt;@ {timestampset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
@@ -903,7 +903,7 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 				<listitem id="time_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
 					<para>Is the first value adjacent to the second one?</para>
-					<para><varname>{numrange,number} -|- {numrange,number}: boolean</varname></para>
+					<para><varname>{numspan,number} -|- {numspan,number}: boolean</varname></para>
 					<para><varname>time -|- time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
@@ -1048,7 +1048,7 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 
 			<para>The temporal aggregate functions are the following ones:</para>
 			<itemizedlist>
-				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
+				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="multidimensional_tiling" />).</para></listitem>
 				<listitem><para>Function <varname>extent</varname> returns a bounding span or period that encloses a set of span or time values.</para></listitem>
 			</itemizedlist>
 
@@ -1059,7 +1059,8 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<listitem id="time_tcount">
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Temporal count</para>
-					<para><varname>tcount({timestampset,period,periodset}): {tint_seq,tint_seqset}</varname></para>
+					<para><varname>tcount(time): {tint_seq,tint_seqset}</varname></para>
+					<para><varname>tcount(time, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
@@ -1070,13 +1071,19 @@ SELECT tcount(ts) FROM times;
 -- {2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}
 
 WITH periods(ps) AS (
-  SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
-  SELECT periodset '{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06]}' UNION
-  SELECT periodset '{[2000-01-02, 2000-01-06]}'
+  SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
+  SELECT periodset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
+  SELECT periodset '{[2000-01-02, 2000-01-06)}'
 )
 SELECT tcount(ps) FROM periods;
-/* {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
-   (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]} */
+-- {[2@2000-01-01, 3@2000-01-03, 1@2000-01-04, 2@2000-01-05, 2@2000-01-06)}
+WITH periods(ps) AS (
+  SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
+  SELECT periodset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
+  SELECT periodset '{[2000-01-02, 2000-01-06)}'
+)
+SELECT tcount(ps, '2 days', '2000-01-01') FROM periods;
+-- {[3@2000-01-01, 2@2000-01-05, 2@2000-01-07)}
 </programlisting>
 				</listitem>
 

@@ -28,48 +28,22 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal aggregate functions
+ * @brief Functions for temporal network points.
  */
 
-#ifndef __TEMPORAL_AGGFUNCS_H__
-#define __TEMPORAL_AGGFUNCS_H__
+#ifndef __TNPOINT_AGGFUNCS_H__
+#define __TNPOINT_AGGFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "pg_general/skiplist.h"
-#include "general/temporal.h"
-#include "general/temporal_util.h"
+/* MEOS */
+#include "meos.h"
+#include "general/skiplist.h"
 
 /*****************************************************************************/
 
-extern Datum datum_min_int32(Datum l, Datum r);
-extern Datum datum_max_int32(Datum l, Datum r);
-extern Datum datum_min_float8(Datum l, Datum r);
-extern Datum datum_max_float8(Datum l, Datum r);
-extern Datum datum_sum_float8(Datum l, Datum r);
-extern Datum datum_min_text(Datum l, Datum r);
-extern Datum datum_max_text(Datum l, Datum r);
-extern Datum datum_sum_double2(Datum l, Datum r);
-extern Datum datum_sum_double3(Datum l, Datum r);
-extern Datum datum_sum_double4(Datum l, Datum r);
-
-/* Generic aggregation functions */
-
-extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
-  TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
-extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
-  TSequence **sequences2, int count2, Datum (*func)(Datum, Datum),
-  bool crossings, int *newcount);
-extern void ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp);
-extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo,
-  SkipList *state, TSequence *seq, datum_func2 func, bool interpoint);
-extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo,
-  SkipList *state1, SkipList *state2, datum_func2 func, bool crossings);
+extern SkipList *tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
 
 /*****************************************************************************/
 
-
-/*****************************************************************************/
-
-#endif
+#endif /* __TNPOINT_AGGFUNCS_H__ */

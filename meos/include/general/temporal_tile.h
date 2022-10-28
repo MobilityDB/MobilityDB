@@ -33,13 +33,91 @@
 /* MobilityDB */
 #include "temporal.h"
 
+#define MAXDIMS 4
+
 /*****************************************************************************/
 
-extern double float_bucket(double value, double size, double origin);
-extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the bucket list
+ */
+typedef struct SpanBucketState
+{
+  bool done;
+  int i;
+  mobdbType basetype;
+  Temporal *temp; /* NULL when generating bucket list, used for splitting */
+  Datum size;
+  Datum origin;
+  Datum minvalue;
+  Datum maxvalue;
+  Datum value;
+} SpanBucketState;
+
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the multidimensional grid
+ */
+typedef struct TboxGridState
+{
+  bool done;
+  int i;
+  double xsize;
+  int64 tunits;
+  TBOX box;
+  double value;
+  TimestampTz t;
+} TboxGridState;
+
+/*****************************************************************************/
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal fragments
+ */
+typedef struct ValueTimeSplitState
+{
+  bool done;           /**< True when all tiles have been processed */
+  int i;               /**< Number of current tile */
+  Datum size;
+  int64 tunits;
+  Datum *value_buckets;
+  TimestampTz *time_buckets;
+  Temporal **fragments;
+  int count;
+} ValueTimeSplitState;
+
+/*****************************************************************************/
+
+extern void span_bucket_set(Datum lower, Datum size, mobdbType basetype,
+  Span *span);
+extern Span *span_bucket_get(Datum lower, Datum size, mobdbType basetype);
+extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
+  Datum origin);
+extern void span_bucket_state_next(SpanBucketState *state);
+
+extern void tbox_tile_get(double value, TimestampTz t, double xsize,
+  int64 tunits, TBOX *box);
+extern TboxGridState *tbox_tile_state_make(const TBOX *box, double xsize,
+  const Interval *duration, double xorigin, TimestampTz torigin);
+extern void tbox_tile_state_next(TboxGridState *state);
+
+/*****************************************************************************/
+
+extern int64 interval_units(const Interval *interval);
+extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
   mobdbType basetype);
+
+extern Temporal **temporal_time_split1(const Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
+
+Temporal **
+temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
+  Datum vorigin, TimestampTz torigin, bool valuesplit, bool timesplit,
+  Datum **value_buckets, TimestampTz **time_buckets, int *newcount);
 
 /*****************************************************************************/
 

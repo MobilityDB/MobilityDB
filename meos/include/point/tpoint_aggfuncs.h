@@ -28,49 +28,43 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for spatiotemporal bounding boxes.
+ * @brief Aggregate functions for temporal points.
  */
 
-#ifndef __TPOINT_TILE_H__
-#define __TPOINT_TILE_H__
+#ifndef __TPOINT_AGGFUNCS_H__
+#define __TPOINT_AGGFUNCS_H__
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MobilityDB */
+#include "general/skiplist.h"
 #include "general/temporal.h"
-
-#define MAXDIMS 4
 
 /*****************************************************************************/
 
 /**
- * Structure for storing a bit matrix
+ * Structure storing the SRID and the dimensionality of the temporal point
+ * values for aggregation. Notice that for the moment we do not aggregate
+ * temporal geographic points.
  */
-typedef struct
+struct GeoAggregateState
 {
-  int numdims;           /**< Number of dimensions */
-  int count[MAXDIMS];    /**< Number of elements in each dimension */
-  uint8_t byte[1];       /**< beginning of variable-length data */
-} BitMatrix;
+  int32_t srid;
+  bool hasz;
+};
 
-/**
- * Struct for storing the state that persists across multiple calls generating
- * a multidimensional grid
- */
-typedef struct STboxGridState
-{
-  bool done;           /**< True when all tiles have been processed */
-  int i;               /**< Number of current tile */
-  double size;         /**< Size of the x, y, and z dimension */
-  int64 tunits;        /**< Size of the time dimension */
-  STBOX box;           /**< Bounding box of the grid */
-  Temporal *temp;      /**< Optional temporal point to be split */
-  BitMatrix *bm;       /**< Optional bit matrix for speeding up
-                            the computation of the split functions */
-  double x;            /**< Minimum x value of the current tile */
-  double y;            /**< Minimum y value of the current tile */
-  double z;            /**< Minimum z value of the current tile */
-  TimestampTz t;       /**< Minimum t value of the current tile */
-  int coords[MAXDIMS]; /**< Coordinates of the current tile */
-} STboxGridState;
+/*****************************************************************************/
+
+extern void geoaggstate_check(const SkipList *state, int32_t srid, bool hasz);
+extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
+extern void geoaggstate_check_state(const SkipList *state1,
+  const SkipList *state2);
+
+extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
+extern TSequence *tpointinst_tcentroid_finalfn(TInstant **instants, int count,
+  int srid);
+extern TSequenceSet *tpointseq_tcentroid_finalfn(TSequence **sequences,
+  int count, int srid);
 
 /*****************************************************************************/
 

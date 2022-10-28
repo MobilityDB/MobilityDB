@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees)
- * for temporal number.
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
+ * for temporal numbers.
  */
 
 #include "general/tnumber_mathfuncs.h"

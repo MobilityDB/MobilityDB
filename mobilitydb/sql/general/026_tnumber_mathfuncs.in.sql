@@ -473,17 +473,22 @@ CREATE OPERATOR / (
 
 CREATE FUNCTION round(tfloat, integer DEFAULT 0)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_round'
+  AS 'MODULE_PATHNAME', 'Tfloat_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION degrees(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_degrees'
+  AS 'MODULE_PATHNAME', 'Tfloat_degrees'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION radians(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_radians'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION derivative(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_derivative'
+  AS 'MODULE_PATHNAME', 'Tfloat_derivative'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
