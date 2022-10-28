@@ -61,6 +61,8 @@
 #define MAX_LENGTH_TRIP 160000
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_GEOM 100000
+/* Maximum length in characters of a header record in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a name in the input data */
 #define MAX_LENGTH_NAME 100
 /* Maximum length in characters of a date in the input data */
@@ -98,6 +100,7 @@ double distance[NO_VEHICLES + 1][NO_COMMUNES + 3] = {0};
 
 char trip_buffer[MAX_LENGTH_TRIP];
 char geo_buffer[MAX_LENGTH_GEOM];
+char header_buffer[MAX_LENGTH_HEADER];
 char date_buffer[MAX_LENGTH_DATE];
 
 region_record brussels_region;
@@ -117,7 +120,7 @@ int read_communes(void)
   int records = 0;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
@@ -162,7 +165,7 @@ int read_brussels_region(void)
   }
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   int read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
@@ -306,14 +309,15 @@ int main(void)
   int records = 0;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
   printf("Reading trip records\n");
 
   /* Continue reading the file */
   do
   {
     int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
-      &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer);
+      &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq,
+      trip_buffer);
 
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);

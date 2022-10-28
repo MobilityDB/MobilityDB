@@ -44,8 +44,15 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include "meos.h"
+
+/* Maximum length in characters of a header record in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
+/* Maximum length in characters of a point in the input data */
+#define MAX_LENGTH_POINT 64
+/* Maximum length in characters of a timestamp in the input data */
+#define MAX_LENGTH_TIMESTAMP 32
 
 typedef struct
 {
@@ -72,28 +79,30 @@ int main(void)
   }
 
   AIS_record rec;
-  int records = 0;
-  int nulls = 0;
-  char buffer[1024];
+  int no_records = 0;
+  int no_nulls = 0;
+  char header_buffer[MAX_LENGTH_HEADER];
+  char point_buffer[MAX_LENGTH_POINT];
+  char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
-      buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
+    int read = fscanf(file, "%31[^,],%ld,%lf,%lf,%lf\n",
+      timestamp_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = pg_timestamp_in(buffer, -1);
+    rec.T = pg_timestamp_in(timestamp_buffer, -1);
 
     if (read == 5)
-      records++;
+      no_records++;
 
     if (read != 5 && !feof(file))
     {
       printf("Record with missing values ignored\n");
-      nulls++;
+      no_nulls++;
     }
 
     if (ferror(file))
@@ -104,13 +113,13 @@ int main(void)
     }
 
     /* Print only 1 out of 1000 records */
-    if (records % 1000 == 0)
+    if (no_records % 1000 == 0)
     {
       char *t_out = pg_timestamp_out(rec.T);
       /* See above the assumptions made wrt the input data in the file */
-      sprintf(buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
+      sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
         rec.Latitude, t_out);
-      Temporal *inst1 = tgeogpoint_in(buffer);
+      Temporal *inst1 = tgeogpoint_in(point_buffer);
       char *inst1_out = tpoint_as_text(inst1, 2);
 
       TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
@@ -124,8 +133,8 @@ int main(void)
 
   } while (!feof(file));
 
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
-    records, nulls);
+  printf("\n%d no_records read.\n%d incomplete records ignored.\n",
+    no_records, no_nulls);
 
   /* Close the file */
   fclose(file);

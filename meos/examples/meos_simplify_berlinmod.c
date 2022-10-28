@@ -46,13 +46,13 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 160000
-/* Maximum length in characters of a geometry in the input data */
-#define MAX_LENGTH_GEOM 100000
+/* Maximum length in characters of a header record in the input CSV file */
+#define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
 #define MAX_LENGTH_DATE 12
 /* Epsilon distance used for the simplification */
@@ -69,20 +69,19 @@ typedef struct
   Temporal *trip;
 } trip_record;
 
-/* Variables to read the input CSV file */
-char trip_buffer[MAX_LENGTH_TRIP];
-char geo_buffer[MAX_LENGTH_GEOM];
-char date_buffer[MAX_LENGTH_DATE];
-
 /* Main program */
 int main(void)
 {
+  /* Variables to read the input CSV file */
+  char trip_buffer[MAX_LENGTH_TRIP];
+  char header_buffer[MAX_LENGTH_HEADER];
+  char date_buffer[MAX_LENGTH_DATE];
   /* Allocate space for the trips and their simplified versions */
   trip_record trips[MAX_NO_TRIPS];
   Temporal *trips_dp[MAX_NO_TRIPS];
   Temporal *trips_sed[MAX_NO_TRIPS];
-  /* Number of records */
-  int records = 0;
+  /* Number of records and records with null values */
+  int no_records = 0;
   int nulls = 0;
   /* Iterator variable */
   int i = 0;
@@ -100,7 +99,7 @@ int main(void)
   }
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", geo_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   i = 0;
@@ -131,12 +130,12 @@ int main(void)
     }
   } while (!feof(file));
 
-  records = i;
+  no_records = i;
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    records, nulls);
+    no_records, nulls);
 
   /* Simplify the trips */
-  for (i = 0; i < records; i++)
+  for (i = 0; i < no_records; i++)
   {
     trips_dp[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, false);
     trips_sed[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, true);
@@ -151,7 +150,7 @@ int main(void)
   }
 
   /* Free memory */
-  for (i = 0; i < records; i++)
+  for (i = 0; i < no_records; i++)
   {
     free(trips[i].trip);
     free(trips_dp[i]);

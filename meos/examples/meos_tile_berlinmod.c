@@ -53,7 +53,7 @@
 
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 160000
-/* Maximum length in characters of a geometry in the input data */
+/* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
 #define MAX_LENGTH_DATE 12
@@ -120,7 +120,7 @@ int main(void)
   }
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", header_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
   printf("Processing records\n");
 
   /* Continue reading the file */
@@ -243,7 +243,6 @@ int main(void)
   /* Free memory */
   free(trip_tiles);
   free(trip_splits);
-  free(speed_tiles);
   free(speed_splits);
 
   /* Close the file */

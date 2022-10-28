@@ -65,14 +65,14 @@ trip_record trip_rec;
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 160000
 
-/* Variables to read the input CSV file */
-char text_buffer[MAX_LENGTH_HEADER];
-char date_buffer[MAX_LENGTH_DATE];
-char trip_buffer[MAX_LENGTH_TRIP];
-
 /* Main program */
 int main(void)
 {
+  /* Variables to read the input CSV file */
+  char header_buffer[MAX_LENGTH_HEADER];
+  char date_buffer[MAX_LENGTH_DATE];
+  char trip_buffer[MAX_LENGTH_TRIP];
+
   /* Initialize MEOS */
   meos_initialize(NULL);
 
@@ -88,7 +88,7 @@ int main(void)
   int i = 0;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1024s\n", text_buffer);
+  fscanf(file, "%1023s\n", header_buffer);
 
   /* Variable keeping the current aggregate state */
   SkipList *state = NULL;
