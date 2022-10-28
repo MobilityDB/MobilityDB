@@ -132,6 +132,10 @@ int main(void)
     {
       printf("Error reading file\n");
       fclose(file);
+      /* Free memory */
+      for (i = 0; i < numships; i++)
+        for (j = 0; j < numinstants[i]; j++)
+          free(trip_instants[i].instants[j]);
       return 1;
     }
 

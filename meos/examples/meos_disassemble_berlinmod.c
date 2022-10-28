@@ -71,6 +71,7 @@ typedef struct
   Temporal *trip;
 } trip_record;
 
+
 /* Main program */
 int main(void)
 {
@@ -124,6 +125,9 @@ int main(void)
     {
       printf("Trip record with missing values\n");
       fclose(file);
+      /* Free memory */
+      for (int j = 0; j < i; j++)
+        free(trips[j].trip);
       return 1;
     }
 
@@ -131,6 +135,9 @@ int main(void)
     {
       printf("Error reading file\n");
       fclose(file);
+      /* Free memory */
+      for (int j = 0; j < i; j++)
+        free(trips[j].trip);
       return 1;
     }
   } while (!feof(file));
@@ -195,6 +202,10 @@ int main(void)
 
   printf("\n%d trip records read.", records_in);
   printf("\n%d observation records written.\n\n", records_out);
+
+  /* Free memory */
+  for (i = 0; i < records_in; i++)
+    free(trips[i].trip);
 
   /* Close the ouput file */
   fclose(file);

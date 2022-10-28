@@ -116,6 +116,10 @@ int main(void)
   if (! file)
   {
     printf("Error opening file\n");
+    free(trip_tiles);
+    free(trip_splits);
+    free(speed_tiles);
+    free(speed_splits);
     return 1;
   }
 
@@ -152,6 +156,10 @@ int main(void)
     {
       printf("Error reading file\n");
       fclose(file);
+      free(trip_tiles);
+      free(trip_splits);
+      free(speed_tiles);
+      free(speed_splits);
       return 1;
     }
 
@@ -243,6 +251,7 @@ int main(void)
   /* Free memory */
   free(trip_tiles);
   free(trip_splits);
+  free(speed_tiles);
   free(speed_splits);
 
   /* Close the file */

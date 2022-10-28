@@ -45,7 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "meos.h"
+#include <meos.h>
 
 typedef struct
 {
@@ -85,7 +85,7 @@ int main(void)
     return 1;
   }
 
-  int i = 0;
+  int no_records = 0, i;
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -103,20 +103,19 @@ int main(void)
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer);
     /* Transform the string representing the date into a date value */
     DateADT day = pg_date_in(date_buffer);
-    /* Transform the string representing the trip into a temporal value */
-    Temporal *trip = temporal_from_hexwkb(trip_buffer);
-
-    /* Save the trip record */
     trip_rec.day = day;
-    trip_rec.trip = trip;
+    /* Transform the string representing the trip into a temporal value */
+    trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     if (read == 5)
-      i++;
+      no_records++;
 
-    if (read != 5 && !feof(file))
+    if (read != 5 && ! feof(file))
     {
       printf("Trip record with missing values\n");
       fclose(file);
+      /* Free memory */
+      free(trip_rec.trip);
       return 1;
     }
 
@@ -124,17 +123,20 @@ int main(void)
     {
       printf("Error reading file\n");
       fclose(file);
+      /* Free memory */
+      free(trip_rec.trip);
       return 1;
     }
 
-    /* Add the current value to the running aggregate state */
+    /* Add the current value to the running aggregates */
     extent = tpoint_extent_transfn(extent, trip);
-
     state = temporal_tcount_transfn(state, trip, interval, origin);
+    /* Free memory */
+    free(trip_rec.trip);
 
   } while (!feof(file));
 
-  printf("\n%d trip records read\n\n", i);
+  printf("\n%d trip records read\n\n", no_records);
 
   printf("Extent\n");
   printf("------\n\n");
@@ -145,10 +147,11 @@ int main(void)
   int seqcount;
   Temporal *tcount = temporal_tagg_finalfn(state);
   Temporal **tcount_seqs = (Temporal **) temporal_sequences(tcount, &seqcount);
-  for (int i = 0; i < seqcount; i++)
+  for (i = 0; i < seqcount; i++)
     printf("\%s\n", tint_out(tcount_seqs[i]));
 
   /* Free memory */
+  free(trip_rec.trip);
   skiplist_free(state);
   free(tcount_seqs);
 

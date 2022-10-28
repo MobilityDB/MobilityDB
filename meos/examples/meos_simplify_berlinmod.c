@@ -83,8 +83,8 @@ int main(void)
   /* Number of records and records with null values */
   int no_records = 0;
   int nulls = 0;
-  /* Iterator variable */
-  int i = 0;
+  /* Iterator variables */
+  int i = 0, j;
 
   /* Initialize MEOS */
   meos_initialize(NULL);
@@ -126,6 +126,9 @@ int main(void)
     {
       printf("Error reading file\n");
       fclose(file);
+      /* Free memory */
+      for (j = 0; j < i; j++)
+        free(trips[j].trip);
       return 1;
     }
   } while (!feof(file));

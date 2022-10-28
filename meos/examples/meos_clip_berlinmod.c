@@ -55,7 +55,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "meos.h"
+#include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 160000
@@ -117,7 +117,7 @@ int read_communes(void)
     return 1;
   }
 
-  int records = 0;
+  int no_records = 0;
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -126,10 +126,10 @@ int read_communes(void)
   do
   {
     int read = fscanf(file, "%d,%100[^,],%d,%100000[^\n]\n",
-      &communes[records].id, communes[records].name,
-      &communes[records].population, geo_buffer);
+      &communes[no_records].id, communes[no_records].name,
+      &communes[no_records].population, geo_buffer);
     /* Transform the string representing the geometry into a geometry value */
-    communes[records++].geom = gserialized_in(geo_buffer, -1);
+    communes[no_records++].geom = gserialized_in(geo_buffer, -1);
 
     if (read != 4 && !feof(file))
     {
@@ -144,7 +144,7 @@ int read_communes(void)
     }
   } while (!feof(file));
 
-  printf("%d commune records read\n", records);
+  printf("%d commune records read\n", no_records);
 
   /* Close the file */
   fclose(file);
@@ -306,7 +306,7 @@ int main(void)
   }
 
   trip_record trip_rec;
-  int records = 0;
+  int no_records = 0, i;
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -318,13 +318,12 @@ int main(void)
     int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq,
       trip_buffer);
-
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     if (read == 5)
     {
-      records++;
+      no_records++;
       printf("*");
       fflush(stdout);
     }
@@ -349,7 +348,7 @@ int main(void)
     distance[trip_rec.vehid - 1][0] += d;
     distance[NO_VEHICLES][0] += d;
     /* Loop for each commune */
-    for (int i = 0; i < 19; i ++)
+    for (i = 0; i < NO_COMMUNES; i ++)
     {
       Temporal *atgeom = tpoint_at_geometry(trip_rec.trip, communes[i].geom);
       if (atgeom)
@@ -362,6 +361,7 @@ int main(void)
         distance[trip_rec.vehid - 1][NO_COMMUNES + 1] += d;
         distance[NO_VEHICLES][i + 1] += d;
         distance[NO_VEHICLES][NO_COMMUNES + 1] += d;
+        free(atgeom);
       }
     }
     /* Compute the distance outside Brussels Region */
@@ -374,14 +374,23 @@ int main(void)
       distance[trip_rec.vehid - 1][NO_COMMUNES + 2] += d;
       /* Add to the column total */
       distance[NO_VEHICLES][NO_COMMUNES + 2] += d;
+      free(minusgeom);
     }
+
+    /* Free memory */
+    free(trip_rec.trip);
 
   } while (!feof(file));
 
-  printf("\n%d trip records read.\n\n", records);
+  printf("\n%d trip records read.\n\n", no_records);
   /* The last argument states whether all communes, including those that have
      a zero value, are printed */
   matrix_print(distance, false);
+
+  /* Free memory */
+  for (i = 0; i < NO_COMMUNES; i++)
+    free(communes[i].geom);
+  free(brussels_region.geom);
 
   /* Close the file */
   fclose(file);

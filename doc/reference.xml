@@ -1149,7 +1149,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Time when the temporal Boolean takes the value true</para>
+					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Get the time when the temporal Boolean takes the value true</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
