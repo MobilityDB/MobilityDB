@@ -279,11 +279,13 @@ Tbox_multidim_grid(PG_FUNCTION_ARGS)
     SRF_RETURN_DONE(funcctx);
   }
 
+  /* Allocate box */
+  TBOX *box = palloc(sizeof(STBOX));
   /* Store tile value and time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
-  tuple_arr[1] = PointerGetDatum(tbox_tile_get(state->value, state->t,
-    state->xsize, state->tunits));
+  tbox_tile_get(state->value, state->t, state->xsize, state->tunits, box);
+  tuple_arr[1] = PointerGetDatum(box);
   /* Advance state */
   tbox_tile_state_next(state);
   /* Form tuple and return */
@@ -312,7 +314,8 @@ Tbox_multidim_tile(PG_FUNCTION_ARGS)
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   double value_bucket = float_bucket(value, xsize, xorigin);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
-  TBOX *result = tbox_tile_get(value_bucket, time_bucket, xsize, tunits);
+  TBOX *result = palloc(sizeof(TBOX));
+  tbox_tile_get(value_bucket, time_bucket, xsize, tunits, result);
   PG_RETURN_POINTER(result);
 }
 

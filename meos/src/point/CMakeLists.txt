@@ -17,4 +17,5 @@ add_library(point OBJECT
   tpoint_spatialrels_meos.c
   tpoint_tempspatialrels.c
   tpoint_tempspatialrels_meos.c
+  tpoint_tile.c
 )

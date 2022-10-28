@@ -418,7 +418,7 @@ period_bucket_list(const Span *bounds, const Interval *duration,
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
  */
 void
-tbox_tile_set(double value, TimestampTz t, double xsize, int64 tunits,
+tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
   TBOX *box)
 {
   Datum xmin = Float8GetDatum(value);
@@ -431,22 +431,6 @@ tbox_tile_set(double value, TimestampTz t, double xsize, int64 tunits,
   span_set(xmin, xmax, true, false, T_FLOAT8, &span);
   tbox_set(&period, &span, box);
   return;
-}
-
-/**
- * Generate a tile from the a multidimensional grid
- *
- * @param[in] value Start value of the tile to output
- * @param[in] t Start timestamp of the tile to output
- * @param[in] xsize Value size of the tiles
- * @param[in] tunits Time size of the tiles in PostgreSQL time units
- */
-TBOX *
-tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits)
-{
-  TBOX *result = palloc(sizeof(TBOX));
-  tbox_tile_set(value, t, xsize, tunits, result);
-  return result;
 }
 
 /**
@@ -546,16 +530,16 @@ tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
     DatumGetFloat8(bounds->span.lower)) / xsize);
   int no_cols = ceil((DatumGetTimestampTz(bounds->period.upper) -
     DatumGetTimestampTz(bounds->period.lower)) / tsize);
-  TBOX *tiles = palloc0(sizeof(TBOX) * no_rows * no_cols);
+  TBOX *result = palloc0(sizeof(TBOX) * no_rows * no_cols);
   for (int i = 0; i < no_rows * no_cols; i++)
   {
-    tbox_tile_set(state->value, state->t, state->xsize, state->tunits,
-      &tiles[i]);
+    tbox_tile_get(state->value, state->t, state->xsize, state->tunits,
+      &result[i]);
     tbox_tile_state_next(state);
   }
   *rows = no_rows;
   *columns = no_cols;
-  return tiles;
+  return result;
 }
 
 /**
