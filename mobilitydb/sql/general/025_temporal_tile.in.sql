@@ -121,18 +121,18 @@ CREATE TYPE index_tbox AS (
   box tbox
 );
 
-CREATE FUNCTION multidimGrid(bounds tbox, size float,
+CREATE FUNCTION tileList(bounds tbox, size float,
   duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
-  AS 'MODULE_PATHNAME', 'Tbox_multidim_grid'
+  AS 'MODULE_PATHNAME', 'Tbox_tile_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION multidimTile("value" float, "time" timestamptz,
+CREATE FUNCTION tile("value" float, "time" timestamptz,
   size float, duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_multidim_tile'
+  AS 'MODULE_PATHNAME', 'Tbox_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

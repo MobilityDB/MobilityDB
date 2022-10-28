@@ -95,7 +95,7 @@ int main(void)
   STBOX *trip_extent =
     stbox_in("SRID=3857;STBOX X(((473212.810151,6578740.528027),(499152.544688,6607165.513683)))");
   GSERIALIZED *sorigin = gserialized_in("Point(0 0)", -1);
-  STBOX *trip_tiles = stbox_multidim_grid(trip_extent, 5e3, NULL, sorigin, 0,
+  STBOX *trip_tiles = stbox_tile_list(trip_extent, 5e3, NULL, sorigin, 0,
     &no_cells);
   /* Compute the (value and time) tiles for speed of trips */
   TBOX *speed_extent = tbox_in("TBOX XT([0, 35),[2020-06-01, 2020-06-05))");
@@ -154,7 +154,7 @@ int main(void)
       fclose(file);
       return 1;
     }
-        
+
     /* Split the trip by the tiles and accumulate aggregate values */
     k = 0;
     for (i = 0; i < no_cells[0] * no_cells[1]; i++)
@@ -171,7 +171,7 @@ int main(void)
       }
       k++;
     }
-    
+
     /* Split the temporal speed by the tiles and accumulate aggregate values */
     k = 0;
     for (i = 0; i < no_rows * no_cols; i++)

@@ -595,7 +595,7 @@ stbox_tile_state_get(STboxGridState *state, STBOX *box)
  * @sqlfunc multidimGrid()
  */
 STBOX *
-stbox_multidim_grid(STBOX *bounds, double size, const Interval *duration,
+stbox_tile_list(STBOX *bounds, double size, const Interval *duration,
   GSERIALIZED *sorigin, TimestampTz torigin, int **no_cells)
 {
   /* Get input parameters */
@@ -647,7 +647,7 @@ stbox_multidim_grid(STBOX *bounds, double size, const Interval *duration,
   }
   if (hast)
   {
-    cellcount[3] = ceil((DatumGetTimestampTz(state->box.period.upper) - 
+    cellcount[3] = ceil((DatumGetTimestampTz(state->box.period.upper) -
       DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
     count *= cellcount[3];
   }

@@ -1153,7 +1153,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Tiempo cuando el booleano temporal toma el valor verdadero</para>
+					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Obtener el tiempo cuando el booleano temporal toma el valor verdadero</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1299,7 +1299,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente</para>
+						<para><link linkend="isSimple"><varname>isSimple</varname></link>: Obtener verdadero si el punto temporal no se auto-intersecta espacialmente</para>
 					</listitem>
 
 					<listitem>
@@ -1336,7 +1336,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples</para>
+						<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Obtener una matriz de fragmentos del punto temporal que son simples</para>
 					</listitem>
 
 					<listitem>
@@ -1483,11 +1483,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="multidimTile"><varname>multidimTile</varname></link>: Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo</para>
+						<para><link linkend="tile"><varname>tile</varname></link>: Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>

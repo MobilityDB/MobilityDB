@@ -1614,7 +1614,7 @@ extern Temporal **temporal_time_split(Temporal *temp, Interval *duration, Timest
 extern Temporal **tint_value_time_split(Temporal *temp, int size, int vorigin, Interval *duration, TimestampTz torigin, int *newcount);
 extern Temporal **tfloat_value_time_split(Temporal *temp, double size, double vorigin, Interval *duration, TimestampTz torigin, int *newcount);
 
-extern STBOX *stbox_multidim_grid(STBOX *bounds, double size, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, int **cellcount);
+extern STBOX *stbox_tile_list(STBOX *bounds, double size, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, int **cellcount);
 
 /*****************************************************************************/
 

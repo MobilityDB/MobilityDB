@@ -41,28 +41,28 @@ CREATE TYPE index_stbox AS (
   box stbox
 );
 
-CREATE FUNCTION multidimGrid(bounds stbox, size float,
+CREATE FUNCTION tileList(bounds stbox, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS SETOF index_stbox
-  AS 'MODULE_PATHNAME', 'Stbox_multidim_grid'
+  AS 'MODULE_PATHNAME', 'Stbox_tile_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION multidimGrid(bounds stbox, size float,
+CREATE FUNCTION tileList(bounds stbox, size float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_stbox
-  AS 'MODULE_PATHNAME', 'Stbox_multidim_grid'
+  AS 'MODULE_PATHNAME', 'Stbox_tile_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION multidimTile(point geometry, size float,
+CREATE FUNCTION tile(point geometry, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_multidim_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION multidimTile(point geometry, "time" timestamptz,
+CREATE FUNCTION tile(point geometry, "time" timestamptz,
     size float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_multidim_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

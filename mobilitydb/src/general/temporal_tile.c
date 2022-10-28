@@ -222,12 +222,12 @@ Period_bucket(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tbox_multidim_grid);
+PG_FUNCTION_INFO_V1(Tbox_tile_list);
 /**
  * Generate a multidimensional grid for temporal numbers.
  */
 PGDLLEXPORT Datum
-Tbox_multidim_grid(PG_FUNCTION_ARGS)
+Tbox_tile_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   TboxGridState *state;
@@ -296,12 +296,12 @@ Tbox_multidim_grid(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tbox_multidim_tile);
+PG_FUNCTION_INFO_V1(Tbox_tile);
 /**
  * Generate a tile in a multidimensional grid for temporal numbers.
 */
 PGDLLEXPORT Datum
-Tbox_multidim_tile(PG_FUNCTION_ARGS)
+Tbox_tile(PG_FUNCTION_ARGS)
 {
   double value = PG_GETARG_FLOAT8(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);

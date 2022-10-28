@@ -51,14 +51,14 @@
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_multidim_grid);
+PG_FUNCTION_INFO_V1(Stbox_tile_list);
 /**
  * @brief @ingroup mobilitydb_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
  * @sqlfunc multidimGrid()
  */
 PGDLLEXPORT Datum
-Stbox_multidim_grid(PG_FUNCTION_ARGS)
+Stbox_tile_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
@@ -158,14 +158,14 @@ Stbox_multidim_grid(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
-PG_FUNCTION_INFO_V1(Stbox_multidim_tile);
+PG_FUNCTION_INFO_V1(Stbox_tile);
 /**
  * @ingroup mobilitydb_temporal_tile
  * @brief Generate a tile in a multidimensional grid for temporal points.
  * @sqlfunc multidimTile()
  */
 PGDLLEXPORT Datum
-Stbox_multidim_tile(PG_FUNCTION_ARGS)
+Stbox_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(point);

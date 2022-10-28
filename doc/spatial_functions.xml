@@ -343,7 +343,7 @@ SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2
 
 				<listitem id="isSimple">
 					<indexterm><primary><varname>isSimple</varname></primary></indexterm>
-					<para>Returns true if the temporal point does not spatially self-intersect &Z_support;</para>
+					<para>Return true if the temporal point does not spatially self-intersect &Z_support;</para>
 					<para><varname>isSimple(tpoint): boolean</varname></para>
 					<para>Notice that a temporal sequence set point is simple if every composing sequence is simple.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -468,7 +468,7 @@ SELECT asText(round(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 
 				<listitem id="makeSimple">
 					<indexterm><primary><varname>makeSimple</varname></primary></indexterm>
-					<para>Returns an array of fragments of the temporal point which are simple &Z_support;</para>
+					<para>Return an array of fragments of the temporal point which are simple &Z_support;</para>
 					<para><varname>makeSimple(tpoint): tgeompoint[]</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
