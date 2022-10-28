@@ -405,7 +405,6 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
   double ymin = y;
   double ymax = ymin + size;
   double zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
   Period p;
   if (hasz)
   {
@@ -414,10 +413,8 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
   }
   if (hast)
   {
-    tmin = t;
-    tmax = tmin + tunits;
-    span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax), true,
-      (tmin == tmax), T_TIMESTAMPTZ, &p);
+    span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
+      false, T_TIMESTAMPTZ, &p);
   }
   return stbox_set(hast ? &p : NULL, true, hasz, false, srid, xmin, xmax,
     ymin, ymax, zmin, zmax, result);
