@@ -634,7 +634,13 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 
 /*****************************************************************************/
 
-/* Time functions for temporal types */
+/* Modification functions for temporal types */
+
+extern TSequence *tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t);
+
+/*****************************************************************************/
+
+/* Intersects functions for temporal types */
 
 extern bool tinstant_intersects_period(const TInstant *inst, const Period *p);
 extern bool tinstant_intersects_periodset(const TInstant *inst, const PeriodSet *ps);

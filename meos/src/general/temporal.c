@@ -3221,6 +3221,37 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
 }
 
 /*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_int_temporal_modification
+ * @brief Delete a timestamp from a temporal value connecting the instants
+ * before and after the given timestamp (if any).
+ * @sqlfunc delete()
+ */
+Temporal *
+temporal_delete_timestamp(const Temporal *temp, TimestampTz t)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t,
+      REST_MINUS);
+  else if (temp->subtype == TSEQUENCE)
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+      result = (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
+    else
+      result = (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t);
+  }
+  // else /* temp->subtype == TSEQUENCESET */
+    // result = (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp,
+      // t);
+  return result;
+}
+
+/*****************************************************************************
  * Intersects functions
  *****************************************************************************/
 

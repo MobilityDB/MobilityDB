@@ -536,25 +536,25 @@ CREATE FUNCTION minusPeriodSet(tnpoint, periodset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTimestamp(tnpoint, timestamptz)
+CREATE FUNCTION intersectsTime(tnpoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTimestampSet(tnpoint, timestampset)
+CREATE FUNCTION intersectsTime(tnpoint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsPeriod(tnpoint, period)
+CREATE FUNCTION intersectsTime(tnpoint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsPeriodSet(tnpoint, periodset)
+CREATE FUNCTION intersectsTime(tnpoint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT tnpoint_supportfn

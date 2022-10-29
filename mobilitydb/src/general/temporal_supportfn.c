@@ -66,10 +66,7 @@
 enum TEMPORAL_FUNCTION_IDX
 {
   /* intersects<Time> functions */
-  INTERSECTS_TIMESTAMP_IDX       = 0,
-  INTERSECTS_TIMESTAMPSET_IDX    = 1,
-  INTERSECTS_PERIOD_IDX          = 2,
-  INTERSECTS_PERIODSET_IDX       = 3,
+  INTERSECTS_TIME_IDX            = 0,
   /* Ever/always comparison functions */
   EVER_EQ_IDX                    = 4,
   ALWAYS_EQ_IDX                  = 5,
@@ -84,19 +81,13 @@ enum TEMPORAL_FUNCTION_IDX
 static const int16 TemporalStrategies[] =
 {
   /* intersects<Time> functions */
-  [INTERSECTS_TIMESTAMP_IDX]     = RTOverlapStrategyNumber,
-  [INTERSECTS_TIMESTAMPSET_IDX]  = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIOD_IDX]        = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIODSET_IDX]     = RTOverlapStrategyNumber,
+  [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
 };
 
 static const int16 TNumberStrategies[] =
 {
   /* intersects<Time> functions */
-  [INTERSECTS_TIMESTAMP_IDX]     = RTOverlapStrategyNumber,
-  [INTERSECTS_TIMESTAMPSET_IDX]  = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIOD_IDX]        = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIODSET_IDX]     = RTOverlapStrategyNumber,
+  [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
@@ -105,10 +96,7 @@ static const int16 TNumberStrategies[] =
 static const int16 TPointStrategies[] =
 {
   /* intersects<Time> functions */
-  [INTERSECTS_TIMESTAMP_IDX]     = RTOverlapStrategyNumber,
-  [INTERSECTS_TIMESTAMPSET_IDX]  = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIOD_IDX]        = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIODSET_IDX]     = RTOverlapStrategyNumber,
+  [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
@@ -124,10 +112,7 @@ static const int16 TPointStrategies[] =
 static const int16 TNPointStrategies[] =
 {
   /* intersects<Time> functions */
-  [INTERSECTS_TIMESTAMP_IDX]     = RTOverlapStrategyNumber,
-  [INTERSECTS_TIMESTAMPSET_IDX]  = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIOD_IDX]        = RTOverlapStrategyNumber,
-  [INTERSECTS_PERIODSET_IDX]     = RTOverlapStrategyNumber,
+  [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
   [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
   [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
@@ -144,20 +129,14 @@ static const int16 TNPointStrategies[] =
 */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
-  /* intersects<Time> functions */
-  {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
-  {"intersectstimestampset", INTERSECTS_TIMESTAMPSET_IDX, 2, 0},
-  {"intersectsperiod", INTERSECTS_PERIOD_IDX, 2, 0},
-  {"intersectsperiodset", INTERSECTS_PERIODSET_IDX, 2, 0},
+  /* intersectsTime functions */
+  {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   {NULL, 0, 0, 0}
 };
 
 static const IndexableFunction TNumberIndexableFunctions[] = {
   /* intersects<Time> functions */
-  {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
-  {"intersectstimestampset", INTERSECTS_TIMESTAMPSET_IDX, 2, 0},
-  {"intersectsperiod", INTERSECTS_PERIOD_IDX, 2, 0},
-  {"intersectsperiodset", INTERSECTS_PERIODSET_IDX, 2, 0},
+  {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
@@ -169,10 +148,7 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
   /* intersects<Time> functions */
-  {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
-  {"intersectstimestampset", INTERSECTS_TIMESTAMPSET_IDX, 2, 0},
-  {"intersectsperiod", INTERSECTS_PERIOD_IDX, 2, 0},
-  {"intersectsperiodset", INTERSECTS_PERIODSET_IDX, 2, 0},
+  {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
   {"contains", CONTAINS_IDX, 2, 0},
   {"disjoint", DISJOINT_IDX, 2, 0},
@@ -184,11 +160,8 @@ static const IndexableFunction TPointIndexableFunctions[] = {
 
 #if NPOINT
 static const IndexableFunction TNPointIndexableFunctions[] = {
-  /* intersects<Time> functions */
-  {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
-  {"intersectstimestampset", INTERSECTS_TIMESTAMPSET_IDX, 2, 0},
-  {"intersectsperiod", INTERSECTS_PERIOD_IDX, 2, 0},
-  {"intersectsperiodset", INTERSECTS_PERIODSET_IDX, 2, 0},
+  /* intersectsTime functions */
+  {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
   {"contains", CONTAINS_IDX, 2, 0},
   {"disjoint", DISJOINT_IDX, 2, 0},

@@ -1977,97 +1977,97 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp != merge(atTbox(temp, b), m
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
  count 
 -------
   9504
@@ -2309,97 +2309,97 @@ SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= 'AAA';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      3
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      4
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    804
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    785
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    795
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    760
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    804
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    785
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    795
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    760
@@ -2445,97 +2445,97 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      3
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      4
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    804
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    785
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    795
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
  count 
 -------
    760
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    804
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    785
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    795
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
    760

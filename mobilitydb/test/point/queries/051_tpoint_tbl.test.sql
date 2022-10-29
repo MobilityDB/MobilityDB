@@ -386,40 +386,40 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atPerio
 ------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+WHERE intersectsTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+WHERE intersectsTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+WHERE intersectsTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+WHERE intersectsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+WHERE intersectsTime(temp, ts) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+WHERE intersectsTime(temp, ts) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+WHERE intersectsTime(temp, ts) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+WHERE intersectsTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
+WHERE intersectsTime(temp, p) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
+WHERE intersectsTime(temp, p) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
+WHERE intersectsTime(temp, p) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
+WHERE intersectsTime(temp, p) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+WHERE intersectsTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+WHERE intersectsTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+WHERE intersectsTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+WHERE intersectsTime(temp, ps) IS NOT NULL;
 
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
@@ -494,17 +494,17 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestamp(temp, '2001-06-01');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -523,17 +523,17 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestamp(temp, '2001-06-01');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

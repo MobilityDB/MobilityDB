@@ -1891,88 +1891,131 @@ CREATE FUNCTION minusPeriodSet(ttext, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Modification Functions
+ *****************************************************************************/
+
+CREATE FUNCTION delete(tbool, timestamptz)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION delete(tint, timestamptz)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION delete(tfloat, timestamptz)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION delete(ttext, timestamptz)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION delete(tbool, timestampset)
+  -- RETURNS tbool
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
+  -- SUPPORT temporal_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION delete(tbool, period)
+  -- RETURNS tbool
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+  -- SUPPORT temporal_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION delete(tbool, periodset)
+  -- RETURNS tbool
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+  -- SUPPORT temporal_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+
+/*****************************************************************************
  * Intersection Functions
  *****************************************************************************/
 
-CREATE FUNCTION intersectsTimestamp(tbool, timestamptz)
+CREATE FUNCTION intersectsTime(tbool, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestamp(tint, timestamptz)
+CREATE FUNCTION intersectsTime(tint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestamp(tfloat, timestamptz)
+CREATE FUNCTION intersectsTime(tfloat, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestamp(ttext, timestamptz)
+CREATE FUNCTION intersectsTime(ttext, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTimestampSet(tbool, timestampset)
+CREATE FUNCTION intersectsTime(tbool, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestampSet(tint, timestampset)
+CREATE FUNCTION intersectsTime(tint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestampSet(tfloat, timestampset)
+CREATE FUNCTION intersectsTime(tfloat, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestampSet(ttext, timestampset)
+CREATE FUNCTION intersectsTime(ttext, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsPeriod(tbool, period)
+CREATE FUNCTION intersectsTime(tbool, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriod(tint, period)
+CREATE FUNCTION intersectsTime(tint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriod(tfloat, period)
+CREATE FUNCTION intersectsTime(tfloat, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriod(ttext, period)
+CREATE FUNCTION intersectsTime(ttext, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsPeriodSet(tbool, periodset)
+CREATE FUNCTION intersectsTime(tbool, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriodSet(tint, periodset)
+CREATE FUNCTION intersectsTime(tint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriodSet(tfloat, periodset)
+CREATE FUNCTION intersectsTime(tfloat, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriodSet(ttext, periodset)
+CREATE FUNCTION intersectsTime(ttext, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT temporal_supportfn

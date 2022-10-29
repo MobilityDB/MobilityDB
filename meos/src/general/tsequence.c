@@ -4224,7 +4224,7 @@ tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
  * a copy of the value
- * @sqlfunc atTimestamp(), minusTimestamp()
+ * @sqlfunc atTimestamp()
  */
 TInstant *
 tdiscseq_at_timestamp(const TSequence *seq, TimestampTz t)
@@ -4253,7 +4253,7 @@ tdiscseq_at_timestamp(const TSequence *seq, TimestampTz t)
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
  * a copy of the value
- * @sqlfunc atTimestamp(), minusTimestamp()
+ * @sqlfunc minusTimestamp()
  */
 TSequence *
 tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t)
@@ -5109,6 +5109,73 @@ tcontseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   int count1 = atfunc ? tcontseq_at_periodset1(seq, ps, sequences) :
     tcontseq_minus_periodset1(seq, ps, 0, sequences);
   return tsequenceset_make_free(sequences, count1, NORMALIZE_NO);
+}
+
+/*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_int_temporal_restrict
+ * @brief Delete a timestamp from a continuous temporal sequence
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ */
+TSequence *
+tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
+{
+  /* Bounding box test */
+  if (! contains_period_timestamp(&seq->period, t))
+    return tsequence_copy(seq);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
+  int k = 0;
+  bool found = false;
+  TInstant *inst1;
+  /* Position of the instant if found => -1 : first, 0 : middle, 1 : last */
+  int pos; 
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    int cmp = timestamptz_cmp_internal(inst->t, t);
+    if (cmp != 0)
+      instants[k++] = (TInstant *) inst;
+    /* If t is found, skip the instant if in the middle, copy the next/previous
+     * value if t is the timestamp of the first/last instant */
+    else /* cmp == 0 */
+    {
+      found = true;
+      Datum value;
+      if (i == 0)
+      {
+        pos = -1;
+        value = tinstant_value(tsequence_inst_n(seq, i + 1));
+        inst1 = tinstant_make(value, seq->temptype, inst->t);
+      }
+      else if (i == seq->count - 1)
+      {
+        pos = 1;
+        value = tinstant_value(tsequence_inst_n(seq, i - 1));
+        inst1 = tinstant_make(value, seq->temptype, inst->t);
+      }
+      /* skip the value if i is in the middle */
+    }
+  }
+  int count = seq->count;
+  if (found && pos == 0)
+    count--;
+  TSequence *result = tsequence_make((const TInstant **) instants, count,
+    count, seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE);
+  if (found && pos != 0)
+    pfree(inst1);
+  pfree(instants);
+  return result;
 }
 
 /*****************************************************************************

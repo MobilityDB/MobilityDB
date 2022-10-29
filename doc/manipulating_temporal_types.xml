@@ -1143,44 +1143,20 @@ SELECT segments(tfloat '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
 </programlisting>
 			</listitem>
 
-			<listitem id="intersectsTimestamp">
-				<indexterm><primary><varname>intersectsTimestamp</varname></primary></indexterm>
-				<para>Does the temporal value intersect the timestamp?</para>
-				<para><varname>intersectsTimestamp(ttype,timestamptz): boolean</varname></para>
+			<listitem id="intersectsTime">
+				<indexterm><primary><varname>intersectsTime</varname></primary></indexterm>
+				<para>Does the temporal value intersect the time value?</para>
+				<para><varname>intersectsTime(ttype,time): boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT intersectsTimestamp(tint '[1@2001-01-01, 1@2001-01-15)', timestamptz '2001-01-03');
+SELECT intersectsTime(tint '[1@2001-01-01, 1@2001-01-15)', timestamptz '2001-01-03');
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsTimestampSet">
-				<indexterm><primary><varname>intersectsTimestampSet</varname></primary></indexterm>
-				<para>Does the temporal value intersect the timestamp set?</para>
-				<para><varname>intersectsTimestampSet(ttype,timestampset): boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT intersectsTimestampSet(tint '[1@2001-01-01, 1@2001-01-15)',
+SELECT intersectsTime(tint '[1@2001-01-01, 1@2001-01-15)',
   timestampset '{2001-01-01, 2001-01-03}');
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsPeriod">
-				<indexterm><primary><varname>intersectsPeriod</varname></primary></indexterm>
-				<para>Does the temporal value intersect the period?</para>
-				<para><varname>intersectsPeriod(ttype,period): boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT intersectsPeriod(tint '[1@2001-01-01, 1@2001-01-04)',
+SELECT intersectsTime(tint '[1@2001-01-01, 1@2001-01-04)',
   period '[2001-01-01,2001-01-05)');
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsPeriodSet">
-				<indexterm><primary><varname>intersectsPeriodSet</varname></primary></indexterm>
-				<para>Does the temporal value intersect the period set?</para>
-				<para><varname>intersectsPeriodSet(ttype,periodset): boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT intersectsPeriodSet(tbool '[t@2001-01-01, f@2001-01-15]',
+SELECT intersectsTime(tbool '[t@2001-01-01, f@2001-01-15]',
   periodset '{[2001-01-01, 2001-01-03), [2001-01-05, 2001-01-07)}');
 -- true
 </programlisting>

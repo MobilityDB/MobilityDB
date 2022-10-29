@@ -357,7 +357,6 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
    * Each sequence can be split 3 times, there may be count - 1 holes between
    * sequences for both sequences1 and sequences2, and there may be
    * 2 sequences before and after.
-   * TODO Verify this formula
    */
   int seqcount = (count1 * 3) + count1 + count2 + 1;
   TSequence **sequences = palloc(sizeof(TSequence *) * seqcount);

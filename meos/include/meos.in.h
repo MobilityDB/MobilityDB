@@ -1553,7 +1553,13 @@ extern Temporal *ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs
 
 /*****************************************************************************/
 
-/* Time functions for temporal types */
+/* Modification functions for temporal types */
+
+extern Temporal *temporal_delete_timestamp(const Temporal *temp, TimestampTz t);
+
+/*****************************************************************************/
+
+/* Intersects functions for temporal types */
 
 extern bool temporal_intersects_period(const Temporal *temp, const Period *p);
 extern bool temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps);

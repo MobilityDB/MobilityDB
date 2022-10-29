@@ -817,19 +817,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTimestamp"><varname>intersectsTimestamp</varname></link>: Does the temporal value intersect the timestamp?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsTimestampSet"><varname>intersectsTimestampSet</varname></link>: Does the temporal value intersect the timestamp set?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsPeriod"><varname>intersectsPeriod</varname></link>: Does the temporal value intersect the period?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsPeriodSet"><varname>intersectsPeriodSet</varname></link>: Does the temporal value intersect the period set?</para>
+					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: Does the temporal value intersect the timestamp?</para>
 				</listitem>
 
 				<listitem>

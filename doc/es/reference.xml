@@ -840,19 +840,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTimestamp"><varname>intersectsTimestamp</varname></link>: ¿Se cruza el valor temporal con la marca de tiempo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsTimestampSet"><varname>intersectsTimestampSet</varname></link>: ¿Se cruza el valor temporal con el conjunto de marcas tiempo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsPeriod"><varname>intersectsPeriod</varname></link>: ¿Se cruza el valor temporal con el período?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsPeriodSet"><varname>intersectsPeriodSet</varname></link>: ¿Se cruza el valor temporal con el conjunto de períodos?</para>
+					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: ¿Se cruza el valor temporal con el valor de tiempo?</para>
 				</listitem>
 
 				<listitem>

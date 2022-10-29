@@ -217,6 +217,7 @@ skiplist_delete(SkipList *list, int cur)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_agg
  * @brief Free the skiplist
@@ -225,9 +226,6 @@ void
 skiplist_free(SkipList *list)
 {
   assert(list);
-#if ! MEOS
-  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
   if (list->extra)
     pfree(list->extra);
   if (list->freed)
@@ -242,11 +240,9 @@ skiplist_free(SkipList *list)
     pfree(list->elems);
   }
   pfree(list);
-#if ! MEOS
-  unset_aggregation_context(ctx);
-#endif /* ! MEOS */
   return;
 }
+#endif /* MEOS */
 
 /**
  * Output the skiplist in graphviz dot format for visualisation and debugging purposes

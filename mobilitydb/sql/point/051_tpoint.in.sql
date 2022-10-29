@@ -812,45 +812,45 @@ CREATE FUNCTION minusPeriodSet(tgeogpoint, periodset)
  * Intersection Functions
  *****************************************************************************/
 
-CREATE FUNCTION intersectsTimestamp(tgeompoint, timestamptz)
+CREATE FUNCTION intersectsTime(tgeompoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestamp(tgeogpoint, timestamptz)
+CREATE FUNCTION intersectsTime(tgeogpoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTimestampSet(tgeompoint, timestampset)
+CREATE FUNCTION intersectsTime(tgeompoint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTimestampSet(tgeogpoint, timestampset)
+CREATE FUNCTION intersectsTime(tgeogpoint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsPeriod(tgeompoint, period)
+CREATE FUNCTION intersectsTime(tgeompoint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriod(tgeogpoint, period)
+CREATE FUNCTION intersectsTime(tgeogpoint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsPeriodSet(tgeompoint, periodset)
+CREATE FUNCTION intersectsTime(tgeompoint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsPeriodSet(tgeogpoint, periodset)
+CREATE FUNCTION intersectsTime(tgeogpoint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
   SUPPORT tpoint_supportfn
