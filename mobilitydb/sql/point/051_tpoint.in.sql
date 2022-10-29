@@ -809,7 +809,22 @@ CREATE FUNCTION minusTime(tgeogpoint, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Intersection Functions
+ * Modification Functions
+ *****************************************************************************/
+
+CREATE FUNCTION deleteTime(tgeompoint, timestamptz, connect boolean DEFAULT TRUE)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  -- SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tgeogpoint, timestamptz, connect boolean DEFAULT TRUE)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  -- SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Intersects Functions
  *****************************************************************************/
 
 CREATE FUNCTION intersectsTime(tgeompoint, timestamptz)

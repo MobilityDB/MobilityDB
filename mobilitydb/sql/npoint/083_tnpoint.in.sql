@@ -536,6 +536,20 @@ CREATE FUNCTION minusTime(tnpoint, periodset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Modification Functions
+ *****************************************************************************/
+
+CREATE FUNCTION deleteTime(tnpoint, timestamptz, connect boolean DEFAULT TRUE)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  -- SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Intersects Functions
+ *****************************************************************************/
+
 CREATE FUNCTION intersectsTime(tnpoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'

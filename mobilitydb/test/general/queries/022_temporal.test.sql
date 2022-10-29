@@ -2241,7 +2241,42 @@ SELECT minusTBox(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@
 SELECT minusTBox(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tbox 'TBOX XT([1,2],[2000-01-01,2000-01-02])');
 
 -------------------------------------------------------------------------------
--- Intesection functions
+-- Modification functions
+-------------------------------------------------------------------------------
+
+SELECT deleteTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
+SELECT deleteTime(tbool 't@2000-01-02', timestamptz '2000-01-01');
+SELECT deleteTime(tbool 't@2000-01-01', timestamptz '2000-01-02');
+SELECT deleteTime(tbool '{t@2000-01-01}', timestamptz '2000-01-01');
+SELECT deleteTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
+SELECT deleteTime(tbool '{t@2000-01-01, t@2000-01-03}', timestamptz '2000-01-02');
+SELECT deleteTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
+SELECT deleteTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
+SELECT deleteTime(tint '1@2000-01-01', timestamptz '2000-01-01');
+SELECT deleteTime(tint '{1@2000-01-01}', timestamptz '2000-01-01');
+SELECT deleteTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
+SELECT deleteTime(tint '{1@2000-01-01, 1@2000-01-03}', timestamptz '2000-01-02');
+SELECT deleteTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
+SELECT deleteTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '{1.5@2000-01-01}', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '{1.5@2000-01-01, 1.5@2000-01-03}', timestamptz '2000-01-02');
+SELECT deleteTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-03, 1.5@2000-01-05]', timestamptz '2000-01-02');
+SELECT deleteTime(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-03, 1.5@2000-01-05]', timestamptz '2000-01-02');
+SELECT deleteTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-03, 1.5@2000-01-05],[3.5@2000-01-06, 3.5@2000-01-07]}', timestamptz '2000-01-02');
+SELECT deleteTime(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-03, 1.5@2000-01-05],[3.5@2000-01-06, 3.5@2000-01-07]}', timestamptz '2000-01-02');
+SELECT deleteTime(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
+SELECT deleteTime(ttext '{AAA@2000-01-01}', timestamptz '2000-01-01');
+SELECT deleteTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
+SELECT deleteTime(ttext '{AAA@2000-01-01, AAA@2000-01-03}', timestamptz '2000-01-02');
+SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
+SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
+  
+-------------------------------------------------------------------------------
+-- Intersection functions
 -------------------------------------------------------------------------------
 
 SELECT intersectsTime(tbool 't@2000-01-01', timestamptz '2000-01-01');

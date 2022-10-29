@@ -2215,11 +2215,12 @@ Temporal_delete_timestamp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Temporal *result = temporal_delete_timestamp(temp, t);
+  bool connect = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_delete_timestamp(temp, t, connect);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

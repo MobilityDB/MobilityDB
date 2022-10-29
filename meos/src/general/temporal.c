@@ -3231,7 +3231,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
  * @sqlfunc delete()
  */
 Temporal *
-temporal_delete_timestamp(const Temporal *temp, TimestampTz t)
+temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3240,14 +3240,14 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t)
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
       result = (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
     else
       result = (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t);
   }
-  // else /* temp->subtype == TSEQUENCESET */
-    // result = (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp,
-      // t);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp,
+      t);
   return result;
 }
 

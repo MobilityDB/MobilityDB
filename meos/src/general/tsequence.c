@@ -5117,7 +5117,13 @@ tcontseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Delete a timestamp from a continuous temporal sequence
+ * @brief Delete a timestamp from a continuous temporal sequence. 
+ *
+ * If an instant has the same timestamp, it will be removed. If the instant is 
+ * in the middle, it will be connected to the next and previous instants in the
+ * result. If the instant is at the beginning or at the end, the time span of
+ * the sequence is reduced. In this case the bounds of the sequence will be
+ * adjusted accordingly, inclusive at the beginning and exclusive at the end.
  *
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
@@ -5137,43 +5143,28 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   int k = 0;
   bool found = false;
-  TInstant *inst1;
-  /* Position of the instant if found => -1 : first, 0 : middle, 1 : last */
-  int pos; 
+  bool lower_inc1 = seq->period.lower_inc;
+  bool upper_inc1 = seq->period.upper_inc;
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    int cmp = timestamptz_cmp_internal(inst->t, t);
-    if (cmp != 0)
+    if (timestamptz_cmp_internal(inst->t, t) != 0)
       instants[k++] = (TInstant *) inst;
-    /* If t is found, skip the instant if in the middle, copy the next/previous
-     * value if t is the timestamp of the first/last instant */
-    else /* cmp == 0 */
+    else /* inst->t == t */
     {
       found = true;
-      Datum value;
       if (i == 0)
-      {
-        pos = -1;
-        value = tinstant_value(tsequence_inst_n(seq, i + 1));
-        inst1 = tinstant_make(value, seq->temptype, inst->t);
-      }
+        lower_inc1 = true;
       else if (i == seq->count - 1)
-      {
-        pos = 1;
-        value = tinstant_value(tsequence_inst_n(seq, i - 1));
-        inst1 = tinstant_make(value, seq->temptype, inst->t);
-      }
-      /* skip the value if i is in the middle */
+        upper_inc1 = false;
     }
   }
   int count = seq->count;
-  if (found && pos == 0)
+  if (found)
     count--;
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make((const TInstant **) instants, count,
-    count, seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE);
-  if (found && pos != 0)
-    pfree(inst1);
+    count, lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
   return result;
 }

@@ -1894,38 +1894,38 @@ CREATE FUNCTION minusTime(ttext, periodset)
  * Modification Functions
  *****************************************************************************/
 
-CREATE FUNCTION delete(tbool, timestamptz)
+CREATE FUNCTION deleteTime(tbool, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
-  SUPPORT temporal_supportfn
+  -- SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION delete(tint, timestamptz)
+CREATE FUNCTION deleteTime(tint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
-  SUPPORT temporal_supportfn
+  -- SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION delete(tfloat, timestamptz)
+CREATE FUNCTION deleteTime(tfloat, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
-  SUPPORT temporal_supportfn
+  -- SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION delete(ttext, timestamptz)
+CREATE FUNCTION deleteTime(ttext, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
-  SUPPORT temporal_supportfn
+  -- SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION delete(tbool, timestampset)
+-- CREATE FUNCTION deleteTime(tbool, timestampset)
   -- RETURNS tbool
   -- AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
   -- SUPPORT temporal_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION delete(tbool, period)
+-- CREATE FUNCTION deleteTime(tbool, period)
   -- RETURNS tbool
   -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
   -- SUPPORT temporal_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION delete(tbool, periodset)
+-- CREATE FUNCTION deleteTime(tbool, periodset)
   -- RETURNS tbool
   -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   -- SUPPORT temporal_supportfn

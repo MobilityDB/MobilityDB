@@ -2521,6 +2521,41 @@ tsequenceset_out(const TSequenceSet *ss, Datum maxdd)
 }
 
 /*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_int_temporal_restrict
+ * @brief Delete a timestamp from a temporal sequence set. 
+ *
+ * @param[in] ss Temporal sequence set
+ * @param[in] t Timestamp
+ */
+TSequenceSet *
+tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
+{
+  /* Bounding box test */
+  if (! contains_period_timestamp(&ss->period, t))
+    return tsequenceset_copy(ss);
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return tcontseq_minus_timestamp(tsequenceset_seq_n(ss, 0), t);
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * (ss->count));
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    TSequence *seq1 = tcontseq_delete_timestamp(seq, t);
+    if (seq1)
+      sequences[k++] = seq1;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
+}
+
+/*****************************************************************************
  * Intersects functions
  *****************************************************************************/
 
