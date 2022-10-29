@@ -885,19 +885,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atTimestamp"><varname>atTimestamp</varname></link>: Restrict to a timestamp</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atTimestampSet"><varname>atTimestampSet</varname></link>: Restrict to a timestamp set</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atPeriod"><varname>atPeriod</varname></link>: Restrict to a period</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atPeriodSet"><varname>atPeriodSet</varname></link>: Restrict to a period set</para>
+						<para><link linkend="atTime"><varname>atTime</varname></link>: Restrict to a time value</para>
 					</listitem>
 
 					<listitem>
@@ -943,19 +931,7 @@
 				</listitem>
 
 					<listitem>
-						<para><link linkend="minusTimestamp"><varname>minusTimestamp</varname></link>: Difference with a timestamp</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusTimestampSet"><varname>minusTimestampSet</varname></link>: Difference with a timestamp set</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusPeriod"><varname>minusPeriod</varname></link>: Difference with period</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusPeriodSet"><varname>minusPeriodSet</varname></link>: Difference with a period set</para>
+						<para><link linkend="minusTime"><varname>minusTime</varname></link>: Difference with a time value</para>
 					</listitem>
 
 					<listitem>

@@ -885,19 +885,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atTimestamp"><varname>atTimestamp</varname></link>: Restringir a una marca de tiempo</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atTimestampSet"><varname>atTimestampSet</varname></link>: Restringir a un conjunto de marcas de tiempo</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atPeriod"><varname>atPeriod</varname></link>: Restringir a un período</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atPeriodSet"><varname>atPeriodSet</varname></link>: Restringir a un conjunto de períodos</para>
+						<para><link linkend="atTime"><varname>atTime</varname></link>: Restringir a un valor de tiempo</para>
 					</listitem>
 
 					<listitem>
@@ -943,20 +931,8 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="minusTimestamp"><varname>minusTimestamp</varname></link>: Diferencia con una marca de tiempo</para>
+					<para><link linkend="minusTime"><varname>minusTime</varname></link>: Diferencia con un valor de tiempo</para>
 				</listitem>
-
-					<listitem>
-						<para><link linkend="minusTimestampSet"><varname>minusTimestampSet</varname></link>: Diferencia con un conjunto de marcas de tiempo</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="minusPeriod"><varname>minusPeriod</varname></link>: Diferencia con un período</para>
-				</listitem>
-
-					<listitem>
-						<para><link linkend="minusPeriodSet"><varname>minusPeriodSet</varname></link>: Diferencia con un conjunto de períodos</para>
-					</listitem>
 
 					<listitem>
 						<para><link linkend="minusTbox"><varname>minusTbox</varname></link>: Diferencia con un <varname>tbox</varname></para>

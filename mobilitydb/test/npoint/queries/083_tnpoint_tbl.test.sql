@@ -201,31 +201,31 @@ SELECT COUNT(*) FROM tbl_tnpoint,
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
+WHERE atTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
+WHERE minusTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
+WHERE atTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
+WHERE minusTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
+WHERE atTime(temp, p) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
+WHERE minusTime(temp, p) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
+WHERE atTime(temp, ps) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
+WHERE minusTime(temp, ps) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE intersectsTime(temp, t) IS NOT NULL;

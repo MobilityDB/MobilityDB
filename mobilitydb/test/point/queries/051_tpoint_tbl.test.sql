@@ -361,25 +361,25 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE valueAtTimestamp(temp
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
 
 ------------------------------------------------------------------------------
 -- Intersects functions

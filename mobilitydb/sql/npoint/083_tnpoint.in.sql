@@ -491,12 +491,12 @@ CREATE FUNCTION minusValues(tnpoint, npoint[])
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atTimestamp(tnpoint, timestamptz)
+CREATE FUNCTION atTime(tnpoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusTimestamp(tnpoint, timestamptz)
+CREATE FUNCTION minusTime(tnpoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -506,32 +506,32 @@ CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atTimestampSet(tnpoint, timestampset)
+CREATE FUNCTION atTime(tnpoint, timestampset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusTimestampSet(tnpoint, timestampset)
+CREATE FUNCTION minusTime(tnpoint, timestampset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atPeriod(tnpoint, period)
+CREATE FUNCTION atTime(tnpoint, period)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusPeriod(tnpoint, period)
+CREATE FUNCTION minusTime(tnpoint, period)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atPeriodSet(tnpoint, periodset)
+CREATE FUNCTION atTime(tnpoint, periodset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusPeriodSet(tnpoint, periodset)
+CREATE FUNCTION minusTime(tnpoint, periodset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
