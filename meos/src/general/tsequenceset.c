@@ -1356,6 +1356,7 @@ tsequenceset_to_tdiscseq(const TSequenceSet *ss)
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
 {
+  assert(seq);
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
   {
     interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEPWISE;
@@ -1902,7 +1903,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a period.
- * @sqlfunc aPeriod(), minusPeriod()
+ * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
 tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
@@ -1926,7 +1927,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
       return result;
     }
     else
-      tcontseq_minus_period(tsequenceset_seq_n(ss, 0), p);
+      return tcontseq_minus_period(tsequenceset_seq_n(ss, 0), p);
   }
 
   /* General case */
@@ -1986,7 +1987,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a period set.
- * @sqlfunc aPeriodSet(), minusPeriodSet()
+ * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
 tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
@@ -2530,6 +2531,7 @@ tsequenceset_out(const TSequenceSet *ss, Datum maxdd)
  *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
+ * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
 tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
@@ -2543,9 +2545,13 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
+    TSequenceSet *result = NULL;
     seq1 = tcontseq_delete_timestamp(tsequenceset_seq_n(ss, 0), t);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
-    pfree(seq1);
+    if (seq1)
+    {
+      result = tsequence_to_tsequenceset(seq1);
+      pfree(seq1);
+    }
     return result;
   }
 
@@ -2565,7 +2571,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a timestamp set.
- * @sqlfunc atTimestampSet(), minusTimestampSet()
+ * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
 tsequenceset_delete_timestampset(const TSequenceSet *ss,
@@ -2584,9 +2590,13 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
   /* Singleton sequence set */
   if (ss->count == 1)
   {
+    TSequenceSet *result = NULL;
     seq1 = tcontseq_delete_timestampset(tsequenceset_seq_n(ss, 0), ts);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
-    pfree(seq1);
+    if (seq1)
+    {
+      result = tsequence_to_tsequenceset(seq1);
+      pfree(seq1);
+    }
     return result;
   }
 
@@ -2597,6 +2607,90 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     seq1 = tcontseq_delete_timestampset(seq, ts);
+    if (seq1)
+      sequences[k++] = seq1;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_int_temporal_restrict
+ * @brief Delete a period from a temporal sequence set.
+ * @sqlfunc deleteTime()
+ */
+TSequenceSet *
+tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
+{
+  /* Bounding box test */
+  if (! overlaps_span_span(&ss->period, p))
+    return tsequenceset_copy(ss);
+
+  TSequence *seq1;
+  TSequenceSet *result = NULL;
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+  {
+    seq1 = tcontseq_delete_period(tsequenceset_seq_n(ss, 0), p);
+    if (seq1)
+    {
+      result = tsequence_to_tsequenceset(seq1);
+      pfree(seq1);
+    }
+    return result;
+  }
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    seq1 = tcontseq_delete_period(seq, p);
+    if (seq1)
+      sequences[k++] = seq1;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_int_temporal_restrict
+ * @brief Delete a period from a temporal sequence set.
+ * @sqlfunc deleteTime()
+ */
+TSequenceSet *
+tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
+{
+  /* Bounding box test */
+  if (! overlaps_span_span(&ss->period, &ps->period))
+    return tsequenceset_copy(ss);
+
+  /* Singleton period set */
+  if (ps->count == 1)
+    return tsequenceset_delete_period(ss, periodset_per_n(ps, 0));
+
+  TSequence *seq1;
+  TSequenceSet *result = NULL;
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+  {
+    seq1 = tcontseq_delete_periodset(tsequenceset_seq_n(ss, 0), ps);
+    if (seq1)
+    {
+      result = tsequence_to_tsequenceset(seq1);
+      pfree(seq1);
+    }
+    return result;
+  }
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    seq1 = tcontseq_delete_periodset(seq, ps);
     if (seq1)
       sequences[k++] = seq1;
   }

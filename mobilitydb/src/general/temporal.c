@@ -2206,7 +2206,7 @@ Temporal_minus_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_delete_timestamp);
 /**
- * @ingroup mobilitydb_temporal_modification
+ * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamp from a temporal value 
  * @sqlfunc deleteTime()
  */
@@ -2225,7 +2225,7 @@ Temporal_delete_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_delete_timestampset);
 /**
- * @ingroup mobilitydb_temporal_modification
+ * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamp set from a temporal value 
  * @sqlfunc deleteTime()
  */
@@ -2243,44 +2243,44 @@ Temporal_delete_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-// PG_FUNCTION_INFO_V1(Temporal_delete_period);
-// /**
- // * @ingroup mobilitydb_temporal_modification
- // * @brief Delete a period from a temporal value 
- // * @sqlfunc deleteTime()
- // */
-// PGDLLEXPORT Datum
-// Temporal_delete_period(PG_FUNCTION_ARGS)
-// {
-  // Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // Period *p = PG_GETARG_PERIOD_P(1);
-  // bool connect = PG_GETARG_BOOL(2);
-  // Temporal *result = temporal_delete_period(temp, p, connect);
-  // PG_FREE_IF_COPY(temp, 0);
-  // if (! result)
-    // PG_RETURN_NULL();
-  // PG_RETURN_POINTER(result);
-// }
+PG_FUNCTION_INFO_V1(Temporal_delete_period);
+/**
+ * @ingroup mobilitydb_temporal_modif
+ * @brief Delete a period from a temporal value 
+ * @sqlfunc deleteTime()
+ */
+PGDLLEXPORT Datum
+Temporal_delete_period(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Period *p = PG_GETARG_SPAN_P(1);
+  bool connect = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_delete_period(temp, p, connect);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
 
-// PG_FUNCTION_INFO_V1(Temporal_delete_periodset);
-// /**
- // * @ingroup mobilitydb_temporal_modification
- // * @brief Delete a period set from a temporal value 
- // * @sqlfunc deleteTime()
- // */
-// PGDLLEXPORT Datum
-// Temporal_delete_periodset(PG_FUNCTION_ARGS)
-// {
-  // Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  // bool connect = PG_GETARG_BOOL(2);
-  // Temporal *result = temporal_delete_periodset(temp, ps, connect);
-  // PG_FREE_IF_COPY(temp, 0);
-  // PG_FREE_IF_COPY(ps, 1);
-  // if (! result)
-    // PG_RETURN_NULL();
-  // PG_RETURN_POINTER(result);
-// }
+PG_FUNCTION_INFO_V1(Temporal_delete_periodset);
+/**
+ * @ingroup mobilitydb_temporal_modif
+ * @brief Delete a period set from a temporal value 
+ * @sqlfunc deleteTime()
+ */
+PGDLLEXPORT Datum
+Temporal_delete_periodset(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  bool connect = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_delete_periodset(temp, ps, connect);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ps, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************
  * Intersects functions

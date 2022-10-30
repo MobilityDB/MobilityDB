@@ -907,7 +907,7 @@ tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a period set.
- * @sqlfunc atPeriodSet(), minusPeriodSet()
+ * @sqlfunc atTime(), minusTime()
  */
 TInstant *
 tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps,

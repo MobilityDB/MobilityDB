@@ -638,8 +638,12 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 
 extern TSequence *tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t);
 extern TSequence *tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts);
+extern TSequence *tcontseq_delete_period(const TSequence *seq, const Period *p);
+extern TSequence *tcontseq_delete_periodset(const TSequence *seq, const PeriodSet *ps);
 extern TSequenceSet *tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t);
 extern TSequenceSet *tsequenceset_delete_timestampset(const TSequenceSet *ss, const TimestampSet *ts);
+extern TSequenceSet *tsequenceset_delete_period(const TSequenceSet *ss, const Period *p);
+extern TSequenceSet *tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps);
 
 /*****************************************************************************/
 

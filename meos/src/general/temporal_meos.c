@@ -492,7 +492,7 @@ tnumber_minus_spans(const Temporal *temp, Span **spans, int count)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a timestamp
- * @sqlfunc atTimestamp()
+ * @sqlfunc atTime()
  */
 Temporal *
 temporal_at_timestamp(const Temporal *temp, TimestampTz t)
@@ -504,7 +504,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp
- * @sqlfunc minusTimestamp()
+ * @sqlfunc minusTime()
  */
 Temporal *
 temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
@@ -516,7 +516,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
- * @sqlfunc atTimestampSet()
+ * @sqlfunc atTime()
  */
 Temporal *
 temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -528,7 +528,7 @@ temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
- * @sqlfunc minusTimestampSet()
+ * @sqlfunc minusTime()
  */
 Temporal *
 temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -540,7 +540,7 @@ temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a period
- * @sqlfunc atPeriod()
+ * @sqlfunc atTime()
  */
 Temporal *
 temporal_at_period(const Temporal *temp, const Period *p)
@@ -552,7 +552,7 @@ temporal_at_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period
- * @sqlfunc minusPeriod()
+ * @sqlfunc minusTime()
  */
 Temporal *
 temporal_minus_period(const Temporal *temp, const Period *p)
@@ -564,7 +564,7 @@ temporal_minus_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to a period set
- * @sqlfunc atPeriodSet()
+ * @sqlfunc atTime()
  */
 Temporal *
 temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
@@ -576,7 +576,7 @@ temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period set
- * @sqlfunc minusPeriodSet()
+ * @sqlfunc minusTime()
  */
 Temporal *
 temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)

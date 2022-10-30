@@ -3009,7 +3009,7 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal value to a timestamp.
- * @sqlfunc atTimestamp(), minusTimestamp()
+ * @sqlfunc atTime(), minusTime()
  */
 Temporal *
 temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
@@ -3066,7 +3066,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamp set
- * @sqlfunc atTimestampSet(), minusTimestampSet()
+ * @sqlfunc atTime(), minusTime()
  */
 Temporal *
 temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
@@ -3098,7 +3098,7 @@ temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period.
- * @sqlfunc atPeriod(), minusPeriod()
+ * @sqlfunc atTime(), minusTime()
  */
 Temporal *
 temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
@@ -3130,7 +3130,7 @@ temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
 /**
  * @ingroup libmeos_int_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period set.
- * @sqlfunc atPeriodSet(), minusPeriodSet()
+ * @sqlfunc atTime(), minusTime()
  */
 Temporal *
 temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
@@ -3225,10 +3225,10 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_modification
+ * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc delete()
+ * @sqlfunc deleteTime()
  */
 Temporal *
 temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
@@ -3252,10 +3252,10 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
 }
 
 /**
- * @ingroup libmeos_int_temporal_modification
+ * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc delete()
+ * @sqlfunc deleteTime()
  */
 Temporal *
 temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
@@ -3280,6 +3280,61 @@ temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
   return result;
 }
 
+/**
+ * @ingroup libmeos_temporal_modif
+ * @brief Delete a period from a temporal value connecting the instants
+ * before and after the given timestamp (if any).
+ * @sqlfunc deleteTime()
+ */
+Temporal *
+temporal_delete_period(const Temporal *temp, const Period *p, bool connect)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_restrict_period((TInstant *) temp, p,
+      REST_MINUS);
+  else if (temp->subtype == TSEQUENCE)
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+      result = (Temporal *) tdiscseq_minus_period((TSequence *) temp, p);
+    else
+      result = (Temporal *) tcontseq_delete_period((TSequence *) temp, p);
+  }
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_delete_period((TSequenceSet *) temp, p);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_modif
+ * @brief Delete a period set from a temporal value connecting the instants
+ * before and after the given timestamp (if any).
+ * @sqlfunc deleteTime()
+ */
+Temporal *
+temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps,
+  bool connect)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_restrict_periodset((TInstant *) temp, ps,
+      REST_MINUS);
+  else if (temp->subtype == TSEQUENCE)
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+      result = (Temporal *) tdiscseq_restrict_periodset((TSequence *) temp, ps,
+        REST_MINUS);
+    else
+      result = (Temporal *) tcontseq_delete_periodset((TSequence *) temp, ps);
+  }
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_delete_periodset((TSequenceSet *) temp,
+      ps);
+  return result;
+}
+
 /*****************************************************************************
  * Intersects functions
  *****************************************************************************/
@@ -3287,8 +3342,8 @@ temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a timestamp
- * @sqlfunc intersectsTimestamp()
- * @pymeosfunc intersectsTimestamp()
+ * @sqlfunc intersectsTime()
+ * @pymeosfunc intersectsTime()
  */
 bool
 temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
@@ -3307,8 +3362,8 @@ temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a timestamp set
- * @sqlfunc intersectsTimestampSet()
- * @pymeosfunc intersectsTimestampSet()
+ * @sqlfunc intersectsTime()
+ * @pymeosfunc intersectsTime()
  */
 bool
 temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -3327,8 +3382,8 @@ temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a period
- * @sqlfunc intersectsPeriod()
- * @pymeosfunc intersectsPeriod()
+ * @sqlfunc intersectsTime()
+ * @pymeosfunc intersectsTime()
  */
 bool
 temporal_intersects_period(const Temporal *temp, const Period *p)
@@ -3347,8 +3402,8 @@ temporal_intersects_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a period set
- * @sqlfunc intersectsPeriodSet()
- * @pymeosfunc intersectsPeriodSet()
+ * @sqlfunc intersectsTime()
+ * @pymeosfunc intersectsTime()
  */
 bool
 temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps)

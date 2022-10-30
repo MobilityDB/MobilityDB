@@ -183,6 +183,10 @@
  * @ingroup libmeos_temporal
  * @brief Restriction functions for temporal types.
  *
+ * @defgroup libmeos_temporal_modif Modification functions
+ * @ingroup libmeos_temporal
+ * @brief Modification functions for temporal types.
+ *
  * @defgroup libmeos_temporal_bool Boolean functions
  * @ingroup libmeos_temporal
  * @brief Boolean functions for temporal types.

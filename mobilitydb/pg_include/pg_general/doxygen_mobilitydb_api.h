@@ -163,6 +163,10 @@
  * @ingroup mobilitydb_temporal
  * @brief Restriction functions for temporal types.
  *
+ * @defgroup mobilitydb_temporal_modif Modification functions
+ * @ingroup mobilitydb_temporal
+ * @brief Modification functions for temporal types.
+ *
  * @defgroup mobilitydb_temporal_bool Boolean functions
  * @ingroup mobilitydb_temporal
  * @brief Boolean functions for temporal types.

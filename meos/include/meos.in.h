@@ -1557,6 +1557,8 @@ extern Temporal *ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs
 
 extern Temporal *temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect);
 extern Temporal *temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts, bool connect);
+extern Temporal *temporal_delete_period(const Temporal *temp, const Period *p, bool connect);
+extern Temporal *temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps, bool connect);
 
 /*****************************************************************************/
 

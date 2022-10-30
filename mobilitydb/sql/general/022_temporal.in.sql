@@ -1936,47 +1936,47 @@ CREATE FUNCTION deleteTime(ttext, timestampset, connect boolean DEFAULT TRUE)
   -- SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;  
 
--- CREATE FUNCTION deleteTime(tbool, period, connect boolean DEFAULT TRUE)
-  -- RETURNS tbool
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+CREATE FUNCTION deleteTime(tbool, period, connect boolean DEFAULT TRUE)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_delete_period'
   -- SUPPORT temporal_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION deleteTime(tint, period, connect boolean DEFAULT TRUE)
-  -- RETURNS tint
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tint, period, connect boolean DEFAULT TRUE)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_period'
   -- SUPPORT tnumber_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION deleteTime(tfloat, period, connect boolean DEFAULT TRUE)
-  -- RETURNS tfloat
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tfloat, period, connect boolean DEFAULT TRUE)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_delete_period'
   -- SUPPORT tnumber_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION deleteTime(ttext, period, connect boolean DEFAULT TRUE)
-  -- RETURNS ttext
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(ttext, period, connect boolean DEFAULT TRUE)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_delete_period'
   -- SUPPORT temporal_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
--- CREATE FUNCTION deleteTime(tbool, periodset, connect boolean DEFAULT TRUE)
-  -- RETURNS tbool
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+CREATE FUNCTION deleteTime(tbool, periodset, connect boolean DEFAULT TRUE)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   -- SUPPORT temporal_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION deleteTime(tint, periodset, connect boolean DEFAULT TRUE)
-  -- RETURNS tint
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tint, periodset, connect boolean DEFAULT TRUE)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   -- SUPPORT tnumber_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION deleteTime(tfloat, periodset, connect boolean DEFAULT TRUE)
-  -- RETURNS tfloat
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tfloat, periodset, connect boolean DEFAULT TRUE)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   -- SUPPORT tnumber_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION deleteTime(ttext, periodset, connect boolean DEFAULT TRUE)
-  -- RETURNS ttext
-  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(ttext, periodset, connect boolean DEFAULT TRUE)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   -- SUPPORT temporal_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 /*****************************************************************************
  * Intersection Functions
