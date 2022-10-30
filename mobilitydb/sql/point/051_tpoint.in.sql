@@ -823,6 +823,39 @@ CREATE FUNCTION deleteTime(tgeogpoint, timestamptz, connect boolean DEFAULT TRUE
   -- SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION deleteTime(tgeompoint, timestampset, connect boolean DEFAULT TRUE)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
+  -- SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tgeogpoint, timestampset, connect boolean DEFAULT TRUE)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
+  -- SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION deleteTime(tgeompoint, period, connect boolean DEFAULT TRUE)
+  -- RETURNS tgeompoint
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION deleteTime(tgeogpoint, period, connect boolean DEFAULT TRUE)
+  -- RETURNS tgeogpoint
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_period'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION deleteTime(tgeompoint, periodset, connect boolean DEFAULT TRUE)
+  -- RETURNS tgeompoint
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION deleteTime(tgeogpoint, periodset, connect boolean DEFAULT TRUE)
+  -- RETURNS tgeogpoint
+  -- AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Intersects Functions
  *****************************************************************************/

@@ -461,8 +461,11 @@ tbox_tile_state_make(const TBOX *box, double xsize, const Interval *duration,
   {
     state->box.span.lower = Float8GetDatum(float_bucket(
       DatumGetFloat8(box->span.lower), xsize, xorigin));
-    state->box.span.upper = Float8GetDatum(float_bucket(
-      DatumGetFloat8(box->span.upper), xsize, xorigin));
+    double upper = DatumGetFloat8(box->span.upper);
+    double upper_bucket = float_bucket(upper, xsize, xorigin);
+    if (upper == upper_bucket && ! box->span.upper_inc)
+      upper_bucket -= xsize;
+    state->box.span.upper = Float8GetDatum(upper_bucket);
   }
   if (tunits)
   {

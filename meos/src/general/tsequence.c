@@ -4706,8 +4706,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
-    return tcontseq_minus_timestamp1(seq, timestampset_time_n(ts, 0),
-      result);
+    return tcontseq_minus_timestamp1(seq, timestampset_time_n(ts, 0), result);
 
   /* Bounding box test */
   if (! overlaps_span_span(&seq->period, &ts->period))
@@ -4805,6 +4804,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
   }
   if (tofree)
     pfree(tofree);
+  pfree(instants);
   return k;
 }
 
@@ -5165,6 +5165,87 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make((const TInstant **) instants, count,
     count, lower_inc1, upper_inc1, interp, NORMALIZE);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_int_temporal_restrict
+ * @brief Delete a timestamp from a continuous temporal sequence. 
+ *
+ * If an instant has the same timestamp, it will be removed. If the instant is 
+ * in the middle, it will be connected to the next and previous instants in the
+ * result. If the instant is at the beginning or at the end, the time span of
+ * the sequence is reduced. In this case the bounds of the sequence will be
+ * adjusted accordingly, inclusive at the beginning and exclusive at the end.
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ */
+TSequence *
+tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts)
+{
+  /* Singleton timestamp set */
+  if (ts->count == 1)
+    return tcontseq_delete_timestamp(seq, timestampset_time_n(ts, 0));
+
+  /* Bounding box test */
+  if (! overlaps_span_span(&seq->period, &ts->period))
+    return tsequence_copy(seq);
+
+  const TInstant *inst;
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    inst = tsequence_inst_n(seq, 0);
+    if (contains_timestampset_timestamp(ts,inst->t))
+      return NULL;
+    return tsequence_copy(seq);
+  }
+
+  /* General case */
+  TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
+  int i = 0,  /* current instant of the argument sequence */
+    j = 0,  /* current timestamp of the argument timestamp set */
+    k = 0,  /* number of instants in the currently constructed sequence */
+    l = 0;  /* number of instants removed */
+  bool lower_inc1 = seq->period.lower_inc;
+  bool upper_inc1 = seq->period.upper_inc;
+  while (i < seq->count && j < ts->count)
+  {
+    inst = tsequence_inst_n(seq, i);
+    TimestampTz t = timestampset_time_n(ts, j);
+    if (inst->t < t)
+    {
+      instants[k++] = (TInstant *) inst;
+      i++; /* advance instants */
+    }
+    else if (inst->t == t)
+    {
+      if (i == 0)
+        lower_inc1 = true;
+      else if (i == seq->count - 1)
+        upper_inc1 = false;
+      i++; /* advance instants */
+      j++; /* advance timestamps */
+      l++; /* advance number of instants removed */
+      }
+    else
+    {
+      /* inst->t > t */
+      j++; /* advance timestamps */
+    }
+  }
+  /* Compute the sequence after the timestamp set */
+  if (i < seq->count)
+  {
+    for (j = i; j < seq->count; j++)
+      instants[k++] = (TInstant *) tsequence_inst_n(seq, j);
+  }
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  TSequence *result = tsequence_make((const TInstant **) instants, k, k,
+    lower_inc1, upper_inc1, interp, NORMALIZE_NO);
   pfree(instants);
   return result;
 }

@@ -435,8 +435,8 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
  * dimension is tiled.
  */
 STboxGridState *
-stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
-  POINT3DZ sorigin, TimestampTz torigin)
+stbox_tile_state_make(const Temporal *temp, const STBOX *box, double size,
+  int64 tunits, POINT3DZ sorigin, TimestampTz torigin)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */

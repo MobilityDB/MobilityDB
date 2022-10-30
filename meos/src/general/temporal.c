@@ -3251,6 +3251,35 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
   return result;
 }
 
+/**
+ * @ingroup libmeos_int_temporal_modification
+ * @brief Delete a timestamp set from a temporal value connecting the instants
+ * before and after the given timestamp (if any).
+ * @sqlfunc delete()
+ */
+Temporal *
+temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
+  bool connect)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_restrict_timestampset((TInstant *) temp, ts,
+      REST_MINUS);
+  else if (temp->subtype == TSEQUENCE)
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+      result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
+        ts, REST_MINUS);
+    else
+      result = (Temporal *) tcontseq_delete_timestampset((TSequence *) temp, ts);
+  }
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_delete_timestampset((TSequenceSet *) temp,
+      ts);
+  return result;
+}
+
 /*****************************************************************************
  * Intersects functions
  *****************************************************************************/

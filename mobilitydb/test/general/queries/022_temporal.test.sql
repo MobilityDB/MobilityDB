@@ -2274,9 +2274,86 @@ SELECT deleteTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', time
 SELECT deleteTime(ttext '{AAA@2000-01-01, AAA@2000-01-03}', timestamptz '2000-01-02');
 SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
-  
+
+SELECT deleteTime(tbool 't@2000-01-01', timestampset '{2000-01-01}');
+SELECT deleteTime(tbool '{t@2000-01-01}', timestampset '{2000-01-01}');
+SELECT deleteTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestampset '{2000-01-01}');
+SELECT deleteTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestampset '{2000-01-01}');
+SELECT deleteTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', timestampset '{2000-01-01}');
+SELECT deleteTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestampset '{2000-01-01}');
+SELECT deleteTime(tint '1@2000-01-01', timestampset '{2000-01-01}');
+SELECT deleteTime(tint '{1@2000-01-01}', timestampset '{2000-01-01}');
+SELECT deleteTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestampset '{2000-01-01}');
+SELECT deleteTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestampset '{2000-01-01}');
+SELECT deleteTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', timestampset '{2000-01-01}');
+SELECT deleteTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestampset '{2000-01-01}');
+SELECT deleteTime(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
+SELECT deleteTime(tfloat '{1.5@2000-01-01}', timestampset '{2000-01-01}');
+SELECT deleteTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestampset '{2000-01-01}');
+SELECT deleteTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestampset '{2000-01-01}');
+SELECT deleteTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', timestampset '{2000-01-01}');
+SELECT deleteTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestampset '{2000-01-01}');
+SELECT deleteTime(ttext 'AAA@2000-01-01', timestampset '{2000-01-01}');
+SELECT deleteTime(ttext '{AAA@2000-01-01}', timestampset '{2000-01-01}');
+SELECT deleteTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestampset '{2000-01-01}');
+SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestampset '{2000-01-01}');
+SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', timestampset '{2000-01-01}');
+SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestampset '{2000-01-01}');
+
+-- SELECT minusTime(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tbool '{t@2000-01-01}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tint '1@2000-01-01', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tint '{1@2000-01-01}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat '1.5@2000-01-01', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat '{1.5@2000-01-01}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(ttext 'AAA@2000-01-01', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(ttext '{AAA@2000-01-01}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', period '[2000-01-01,2000-01-02]');
+-- SELECT minusTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+
+-- SELECT minusTime(tbool 't@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tbool '{t@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tint '1@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tint '{1@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tfloat '1.5@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tfloat '{1.5@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(ttext 'AAA@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(ttext '{AAA@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
+-- SELECT minusTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+
 -------------------------------------------------------------------------------
--- Intersection functions
+-- Intersects functions
 -------------------------------------------------------------------------------
 
 SELECT intersectsTime(tbool 't@2000-01-01', timestamptz '2000-01-01');

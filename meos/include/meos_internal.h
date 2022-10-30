@@ -637,7 +637,9 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 /* Modification functions for temporal types */
 
 extern TSequence *tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t);
+extern TSequence *tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts);
 extern TSequenceSet *tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t);
+extern TSequenceSet *tsequenceset_delete_timestampset(const TSequenceSet *ss, const TimestampSet *ts);
 
 /*****************************************************************************/
 
