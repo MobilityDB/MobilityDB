@@ -2054,7 +2054,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
         /* Compute the difference of the sequence and the FULL periodset.
          * Notice that we cannot compute the difference with the
          * current period without replicating the functionality in
-         * tsequence_minus_periodset */
+         * tcontseq_minus_periodset1 */
         k += tcontseq_minus_periodset1(seq, ps, j, &sequences[k]);
         i++;
       }
@@ -2526,7 +2526,193 @@ tsequenceset_out(const TSequenceSet *ss, Datum maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_int_temporal_modif
+ * @brief Insert the second temporal value into the first one.
+ */
+TSequenceSet *
+tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
+{ 
+  const TInstant *instants[2] = {0};
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss1->flags);
+
+  /* Order the two sequence sets */
+  const TSequence *seq1 = tsequenceset_seq_n(ss1, 0);
+  const TSequence *seq2 = tsequenceset_seq_n(ss2, 0);
+  const TSequenceSet *ss; /* for swaping */
+  if (left_span_span(&seq2->period, &seq1->period))
+  {
+    ss = ss1; ss1 = ss2; ss2 = ss;
+  }
+
+  /* If one sequence set is before the other one add the potential gap between
+   * the two and call directly the merge function */
+  if (left_span_span(&ss1->period, &ss2->period))
+  {
+    seq1 = tsequenceset_seq_n(ss1, ss1->count - 1);
+    seq2 = tsequenceset_seq_n(ss2, 0);
+    instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
+    instants[1] = tsequence_inst_n(seq2, 0);
+    TSequence *seq = tsequence_make(instants, 2, 2, true, true, interp,
+      NORMALIZE_NO);
+    TSequenceSet *gap = tsequence_to_tsequenceset(seq);
+    pfree(seq);
+    const TSequenceSet *seqsets[] = {ss1, gap, ss2};
+    return tsequenceset_merge_array(seqsets, 3);
+  }
+
+  /*
+   * ss1   |---|         |---|         |---|
+   * ss2          |---|         |---|
+   * additional sequences
+   *           |--|   |--|   |--|   |--|
+   */
+  int count = ss1->count + ss2->count + Min(ss1->count, ss2->count) * 2;
+  const TSequence **sequences = palloc(sizeof(TSequence *) * count);;
+  TSequence **tofree = palloc(sizeof(TSequence *) *
+    Min(ss1->count, ss2->count) * 2);
+  mobdbType basetype = temptype_basetype(ss1->temptype);
+  seq1 = tsequenceset_seq_n(ss1, 0);
+  seq2 = tsequenceset_seq_n(ss2, 0);
+  sequences[0] = seq1;
+  if (ss1->count > 1)
+    seq1 = tsequenceset_seq_n(ss1, 1);
+  int i = 1, j = 0, k = 1, l = 0;
+  bool first = true; /* True when the last sequence added is from ss1 */
+  while (i < ss1->count && j < ss2->count)
+  {
+    if (left_span_span(&seq1->period, &seq2->period))
+    {
+      /* Fill the gap between the last sequence added and seq1 if at least one
+       * sequence from both sequence sets have been entered */
+      if (i > 0 && j > 0 &&
+        sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
+      {
+        instants[0] = tsequence_inst_n(sequences[k - 1],
+          sequences[k - 1]->count - 1);
+        instants[1] = tsequence_inst_n(seq1, 0);
+        /* We put true so that it works with stepwise interpolation */
+        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+          NORMALIZE_NO);
+        sequences[k++] = (const TSequence *) tofree[l++];
+      }
+      sequences[k++] = seq1;
+      first = true;
+      i++;
+      if (i < ss1->count)
+        seq1 = tsequenceset_seq_n(ss1, i);
+    }
+    else if (left_span_span(&seq2->period, &seq1->period))
+    {
+      /* Fill the gap between the last sequence added and seq2 if at least one
+       * sequence from both sequence sets have been entered */
+      if (i > 0 && j > 0 &&
+        sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
+      {
+        instants[0] = tsequence_inst_n(sequences[k - 1],
+          sequences[k - 1]->count - 1);
+        instants[1] = tsequence_inst_n(seq2, 0);
+        /* We put true so that it works with stepwise interpolation */
+        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+          NORMALIZE_NO);
+        sequences[k++] = (const TSequence *) tofree[l++];
+      }
+      sequences[k++] = seq2;
+      first = false;
+      j++;
+      if (j < ss2->count)
+        seq2 = tsequenceset_seq_n(ss2, j);
+    }
+    else /* overlap on the boundary*/
+    {
+      /* Find the common instants */
+      if (datum_eq(seq1->period.upper, seq1->period.lower,
+        seq1->period.basetype))
+      {
+        instants[0] = tsequence_inst_n(seq2, seq2->count - 1);
+        instants[1] = tsequence_inst_n(seq1, 0);
+        first = true;
+      }
+      else
+      {
+        instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
+        instants[1] = tsequence_inst_n(seq2, 0);
+        first = false;
+      }
+      if (! datum_eq(tinstant_value(instants[0]), tinstant_value(instants[1]),
+        basetype))
+      {
+        char *str = pg_timestamptz_out(instants[0]->t);
+        elog(ERROR, "The temporal values have different value at their common instant %s", str);
+      }
+      sequences[k++] = first ? seq1 : seq2;
+    }
+  }
+  /* If there are still sequences to be added, fill the last gap before adding
+    the sequences */
+  if ((i < ss1->count - 1) || (j < ss2->count - 1))
+  {
+    if (left_span_span(&seq1->period, &seq2->period))
+    {
+      if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
+      {
+        instants[0] = tsequence_inst_n(sequences[k - 1],
+          sequences[k - 1]->count - 1);
+        instants[1] = tsequence_inst_n(seq2, 0);
+        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+          NORMALIZE_NO);
+        sequences[k++] = (const TSequence *) tofree[l++];
+      }
+    }
+    else if (left_span_span(&seq2->period, &seq1->period))
+    {
+      if (sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
+      {
+        instants[0] = tsequence_inst_n(sequences[k - 1],
+          sequences[k - 1]->count - 1);
+        instants[1] = tsequence_inst_n(seq1, 0);
+        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+          NORMALIZE_NO);
+        sequences[k++] = (const TSequence *) tofree[l++];
+      }
+    }
+  }
+  /* Add the remaining sequences */
+  if (first)
+    j++;
+  else
+    i++;
+  while (i < ss1->count)
+    sequences[k++] = tsequenceset_seq_n(ss1, i++);
+  while (j < ss2->count)
+    sequences[k++] = tsequenceset_seq_n(ss2, j++);
+  /* Construct the result */
+  int newcount;
+  TSequence **normseqs = tseqarr_normalize(sequences, k, &newcount);
+  TSequenceSet *result = tsequenceset_make_free(normseqs, newcount,
+    NORMALIZE_NO);
+  pfree_array((void **) tofree, l);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_int_temporal_modif
+ * @brief Update the first temporal value with the second one.
+ */
+TSequenceSet *
+tsequenceset_update(const TSequenceSet *ss1, const TSequenceSet *ss2)
+{ // TODO BBOX TEST
+  PeriodSet *ps = tsequenceset_time(ss2);
+  TSequenceSet *rest = tsequenceset_restrict_periodset(ss1, ps, REST_MINUS);
+  pfree(ps);
+  if (! rest)
+    return tsequenceset_copy(ss2);
+  TSequenceSet *result = tsequenceset_insert(rest, ss2);
+  pfree(rest);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_int_temporal_transf
  * @brief Delete a timestamp from a temporal sequence set. 
  *
  * @param[in] ss Temporal sequence set
@@ -2569,7 +2755,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_int_temporal_transf
  * @brief Restrict a temporal sequence set to (the complement of) a timestamp set.
  * @sqlfunc atTime(), minusTime()
  */
@@ -2614,7 +2800,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_int_temporal_transf
  * @brief Delete a period from a temporal sequence set.
  * @sqlfunc deleteTime()
  */
@@ -2654,7 +2840,7 @@ tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_int_temporal_transf
  * @brief Delete a period from a temporal sequence set.
  * @sqlfunc deleteTime()
  */

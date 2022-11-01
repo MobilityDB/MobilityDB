@@ -1237,7 +1237,7 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<para>Fusionar los valores temporales</para>
 				<para><varname>merge(ttype,ttype): ttype</varname></para>
 				<para><varname>merge(ttype[]): ttype</varname></para>
-				<para>Los valores pueden compartir una sola marca de tiempo, en ese caso, los valores temporales se unen en el resultado si su valor en la marca de tiempo común es el mismo; de lo contrario, se genera un error.</para>
+				<para>Los valores pueden compartir marcas de tiempo solo en su límite, en ese caso, los valores temporales se unen en el resultado si sus valores en las marcas de tiempo comunes son los mismos; de lo contrario, se genera un error.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
 -- {1@2000-01-01, 1@2000-01-02}

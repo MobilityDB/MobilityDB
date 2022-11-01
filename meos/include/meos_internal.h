@@ -431,10 +431,6 @@ extern TSequence *tnumberdiscseq_restrict_span(const TSequence *seq, const Span 
 extern TSequence *tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans, int count, bool atfunc);
 extern TSequence *tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
 extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);
-extern Temporal *tsequence_minus_timestamp(const TSequence *seq, TimestampTz t);
-extern TSequence *tsequence_restrict_timestampset(const TSequence *seq, const TimestampSet *ss, bool atfunc);
-extern TSequence *tsequence_restrict_period(const TSequence *seq, const Period *period, bool atfunc);
-extern TSequence *tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atfunc);
 extern bool tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
 extern TSequenceSet *tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc);
 extern TSequenceSet *tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count, bool atfunc);
@@ -635,6 +631,11 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 /*****************************************************************************/
 
 /* Modification functions for temporal types */
+
+extern Temporal *tcontseq_insert(const TSequence *seq1, const TSequence *seq2);
+extern Temporal *tcontseq_update(const TSequence *seq1, const TSequence *seq2);
+extern TSequenceSet *tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2);
+extern TSequenceSet *tsequenceset_update(const TSequenceSet *ss1, const TSequenceSet *ss2);
 
 extern TSequence *tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t);
 extern TSequence *tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts);

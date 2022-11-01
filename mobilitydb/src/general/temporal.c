@@ -2204,6 +2204,42 @@ Temporal_minus_periodset(PG_FUNCTION_ARGS)
  * Modification functions
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Temporal_insert);
+/**
+ * @ingroup mobilitydb_temporal_modif
+ * @brief Insert the second temporal value into the first one.
+ * @sqlfunc insert()
+ */
+PGDLLEXPORT Datum
+Temporal_insert(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool connect = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_insert(temp1, temp2, connect);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_update);
+/**
+ * @ingroup mobilitydb_temporal_modif
+ * @brief Update the first temporal value with the second one.
+ * @sqlfunc update()
+ */
+PGDLLEXPORT Datum
+Temporal_update(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool connect = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_update(temp1, temp2, connect);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Temporal_delete_timestamp);
 /**
  * @ingroup mobilitydb_temporal_modif

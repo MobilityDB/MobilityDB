@@ -1243,7 +1243,7 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<para>Merge the temporal values</para>
 				<para><varname>merge(ttype,ttype): ttype</varname></para>
 				<para><varname>merge(ttype[]): ttype</varname></para>
-				<para>The values may share a single timestamp, in that case the temporal values are joined in the result if their value at the common timestamp is the same, otherwise an error is raised.</para>
+				<para>The values may share timestamps only at their boundary, in that case the temporal values are joined in the result if their values at the common timestamps are the same, otherwise an error is raised.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
 -- {1@2000-01-01, 1@2000-01-02}

@@ -5114,7 +5114,86 @@ tcontseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_int_temporal_modif
+ * @brief Insert the second temporal value into the first one.
+ */
+Temporal *
+tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
+{
+  /* Order the two sequences */
+  const TSequence *seq; /* for swaping */
+  const TInstant *inst; /* for swaping */
+  const TInstant *instants[2] = {0};
+  instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
+  instants[1] = tsequence_inst_n(seq2, 0);
+  if (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) > 0)
+  {
+    inst = instants[0]; instants[0] = instants[1]; instants[1] = inst;
+    seq = seq1; seq1 = seq2; seq2 = seq;
+  }
+
+  /* Add the sequences in the array to merge */
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+  TSequence *tofree = NULL;
+  const TSequence **sequences = palloc(sizeof(TSequence *) * 3);
+  sequences[0] = seq1;
+  int k = 1;
+  if (left_span_span(&seq1->period, &seq2->period))
+  {
+    if (seq1->period.upper_inc && seq2->period.lower_inc)
+    {
+      /* We put true so that it works with stepwise interpolation */
+      tofree = tsequence_make(instants, 2, 2, true, true, interp,
+        NORMALIZE_NO);
+      sequences[k++] = (const TSequence *) tofree;
+   }
+  }
+  else /* overlap on the boundary*/
+  {
+    mobdbType basetype = temptype_basetype(seq1->temptype);
+    if (! datum_eq(tinstant_value(instants[0]), tinstant_value(instants[1]),
+      basetype))
+    {
+      char *str = pg_timestamptz_out(instants[0]->t);
+      elog(ERROR, "The temporal values have different value at their common instant %s", str);
+    }
+  }
+ sequences[k++] = (TSequence *) seq2;
+
+  int count;
+  TSequence **newseqs = tsequence_merge_array1(sequences, k, &count);
+  Temporal *result;
+  if (count == 1)
+  {
+    result = (Temporal *) newseqs[0];
+    pfree(newseqs);
+  }
+  else
+    /* Normalization was done at function tsequence_merge_array1 */
+    result = (Temporal *) tsequenceset_make_free(newseqs, count, NORMALIZE_NO);
+  if (tofree)
+    pfree(tofree);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_int_temporal_modif
+ * @brief Update the first temporal value with the second one.
+ */
+Temporal *
+tcontseq_update(const TSequence *seq1, const TSequence *seq2)
+{
+  TSequenceSet *ss1 = tcontseq_minus_period(seq1, &seq2->period);
+  TSequenceSet *ss2 = tsequence_to_tsequenceset(seq2);
+  if (! ss1)
+    return (Temporal *) ss2;
+  TSequenceSet *result = tsequenceset_insert(ss1, ss2);
+  pfree(ss1); pfree(ss2);
+  return (Temporal *) result;
+}
+
+/**
+ * @ingroup libmeos_int_temporal_transf
  * @brief Delete a timestamp from a continuous temporal sequence. 
  *
  * If an instant has the same timestamp, it will be removed. If the instant is 
@@ -5168,7 +5247,7 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_int_temporal_transf
  * @brief Delete a timestamp from a continuous temporal sequence. 
  *
  * If an instant has the same timestamp, it will be removed. If the instant is 
@@ -5253,7 +5332,8 @@ tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts)
 }
 
 /**
- * Delete a period from temporal sequence.
+ * @ingroup libmeos_int_temporal_transf
+ * @brief Delete a period from a continuos temporal sequence.
  *
  * @param[in] seq Temporal sequence
  * @param[in] p Period
@@ -5300,7 +5380,7 @@ tcontseq_delete_period(const TSequence *seq, const Period *p)
 
 /**
  * @ingroup libmeos_int_temporal_modif
- * @brief Delete a period set from a temporal sequence.
+ * @brief Delete a period set from a continuous temporal sequence.
  *
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set

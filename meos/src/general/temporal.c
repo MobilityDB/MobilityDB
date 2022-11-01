@@ -862,17 +862,17 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 
   /* Different subtype */
   bool swap = false;
-  Temporal *new1, *new2;
+  const Temporal *new1, *new2;
   if (temp1->subtype > temp2->subtype)
   {
-    new1 = (Temporal *) temp2;
-    new2 = (Temporal *) temp1;
+    new1 = temp2;
+    new2 = temp1;
     swap = true;
   }
   else
   {
-    new1 = (Temporal *) temp1;
-    new2 = (Temporal *) temp2;
+    new1 = temp1;
+    new2 = temp2;
   }
 
   Temporal *new;
@@ -924,7 +924,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   ensure_same_temptype(temp1, temp2);
   ensure_same_interpolation(temp1, temp2);
 
-  /* Convert to the same subtype if possible */
+  /* Convert to the same subtype */
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3225,6 +3225,94 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_transf
+ * @brief Insert the second temporal value into the first one.
+ * @sqlfunc insert()
+ */
+Temporal *
+temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
+{
+  ensure_same_temptype(temp1, temp2);
+  ensure_same_interpolation(temp1, temp2);
+
+  /* Convert to the same subtype */
+  Temporal *new1, *new2;
+  temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
+
+  Temporal *result;
+  ensure_valid_tempsubtype(new1->subtype);
+  if (new1->subtype == TINSTANT)
+    result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
+  else if (new1->subtype == TSEQUENCE)
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags) || ! connect)
+      result = (Temporal *) tsequence_merge((TSequence *) new1,
+        (TSequence *) new2);
+    else
+      result = (Temporal *) tcontseq_insert((TSequence *) new1,
+        (TSequence *) new2);
+  }
+  else /* new1->subtype == TSEQUENCESET */
+  {
+    if (! connect)
+      result = (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
+        (TSequenceSet *) new2);
+    else
+      result = (Temporal *) tsequenceset_insert((TSequenceSet *) new1,
+        (TSequenceSet *) new2);
+  }
+  if (temp1 != new1)
+    pfree(new1);
+  if (temp2 != new2)
+    pfree(new2);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Update the first temporal value with the second one.
+ * @sqlfunc update()
+ */
+Temporal *
+temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
+{
+  ensure_same_temptype(temp1, temp2);
+  ensure_same_interpolation(temp1, temp2);
+
+  /* Convert to the same subtype */
+  Temporal *new1, *new2;
+  temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
+
+  Temporal *result;
+  ensure_valid_tempsubtype(new1->subtype);
+  if (new1->subtype == TINSTANT)
+    result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
+  else if (new1->subtype == TSEQUENCE)
+  {
+    if (MOBDB_FLAGS_GET_DISCRETE(new1->flags) || ! connect)
+      result = (Temporal *) tsequence_merge((TSequence *) new1,
+        (TSequence *) new2);
+    else
+      result = (Temporal *) tcontseq_update((TSequence *) new1,
+        (TSequence *) new2);
+  }
+  else /* new1->subtype == TSEQUENCESET */
+  {
+    if (! connect)
+      result = (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
+        (TSequenceSet *) new2);
+    else
+      result = (Temporal *) tsequenceset_update((TSequenceSet *) new1,
+        (TSequenceSet *) new2);
+  }
+  if (temp1 != new1)
+    pfree(new1);
+  if (temp2 != new2)
+    pfree(new2);
+  return result;
+}
+
+/**
  * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp from a temporal value connecting the instants
  * before and after the given timestamp (if any).
@@ -3246,8 +3334,13 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
       result = (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp,
-      t);
+  {
+    if (! connect)
+      result = (Temporal *) tsequenceset_restrict_timestamp(
+        (TSequenceSet *) temp, t, REST_MINUS);
+    else
+      result = (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp, t);
+  }
   return result;
 }
 

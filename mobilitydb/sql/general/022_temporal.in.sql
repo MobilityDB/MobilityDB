@@ -1894,6 +1894,48 @@ CREATE FUNCTION minusTime(ttext, periodset)
  * Modification Functions
  *****************************************************************************/
 
+CREATE FUNCTION insert(tbool, tbool, connect boolean DEFAULT TRUE)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
+  -- SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION insert(tint, tbool, connect boolean DEFAULT TRUE)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
+  -- SUPPORT tnumber_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION insert(tfloat, tfloat, connect boolean DEFAULT TRUE)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
+  -- SUPPORT tnumber_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION insert(ttext, ttext, connect boolean DEFAULT TRUE)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
+  -- SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION update(tbool, tbool, connect boolean DEFAULT TRUE)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  -- SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION update(tint, tbool, connect boolean DEFAULT TRUE)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  -- SUPPORT tnumber_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION update(tfloat, tfloat, connect boolean DEFAULT TRUE)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  -- SUPPORT tnumber_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION update(ttext, ttext, connect boolean DEFAULT TRUE)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  -- SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION deleteTime(tbool, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'

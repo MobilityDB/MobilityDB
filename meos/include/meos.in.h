@@ -1555,6 +1555,8 @@ extern Temporal *ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs
 
 /* Modification functions for temporal types */
 
+extern Temporal *temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect);
+extern Temporal *temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect);
 extern Temporal *temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect);
 extern Temporal *temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts, bool connect);
 extern Temporal *temporal_delete_period(const Temporal *temp, const Period *p, bool connect);
