@@ -465,7 +465,7 @@ TSequence *
 tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
-  return tsequence_make1_exp(instants, count, count, lower_inc, upper_inc, 
+  return tsequence_make1_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
 }
 
@@ -1671,6 +1671,26 @@ tsequence_make(const TInstant **instants, int count, bool lower_inc,
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
 }
+
+#if 0 /* Not used */
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of the temporal sequence removing extra free space for
+ * additional instants
+ */
+TSequence *
+tsequence_compact(const TSequence *seq)
+{
+  if (seq->count == seq->maxcount)
+    return tsequence_copy(seq);
+  const TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tsequence_inst_n(seq, i);
+  TSequence *result = tsequence_make_exp(instants, count, count, lower_inc,
+    upper_inc, interp, normalize);
+  return result;
+}
+#endif /* Not used */
 
 /**
  * @brief Construct a temporal sequence from an array of temporal instants
@@ -5168,14 +5188,14 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
 {
   /* Order the two sequences */
   const TSequence *seq; /* for swaping */
-  const TInstant *inst; /* for swaping */
   const TInstant *instants[2] = {0};
   instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
   instants[1] = tsequence_inst_n(seq2, 0);
   if (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) > 0)
   {
-    inst = instants[0]; instants[0] = instants[1]; instants[1] = inst;
     seq = seq1; seq1 = seq2; seq2 = seq;
+    instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
+    instants[1] = tsequence_inst_n(seq2, 0);
   }
 
   /* Add the sequences in the array to merge */
@@ -5189,7 +5209,9 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
     if (seq1->period.upper_inc && seq2->period.lower_inc)
     {
       /* We put true so that it works with stepwise interpolation */
-      tofree = tsequence_make(instants, 2, true, true, interp,
+      int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
+        1 : 2;
+      tofree = tsequence_make(instants, count, true, true, interp,
         NORMALIZE_NO);
       sequences[k++] = (const TSequence *) tofree;
    }
@@ -5223,26 +5245,10 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libmeos_int_temporal_modif
- * @brief Update the first temporal value with the second one.
- */
-Temporal *
-tcontseq_update(const TSequence *seq1, const TSequence *seq2)
-{
-  TSequenceSet *ss1 = tcontseq_minus_period(seq1, &seq2->period);
-  TSequenceSet *ss2 = tsequence_to_tsequenceset(seq2);
-  if (! ss1)
-    return (Temporal *) ss2;
-  TSequenceSet *result = tsequenceset_insert(ss1, ss2);
-  pfree(ss1); pfree(ss2);
-  return (Temporal *) result;
-}
-
-/**
  * @ingroup libmeos_int_temporal_transf
- * @brief Delete a timestamp from a continuous temporal sequence. 
+ * @brief Delete a timestamp from a continuous temporal sequence.
  *
- * If an instant has the same timestamp, it will be removed. If the instant is 
+ * If an instant has the same timestamp, it will be removed. If the instant is
  * in the middle, it will be connected to the next and previous instants in the
  * result. If the instant is at the beginning or at the end, the time span of
  * the sequence is reduced. In this case the bounds of the sequence will be
@@ -5294,9 +5300,9 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
 
 /**
  * @ingroup libmeos_int_temporal_transf
- * @brief Delete a timestamp from a continuous temporal sequence. 
+ * @brief Delete a timestamp from a continuous temporal sequence.
  *
- * If an instant has the same timestamp, it will be removed. If the instant is 
+ * If an instant has the same timestamp, it will be removed. If the instant is
  * in the middle, it will be connected to the next and previous instants in the
  * result. If the instant is at the beginning or at the end, the time span of
  * the sequence is reduced. In this case the bounds of the sequence will be

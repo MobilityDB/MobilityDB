@@ -633,9 +633,9 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 /* Modification functions for temporal types */
 
 extern Temporal *tcontseq_insert(const TSequence *seq1, const TSequence *seq2);
-extern Temporal *tcontseq_update(const TSequence *seq1, const TSequence *seq2);
+// extern Temporal *tcontseq_update(const TSequence *seq1, const TSequence *seq2);
 extern TSequenceSet *tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2);
-extern TSequenceSet *tsequenceset_update(const TSequenceSet *ss1, const TSequenceSet *ss2);
+// extern TSequenceSet *tsequenceset_update(const TSequenceSet *ss1, const TSequenceSet *ss2);
 
 extern TSequence *tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t);
 extern TSequence *tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts);

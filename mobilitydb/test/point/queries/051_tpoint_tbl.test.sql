@@ -381,6 +381,14 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atTime(te
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
+
+-- Update calls the insert function after calling the minusTime function
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
+
 ------------------------------------------------------------------------------
 -- Intersects functions
 ------------------------------------------------------------------------------

@@ -65,28 +65,28 @@
 
 enum TEMPORAL_FUNCTION_IDX
 {
-  /* intersects<Time> functions */
+  /* intersectsTime function */
   INTERSECTS_TIME_IDX            = 0,
   /* Ever/always comparison functions */
-  EVER_EQ_IDX                    = 4,
-  ALWAYS_EQ_IDX                  = 5,
+  EVER_EQ_IDX                    = 1,
+  ALWAYS_EQ_IDX                  = 2,
   /* Ever spatial relationships */
-  CONTAINS_IDX                   = 6,
-  DISJOINT_IDX                   = 7,
-  INTERSECTS_IDX                 = 8,
-  TOUCHES_IDX                    = 9,
-  DWITHIN_IDX                    = 10,
+  CONTAINS_IDX                   = 3,
+  DISJOINT_IDX                   = 4,
+  INTERSECTS_IDX                 = 5,
+  TOUCHES_IDX                    = 6,
+  DWITHIN_IDX                    = 7,
 };
 
 static const int16 TemporalStrategies[] =
 {
-  /* intersects<Time> functions */
+  /* intersectsTime function */
   [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
 };
 
 static const int16 TNumberStrategies[] =
 {
-  /* intersects<Time> functions */
+  /* intersectsTime function */
   [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
@@ -95,7 +95,7 @@ static const int16 TNumberStrategies[] =
 
 static const int16 TPointStrategies[] =
 {
-  /* intersects<Time> functions */
+  /* intersectsTime function */
   [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
@@ -111,7 +111,7 @@ static const int16 TPointStrategies[] =
 #if NPOINT
 static const int16 TNPointStrategies[] =
 {
-  /* intersects<Time> functions */
+  /* intersectsTime functions */
   [INTERSECTS_TIME_IDX]          = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
   [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
@@ -129,13 +129,13 @@ static const int16 TNPointStrategies[] =
 */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
-  /* intersectsTime functions */
+  /* intersectsTime function */
   {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   {NULL, 0, 0, 0}
 };
 
 static const IndexableFunction TNumberIndexableFunctions[] = {
-  /* intersects<Time> functions */
+  /* intersectsTime function */
   {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
@@ -144,11 +144,11 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
 };
 
 static const IndexableFunction TPointIndexableFunctions[] = {
+  /* intersectsTime function */
+  {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
-  /* intersects<Time> functions */
-  {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
   {"contains", CONTAINS_IDX, 2, 0},
   {"disjoint", DISJOINT_IDX, 2, 0},
@@ -160,7 +160,7 @@ static const IndexableFunction TPointIndexableFunctions[] = {
 
 #if NPOINT
 static const IndexableFunction TNPointIndexableFunctions[] = {
-  /* intersectsTime functions */
+  /* intersectsTime function */
   {"intersectstime", INTERSECTS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
   {"contains", CONTAINS_IDX, 2, 0},

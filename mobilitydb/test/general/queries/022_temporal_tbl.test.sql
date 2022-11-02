@@ -529,6 +529,20 @@ SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE intersectsTime(temp, ps) IS N
 SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
 
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
+
+-- Update calls the insert function after calling the minusTime function
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.k < t2.k;
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.k < t2.k;
+
+-------------------------------------------------------------------------------
+--  Value Aggregate Functions
+-------------------------------------------------------------------------------
+
 SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
 SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;
 

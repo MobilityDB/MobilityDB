@@ -240,6 +240,13 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
 WHERE intersectsTime(temp, ps) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
+
+-- Update calls the insert function after calling the minusTime function
+-- SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k < t2.k;
+
+-------------------------------------------------------------------------------
 --  Comparison functions and B-tree indexing
 -------------------------------------------------------------------------------
 

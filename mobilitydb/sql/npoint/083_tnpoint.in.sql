@@ -540,25 +540,31 @@ CREATE FUNCTION minusTime(tnpoint, periodset)
  * Modification Functions
  *****************************************************************************/
 
+CREATE FUNCTION insert(tnpoint, tnpoint, connect boolean DEFAULT TRUE)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION update(tnpoint, tnpoint, connect boolean DEFAULT TRUE)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION deleteTime(tnpoint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
-  -- SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, timestampset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
-  -- SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, period, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_period'
-  -- SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, periodset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
-  -- SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

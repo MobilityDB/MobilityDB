@@ -3245,7 +3245,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
     result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
   else if (new1->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp1->flags) || ! connect)
+    if (MOBDB_FLAGS_GET_DISCRETE(new1->flags) || ! connect)
       result = (Temporal *) tsequence_merge((TSequence *) new1,
         (TSequence *) new2);
     else
@@ -3276,40 +3276,13 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  ensure_same_temptype(temp1, temp2);
-  ensure_same_interpolation(temp1, temp2);
-
-  /* Convert to the same subtype */
-  Temporal *new1, *new2;
-  temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
-
-  Temporal *result;
-  ensure_valid_tempsubtype(new1->subtype);
-  if (new1->subtype == TINSTANT)
-    result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
-  else if (new1->subtype == TSEQUENCE)
-  {
-    if (MOBDB_FLAGS_GET_DISCRETE(new1->flags) || ! connect)
-      result = (Temporal *) tsequence_merge((TSequence *) new1,
-        (TSequence *) new2);
-    else
-      result = (Temporal *) tcontseq_update((TSequence *) new1,
-        (TSequence *) new2);
-  }
-  else /* new1->subtype == TSEQUENCESET */
-  {
-    if (! connect)
-      result = (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
-        (TSequenceSet *) new2);
-    else
-      result = (Temporal *) tsequenceset_update((TSequenceSet *) new1,
-        (TSequenceSet *) new2);
-  }
-  if (temp1 != new1)
-    pfree(new1);
-  if (temp2 != new2)
-    pfree(new2);
-  return result;
+  PeriodSet *ps = temporal_time(temp2);
+  Temporal *rest = temporal_restrict_periodset(temp1, ps, REST_MINUS);
+  if (! rest)
+    return (Temporal *) temp2;
+  Temporal *result = temporal_insert(rest, temp2, connect);
+  pfree(rest); pfree(ps);
+  return (Temporal *) result;
 }
 
 /**
