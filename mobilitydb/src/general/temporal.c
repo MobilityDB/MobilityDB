@@ -523,7 +523,7 @@ tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_bounds,
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
   Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
-    count, count, lower_inc, upper_inc, interp, NORMALIZE);
+    count, lower_inc, upper_inc, interp, NORMALIZE);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);

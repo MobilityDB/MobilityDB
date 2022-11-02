@@ -2021,9 +2021,8 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
     pfree(DatumGetPointer(point));
   }
   lwmpoint_free(lwmpoint);
-  return tsequence_make_free(instants, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -2295,8 +2294,8 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
     value1 = value2;
   }
-  return tsequence_make_free(instants, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
 /**
@@ -2380,8 +2379,7 @@ tpointseq_speed(const TSequence *seq)
     seq->period.upper);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc, STEPWISE,
-    NORMALIZE);
+    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE);
   pfree_array((void **) instants, seq->count - 1);
   return result;
 }
@@ -2452,13 +2450,13 @@ tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
     if (hasz)
       instantsz[i] = tinstant_make(Float8GetDatum(p.z), T_TFLOAT, inst->t);
   }
-  *seqx = tsequence_make_free(instantsx, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
-  *seqy = tsequence_make_free(instantsy, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+  *seqx = tsequence_make_free(instantsx, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE);
+  *seqy = tsequence_make_free(instantsy, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE);
   if (hasz)
-    *seqz = tsequence_make_free(instantsz, seq->count, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+    *seqz = tsequence_make_free(instantsz, seq->count, seq->period.lower_inc,
+      seq->period.upper_inc, interp, NORMALIZE);
   return;
 }
 
@@ -2622,7 +2620,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
         instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
         upper_inc = true;
         /* Resulting sequence has step interpolation */
-        result[l++] = tsequence_make((const TInstant **) instants, k, k,
+        result[l++] = tsequence_make((const TInstant **) instants, k,
           lower_inc, upper_inc, STEPWISE, NORMALIZE);
         for (int j = 0; j < k; j++)
           pfree(instants[j]);
@@ -2637,7 +2635,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
   {
     instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     /* Resulting sequence has step interpolation */
-    result[l++] = tsequence_make((const TInstant **) instants, k, k,
+    result[l++] = tsequence_make((const TInstant **) instants, k,
       lower_inc, upper_inc, STEPWISE, NORMALIZE);
   }
 
@@ -3389,8 +3387,8 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
     /* Construct piece from start to end */
     for (int j = 0; j < end - start; j++)
       instants[j] = tsequence_inst_n(seq, j + start);
-    result[k++] = tsequence_make(instants, end - start, end - start,
-      true, true, DISCRETE, NORMALIZE_NO);
+    result[k++] = tsequence_make(instants, end - start, true, true,
+      DISCRETE, NORMALIZE_NO);
     /* Continue with the next split */
     start = end;
   }
@@ -3440,8 +3438,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
       upper_inc1 = false;
     }
     result[k++] = tsequence_make((const TInstant **) instants, end - start + 1,
-      end - start + 1, lower_inc1, upper_inc1, linear ? LINEAR :
-      STEPWISE, NORMALIZE_NO);
+      lower_inc1, upper_inc1, linear ? LINEAR : STEPWISE, NORMALIZE_NO);
     if (tofree)
     {
       /* Free the last instant created for the step interpolation */
@@ -3456,7 +3453,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
     /* Construct piece containing last instant of sequence */
     instants[0] = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
     result[k++] = tsequence_make((const TInstant **) instants,
-      seq->count - start, seq->count - start, true, seq->period.upper_inc,
+      seq->count - start, true, seq->period.upper_inc,
       linear, NORMALIZE_NO);
   }
   pfree(instants);
@@ -3624,7 +3621,7 @@ tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   }
   TSequence *result = NULL;
   if (k != 0)
-    result = tsequence_make(instants, k, k, true, true, DISCRETE, NORMALIZE_NO);
+    result = tsequence_make(instants, k, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
 }

@@ -632,7 +632,7 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
       if (k > 0)
       {
         times[l] = lower;
-        result[l++] = tsequence_make(instants, k, k, true, true, DISCRETE,
+        result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
           NORMALIZE_NO);
         k = 0;
       }
@@ -643,7 +643,7 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
   if (k > 0)
   {
     times[l] = lower;
-    result[l++] = tsequence_make(instants, k, k, true, true, DISCRETE,
+    result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
       NORMALIZE_NO);
   }
   pfree(instants);
@@ -721,7 +721,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
       }
       lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
       times[m] = lower;
-      result[m++] = tsequence_make(instants, k, k, lower_inc1,
+      result[m++] = tsequence_make(instants, k, lower_inc1,
          (k > 1) ? false : true, linear ? LINEAR : STEPWISE, NORMALIZE);
       k = 0;
       lower = upper;
@@ -739,7 +739,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
   {
     lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
     times[m] = lower;
-    result[m++] = tsequence_make(instants, k, k, lower_inc1,
+    result[m++] = tsequence_make(instants, k, lower_inc1,
       seq->period.upper_inc, linear ? LINEAR : STEPWISE, NORMALIZE);
   }
   pfree_array((void **) tofree, l);
@@ -1020,7 +1020,7 @@ tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
     if (numinsts[i] > 0)
     {
       result[k] = tsequence_make(&instants[i * seq->count], numinsts[i],
-        numinsts[i], true, true, DISCRETE, NORMALIZE_NO);
+        true, true, DISCRETE, NORMALIZE_NO);
       values[k++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype, basetype);
@@ -1087,7 +1087,7 @@ for (int i = 1; i < seq->count; i++)
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-      k, k, lower_inc1, false, STEPWISE, NORMALIZE);
+      k, lower_inc1, false, STEPWISE, NORMALIZE);
     bounds[0] = bounds[1];
     inst1 = inst2;
     lower_inc1 = true;
@@ -1256,7 +1256,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         break;
       seq_no = numseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        k, k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
+        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;

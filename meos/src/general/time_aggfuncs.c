@@ -470,8 +470,8 @@ period_transform_tcount(const Period *p, const Interval *interval,
   instants[0] = tinstant_make(datum_one, T_TINT, t);
   if (p->lower == p->upper)
   {
-    result = tsequence_make((const TInstant **) instants, 1, 1,
-      p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
+    result = tsequence_make((const TInstant **) instants, 1, p->lower_inc,
+      p->upper_inc, STEPWISE, NORMALIZE_NO);
   }
   else
   {
@@ -483,7 +483,7 @@ period_transform_tcount(const Period *p, const Interval *interval,
       t = timestamptz_bucket(t, interval, origin) + size;
     }
     instants[1] = tinstant_make(datum_one, T_TINT, t);
-    result = tsequence_make((const TInstant **) instants, 2, 2,
+    result = tsequence_make((const TInstant **) instants, 2,
       p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
     pfree(instants[1]);
   }

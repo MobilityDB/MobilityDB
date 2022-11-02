@@ -79,7 +79,7 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
   TimestampTz upper = pg_timestamp_pl_interval(inst->t, interval);
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), inst->temptype, upper);
-  result[0] = tsequence_make((const TInstant **) instants, 2, 2, true, true,
+  result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
     MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
   pfree(instants[1]);
   return 1;
@@ -139,7 +139,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
       TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
       instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make(value1, inst1->temptype, upper);
-      result[i] = tsequence_make((const TInstant **) instants, 2, 2,
+      result[i] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, interp, NORMALIZE_NO);
       pfree(instants[1]);
     }
@@ -156,7 +156,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
         instants[0] = inst1;
         instants[1] = tinstant_make(value1, inst1->temptype, lower);
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
-        result[i] = tsequence_make((const TInstant **) instants, 3, 3,
+        result[i] = tsequence_make((const TInstant **) instants, 3,
           lower_inc, upper_inc, interp, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
       }
@@ -168,7 +168,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
         instants[0] = inst1;
         instants[1] = inst2;
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
-        result[i] = tsequence_make((const TInstant**) instants, 3, 3,
+        result[i] = tsequence_make((const TInstant**) instants, 3,
           lower_inc, upper_inc, interp, NORMALIZE_NO);
         pfree(instants[2]);
       }
@@ -256,7 +256,7 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
   TimestampTz upper1 = pg_timestamp_pl_interval(upper, interval);
   instants[0] = tinstant_make(Int32GetDatum(1), T_TINT, lower);
   instants[1] = tinstant_make(Int32GetDatum(1), T_TINT, upper1);
-  TSequence *result = tsequence_make((const TInstant **) instants, 2, 2,
+  TSequence *result = tsequence_make((const TInstant **) instants, 2,
     lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
@@ -414,7 +414,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
   TInstant *instants[2];
   instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
-  result[0] = tsequence_make((const TInstant**) instants, 2, 2, true, true,
+  result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
     MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return 1;
@@ -479,8 +479,8 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
     instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst1->t);
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
-    result[i] = tsequence_make((const TInstant **) instants, 2, 2,
-      lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
+    result[i] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+      upper_inc, STEPWISE, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
     lower_inc = true;

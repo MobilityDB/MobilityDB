@@ -350,8 +350,7 @@ tfloatseq_derivative(const TSequence *seq)
     T_TFLOAT, seq->period.upper);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc, STEPWISE,
-    NORMALIZE);
+    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE);
   pfree_array((void **) instants, seq->count - 1);
   return result;
 }

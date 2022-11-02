@@ -168,8 +168,8 @@ tinterrel_tpointdiscseq_geom(const TSequence *seq, Datum geom, bool tinter,
       result = ! result;
     instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
-  TSequence *result = tsequence_make(instants, seq->count, seq->count,
-    true, true, DISCRETE, NORMALIZE_NO);
+  TSequence *result = tsequence_make(instants, seq->count, true, true,
+    DISCRETE, NORMALIZE_NO);
   pfree_array((void **) instants, seq->count);
   return result;
 }
@@ -212,7 +212,7 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
       instants[l++] = tinstant_make(datum_res, T_TBOOL, inst2->t);
     else
       upper_inc1 = true;
-    result[k++] = tsequence_make((const TInstant **) instants, l, l,
+    result[k++] = tsequence_make((const TInstant **) instants, l,
       lower_inc1, upper_inc1, STEPWISE, NORMALIZE_NO);
     pfree(instants[0]);
     if (inst2 != NULL)
@@ -767,7 +767,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   {
     tinstant_set(instants[0], datum_false, lower);
     tinstant_set(instants[1], datum_false, upper);
-    result[k++] = tsequence_make((const TInstant **) instants, 2, 2,
+    result[k++] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc1, STEPWISE, NORMALIZE_NO);
   }
   /*
@@ -787,13 +787,13 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
     tinstant_set(instants[j++], datum_true, t1);
     if (solutions == 2 && t1 != t2)
       tinstant_set(instants[j++], datum_true, t2);
-    result[k++] = tsequence_make((const TInstant **) instants, j, j,
+    result[k++] = tsequence_make((const TInstant **) instants, j,
       lower_inc, (t2 != upper) ? true : upper_inc1, STEPWISE, NORMALIZE_NO);
     if (t2 != upper)
     {
       tinstant_set(instants[0], datum_false, t2);
       tinstant_set(instants[1], datum_false, upper);
-      result[k++] = tsequence_make((const TInstant **) instants, 2, 2, false,
+      result[k++] = tsequence_make((const TInstant **) instants, 2, false,
         upper_inc1, STEPWISE, NORMALIZE_NO);
     }
   }
@@ -866,7 +866,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
       }
       else
         tinstant_set(instants[1], value, upper);
-      result[k++] = tsequence_make((const TInstant **) instants, 2, 2,
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
     }
     /* General case */
@@ -1010,7 +1010,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
       }
       else
         tinstant_set(instants[1], value, upper);
-      result[k++] = tsequence_make((const TInstant **) instants, 2, 2,
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
     }
     /* General case */

@@ -287,7 +287,7 @@ tpointdiscseq_parse(const char **str, mobdbType temptype, int *tpoint_srid)
     instants[i] = tpointinst_parse(str, temptype, false, true, tpoint_srid);
   }
   p_cbrace(str);
-  return tsequence_make_free(instants, count, count, true, true, DISCRETE,
+  return tsequence_make_free(instants, count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -345,7 +345,7 @@ tpointseq_parse(const char **str, mobdbType temptype, interpType interp,
   }
   p_cbracket(str);
   p_cparen(str);
-  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
+  return tsequence_make_free(instants, count, lower_inc, upper_inc,
     interp, NORMALIZE);
 }
 

@@ -518,7 +518,7 @@ tdiscseq_parse(const char **str, mobdbType temptype)
     instants[i] = tinstant_parse(str, temptype, false, true);
   }
   p_cbrace(str);
-  return tsequence_make_free(instants, count, count, true, true, DISCRETE,
+  return tsequence_make_free(instants, count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -575,8 +575,8 @@ tcontseq_parse(const char **str, mobdbType temptype, interpType interp, bool end
   }
   p_cbracket(str);
   p_cparen(str);
-  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
-    interp, NORMALIZE);
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    NORMALIZE);
 }
 
 /**

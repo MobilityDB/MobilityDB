@@ -80,8 +80,8 @@ tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tnpointinst_tgeompointinst(inst);
   }
-  return tsequence_make_free(instants, seq->count, seq->count,
-    true, true, DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -112,9 +112,8 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
 
   pfree(DatumGetPointer(line));
   lwline_free(lwline);
-  return tsequence_make_free(instants, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -187,7 +186,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
     instants[i] = inst1;
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
-    seq->count, seq->period.lower_inc, seq->period.upper_inc,
+    seq->period.lower_inc, seq->period.upper_inc,
     MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   return result;
 }

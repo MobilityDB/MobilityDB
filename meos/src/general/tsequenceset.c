@@ -354,8 +354,8 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   /* If no gaps are given construt call the standard sequence constructor */
   if (maxdist <= 0.0 && maxt == NULL)
   {
-    seq = tsequence_make((const TInstant **) instants, count, count, true,
-      true, interp, NORMALIZE);
+    seq = tsequence_make((const TInstant **) instants, count, true, true,
+      interp, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     pfree(seq);
     return result;
@@ -369,8 +369,8 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   {
     /* There are no gaps  */
     pfree(splits);
-    seq = tsequence_make1((const TInstant **) instants, count, count, true,
-      true, interp, NORMALIZE);
+    seq = tsequence_make1((const TInstant **) instants, count, true, true,
+      interp, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     pfree(seq);
   }
@@ -388,7 +388,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
         /* Finalize the current sequence and start a new one */
         assert(k > 0);
         sequences[newcount++] = tsequence_make1((const TInstant **) newinsts,
-          k, k, true, true, interp, NORMALIZE);
+          k, true, true, interp, NORMALIZE);
         j++; k = 0;
       }
       /* Continue with the current sequence */
@@ -397,7 +397,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
     /* Construct last sequence */
     if (k > 0)
       sequences[newcount++] = tsequence_make1((const TInstant **) newinsts,
-        k, k, true, true, interp, NORMALIZE);
+        k, true, true, interp, NORMALIZE);
     result = tsequenceset_make((const TSequence **) sequences, newcount,
       NORMALIZE);
     pfree(newinsts); pfree(sequences);
@@ -1342,8 +1342,8 @@ tsequenceset_to_tdiscseq(const TSequenceSet *ss)
     seq = tsequenceset_seq_n(ss, i);
     instants[i] = tsequence_inst_n(seq, 0);
   }
-  TSequence *result = tsequence_make(instants, ss->count, ss->count, true,
-    true, DISCRETE, NORMALIZE_NO);
+  TSequence *result = tsequence_make(instants, ss->count, true, true, DISCRETE,
+    NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -1880,7 +1880,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
           j++;
       }
     }
-    return (Temporal *) tsequence_make_free(instants, count, count, true, true,
+    return (Temporal *) tsequence_make_free(instants, count, true, true,
       DISCRETE, NORMALIZE_NO);
   }
   else
@@ -2351,9 +2351,9 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
     return false;
   }
 
-  *inter1 = tsequence_make_free(instants1, k, k, true, true, DISCRETE,
+  *inter1 = tsequence_make_free(instants1, k, true, true, DISCRETE,
     NORMALIZE_NO);
-  *inter2 = tsequence_make(instants2, k, k, true, true, DISCRETE,
+  *inter2 = tsequence_make(instants2, k, true, true, DISCRETE,
     NORMALIZE_NO);
   pfree(instants2);
   return true;
@@ -2552,7 +2552,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     seq2 = tsequenceset_seq_n(ss2, 0);
     instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
     instants[1] = tsequence_inst_n(seq2, 0);
-    TSequence *seq = tsequence_make(instants, 2, 2, true, true, interp,
+    TSequence *seq = tsequence_make(instants, 2, true, true, interp,
       NORMALIZE_NO);
     TSequenceSet *gap = tsequence_to_tsequenceset(seq);
     pfree(seq);
@@ -2591,7 +2591,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
           sequences[k - 1]->count - 1);
         instants[1] = tsequence_inst_n(seq1, 0);
         /* We put true so that it works with stepwise interpolation */
-        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+        tofree[l] = tsequence_make(instants, 2, true, true, interp,
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
       }
@@ -2612,7 +2612,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
           sequences[k - 1]->count - 1);
         instants[1] = tsequence_inst_n(seq2, 0);
         /* We put true so that it works with stepwise interpolation */
-        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+        tofree[l] = tsequence_make(instants, 2, true, true, interp,
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
       }
@@ -2658,7 +2658,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         instants[0] = tsequence_inst_n(sequences[k - 1],
           sequences[k - 1]->count - 1);
         instants[1] = tsequence_inst_n(seq2, 0);
-        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+        tofree[l] = tsequence_make(instants, 2, true, true, interp,
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
       }
@@ -2670,7 +2670,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         instants[0] = tsequence_inst_n(sequences[k - 1],
           sequences[k - 1]->count - 1);
         instants[1] = tsequence_inst_n(seq1, 0);
-        tofree[l] = tsequence_make(instants, 2, 2, true, true, interp,
+        tofree[l] = tsequence_make(instants, 2, true, true, interp,
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
       }
