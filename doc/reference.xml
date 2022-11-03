@@ -805,6 +805,28 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: Does the temporal value intersect the timestamp?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Get the time-weighted average</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Transformation Functions</title>
+
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
 				</listitem>
 
@@ -816,13 +838,6 @@
 					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: Does the temporal value intersect the timestamp?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Get the time-weighted average</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -831,11 +846,15 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="insert"><varname>insert</varname></link>: Insert a temporal value into another one</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+				<para><link linkend="update"><varname>update</varname></link>: Update a temporal value with another one</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="deleteTime"><varname>deleteTime</varname></link>: Delete from a temporal value a time value</para>
 				</listitem>
 
 				<listitem>

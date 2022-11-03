@@ -2607,8 +2607,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     {
       /* Fill the gap between the last sequence added and seq1 if at least one
        * sequence from both sequence sets have been entered */
-      if (i > 0 && j > 0 &&
-        sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
+      if (sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
       {
         instants[0] = tsequence_inst_n(sequences[k - 1],
           sequences[k - 1]->count - 1);
@@ -2630,8 +2629,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     {
       /* Fill the gap between the last sequence added and seq2 if at least one
        * sequence from both sequence sets have been entered */
-      if (i > 0 && j > 0 &&
-        sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
+      if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
       {
         instants[0] = tsequence_inst_n(sequences[k - 1],
           sequences[k - 1]->count - 1);
@@ -2676,42 +2674,39 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   }
   /* If there are still sequences to be added, fill the last gap before adding
     the sequences */
-  if ((i < ss1->count - 1) || (j < ss2->count - 1))
+  if (left_span_span(&seq1->period, &seq2->period))
   {
-    if (left_span_span(&seq1->period, &seq2->period))
+    if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
     {
-      if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
-      {
-        instants[0] = tsequence_inst_n(sequences[k - 1],
-          sequences[k - 1]->count - 1);
-        instants[1] = tsequence_inst_n(seq2, 0);
-        count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-          1 : 2;
-        tofree[l] = tsequence_make(instants, count, true, true, interp,
-          NORMALIZE_NO);
-        sequences[k++] = (const TSequence *) tofree[l++];
-      }
+      instants[0] = tsequence_inst_n(sequences[k - 1],
+        sequences[k - 1]->count - 1);
+      instants[1] = tsequence_inst_n(seq2, 0);
+      count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
+        1 : 2;
+      tofree[l] = tsequence_make(instants, count, true, true, interp,
+        NORMALIZE_NO);
+      sequences[k++] = (const TSequence *) tofree[l++];
     }
-    else if (left_span_span(&seq2->period, &seq1->period))
+  }
+  else if (left_span_span(&seq2->period, &seq1->period))
+  {
+    if (sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
     {
-      if (sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
-      {
-        instants[0] = tsequence_inst_n(sequences[k - 1],
-          sequences[k - 1]->count - 1);
-        instants[1] = tsequence_inst_n(seq1, 0);
-        count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-          1 : 2;
-        tofree[l] = tsequence_make(instants, count, true, true, interp,
-          NORMALIZE_NO);
-        sequences[k++] = (const TSequence *) tofree[l++];
-      }
+      instants[0] = tsequence_inst_n(sequences[k - 1],
+        sequences[k - 1]->count - 1);
+      instants[1] = tsequence_inst_n(seq1, 0);
+      count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
+        1 : 2;
+      tofree[l] = tsequence_make(instants, count, true, true, interp,
+        NORMALIZE_NO);
+      sequences[k++] = (const TSequence *) tofree[l++];
     }
   }
   /* Add the remaining sequences */
-  if (first)
-    j++;
-  else
-    i++;
+  // if (first)
+    // j++;
+  // else
+    // i++;
   while (i < ss1->count)
     sequences[k++] = tsequenceset_seq_n(ss1, i++);
   while (j < ss2->count)

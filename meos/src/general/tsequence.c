@@ -720,6 +720,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     }
   }
 
+  /* Add the new instant */
   const TInstant **instants = palloc(sizeof(TInstant *) * count);
   int k = 0;
   for (int i = 0; i < count - 1; i++)
@@ -1671,26 +1672,6 @@ tsequence_make(const TInstant **instants, int count, bool lower_inc,
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
 }
-
-#if 0 /* Not used */
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Return a copy of the temporal sequence removing extra free space for
- * additional instants
- */
-TSequence *
-tsequence_compact(const TSequence *seq)
-{
-  if (seq->count == seq->maxcount)
-    return tsequence_copy(seq);
-  const TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < seq->count; i++)
-    instants[i] = tsequence_inst_n(seq, i);
-  TSequence *result = tsequence_make_exp(instants, count, count, lower_inc,
-    upper_inc, interp, normalize);
-  return result;
-}
-#endif /* Not used */
 
 /**
  * @brief Construct a temporal sequence from an array of temporal instants

@@ -3254,11 +3254,10 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
   }
   else /* new1->subtype == TSEQUENCESET */
   {
-    if (! connect)
-      result = (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
-        (TSequenceSet *) new2);
-    else
-      result = (Temporal *) tsequenceset_insert((TSequenceSet *) new1,
+    result = connect ?
+      (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
+        (TSequenceSet *) new2) :
+      (Temporal *) tsequenceset_insert((TSequenceSet *) new1,
         (TSequenceSet *) new2);
   }
   if (temp1 != new1)
@@ -3301,18 +3300,19 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
       result = (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
     else
-      result = (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t);
+      result = connect ?
+        (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t) :
+        (Temporal *) tcontseq_minus_timestamp((TSequence *) temp, t);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
-    if (! connect)
-      result = (Temporal *) tsequenceset_restrict_timestamp(
-        (TSequenceSet *) temp, t, REST_MINUS);
-    else
-      result = (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp, t);
+    result = connect ?
+      (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp, t,
+        REST_MINUS) :
+      (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp, t);
   }
   return result;
 }
@@ -3334,15 +3334,21 @@ temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
       result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
         ts, REST_MINUS);
     else
-      result = (Temporal *) tcontseq_delete_timestampset((TSequence *) temp, ts);
+      result = connect ?
+        (Temporal *) tcontseq_delete_timestampset((TSequence *) temp, ts) :
+        (Temporal *) tcontseq_minus_timestampset((TSequence *) temp, ts);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_delete_timestampset((TSequenceSet *) temp,
-      ts);
+  {
+    result = connect ?
+      (Temporal *) tsequenceset_delete_timestampset((TSequenceSet *) temp, ts) :
+      (Temporal *) tsequenceset_restrict_timestampset((TSequenceSet *) temp, ts,
+        REST_MINUS);
+  }
   return result;
 }
 
@@ -3362,13 +3368,20 @@ temporal_delete_period(const Temporal *temp, const Period *p, bool connect)
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
       result = (Temporal *) tdiscseq_minus_period((TSequence *) temp, p);
     else
-      result = (Temporal *) tcontseq_delete_period((TSequence *) temp, p);
+      result = connect ?
+        (Temporal *) tcontseq_delete_period((TSequence *) temp, p) :
+        (Temporal *) tcontseq_minus_period((TSequence *) temp, p);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_delete_period((TSequenceSet *) temp, p);
+  {
+    result = connect ?
+      (Temporal *) tsequenceset_delete_period((TSequenceSet *) temp, p) :
+      (Temporal *) tsequenceset_restrict_period((TSequenceSet *) temp, p,
+        REST_MINUS);
+  }
   return result;
 }
 
@@ -3389,15 +3402,22 @@ temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags) || ! connect)
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
       result = (Temporal *) tdiscseq_restrict_periodset((TSequence *) temp, ps,
         REST_MINUS);
     else
-      result = (Temporal *) tcontseq_delete_periodset((TSequence *) temp, ps);
+      result = connect ?
+        (Temporal *) tcontseq_delete_periodset((TSequence *) temp, ps) :
+        (Temporal *) tcontseq_restrict_periodset((TSequence *) temp, ps,
+          REST_MINUS);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_delete_periodset((TSequenceSet *) temp,
-      ps);
+  {
+    result = connect ?
+      (Temporal *) tsequenceset_delete_periodset((TSequenceSet *) temp, ps) :
+      (Temporal *) tsequenceset_restrict_periodset((TSequenceSet *) temp, ps,
+        REST_MINUS);
+  }
   return result;
 }
 
