@@ -2826,41 +2826,6 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
  * @sqlfunc deleteTime()
  */
 TSequenceSet *
-tsequenceset_delete_period_old(const TSequenceSet *ss, const Period *p)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, p))
-    return tsequenceset_copy(ss);
-
-  TSequence *seq1;
-  TSequenceSet *result = NULL;
-
-  /* Singleton sequence set */
-  if (ss->count == 1)
-  {
-    seq1 = tcontseq_delete_period(tsequenceset_seq_n(ss, 0), p);
-    if (seq1)
-    {
-      result = tsequence_to_tsequenceset(seq1);
-      pfree(seq1);
-    }
-    return result;
-  }
-
-  /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
-    seq1 = tcontseq_delete_period(seq, p);
-    if (seq1)
-      sequences[k++] = seq1;
-  }
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
-}
-
-TSequenceSet *
 tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
 {
   PeriodSet *ps = period_to_periodset(p);
@@ -2874,45 +2839,6 @@ tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
  * @brief Delete a period from a temporal sequence set.
  * @sqlfunc deleteTime()
  */
-TSequenceSet *
-tsequenceset_delete_periodset_old(const TSequenceSet *ss, const PeriodSet *ps)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ps->period))
-    return tsequenceset_copy(ss);
-
-  /* Singleton period set */
-  if (ps->count == 1)
-    return tsequenceset_delete_period(ss, periodset_per_n(ps, 0));
-
-  TSequence *seq1;
-  TSequenceSet *result = NULL;
-
-  /* Singleton sequence set */
-  if (ss->count == 1)
-  {
-    seq1 = tcontseq_delete_periodset(tsequenceset_seq_n(ss, 0), ps);
-    if (seq1)
-    {
-      result = tsequence_to_tsequenceset(seq1);
-      pfree(seq1);
-    }
-    return result;
-  }
-
-  /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
-    seq1 = tcontseq_delete_periodset(seq, ps);
-    if (seq1)
-      sequences[k++] = seq1;
-  }
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
-}
-
 TSequenceSet *
 tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
 {
@@ -2976,6 +2902,9 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
     seq = (TSequence *) tsequenceset_seq_n(minus, ++i);
     p = periodset_per_n(ps, ++j);
   }
+  /* Add remaining sequences to the result */
+  while (i < ss->count)
+    sequences[k++] = (TSequence *) tsequenceset_seq_n(minus, i++);
   /* Construct the result */
   int newcount;
   TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, k,
