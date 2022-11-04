@@ -689,6 +689,34 @@
 		</sect2>
 
 		<sect2>
+			<title>Funciones de modificación</title>
+
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="insert"><varname>insert</varname></link>: Insertar un valor temporal en otro</para>
+				</listitem>
+
+				<listitem>
+				<para><link linkend="update"><varname>update</varname></link>: Actualizar un valor temporal con otro</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="delete"><varname>delete</varname></link>: Eliminar de un valor temporal los instantes que intersectan un valor de tiempo</para>
+				</listitem>
+
+				<listitem>
+				<para><link linkend="appendInstant"><varname>appendInstant</varname></link>: Anexar un instante temporal a un valor temporal</para>
+				</listitem>
+
+				<listitem>
+				<para><link linkend="merge"><varname>merge</varname></link>: Fusionar los valores temporales</para>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+
+
+		<sect2>
 			<title>Funciones de accesor</title>
 			<itemizedlist>
 				<listitem>

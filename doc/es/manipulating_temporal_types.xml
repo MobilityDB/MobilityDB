@@ -1214,68 +1214,6 @@ SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem id="appendInstant">
-				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
-				<para>Anexar un instante temporal a un valor temporal</para>
-				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
--- {1@2000-01-01, 1@2000-01-02}
-SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
--- [1@2000-01-01, 1@2000-01-02]
-SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  tgeompoint 'Point(1 1 1)@2000-01-06'));
-/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
-   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
-   POINT Z (1 1 1)@2000-01-06]} */
-</programlisting>
-			</listitem>
-
-			<listitem id="merge">
-				<indexterm><primary><varname>merge</varname></primary></indexterm>
-				<para>Fusionar los valores temporales</para>
-				<para><varname>merge(ttype,ttype): ttype</varname></para>
-				<para><varname>merge(ttype[]): ttype</varname></para>
-				<para>Los valores pueden compartir marcas de tiempo solo en su límite, en ese caso, los valores temporales se unen en el resultado si sus valores en las marcas de tiempo comunes son los mismos; de lo contrario, se genera un error.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
--- {1@2000-01-01, 1@2000-01-02}
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
--- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03]
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
--- {[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
--- ERROR:  Both arguments have different value at their overlapping timestamp
-SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
-/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
-   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
-   POINT Z (1 1 1)@2000-01-06]} */
-
-SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
--- {1@2000-01-01, 1@2000-01-02}
-SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
--- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
-SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
--- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}
-SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
--- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03]
-SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
--- {[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}
-SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
-  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
-  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
-/* {[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
-   Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
-   [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]} */
-SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
-  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
--- [Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
-</programlisting>
-			</listitem>
-
 			<listitem id="shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
@@ -1333,6 +1271,179 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 id="modification_functions">
+		<title>Funciones de modificación</title>
+		<para>A continuación, explicamos la semántica de las operaciones de modificación (es decir, <varname>insert</varname>, <varname>update</varname> y <varname>delete</varname>) para tipos temporales. Estas operaciones tienen una semántica similar a las operaciones correspondientes para tablas temporales de tiempo de aplicación (<emphasis>application-time temporal tables</emphasis>) introducidas en el estándar <ulink url="https://en.wikipedia.org/wiki/SQL:2011">SQL:2011</ulink>. La principal diferencia es que SQL usa marcas de tiempo de tuplas (donde las marcas de tiempo se adjuntan a las tuplas), mientras que los valores temporales en MobilityDB usan marcas de tiempo de atributos (donde las marcas de tiempo se adjuntan a los valores de los atributos).</para>
+<para>La operación <varname>insert</varname> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en <xref linkend="insert_fig" />.</para>
+
+		<figure id="insert_fig" float="start">
+			<title>Operación de inserción para valores temporales.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/insert.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/insert.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/insert.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>Como se muestra en la figura, los valores temporales solo pueden intersectarse en su límite y, en ese caso, deben tener el mismo valor de base en sus marcas de tiempo comunes; de lo contrario, se genera un error. El resultado de la operación es la unión de los instantes para ambos valores temporales, como se muestra en el primer resultado de la figura. Esto es equivalente a una operación <varname>merge</varname> que se explica a continuación. Alternativamente, como se muestra en el segundo resultado de la figura, los fragmentos insertados que son disjuntos con el valor original se conectan al último instante anterior y al primer instante posterior al fragmento. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Tenga en cuenta que esto solo se aplica a valores temporales continuos.</para>
+
+		<para>La operación <varname>update</varname> reemplaza los instantes en un primer valor temporal con los de un segundo valor como se ilustra en la <xref linkend="update_fig" />.</para>
+
+		<figure id="update_fig" float="start">
+			<title>Operación de actualización para valores temporales.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/update.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/update.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/update.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>Como se muestra en la figura, el valor resultante contiene los instantes del segundo valor, independientemente de los instantes anteriores que tenía en el valor temporal original. Como en el caso de una operación <varname>insert</varname>, un parámetro booleano adicional determina si los nuevos fragmentos desconectados están conectados en el valor resultante, como se muestra en los dos posibles resultados de la figura. Cuando los dos valores temporales son disjuntos o solo se intersectan en su límite, esto corresponde a una operación <varname>insert</varname> como se explicó anteriormente. En este caso, la operación <varname>update</varname> se comporta como una operación <varname>upsert</varname> en SQL.</para>
+
+		<para>La operación <varname>deleteTime</varname> elimina los instantes de un valor temporal que intersectan un valor de tiempo. Esta operación se puede utilizar en dos situaciones diferentes, ilustradas en la <xref linkend="deleteTime_fig" />.</para>
+
+		<figure id="deleteTime_fig" float="start">
+			<title>Operación de supresión para valores temporales.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/delete.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/delete.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/delete.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<orderedlist>
+			<listitem>
+				<para>En el primer caso, que se muestra como el resultado superior de la figura, el significado de la operación es introducir brechas de tiempo después de eliminar los instantes del valor temporal que intersectan el valor de tiempo. Esto es equivalente a las operaciones de diferencia (<xref linkend="difference" />), que restringen un valor temporal al complemento del valor de tiempo.</para>
+			</listitem>
+
+			<listitem>
+				<para>El segundo caso, que se muestra como el resultado inferior de la figura, se usa para eliminar valores erróneos (por ejemplo, detectados como valores atípicos) sin introducir una brecha de tiempo, o para eliminar una brecha de tiempo. En este caso, los valores en el fragmento del valor temporal se eliminan y el último instante anterior y el primer instante posterior a une fragmento suprimido se conectan. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Tenga en cuenta que esto solo se aplica a valores temporales continuos.</para>
+			</listitem>
+		</orderedlist>
+		<itemizedlist>
+			<listitem id="insert">
+				<para><varname>insert</varname>: Insertar un valor temporal en otro</para>
+				<para><varname>insert(ttype,ttype,connect boolean=true): ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT insert(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
+  tint '{3@2000-01-03, 7@2000-01-07}');
+-- {1@2000-01-01, 3@2000-01-03, 5@2000-01-05, 7@2000-01-07}
+SELECT insert(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
+  tint '{5@2000-01-03, 7@2000-01-07}');
+-- ERROR: The temporal values have different value at their overlapping instant 2000-01-03
+SELECT insert(tfloat '[1@2000-01-01, 2@2000-01-02]',
+  tfloat '[1@2000-01-03, 1@2000-01-05]');
+-- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-05]
+SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02],
+  [Point(3 3 3)@2000-01-04],[Point(1 1 1)@2000-01-05]}',
+  tgeompoint 'Point(1 1 1)@2000-01-03'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (1 1 1)@2000-01-03,
+ POINT Z (3 3 3)@2000-01-04], [POINT Z (1 1 1)@2000-01-05]} */
+</programlisting>
+				</listitem>
+
+				<listitem id="update">
+				<para><varname>update</varname>: Actualizar un valor temporal con otro</para>
+				<para><varname>update(ttype,ttype,connect boolean=true): ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT update(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
+  tint '{5@2000-01-03, 7@2000-01-07}');
+-- {1@2000-01-01, 5@2000-01-03, 5@2000-01-05, 7@2000-01-07}
+SELECT update(tfloat '[1@2000-01-01, 1@2000-01-05]',
+  tfloat '[1@2000-01-02, 3@2000-01-03, 1@2000-01-04]');
+-- {[1@2000-01-01, 1@2000-01-02, 3@2000-01-03, 1@2000-01-04, 1@2000-01-05]}
+SELECT asText(update(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03,
+  Point(1 1 1)@2000-01-05], [Point(1 1 1)@2000-01-07]}',
+  tgeompoint '[Point(2 2 2)@2000-01-02, Point(2 2 2)@2000-01-04]'));
+/*  {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (2 2 2)@2000-01-04,
+  POINT Z (1 1 1)@2000-01-05], [POINT Z (1 1 1)@2000-01-07]} */
+</programlisting>
+				</listitem>
+
+				<listitem id="deleteTime">
+					<para><varname>deleteTime</varname>: Eliminar de un valor temporal un valor de tiempo</para>
+				<para><varname>deleteTime(ttype,time,connect boolean=true): ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02', false);
+-- {[1@2000-01-01, 1@2000-01-02), (1@2000-01-02, 1@2000-01-03]}
+SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02');
+-- [1@2000-01-01, 1@2000-01-03]
+SELECT deleteTime(tfloat '[1@2000-01-01, 4@2000-01-02, 2@2000-01-04, 5@2000-01-05]',
+  period '[2000-01-02, 2000-01-04]');
+-- [1@2000-01-01, 5@2000-01-05]
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  period '[2000-01-02, 2000-01-04]'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (3 3 3)@2000-01-04,
+  POINT Z (3 3 3)@2000-01-05]} */
+</programlisting>
+				</listitem>
+
+			<listitem id="appendInstant">
+				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
+				<para>Anexar un instante temporal a un valor temporal</para>
+				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
+-- {1@2000-01-01, 1@2000-01-02}
+SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
+-- [1@2000-01-01, 1@2000-01-02]
+SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint 'Point(1 1 1)@2000-01-06'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
+   POINT Z (1 1 1)@2000-01-06]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="merge">
+				<indexterm><primary><varname>merge</varname></primary></indexterm>
+				<para>Fusionar los valores temporales</para>
+				<para><varname>merge(ttype,ttype): ttype</varname></para>
+				<para><varname>merge(ttype[]): ttype</varname></para>
+				<para>Los valores temporales solo pueden intersectar en su límite y en ese caso, los valores de base en las marcas de tiempo comunes deben ser los mismos; de lo contrario, se genera un error.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
+-- {1@2000-01-01, 1@2000-01-02}
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
+-- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03]
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
+-- {[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
+-- ERROR:  Both arguments have different value at their overlapping timestamp
+SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
+   POINT Z (1 1 1)@2000-01-06]} */
+
+SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
+-- {1@2000-01-01, 1@2000-01-02}
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
+-- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03]
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
+-- {[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
+  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
+  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
+/* {[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
+   Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
+   [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]} */
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
+  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
+-- [Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
 	</sect1>
 
 	<sect1 id="restriction_functions">
@@ -1482,7 +1593,7 @@ SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
+		<sect2 id="difference">
 			<title>Funciones de diferencia</title>
 			<para>Estas funciones restringen el valor temporal con respecto al complemento de una extensión de valores y/o de tiempo.</para>
 			<itemizedlist>

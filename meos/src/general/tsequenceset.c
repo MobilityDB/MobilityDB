@@ -2703,10 +2703,6 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     }
   }
   /* Add the remaining sequences */
-  // if (first)
-    // j++;
-  // else
-    // i++;
   while (i < ss1->count)
     sequences[k++] = tsequenceset_seq_n(ss1, i++);
   while (j < ss2->count)
@@ -2830,7 +2826,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
  * @sqlfunc deleteTime()
  */
 TSequenceSet *
-tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
+tsequenceset_delete_period_old(const TSequenceSet *ss, const Period *p)
 {
   /* Bounding box test */
   if (! overlaps_span_span(&ss->period, p))
@@ -2864,13 +2860,22 @@ tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
+TSequenceSet *
+tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
+{
+  PeriodSet *ps = period_to_periodset(p);
+  TSequenceSet *result = tsequenceset_delete_periodset(ss, ps);
+  pfree(ps);
+  return result;
+}
+
 /**
  * @ingroup libmeos_int_temporal_transf
  * @brief Delete a period from a temporal sequence set.
  * @sqlfunc deleteTime()
  */
 TSequenceSet *
-tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
+tsequenceset_delete_periodset_old(const TSequenceSet *ss, const PeriodSet *ps)
 {
   /* Bounding box test */
   if (! overlaps_span_span(&ss->period, &ps->period))
@@ -2906,6 +2911,78 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
       sequences[k++] = seq1;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+TSequenceSet *
+tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
+{
+  /* Bounding box test */
+  if (! overlaps_span_span(&ss->period, &ps->period))
+    return tsequenceset_copy(ss);
+
+  TSequence *seq;
+  TSequenceSet *result = NULL;
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+  {
+    seq = tcontseq_delete_periodset(tsequenceset_seq_n(ss, 0), ps);
+    if (seq)
+    {
+      result = tsequence_to_tsequenceset(seq);
+      pfree(seq);
+    }
+    return result;
+  }
+
+  /* General case */
+  TSequenceSet *minus = tsequenceset_restrict_periodset(ss, ps, REST_MINUS);
+  /* The are minus->count - 1 holes that may be filled */
+  TSequence **sequences = palloc(sizeof(TSequence *) * (minus->count * 2 - 1));
+  TSequence **tofree = palloc(sizeof(TSequence *) * (minus->count - 1));
+  const TInstant *instants[2] = {0};
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
+  sequences[0] = seq = (TSequence *) tsequenceset_seq_n(minus, 0);
+  const Period *p = periodset_per_n(ps, 0);
+  int i = 1, /* current composing sequence */
+    j = 0,   /* current composing period */
+    k = 1,   /* number of sequences in the currently constructed sequence */
+    l = 0;   /* number of sequences to be freed */  /* Fill the gaps */
+  /* Skip all composing periods that are before or adjacent to seq */
+  while (j < ps->count)
+  {
+    if (timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
+          DatumGetTimestampTz(seq->period.lower)) > 0)
+      break;
+    p = periodset_per_n(ps, ++j);
+  }
+  seq = (TSequence *) tsequenceset_seq_n(minus, 1);
+  while (i < ss->count && j < ps->count)
+  {
+    if (timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
+          DatumGetTimestampTz(seq->period.lower) <= 0))
+    {
+      instants[0] = tsequence_inst_n(sequences[k - 1],
+        sequences[k - 1]->count - 1);
+      instants[1] = tsequence_inst_n(seq, 0);
+      int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
+        1 : 2;
+      /* We put true so that it works with stepwise interpolation */
+      tofree[l] = tsequence_make(instants, count, true, true, interp,
+        NORMALIZE_NO);
+      sequences[k++] = tofree[l++];
+    }
+    sequences[k++] = seq;
+    seq = (TSequence *) tsequenceset_seq_n(minus, ++i);
+    p = periodset_per_n(ps, ++j);
+  }
+  /* Construct the result */
+  int newcount;
+  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, k,
+    &newcount);
+  result = tsequenceset_make_free(normseqs, newcount, NORMALIZE_NO);
+  pfree_array((void **) tofree, l);
+  return result;
 }
 
 /*****************************************************************************

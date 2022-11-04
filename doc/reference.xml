@@ -854,7 +854,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="deleteTime"><varname>deleteTime</varname></link>: Delete from a temporal value a time value</para>
+					<para><link linkend="deleteTime"><varname>deleteTime</varname></link>: Delete the instants of a temporal value that intersect a time value</para>
 				</listitem>
 
 				<listitem>
