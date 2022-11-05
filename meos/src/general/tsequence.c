@@ -391,7 +391,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
    * of the count instants provided. Note that this is only an initial
    * estimation. The functions adding instants to a sequence must verify both
    * the maximum number of instants and the remaining space for adding an
-   * additional variable-length instant or arbitrary size */
+   * additional variable-length instant of arbitrary size */
   int totalcount;
   if (count != maxcount)
   {
@@ -432,7 +432,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
    */
   if (bboxsize != 0)
   {
-    tsequence_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
+    tinstarr_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
       upper_inc, interp, TSEQUENCE_BBOX_PTR(result));
   }
   else
@@ -720,7 +720,38 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     }
   }
 
-  /* Add the new instant */
+#if MEOS
+  /* A while is used instead of an if to enable to break the loop if there is
+   * no more available space */
+  while (expand && seq->count < seq->maxcount)
+  {
+    /* Append the new instant if there is enough space */
+    size_t size = double_pad(VARSIZE(inst));
+    TInstant *last = (TInstant *) tsequence_inst_n(seq, count - 2);
+    size_t avail_size = ((char *) seq + VARSIZE(seq)) -
+      ((char *) inst1 + double_pad(VARSIZE(inst1)));
+    if (size > avail_size)
+      break;
+    /* Update the offsets array and the count if not replacing the last instant */
+    if (count != seq->count)
+    {
+      (tsequence_offsets_ptr(seq))[count - 1] =
+        (tsequence_offsets_ptr(seq))[count - 2] + size;
+      seq->count++;
+    }
+    /* There is enough space to add the new instant */
+    last = (TInstant *) tsequence_inst_n(seq, count - 1);
+    memcpy(last, inst, size);
+    /* Recompute the bounding box and return */
+    TBOX box;
+    tsequence_compute_bbox(seq, &box);
+    tsequence_set_bbox(seq, &box);
+    return (Temporal *) seq;
+  }
+#endif /* MEOS */
+
+  /* This is the first time we use an expandable structure or there is no more
+   * free space */
   const TInstant **instants = palloc(sizeof(TInstant *) * count);
   int k = 0;
   for (int i = 0; i < count - 1; i++)

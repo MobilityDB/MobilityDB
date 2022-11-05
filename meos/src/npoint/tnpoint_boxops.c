@@ -97,7 +97,7 @@ tnpointinst_set_stbox(const TInstant *inst, STBOX *box)
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
+tnpointinstarr_step_set_stbox(const TInstant **instants, int count, STBOX *box)
 {
   tnpointinst_set_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
@@ -153,15 +153,39 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointseq_set_stbox(const TInstant **instants, int count, interpType interp,
-  STBOX *box)
+tnpointinstarr_set_stbox(const TInstant **instants, int count,
+  interpType interp, STBOX *box)
 {
   if (interp == LINEAR)
     tnpointinstarr_linear_set_stbox(instants, count, box);
   else
-    tnpointinstarr_set_stbox(instants, count, box);
+    tnpointinstarr_step_set_stbox(instants, count, box);
   return;
 }
+
+#if MEOS
+/**
+ * Set the spatiotemporal box from the temporal network point sequence.
+ *
+ * @param[in] seq Temporal sequence
+ * @param[out] box Spatiotemporal box
+ */
+ // TODO Direct implementation without creating the instants array
+void
+tnpointseq_set_stbox(const TSequence *seq, STBOX *box)
+{
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count - 1; i++)
+    instants[i] = tsequence_inst_n(seq, i);
+  if (interp == LINEAR)
+    tnpointinstarr_linear_set_stbox(instants, seq->count, box);
+  else
+    tnpointinstarr_step_set_stbox(instants, seq->count, box);
+  pfree(instants);
+  return;
+}
+#endif /* MEOS */
 
 /**
  * @brief Return the bounding box of the network segment value

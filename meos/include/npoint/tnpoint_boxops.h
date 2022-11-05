@@ -52,9 +52,8 @@ extern bool npoint_period_set_stbox(const Npoint *np, const Period *p,
 
 extern void tnpointinst_set_stbox(const TInstant *inst, STBOX *box);
 extern void tnpointinstarr_set_stbox(const TInstant **inst, int count,
-  STBOX *box);
-extern void tnpointseq_set_stbox(const TInstant **inst, int count,
   interpType interp, STBOX *box);
+extern void tnpointseq_set_stbox(const TSequence *seq, STBOX *box);
 
 /*****************************************************************************/
 

@@ -1305,12 +1305,37 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
   return result;
 }
 
+#if MEOS
+Temporal *
+temporal_shift(const Temporal *temp, const Interval *shift)
+{
+  return temporal_shift_tscale(temp, shift, NULL);
+}
+
+Temporal *
+temporal_tscale(const Temporal *temp, const Interval *duration)
+{
+  return temporal_shift_tscale(temp, NULL, duration);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
 #define MOBDB_INTERPOLATION_STR_MAXLEN 12
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the size in bytes of a temporal value
+ * @sqlfunc memSize()
+ */
+size_t
+temporal_size(const Temporal *temp)
+{
+  return VARSIZE(temp);
+}
 
 /**
  * @ingroup libmeos_temporal_accessor

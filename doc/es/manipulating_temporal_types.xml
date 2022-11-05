@@ -1322,6 +1322,18 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 				<para>El segundo caso, que se muestra como el resultado inferior de la figura, se usa para eliminar valores erróneos (por ejemplo, detectados como valores atípicos) sin introducir una brecha de tiempo, o para eliminar una brecha de tiempo. En este caso, los valores en el fragmento del valor temporal se eliminan y el último instante anterior y el primer instante posterior a une fragmento suprimido se conectan. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Tenga en cuenta que esto solo se aplica a valores temporales continuos.</para>
 			</listitem>
 		</orderedlist>
+
+		<figure id="modif_sql_fig" float="start">
+			<title>Operaciones de modificación para tablas temporales en SQL.</title>
+			<inlinemediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/modif_sql.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/modif_sql.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/modif_sql.png"/></imageobject>
+			</inlinemediaobject>
+		</figure>
+
+<xref linkend="modif_sql_fig" /> muestra las operaciones de modificación equivalentes para tablas temporales en el estándar SQL. Intuitivamente, estas figuras se obtienen girando 90 grados en el sentido de las agujas del reloj las figuras correspondientes a los valores temporales. Nótese que en SQL, las tuplas consecutivas ordenadas por tiempo generalmente se conectan a través de las funciones de ventana <varname>LEAD</varname> y <varname>LAG</varname>.
+
 		<itemizedlist>
 			<listitem id="insert">
 				<para><varname>insert</varname>: Insertar un valor temporal en otro</para>

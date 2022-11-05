@@ -266,9 +266,9 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 /**
  * Set a temporal box from an array of temporal number instants
  *
- * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
+ * @param[in] box Box
  */
 static void
 tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
@@ -283,6 +283,29 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
   return;
 }
 
+#if MEOS
+/**
+ * Set a temporal box from a temporal number sequence
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] box Box
+ */
+static void
+tnumberseq_set_tbox(const TSequence *seq, TBOX *box)
+{
+  const TInstant *inst = tsequence_inst_n(seq, 0);
+  tinstant_set_bbox(inst, box);
+  for (int i = 1; i < seq->count; i++)
+  {
+    TBOX box1;
+    inst = tsequence_inst_n(seq, i);
+    tinstant_set_bbox(inst, &box1);
+    tbox_expand(&box1, box);
+  }
+  return;
+}
+#endif /* MEOS */
+
 /**
  * Set a bounding box from an array of temporal instant values
  *
@@ -293,7 +316,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
  * @param[out] box Bounding box
  */
 void
-tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
+tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 #if NPOINT
   bool upper_inc, interpType interp, void *box)
 #else
@@ -314,7 +337,7 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
     tgeogpointinstarr_set_stbox(instants, count, interp, (STBOX *) box);
 #if NPOINT
   else if (instants[0]->temptype == T_TNPOINT)
-    tnpointseq_set_stbox(instants, count, interp, (STBOX *) box);
+    tnpointinstarr_set_stbox(instants, count, interp, (STBOX *) box);
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
@@ -326,6 +349,44 @@ tsequence_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   p->upper_inc = upper_inc;
   return;
 }
+
+#if MEOS
+/**
+ * Set a bounding box from an array of temporal instant values
+ *
+ * @param[in] seq Temporal sequence
+ * @param[out] box Bounding box
+ */
+void
+tsequence_compute_bbox(const TSequence *seq, void *box)
+{
+  /* Only external types have bounding box */
+  ensure_temporal_type(seq->temptype);
+  if (talpha_type(seq->temptype))
+    span_set(TimestampTzGetDatum(tsequence_inst_n(seq, 0)->t),
+      TimestampTzGetDatum(tsequence_inst_n(seq, seq->count - 1)->t),
+      seq->period.lower_inc, seq->period.upper_inc, T_TIMESTAMPTZ, (Span *) box);
+  else if (tnumber_type(seq->temptype))
+    tnumberseq_set_tbox(seq, (TBOX *) box);
+  else if (seq->temptype == T_TGEOMPOINT)
+    tgeompointseq_set_stbox(seq, (STBOX *) box);
+  else if (seq->temptype == T_TGEOGPOINT)
+    tgeogpointseq_set_stbox(seq, (STBOX *) box);
+#if NPOINT
+  else if (seq->temptype == T_TNPOINT)
+    tnpointseq_set_stbox(seq, (STBOX *) box);
+#endif
+  else
+    elog(ERROR, "unknown bounding box function for temporal type: %d",
+      seq->temptype);
+  /* Set the lower_inc and upper_inc bounds of the period at the beginning
+   * of the bounding box */
+  Period *p = (Period *) box;
+  p->lower_inc = seq->period.lower_inc;
+  p->upper_inc = seq->period.upper_inc;
+  return;
+}
+#endif /* MEOS */
 
 /**
  * Set the period from the array of temporal sequence values

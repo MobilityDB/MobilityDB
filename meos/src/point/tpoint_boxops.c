@@ -98,6 +98,30 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
   return;
 }
 
+#if MEOS
+/**
+ * Set the spatiotemporal box from a temporal sequence point
+ *
+ * @param[in] seq Temporal sequence
+ * @param[out] box Spatiotemporal box
+ * @note Temporal instant values do not have a precomputed bounding box
+ */
+void
+tgeompointseq_set_stbox(const TSequence *seq, STBOX *box)
+{
+  const TInstant *inst = tsequence_inst_n(seq, 0);
+  tpointinst_set_stbox(inst, box);
+  for (int i = 1; i < seq->count; i++)
+  {
+    STBOX box1;
+    inst = tsequence_inst_n(seq, i);
+    tpointinst_set_stbox(inst, &box1);
+    stbox_expand(&box1, box);
+  }
+  return;
+}
+#endif /* MEOS */
+
 /**
  * Set the GBOX bounding box from an array of temporal geographic point instants
  *
@@ -124,6 +148,34 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
   /* We cannot pfree(points); */
   return;
 }
+
+#if MEOS
+/**
+ * Set the GBOX bounding box from a temporal geographic point sequence
+ *
+ * @param[in] seq Temporal point
+ * @param[out] box Resulting bounding box
+ */
+static void
+tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
+{
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, seq->count,
+    interp);
+  lwgeom_calculate_gbox_geodetic(lwgeom, box);
+
+  lwgeom_free(lwgeom);
+  /* We cannot pfree(points); */
+  return;
+}
+#endif /* MEOS */
 
 /**
  * Set the spatiotemporal box from an array of temporal instant geography point
@@ -160,6 +212,36 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
     gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, box);
   return;
 }
+
+#if MEOS
+/**
+ * Set the spatiotemporal box from an array of temporal instant geography point
+ *
+ * @param[in] seq Temporal point
+ * @param[out] box Spatiotemporal box
+ * @note In the current PostGIS version the difference when computing the
+ * gbox for a MultiPoint and a Linestring is around 2e-7
+ */
+void
+tgeogpointseq_set_stbox(const TSequence *seq, STBOX *box)
+{
+  GBOX gbox;
+  gbox_init(&gbox);
+  FLAGS_SET_Z(gbox.flags, 1);
+  FLAGS_SET_M(gbox.flags, 0);
+  FLAGS_SET_GEODETIC(gbox.flags, 1);
+  tgeogpointseq_set_gbox(seq, &gbox);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  int32 srid = tpointseq_srid(seq);
+  Period period;
+  span_set(tsequence_inst_n(seq, 0)->t,
+    tsequence_inst_n(seq, seq->count - 1)->t, true, true, T_TIMESTAMPTZ,
+    &period);
+  stbox_set(&period, true, hasz, true, srid, gbox.xmin, gbox.xmax,
+    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, box);
+  return;
+}
+#endif /* MEOS */
 
 /**
  * Set the spatiotemporal box from an array of temporal sequence points
