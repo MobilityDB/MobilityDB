@@ -41,7 +41,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_assemble_ais_full meos_assemble_ais_full.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_assemble_ais meos_assemble_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -50,34 +50,65 @@
 #include <time.h>
 #include <meos.h>
 
-/* Maximum number of instants in an input trip */
-#define MAX_INSTANTS 50000
+/* Maximum number of records read in the CSV file */
+#define MAX_NO_RECORDS 10000000
+/* Number of instants in a batch for printing a marker */
+#define NO_RECORDS_BATCH 100000
+/* Initial number of allocated instants for an input trip and SOG */
+#define INITIAL_INSTANTS 1
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
 #define MAX_LENGTH_POINT 64
 /* Maximum length in characters of a timestamp in the input data */
 #define MAX_LENGTH_TIMESTAMP 32
+/* Maximum length in characters of all other strings in the input data */
+#define MAX_LENGTH_STRING 64
 /* Maximum number of trips */
-#define MAX_TRIPS 5
+#define MAX_TRIPS 5614
 
 typedef struct
 {
   Timestamp T;
+  char *TypeOfMobile;
   long int MMSI;
   double Latitude;
   double Longitude;
+  char *navigationalStatus;
+  double ROT;
   double SOG;
+  double COG;
+  int Heading;
+  char *IMO;
+  char *Callsign;
+  char *Name;
+  char *ShipType;
+  char *CargoType;
+  double Width;
+  double Length;
+  char *TypeOfPositionFixingDevice;
+  double Draught;
+  char *Destination;
+  char *ETA;
+  char *DataSourceType;
+  double SizeA;
+  double SizeB;
+  double SizeC;
+  double SizeD;
 } AIS_record;
 
 typedef struct
 {
-  long int MMSI;   /* Identifier of the trip */
-  int numinstants; /* Number of input instants */
-  TInstant *trip_instants[MAX_INSTANTS]; /* Array of instants for the trip */
-  TInstant *SOG_instants[MAX_INSTANTS];  /* Array of instants for the SOG */
-  Temporal *trip;  /* Trip constructed from the input instants */
-  Temporal *SOG;   /* SOG constructed from the input instants */
+  long int MMSI;    /* Identifier of the trip */
+  int numinstants;  /* Number of input instants */
+  int no_trip_instants;   /* Number of input instants for the trip */
+  int free_trip_instants; /* Number of available input instants for the trip */
+  int no_SOG_instants;   /* Number of input instants for the SOG */
+  int free_SOG_instants;  /* Number of available input instants for the SOG */
+  TInstant **trip_instants; /* Array of instants for the trip */
+  TInstant **SOG_instants;  /* Array of instants for the SOG */
+  Temporal *trip;   /* Trip constructed from the input instants */
+  Temporal *SOG;    /* SOG constructed from the input instants */
 } trip_record;
 
 
@@ -96,10 +127,10 @@ int main(void)
   /* Number of ships */
   int numships = 0;
   /* Iterator variables */
-  int i, j;
+  int i, j, ship;
 
   /* Substitute the full file path in the first argument of fopen */
-  FILE *file = fopen("aisinput.csv", "r");
+  FILE *file = fopen("aisdk-2022-09-01.csv", "r");
 
   if (! file)
   {
@@ -113,29 +144,61 @@ int main(void)
   char header_buffer[MAX_LENGTH_HEADER];
   char point_buffer[MAX_LENGTH_POINT];
   char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
+  // char TypeOfMobile_buffer[MAX_LENGTH_STRING];
+  // char navigationalStatus_buffer[MAX_LENGTH_STRING];
+  // char IMO_buffer[MAX_LENGTH_STRING];
+  // char Callsign_buffer[MAX_LENGTH_STRING];
+  // char Name_buffer[MAX_LENGTH_STRING];
+  // char ShipType_buffer[MAX_LENGTH_STRING];
+  // char CargoType_buffer[MAX_LENGTH_STRING];
+  // char TypeOfPositionFixingDevice_buffer[MAX_LENGTH_STRING];
+  // char Destination_buffer[MAX_LENGTH_STRING];
+  // char ETA_buffer[MAX_LENGTH_STRING];
+  // char DataSourceType_buffer[MAX_LENGTH_STRING];
+  char string_buffer[MAX_LENGTH_STRING];
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
+  fscanf(file, "%1023[^\n]\n", header_buffer);
+  printf("Processing records (one marker every %d records)\n",
+    NO_RECORDS_BATCH);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%31[^,],%ld,%lf,%lf,%lf\n",
-      timestamp_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
+    // int read = fscanf(file,
+    fscanf(file,
+      /* T,TypeOfMobile,MMSI,Latitude,Longitude, */
+      "%31[^,],%63[^,],%ld,%lf,%lf,"
+      /* navigationalStatus,ROT,SOG,COG,Heading,IMO, */
+      "%63[^,],%lf,%lf,%lf,%d,%63[^,],"
+      /* Callsign,Name,ShipType,CargoType,Width, */
+      "%63[^,],%63[^,],%63[^,],%63[^,],%lf,"
+      /* Length, TypeOfPositionFixingDevice,Draught,Destination,ETA, */
+      "%lf,%63[^,],%lf,%63[^,],%63[^,],"
+      /* DataSourceType,SizeA,SizeB,SizeC,SizeD */
+      "%63[^,],%lf,%lf,%lf,%lf\n",
+      // timestamp_buffer, TypeOfMobile_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude,
+      // navigationalStatus_buffer, &rec.ROT, &rec.SOG, &rec.COG, &rec.Heading, IMO_buffer,
+      // Callsign_buffer, Name_buffer, ShipType_buffer, CargoType_buffer, &rec.Width,
+      // &rec.Length, TypeOfPositionFixingDevice_buffer, &rec.Draught, Destination_buffer, ETA_buffer,
+      // DataSourceType_buffer, &rec.SizeA, &rec.SizeB, &rec.SizeC, &rec.SizeD);
+      timestamp_buffer, string_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude,
+      string_buffer, &rec.ROT, &rec.SOG, &rec.COG, &rec.Heading, string_buffer,
+      string_buffer, string_buffer, string_buffer, string_buffer, &rec.Width,
+      &rec.Length, string_buffer, &rec.Draught, string_buffer, string_buffer,
+      string_buffer, &rec.SizeA, &rec.SizeB, &rec.SizeC, &rec.SizeD);
     /* Transform the string representing the timestamp into a timestamp value */
     rec.T = pg_timestamp_in(timestamp_buffer, -1);
 
-    if (read == 5)
+    no_records++;
+    /* Break if maximum number of records read */
+    if (no_records == MAX_NO_RECORDS)
+      break;
+    /* Print a marker every X records read */
+    if (no_records % NO_RECORDS_BATCH == 0)
     {
-      no_records++;
       printf("*");
       fflush(stdout);
-    }
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
     }
 
     if (ferror(file))
@@ -145,8 +208,6 @@ int main(void)
       /* Free memory */
       for (i = 0; i < numships; i++)
       {
-        free(trips[i].trip);
-        free(trips[i].SOG);
         for (j = 0; j < trips[i].numinstants; j++)
         {
           free(trips[i].trip_instants[j]);
@@ -157,9 +218,12 @@ int main(void)
     }
 
     /* Find the place to store the new instant */
-    int ship = -1;
-    for (i = 0; i < MAX_TRIPS; i++)
+    ship = -1;
+    i = 0;
+    while (i < MAX_TRIPS)
     {
+      if (trips[i].MMSI == 0)
+        break;
       if (trips[i].MMSI == rec.MMSI)
       {
         ship = i;
@@ -170,10 +234,17 @@ int main(void)
     {
       ship = numships++;
       trips[ship].MMSI = rec.MMSI;
+      /* Allocate initial space for storing the instants */
+      trips[ship].trip_instants = malloc(sizeof(TInstant *) * INITIAL_INSTANTS);
+      trips[ship].SOG_instants = malloc(sizeof(TInstant *) * INITIAL_INSTANTS);
+      trips[ship].no_trip_instants = INITIAL_INSTANTS;
+      trips[ship].free_trip_instants = INITIAL_INSTANTS;
+      trips[ship].no_SOG_instants = INITIAL_INSTANTS;
+      trips[ship].free_SOG_instants = INITIAL_INSTANTS;
     }
 
     /*
-     * Create the instant and store it in the array of the corresponding ship.
+     * Create the instants and store them in the arrays of the ship.
      * In the input file it is assumed that
      * - The coordinates are given in the WGS84 geographic coordinate system
      * - The timestamps are given in GMT time zone
@@ -182,9 +253,27 @@ int main(void)
     sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
       rec.Latitude, t_out);
     TInstant *inst1 = (TInstant *) tgeogpoint_in(point_buffer);
+    /* Ensure there is still space for storing the instant */
+    if (trips[ship].free_trip_instants == 0)
+    {
+      trips[ship].trip_instants = realloc(trips[ship].trip_instants,
+        sizeof(TInstant *) * trips[ship].no_trip_instants * 2);
+      trips[ship].free_trip_instants = trips[ship].no_trip_instants;
+      trips[ship].no_trip_instants *= 2;
+    }
     trips[ship].trip_instants[trips[ship].numinstants] = inst1;
+    trips[ship].free_trip_instants--;
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
+    /* Ensure there is still space for storing the instant */
+    if (trips[ship].free_SOG_instants == 0)
+    {
+      trips[ship].SOG_instants = realloc(trips[ship].SOG_instants,
+        sizeof(TInstant *) * trips[ship].no_SOG_instants * 2);
+      trips[ship].free_SOG_instants = trips[ship].no_SOG_instants;
+      trips[ship].no_SOG_instants *= 2;
+    }
     trips[ship].SOG_instants[trips[ship].numinstants++] = inst2;
+    trips[ship].free_SOG_instants--;
   } while (!feof(file));
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",

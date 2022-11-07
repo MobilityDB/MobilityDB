@@ -1338,7 +1338,7 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 			</inlinemediaobject>
 		</figure>
 
-<xref linkend="modif_sql_fig" /> shows the equivalent modification operations for temporal tables in the SQL standard. Intuitively, these figures are obtained by rotating 90 degrees clockwise the corresponding figures for temporal values. Notice that in SQL consecutive tuples ordered by time are typically connected through the <varname>LEAD</varname> and <varname>LAG</varname> window functions.
+<xref linkend="modif_sql_fig" /> shows the equivalent modification operations for temporal tables in the SQL standard. Intuitively, these figures are obtained by rotating 90 degrees clockwise the corresponding figures for temporal values (<xref linkend="insert_fig" />, <xref linkend="update_fig" />, and <xref linkend="deleteTime_fig" />). This follows the fact that in SQL consecutive tuples ordered by time are typically connected through the <varname>LEAD</varname> and <varname>LAG</varname> window functions.
 
 		<itemizedlist>
 			<listitem id="insert">

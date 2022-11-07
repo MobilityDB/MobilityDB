@@ -723,13 +723,15 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
 #if MEOS
   /* A while is used instead of an if to enable to break the loop if there is
    * no more available space */
-  while (expand && seq->count < seq->maxcount)
+  while (expand && count <= seq->maxcount)
   {
     /* Append the new instant if there is enough space */
     size_t size = double_pad(VARSIZE(inst));
+    /* Get the last instant to keep. It is either the last instant or the
+     * penultimate one if the last one is redundant through normalization */
     TInstant *last = (TInstant *) tsequence_inst_n(seq, count - 2);
     size_t avail_size = ((char *) seq + VARSIZE(seq)) -
-      ((char *) inst1 + double_pad(VARSIZE(inst1)));
+      ((char *) last + double_pad(VARSIZE(last)));
     if (size > avail_size)
       break;
     /* Update the offsets array and the count if not replacing the last instant */
@@ -758,11 +760,17 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     instants[k++] = tsequence_inst_n(seq, i);
   instants[k++] = inst;
   int maxcount = count;
-  if (expand && count == maxcount)
-    maxcount *= 2;
+  if (expand && count > seq->maxcount)
+  {
+    maxcount = seq->maxcount * 2;
+#ifdef DEBUG_BUILD
+    printf(" -> %d\n", maxcount);
+#endif /* DEBUG_BUILD */
+  }
   TSequence *result = tsequence_make1_exp(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO);
   pfree(instants);
+  pfree(seq);
   return (Temporal *) result;
 }
 

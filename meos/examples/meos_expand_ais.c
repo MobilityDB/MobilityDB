@@ -41,7 +41,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_assemble_ais_full meos_assemble_ais_full.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_expand_ais meos_expand_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -50,12 +50,10 @@
 #include <time.h>
 #include <meos.h>
 
-/* Maximum number of instants in an input trip */
-#define MAX_INSTANTS 50000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LENGTH_INST 64
 /* Maximum length in characters of a timestamp in the input data */
 #define MAX_LENGTH_TIMESTAMP 32
 /* Maximum number of trips */
@@ -74,12 +72,9 @@ typedef struct
 {
   long int MMSI;   /* Identifier of the trip */
   int numinstants; /* Number of input instants */
-  TInstant *trip_instants[MAX_INSTANTS]; /* Array of instants for the trip */
-  TInstant *SOG_instants[MAX_INSTANTS];  /* Array of instants for the SOG */
-  Temporal *trip;  /* Trip constructed from the input instants */
-  Temporal *SOG;   /* SOG constructed from the input instants */
+  Temporal *trip;  /* Trip constructed with expandable structures */
+  Temporal *SOG;   /* SOG constructed with expandable structures */
 } trip_record;
-
 
 /* Main program */
 int main(void)
@@ -95,11 +90,11 @@ int main(void)
   trip_record trips[MAX_TRIPS] = {0};
   /* Number of ships */
   int numships = 0;
-  /* Iterator variables */
-  int i, j;
+  /* Iterator variable */
+  int i;
 
   /* Substitute the full file path in the first argument of fopen */
-  FILE *file = fopen("aisinput.csv", "r");
+  FILE *file = fopen("aisinput_one.csv", "r"); // TO CHANGE
 
   if (! file)
   {
@@ -111,7 +106,7 @@ int main(void)
   int no_records = 0;
   int no_nulls = 0;
   char header_buffer[MAX_LENGTH_HEADER];
-  char point_buffer[MAX_LENGTH_POINT];
+  char inst_buffer[MAX_LENGTH_INST];
   char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
@@ -126,11 +121,7 @@ int main(void)
     rec.T = pg_timestamp_in(timestamp_buffer, -1);
 
     if (read == 5)
-    {
       no_records++;
-      printf("*");
-      fflush(stdout);
-    }
 
     if (read != 5 && !feof(file))
     {
@@ -145,13 +136,8 @@ int main(void)
       /* Free memory */
       for (i = 0; i < numships; i++)
       {
-        free(trips[i].trip);
+        // free(trips[i].trip);
         free(trips[i].SOG);
-        for (j = 0; j < trips[i].numinstants; j++)
-        {
-          free(trips[i].trip_instants[j]);
-          free(trips[i].SOG_instants[j]);
-        }
       }
       return 1;
     }
@@ -171,53 +157,53 @@ int main(void)
       ship = numships++;
       trips[ship].MMSI = rec.MMSI;
     }
+    trips[ship].numinstants++;
 
     /*
-     * Create the instant and store it in the array of the corresponding ship.
+     * Create the instants and append them in the corresponding ship record.
      * In the input file it is assumed that
      * - The coordinates are given in the WGS84 geographic coordinate system
      * - The timestamps are given in GMT time zone
      */
     char *t_out = pg_timestamp_out(rec.T);
-    sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
+    sprintf(inst_buffer, "SRID=4326;Point(%lf %lf)@%s", rec.Longitude,
       rec.Latitude, t_out);
-    TInstant *inst1 = (TInstant *) tgeogpoint_in(point_buffer);
-    trips[ship].trip_instants[trips[ship].numinstants] = inst1;
+    // TInstant *inst1 = (TInstant *) tgeogpoint_in(inst_buffer);
+    // if (! trips[ship].trip)
+      // trips[ship].trip = (Temporal *) tsequence_make_exp(
+        // (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
+    // else
+      // trips[ship].trip = temporal_append_tinstant(trips[ship].trip, inst1, true);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
-    trips[ship].SOG_instants[trips[ship].numinstants++] = inst2;
+    if (! trips[ship].SOG)
+      trips[ship].SOG = (Temporal *) tsequence_make_exp(
+        (const TInstant **) &inst2, 1, 2, true, true, LINEAR, false);
+    else
+      trips[ship].SOG = temporal_append_tinstant(trips[ship].SOG, inst2, true);
+    // free(inst1);
+    free(inst2);
   } while (!feof(file));
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
   printf("%d trips read.\n", numships);
 
-  /* Construct the trips */
+  /* Print information about the trips */
   for (i = 0; i < numships; i++)
   {
-    trips[i].trip = (Temporal *) tsequence_make(
-      (const TInstant **) trips[i].trip_instants,
-      trips[i].numinstants, true, true, LINEAR, true);
-    trips[i].SOG = (Temporal *) tsequence_make(
-      (const TInstant **) trips[i].SOG_instants,
-      trips[i].numinstants, true, true, LINEAR, true);
     printf("MMSI: %ld, Number of input instants: %d\n", trips[i].MMSI,
       trips[i].numinstants);
-    printf("  Trip -> Number of instants: %d, Distance travelled %lf\n",
-      temporal_num_instants(trips[i].trip), tpoint_length(trips[i].trip));
+    // printf("  Trip -> Number of instants: %d, Distance travelled %lf\n",
+      // temporal_num_instants(trips[i].trip), tpoint_length(trips[i].trip));
     printf("  SOG -> Number of instants: %d, Time-weighted average %lf\n",
       temporal_num_instants(trips[i].SOG), tnumber_twavg(trips[i].SOG));
   }
 
- /* Free memory */
+  /* Free memory */
   for (i = 0; i < numships; i++)
   {
-    free(trips[i].trip);
+    // free(trips[i].trip);
     free(trips[i].SOG);
-    for (j = 0; j < trips[i].numinstants; j++)
-    {
-      free(trips[i].trip_instants[j]);
-      free(trips[i].SOG_instants[j]);
-    }
   }
 
   /* Close the file */
