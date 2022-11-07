@@ -770,7 +770,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   TSequence *result = tsequence_make1_exp(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO);
   pfree(instants);
+#if MEOS
   pfree(seq);
+#endif /* MEOS */
   return (Temporal *) result;
 }
 
