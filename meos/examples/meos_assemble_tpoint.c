@@ -32,8 +32,8 @@
  * instants, assemble the instants into a sequence at the end of the generation
  * process, and outputs the number of instants and the distance travelled.
  *
- * Notice that the instants are generated so the instants are not redundant,
- * that is, all input instants will appear in the final sequence.
+ * Notice that the instants are generated so they are not redundant, that is,
+ * all input instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
@@ -47,7 +47,7 @@
 #include <meos.h>
 
 /* Maximum number of instants */
-#define MAX_INSTANTS 1000000
+#define MAX_INSTANTS 10000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 

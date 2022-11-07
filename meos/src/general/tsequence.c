@@ -395,7 +395,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   int totalcount;
   if (count != maxcount)
   {
-    insts_size *= maxcount / count;
+    insts_size *= (double) maxcount / count;
     totalcount = maxcount;
   }
   else
@@ -633,7 +633,9 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
  * @param[in] inst Temporal instant
  * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstant()
- * @note It is the responsibility of the calling function to free the memory
+ * @note It is the responsibility of the calling function to free the memory,
+ * that is, delete the old value of seq when it is expanded or when the
+ * result is a sequence set.
  */
 Temporal *
 tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
@@ -764,9 +766,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   if (expand && count > seq->maxcount)
   {
     maxcount = seq->maxcount * 2;
-// #ifdef DEBUG_BUILD
-    // printf(" -> %d\n", maxcount);
-// #endif /* DEBUG_BUILD */
+#ifdef DEBUG_BUILD
+    printf(" -> %d\n", maxcount);
+#endif /* DEBUG_BUILD */
   }
   TSequence *result = tsequence_make1_exp(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO);

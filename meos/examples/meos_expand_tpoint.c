@@ -56,7 +56,7 @@
  */
 #define EXPAND true
 /* Maximum number of instants */
-#define MAX_INSTANTS 100000
+#define MAX_INSTANTS 10000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 

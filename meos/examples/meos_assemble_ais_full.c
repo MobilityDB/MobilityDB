@@ -51,6 +51,7 @@
 #include <meos.h>
 
 /* Maximum number of records read in the CSV file
+ * IMPORTANT !!!
  * Please fix this value according to the available memory in your computer */
 #define MAX_NO_RECORDS 10000000
 /* Number of instants in a batch for printing a marker */
