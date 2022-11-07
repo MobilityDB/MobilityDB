@@ -28,16 +28,12 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that reads AIS data from a CSV file, constructs
- * trips from these records, and outputs for each trip the MMSI, the number of
- * instants, and the distance travelled.
+ * @brief A simple program that generates a given number of arbitrary tgeompoint
+ * instants, assemble the instants into a sequence at the end of the generation
+ * process, and outputs the number of instants and the distance travelled.
  *
- * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `meos_read_ais.c` in the same directory. Furthermore, this program
- * assumes the input file contains less than 50K observations for at most
- * five ships. Also, the program does not cope with erroneous inputs, such as
- * two or more observations for the same ship with equal timestamp values and
- * supposes that the observations are in increasing timestamp value.
+ * Notice that the instants are generated so the instants are not redundant,
+ * that is, all input instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
