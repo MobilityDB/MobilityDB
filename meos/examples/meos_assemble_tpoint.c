@@ -41,7 +41,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_expand_tpoint meos_expand_tpoint.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_assemble_tpoint meos_assemble_tpoint.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -50,13 +50,8 @@
 #include <time.h>
 #include <meos.h>
 
-/* Define the approach for processing the input instants. Possible values are
- * - false => static: produce a new sequence value after adding every instant
- * - true => expand: use expandable structures
- */
-#define EXPAND true
 /* Maximum number of instants */
-#define MAX_INSTANTS 100000
+#define MAX_INSTANTS 1000000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 
@@ -72,6 +67,8 @@ int main(void)
 
   /* Buffer for creating input string */
   char inst_buffer[MAX_LENGTH_INST];
+  /* Input instants that are accumulated */
+  TInstant *instants[MAX_INSTANTS] = {0};
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -86,19 +83,11 @@ int main(void)
     char *time_str = pg_timestamptz_out(t);
     sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", i % 2 + 1, i % 2 + 1,
       time_str);
-    TInstant *inst = (TInstant *) tgeogpoint_in(inst_buffer);
-    if (! seq)
-      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
-        EXPAND ? 2 : 1, true, true, LINEAR, false);
-    else
-    {
-      Temporal *oldseq = seq;
-      seq = temporal_append_tinstant((Temporal *) seq, inst, EXPAND);
-      if (oldseq != seq)
-        free(oldseq);
-    }
-    free(inst);
+    instants[i] = (TInstant *) tgeogpoint_in(inst_buffer);
   }
+
+  seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
+    true, true, LINEAR, true);
 
   /* Print information about the sequence */
   printf("Number of instants: %d, Distance : %lf\n",
@@ -106,12 +95,14 @@ int main(void)
 
   /* Free memory */
   free(seq);
+  for (i = 0; i < MAX_INSTANTS; i++)
+    free(instants[i]);
 
   /* Calculate the elapsed time */
   time = clock() - time;
   double time_taken = ((double) time) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
-  printf("Using %s structures\n", EXPAND ? "expandable" : "static");
+  printf("Accumulating the instants and constructing the sequence at the end\n");
 
   /* Finalize MEOS */
   meos_finish();
