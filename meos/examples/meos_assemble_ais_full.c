@@ -50,7 +50,8 @@
 #include <time.h>
 #include <meos.h>
 
-/* Maximum number of records read in the CSV file */
+/* Maximum number of records read in the CSV file
+ * Please fix this value according to the available memory in your computer */
 #define MAX_NO_RECORDS 10000000
 /* Number of instants in a batch for printing a marker */
 #define NO_RECORDS_BATCH 100000
@@ -144,17 +145,6 @@ int main(void)
   char header_buffer[MAX_LENGTH_HEADER];
   char point_buffer[MAX_LENGTH_POINT];
   char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
-  // char TypeOfMobile_buffer[MAX_LENGTH_STRING];
-  // char navigationalStatus_buffer[MAX_LENGTH_STRING];
-  // char IMO_buffer[MAX_LENGTH_STRING];
-  // char Callsign_buffer[MAX_LENGTH_STRING];
-  // char Name_buffer[MAX_LENGTH_STRING];
-  // char ShipType_buffer[MAX_LENGTH_STRING];
-  // char CargoType_buffer[MAX_LENGTH_STRING];
-  // char TypeOfPositionFixingDevice_buffer[MAX_LENGTH_STRING];
-  // char Destination_buffer[MAX_LENGTH_STRING];
-  // char ETA_buffer[MAX_LENGTH_STRING];
-  // char DataSourceType_buffer[MAX_LENGTH_STRING];
   char string_buffer[MAX_LENGTH_STRING];
 
   /* Read the first line of the file with the headers */
@@ -177,11 +167,6 @@ int main(void)
       "%lf,%63[^,],%lf,%63[^,],%63[^,],"
       /* DataSourceType,SizeA,SizeB,SizeC,SizeD */
       "%63[^,],%lf,%lf,%lf,%lf\n",
-      // timestamp_buffer, TypeOfMobile_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude,
-      // navigationalStatus_buffer, &rec.ROT, &rec.SOG, &rec.COG, &rec.Heading, IMO_buffer,
-      // Callsign_buffer, Name_buffer, ShipType_buffer, CargoType_buffer, &rec.Width,
-      // &rec.Length, TypeOfPositionFixingDevice_buffer, &rec.Draught, Destination_buffer, ETA_buffer,
-      // DataSourceType_buffer, &rec.SizeA, &rec.SizeB, &rec.SizeC, &rec.SizeD);
       timestamp_buffer, string_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude,
       string_buffer, &rec.ROT, &rec.SOG, &rec.COG, &rec.Heading, string_buffer,
       string_buffer, string_buffer, string_buffer, string_buffer, &rec.Width,

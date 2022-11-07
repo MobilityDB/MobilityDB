@@ -47,6 +47,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <meos.h>
 
 /* Maximum number of instants */
@@ -59,6 +60,10 @@ int main(void)
 {
   /* Initialize MEOS */
   meos_initialize(NULL);
+
+  /* Get start time */
+  clock_t time;
+  time = clock();
 
   /* Buffer for creating input string */
   char inst_buffer[MAX_LENGTH_INST];
@@ -93,6 +98,11 @@ int main(void)
   /* Free memory */
   free(seq);
   free(seq_str);
+
+  /* Calculate the elapsed time */
+  time = clock() - time;
+  double time_taken = ((double) time) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
 
   /* Finalize MEOS */
   meos_finish();
