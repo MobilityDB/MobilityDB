@@ -28,12 +28,12 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that generates a given number of arbitrary tgeompoint
- * instants, assemble the instants into a sequence at the end of the generation
- * process, and outputs the number of instants and the distance travelled.
+ * @brief A simple program that generates a given number of tgeompoint instants,
+ * assembles the instants into a sequence at the end of the generation process,
+ * and outputs the number of instants and the distance travelled.
  *
- * Notice that the instants are generated so they are not redundant, that is,
- * all input instants will appear in the final sequence.
+ * The instants are generated so they are not redundant, that is, all input
+ * instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
