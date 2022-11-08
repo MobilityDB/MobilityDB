@@ -48,17 +48,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include <meos.h>
 
 /* Define the approach for processing the input instants. Possible values are
  * - false => static: produce a new sequence value after adding every instant
  * - true => expand: use expandable structures
  */
-#define EXPAND false
+#define EXPAND true
 /* Maximum number of instants */
-#define MAX_INSTANTS 1000000
+#define MAX_INSTANTS 100000
+/* Number of instants in a batch for printing a marker */
+#define NO_INSTANTS_BATCH 1000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
+/* Maximum length in characters of the text values in the instants */
+#define MAX_LENGTH_TEXT 20
 
 /* Main program */
 int main(void)
@@ -70,8 +75,6 @@ int main(void)
   clock_t tm;
   tm = clock();
 
-  /* Buffer for creating input string */
-  char inst_buffer[MAX_LENGTH_INST];
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -81,14 +84,24 @@ int main(void)
   /* Seed the random number generator with the current time in seconds. */
   srandom (time (0));
 
+#if EXPAND == false
+  printf("Generating the instants (one marker every %d instants)\n",
+    NO_INSTANTS_BATCH);
+#endif
+
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
+    /* Generate the instant */
+    /* Use a random generator to set the length of the text value */
+    int len = random() % MAX_LENGTH_TEXT + 1;
+    char *value = malloc(sizeof(char) * (len + 2));
+    memset(value, i % 2 == 0 ? 'A' : 'B', len);
+    value[len] = '\0';
+    text *txt = cstring2text(value);
     t = pg_timestamp_pl_interval(t, oneday);
-    char *time_str = pg_timestamptz_out(t);
-    /* We use a random generator to ensure that every instant is different */
-    sprintf(inst_buffer, "%ld@%s", random(), time_str);
-    TInstant *inst = (TInstant *) ttext_in(inst_buffer);
+    TInstant *inst = ttextinst_make(txt, t);
+    free(value); free(txt);
     if (! seq)
       seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
         EXPAND ? 2 : 1, true, true, STEPWISE, false);
@@ -100,12 +113,24 @@ int main(void)
         free(oldseq);
     }
     free(inst);
+
+#if EXPAND == false
+    /* Print a marker every X instants generated */
+    if (i % NO_INSTANTS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
+#endif
   }
 
   /* Print information about the sequence */
+  // Uncomment the next line to see the resulting sequence value
+  // printf("%s\n", ttext_out(seq));
   char *str = text2cstring(ttext_end_value(seq));
-  printf("Number of instants: %d, Last value : %s\n",
+  printf("\nNumber of instants: %d, Last value : %s\n",
     temporal_num_instants(seq), str);
+
   /* Free memory */
   free(seq);
   free(str);
