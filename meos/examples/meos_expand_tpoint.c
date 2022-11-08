@@ -28,14 +28,15 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that generates a given number of tgeogpoint instants,
+ * @brief A simple program that generates a given number of tpoint instants,
  * appends the instant into a sequence at each generation, and outputs the
  * number of instants and the distance travelled at the end.
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. A compiler option allows to
+ * instants will appear in the final sequence. A compiler option allows one to
  * either use expandable structures or to create a new sequence at every new
- * instant generated.
+ * instant generated. Another compiler option allows one to either use
+ * geodetic or geometric points.
  *
  * The program can be build as follows
  * @code
@@ -48,11 +49,18 @@
 #include <time.h>
 #include <meos.h>
 
-/* Define the approach for processing the input instants. Possible values are
+/*
+ * Define the approach for processing the input instants. Possible values are
  * - false => static: produce a new sequence value after adding every instant
  * - true => expand: use expandable structures
  */
 #define EXPAND true
+/*
+ * Define whether geometric or geodetic points are used. Possible values are
+ * - false => use geometric points
+ * - true => use geodetic points
+ */
+#define GEODETIC false
 /* Maximum number of instants */
 #define MAX_INSTANTS 10000
 /* Maximum length in characters of the input instant */
@@ -82,9 +90,14 @@ int main(void)
   {
     t = pg_timestamp_pl_interval(t, oneday);
     char *time_str = pg_timestamptz_out(t);
-    sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", i % 2 + 1, i % 2 + 1,
-      time_str);
+    int value = i % 2 + 1;
+#if GEODETIC == true
+    sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", value, value, time_str);
     TInstant *inst = (TInstant *) tgeogpoint_in(inst_buffer);
+#else
+    sprintf(inst_buffer, "Point(%d %d)@%s", value, value, time_str);
+    TInstant *inst = (TInstant *) tgeompoint_in(inst_buffer);
+#endif
     if (! seq)
       seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
         EXPAND ? 2 : 1, true, true, LINEAR, false);
@@ -110,6 +123,7 @@ int main(void)
   double time_taken = ((double) time) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
   printf("Using %s structures\n", EXPAND ? "expandable" : "static");
+  printf("Using %s points\n", GEODETIC ? "geodetic" : "geometric");
 
   /* Finalize MEOS */
   meos_finish();

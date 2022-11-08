@@ -55,7 +55,7 @@
  */
 #define EXPAND true
 /* Maximum number of instants */
-#define MAX_INSTANTS 100000
+#define MAX_INSTANTS 10000
 /* Number of instants in a batch for printing a marker */
 #define NO_INSTANTS_BATCH 1000
 /* Maximum length in characters of the input instant */
