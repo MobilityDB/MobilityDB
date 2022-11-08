@@ -843,6 +843,11 @@ extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
  * Functions for temporal types
  *****************************************************************************/
 
+/* Utility functions for temporal types */
+
+extern text *cstring2text(const char *cstring);
+extern char *text2cstring(const text *textptr);
+
 /* Input/output functions for temporal types */
 
 extern Temporal *tbool_in(const char *str);
