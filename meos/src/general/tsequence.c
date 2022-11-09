@@ -747,10 +747,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     /* There is enough space to add the new instant */
     last = (TInstant *) tsequence_inst_n(seq, count - 1);
     memcpy(last, inst, size);
-    /* Recompute the bounding box and return */
-    TBOX box;
-    tsequence_compute_bbox(seq, &box);
-    tsequence_set_bbox(seq, &box);
+    /* Expand the bounding box and return */
+    tsequence_expand_bbox(seq, inst);
     return (Temporal *) seq;
   }
 #endif /* MEOS */

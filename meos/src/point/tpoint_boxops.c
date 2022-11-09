@@ -100,24 +100,51 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
 
 #if MEOS
 /**
- * Set the spatiotemporal box from a temporal sequence point
+ * Expand the bounding box of a temporal geometric point sequence with an instant
  *
  * @param[in] seq Temporal sequence
- * @param[out] box Spatiotemporal box
- * @note Temporal instant values do not have a precomputed bounding box
+ * @param[in] inst Temporal instant
  */
 void
-tgeompointseq_set_stbox(const TSequence *seq, STBOX *box)
+tgeompointseq_expand_stbox(TSequence *seq, const TInstant *inst)
 {
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  tpointinst_set_stbox(inst, box);
-  for (int i = 1; i < seq->count; i++)
-  {
-    STBOX box1;
-    inst = tsequence_inst_n(seq, i);
-    tpointinst_set_stbox(inst, &box1);
-    stbox_expand(&box1, box);
-  }
+  STBOX box;
+  tpointinst_set_stbox(inst, &box);
+  stbox_expand(&box, (STBOX *) TSEQUENCE_BBOX_PTR(seq));
+  return;
+}
+
+/**
+ * Expand the bounding box of a temporal geographic point sequence with an instant
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] inst Temporal instant
+ */
+void
+tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
+{
+  /* Compute the bounding box of the end point of the sequence and the instant */
+  POINT3D A1, A2;
+  GBOX edge_gbox;
+  gbox_init(&edge_gbox);
+  FLAGS_SET_Z(edge_gbox.flags, 1);
+  FLAGS_SET_M(edge_gbox.flags, 0);
+  FLAGS_SET_GEODETIC(edge_gbox.flags, 1);
+  const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
+  const POINT2D *p1 = datum_point2d_p(tinstant_value(last));
+  const POINT2D *p2 = datum_point2d_p(tinstant_value(inst));
+  ll2cart(p1, &A1);
+  ll2cart(p2, &A2);
+  edge_calculate_gbox(&A1, &A2, &edge_gbox);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  int32 srid = tpointseq_srid(seq);
+  Period period;
+  span_set(last->t, inst->t, true, true, T_TIMESTAMPTZ, &period);
+  STBOX box;
+  stbox_set(&period, true, hasz, true, srid, edge_gbox.xmin, edge_gbox.xmax,
+    edge_gbox.ymin, edge_gbox.ymax, edge_gbox.zmin, edge_gbox.zmax, &box);
+  /* Expand the bounding box of the sequence with the last edge */
+  stbox_expand(&box, (STBOX *) TSEQUENCE_BBOX_PTR(seq));
   return;
 }
 #endif /* MEOS */

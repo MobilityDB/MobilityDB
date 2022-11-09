@@ -60,9 +60,9 @@
  * - false => use geometric points
  * - true => use geodetic points
  */
-#define GEODETIC false
+#define GEODETIC true
 /* Maximum number of instants */
-#define MAX_INSTANTS 10000
+#define MAX_INSTANTS 1000000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 

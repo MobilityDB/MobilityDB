@@ -165,24 +165,41 @@ tnpointinstarr_set_stbox(const TInstant **instants, int count,
 
 #if MEOS
 /**
- * Set the spatiotemporal box from the temporal network point sequence.
+ * Expand the temporal box of a temporal network point sequence with an instant
  *
  * @param[in] seq Temporal sequence
- * @param[out] box Spatiotemporal box
+ * @param[in] inst Temporal instant
  */
- // TODO Direct implementation without creating the instants array
 void
-tnpointseq_set_stbox(const TSequence *seq, STBOX *box)
+tnpointseq_expand_bbox(const TSequence *seq, const TInstant *inst)
 {
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count - 1; i++)
-    instants[i] = tsequence_inst_n(seq, i);
+  /* Compute the bounding box of the end point of the sequence and the instant */
+  STBOX box;
   if (interp == LINEAR)
-    tnpointinstarr_linear_set_stbox(instants, seq->count, box);
+  {
+    const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
+    Npoint *np1 = DatumGetNpointP(tinstant_value(last));
+    Npoint *np2 = DatumGetNpointP(tinstant_value(inst));
+    int64 rid = np1->rid;
+    double posmin = Min(np1->pos, np2->pos);
+    double posmax = Min(np1->pos, np2->pos);
+    GSERIALIZED *line = route_geom(rid);
+    GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
+      gserialized_line_substring(line, posmin, posmax);
+    geo_set_stbox(gs, box);
+    span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
+      true, true, T_TIMESTAMPTZ, &box->period);
+    MOBDB_FLAGS_SET_T(box->flags, true);
+    pfree(DatumGetPointer(line));
+    if (posmin != 0 || posmax != 1)
+      pfree(gs);
+  }
   else
-    tnpointinstarr_step_set_stbox(instants, seq->count, box);
-  pfree(instants);
+  {
+    tnpointinst_set_stbox(inst, &box);
+  }
+  /* Expand the bounding box of the sequence with the last edge */
+  stbox_expand(&box, (STBOX *) TSEQUENCE_BBOX_PTR(seq));
   return;
 }
 #endif /* MEOS */

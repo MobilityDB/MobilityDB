@@ -283,29 +283,6 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBOX *box)
   return;
 }
 
-#if MEOS
-/**
- * Set a temporal box from a temporal number sequence
- *
- * @param[in] seq Temporal sequence
- * @param[in] box Box
- */
-static void
-tnumberseq_set_tbox(const TSequence *seq, TBOX *box)
-{
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  tinstant_set_bbox(inst, box);
-  for (int i = 1; i < seq->count; i++)
-  {
-    TBOX box1;
-    inst = tsequence_inst_n(seq, i);
-    tinstant_set_bbox(inst, &box1);
-    tbox_expand(&box1, box);
-  }
-  return;
-}
-#endif /* MEOS */
-
 /**
  * Set a bounding box from an array of temporal instant values
  *
@@ -352,38 +329,49 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 
 #if MEOS
 /**
- * Set a bounding box from an array of temporal instant values
+ * Expand the bounding box of a temporal number sequence with an instant
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] inst Temporal instant
+ */
+static void
+tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
+{
+  TBOX box;
+  tinstant_set_bbox(inst, &box);
+  tbox_expand(&box, (TBOX *) TSEQUENCE_BBOX_PTR(seq));
+  return;
+}
+
+/**
+ * Expand the bounding box of a temporal sequence with an additional instant
  *
  * @param[in] seq Temporal sequence
  * @param[out] box Bounding box
  */
 void
-tsequence_compute_bbox(const TSequence *seq, void *box)
+tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(seq->temptype);
   if (talpha_type(seq->temptype))
     span_set(TimestampTzGetDatum(tsequence_inst_n(seq, 0)->t),
       TimestampTzGetDatum(tsequence_inst_n(seq, seq->count - 1)->t),
-      seq->period.lower_inc, seq->period.upper_inc, T_TIMESTAMPTZ, (Span *) box);
+      seq->period.lower_inc, true, T_TIMESTAMPTZ,
+      (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
-    tnumberseq_set_tbox(seq, (TBOX *) box);
+    tnumberseq_expand_tbox(seq, inst);
   else if (seq->temptype == T_TGEOMPOINT)
-    tgeompointseq_set_stbox(seq, (STBOX *) box);
+    tgeompointseq_expand_stbox(seq, inst);
   else if (seq->temptype == T_TGEOGPOINT)
-    tgeogpointseq_set_stbox(seq, (STBOX *) box);
+    tgeogpointseq_expand_stbox(seq, inst);
 #if NPOINT
   else if (seq->temptype == T_TNPOINT)
-    tnpointseq_set_stbox(seq, (STBOX *) box);
+    tnpointseq_expand_stbox(seq, (STBOX *) TSEQUENCE_BBOX_PTR(seq));
 #endif
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       seq->temptype);
-  /* Set the lower_inc and upper_inc bounds of the period at the beginning
-   * of the bounding box */
-  Period *p = (Period *) box;
-  p->lower_inc = seq->period.lower_inc;
-  p->upper_inc = seq->period.upper_inc;
   return;
 }
 #endif /* MEOS */

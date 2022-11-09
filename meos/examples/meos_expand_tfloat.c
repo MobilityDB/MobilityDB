@@ -47,12 +47,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <meos.h>
 
 /* Maximum number of instants */
-#define MAX_INSTANTS 1000
-/* Maximum length in characters of the input instant */
-#define MAX_LENGTH_INST 64
+#define MAX_INSTANTS 1000000
 
 /* Main program */
 int main(void)
@@ -60,8 +59,10 @@ int main(void)
   /* Initialize MEOS */
   meos_initialize(NULL);
 
-  /* Buffer for creating input string */
-  char inst_buffer[MAX_LENGTH_INST];
+  /* Get start time */
+  clock_t tm;
+  tm = clock();
+
   /* Expandable sequence */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -73,9 +74,7 @@ int main(void)
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     t = pg_timestamp_pl_interval(t, oneday);
-    char *time_str = pg_timestamptz_out(t);
-    sprintf(inst_buffer, "%d@%s", i % 2 + 1, time_str);
-    TInstant *inst = (TInstant *) tfloat_in(inst_buffer);
+    TInstant *inst = tfloatinst_make(i % 2 + 1, t);;
     if (! seq)
       seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1, 2,
         true, true, LINEAR, false);
@@ -86,13 +85,17 @@ int main(void)
   }
 
   /* Print information about the sequence */
-  char *seq_str = tfloat_out(seq, 0);
-  printf("Sequence: %s\nNumber of instants: %d, Twag : %lf\n",
-    seq_str, temporal_num_instants(seq), tnumber_twavg(seq));
+  printf("Number of instants: %d, Time-weighted average: %lf\n",
+    temporal_num_instants(seq), tnumber_twavg(seq));
+
+  /* Calculate the elapsed time */
+  tm = clock() - tm;
+  double time_taken = ((double) tm) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
+  printf("Accumulating the instants and constructing the sequence at the end\n");
 
   /* Free memory */
   free(seq);
-  free(seq_str);
 
   /* Finalize MEOS */
   meos_finish();

@@ -46,8 +46,14 @@
 #include <time.h>
 #include <meos.h>
 
+/*
+ * Define whether geometric or geodetic points are used. Possible values are
+ * - false => use geometric points
+ * - true => use geodetic points
+ */
+#define GEODETIC true
 /* Maximum number of instants */
-#define MAX_INSTANTS 10000
+#define MAX_INSTANTS 1000000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 
@@ -77,9 +83,14 @@ int main(void)
   {
     t = pg_timestamp_pl_interval(t, oneday);
     char *time_str = pg_timestamptz_out(t);
-    sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", i % 2 + 1, i % 2 + 1,
-      time_str);
+    int value = i % 2 + 1;
+#if GEODETIC == true
+    sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", value, value, time_str);
     instants[i] = (TInstant *) tgeogpoint_in(inst_buffer);
+#else
+    sprintf(inst_buffer, "Point(%d %d)@%s", value, value, time_str);
+    instants[i] = (TInstant *) tgeompoint_in(inst_buffer);
+#endif
   }
 
   seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,

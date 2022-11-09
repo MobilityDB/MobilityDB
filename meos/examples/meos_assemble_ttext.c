@@ -39,7 +39,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_expand_ttext meos_expand_ttext.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_assemble_ttext meos_assemble_ttext.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -49,12 +49,6 @@
 #include <string.h>
 #include <meos.h>
 
-/* Define the approach for processing the input instants. Possible values are
- * - false => static: produce a new sequence value after adding every instant
- * - true => expand: use expandable structures
- */
-#define EXPAND true
-/* Maximum number of instants */
 #define MAX_INSTANTS 1000000
 /* Number of instants in a batch for printing a marker */
 #define NO_INSTANTS_BATCH 1000
@@ -73,6 +67,8 @@ int main(void)
   clock_t tm;
   tm = clock();
 
+  /* Input instants that are accumulated */
+  TInstant *instants[MAX_INSTANTS] = {0};
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -81,11 +77,6 @@ int main(void)
   int i;
   /* Seed the random number generator with the current time in seconds. */
   srandom (time (0));
-
-#if EXPAND == false
-  printf("Generating the instants (one marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
-#endif
 
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
@@ -98,29 +89,12 @@ int main(void)
     value[len] = '\0';
     text *txt = cstring2text(value);
     t = pg_timestamp_pl_interval(t, oneday);
-    TInstant *inst = ttextinst_make(txt, t);
+    instants[i] = ttextinst_make(txt, t);
     free(value); free(txt);
-    if (! seq)
-      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
-        EXPAND ? 2 : 1, true, true, STEPWISE, false);
-    else
-    {
-      Temporal *oldseq = seq;
-      seq = temporal_append_tinstant((Temporal *) seq, inst, EXPAND);
-      if (oldseq != seq)
-        free(oldseq);
-    }
-    free(inst);
-
-#if EXPAND == false
-    /* Print a marker every X instants generated */
-    if (i % NO_INSTANTS_BATCH == 0)
-    {
-      printf("*");
-      fflush(stdout);
-    }
-#endif
   }
+
+  seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
+    true, true, STEPWISE, true);
 
   /* Print information about the sequence */
   // Uncomment the next line to see the resulting sequence value
@@ -137,7 +111,7 @@ int main(void)
   tm = clock() - tm;
   double time_taken = ((double) tm) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
-  printf("Using %s structures\n", EXPAND ? "expandable" : "static");
+  printf("Accumulating the instants and constructing the sequence at the end\n");
 
   /* Finalize MEOS */
   meos_finish();

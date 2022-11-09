@@ -341,6 +341,7 @@ extern TSequence **tsequence_segments(const TSequence *seq, int *count);
 extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
 extern TSequence **tsequence_sequences(const TSequence *seq, int *count);
 extern void tsequence_set_bbox(const TSequence *seq, void *box);
+extern void tsequence_expand_bbox(TSequence *seq, const TInstant *inst);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern PeriodSet *tsequence_time(const TSequence *seq);
 extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
