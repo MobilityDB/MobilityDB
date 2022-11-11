@@ -88,6 +88,24 @@ extern Datum float8_numeric(PG_FUNCTION_ARGS);
 #define RTOverBackStrategyNumber      35    /* for /&> */
 
 /*****************************************************************************
+ * Struct definitions for the unnest operation
+ *****************************************************************************/
+
+/**
+ * Structure to represent information about an entry that can be placed
+ * to either group without affecting overlap over selected axis ("common entry").
+ */
+typedef struct
+{
+  bool done;
+  int i;
+  int count;
+  mobdbType basetype;    /* Base type of the temporal value */
+  const Temporal *temp;  /* Temporal value to unnest */
+  Datum *values;         /* Values obtained by getValues(temp) */
+} UnnestState;
+
+/*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL
  *****************************************************************************/
 

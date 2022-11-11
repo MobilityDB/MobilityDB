@@ -809,6 +809,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="integral"><varname>integral</varname></link>: Get the area under the curve</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Get the time-weighted average</para>
 				</listitem>
 			</itemizedlist>
@@ -836,6 +840,10 @@
 
 				<listitem>
 					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value.</para>
 				</listitem>
 
 			</itemizedlist>

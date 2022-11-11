@@ -868,7 +868,15 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="unnest"><varname>unnest</varname></link>: Transformar un valor temporal no lineal en un conjunto de filas, cada una compuesta de un valor base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base.</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: ¿Se cruza el valor temporal con el valor de tiempo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="integral"><varname>integral</varname></link>: Obtener el área bajo la curva</para>
 				</listitem>
 
 				<listitem>

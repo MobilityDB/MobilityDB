@@ -583,6 +583,28 @@ CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Unnest Function
+ *****************************************************************************/
+
+CREATE TYPE geom_periodset AS (
+  value geometry,
+  time periodset
+);
+CREATE TYPE geog_periodset AS (
+  value geography,
+  time periodset
+);
+
+CREATE FUNCTION unnest(tgeompoint)
+  RETURNS SETOF geom_periodset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(tgeogpoint)
+  RETURNS SETOF geog_periodset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Index Support Function
  *****************************************************************************/
 

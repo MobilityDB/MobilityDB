@@ -107,18 +107,16 @@ ensure_tinstarr(const TInstant **instants, int count)
   return;
 }
 
-#if 0 /* Not used */
 /**
- * Ensure that a temporal value has linear interpolation
+ * Ensure that a temporal value does not have linear interpolation
  */
 void
-ensure_linear_interpolation(int16 flags)
+ensure_nonlinear_interpolation(int16 flags)
 {
-  if (! MOBDB_FLAGS_GET_LINEAR(flags))
-    elog(ERROR, "The temporal value must have linear interpolation");
+  if (MOBDB_FLAGS_GET_LINEAR(flags))
+    elog(ERROR, "The temporal value cannot have linear interpolation");
   return;
 }
-#endif /* Not used */
 
 /**
  * Ensure that two temporal values have at least one common dimension based on

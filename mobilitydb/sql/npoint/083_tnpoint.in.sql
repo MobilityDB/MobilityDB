@@ -407,6 +407,20 @@ CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Unnest Function
+ *****************************************************************************/
+
+CREATE TYPE npoint_periodset AS (
+  value npoint,
+  time periodset
+);
+
+CREATE FUNCTION unnest(tnpoint)
+  RETURNS SETOF npoint_periodset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Index Support Functions
  *****************************************************************************/
 

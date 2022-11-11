@@ -441,7 +441,7 @@ extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
 extern void ensure_continuous(const Temporal *temp);
 extern void ensure_tinstarr(const TInstant **instants, int count);
-extern void ensure_linear_interpolation(int16 flags);
+extern void ensure_nonlinear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);

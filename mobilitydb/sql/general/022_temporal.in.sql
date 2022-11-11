@@ -937,6 +937,36 @@ CREATE FUNCTION timestamps(ttext)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Unnest Function
+ *****************************************************************************/
+
+CREATE TYPE int_periodset AS (
+  value integer,
+  time periodset
+);
+CREATE TYPE float_periodset AS (
+  value float,
+  time periodset
+);
+CREATE TYPE text_periodset AS (
+  value text,
+  time periodset
+);
+
+CREATE FUNCTION unnest(tint)
+  RETURNS SETOF int_periodset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(tfloat)
+  RETURNS SETOF float_periodset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(ttext)
+  RETURNS SETOF text_periodset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Index Support Functions
  *****************************************************************************/
 
