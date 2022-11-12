@@ -100,9 +100,8 @@ typedef struct
   bool done;
   int i;
   int count;
-  mobdbType basetype;    /* Base type of the temporal value */
-  const Temporal *temp;  /* Temporal value to unnest */
-  Datum *values;         /* Values obtained by getValues(temp) */
+  Temporal *temp;  /* Temporal value to unnest */
+  Datum *values;   /* Values obtained by getValues(temp) */
 } UnnestState;
 
 /*****************************************************************************

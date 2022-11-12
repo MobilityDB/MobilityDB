@@ -1349,8 +1349,7 @@ temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
   state->i = 0;
   state->count = count;
   state->values = values;
-  state->basetype = temptype_basetype(temp->temptype);
-  state->temp = temp;
+  state->temp = temporal_copy(temp);
   return state;
 }
 
@@ -1416,7 +1415,8 @@ Temporal_unnest(PG_FUNCTION_ARGS)
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-    pfree(state->values);
+    // pfree(state->values);
+    // pfree(state->temp);
     pfree(state);
     MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
@@ -1427,6 +1427,9 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   /* Get period set */
   Temporal *rest = temporal_restrict_value(state->temp,
     state->values[state->i], REST_AT);
+  if (!rest)
+    elog(ERROR, "Unexpected error with temporal value %s",
+      temporal_out(state->temp, OUT_DEFAULT_DECIMAL_DIGITS));
   tuple_arr[1] = PointerGetDatum(temporal_time(rest));
   pfree(rest);
   /* Advance state */
