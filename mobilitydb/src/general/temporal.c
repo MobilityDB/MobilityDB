@@ -684,10 +684,10 @@ Tsequence_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  interpType interp = LINEAR;
+  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tsequence_from_base_time(value, temptype, p, interp);
   PG_RETURN_POINTER(result);
 }
@@ -704,10 +704,10 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  interpType interp = LINEAR;
+  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
     interp);
   PG_FREE_IF_COPY(ps, 1);

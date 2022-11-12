@@ -809,7 +809,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
     elog(ERROR, "The second argument must be of instant subtype");
   ensure_same_temptype(temp, (Temporal *) inst);
   /* The test to ensure the increasing timestamps must be done in the
-   * specific function since the inclusive/exclusive bounds must be
+   * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
   ensure_spatial_validity(temp, (const Temporal *) inst);
 
@@ -1238,7 +1238,7 @@ temporal_to_tsequenceset(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp,
-      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEPWISE);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

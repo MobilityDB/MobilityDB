@@ -650,22 +650,24 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     ensure_same_rid_tnpointinst(inst, inst1);
 #endif
 
-  /* Notice that we cannot call ensure_increasing_timestamps since we must
-   * take into account the inclusive/exclusive bounds */
+  /* We cannot call ensure_increasing_timestamps since we must take into
+   * account inclusive/exclusive bounds */
   if (inst1->t > inst->t)
   {
     char *t1 = pg_timestamptz_out(inst1->t);
-    char *t2 = pg_timestamptz_out(inst->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+    char *t = pg_timestamptz_out(inst->t);
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s",
+      t1, t);
   }
 
-  bool eqvalue = datum_eq(tinstant_value(inst1), tinstant_value(inst),
-    basetype);
+  Datum value1 = tinstant_value(inst1);
+  Datum value = tinstant_value(inst);
+  bool eqv1v = datum_eq(value1, value, basetype);
   if (inst1->t == inst->t)
   {
     if (seq->period.upper_inc)
     {
-      if (! eqvalue)
+      if (! eqv1v)
       {
         char *t1 = pg_timestamptz_out(inst1->t);
         elog(ERROR, "The temporal values have different value at their common timestamp %s", t1);
@@ -676,7 +678,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
         return (Temporal *) tsequence_copy(seq);
     }
     /* Exclusive upper bound and different value => result is a sequence set */
-    else if (interp == LINEAR && ! eqvalue)
+    else if (interp == LINEAR && ! eqv1v)
     {
       TSequence *sequences[2];
       sequences[0] = (TSequence *) seq;
@@ -693,29 +695,26 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   /* Normalize the result */
   if (interp != DISCRETE && seq->count > 1)
   {
-    inst1 = tsequence_inst_n(seq, seq->count - 2);
-    Datum value1 = tinstant_value(inst1);
-    const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
+    const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 2);
     Datum value2 = tinstant_value(inst2);
-    Datum value3 = tinstant_value(inst);
-    bool v1v2eq = datum_eq(value1, value2, basetype);
-    bool v2v3eq = datum_eq(value2, value3, basetype);
+    bool eqv2v1 = datum_eq(value2, value1, basetype);
+    bool eqv1v = datum_eq(value1, value, basetype);
     if (
       /* step sequences and 2 consecutive instants that have the same value
         ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
       */
-      (interp == STEPWISE && v1v2eq)
+      (interp == STEPWISE && eqv2v1)
       ||
       /* 3 consecutive float/point instants that have the same value
         ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
       */
-      (interp == LINEAR && v1v2eq && v2v3eq)
+      (interp == LINEAR && eqv2v1 && eqv1v)
       ||
       /* collinear float/point instants that have the same duration
         ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
       */
-      (interp == LINEAR && datum_collinear(basetype, value1, value2, value3,
-        inst1->t, inst2->t, inst->t))
+      (interp == LINEAR && datum_collinear(basetype, value2, value1, value,
+        inst2->t, inst1->t, inst->t))
       )
     {
       /* The new instant replaces the last instant of the sequence */
@@ -2043,7 +2042,7 @@ tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p,
 TSequence *
 tboolseq_from_base_time(bool b, const Period *p)
 {
-  return tsequence_from_base_time(BoolGetDatum(b), T_TBOOL, p, false);
+  return tsequence_from_base_time(BoolGetDatum(b), T_TBOOL, p, STEPWISE);
 }
 
 /**
@@ -2053,7 +2052,7 @@ tboolseq_from_base_time(bool b, const Period *p)
 TSequence *
 tintseq_from_base_time(int i, const Period *p)
 {
-  return tsequence_from_base_time(Int32GetDatum(i), T_TINT, p, false);
+  return tsequence_from_base_time(Int32GetDatum(i), T_TINT, p, STEPWISE);
 }
 
 /**
@@ -2073,7 +2072,7 @@ tfloatseq_from_base_time(double d, const Period *p, interpType interp)
 TSequence *
 ttextseq_from_base_time(const text *txt, const Period *p)
 {
-  return tsequence_from_base_time(PointerGetDatum(txt), T_TTEXT, p, false);
+  return tsequence_from_base_time(PointerGetDatum(txt), T_TTEXT, p, STEPWISE);
 }
 
 /**

@@ -154,25 +154,17 @@ typedef enum
 #define TSEQUENCESET    3
 
 /*****************************************************************************
- * Interpolation functions
- *****************************************************************************/
-
-/**
- * Enumeration for the interpolation functions for temporal types
- */
-// #define INTERP_NONE     0
-// #define DISCRETE        1
-// #define STEPWISE        2
-// #define LINEAR          3
-
-/*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
  * bits are GTZXIICB, where
  *   G: coordinates are geodetic
  *   T: has T coordinate,
  *   Z: has Z coordinate
  *   X: has value or X coordinate
- *   II: interpolation
+ *   II: interpolation, whose values are
+ *   - 00: INTERP_NONE (undetermined) for TInstant
+ *   - 01: DISCRETE
+ *   - 10: STEPWISE
+ *   - 11: LINEAR
  *   C: continuous base type
  *   B: base type passed by value
  * Notice that formally speaking the interpolation flags are only needed
@@ -183,7 +175,7 @@ typedef enum
 #define MOBDB_FLAG_BYVAL      0x0001  // 1
 #define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
-#define MOBDB_FLAGS_INTERP    0x000C  // 4 or 8
+#define MOBDB_FLAGS_INTERP    0x000C  // 4 / 8
 /* The following two flags are used for both bounding boxes and temporal types */
 #define MOBDB_FLAG_X          0x0010  // 16
 #define MOBDB_FLAG_Z          0x0020  // 32
