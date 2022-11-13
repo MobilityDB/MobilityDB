@@ -2030,87 +2030,87 @@ CREATE FUNCTION deleteTime(ttext, periodset, connect boolean DEFAULT TRUE)
  * Intersection Functions
  *****************************************************************************/
 
-CREATE FUNCTION intersectsTime(tbool, timestamptz)
+CREATE FUNCTION overlapsTime(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tint, timestamptz)
+CREATE FUNCTION overlapsTime(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tfloat, timestamptz)
+CREATE FUNCTION overlapsTime(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(ttext, timestamptz)
+CREATE FUNCTION overlapsTime(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION intersectsTime(tbool, timestampset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tint, timestampset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tfloat, timestampset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(ttext, timestampset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tbool, period)
+CREATE FUNCTION overlapsTime(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tint, period)
+CREATE FUNCTION overlapsTime(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tfloat, period)
+CREATE FUNCTION overlapsTime(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(ttext, period)
+CREATE FUNCTION overlapsTime(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tbool, periodset)
+CREATE FUNCTION overlapsTime(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tint, periodset)
+CREATE FUNCTION overlapsTime(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tfloat, periodset)
+CREATE FUNCTION overlapsTime(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
   SUPPORT tnumber_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(ttext, periodset)
+CREATE FUNCTION overlapsTime(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
+  SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overlapsTime(tbool, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
+  SUPPORT temporal_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlapsTime(tint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
+  SUPPORT tnumber_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlapsTime(tfloat, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
+  SUPPORT tnumber_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlapsTime(ttext, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
   SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

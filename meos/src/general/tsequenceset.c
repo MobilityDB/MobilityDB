@@ -2924,7 +2924,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
  * @sqlfunc intersectsTimestamp()
  */
 bool
-tsequenceset_intersects_timestamp(const TSequenceSet *ss, TimestampTz t)
+tsequenceset_overlaps_timestamp(const TSequenceSet *ss, TimestampTz t)
 {
   int loc;
   if (tsequenceset_find_timestamp(ss, t, &loc))
@@ -2938,11 +2938,11 @@ tsequenceset_intersects_timestamp(const TSequenceSet *ss, TimestampTz t)
  * @sqlfunc intersectsTimestampSet()
  */
 bool
-tsequenceset_intersects_timestampset(const TSequenceSet *ss,
+tsequenceset_overlaps_timestampset(const TSequenceSet *ss,
   const TimestampSet *ss1)
 {
   for (int i = 0; i < ss1->count; i++)
-    if (tsequenceset_intersects_timestamp(ss, timestampset_time_n(ss1, i)))
+    if (tsequenceset_overlaps_timestamp(ss, timestampset_time_n(ss1, i)))
       return true;
   return false;
 }
@@ -2953,7 +2953,7 @@ tsequenceset_intersects_timestampset(const TSequenceSet *ss,
  * @sqlfunc intersectsPeriod()
  */
 bool
-tsequenceset_intersects_period(const TSequenceSet *ss, const Period *p)
+tsequenceset_overlaps_period(const TSequenceSet *ss, const Period *p)
 {
   /* Binary search of lower and upper bounds of period */
   int loc1, loc2;
@@ -2978,10 +2978,10 @@ tsequenceset_intersects_period(const TSequenceSet *ss, const Period *p)
  * @sqlfunc intersectsPeriod()
  */
 bool
-tsequenceset_intersects_periodset(const TSequenceSet *ss, const PeriodSet *ps)
+tsequenceset_overlaps_periodset(const TSequenceSet *ss, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
-    if (tsequenceset_intersects_period(ss, periodset_per_n(ps, i)))
+    if (tsequenceset_overlaps_period(ss, periodset_per_n(ps, i)))
       return true;
   return false;
 }

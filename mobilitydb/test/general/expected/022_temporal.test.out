@@ -11065,393 +11065,393 @@ SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@
  {("BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT intersectsTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '1@2000-01-01', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '1@2000-01-01', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool 't@2000-01-01', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool 't@2000-01-01', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '1@2000-01-01', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '1@2000-01-01', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext 'AAA@2000-01-01', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext 'AAA@2000-01-01', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestampset '{2000-01-01}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestampset '{2000-01-01}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '1@2000-01-01', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '1@2000-01-01', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '1.5@2000-01-01', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '1.5@2000-01-01', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext 'AAA@2000-01-01', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext 'AAA@2000-01-01', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', period '[2000-01-01,2000-01-02]');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{[1@2000-01-02, 1@2000-01-03]}', period '[2000-01-01, 2000-01-04]');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{[1@2000-01-02, 1@2000-01-03]}', period '[2000-01-01, 2000-01-04]');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool 't@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool 't@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '1@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '1@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '1.5@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '1.5@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext 'AAA@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext 'AAA@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 
-SELECT intersectsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
- intersectstime 
-----------------
+SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+ overlapstime 
+--------------
  t
 (1 row)
 

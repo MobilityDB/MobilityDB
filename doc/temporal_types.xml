@@ -150,7 +150,7 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 	</itemizedlist>
 
 	<para>
-		A rich set of functions and operators is available to perform various operations on temporal types. They are explained in <xref linkend="manipulating_temporal_types" />. Some of these operations, in particular those related to indexes, manipulate bounding boxes for efficiency reasons.
+		A rich set of functions and operators is available to perform various operations on temporal types. They are explained in <xref linkend="manipulating_temporal_types_p1" /> and <xref linkend="manipulating_temporal_types_p2" />. Some of these operations, in particular those related to indexes, manipulate bounding boxes for efficiency reasons.
 	</para>
 
 	<sect1 id="examples_temporal_types">

@@ -470,7 +470,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 	<sect1 id="functions_temporal_network_points">
 		<title>Functions and Operators for Temporal Network Points</title>
 
-		<para>All functions for temporal types described in <xref linkend="manipulating_temporal_types" /> can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
+		<para>All functions for temporal types described in <xref linkend="manipulating_temporal_types_p1" /> and <xref linkend="manipulating_temporal_types_p2" /> can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
 
 		<itemizedlist>
 			<listitem id="tnpoint_transform">

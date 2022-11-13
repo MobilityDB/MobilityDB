@@ -892,47 +892,47 @@ CREATE FUNCTION deleteTime(tgeogpoint, periodset, connect boolean DEFAULT TRUE)
  * Intersects Functions
  *****************************************************************************/
 
-CREATE FUNCTION intersectsTime(tgeompoint, timestamptz)
+CREATE FUNCTION overlapsTime(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tgeogpoint, timestamptz)
+CREATE FUNCTION overlapsTime(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION intersectsTime(tgeompoint, timestampset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tgeogpoint, timestampset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tgeompoint, period)
+CREATE FUNCTION overlapsTime(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tgeogpoint, period)
+CREATE FUNCTION overlapsTime(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tgeompoint, periodset)
+CREATE FUNCTION overlapsTime(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersectsTime(tgeogpoint, periodset)
+CREATE FUNCTION overlapsTime(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overlapsTime(tgeompoint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlapsTime(tgeogpoint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

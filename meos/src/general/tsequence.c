@@ -5517,7 +5517,7 @@ tcontseq_delete_periodset(const TSequence *seq, const PeriodSet *ps)
  * @sqlfunc intersectsTimestamp()
  */
 bool
-tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t)
+tsequence_overlaps_timestamp(const TSequence *seq, TimestampTz t)
 {
   /* Discrete sequence */
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
@@ -5532,10 +5532,10 @@ tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc intersectsTimestampSet()
  */
 bool
-tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ts)
+tsequence_overlaps_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
-    if (tsequence_intersects_timestamp(seq, timestampset_time_n(ts, i)))
+    if (tsequence_overlaps_timestamp(seq, timestampset_time_n(ts, i)))
       return true;
   return false;
 }
@@ -5546,7 +5546,7 @@ tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ts)
  * @sqlfunc intersectsPeriod()
  */
 bool
-tsequence_intersects_period(const TSequence *seq, const Period *p)
+tsequence_overlaps_period(const TSequence *seq, const Period *p)
 {
   /* Bounding period test */
   if (! overlaps_span_span(&seq->period, p))
@@ -5572,10 +5572,10 @@ tsequence_intersects_period(const TSequence *seq, const Period *p)
  * @sqlfunc intersectsPeriodSet()
  */
 bool
-tsequence_intersects_periodset(const TSequence *seq, const PeriodSet *ps)
+tsequence_overlaps_periodset(const TSequence *seq, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
-    if (tsequence_intersects_period(seq, periodset_per_n(ps, i)))
+    if (tsequence_overlaps_period(seq, periodset_per_n(ps, i)))
       return true;
   return false;
 }

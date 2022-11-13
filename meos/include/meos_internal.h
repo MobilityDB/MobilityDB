@@ -649,20 +649,20 @@ extern TSequenceSet *tsequenceset_delete_periodset(const TSequenceSet *ss, const
 
 /*****************************************************************************/
 
-/* Intersects functions for temporal types */
+/* Overlaps functions for temporal types */
 
-extern bool tinstant_intersects_period(const TInstant *inst, const Period *p);
-extern bool tinstant_intersects_periodset(const TInstant *inst, const PeriodSet *ps);
-extern bool tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t);
-extern bool tinstant_intersects_timestampset(const TInstant *inst, const TimestampSet *ss);
-extern bool tsequence_intersects_period(const TSequence *seq, const Period *p);
-extern bool tsequence_intersects_periodset(const TSequence *seq, const PeriodSet *ps);
-extern bool tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t);
-extern bool tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *ss);
-extern bool tsequenceset_intersects_period(const TSequenceSet *ss, const Period *p);
-extern bool tsequenceset_intersects_periodset(const TSequenceSet *ss, const PeriodSet *ps);
-extern bool tsequenceset_intersects_timestamp(const TSequenceSet *ss, TimestampTz t);
-extern bool tsequenceset_intersects_timestampset(const TSequenceSet *ss, const TimestampSet *ss1);
+extern bool tinstant_overlaps_period(const TInstant *inst, const Period *p);
+extern bool tinstant_overlaps_periodset(const TInstant *inst, const PeriodSet *ps);
+extern bool tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t);
+extern bool tinstant_overlaps_timestampset(const TInstant *inst, const TimestampSet *ss);
+extern bool tsequence_overlaps_period(const TSequence *seq, const Period *p);
+extern bool tsequence_overlaps_periodset(const TSequence *seq, const PeriodSet *ps);
+extern bool tsequence_overlaps_timestamp(const TSequence *seq, TimestampTz t);
+extern bool tsequence_overlaps_timestampset(const TSequence *seq, const TimestampSet *ss);
+extern bool tsequenceset_overlaps_period(const TSequenceSet *ss, const Period *p);
+extern bool tsequenceset_overlaps_periodset(const TSequenceSet *ss, const PeriodSet *ps);
+extern bool tsequenceset_overlaps_timestamp(const TSequenceSet *ss, TimestampTz t);
+extern bool tsequenceset_overlaps_timestampset(const TSequenceSet *ss, const TimestampSet *ss1);
 
 /*****************************************************************************/
 

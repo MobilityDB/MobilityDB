@@ -1574,12 +1574,12 @@ extern Temporal *temporal_delete_periodset(const Temporal *temp, const PeriodSet
 
 /*****************************************************************************/
 
-/* Intersects functions for temporal types */
+/* Overlaps functions for temporal types */
 
-extern bool temporal_intersects_period(const Temporal *temp, const Period *p);
-extern bool temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps);
-extern bool temporal_intersects_timestamp(const Temporal *temp, TimestampTz t);
-extern bool temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ss);
+extern bool temporal_overlaps_period(const Temporal *temp, const Period *p);
+extern bool temporal_overlaps_periodset(const Temporal *temp, const PeriodSet *ps);
+extern bool temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t);
+extern bool temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ss);
 
 /*****************************************************************************/
 

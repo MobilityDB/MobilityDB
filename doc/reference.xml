@@ -805,7 +805,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: Does the temporal value intersect the timestamp?</para>
+					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: Does the temporal value overlap the time value?</para>
 				</listitem>
 
 				<listitem>

@@ -993,7 +993,7 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  * @sqlfunc intersectsTimestamp()
  */
 bool
-tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t)
+tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t)
 {
   return (inst->t == t);
 }
@@ -1004,7 +1004,7 @@ tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t)
  * @sqlfunc intersectsTimestampSet()
  */
 bool
-tinstant_intersects_timestampset(const TInstant *inst, const TimestampSet *ts)
+tinstant_overlaps_timestampset(const TInstant *inst, const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (inst->t == timestampset_time_n(ts, i))
@@ -1018,7 +1018,7 @@ tinstant_intersects_timestampset(const TInstant *inst, const TimestampSet *ts)
  * @sqlfunc intersectsPeriod()
  */
 bool
-tinstant_intersects_period(const TInstant *inst, const Period *p)
+tinstant_overlaps_period(const TInstant *inst, const Period *p)
 {
   return contains_period_timestamp(p, inst->t);
 }
@@ -1029,7 +1029,7 @@ tinstant_intersects_period(const TInstant *inst, const Period *p)
  * @sqlfunc intersectsPeriodSet()
  */
 bool
-tinstant_intersects_periodset(const TInstant *inst, const PeriodSet *ps)
+tinstant_overlaps_periodset(const TInstant *inst, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
     if (contains_period_timestamp(periodset_per_n(ps, i), inst->t))

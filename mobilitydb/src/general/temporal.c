@@ -2434,67 +2434,67 @@ Temporal_delete_periodset(PG_FUNCTION_ARGS)
  * Intersects functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Temporal_intersects_timestamp);
+PG_FUNCTION_INFO_V1(Temporal_overlaps_timestamp);
 /**
  * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a timestamp
  * @sqlfunc intersectsTime()
  */
 PGDLLEXPORT Datum
-Temporal_intersects_timestamp(PG_FUNCTION_ARGS)
+Temporal_overlaps_timestamp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = temporal_intersects_timestamp(temp, t);
+  bool result = temporal_overlaps_timestamp(temp, t);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_intersects_timestampset);
+PG_FUNCTION_INFO_V1(Temporal_overlaps_timestampset);
 /**
  * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a timestamp set
  * @sqlfunc intersectsTime()
  */
 PGDLLEXPORT Datum
-Temporal_intersects_timestampset(PG_FUNCTION_ARGS)
+Temporal_overlaps_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = temporal_intersects_timestampset(temp, ts);
+  bool result = temporal_overlaps_timestampset(temp, ts);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_intersects_period);
+PG_FUNCTION_INFO_V1(Temporal_overlaps_period);
 /**
  * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a period
  * @sqlfunc intersectsTime()
  */
 PGDLLEXPORT Datum
-Temporal_intersects_period(PG_FUNCTION_ARGS)
+Temporal_overlaps_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  bool result = temporal_intersects_period(temp, p);
+  bool result = temporal_overlaps_period(temp, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_intersects_periodset);
+PG_FUNCTION_INFO_V1(Temporal_overlaps_periodset);
 /**
  * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a period set
  * @sqlfunc intersectsTime()
  */
 PGDLLEXPORT Datum
-Temporal_intersects_periodset(PG_FUNCTION_ARGS)
+Temporal_overlaps_periodset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = temporal_intersects_periodset(temp, ps);
+  bool result = temporal_overlaps_periodset(temp, ps);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);

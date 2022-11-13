@@ -872,7 +872,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTime"><varname>intersectsTime</varname></link>: ¿Se cruza el valor temporal con el valor de tiempo?</para>
+					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: ¿Se superpone el valor temporal con el valor de tiempo?</para>
 				</listitem>
 
 				<listitem>

@@ -509,25 +509,25 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE merge(atTime(temp, ps), minu
 SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
 SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE intersectsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE overlapsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE overlapsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE overlapsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE overlapsTime(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE intersectsTime(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE overlapsTime(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE overlapsTime(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE overlapsTime(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE overlapsTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE intersectsTime(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE overlapsTime(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE overlapsTime(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE overlapsTime(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE overlapsTime(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE intersectsTime(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE overlapsTime(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE overlapsTime(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE overlapsTime(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE overlapsTime(temp, ps) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Modification functions
@@ -624,25 +624,25 @@ SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
 SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= 'AAA';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tbool_big_rtree_idx;
 DROP INDEX tbl_tint_big_rtree_idx;
@@ -665,25 +665,25 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tbool_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tint_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_ttext_big WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tbool_big_quadtree_idx;
 DROP INDEX tbl_tint_big_quadtree_idx;

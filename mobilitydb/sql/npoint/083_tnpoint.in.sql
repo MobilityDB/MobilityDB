@@ -585,27 +585,27 @@ CREATE FUNCTION deleteTime(tnpoint, periodset, connect boolean DEFAULT TRUE)
  * Intersects Functions
  *****************************************************************************/
 
-CREATE FUNCTION intersectsTime(tnpoint, timestamptz)
+CREATE FUNCTION overlapsTime(tnpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tnpoint, timestampset)
+CREATE FUNCTION overlapsTime(tnpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tnpoint, period)
+CREATE FUNCTION overlapsTime(tnpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intersectsTime(tnpoint, periodset)
+CREATE FUNCTION overlapsTime(tnpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

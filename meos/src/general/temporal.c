@@ -3455,16 +3455,16 @@ temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps,
  * @pymeosfunc intersectsTime()
  */
 bool
-temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
+temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_intersects_timestamp((TInstant *) temp, t);
+    result = tinstant_overlaps_timestamp((TInstant *) temp, t);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_intersects_timestamp((TSequence *) temp, t);
+    result = tsequence_overlaps_timestamp((TSequence *) temp, t);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_intersects_timestamp((TSequenceSet *) temp, t);
+    result = tsequenceset_overlaps_timestamp((TSequenceSet *) temp, t);
   return result;
 }
 
@@ -3475,16 +3475,16 @@ temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
  * @pymeosfunc intersectsTime()
  */
 bool
-temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ts)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_intersects_timestampset((TInstant *) temp, ts);
+    result = tinstant_overlaps_timestampset((TInstant *) temp, ts);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_intersects_timestampset((TSequence *) temp, ts);
+    result = tsequence_overlaps_timestampset((TSequence *) temp, ts);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_intersects_timestampset((TSequenceSet *) temp, ts);
+    result = tsequenceset_overlaps_timestampset((TSequenceSet *) temp, ts);
   return result;
 }
 
@@ -3495,16 +3495,16 @@ temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @pymeosfunc intersectsTime()
  */
 bool
-temporal_intersects_period(const Temporal *temp, const Period *p)
+temporal_overlaps_period(const Temporal *temp, const Period *p)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_intersects_period((TInstant *) temp, p);
+    result = tinstant_overlaps_period((TInstant *) temp, p);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_intersects_period((TSequence *) temp, p);
+    result = tsequence_overlaps_period((TSequence *) temp, p);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_intersects_period((TSequenceSet *) temp, p);
+    result = tsequenceset_overlaps_period((TSequenceSet *) temp, p);
   return result;
 }
 
@@ -3515,16 +3515,16 @@ temporal_intersects_period(const Temporal *temp, const Period *p)
  * @pymeosfunc intersectsTime()
  */
 bool
-temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_overlaps_periodset(const Temporal *temp, const PeriodSet *ps)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_intersects_periodset((TInstant *) temp, ps);
+    result = tinstant_overlaps_periodset((TInstant *) temp, ps);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_intersects_periodset((TSequence *) temp, ps);
+    result = tsequence_overlaps_periodset((TSequence *) temp, ps);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_intersects_periodset((TSequenceSet *) temp, ps);
+    result = tsequenceset_overlaps_periodset((TSequenceSet *) temp, ps);
   return result;
 }
 
