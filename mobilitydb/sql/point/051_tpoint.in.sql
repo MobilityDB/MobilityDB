@@ -135,14 +135,43 @@ CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, inte
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tgeompoint_inst(geometry(Point), timestamptz)
+CREATE FUNCTION tgeompoint(geometry(Point), timestamptz)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpointinst_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_inst(geography(Point), timestamptz)
+CREATE FUNCTION tgeogpoint(geography(Point), timestamptz)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tpointinst_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompoint(geometry, timestampset)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(geography, timestampset)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompoint(geometry, period, linear bool DEFAULT true)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(geography, period, linear bool DEFAULT true)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tgeompoint(geometry, periodset, linear bool DEFAULT true)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(geography, periodset, linear bool DEFAULT true)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
 
 CREATE FUNCTION tgeompoint_discseq(tgeompoint[])
   RETURNS tgeompoint
@@ -153,12 +182,12 @@ CREATE FUNCTION tgeogpoint_discseq(tgeogpoint[])
   AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeompoint_seq(tgeompoint[], lower_inc boolean DEFAULT true,
+CREATE FUNCTION tgeompoint_contseq(tgeompoint[], lower_inc boolean DEFAULT true,
   upper_inc boolean DEFAULT true, linear bool DEFAULT true)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(tgeogpoint[], lower_inc boolean DEFAULT true,
+CREATE FUNCTION tgeogpoint_contseq(tgeogpoint[], lower_inc boolean DEFAULT true,
   upper_inc boolean DEFAULT true, linear bool DEFAULT true)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
@@ -213,26 +242,13 @@ CREATE FUNCTION tgeompoint_discseq(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seq(tgeompoint)
+CREATE FUNCTION tgeompoint_contseq(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint_seqset(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tgeompoint_discseq(geometry, timestampset)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seq(geometry, period, linear bool DEFAULT true)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seqset(geometry, periodset, linear bool DEFAULT true)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpoint_inst(tgeogpoint)
@@ -243,26 +259,13 @@ CREATE FUNCTION tgeogpoint_discseq(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(tgeogpoint)
+CREATE FUNCTION tgeogpoint_contseq(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tgeogpoint_discseq(geography, timestampset)
-  RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(geography, period, linear bool DEFAULT true)
-  RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seqset(geography, periodset, linear bool DEFAULT true)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION toLinear(tgeompoint)

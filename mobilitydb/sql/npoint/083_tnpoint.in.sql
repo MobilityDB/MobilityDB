@@ -123,15 +123,30 @@ CREATE FUNCTION asHexWKB(tnpoint, endianenconding text)
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tnpoint_inst(val npoint, t timestamptz)
+CREATE FUNCTION tnpoint(npoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnpoint(npoint, timestampset)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnpoint(npoint, period, boolean DEFAULT true)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnpoint(npoint, periodset, boolean DEFAULT true)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
 CREATE FUNCTION tnpoint_discseq(tnpoint[])
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(tnpoint[], lower_inc boolean DEFAULT true,
+CREATE FUNCTION tnpoint_contseq(tnpoint[], lower_inc boolean DEFAULT true,
     upper_inc boolean DEFAULT true, linear bool DEFAULT true)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
@@ -139,19 +154,6 @@ CREATE FUNCTION tnpoint_seq(tnpoint[], lower_inc boolean DEFAULT true,
 CREATE FUNCTION tnpoint_seqset(tnpoint[])
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tnpoint_discseq(npoint, timestampset)
-  RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(npoint, period, boolean DEFAULT true)
-  RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seqset(npoint, periodset, boolean DEFAULT true)
-  RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear bool DEFAULT true,
