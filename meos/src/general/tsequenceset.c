@@ -1998,7 +1998,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
     return tsequenceset_restrict_period(ss, periodset_per_n(ps, 0), atfunc);
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ps->period))
+  if (! overlaps_span_span(&ss->period, &ps->span))
     return atfunc ? NULL : tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -2010,7 +2010,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
   int i = 0, j = 0, k = 0;
   if (atfunc)
   {
-    TimestampTz t = Max(ss->period.lower, ps->period.lower);
+    TimestampTz t = Max(ss->period.lower, ps->span.lower);
     tsequenceset_find_timestamp(ss, t, &i);
     periodset_find_timestamp(ps, t, &j);
     sequences = palloc(sizeof(TSequence *) * (ss->count + ps->count - i - j));
@@ -2843,7 +2843,7 @@ TSequenceSet *
 tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ps->period))
+  if (! overlaps_span_span(&ss->period, &ps->span))
     return tsequenceset_copy(ss);
 
   TSequence *seq;

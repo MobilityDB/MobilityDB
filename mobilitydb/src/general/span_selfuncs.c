@@ -854,7 +854,7 @@ time_const_to_period(Node *other, Period *period)
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
     const PeriodSet *ps = DatumGetPeriodSetP(((Const *) other)->constvalue);
-    memcpy(period, &ps->period, sizeof(Period));
+    memcpy(period, &ps->span, sizeof(Period));
   }
   return;
 }

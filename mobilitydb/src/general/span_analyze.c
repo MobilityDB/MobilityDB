@@ -283,7 +283,7 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     else if (type == T_PERIODSET)
     {
       const PeriodSet *ps= DatumGetPeriodSetP(value);
-      period = &ps->period;
+      period = &ps->span;
       span_deserialize((Period *) period, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ps);

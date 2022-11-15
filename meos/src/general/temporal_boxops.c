@@ -511,7 +511,7 @@ boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
 {
   Period p;
   temporal_set_period(temp, &p);
-  bool result = invert ? func(&ps->period, &p) : func(&p, &ps->period);
+  bool result = invert ? func(&ps->span, &p) : func(&p, &ps->span);
   return result;
 }
 

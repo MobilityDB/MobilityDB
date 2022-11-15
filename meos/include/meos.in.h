@@ -60,10 +60,22 @@ typedef struct
 } Span;
 
 /**
- * Make the Period type as a Span type for facilitating the manipulation of
- * the time dimension
+ * Structure to represent period sets
+ */
+typedef struct
+{
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 count;          /**< Number of Period elements */
+  Span span;        /**< Bounding period */
+  Span elems[1];      /**< Beginning of variable-length data */
+} SpanSet;
+
+/**
+ * Make the Period and PeriodSet types as Span and SpanSet type for
+ * facilitating the manipulation of the time dimension
  */
 typedef Span Period;
+typedef SpanSet PeriodSet;
 
 /**
  * Structure to represent timestamp sets
@@ -75,17 +87,6 @@ typedef struct
   Period period;        /**< Bounding period */
   TimestampTz elems[1]; /**< Beginning of variable-length data */
 } TimestampSet;
-
-/**
- * Structure to represent period sets
- */
-typedef struct
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of Period elements */
-  Period period;        /**< Bounding period */
-  Period elems[1];      /**< Beginning of variable-length data */
-} PeriodSet;
 
 /**
  * Structure to represent temporal boxes

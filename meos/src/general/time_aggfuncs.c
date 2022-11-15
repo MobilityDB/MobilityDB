@@ -261,12 +261,12 @@ periodset_extent_transfn(Period *p, const PeriodSet *ps)
     return NULL;
   /* Null period and non-null period set, return the bbox of the period set */
   if (! p)
-    return span_copy(&ps->period);
+    return span_copy(&ps->span);
   /* Non-null period and null temporal, return the period */
   if (! ps)
     return span_copy(p);
 
-  span_expand(&ps->period, p);
+  span_expand(&ps->span, p);
   return p;
 }
 
@@ -369,7 +369,7 @@ periodset_tunion_transfn(SkipList *state, const PeriodSet *ps)
 }
 
 /*****************************************************************************/
- 
+
 /**
  * Final function for union aggregation of timestamp set values
  */
@@ -561,7 +561,7 @@ timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts,
     ensure_same_timetype_skiplist(state, TINSTANT);
     skiplist_splice(state, (void **) instants, count, &datum_sum_int32,
       CROSSINGS_NO);
-  } 
+  }
   else
   {
     state = skiplist_make((void **) instants, count, TEMPORAL);

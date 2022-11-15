@@ -4521,7 +4521,7 @@ tdiscseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
       tdiscseq_minus_period(seq, periodset_per_n(ps, 0));
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ps->period))
+  if (! overlaps_span_span(&seq->period, &ps->span))
     return atfunc ? NULL : tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -5074,7 +5074,7 @@ tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ps->period))
+  if (! overlaps_span_span(&seq->period, &ps->span))
     return 0;
 
   /* Instantaneous sequence */
@@ -5174,7 +5174,7 @@ tcontseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   bool atfunc)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ps->period))
+  if (! overlaps_span_span(&seq->period, &ps->span))
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
   /* Instantaneous sequence */
@@ -5462,7 +5462,7 @@ TSequence *
 tcontseq_delete_periodset(const TSequence *seq, const PeriodSet *ps)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ps->period))
+  if (! overlaps_span_span(&seq->period, &ps->span))
     return tsequence_copy(seq);
 
   /* Instantaneous sequence */

@@ -393,7 +393,7 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
   {
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    Datum size, vorigin;
+    Datum size = 0, vorigin = 0; /* make compiler quiet */
     Interval *duration = NULL;
     TimestampTz torigin = 0;
     int i = 1;

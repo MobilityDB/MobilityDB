@@ -323,7 +323,6 @@ left_span_elem(const Span *s, Datum d, mobdbType basetype)
   return (cmp < 0 || (cmp == 0 && ! s->upper_inc));
 }
 
-
 #if MEOS
 /**
  * @ingroup libmeos_spantime_pos

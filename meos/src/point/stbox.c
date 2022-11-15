@@ -601,7 +601,7 @@ periodset_set_stbox(const PeriodSet *ps, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
-  memcpy(&box->period, &ps->period, sizeof(Span));
+  memcpy(&box->period, &ps->span, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }

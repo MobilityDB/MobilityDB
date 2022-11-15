@@ -196,7 +196,7 @@ periodset_period_slice(Datum psdatum, Period *p)
       time_max_header_size());
   else
     ps = (PeriodSet *) psdatum;
-  memcpy(p, &ps->period, sizeof(Span));
+  memcpy(p, &ps->span, sizeof(Span));
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
