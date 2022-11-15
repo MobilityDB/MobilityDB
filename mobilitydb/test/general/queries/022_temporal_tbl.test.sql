@@ -104,88 +104,88 @@ DROP TABLE tbl_tfloatinst_test;
 
 SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
 SELECT DISTINCT tempSubtype(tbool_discseq(inst)) FROM tbl_tbool_inst;
-SELECT DISTINCT tempSubtype(tbool_seq(inst)) FROM tbl_tbool_inst;
+SELECT DISTINCT tempSubtype(tbool_contseq(inst)) FROM tbl_tbool_inst;
 SELECT DISTINCT tempSubtype(tbool_seqset(inst)) FROM tbl_tbool_inst;
 
 SELECT DISTINCT tempSubtype(tint_inst(inst)) FROM tbl_tint_inst;
 SELECT DISTINCT tempSubtype(tint_discseq(inst)) FROM tbl_tint_inst;
-SELECT DISTINCT tempSubtype(tint_seq(inst)) FROM tbl_tint_inst;
+SELECT DISTINCT tempSubtype(tint_contseq(inst)) FROM tbl_tint_inst;
 SELECT DISTINCT tempSubtype(tint_seqset(inst)) FROM tbl_tint_inst;
 
 SELECT DISTINCT tempSubtype(tfloat_inst(inst)) FROM tbl_tfloat_inst;
 SELECT DISTINCT tempSubtype(tfloat_discseq(inst)) FROM tbl_tfloat_inst;
-SELECT DISTINCT tempSubtype(tfloat_seq(inst)) FROM tbl_tfloat_inst;
+SELECT DISTINCT tempSubtype(tfloat_contseq(inst)) FROM tbl_tfloat_inst;
 SELECT DISTINCT tempSubtype(tfloat_seqset(inst)) FROM tbl_tfloat_inst;
 
 SELECT DISTINCT tempSubtype(ttext_inst(inst)) FROM tbl_ttext_inst;
 SELECT DISTINCT tempSubtype(ttext_discseq(inst)) FROM tbl_ttext_inst;
-SELECT DISTINCT tempSubtype(ttext_seq(inst)) FROM tbl_ttext_inst;
+SELECT DISTINCT tempSubtype(ttext_contseq(inst)) FROM tbl_ttext_inst;
 SELECT DISTINCT tempSubtype(ttext_seqset(inst)) FROM tbl_ttext_inst;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tbool_inst(ti)) FROM tbl_tbool_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tbool_discseq(ti)) FROM tbl_tbool_discseq;
-SELECT DISTINCT tempSubtype(tbool_seq(ti)) FROM tbl_tbool_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tbool_contseq(ti)) FROM tbl_tbool_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tbool_seqset(ti)) FROM tbl_tbool_discseq;
 
 SELECT DISTINCT tempSubtype(tint_inst(ti)) FROM tbl_tint_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tint_discseq(ti)) FROM tbl_tint_discseq;
-SELECT DISTINCT tempSubtype(tint_seq(ti)) FROM tbl_tint_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tint_contseq(ti)) FROM tbl_tint_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tint_seqset(ti)) FROM tbl_tint_discseq;
 
 SELECT DISTINCT tempSubtype(tfloat_inst(ti)) FROM tbl_tfloat_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tfloat_discseq(ti)) FROM tbl_tfloat_discseq;
-SELECT DISTINCT tempSubtype(tfloat_seq(ti)) FROM tbl_tfloat_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tfloat_contseq(ti)) FROM tbl_tfloat_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tfloat_seqset(ti)) FROM tbl_tfloat_discseq;
 
 SELECT DISTINCT tempSubtype(ttext_inst(ti)) FROM tbl_ttext_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(ttext_discseq(ti)) FROM tbl_ttext_discseq;
-SELECT DISTINCT tempSubtype(ttext_seq(ti)) FROM tbl_ttext_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(ttext_contseq(ti)) FROM tbl_ttext_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(ttext_seqset(ti)) FROM tbl_ttext_discseq;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tbool_inst(seq)) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(tbool_discseq(seq)) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tbool_seq(seq)) FROM tbl_tbool_seq;
+SELECT DISTINCT tempSubtype(tbool_contseq(seq)) FROM tbl_tbool_seq;
 SELECT DISTINCT tempSubtype(tbool_seqset(seq)) FROM tbl_tbool_seq;
 
 SELECT DISTINCT tempSubtype(tint_inst(seq)) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(tint_discseq(seq)) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tint_seq(seq)) FROM tbl_tint_seq;
+SELECT DISTINCT tempSubtype(tint_contseq(seq)) FROM tbl_tint_seq;
 SELECT DISTINCT tempSubtype(tint_seqset(seq)) FROM tbl_tint_seq;
 
 SELECT DISTINCT tempSubtype(tfloat_inst(seq)) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(tfloat_discseq(seq)) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tfloat_seq(seq)) FROM tbl_tfloat_seq;
+SELECT DISTINCT tempSubtype(tfloat_contseq(seq)) FROM tbl_tfloat_seq;
 SELECT DISTINCT tempSubtype(tfloat_seqset(seq)) FROM tbl_tfloat_seq;
 
 SELECT DISTINCT tempSubtype(ttext_inst(seq)) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(ttext_discseq(seq)) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(ttext_seq(seq)) FROM tbl_ttext_seq;
+SELECT DISTINCT tempSubtype(ttext_contseq(seq)) FROM tbl_ttext_seq;
 SELECT DISTINCT tempSubtype(ttext_seqset(seq)) FROM tbl_ttext_seq;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tbool_inst(ts)) FROM tbl_tbool_seqset WHERE numInstants(ts) = 1;
 SELECT DISTINCT tempSubtype(tbool_discseq(ts)) FROM tbl_tbool_seqset WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tbool_seq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tbool_contseq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tbool_seqset(ts)) FROM tbl_tbool_seqset;
 
 SELECT DISTINCT tempSubtype(tint_inst(ts)) FROM tbl_tint_seqset WHERE numInstants(ts) = 1;
 SELECT DISTINCT tempSubtype(tint_discseq(ts)) FROM tbl_tint_seqset WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tint_seq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tint_contseq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tint_seqset(ts)) FROM tbl_tint_seqset;
 
 SELECT DISTINCT tempSubtype(tfloat_inst(ts)) FROM tbl_tfloat_seqset WHERE numInstants(ts) = 1;
 SELECT DISTINCT tempSubtype(tfloat_discseq(ts)) FROM tbl_tfloat_seqset WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tfloat_seq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tfloat_contseq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tfloat_seqset(ts)) FROM tbl_tfloat_seqset;
 
 SELECT DISTINCT tempSubtype(ttext_inst(ts)) FROM tbl_ttext_seqset WHERE numInstants(ts) = 1;
 SELECT DISTINCT tempSubtype(ttext_discseq(ts)) FROM tbl_ttext_seqset WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(ttext_seq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(ttext_contseq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(ttext_seqset(ts)) FROM tbl_ttext_seqset;
 
 -------------------------------------------------------------------------------

@@ -1451,19 +1451,19 @@ CREATE FUNCTION ttext_discseq(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_seq(tbool)
+CREATE FUNCTION tbool_contseq(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_seq(tint)
+CREATE FUNCTION tint_contseq(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seq(tfloat)
+CREATE FUNCTION tfloat_contseq(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_seq(ttext)
+CREATE FUNCTION ttext_contseq(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

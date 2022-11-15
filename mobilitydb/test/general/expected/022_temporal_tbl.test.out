@@ -172,7 +172,7 @@ SELECT DISTINCT tempSubtype(tbool_discseq(inst)) FROM tbl_tbool_inst;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tbool_seq(inst)) FROM tbl_tbool_inst;
+SELECT DISTINCT tempSubtype(tbool_contseq(inst)) FROM tbl_tbool_inst;
  tempsubtype 
 -------------
  
@@ -200,7 +200,7 @@ SELECT DISTINCT tempSubtype(tint_discseq(inst)) FROM tbl_tint_inst;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tint_seq(inst)) FROM tbl_tint_inst;
+SELECT DISTINCT tempSubtype(tint_contseq(inst)) FROM tbl_tint_inst;
  tempsubtype 
 -------------
  
@@ -228,7 +228,7 @@ SELECT DISTINCT tempSubtype(tfloat_discseq(inst)) FROM tbl_tfloat_inst;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(inst)) FROM tbl_tfloat_inst;
+SELECT DISTINCT tempSubtype(tfloat_contseq(inst)) FROM tbl_tfloat_inst;
  tempsubtype 
 -------------
  
@@ -256,7 +256,7 @@ SELECT DISTINCT tempSubtype(ttext_discseq(inst)) FROM tbl_ttext_inst;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(ttext_seq(inst)) FROM tbl_ttext_inst;
+SELECT DISTINCT tempSubtype(ttext_contseq(inst)) FROM tbl_ttext_inst;
  tempsubtype 
 -------------
  
@@ -283,7 +283,7 @@ SELECT DISTINCT tempSubtype(tbool_discseq(ti)) FROM tbl_tbool_discseq;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tbool_seq(ti)) FROM tbl_tbool_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tbool_contseq(ti)) FROM tbl_tbool_discseq WHERE numInstants(ti) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -309,7 +309,7 @@ SELECT DISTINCT tempSubtype(tint_discseq(ti)) FROM tbl_tint_discseq;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tint_seq(ti)) FROM tbl_tint_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tint_contseq(ti)) FROM tbl_tint_discseq WHERE numInstants(ti) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -335,7 +335,7 @@ SELECT DISTINCT tempSubtype(tfloat_discseq(ti)) FROM tbl_tfloat_discseq;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(ti)) FROM tbl_tfloat_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tfloat_contseq(ti)) FROM tbl_tfloat_discseq WHERE numInstants(ti) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -361,7 +361,7 @@ SELECT DISTINCT tempSubtype(ttext_discseq(ti)) FROM tbl_ttext_discseq;
  Sequence
 (2 rows)
 
-SELECT DISTINCT tempSubtype(ttext_seq(ti)) FROM tbl_ttext_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(ttext_contseq(ti)) FROM tbl_ttext_discseq WHERE numInstants(ti) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -386,7 +386,7 @@ SELECT DISTINCT tempSubtype(tbool_discseq(seq)) FROM tbl_tbool_seq WHERE numInst
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tbool_seq(seq)) FROM tbl_tbool_seq;
+SELECT DISTINCT tempSubtype(tbool_contseq(seq)) FROM tbl_tbool_seq;
  tempsubtype 
 -------------
  
@@ -412,7 +412,7 @@ SELECT DISTINCT tempSubtype(tint_discseq(seq)) FROM tbl_tint_seq WHERE numInstan
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tint_seq(seq)) FROM tbl_tint_seq;
+SELECT DISTINCT tempSubtype(tint_contseq(seq)) FROM tbl_tint_seq;
  tempsubtype 
 -------------
  
@@ -438,7 +438,7 @@ SELECT DISTINCT tempSubtype(tfloat_discseq(seq)) FROM tbl_tfloat_seq WHERE numIn
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(seq)) FROM tbl_tfloat_seq;
+SELECT DISTINCT tempSubtype(tfloat_contseq(seq)) FROM tbl_tfloat_seq;
  tempsubtype 
 -------------
  
@@ -464,7 +464,7 @@ SELECT DISTINCT tempSubtype(ttext_discseq(seq)) FROM tbl_ttext_seq WHERE numInst
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(ttext_seq(seq)) FROM tbl_ttext_seq;
+SELECT DISTINCT tempSubtype(ttext_contseq(seq)) FROM tbl_ttext_seq;
  tempsubtype 
 -------------
  
@@ -488,7 +488,7 @@ SELECT DISTINCT tempSubtype(tbool_discseq(ts)) FROM tbl_tbool_seqset WHERE times
 -------------
 (0 rows)
 
-SELECT DISTINCT tempSubtype(tbool_seq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tbool_contseq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -513,7 +513,7 @@ SELECT DISTINCT tempSubtype(tint_discseq(ts)) FROM tbl_tint_seqset WHERE timespa
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tint_seq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tint_contseq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -538,7 +538,7 @@ SELECT DISTINCT tempSubtype(tfloat_discseq(ts)) FROM tbl_tfloat_seqset WHERE tim
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tfloat_contseq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -561,7 +561,7 @@ SELECT DISTINCT tempSubtype(ttext_discseq(ts)) FROM tbl_ttext_seqset WHERE times
 -------------
 (0 rows)
 
-SELECT DISTINCT tempSubtype(ttext_seq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(ttext_contseq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
  tempsubtype 
 -------------
  Sequence
