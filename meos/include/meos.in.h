@@ -337,6 +337,7 @@ extern PeriodSet *periodset_copy(const PeriodSet *ps);
 extern PeriodSet *periodset_make(const Period **periods, int count, bool normalize);
 extern PeriodSet *periodset_make_free(Period **periods, int count, bool normalize);
 extern Span *span_copy(const Span *s);
+extern SpanSet *spanset_make_free(Span **spans, int count, bool normalize);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
 extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);

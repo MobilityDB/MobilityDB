@@ -1,5 +1,6 @@
 SET(LOCAL_FILES
   001_span
+  002_spanset
   003_timestampset
   005_periodset
   007_span_ops

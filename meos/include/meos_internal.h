@@ -56,6 +56,9 @@
 
 extern Span *span_in(const char *str, mobdbType spantype);
 
+extern SpanSet *spanset_in(const char *str, mobdbType spantype);
+extern char *spanset_out(const SpanSet *ss, Datum maxdd);
+
 /*****************************************************************************/
 
 /* Constructor functions for span and time types */
@@ -74,6 +77,7 @@ extern Span *elem_to_span(Datum d, mobdbType basetype);
 /* Accessor functions for span and time types */
 
 extern const Period *periodset_per_n(const PeriodSet *ps, int index);
+extern const Span *spanset_span_n(const SpanSet *ss, int index);
 extern void timestampset_set_period(const TimestampSet *ts, Period *p);
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 

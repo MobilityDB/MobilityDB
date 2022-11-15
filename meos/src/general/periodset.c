@@ -164,8 +164,8 @@ periodset_make(const Period **periods, int count, bool normalize)
   /* Test the validity of the periods */
   for (int i = 0; i < count - 1; i++)
   {
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(periods[i]->upper),
-      DatumGetTimestampTz(periods[i + 1]->lower));
+    int cmp = datum_cmp(periods[i]->upper, periods[i + 1]->lower,
+      periods[i]->basetype);
     if (cmp > 0 ||
       (cmp == 0 && periods[i]->upper_inc && periods[i + 1]->lower_inc))
       elog(ERROR, "Invalid value for period set");

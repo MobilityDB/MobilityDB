@@ -62,6 +62,7 @@ extern Period *period_parse(const char **str, bool make);
 extern PeriodSet *periodset_parse(const char **str);
 extern Datum elem_parse(const char **str, mobdbType basetype);
 extern Span *span_parse(const char **str, mobdbType spantype, bool end, bool make);
+extern SpanSet *spanset_parse(const char **str, mobdbType spantype);
 
 extern TInstant *tinstant_parse(const char **str, mobdbType temptype, bool end,
   bool make);

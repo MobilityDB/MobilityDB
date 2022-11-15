@@ -6,6 +6,7 @@ add_library(general OBJECT
   pg_call.c
   skiplist.c
   span.c
+  spanset.c
   span_ops.c
   tbool_boolops.c
   tbool_boolops_meos.c

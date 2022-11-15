@@ -10,6 +10,7 @@ add_library(pg_general OBJECT
   span_spgist.c
   span_ops.c
   span_selfuncs.c
+  spanset.c
   tbool_boolops.c
   tbox.c
   temporal.c

@@ -54,11 +54,13 @@ typedef enum
   T_DOUBLE4,       /**< double4 type */
   T_FLOAT8,        /**< float8 type */
   T_FLOATSPAN,     /**< float8 span type */
+  T_FLOATSPANSET,  /**< float8 span set type */
   T_INT4,          /**< int4 type */
 #if ! MEOS
   T_INT4RANGE,     /**< PostgreSQL int4 range type */
 #endif
   T_INTSPAN,       /**< int4 span type */
+  T_INTSPANSET,    /**< int4 span set type */
   T_INT8,          /**< int8 type */
   T_PERIOD,        /**< period type */
   T_PERIODSET,     /**< period set type */

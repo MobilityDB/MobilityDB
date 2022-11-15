@@ -495,6 +495,30 @@ periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   return;
 }
 
+PG_FUNCTION_INFO_V1(Intspanset_analyze);
+/**
+ * Compute statistics for period set columns
+ */
+PGDLLEXPORT Datum
+Intspanset_analyze(PG_FUNCTION_ARGS)
+{
+  elog(NOTICE, "Function not yet implemented");
+
+  PG_RETURN_BOOL(true);
+}
+
+PG_FUNCTION_INFO_V1(Floatspanset_analyze);
+/**
+ * Compute statistics for period set columns
+ */
+PGDLLEXPORT Datum
+Floatspanset_analyze(PG_FUNCTION_ARGS)
+{
+  elog(NOTICE, "Function not yet implemented");
+
+  PG_RETURN_BOOL(true);
+}
+
 PG_FUNCTION_INFO_V1(Periodset_analyze);
 /**
  * Compute statistics for period set columns

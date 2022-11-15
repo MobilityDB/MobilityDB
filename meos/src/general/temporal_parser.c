@@ -454,6 +454,40 @@ span_parse(const char **str, mobdbType spantype, bool end, bool make)
   return span_make(lower, upper, lower_inc, upper_inc, basetype);
 }
 
+/**
+ * @brief Parse a span set value from the buffer.
+ */
+SpanSet *
+spanset_parse(const char **str, mobdbType spantype)
+{
+  if (!p_obrace(str))
+    elog(ERROR, "Could not parse span set");
+
+  /* First parsing */
+  const char *bak = *str;
+  span_parse(str, spantype, false, false);
+  int count = 1;
+  while (p_comma(str))
+  {
+    count++;
+    span_parse(str, spantype, false, false);
+  }
+  if (!p_cbrace(str))
+    elog(ERROR, "Could not parse span set");
+
+  /* Second parsing */
+  *str = bak;
+  Span **spans = palloc(sizeof(Span *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    p_comma(str);
+    spans[i] = span_parse(str, spantype, false, true);
+  }
+  p_cbrace(str);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  return result;
+}
+
 /*****************************************************************************/
 /* Temporal Types */
 
