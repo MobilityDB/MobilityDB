@@ -108,12 +108,23 @@ typedef struct
   mobdbType basetype;    /**< Enum value of the base type */
 } spantype_cache_struct;
 
+/**
+ * Structure to represent the spanset type cache array.
+ */
+typedef struct
+{
+  mobdbType spansettype;    /**< Enum value of the span type */
+  mobdbType spantype;       /**< Enum value of the base type */
+} spansettype_cache_struct;
+
 /*****************************************************************************/
 
 /* Cache functions */
 
 extern mobdbType temptype_basetype(mobdbType temptype);
 extern mobdbType spantype_basetype(mobdbType spantype);
+extern mobdbType spantype_spansettype(mobdbType spantype);
+extern mobdbType spansettype_spantype(mobdbType spansettype);
 extern mobdbType basetype_spantype(mobdbType basetype);
 
 /* Catalog functions */

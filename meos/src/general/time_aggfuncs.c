@@ -353,7 +353,7 @@ SkipList *
 periodset_tunion_transfn(SkipList *state, const PeriodSet *ps)
 {
   int count;
-  const Period **periods = periodset_periods(ps, &count);
+  const Period **periods = spanset_spans(ps, &count);
   SkipList *result;
   if (! state)
     /* Periods are copied while constructing the skiplist */
@@ -396,7 +396,7 @@ period_tunion_finalfn(SkipList *state)
 
   assert(state->elemtype == PERIOD);
   const Period **values = (const Period **) skiplist_values(state);
-  PeriodSet *result = periodset_make(values, state->length, NORMALIZE);
+  PeriodSet *result = spanset_make(values, state->length, NORMALIZE);
   pfree(values);
   return result;
 }
@@ -502,7 +502,7 @@ periodset_transform_tcount(const PeriodSet *ps, const Interval *interval,
   TSequence **result = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = periodset_per_n(ps, i);
+    const Period *p = spanset_sp_n(ps, i);
     result[i] = period_transform_tcount(p, interval, origin);
   }
   return result;

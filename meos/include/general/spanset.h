@@ -28,11 +28,11 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for set of disjoint periods.
+ * @brief Basic functions for set of disjoint spans.
  */
 
-#ifndef __PERIODSET_H__
-#define __PERIODSET_H__
+#ifndef __SPANSET_H__
+#define __SPANSET_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -43,8 +43,9 @@
 
 /* General functions */
 
-extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
-  int *loc);
+extern void spanset_span_slice(Datum psdatum, Period *p);
+// extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
+  // int *loc);
 
 /*****************************************************************************/
 

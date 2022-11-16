@@ -46,6 +46,7 @@
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
+#include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
@@ -181,7 +182,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   else if (type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
-    periodset_period_slice(psdatum, result);
+    spanset_span_slice(psdatum, result);
   }
   /* For temporal types whose bounding box is a period */
   else if (talpha_type(type))
@@ -282,7 +283,7 @@ Periodset_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Period *period = palloc(sizeof(Period));
-    periodset_period_slice(entry->key, period);
+    spanset_span_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

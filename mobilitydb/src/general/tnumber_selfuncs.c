@@ -46,6 +46,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/timestampset.h"
+#include "general/spanset.h"
 #include "general/periodset.h"
 /* MobilityDB */
 #include "pg_general/span_selfuncs.h"
@@ -150,7 +151,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (type == T_PERIODSET)
   {
     *p = palloc(sizeof(Period));
-    periodset_period_slice(((Const *) other)->constvalue, *p);
+    spanset_span_slice(((Const *) other)->constvalue, *p);
   }
   else if (type == T_TBOX)
   {

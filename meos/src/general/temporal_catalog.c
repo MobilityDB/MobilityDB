@@ -79,6 +79,18 @@ spantype_cache_struct _spantype_cache[] =
   {T_PERIOD,        T_TIMESTAMPTZ},
 };
 
+/**
+ * Global array that keeps type information for the span types defined
+ * in MobilityDB.
+ */
+spansettype_cache_struct _spansettype_cache[] =
+{
+  /* spansettype    spantype */
+  {T_INTSPANSET,    T_INTSPAN},
+  {T_FLOATSPANSET,  T_FLOATSPAN},
+  {T_PERIODSET,     T_PERIOD},
+};
+
 /*****************************************************************************
  * Cache functions
  *****************************************************************************/
@@ -117,6 +129,22 @@ spantype_basetype(mobdbType spantype)
 }
 
 /**
+ * Return the span type from the span set type
+ */
+mobdbType
+spansettype_spantype(mobdbType spansettype)
+{
+  int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_spansettype_cache[i].spansettype == spansettype)
+      return _spansettype_cache[i].spantype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a span set type", spansettype);
+}
+
+/**
  * Return the base type from the span type
  */
 mobdbType
@@ -131,6 +159,23 @@ basetype_spantype(mobdbType basetype)
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", basetype);
 }
+
+/**
+ * Return the span type from the span set type
+ */
+mobdbType
+spantype_spansettype(mobdbType spantype)
+{
+  int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_spansettype_cache[i].spantype == spantype)
+      return _spansettype_cache[i].spansettype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a span type", spantype);
+}
+
 
 /*****************************************************************************
  * Catalog functions

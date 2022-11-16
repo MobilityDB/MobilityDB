@@ -4018,7 +4018,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* It is necessary to sort the periods */
     spanarr_sort(allperiods, totalcount);
   }
-  PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
+  PeriodSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
   *count = tcontseq_at_periodset1(seq, ps, result);
   pfree(ps);
@@ -4094,7 +4094,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
   const Period **periods = palloc(sizeof(Period *) * countinter);
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
-  PeriodSet *ps1 = periodset_make(periods, countinter, NORMALIZE_NO);
+  PeriodSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
   PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
   pfree(ps1); pfree(periods);
   if (ps2 == NULL)

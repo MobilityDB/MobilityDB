@@ -12,11 +12,11 @@ SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-02, 2000-01-03), [2000-01-
 
 /* Errors */
 SELECT periodset '2000-01-01, 2000-01-02';
-ERROR:  Could not parse period set
+ERROR:  Could not parse span set
 LINE 2: SELECT periodset '2000-01-01, 2000-01-02';
                          ^
 SELECT periodset '{[2000-01-01, 2000-01-02]';
-ERROR:  Could not parse period set
+ERROR:  Could not parse span set
 LINE 1: SELECT periodset '{[2000-01-01, 2000-01-02]';
                          ^
 SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-04]']);
@@ -27,7 +27,7 @@ SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-
 
 /* Errors */
 SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-04]']);
-ERROR:  Invalid value for period set
+ERROR:  Invalid value for span set
 SELECT periodset('{}'::period[]);
 ERROR:  The input array cannot be empty
 SELECT periodset(timestamptz '2000-01-01');
@@ -69,37 +69,37 @@ SELECT period '[2000-01-01,2000-01-02]'::periodset;
 SELECT memSize(periodset '{[2000-01-01,2000-01-01]}');
  memsize 
 ---------
-      56
+      64
 (1 row)
 
 SELECT memSize(periodset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
  memsize 
 ---------
-     104
+     112
 (1 row)
 
 SELECT memSize(periodset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
  memsize 
 ---------
-     104
+     112
 (1 row)
 
 SELECT memSize(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
  memsize 
 ---------
-     104
+     112
 (1 row)
 
 SELECT memSize(periodset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
  memsize 
 ---------
-     104
+     112
 (1 row)
 
 SELECT memSize(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
  memsize 
 ---------
-     104
+     112
 (1 row)
 
 SELECT period(periodset '{[2000-01-01,2000-01-01]}');

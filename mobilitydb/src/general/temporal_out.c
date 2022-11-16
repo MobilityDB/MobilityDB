@@ -319,37 +319,37 @@ Timestampset_as_hexwkb(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Periodset_as_wkb);
+PG_FUNCTION_INFO_V1(Spanset_as_wkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
- * @brief Output a period set in WKB format.
+ * @brief Output a span set in WKB format.
  * @sqlfunc asBinary()
  */
 PGDLLEXPORT Datum
-Periodset_as_wkb(PG_FUNCTION_ARGS)
+Spanset_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(ps),
-    T_PERIODSET, false);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(ss),
+    ss->spansettype, false);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BYTEA_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_as_hexwkb);
+PG_FUNCTION_INFO_V1(Spanset_as_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Output the period set in HexWKB format.
  * @sqlfunc asHexWKB()
  */
 PGDLLEXPORT Datum
-Periodset_as_hexwkb(PG_FUNCTION_ARGS)
+Spanset_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(ps),
-    T_PERIODSET);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(ss),
+    ss->spansettype);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TEXT_P(result);
 }
 

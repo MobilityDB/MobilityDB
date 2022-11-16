@@ -60,8 +60,10 @@ typedef struct
   size_t wkb_size;     /**< Expected size of WKB */
   bool swap_bytes;     /**< Do an endian flip? */
   uint8_t temptype;    /**< Current temporal type we are handling */
+  uint8_t subtype;     /**< Current temporal subtype we are handling */
+  uint8_t spansettype; /**< Current span set type we are handling */
+  uint8_t spantype;    /**< Current span type we are handling */
   uint8_t basetype;    /**< Current base type we are handling */
-  uint8_t subtype;     /**< Current subtype we are handling */
   int32_t srid;        /**< Current SRID we are handling */
   bool hasx;           /**< X? */
   bool hasz;           /**< Z? */
@@ -1048,19 +1050,19 @@ span_spantype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spantype)
   switch (wkb_spantype)
   {
     case MOBDB_WKB_T_INTSPAN:
-      s->temptype = T_INTSPAN;
+      s->spantype = T_INTSPAN;
       break;
     case MOBDB_WKB_T_FLOATSPAN:
-      s->temptype = T_FLOATSPAN;
+      s->spantype = T_FLOATSPAN;
       break;
     case MOBDB_WKB_T_PERIOD:
-      s->temptype = T_PERIOD;
+      s->spantype = T_PERIOD;
       break;
     default: /* Error! */
       elog(ERROR, "Unknown WKB span type: %d", wkb_spantype);
       break;
   }
-  s->basetype = spantype_basetype(s->temptype);
+  s->basetype = spantype_basetype(s->spantype);
   return;
 }
 
@@ -1095,8 +1097,8 @@ static Datum
 span_basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
-  ensure_span_type(s->temptype);
-  switch (s->temptype)
+  ensure_span_type(s->spantype);
+  switch (s->spantype)
   {
     case T_INTSPAN:
       result = Int32GetDatum(int32_from_wkb_state(s));
@@ -1108,8 +1110,7 @@ span_basevalue_from_wkb_state(wkb_parse_state *s)
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown span type: %d",
-        s->temptype);
+      elog(ERROR, "Unknown span type: %d", s->spantype);
       break;
   }
   return result;
@@ -1133,15 +1134,12 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 }
 
 /**
- * Return a span from its WKB representation
+ * Return a span from its WKB representation when reading components spans
+ * in a span set (which does not repeat the spantype for every component
  */
-Span *
-span_from_wkb_state(wkb_parse_state *s)
+static Span *
+span_from_wkb_state1(wkb_parse_state *s)
 {
-  /* Read the span type */
-  uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
-  span_spantype_from_wkb_state(s, wkb_spantype);
-
   /* Read the span bounds */
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
   bool lower_inc, upper_inc;
@@ -1156,6 +1154,18 @@ span_from_wkb_state(wkb_parse_state *s)
   Datum upper = span_basevalue_from_wkb_state(s);
   Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
   return result;
+}
+
+/**
+ * Return a span from its WKB representation
+ */
+Span *
+span_from_wkb_state(wkb_parse_state *s)
+{
+  /* Read the span type */
+  uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
+  span_spantype_from_wkb_state(s, wkb_spantype);
+  return span_from_wkb_state1(s);
 }
 
 /*****************************************************************************/
@@ -1179,45 +1189,75 @@ timestampset_from_wkb_state(wkb_parse_state *s)
 
 /*****************************************************************************/
 
+// /**
+ // * Optimized version of span_from_wkb_state for reading the periods in a period
+ // * set. The endian byte and the basetype int16 are not read from the buffer.
+ // */
+// static Period *
+// period_from_wkb_state(wkb_parse_state *s)
+// {
+  // /* Read the span bounds */
+  // uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
+  // bool lower_inc, upper_inc;
+  // bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
+
+  // /* Does the data we want to read exist? */
+  // wkb_parse_state_check(s, 2 * MOBDB_WKB_TIMESTAMP_SIZE);
+
+  // /* Read the values and create the span */
+  // Datum lower = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+  // Datum upper = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+  // Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
+  // return result;
+// }
+
+/*****************************************************************************/
+
 /**
- * Optimized version of span_from_wkb_state for reading the periods in a period
- * set. The endian byte and the basetype int16 are not read from the buffer.
+ * Take in an unknown span set type of WKB type number and ensure it comes out
+ * as an extended WKB span set type number.
  */
-static Period *
-period_from_wkb_state(wkb_parse_state *s)
+void
+spanset_spansettype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spansettype)
 {
-  /* Read the span bounds */
-  uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
-  bool lower_inc, upper_inc;
-  bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
-
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, 2 * MOBDB_WKB_TIMESTAMP_SIZE);
-
-  /* Read the values and create the span */
-  Datum lower = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  Datum upper = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
-  return result;
+  switch (wkb_spansettype)
+  {
+    case MOBDB_WKB_T_INTSPANSET:
+      s->spansettype = T_INTSPANSET;
+      break;
+    case MOBDB_WKB_T_FLOATSPANSET:
+      s->spansettype = T_FLOATSPANSET;
+      break;
+    case MOBDB_WKB_T_PERIODSET:
+      s->spansettype = T_PERIODSET;
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown WKB span set type: %d", wkb_spansettype);
+      break;
+  }
+  s->spantype = spansettype_spantype(s->spansettype);
+  s->basetype = spantype_basetype(s->spantype);
+  return;
 }
 
 /**
- * Return a period set from its WKB representation
+ * Return a span set from its WKB representation
  */
-static PeriodSet *
-periodset_from_wkb_state(wkb_parse_state *s)
+static SpanSet *
+spanset_from_wkb_state(wkb_parse_state *s)
 {
-  /* Read the number of periods and allocate space for them */
+  /* Read the span type */
+  uint16_t wkb_spansettype = (uint16_t) int16_from_wkb_state(s);
+  spanset_spansettype_from_wkb_state(s, wkb_spansettype);
+
+  /* Read the number of spans and allocate space for them */
   int count = int32_from_wkb_state(s);
-  Period **periods = palloc(sizeof(Period *) * count);
+  Span **spans = palloc(sizeof(Span *) * count);
 
-  /* Set the state basetype to TimestampTz */
-  s->basetype = T_TIMESTAMPTZ;
-
-  /* Read and create the period set */
+  /* Read and create the span set */
   for (int i = 0; i < count; i++)
-    periods[i] = (Period *) period_from_wkb_state(s);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);
+    spans[i] = (Span *) span_from_wkb_state1(s);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
   return result;
 }
 
@@ -1454,8 +1494,7 @@ temporal_basevalue_from_wkb_state(wkb_parse_state *s)
       break;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d",
-        s->temptype);
+      elog(ERROR, "Unknown temporal type: %d", s->temptype);
       break;
   }
   return result;
@@ -1624,8 +1663,10 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
     case T_TIMESTAMPSET:
       result = PointerGetDatum(timestampset_from_wkb_state(&s));
       break;
+    case T_INTSPANSET:
+    case T_FLOATSPANSET:
     case T_PERIODSET:
-      result = PointerGetDatum(periodset_from_wkb_state(&s));
+      result = PointerGetDatum(spanset_from_wkb_state(&s));
       break;
     case T_TBOX:
       result = PointerGetDatum(tbox_from_wkb_state(&s));
@@ -1732,9 +1773,11 @@ timestampset_from_hexwkb(const char *hexwkb)
  * @sqlfunc periodsetFromBinary()
  */
 PeriodSet *
-periodset_from_wkb(const uint8_t *wkb, int size)
+spanset_from_wkb(const uint8_t *wkb, int size)
 {
-  return DatumGetPeriodSetP(datum_from_wkb(wkb, size, T_PERIODSET));
+  /* We pass ANY span type to the dispatch function but the actual span type
+   * will be read from the byte string */
+  return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_PERIODSET));
 }
 
 /**
@@ -1743,8 +1786,10 @@ periodset_from_wkb(const uint8_t *wkb, int size)
  * @sqlfunc periodsetFromHexWKB()
  */
 PeriodSet *
-periodset_from_hexwkb(const char *hexwkb)
+spanset_from_hexwkb(const char *hexwkb)
 {
+  /* We pass ANY span type to the dispatch function but the actual span type
+   * will be read from the byte string */
   int size = strlen(hexwkb);
   return DatumGetPeriodSetP(datum_from_hexwkb(hexwkb, size, T_PERIODSET));
 }

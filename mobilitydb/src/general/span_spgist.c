@@ -45,6 +45,7 @@
 #include <meos_internal.h>
 #include "general/timestampset.h"
 #include "general/periodset.h"
+#include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/span_gist.h"
@@ -308,7 +309,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   }
   else if (type == T_PERIODSET)
   {
-    periodset_period_slice(scankey->sk_argument, result);
+    spanset_span_slice(scankey->sk_argument, result);
   }
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(type))
@@ -719,7 +720,7 @@ Periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = palloc(sizeof(Period));
-  periodset_period_slice(psdatum, result);
+  spanset_span_slice(psdatum, result);
   PG_RETURN_SPAN_P(result);
 }
 

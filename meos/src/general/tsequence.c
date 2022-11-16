@@ -2508,7 +2508,7 @@ tsequence_time(const TSequence *seq)
 {
   /* Continuous sequence */
   if (! MOBDB_FLAGS_GET_DISCRETE(seq->flags))
-    return period_to_periodset(&seq->period);
+    return span_to_spanset(&seq->period);
 
   /* Discrete sequence */
   Period **periods = palloc(sizeof(Period *) * seq->count);
@@ -2517,7 +2517,7 @@ tsequence_time(const TSequence *seq)
     const TInstant *inst = tsequence_inst_n(seq, i);
     periods[i] = span_make(inst->t, inst->t, true, true, T_TIMESTAMPTZ);
   }
-  PeriodSet *result = periodset_make_free(periods, seq->count, NORMALIZE_NO);
+  PeriodSet *result = spanset_make_free(periods, seq->count, NORMALIZE_NO);
   return result;
 }
 
@@ -4517,8 +4517,8 @@ tdiscseq_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   /* Singleton period set */
   if (ps->count == 1)
     return atfunc ?
-      tdiscseq_at_period(seq, periodset_per_n(ps, 0)) :
-      tdiscseq_minus_period(seq, periodset_per_n(ps, 0));
+      tdiscseq_at_period(seq, spanset_sp_n(ps, 0)) :
+      tdiscseq_minus_period(seq, spanset_sp_n(ps, 0));
 
   /* Bounding box test */
   if (! overlaps_span_span(&seq->period, &ps->span))
@@ -5023,7 +5023,7 @@ tcontseq_minus_period1(const TSequence *seq, const Period *p,
     return 0;
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p1 = periodset_per_n(ps, i);
+    const Period *p1 = spanset_sp_n(ps, i);
     result[i] = tcontseq_at_period(seq, p1);
   }
   pfree(ps);
@@ -5069,7 +5069,7 @@ tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
   /* Singleton period set */
   if (ps->count == 1)
   {
-    result[0] = tcontseq_at_period(seq, periodset_per_n(ps, 0));
+    result[0] = tcontseq_at_period(seq, spanset_sp_n(ps, 0));
     return 1;
   }
 
@@ -5093,7 +5093,7 @@ tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
   int k = 0;
   for (int i = loc; i < ps->count; i++)
   {
-    const Period *p = periodset_per_n(ps, i);
+    const Period *p = spanset_sp_n(ps, i);
     TSequence *seq1 = tcontseq_at_period(seq, p);
     if (seq1 != NULL)
       result[k++] = seq1;
@@ -5120,7 +5120,7 @@ tcontseq_minus_periodset1(const TSequence *seq, const PeriodSet *ps, int from,
 {
   /* Singleton period set */
   if (ps->count == 1)
-    return tcontseq_minus_period1(seq, periodset_per_n(ps, 0), result);
+    return tcontseq_minus_period1(seq, spanset_sp_n(ps, 0), result);
 
   /* The sequence can be split at most into (count + 1) sequences
    *    |----------------------|
@@ -5130,7 +5130,7 @@ tcontseq_minus_periodset1(const TSequence *seq, const PeriodSet *ps, int from,
   int k = 0;
   for (int i = from; i < ps->count; i++)
   {
-    const Period *p1 = periodset_per_n(ps, i);
+    const Period *p1 = spanset_sp_n(ps, i);
     /* If the remaining periods are to the left of the current period */
     int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(curr->period.upper),
       DatumGetTimestampTz(p1->lower));
@@ -5476,7 +5476,7 @@ tcontseq_delete_periodset(const TSequence *seq, const PeriodSet *ps)
 
   /* Singleton period set */
   if (ps->count == 1)
-    return tcontseq_delete_period(seq, periodset_per_n(ps, 0));
+    return tcontseq_delete_period(seq, spanset_sp_n(ps, 0));
 
   /* General case */
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
@@ -5575,7 +5575,7 @@ bool
 tsequence_overlaps_periodset(const TSequence *seq, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
-    if (tsequence_overlaps_period(seq, periodset_per_n(ps, i)))
+    if (tsequence_overlaps_period(seq, spanset_sp_n(ps, i)))
       return true;
   return false;
 }

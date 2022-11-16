@@ -531,7 +531,7 @@ tsequenceset_from_base_time(Datum value, mobdbType temptype,
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = periodset_per_n(ps, i);
+    const Period *p = spanset_sp_n(ps, i);
     sequences[i] = tsequence_from_base_time(value, temptype, p, interp);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
@@ -803,7 +803,7 @@ tsequenceset_time(const TSequenceSet *ss)
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     periods[i] = &seq->period;
   }
-  PeriodSet *result = periodset_make(periods, ss->count, NORMALIZE_NO);
+  PeriodSet *result = spanset_make(periods, ss->count, NORMALIZE_NO);
   pfree(periods);
   return result;
 }
@@ -1995,7 +1995,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
 {
   /* Singleton period set */
   if (ps->count == 1)
-    return tsequenceset_restrict_period(ss, periodset_per_n(ps, 0), atfunc);
+    return tsequenceset_restrict_period(ss, spanset_sp_n(ps, 0), atfunc);
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss->period, &ps->span))
@@ -2020,7 +2020,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
   while (i < ss->count && j < ps->count)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    const Period *p = periodset_per_n(ps, j);
+    const Period *p = spanset_sp_n(ps, j);
     /* The sequence and the period do not overlap */
     if (left_span_span(&seq->period, p))
     {
@@ -2828,7 +2828,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
 TSequenceSet *
 tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
 {
-  PeriodSet *ps = period_to_periodset(p);
+  PeriodSet *ps = span_to_spanset(p);
   TSequenceSet *result = tsequenceset_delete_periodset(ss, ps);
   pfree(ps);
   return result;
@@ -2869,7 +2869,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
   const TInstant *instants[2] = {0};
   interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   sequences[0] = seq = (TSequence *) tsequenceset_seq_n(minus, 0);
-  const Period *p = periodset_per_n(ps, 0);
+  const Period *p = spanset_sp_n(ps, 0);
   int i = 1, /* current composing sequence */
     j = 0,   /* current composing period */
     k = 1,   /* number of sequences in the currently constructed sequence */
@@ -2880,7 +2880,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
     if (timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
           DatumGetTimestampTz(seq->period.lower)) > 0)
       break;
-    p = periodset_per_n(ps, ++j);
+    p = spanset_sp_n(ps, ++j);
   }
   seq = (TSequence *) tsequenceset_seq_n(minus, 1);
   while (i < ss->count && j < ps->count)
@@ -2900,7 +2900,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const PeriodSet *ps)
     }
     sequences[k++] = seq;
     seq = (TSequence *) tsequenceset_seq_n(minus, ++i);
-    p = periodset_per_n(ps, ++j);
+    p = spanset_sp_n(ps, ++j);
   }
   /* Add remaining sequences to the result */
   while (i < ss->count)
@@ -2981,7 +2981,7 @@ bool
 tsequenceset_overlaps_periodset(const TSequenceSet *ss, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
-    if (tsequenceset_overlaps_period(ss, periodset_per_n(ps, i)))
+    if (tsequenceset_overlaps_period(ss, spanset_sp_n(ps, i)))
       return true;
   return false;
 }

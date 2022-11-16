@@ -392,7 +392,7 @@ periodset_parse(const char **str)
     periods[i] = span_parse(str, T_PERIOD, false, true);
   }
   p_cbrace(str);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);
+  PeriodSet *result = spanset_make_free(periods, count, NORMALIZE);
   return result;
 }
 
@@ -458,11 +458,12 @@ span_parse(const char **str, mobdbType spantype, bool end, bool make)
  * @brief Parse a span set value from the buffer.
  */
 SpanSet *
-spanset_parse(const char **str, mobdbType spantype)
+spanset_parse(const char **str, mobdbType spansettype)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse span set");
 
+  mobdbType spantype = spansettype_spantype(spansettype);
   /* First parsing */
   const char *bak = *str;
   span_parse(str, spantype, false, false);

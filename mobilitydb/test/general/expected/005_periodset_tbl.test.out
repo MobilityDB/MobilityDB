@@ -30,7 +30,7 @@ SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromHexWKB(asHexWKB(ps)) <> ps
 SELECT MAX(memSize(ps)) FROM tbl_periodset;
  max 
 -----
- 248
+ 256
 (1 row)
 
 SELECT period(ps) FROM tbl_periodset;
@@ -1548,12 +1548,12 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
 SELECT MAX(periodset_hash(ps)) FROM tbl_periodset;
     max     
 ------------
- 2120952255
+ 2135356998
 (1 row)
 
 SELECT MAX(periodset_hash_extended(ps, 1)) FROM tbl_periodset;
          max         
 ---------------------
- 8819800551271229943
+ 8976367023169608651
 (1 row)
 

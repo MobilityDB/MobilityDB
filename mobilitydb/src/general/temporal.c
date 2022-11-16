@@ -903,7 +903,7 @@ Tfloat_spans(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Span **spans = tfloat_spans(temp, &count);
-  ArrayType *result = spanarr_to_array(spans, count);
+  ArrayType *result = spanarr_to_array((const Span **) spans, count);
   pfree_array((void **) spans, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

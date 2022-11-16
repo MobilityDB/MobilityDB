@@ -38,6 +38,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include "general/periodset.h"
+#include "general/spanset.h"
 #include "general/timestampset.h"
 #include "general/temporal_util.h"
 
@@ -2772,7 +2773,7 @@ Distance_timestamp_periodset(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p;
-  periodset_period_slice(ps, &p);
+  spanset_span_slice(ps, &p);
   double result = distance_period_timestamp(&p, t);
   PG_RETURN_FLOAT8(result);
 }
@@ -2846,7 +2847,7 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(1);
   Period p1, p2;
   timestampset_period_slice(ts, &p1);
-  periodset_period_slice(ps, &p2);
+  spanset_span_slice(ps, &p2);
   double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
@@ -2914,7 +2915,7 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_SPAN_P(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p1;
-  periodset_period_slice(ps, &p1);
+  spanset_span_slice(ps, &p1);
   double result = distance_span_span(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
@@ -2932,7 +2933,7 @@ Distance_periodset_timestamp(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p;
-  periodset_period_slice(ps, &p);
+  spanset_span_slice(ps, &p);
   double result = distance_period_timestamp(&p, t);
   PG_RETURN_FLOAT8(result);
 }
@@ -2950,7 +2951,7 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p1, p2;
-  periodset_period_slice(ps, &p1);
+  spanset_span_slice(ps, &p1);
   timestampset_period_slice(ts, &p2);
   double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
@@ -2969,7 +2970,7 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
   Datum ps = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
   Period p1;
-  periodset_period_slice(ps, &p1);
+  spanset_span_slice(ps, &p1);
   double result = distance_span_span(&p1, p);
   PG_RETURN_FLOAT8(result);
 }
@@ -2987,8 +2988,8 @@ Distance_periodset_periodset(PG_FUNCTION_ARGS)
   Datum ps1 = PG_GETARG_DATUM(0);
   Datum ps2 = PG_GETARG_DATUM(1);
   Period p1, p2;
-  periodset_period_slice(ps1, &p1);
-  periodset_period_slice(ps2, &p2);
+  spanset_span_slice(ps1, &p1);
+  spanset_span_slice(ps2, &p2);
   double result = distance_span_span(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }

@@ -201,15 +201,6 @@ timestamparr_extract(ArrayType *array, int *count)
 }
 
 /**
- * Extract a C array from a PostgreSQL array containing periods
- */
-Period **
-periodarr_extract(ArrayType *array, int *count)
-{
-  return (Period **) datumarr_extract(array, count);
-}
-
-/**
  * Extract a C array from a PostgreSQL array containing spans
  */
 Span **

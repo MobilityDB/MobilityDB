@@ -899,7 +899,7 @@ tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
   bool atfunc)
 {
   for (int i = 0; i < ps->count; i++)
-    if (contains_period_timestamp(periodset_per_n(ps, i), inst->t))
+    if (contains_period_timestamp(spanset_sp_n(ps, i), inst->t))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }
@@ -1032,7 +1032,7 @@ bool
 tinstant_overlaps_periodset(const TInstant *inst, const PeriodSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
-    if (contains_period_timestamp(periodset_per_n(ps, i), inst->t))
+    if (contains_period_timestamp(spanset_sp_n(ps, i), inst->t))
       return true;
   return false;
 }

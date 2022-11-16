@@ -1115,17 +1115,18 @@ timestampset_to_wkb_size(const TimestampSet *ts)
 /*****************************************************************************/
 
 /**
- * @brief Return the size in bytes of a period set represented in Well-Known
+ * @brief Return the size in bytes of a span set represented in Well-Known
  * Binary (WKB) format
  * @note The size of the elements is smaller than a full span since it does not
  * contain neither the endian flag nor the span type
  */
 static size_t
-periodset_to_wkb_size(const PeriodSet *ps)
+spanset_to_wkb_size(const SpanSet *ss)
 {
-  /* Endian flag + count + ( bound flag + 2 timestamps ) * count */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT4_SIZE +
-    (MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_TIMESTAMP_SIZE * 2) * ps->count;
+  size_t sizebase = span_basevalue_to_wkb_size(&ss->elems[0]);
+  /* Endian flag + spansettype + count + (bound flag + 2 values) * count */
+  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+    MOBDB_WKB_INT4_SIZE + (MOBDB_WKB_BYTE_SIZE + sizebase * 2) * ss->count;
   return size;
 }
 
@@ -1363,8 +1364,10 @@ datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
     case T_TIMESTAMPSET:
       result = timestampset_to_wkb_size((TimestampSet *) DatumGetPointer(value));
       break;
+    case T_INTSPANSET:
+    case T_FLOATSPANSET:
     case T_PERIODSET:
-      result = periodset_to_wkb_size((PeriodSet *) DatumGetPointer(value));
+      result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
       break;
     case T_TBOX:
       result = tbox_to_wkb_size((TBOX *) DatumGetPointer(value));
@@ -1696,10 +1699,25 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 }
 
 /**
+ * Write into the buffer a span that is a component of a span set
+ * represented in Well-Known Binary (WKB) format as follows
+ * - Basetype int16
+ * - Bounds byte stating whether the bounds are inclusive
+ * - Two base type values
+ */
+static uint8_t *
+span_to_wkb_buf_int1(const Span *s, uint8_t *buf, uint8_t variant)
+{
+  /* Write the span bounds */
+  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
+  /* Write the base values */
+  buf = lower_upper_to_wkb_buf(s, buf, variant);
+  return buf;
+}
+
+/**
  * Write into the buffer a span that is a component of another type
  * represented in Well-Known Binary (WKB) format as follows
- * - Endian byte
- * - Basetype int16
  * - Bounds byte stating whether the bounds are inclusive
  * - Two base type values
  */
@@ -1708,10 +1726,8 @@ span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the span type */
   buf = span_spantype_to_wkb_buf(s, buf, variant);
-  /* Write the span bounds */
-  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
-  /* Write the base values */
-  buf = lower_upper_to_wkb_buf(s, buf, variant);
+  /* Write the span bounds and values */
+  buf = span_to_wkb_buf_int1(s, buf, variant);
   return buf;
 }
 
@@ -1772,23 +1788,53 @@ period_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
   return buf;
 }
 
+/*****************************************************************************/
+
 /**
- * Write into the buffer a period set represented in Well-Known Binary (WKB)
- * format as follows
- * - Endian byte
- * - int32 stating the number of periods
- * - Periods
+ * Write into the buffer the span set type
  */
 static uint8_t *
-periodset_to_wkb_buf(const PeriodSet *ps, uint8_t *buf, uint8_t variant)
+spanset_spansettype_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
+{
+  uint16_t wkb_spansettype;
+  switch (ss->spansettype)
+  {
+    case T_INTSPANSET:
+      wkb_spansettype = MOBDB_WKB_T_INTSPANSET;
+      break;
+    case T_FLOATSPANSET:
+      wkb_spansettype = MOBDB_WKB_T_FLOATSPANSET;
+      break;
+    case T_PERIODSET:
+      wkb_spansettype = MOBDB_WKB_T_PERIODSET;
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown span type: %d", ss->spansettype);
+      break;
+  }
+  return int16_to_wkb_buf(wkb_spansettype, buf, variant);
+}
+
+/**
+ * Write into the buffer a span set represented in Well-Known Binary (WKB)
+ * format as follows
+ * - Endian byte
+ * - Basetype int16
+ * - int32 stating the number of periods
+ * - Spans
+ */
+static uint8_t *
+spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
+  /* Write the span type */
+  buf = spanset_spansettype_to_wkb_buf(ss, buf, variant);
   /* Write the count */
-  buf = int32_to_wkb_buf(ps->count, buf, variant);
+  buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
-  for (int i = 0; i < ps->count; i++)
-    buf = period_to_wkb_buf(&ps->elems[i], buf, variant);
+  for (int i = 0; i < ss->count; i++)
+    buf = span_to_wkb_buf_int1(&ss->elems[i], buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -2178,7 +2224,7 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
         buf, variant);
       break;
     case T_PERIODSET:
-      buf = periodset_to_wkb_buf((PeriodSet *) DatumGetPointer(value), buf,
+      buf = spanset_to_wkb_buf((PeriodSet *) DatumGetPointer(value), buf,
         variant);
       break;
     case T_TBOX:
@@ -2371,9 +2417,9 @@ timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
  * @sqlfunc asBinary()
  */
 uint8_t *
-periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
+spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(ps), T_PERIODSET, variant,
+  uint8_t *result = datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant,
     size_out);
   return result;
 }
@@ -2381,13 +2427,13 @@ periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_spantime_in_out
- * @brief Return the WKB representation of a period set in hex-encoded ASCII.
+ * @brief Return the WKB representation of a span set in hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
-periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out)
+spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ps), T_PERIODSET,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

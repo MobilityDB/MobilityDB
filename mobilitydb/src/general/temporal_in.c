@@ -70,7 +70,7 @@ PG_FUNCTION_INFO_V1(Span_from_wkb);
  * @ingroup mobilitydb_temporal_in_out
  * @brief Input a span from its WKB representation
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary
- * 
+ *
  */
 PGDLLEXPORT Datum
 Span_from_wkb(PG_FUNCTION_ARGS)
@@ -106,7 +106,7 @@ PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
  * @ingroup mobilitydb_temporal_in_out
  * @brief Input a timestamp set from its WKB representation
  * @sqlfunc timestampsetFromBinary()
- * 
+ *
  */
 PGDLLEXPORT Datum
 Timestampset_from_wkb(PG_FUNCTION_ARGS)
@@ -137,37 +137,38 @@ Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Periodset_from_wkb);
+PG_FUNCTION_INFO_V1(Spanset_from_wkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
- * @brief Input a timestamp set from its WKB representation
- * @sqlfunc periodsetFromBinary()
+ * @brief Input a span set from its WKB representation
+ * @sqlfunc instspansetFromBinary(), floatspansetFromBinary(),
+ * periodsetFromBinary()
  */
 PGDLLEXPORT Datum
-Periodset_from_wkb(PG_FUNCTION_ARGS)
+Spanset_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  PeriodSet *ps = periodset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  SpanSet *ss = spanset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ps);
+  PG_RETURN_POINTER(ss);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_from_hexwkb);
+PG_FUNCTION_INFO_V1(Spanset_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Input a period set from its HexWKB representation
  * @sqlfunc periodsetFromHexWKB()
  */
 PGDLLEXPORT Datum
-Periodset_from_hexwkb(PG_FUNCTION_ARGS)
+Spanset_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  PeriodSet *ps = periodset_from_hexwkb(hexwkb);
+  SpanSet *ss = spanset_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ps);
+  PG_RETURN_POINTER(ss);
 }
 
 /*****************************************************************************/

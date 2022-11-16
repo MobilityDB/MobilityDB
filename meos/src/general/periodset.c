@@ -84,7 +84,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
   while (first <= last)
   {
     middle = (first + last)/2;
-    p = periodset_per_n(ps, middle);
+    p = spanset_sp_n(ps, middle);
     if (contains_period_timestamp(p, t))
     {
       *loc = middle;
@@ -102,139 +102,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 }
 
 /*****************************************************************************
- * Input/output functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_spantime_in_out
- * @brief Return a period set from its Well-Known Text (WKT) representation.
- */
-PeriodSet *
-periodset_in(const char *str)
-{
-  return periodset_parse(&str);
-}
-
-/**
- * @ingroup libmeos_spantime_in_out
- * @brief Return the Well-Known Text (WKT) representation of a period set.
- */
-char *
-periodset_out(const PeriodSet *ps)
-{
-  char **strings = palloc(sizeof(char *) * ps->count);
-  size_t outlen = 0;
-
-  for (int i = 0; i < ps->count; i++)
-  {
-    const Period *p = periodset_per_n(ps, i);
-    /* The second argument of span_out is not used for periods */
-    strings[i] = span_out(p, Int32GetDatum(0));
-    outlen += strlen(strings[i]) + 2;
-  }
-  return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');
-}
-
-/*****************************************************************************
- * Constructor functions
- ****************************************************************************/
-
-/**
- * @ingroup libmeos_spantime_constructor
- * @brief Construct a period set from an array of disjoint periods.
- *
- * For example, the memory structure of a PeriodSet with 3 periods is as
- * follows
- * @code
- * ---------------------------------------------------------------------------------
- * ( PeriodSet )_X | ( bbox )_X | ( Period_0 )_X | ( Period_1 )_X | ( Period_2 )_X |
- * ---------------------------------------------------------------------------------
- * @endcode
- * where the `X` are unused bytes added for double padding, and `bbox` is the
- * bounding box which is also a period.
- *
- * @param[in] periods Array of periods
- * @param[in] count Number of elements in the array
- * @param[in] normalize True if the resulting value should be normalized
- * @sqlfunc periodset()
- */
-PeriodSet *
-periodset_make(const Period **periods, int count, bool normalize)
-{
-  /* Test the validity of the periods */
-  for (int i = 0; i < count - 1; i++)
-  {
-    int cmp = datum_cmp(periods[i]->upper, periods[i + 1]->lower,
-      periods[i]->basetype);
-    if (cmp > 0 ||
-      (cmp == 0 && periods[i]->upper_inc && periods[i + 1]->lower_inc))
-      elog(ERROR, "Invalid value for period set");
-  }
-
-  Period **newperiods = (Period **) periods;
-  int newcount = count;
-  if (normalize && count > 1)
-    newperiods = spanarr_normalize((Period **) periods, count, SORT_NO,
-      &newcount);
-  /* Notice that the first period is already declared in the struct */
-  size_t memsize = double_pad(sizeof(PeriodSet)) +
-    double_pad(sizeof(Period)) * (newcount - 1);
-  PeriodSet *result = palloc0(memsize);
-  SET_VARSIZE(result, memsize);
-  result->count = newcount;
-
-  /* Compute the bounding period */
-  span_set(newperiods[0]->lower, newperiods[newcount - 1]->upper,
-    newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc,
-    T_TIMESTAMPTZ, &result->span);
-  /* Copy the period array */
-  for (int i = 0; i < newcount; i++)
-    memcpy(&result->elems[i], newperiods[i], sizeof(Span));
-  /* Free after normalization */
-  if (normalize && count > 1)
-    pfree_array((void **) newperiods, newcount);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_constructor
- * @brief Construct a period set from an array of periods and free the array
- * and the periods after the creation.
- *
- * @param[in] periods Array of periods
- * @param[in] count Number of elements in the array
- * @param[in] normalize True if the resulting value should be normalized.
- * @see periodset_make
- * @sqlfunc periodset()
- */
-PeriodSet *
-periodset_make_free(Period **periods, int count, bool normalize)
-{
-  if (count == 0)
-  {
-    pfree(periods);
-    return NULL;
-  }
-  PeriodSet *result = periodset_make((const Period **) periods, count,
-    normalize);
-  pfree_array((void **) periods, count);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_constructor
- * @brief Return a copy of a period set.
- */
-PeriodSet *
-periodset_copy(const PeriodSet *ps)
-{
-  PeriodSet *result = palloc(VARSIZE(ps));
-  memcpy(result, ps, VARSIZE(ps));
-  return result;
-}
-
-/*****************************************************************************
- * Cast function
+ * Cast functions
  *****************************************************************************/
 
 /**
@@ -248,7 +116,7 @@ timestamp_to_periodset(TimestampTz t)
   Span p;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &p);
-  PeriodSet *result = period_to_periodset(&p);
+  PeriodSet *result = span_to_spanset(&p);
   return result;
 }
 
@@ -266,47 +134,13 @@ timestampset_to_periodset(const TimestampSet *ts)
     TimestampTz t = timestampset_time_n(ts, i);
     periods[i] = span_make(t, t, true, true, T_TIMESTAMPTZ);
   }
-  PeriodSet *result = periodset_make_free(periods, ts->count, NORMALIZE_NO);
+  PeriodSet *result = spanset_make_free(periods, ts->count, NORMALIZE_NO);
   return result;
-}
-
-/**
- * @ingroup libmeos_spantime_cast
- * @brief Cast a period as a period set.
- * @sqlop @p ::
- */
-PeriodSet *
-period_to_periodset(const Period *period)
-{
-  return periodset_make((const Period **) &period, 1, NORMALIZE_NO);
 }
 
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_spantime_accessor
- * @brief Return the n-th period of a period set.
- * @pre The argument @p index is less than the number of periods in the period
- * set
- */
-const Period *
-periodset_per_n(const PeriodSet *ps, int index)
-{
-  return (Period *) &ps->elems[index];
-}
-
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the size in bytes of a period set
- * @sqlfunc memSize()
- */
-int
-periodset_mem_size(const PeriodSet *ps)
-{
-  return (int) VARSIZE(DatumGetPointer(ps));
-}
 
 /**
  * @ingroup libmeos_spantime_accessor
@@ -317,28 +151,11 @@ periodset_mem_size(const PeriodSet *ps)
 Interval *
 periodset_timespan(const PeriodSet *ps)
 {
-  const Period *p1 = periodset_per_n(ps, 0);
-  const Period *p2 = periodset_per_n(ps, ps->count - 1);
+  const Period *p1 = spanset_sp_n(ps, 0);
+  const Period *p2 = spanset_sp_n(ps, ps->count - 1);
   Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_cast
- * @brief Return the bounding period of a period set.
- * @sqlfunc period()
- * @sqlop @p ::
- * @pymeosfunc period()
- */
-Period *
-periodset_to_period(const PeriodSet *ps)
-{
-  Period *result = palloc(sizeof(Period));
-  memcpy(result, &ps->span, sizeof(Span));
-  return result;
-}
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_accessor
@@ -349,88 +166,17 @@ periodset_to_period(const PeriodSet *ps)
 Interval *
 periodset_duration(const PeriodSet *ps)
 {
-  const Period *p = periodset_per_n(ps, 0);
+  const Period *p = spanset_sp_n(ps, 0);
   Interval *result = pg_timestamp_mi(p->upper, p->lower);
   for (int i = 1; i < ps->count; i++)
   {
-    p = periodset_per_n(ps, i);
+    p = spanset_sp_n(ps, i);
     Interval *interval1 = pg_timestamp_mi(p->upper, p->lower);
     Interval *interval2 = pg_interval_pl(result, interval1);
     pfree(result); pfree(interval1);
     result = interval2;
   }
   return result;
-}
-
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the number of periods of a period set
- * @sqlfunc numPeriods()
- * @pymeosfunc numPeriods()
- */
-int
-periodset_num_periods(const PeriodSet *ps)
-{
-  return ps->count;
-}
-
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the start period of a period set
- * @sqlfunc startPeriod()
- * @pymeosfunc startPeriod()
- */
-Period *
-periodset_start_period(const PeriodSet *ps)
-{
-  Period *result = span_copy(periodset_per_n(ps, 0));
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the end period of a period set
- * @sqlfunc endPeriod()
- * @pymeosfunc endPeriod()
- */
-Period *
-periodset_end_period(const PeriodSet *ps)
-{
-  Period *result = span_copy(periodset_per_n(ps, ps->count - 1));
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the n-th period of a period set
- * @sqlfunc periodN()
- * @pymeosfunc periodN()
- */
-Period *
-periodset_period_n(const PeriodSet *ps, int i)
-{
-  Period *result = NULL;
-  if (i >= 1 && i <= ps->count)
-    result = span_copy(periodset_per_n(ps, i - 1));
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_accessor
- * @brief Return the periods of a period set.
- * @post The output parameter @p count is equal to the number of periods of
- * the input period set
- * @sqlfunc periods()
- * @pymeosfunc periods()
- */
-const Period **
-periodset_periods(const PeriodSet *ps, int *count)
-{
-  const Period **periods = palloc(sizeof(Period *) * ps->count);
-  for (int i = 0; i < ps->count; i++)
-    periods[i] = periodset_per_n(ps, i);
-  *count = ps->count;
-  return periods;
 }
 
 /**
@@ -442,7 +188,7 @@ periodset_periods(const PeriodSet *ps, int *count)
 int
 periodset_num_timestamps(const PeriodSet *ps)
 {
-  const Period *p = periodset_per_n(ps, 0);
+  const Period *p = spanset_sp_n(ps, 0);
   TimestampTz prev = p->lower;
   bool start = false;
   int result = 1;
@@ -452,7 +198,7 @@ periodset_num_timestamps(const PeriodSet *ps)
   {
     if (start)
     {
-      p = periodset_per_n(ps, i++);
+      p = spanset_sp_n(ps, i++);
       d = p->lower;
       start = !start;
     }
@@ -479,7 +225,7 @@ periodset_num_timestamps(const PeriodSet *ps)
 TimestampTz
 periodset_start_timestamp(const PeriodSet *ps)
 {
-  const Period *p = periodset_per_n(ps, 0);
+  const Period *p = spanset_sp_n(ps, 0);
   return p->lower;
 }
 
@@ -492,7 +238,7 @@ periodset_start_timestamp(const PeriodSet *ps)
 TimestampTz
 periodset_end_timestamp(const PeriodSet *ps)
 {
-  const Period *p = periodset_per_n(ps, ps->count - 1);
+  const Period *p = spanset_sp_n(ps, ps->count - 1);
   return p->upper;
 }
 
@@ -512,7 +258,7 @@ bool
 periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
 {
   int pernum = 0;
-  const Period *p = periodset_per_n(ps, pernum);
+  const Period *p = spanset_sp_n(ps, pernum);
   TimestampTz d = p->lower;
   if (n == 1)
   {
@@ -531,7 +277,7 @@ periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
       if (pernum == ps->count)
         break;
 
-      p = periodset_per_n(ps, pernum);
+      p = spanset_sp_n(ps, pernum);
       d = p->lower;
       start = !start;
     }
@@ -562,14 +308,14 @@ TimestampTz *
 periodset_timestamps(const PeriodSet *ps, int *count)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ps->count);
-  const Period *p = periodset_per_n(ps, 0);
+  const Period *p = spanset_sp_n(ps, 0);
   result[0] = p->lower;
   int k = 1;
   if (p->lower != p->upper)
     result[k++] = p->upper;
   for (int i = 1; i < ps->count; i++)
   {
-    p = periodset_per_n(ps, i);
+    p = spanset_sp_n(ps, i);
     if (result[k - 1] != (TimestampTz) p->lower)
       result[k++] = p->lower;
     if (result[k - 1] != (TimestampTz) p->upper)
@@ -599,7 +345,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
   bool instant = (ps->span.lower == ps->span.upper);
 
   /* Copy the input period set to the output period set */
-  PeriodSet *result = periodset_copy(ps);
+  PeriodSet *result = spanset_copy(ps);
   /* Shift and/or scale the bounding period */
   period_shift_tscale(shift, duration, &result->span);
   /* Shift and/or scale the periods of the period set */
@@ -635,67 +381,67 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set is equal to the second one.
+ * @brief Return true if the first span set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
  * @pymeosfunc __eq__()
  */
 bool
-periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
 {
-  if (ps1->count != ps2->count)
+  if (ss1->count != ss2->count)
     return false;
-  /* ps1 and ps2 have the same number of PeriodSet */
-  for (int i = 0; i < ps1->count; i++)
+  /* ss1 and ss2 have the same number of SpanSet */
+  for (int i = 0; i < ss1->count; i++)
   {
-    const Period *p1 = periodset_per_n(ps1, i);
-    const Period *p2 = periodset_per_n(ps2, i);
-    if (span_ne(p1, p2))
+    const Span *s1 = spanset_sp_n(ss1, i);
+    const Span *s2 = spanset_sp_n(ss2, i);
+    if (span_ne(s1, s2))
       return false;
   }
-  /* All periods of the two PeriodSet are equal */
+  /* All spans of the two span sets are equal */
   return true;
 }
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set is different from the
+ * @brief Return true if the first span set is different from the
  * second one.
  * @sqlop @p <>
  */
 bool
-periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 {
-  return ! periodset_eq(ps1, ps2);
+  return ! spanset_eq(ss1, ss2);
 }
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return -1, 0, or 1 depending on whether the first period set
+ * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
- * @sqlfunc periodset_cmp()
+ * @sqlfunc spanset_cmp()
  */
 int
-periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int count1 = ps1->count;
-  int count2 = ps2->count;
+  int count1 = ss1->count;
+  int count2 = ss2->count;
   int count = count1 < count2 ? count1 : count2;
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    const Period *p1 = periodset_per_n(ps1, i);
-    const Period *p2 = periodset_per_n(ps2, i);
-    result = span_cmp(p1, p2);
+    const Span *s1 = spanset_sp_n(ss1, i);
+    const Span *s2 = spanset_sp_n(ss2, i);
+    result = span_cmp(s1, s2);
     if (result)
       break;
   }
-  /* The first count periods of the two PeriodSet are equal */
+  /* The first count spans of the two SpanSet are equal */
   if (! result)
   {
-    if (count < count1) /* ps1 has more PeriodSet than ps2 */
+    if (count < count1) /* ss1 has more SpanSet than ss2 */
       result = 1;
-    else if (count < count2) /* ps2 has more PeriodSet than ps1 */
+    else if (count < count2) /* ss2 has more SpanSet than ss1 */
       result = -1;
     else
       result = 0;
@@ -705,51 +451,51 @@ periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set is less than the second one
+ * @brief Return true if the first span set is less than the second one
  * @sqlop @p <
  */
 bool
-periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = periodset_cmp(ps1, ps2);
+  int cmp = spanset_cmp(ss1, ss2);
   return cmp < 0;
 }
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set is less than or equal to
+ * @brief Return true if the first span set is less than or equal to
  * the second one
  * @sqlop @p <=
  */
 bool
-periodset_le(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_le(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = periodset_cmp(ps1, ps2);
+  int cmp = spanset_cmp(ss1, ss2);
   return cmp <= 0;
 }
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set is greater than or equal to
+ * @brief Return true if the first span set is greater than or equal to
  * the second one
  * @sqlop @p >=
  */
 bool
-periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = periodset_cmp(ps1, ps2);
+  int cmp = spanset_cmp(ss1, ss2);
   return cmp >= 0;
 }
 
 /**
  * @ingroup libmeos_spantime_comp
- * @brief Return true if the first period set is greater than the second one
+ * @brief Return true if the first span set is greater than the second one
  * @sqlop @p >
  */
 bool
-periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2)
+spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = periodset_cmp(ps1, ps2);
+  int cmp = spanset_cmp(ss1, ss2);
   return cmp > 0;
 }
 
@@ -761,16 +507,16 @@ periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the 32-bit hash value of a period set.
- * @sqlfunc periodset_hash()
+ * @brief Return the 32-bit hash value of a span set.
+ * @sqlfunc spanset_hash()
  */
 uint32
-periodset_hash(const PeriodSet *ps)
+spanset_hash(const SpanSet *ps)
 {
   uint32 result = 1;
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = periodset_per_n(ps, i);
+    const Span *p = spanset_sp_n(ps, i);
     uint32 per_hash = span_hash(p);
     result = (result << 5) - result + per_hash;
   }
@@ -779,16 +525,16 @@ periodset_hash(const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_spantime_accessor
- * @brief Return the 64-bit hash value of a period set using a seed
- * @sqlfunc periodset_hash_extended()
+ * @brief Return the 64-bit hash value of a span set using a seed
+ * @sqlfunc spanset_hash_extended()
  */
 uint64
-periodset_hash_extended(const PeriodSet *ps, uint64 seed)
+spanset_hash_extended(const SpanSet *ps, uint64 seed)
 {
   uint64 result = 1;
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = periodset_per_n(ps, i);
+    const Span *p = spanset_sp_n(ps, i);
     uint64 per_hash = span_hash_extended(p, seed);
     result = (result << 5) - result + per_hash;
   }
