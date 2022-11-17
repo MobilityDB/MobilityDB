@@ -299,7 +299,7 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     lowers[non_null_cnt] = lower;
     uppers[non_null_cnt] = upper;
-    lengths[non_null_cnt] = distance_elem_elem(upper.val, lower.val,
+    lengths[non_null_cnt] = distance_value_value(upper.val, lower.val,
       upper.basetype, lower.basetype);
     non_null_cnt++;
   }

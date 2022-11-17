@@ -48,7 +48,7 @@
  * Return the minimum value of the two span base values
  */
 Datum
-span_elem_min(Datum l, Datum r, mobdbType type)
+span_value_min(Datum l, Datum r, mobdbType type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -64,7 +64,7 @@ span_elem_min(Datum l, Datum r, mobdbType type)
  * Return the minimum value of the two span base values
  */
 Datum
-span_elem_max(Datum l, Datum r, mobdbType type)
+span_value_max(Datum l, Datum r, mobdbType type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -84,7 +84,7 @@ span_elem_max(Datum l, Datum r, mobdbType type)
  * @brief Return true if a span contains an element.
  */
 bool
-contains_span_elem(const Span *s, Datum d, mobdbType basetype)
+contains_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
@@ -106,7 +106,7 @@ contains_span_elem(const Span *s, Datum d, mobdbType basetype)
 bool
 contains_intspan_int(const Span *s, int i)
 {
-  return contains_span_elem(s, Int32GetDatum(i), T_INT4);
+  return contains_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -117,7 +117,7 @@ contains_intspan_int(const Span *s, int i)
 bool
 contains_floatspan_float(const Span *s, double d)
 {
-  return contains_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -148,9 +148,9 @@ contains_span_span(const Span *s1, const Span *s2)
  * @brief Return true if an element is contained by a span
  */
 bool
-contained_elem_span(Datum d, mobdbType basetype, const Span *s)
+contained_value_span(Datum d, mobdbType basetype, const Span *s)
 {
-  return contains_span_elem(s, d, basetype);
+  return contains_span_value(s, d, basetype);
 }
 
 #if MEOS
@@ -162,7 +162,7 @@ contained_elem_span(Datum d, mobdbType basetype, const Span *s)
 bool
 contained_int_intspan(int i, const Span *s)
 {
-  return contains_span_elem(s, Int32GetDatum(i), T_INT4);
+  return contains_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -173,7 +173,7 @@ contained_int_intspan(int i, const Span *s)
 bool
 contained_float_floatspan(double d, const Span *s)
 {
-  return contains_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -219,7 +219,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a span and an element are adjacent
  */
 bool
-adjacent_span_elem(const Span *s, Datum d, mobdbType basetype)
+adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   /*
    * A timestamp A and a span C..D are adjacent if and only if
@@ -238,7 +238,7 @@ adjacent_span_elem(const Span *s, Datum d, mobdbType basetype)
 bool
 adjacent_intspan_int(const Span *s, int i)
 {
-  return adjacent_span_elem(s, Int32GetDatum(i), T_INT4);
+  return adjacent_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -249,7 +249,7 @@ adjacent_intspan_int(const Span *s, int i)
 bool
 adjacent_floatspan_float(const Span *s, double d)
 {
-  return adjacent_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return adjacent_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -281,7 +281,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
  * @brief Return true if an element is strictly to the left of a span.
  */
 bool
-left_elem_span(Datum d, mobdbType basetype, const Span *s)
+left_value_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
@@ -296,7 +296,7 @@ left_elem_span(Datum d, mobdbType basetype, const Span *s)
 bool
 left_int_intspan(int i, const Span *s)
 {
-  return left_elem_span(Int32GetDatum(i), T_INT4, s);
+  return left_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
@@ -307,7 +307,7 @@ left_int_intspan(int i, const Span *s)
 bool
 left_float_floatspan(double d, const Span *s)
 {
-  return left_elem_span(Float8GetDatum(d), T_FLOAT8, s);
+  return left_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
 
@@ -316,7 +316,7 @@ left_float_floatspan(double d, const Span *s)
  * @brief Return true if a span is strictly to the left of an element.
  */
 bool
-left_span_elem(const Span *s, Datum d, mobdbType basetype)
+left_span_value(const Span *s, Datum d, mobdbType basetype)
 {
 
   int cmp = datum_cmp2(s->upper, d, s->basetype, basetype);
@@ -332,7 +332,7 @@ left_span_elem(const Span *s, Datum d, mobdbType basetype)
 bool
 left_intspan_int(const Span *s, int i)
 {
-  return left_span_elem(s, Int32GetDatum(i), T_INT4);
+  return left_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -343,7 +343,7 @@ left_intspan_int(const Span *s, int i)
 bool
 left_floatspan_float(const Span *s, double d)
 {
-  return left_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return left_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -368,7 +368,7 @@ left_span_span(const Span *s1, const Span *s2)
  * @brief Return true if an element is strictly to the right of a span.
  */
 bool
-right_elem_span(Datum d, mobdbType basetype, const Span *s)
+right_value_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp > 0 || (cmp == 0 && ! s->upper_inc));
@@ -383,7 +383,7 @@ right_elem_span(Datum d, mobdbType basetype, const Span *s)
 bool
 right_int_intspan(int i, const Span *s)
 {
-  return right_elem_span(Int32GetDatum(i), T_INT4, s);
+  return right_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
@@ -394,7 +394,7 @@ right_int_intspan(int i, const Span *s)
 bool
 right_float_floatspan(double d, const Span *s)
 {
-  return right_elem_span(Float8GetDatum(d), T_FLOAT8, s);
+  return right_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
 
@@ -403,7 +403,7 @@ right_float_floatspan(double d, const Span *s)
  * @brief Return true if a span is strictly to the right of an element
  */
 bool
-right_span_elem(const Span *s, Datum d, mobdbType basetype)
+right_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
@@ -418,7 +418,7 @@ right_span_elem(const Span *s, Datum d, mobdbType basetype)
 bool
 right_intspan_int(const Span *s, int i)
 {
-  return right_span_elem(s, Int32GetDatum(i), T_INT4);
+  return right_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -429,7 +429,7 @@ right_intspan_int(const Span *s, int i)
 bool
 right_floatspan_float(const Span *s, double d)
 {
-  return right_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return right_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -452,7 +452,7 @@ right_span_span(const Span *s1, const Span *s2)
  * @brief Return true if an element is not to the right of a span.
  */
 bool
-overleft_elem_span(Datum d, mobdbType basetype, const Span *s)
+overleft_value_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && s->upper_inc));
@@ -467,7 +467,7 @@ overleft_elem_span(Datum d, mobdbType basetype, const Span *s)
 bool
 overleft_int_intspan(int i, const Span *s)
 {
-  return overleft_elem_span(Int32GetDatum(i), T_INT4, s);
+  return overleft_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
@@ -478,7 +478,7 @@ overleft_int_intspan(int i, const Span *s)
 bool
 overleft_float_floatspan(double d, const Span *s)
 {
-  return overleft_elem_span(Float8GetDatum(d), T_INT4, s);
+  return overleft_value_span(Float8GetDatum(d), T_INT4, s);
 }
 #endif /* MEOS */
 
@@ -487,7 +487,7 @@ overleft_float_floatspan(double d, const Span *s)
  * @brief Return true if a span is not to the right of an element.
  */
 bool
-overleft_span_elem(const Span *s, Datum d, mobdbType basetype)
+overleft_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   /* Integer spans are canonicalized and thus their upper bound is exclusive.
    * Therefore, we cannot simply check that s->upper <= d */
@@ -505,7 +505,7 @@ overleft_span_elem(const Span *s, Datum d, mobdbType basetype)
 bool
 overleft_intspan_int(const Span *s, int i)
 {
-  return overleft_span_elem(s, Int32GetDatum(i), T_INT4);
+  return overleft_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -516,7 +516,7 @@ overleft_intspan_int(const Span *s, int i)
 bool
 overleft_floatspan_float(const Span *s, double d)
 {
-  return overleft_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -541,7 +541,7 @@ overleft_span_span(const Span *s1, const Span *s2)
  * @brief Return true if an element is not the left of a span.
  */
 bool
-overright_elem_span(Datum d, mobdbType basetype, const Span *s)
+overright_value_span(Datum d, mobdbType basetype, const Span *s)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   return (cmp < 0 || (cmp == 0 && s->lower_inc));
@@ -556,7 +556,7 @@ overright_elem_span(Datum d, mobdbType basetype, const Span *s)
 bool
 overright_int_intspan(int i, const Span *s)
 {
-  return overright_elem_span(Int32GetDatum(i), T_INT4, s);
+  return overright_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
@@ -567,7 +567,7 @@ overright_int_intspan(int i, const Span *s)
 bool
 overright_float_floatspan(double d, const Span *s)
 {
-  return overright_elem_span(Float8GetDatum(d), T_FLOAT8, s);
+  return overright_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
 
@@ -576,7 +576,7 @@ overright_float_floatspan(double d, const Span *s)
  * @brief Return true if a span is not to the left of an element.
  */
 bool
-overright_span_elem(const Span *s, Datum d, mobdbType basetype)
+overright_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   return datum_le2(d, s->lower, basetype, s->basetype);
 }
@@ -590,7 +590,7 @@ overright_span_elem(const Span *s, Datum d, mobdbType basetype)
 bool
 overright_intspan_int(const Span *s, int i)
 {
-  return overright_span_elem(s, Int32GetDatum(i), T_INT4);
+  return overright_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -601,7 +601,7 @@ overright_intspan_int(const Span *s, int i)
 bool
 overright_floatspan_float(const Span *s, double d)
 {
-  return overright_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return overright_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -628,7 +628,7 @@ overright_span_span(const Span *s1, const Span *s2)
  * @sqlop @p +
  */
 Span *
-union_span_span(const Span *s1, const Span *s2, bool strict)
+bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
 {
   assert(s1->spantype == s2->spantype);
   /* If the spans do not overlap */
@@ -660,8 +660,8 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
     return false;
 
   memset(result, 0, sizeof(Span));
-  Datum lower = span_elem_max(s1->lower, s2->lower, s1->basetype);
-  Datum upper = span_elem_min(s1->upper, s2->upper, s1->basetype);
+  Datum lower = span_value_max(s1->lower, s2->lower, s1->basetype);
+  Datum upper = span_value_min(s1->upper, s2->upper, s1->basetype);
   bool lower_inc = s1->lower == s2->lower ? s1->lower_inc && s2->lower_inc :
     ( lower == s1->lower ? s1->lower_inc : s2->lower_inc );
   bool upper_inc = s1->upper == s2->upper ? s1->upper_inc && s2->upper_inc :
@@ -697,7 +697,7 @@ intersection_span_span(const Span *s1, const Span *s2)
  * @sqlop @p -
  */
 Span *
-minus_span_span(const Span *s1, const Span *s2)
+bbox_minus_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
   /* Deserialize the spans */
@@ -758,7 +758,7 @@ minus_span_span(const Span *s1, const Span *s2)
  * @brief Return the distance between the elements
  */
 double
-distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer)
+distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
 {
   ensure_span_basetype(typel);
   if (typel != typer)
@@ -782,22 +782,22 @@ distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * @brief Return the distance between a span and a element.
  */
 double
-distance_span_elem(const Span *s, Datum d, mobdbType basetype)
+distance_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   /* If the span contains the element return 0 */
-  if (contains_span_elem(s, d, basetype))
+  if (contains_span_value(s, d, basetype))
     return 0.0;
 
   /* If the span is to the right of the element return the distance
    * between the element and the lower bound of the span
    *     d   [---- s ----] */
-  if (right_span_elem(s, d, basetype))
-    return distance_elem_elem(d, s->lower, basetype, s->basetype);
+  if (right_span_value(s, d, basetype))
+    return distance_value_value(d, s->lower, basetype, s->basetype);
 
   /* If the span is to the left of the element return the distance
    * between the upper bound of the span and element
    *     [---- s ----]   d */
-  return distance_elem_elem(s->upper, d, s->basetype, basetype);
+  return distance_value_value(s->upper, d, s->basetype, basetype);
 }
 
 #if MEOS
@@ -809,7 +809,7 @@ distance_span_elem(const Span *s, Datum d, mobdbType basetype)
 double
 distance_intspan_int(const Span *s, int i)
 {
-  return distance_span_elem(s, Int32GetDatum(i), T_INT4);
+  return distance_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -820,7 +820,7 @@ distance_intspan_int(const Span *s, int i)
 double
 distance_floatspan_float(const Span *s, double d)
 {
-  return distance_span_elem(s, Float8GetDatum(d), T_FLOAT8);
+  return distance_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -842,12 +842,12 @@ distance_span_span(const Span *s1, const Span *s2)
    * between the upper bound of the first and lower bound of the second
    *     [---- s1 ----]   [---- s2 ----] */
   if (left_span_span(s1, s2))
-    return distance_elem_elem(s1->upper, s2->lower, s1->basetype, s2->basetype);
+    return distance_value_value(s1->upper, s2->lower, s1->basetype, s2->basetype);
 
   /* If the first span is to the right of the second one return the distance
    * between the upper bound of the second and the lower bound of the first
    *     [---- s2 ----]   [---- s1 ----] */
-  return distance_elem_elem(s2->upper, s1->lower, s2->basetype, s1->basetype);
+  return distance_value_value(s2->upper, s1->lower, s2->basetype, s1->basetype);
 }
 
 /******************************************************************************/

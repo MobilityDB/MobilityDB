@@ -1147,7 +1147,7 @@ temporal_extent_transfn(Period *p, Temporal *temp)
 
   Period p1;
   temporal_set_period(temp, &p1);
-  result = union_span_span(p, &p1, false);
+  result = bbox_union_span_span(p, &p1, false);
   return result;
 }
 

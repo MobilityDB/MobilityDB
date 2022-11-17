@@ -94,22 +94,22 @@ extern void lower_upper_shift_tscale(const Interval *shift, const Interval *dura
 
 /* Topological functions for span and time types */
 
-extern bool contains_span_elem(const Span *s, Datum d, mobdbType basetype);
-extern bool contained_elem_span(Datum d, mobdbType basetype, const Span *s);
-extern bool adjacent_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool contained_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool adjacent_span_value(const Span *s, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
 /* Position functions for span and time types */
 
-extern bool left_elem_span(Datum d, mobdbType basetype, const Span *s);
-extern bool left_span_elem(const Span *s, Datum d, mobdbType basetype);
-extern bool right_elem_span(Datum d, mobdbType basetype, const Span *s);
-extern bool right_span_elem(const Span *s, Datum d, mobdbType basetype);
-extern bool overleft_elem_span(Datum d, mobdbType basetype, const Span *s);
-extern bool overleft_span_elem(const Span *s, Datum d, mobdbType basetype);
-extern bool overright_elem_span(Datum d, mobdbType basetype, const Span *s);
-extern bool overright_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern bool left_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool left_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool right_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool right_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool overleft_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overleft_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool overright_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overright_span_value(const Span *s, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -121,8 +121,8 @@ extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
 
 /* Distance functions for span and time types */
 
-extern double distance_elem_elem(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern double distance_span_elem(const Span *s, Datum d, mobdbType basetype);
+extern double distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer);
+extern double distance_span_value(const Span *s, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 

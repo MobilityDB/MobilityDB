@@ -996,9 +996,9 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Span *period = NULL, *span = NULL;
   if (hast)
-    period = union_span_span(&box1->period, &box2->period, true);
+    period = bbox_union_span_span(&box1->period, &box2->period, true);
   if (hasx)
-    span = union_span_span(&box1->span, &box2->span, true);
+    span = bbox_union_span_span(&box1->span, &box2->span, true);
   TBOX *result = tbox_make(period, span);
   return result;
 }

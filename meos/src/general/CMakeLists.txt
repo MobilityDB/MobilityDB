@@ -8,6 +8,7 @@ add_library(general OBJECT
   span.c
   spanset.c
   span_ops.c
+  spanset_ops.c
   tbool_boolops.c
   tbool_boolops_meos.c
   tbox.c

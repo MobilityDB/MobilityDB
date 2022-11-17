@@ -51,6 +51,61 @@
  * General functions
  *****************************************************************************/
 
+/**
+ * Return the location of the value in the span set using binary search
+ *
+ * If the value is found, the index of the span is returned in the output
+ * parameter. Otherwise, return a number encoding whether the value is before
+ * between two spans, or after the span set.
+ * For example, given a value composed of 3 spans and a value v, the
+ * result of the function is as follows:
+ * @code
+ *               0          1          2
+ *            |-----|    |-----|    |-----|
+ * 1)    v^                                        => loc = 0
+ * 2)            v^                                => loc = 0
+ * 3)                 v^                           => loc = 1
+ * 4)                            v^                => loc = 2
+ * 5)                                        v^    => loc = 3
+ * @endcode
+ * @param[in] ss Span set value
+ * @param[in] v Value
+ * @param[out] loc Location
+ * @result Return true if the timestamp is contained in the period set
+ */
+bool
+spanset_find_value(const SpanSet *ss, Datum v, int *loc)
+{
+  int first = 0;
+  int last = ss->count - 1;
+  int middle = 0; /* make compiler quiet */
+  const Span *s = NULL; /* make compiler quiet */
+  while (first <= last)
+  {
+    middle = (first + last)/2;
+    s = spanset_sp_n(ss, middle);
+    if (contains_span_value(s, v, s->basetype))
+    {
+      *loc = middle;
+      return true;
+    }
+    if (datum_le(v, s->lower, s->basetype))
+      last = middle - 1;
+    else
+      first = middle + 1;
+  }
+  if (datum_ge(v, s->upper, s->basetype))
+    middle++;
+  *loc = middle;
+  return false;
+}
+
+bool
+periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
+{
+  return spanset_find_value(ps, TimestampTzGetDatum(t), loc);
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

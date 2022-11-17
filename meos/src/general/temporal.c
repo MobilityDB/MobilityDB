@@ -3445,14 +3445,14 @@ temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps,
 }
 
 /*****************************************************************************
- * Intersects functions
+ * Overlaps functions
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a timestamp
- * @sqlfunc intersectsTime()
- * @pymeosfunc intersectsTime()
+ * @sqlfunc overlapsTime()
+ * @pymeosfunc overlapsTime()
  */
 bool
 temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t)
@@ -3471,8 +3471,8 @@ temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a timestamp set
- * @sqlfunc intersectsTime()
- * @pymeosfunc intersectsTime()
+ * @sqlfunc overlapsTime()
+ * @pymeosfunc overlapsTime()
  */
 bool
 temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ts)
@@ -3491,8 +3491,8 @@ temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ts)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a period
- * @sqlfunc intersectsTime()
- * @pymeosfunc intersectsTime()
+ * @sqlfunc overlapsTime()
+ * @pymeosfunc overlapsTime()
  */
 bool
 temporal_overlaps_period(const Temporal *temp, const Period *p)
@@ -3511,8 +3511,8 @@ temporal_overlaps_period(const Temporal *temp, const Period *p)
 /**
  * @ingroup libmeos_temporal_time
  * @brief Return true if a temporal value intersects a period set
- * @sqlfunc intersectsTime()
- * @pymeosfunc intersectsTime()
+ * @sqlfunc overlapsTime()
+ * @pymeosfunc overlapsTime()
  */
 bool
 temporal_overlaps_periodset(const Temporal *temp, const PeriodSet *ps)

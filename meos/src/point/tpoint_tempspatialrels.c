@@ -302,13 +302,13 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   }
   PeriodSet *ps;
   if (countper == 1)
-    ps = minus_period_period(&seq->period, periods[0]);
+    ps = minus_span_span(&seq->period, periods[0]);
   else
   {
     /* It is necessary to sort the periods */
     spanarr_sort(periods, countper);
     PeriodSet *ps1 = spanset_make((const Period **) periods, countper, NORMALIZE);
-    ps = minus_period_periodset(&seq->period, ps1);
+    ps = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
   int newcount = countper;

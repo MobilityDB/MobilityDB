@@ -3660,7 +3660,7 @@ tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count,
     return tsequence_to_tsequenceset(seq);
 
   PeriodSet *ps1 = tsequenceset_time(atresult);
-  PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
+  PeriodSet *ps2 = minus_span_spanset(&seq->period, ps1);
   TSequenceSet *result = NULL;
   if (ps2 != NULL)
   {
@@ -3780,7 +3780,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   /* Constant segment (step or linear interpolation) */
   if (datum_eq(value1, value2, basetype))
   {
-    contains = contains_span_elem(span, value1, basetype);
+    contains = contains_span_value(span, value1, basetype);
     if ((atfunc && ! contains) || (! atfunc && contains))
       return 0;
     instants[0] = (TInstant *) inst1;
@@ -3794,7 +3794,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   if (! linear)
   {
     int k = 0;
-    contains = contains_span_elem(span, value1, basetype);
+    contains = contains_span_value(span, value1, basetype);
     if ((atfunc && contains) || (! atfunc && ! contains))
     {
       instants[0] = (TInstant *) inst1;
@@ -3803,7 +3803,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
         lower_inclu, false, interp, NORMALIZE_NO);
       pfree(instants[1]);
     }
-    contains = contains_span_elem(span, value2, basetype);
+    contains = contains_span_value(span, value2, basetype);
     if (upper_inclu &&
       ((atfunc && contains) || (! atfunc && ! contains)))
     {
@@ -4196,7 +4196,7 @@ tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
     }
 
     PeriodSet *ps1 = tsequenceset_time(ss);
-    PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
+    PeriodSet *ps2 = minus_span_spanset(&seq->period, ps1);
     int newcount = 0;
     if (ps2 != NULL)
     {
@@ -5018,7 +5018,7 @@ tcontseq_minus_period1(const TSequence *seq, const Period *p,
     return 0;
 
   /* General case */
-  PeriodSet *ps = minus_period_period(&seq->period, p);
+  PeriodSet *ps = minus_span_span(&seq->period, p);
   if (ps == NULL)
     return 0;
   for (int i = 0; i < ps->count; i++)

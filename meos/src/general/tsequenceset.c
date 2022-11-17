@@ -1669,7 +1669,7 @@ tsequenceset_restrict_values(const TSequenceSet *ss, const Datum *values,
 
   PeriodSet *ps1 = tsequenceset_time(ss);
   PeriodSet *ps2 = tsequenceset_time(atresult);
-  PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
+  PeriodSet *ps = minus_spanset_spanset(ps1, ps2);
   TSequenceSet *result = NULL;
   if (ps != NULL)
   {
@@ -1972,7 +1972,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
   {
     /* MINUS */
     PeriodSet *ps = tsequenceset_time(ss);
-    PeriodSet *resultps = minus_periodset_period(ps, p);
+    PeriodSet *resultps = minus_spanset_span(ps, p);
     result = NULL;
     if (resultps != NULL)
     {

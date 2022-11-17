@@ -4095,7 +4095,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
   PeriodSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
-  PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
+  PeriodSet *ps2 = minus_span_spanset(&seq->period, ps1);
   pfree(ps1); pfree(periods);
   if (ps2 == NULL)
   {
@@ -4461,7 +4461,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
   {
     PeriodSet *ps1 = temporal_time(temp);
     PeriodSet *ps2 = temporal_time(temp1);
-    PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
+    PeriodSet *ps = minus_spanset_spanset(ps1, ps2);
     if (ps != NULL)
     {
       result = temporal_restrict_periodset(temp, ps, REST_MINUS);

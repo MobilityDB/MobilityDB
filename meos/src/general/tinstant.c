@@ -764,7 +764,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
 {
   Datum d = tinstant_value(inst);
   mobdbType basetype = temptype_basetype(inst->temptype);
-  bool contains = contains_span_elem(span, d, basetype);
+  bool contains = contains_span_value(span, d, basetype);
   return atfunc ? contains : ! contains;
 }
 
@@ -803,7 +803,7 @@ tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
   mobdbType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < count; i++)
   {
-    if (contains_span_elem(normspans[i], d, basetype))
+    if (contains_span_value(normspans[i], d, basetype))
       return atfunc ? true : false;
   }
   /* Since the array of spans has been filtered with the bounding box of

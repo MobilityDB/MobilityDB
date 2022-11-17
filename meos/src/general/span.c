@@ -690,7 +690,7 @@ span_upper_inc(const Span *s)
 double
 span_width(const Span *s)
 {
-  return distance_elem_elem(s->lower, s->upper, s->basetype, s->basetype);
+  return distance_value_value(s->lower, s->upper, s->basetype, s->basetype);
 }
 
 /**

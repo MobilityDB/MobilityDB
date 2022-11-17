@@ -301,7 +301,7 @@ PG_FUNCTION_INFO_V1(Span_gist_penalty);
  *
  * The penalty function has the following goals (in order from most to least
  * important):
- * - Avoid broadening (as determined by distance_elem_elem) the original
+ * - Avoid broadening (as determined by distance_value_value) the original
  *   predicate
  * - Favor adding spans to narrower original predicates
  */
@@ -317,13 +317,13 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   span_deserialize(orig, &orig_lower, &orig_upper);
   span_deserialize(new, &new_lower, &new_upper);
 
-  /* Calculate extension of original span by calling distance_elem_elem */
+  /* Calculate extension of original span by calling distance_value_value */
   float8 diff = 0.0;
   if (span_bound_cmp(&new_lower, &orig_lower) < 0)
-    diff += distance_elem_elem(orig->lower, new->lower, orig->basetype,
+    diff += distance_value_value(orig->lower, new->lower, orig->basetype,
       new->basetype);
   if (span_bound_cmp(&new_upper, &orig_upper) > 0)
-    diff += distance_elem_elem(new->upper, orig->upper, new->basetype,
+    diff += distance_value_value(new->upper, orig->upper, new->basetype,
       orig->basetype);
   *penalty = (float4) diff;
 
@@ -339,7 +339,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(span, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      left_span = union_span_span(left_span, span, false); \
+      left_span = bbox_union_span_span(left_span, span, false); \
     else                  \
       left_span = (span);        \
     v->spl_left[v->spl_nleft++] = (off);  \
@@ -348,7 +348,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(span, off)        \
   do {                    \
     if (v->spl_nright > 0)          \
-      right_span = union_span_span(right_span, span, false); \
+      right_span = bbox_union_span_span(right_span, span, false); \
     else                  \
       right_span = (span);      \
     v->spl_right[v->spl_nright++] = (off);  \
@@ -443,7 +443,7 @@ span_gist_consider_split(ConsiderSplitContext *context,
      * values) and minimal ratio secondarily.  The subtype_diff is
      * used for overlap measure.
      */
-    overlap = (float4) distance_elem_elem(left_upper->val, right_lower->val,
+    overlap = (float4) distance_value_value(left_upper->val, right_lower->val,
       left_upper->basetype, right_lower->basetype);
 
     /* If there is no previous selection, select this split */
@@ -751,9 +751,9 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
          * (context.left_upper - upper)
          */
         common_entries[common_entries_count].delta =
-          distance_elem_elem(span->lower, context.right_lower.val,
+          distance_value_value(span->lower, context.right_lower.val,
             span->basetype, context.right_lower.basetype) -
-          distance_elem_elem(context.left_upper.val, span->upper,
+          distance_value_value(context.left_upper.val, span->upper,
             context.right_lower.basetype, span->basetype);
         common_entries_count++;
       }

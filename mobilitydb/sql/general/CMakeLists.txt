@@ -4,6 +4,7 @@ SET(LOCAL_FILES
   003_timestampset
   005_periodset
   007_span_ops
+  008_spanset_ops
   009_time_ops
   011_span_indexes
   013_time_indexes

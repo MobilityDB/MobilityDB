@@ -141,6 +141,14 @@ typedef enum
   TNPOINTTYPE,
 } TemporalFamily;
 
+/** Enumeration for the set operations of span and temporal types */
+typedef enum
+{
+  UNION,
+  INTER,
+  MINUS
+} SetOper;
+
 /*****************************************************************************
  * Concrete subtype of temporal types
  *****************************************************************************/

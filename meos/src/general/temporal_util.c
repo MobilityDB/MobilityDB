@@ -153,7 +153,7 @@ datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
-  elog(ERROR, "unknown span_elem_cmp function for span base type: %d", typel);
+  elog(ERROR, "unknown span_value_cmp function for span base type: %d", typel);
 }
 
 /**

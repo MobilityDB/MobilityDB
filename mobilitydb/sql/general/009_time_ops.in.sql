@@ -52,14 +52,6 @@ CREATE FUNCTION time_contains(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contains(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contains(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_periodset_timestamp'
@@ -67,14 +59,6 @@ CREATE FUNCTION time_contains(periodset, timestamptz)
 CREATE FUNCTION time_contains(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contains(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contains(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -102,18 +86,6 @@ CREATE OPERATOR @> (
   COMMUTATOR = <@,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR @> (
-  PROCEDURE = time_contains,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = time_contains,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
 
 CREATE OPERATOR @> (
   PROCEDURE = time_contains,
@@ -124,18 +96,6 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = time_contains,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = time_contains,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = time_contains,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = <@,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -163,22 +123,6 @@ CREATE FUNCTION time_contained(timestampset, period)
 CREATE FUNCTION time_contained(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contained(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contained(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contained(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_contained(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -217,30 +161,6 @@ CREATE OPERATOR <@ (
   COMMUTATOR = @>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <@ (
-  PROCEDURE = time_contained,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = time_contained,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = time_contained,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = time_contained,
-  LEFTARG = periodset, RIGHTARG = periodset,
-  COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
 
 CREATE FUNCTION time_overlaps(timestampset, timestampset)
   RETURNS boolean
@@ -258,25 +178,9 @@ CREATE FUNCTION time_overlaps(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overlaps(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overlaps(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overlaps(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overlaps(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -299,37 +203,13 @@ CREATE OPERATOR && (
 );
 CREATE OPERATOR && (
   PROCEDURE = time_overlaps,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR && (
-  PROCEDURE = time_overlaps,
   LEFTARG = period, RIGHTARG = timestampset,
   COMMUTATOR = &&,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = time_overlaps,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR && (
-  PROCEDURE = time_overlaps,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR && (
-  PROCEDURE = time_overlaps,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR && (
-  PROCEDURE = time_overlaps,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = &&,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -370,14 +250,6 @@ CREATE FUNCTION time_before(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_before(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_before(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_before(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_periodset_timestampset'
@@ -385,14 +257,6 @@ CREATE FUNCTION time_before(periodset, timestampset)
 CREATE FUNCTION time_before(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_before(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_before(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -451,18 +315,6 @@ CREATE OPERATOR <<# (
 );
 CREATE OPERATOR <<# (
   PROCEDURE = time_before,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <<# (
-  PROCEDURE = time_before,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <<# (
-  PROCEDURE = time_before,
   LEFTARG = periodset, RIGHTARG = timestamptz,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -470,18 +322,6 @@ CREATE OPERATOR <<# (
 CREATE OPERATOR <<# (
   PROCEDURE = time_before,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <<# (
-  PROCEDURE = time_before,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR <<# (
-  PROCEDURE = time_before,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -522,14 +362,6 @@ CREATE FUNCTION time_after(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_after(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_after(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_after(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_periodset_timestamp'
@@ -537,14 +369,6 @@ CREATE FUNCTION time_after(periodset, timestamptz)
 CREATE FUNCTION time_after(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_after(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_after(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>> (
@@ -603,18 +427,6 @@ CREATE OPERATOR #>> (
 );
 CREATE OPERATOR #>> (
   PROCEDURE = time_after,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #>> (
-  PROCEDURE = time_after,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #>> (
-  PROCEDURE = time_after,
   LEFTARG = periodset, RIGHTARG = timestamptz,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -622,18 +434,6 @@ CREATE OPERATOR #>> (
 CREATE OPERATOR #>> (
   PROCEDURE = time_after,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #>> (
-  PROCEDURE = time_after,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #>> (
-  PROCEDURE = time_after,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -674,14 +474,6 @@ CREATE FUNCTION time_overbefore(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overbefore(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overbefore(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overbefore(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_periodset_timestampset'
@@ -689,14 +481,6 @@ CREATE FUNCTION time_overbefore(periodset, timestampset)
 CREATE FUNCTION time_overbefore(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overbefore(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overbefore(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &<# (
@@ -746,32 +530,12 @@ CREATE OPERATOR &<# (
 );
 CREATE OPERATOR &<# (
   PROCEDURE = time_overbefore,
-  LEFTARG = period, RIGHTARG = period,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR &<# (
-  PROCEDURE = time_overbefore,
-  LEFTARG = period, RIGHTARG = periodset,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR &<# (
-  PROCEDURE = time_overbefore,
   LEFTARG = periodset, RIGHTARG = timestamptz,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
   PROCEDURE = time_overbefore,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR &<# (
-  PROCEDURE = time_overbefore,
-  LEFTARG = periodset, RIGHTARG = period,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR &<# (
-  PROCEDURE = time_overbefore,
-  LEFTARG = periodset, RIGHTARG = periodset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 
@@ -811,14 +575,6 @@ CREATE FUNCTION time_overafter(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overafter(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overafter(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overafter(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_periodset_timestampset'
@@ -826,14 +582,6 @@ CREATE FUNCTION time_overafter(periodset, timestampset)
 CREATE FUNCTION time_overafter(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overafter(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_overafter(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #&> (
@@ -883,32 +631,12 @@ CREATE OPERATOR #&> (
 );
 CREATE OPERATOR #&> (
   PROCEDURE = time_overafter,
-  LEFTARG = period, RIGHTARG = period,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #&> (
-  PROCEDURE = time_overafter,
-  LEFTARG = period, RIGHTARG = periodset,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #&> (
-  PROCEDURE = time_overafter,
   LEFTARG = periodset, RIGHTARG = timestamptz,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
   PROCEDURE = time_overafter,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #&> (
-  PROCEDURE = time_overafter,
-  LEFTARG = periodset, RIGHTARG = period,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR #&> (
-  PROCEDURE = time_overafter,
-  LEFTARG = periodset, RIGHTARG = periodset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 
@@ -936,14 +664,6 @@ CREATE FUNCTION time_adjacent(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_adjacent(period, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_adjacent(period, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION time_adjacent(periodset, timestamptz)
   RETURNS boolean
@@ -952,14 +672,6 @@ CREATE FUNCTION time_adjacent(periodset, timestamptz)
 CREATE FUNCTION time_adjacent(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_adjacent(periodset, period)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_adjacent(periodset, periodset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -1000,18 +712,6 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = time_adjacent,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR -|- (
-  PROCEDURE = time_adjacent,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR -|- (
-  PROCEDURE = time_adjacent,
   LEFTARG = periodset, RIGHTARG = timestamptz,
   COMMUTATOR = -|-,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -1019,18 +719,6 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = time_adjacent,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR -|- (
-  PROCEDURE = time_adjacent,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = -|-,
-  RESTRICT = period_sel, JOIN = span_joinsel
-);
-CREATE OPERATOR -|- (
-  PROCEDURE = time_adjacent,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = -|-,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -1121,14 +809,6 @@ CREATE FUNCTION time_union(period, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_union(period, period)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Union_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_union(period, periodset)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Union_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = time_union,
@@ -1140,16 +820,6 @@ CREATE OPERATOR + (
   LEFTARG = period, RIGHTARG = timestampset,
   COMMUTATOR = +
 );
-CREATE OPERATOR + (
-  PROCEDURE = time_union,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = time_union,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = +
-);
 
 CREATE FUNCTION time_union(periodset, timestamptz)
   RETURNS periodset
@@ -1158,14 +828,6 @@ CREATE FUNCTION time_union(periodset, timestamptz)
 CREATE FUNCTION time_union(periodset, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_union(periodset, period)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Union_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_union(periodset, periodset)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Union_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
@@ -1176,16 +838,6 @@ CREATE OPERATOR + (
 CREATE OPERATOR + (
   PROCEDURE = time_union,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = time_union,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = time_union,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = +
 );
 
@@ -1267,14 +919,6 @@ CREATE FUNCTION time_minus(period, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Minus_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_minus(period, period)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Minus_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_minus(period, periodset)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Minus_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = time_minus,
@@ -1283,14 +927,6 @@ CREATE OPERATOR - (
 CREATE OPERATOR - (
   PROCEDURE = time_minus,
   LEFTARG = period, RIGHTARG = timestampset
-);
-CREATE OPERATOR - (
-  PROCEDURE = time_minus,
-  LEFTARG = period, RIGHTARG = period
-);
-CREATE OPERATOR - (
-  PROCEDURE = time_minus,
-  LEFTARG = period, RIGHTARG = periodset
 );
 
 CREATE FUNCTION time_minus(periodset, timestamptz)
@@ -1301,14 +937,6 @@ CREATE FUNCTION time_minus(periodset, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Minus_periodset_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_minus(periodset, period)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Minus_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_minus(periodset, periodset)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Minus_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = time_minus,
@@ -1317,14 +945,6 @@ CREATE OPERATOR - (
 CREATE OPERATOR - (
   PROCEDURE = time_minus,
   LEFTARG = periodset, RIGHTARG = timestampset
-);
-CREATE OPERATOR - (
-  PROCEDURE = time_minus,
-  LEFTARG = periodset, RIGHTARG = period
-);
-CREATE OPERATOR - (
-  PROCEDURE = time_minus,
-  LEFTARG = periodset, RIGHTARG = periodset
 );
 
 /*****************************************************************************/
@@ -1414,14 +1034,6 @@ CREATE FUNCTION time_intersection(period, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Intersection_period_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_intersection(period, period)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Intersection_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_intersection(period, periodset)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Intersection_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = time_intersection,
@@ -1433,16 +1045,6 @@ CREATE OPERATOR * (
   LEFTARG = period, RIGHTARG = timestampset,
   COMMUTATOR = *
 );
-CREATE OPERATOR * (
-  PROCEDURE = time_intersection,
-  LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = time_intersection,
-  LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = *
-);
 
 CREATE FUNCTION time_intersection(periodset, timestamptz)
   RETURNS timestamptz
@@ -1451,14 +1053,6 @@ CREATE FUNCTION time_intersection(periodset, timestamptz)
 CREATE FUNCTION time_intersection(periodset, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Intersection_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_intersection(periodset, period)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Intersection_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_intersection(periodset, periodset)
-  RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Intersection_periodset_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
@@ -1469,16 +1063,6 @@ CREATE OPERATOR * (
 CREATE OPERATOR * (
   PROCEDURE = time_intersection,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = time_intersection,
-  LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = time_intersection,
-  LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = *
 );
 

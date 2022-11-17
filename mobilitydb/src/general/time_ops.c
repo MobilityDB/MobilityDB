@@ -125,21 +125,6 @@ Contains_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Contains_period_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period contains a period
- * @sqlfunc time_contains()
- * @sqlop @p @>
- */
-PGDLLEXPORT Datum
-Contains_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(contains_span_span(p1, p2));
-}
-
 PG_FUNCTION_INFO_V1(Contains_periodset_timestamp);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -172,58 +157,6 @@ Contains_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = contains_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contains_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period set contains a period set
- * @sqlfunc time_contains()
- * @sqlop @p @>
- */
-PGDLLEXPORT Datum
-Contains_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = contains_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contains_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period contains a period set
- * @sqlfunc time_contains()
- * @sqlop @p @>
- */
-PGDLLEXPORT Datum
-Contains_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contains_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the first period set contains the second one
- * @sqlfunc time_contains()
- * @sqlop @p @>
- */
-PGDLLEXPORT Datum
-Contains_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -332,73 +265,6 @@ Contained_timestampset_periodset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Contained_period_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period is contained by the second one
- * @sqlfunc time_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(contained_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Contained_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period is contained by a period set
- * @sqlfunc time_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contained_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period set is contained by a period
- * @sqlfunc time_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = contained_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the first period set is contained by the second one
- * @sqlfunc time_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = contained_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /*****************************************************************************/
 /* overlaps? */
 
@@ -472,38 +338,6 @@ Overlaps_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_period_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the periods overlap
- * @sqlfunc time_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(overlaps_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period and a period set overlap
- * @sqlfunc time_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overlaps_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overlaps_periodset_timestampset);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -519,41 +353,6 @@ Overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = overlaps_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period set and a period overlap
- * @sqlfunc time_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = overlaps_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the period sets overlap
- * @sqlfunc time_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = overlaps_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -659,38 +458,6 @@ Adjacent_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_period_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the periods are adjacent
- * @sqlfunc time_adjacent()
- * @sqlop @p -|-
- */
-PGDLLEXPORT Datum
-Adjacent_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(adjacent_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period and a period set are adjacent
- * @sqlfunc time_adjacent()
- * @sqlop @p -|-
- */
-PGDLLEXPORT Datum
-Adjacent_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = adjacent_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Adjacent_periodset_timestamp);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -723,41 +490,6 @@ Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = adjacent_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a period set and a period are adjacent
- * @sqlfunc time_adjacent()
- * @sqlop @p -|-
- */
-PGDLLEXPORT Datum
-Adjacent_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = adjacent_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the period sets are adjacent
- * @sqlfunc time_adjacent()
- * @sqlop @p -|-
- */
-PGDLLEXPORT Datum
-Adjacent_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = adjacent_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -915,38 +647,6 @@ Before_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Before_period_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period is strictly before the second one
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(left_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Before_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period is strictly before a period set
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = before_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Before_periodset_timestamp);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -979,41 +679,6 @@ Before_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = before_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Before_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period set is strictly before a period
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = before_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Before_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period set is strictly before the second one
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = before_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -1171,38 +836,6 @@ After_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(After_period_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period is strictly after the second one
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(right_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(After_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period is strictly after a period set
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = after_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(After_periodset_timestamp);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -1235,41 +868,6 @@ After_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = after_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(After_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period set is strictly after a period
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = after_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(After_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period set is strictly after the second one
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = after_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -1427,38 +1025,6 @@ Overbefore_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_period_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period is not after the second one
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(overleft_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period is not after a period set
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overbefore_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overbefore_periodset_timestamp);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -1491,41 +1057,6 @@ Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = overbefore_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period set is not after a period set
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = overbefore_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period set is not after the second one
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = overbefore_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -1683,38 +1214,6 @@ Overafter_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_period_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period is not before the second one
- * @sqlfunc time_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overafter_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(overright_span_span(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Overafter_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period is not before a period set
- * @sqlfunc time_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overafter_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overafter_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overafter_periodset_timestamp);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -1747,41 +1246,6 @@ Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
   bool result = overafter_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a period set is not before a period
- * @sqlfunc time_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overafter_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  bool result = overafter_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first period set is not before the second one
- * @sqlfunc time_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overafter_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = overafter_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -1962,38 +1426,6 @@ Union_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Union_period_period);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of the periods
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_POINTER(union_period_period(p1, p2));
-}
-
-PG_FUNCTION_INFO_V1(Union_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of a period and a period set
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = union_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Union_periodset_timestamp);
@@ -2028,41 +1460,6 @@ Union_periodset_timestampset(PG_FUNCTION_ARGS)
   PeriodSet *result = union_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of a period set and a period
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  PeriodSet *result = union_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of the period sets
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = union_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -2268,43 +1665,6 @@ Intersection_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_period_period);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of the periods
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  Period *result = intersection_span_span(p1, p2);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPAN_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of a period and a period set
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = intersection_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Intersection_periodset_timestamp);
@@ -2342,45 +1702,6 @@ Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
   TimestampSet *result = intersection_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of a period set and a period
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  PeriodSet *result = intersection_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of the period sets
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = intersection_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -2589,43 +1910,6 @@ Minus_period_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Minus_period_period);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of the periods.
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_SPAN_P(0);
-  Period *p2 = PG_GETARG_SPAN_P(1);
-  PeriodSet *result = minus_period_period(p1, p2);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Minus_period_periodset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of a period and a period set
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = minus_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Minus_periodset_timestamp);
@@ -2662,45 +1946,6 @@ Minus_periodset_timestampset(PG_FUNCTION_ARGS)
   PeriodSet *result = minus_periodset_timestampset(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Minus_periodset_period);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of a period set and a period
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
-  PeriodSet *result = minus_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Minus_periodset_periodset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of the period sets
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = minus_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

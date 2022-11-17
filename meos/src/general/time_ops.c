@@ -45,13 +45,6 @@
 #include "general/timestampset.h"
 #include "general/temporal_util.h"
 
-typedef enum
-{
-  UNION,
-  INTER,
-  MINUS
-} SetOper;
-
 /*****************************************************************************
  * Generic operations
  *****************************************************************************/
@@ -205,8 +198,9 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
   return timestampset_make_free(times, k);
 }
 
-/*****************************************************************************/
-/* contains? */
+/*****************************************************************************
+ * Contains
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -337,79 +331,9 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return true;
 }
 
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a period set contains a period.
- * @sqlop @p \@>
- */
-bool
-contains_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  /* Bounding box test */
-  if (! contains_span_span(&ps->span, p))
-    return false;
-
-  int loc;
-  periodset_find_timestamp(ps, p->lower, &loc);
-  const Period *p1 = spanset_sp_n(ps, loc);
-  return contains_span_span(p1, p);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a period contains a period set.
- * @sqlop @p \@>
- */
-bool
-contains_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  return contains_span_span(p, &ps->span);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if the first period set contains the second one.
- * @sqlop @p \@>
- */
-bool
-contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  /* Bounding box test */
-  if (! contains_span_span(&ps1->span, &ps2->span))
-    return false;
-
-  int i = 0, j = 0;
-  while (i < ps1->count && j < ps2->count)
-  {
-    const Period *p1 = spanset_sp_n(ps1, i);
-    const Period *p2 = spanset_sp_n(ps2, j);
-    if (left_span_span(p1, p2))
-      i++;
-    else if (left_span_span(p2, p1))
-      return false;
-    else
-    {
-      /* p1 and p2 overlap */
-      if (contains_span_span(p1, p2))
-      {
-        if (p1->upper == p2->upper)
-        {
-          i++; j++;
-        }
-        else
-          j++;
-      }
-      else
-        return false;
-    }
-  }
-  /* if j == ps2->count every period in p2 is contained in a period of p1
-     but p1 may have additional periods */
-  return (j == ps2->count);
-}
-
-/*****************************************************************************/
-/* contained? */
+/*****************************************************************************
+ * Contained
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -478,41 +402,9 @@ contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return contains_periodset_timestampset(ps, ts);
 }
 
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a period is contained by a period
- * @sqlop @p <@
- */
-bool
-contained_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  return contains_periodset_period(ps, p);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a period set is contained by a period
- * @sqlop @p <@
- */
-bool
-contained_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  return contains_period_periodset(p, ps);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if the first period set is contained by the second one
- * @sqlop @p <@
- */
-bool
-contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  return contains_periodset_periodset(ps2, ps1);
-}
-
-/*****************************************************************************/
-/* overlaps? */
+/*****************************************************************************
+ * Overlaps
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -604,32 +496,6 @@ overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if a period and a period set overlap.
- * @sqlop @p &&
- */
-bool
-overlaps_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(p, &ps->span))
-    return false;
-
-  /* Binary search of lower bound of period */
-  int loc;
-  periodset_find_timestamp(ps, p->lower, &loc);
-  for (int i = loc; i < ps->count; i++)
-  {
-    const Period *p1 = spanset_sp_n(ps, i);
-    if (overlaps_span_span(p1, p))
-      return true;
-    if (p->upper < p1->upper)
-      break;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set and a timestamp set overlap
  * @sqlop @p &&
  */
@@ -639,52 +505,9 @@ overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return overlaps_timestampset_periodset(ts, ps);
 }
 
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a periodset and a period overlap
- * @sqlop @p &&
- */
-bool
-overlaps_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  return overlaps_period_periodset(p, ps);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if two period sets overlap.
- * @sqlop @p &&
- */
-bool
-overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(&ps1->span, &ps2->span))
-    return false;
-
-  int i = 0, j = 0;
-  while (i < ps1->count && j < ps2->count)
-  {
-    const Period *p1 = spanset_sp_n(ps1, i);
-    const Period *p2 = spanset_sp_n(ps2, j);
-    if (overlaps_span_span(p1, p2))
-      return true;
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p1->upper),
-      DatumGetTimestampTz(p2->upper));
-    if (cmp == 0)
-    {
-      i++; j++;
-    }
-    else if (cmp < 0)
-      i++;
-    else
-      j++;
-  }
-  return false;
-}
-
-/*****************************************************************************/
-/* adjacent to (but not overlapping)? */
+/*****************************************************************************
+ * Adjacent to (but not overlapping)
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -782,24 +605,6 @@ adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_topo
- * @brief Return true if a period and a period set are adjacent.
- * @sqlop @p -|-
- */
-bool
-adjacent_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  const Period *p1 = spanset_sp_n(ps, 0);
-  const Period *p2 = spanset_sp_n(ps, ps->count - 1);
-  /*
-   * Two periods A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
-   */
-  return (p2->upper == p->lower && p2->upper_inc != p->lower_inc) ||
-       (p->upper == p1->lower && p->upper_inc != p1->lower_inc);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
  * @brief Return true if a period set a timestamp are adjacent
  * @sqlop @p -|-
  */
@@ -820,39 +625,9 @@ adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return adjacent_timestampset_periodset(ts, ps);
 }
 
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a period set and a period are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  return adjacent_period_periodset(p, ps);
-}
-
-/**
- * @ingroup libmeos_spantime_topo
- * @brief Return true if a period set and a period are adjacent.
- * @sqlop @p -|-
- */
-bool
-adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  const Period *startps1 = spanset_sp_n(ps1, 0);
-  const Period *endps1 = spanset_sp_n(ps1, ps1->count - 1);
-  const Period *startps2 = spanset_sp_n(ps2, 0);
-  const Period *endps2 = spanset_sp_n(ps2, ps2->count - 1);
-  /*
-   * Two periods A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
-   */
-  return (endps1->upper == startps2->lower && endps1->upper_inc != startps2->lower_inc) ||
-    (endps2->upper == startps1->lower && endps2->upper_inc != startps1->lower_inc);
-}
-
-/*****************************************************************************/
-/* strictly before of? */
+/*****************************************************************************
+ * Strictly before of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -968,18 +743,6 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a period is strictly before a period set.
- * @sqlop @p <<#
- */
-bool
-before_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  const Period *p1 = spanset_sp_n(ps, 0);
-  return left_span_span(p, p1);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly before a timestamp.
  * @sqlop @p <<#
  */
@@ -1003,33 +766,9 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return before_period_timestamp(p, t);
 }
 
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if a period set is strictly before a period.
- * @sqlop @p <<#
- */
-bool
-before_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  const Period *p1 = spanset_sp_n(ps, ps->count - 1);
-  return left_span_span(p1, p);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if the first period set is strictly before the second one.
- * @sqlop @p <<#
- */
-bool
-before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  const Period *p1 = spanset_sp_n(ps1, ps1->count - 1);
-  const Period *p2 = spanset_sp_n(ps2, 0);
-  return left_span_span(p1, p2);
-}
-
-/*****************************************************************************/
-/* strictly after of? */
+/*****************************************************************************
+ * Strictly after of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -1144,18 +883,6 @@ after_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a period is strictly after a period set.
- * @sqlop @p #>>
- */
-bool
-after_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  const Period *p1 = spanset_sp_n(ps, ps->count - 1);
-  return right_span_span(p, p1);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is strictly after a timestamp.
  * @sqlop @p #>>
  */
@@ -1179,33 +906,9 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return after_period_timestamp(p, t);
 }
 
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if a period set is strictly after a period.
- * @sqlop @p #>>
- */
-bool
-after_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  const Period *p1 = spanset_sp_n(ps, 0);
-  return right_span_span(p1, p);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if the first period set is strictly after the second one.
- * @sqlop @p #>>
- */
-bool
-after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  const Period *p1 = spanset_sp_n(ps1, 0);
-  const Period *p2 = spanset_sp_n(ps2, ps2->count - 1);
-  return right_span_span(p1, p2);
-}
-
-/*****************************************************************************/
-/* does not extend to right of? */
+/*****************************************************************************
+ * Does not extend to right of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -1319,18 +1022,6 @@ overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a period is not after a period set.
- * @sqlop @p &<#
- */
-bool
-overbefore_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  const Period *p1 = spanset_sp_n(ps, ps->count - 1);
-  return overleft_span_span(p, p1);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not after a timestamp.
  * @sqlop @p &<#
  */
@@ -1354,33 +1045,9 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return (t1 <= t2);
 }
 
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if a period set is not after a period.
- * @sqlop @p &<#
- */
-bool
-overbefore_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  const Period *p1 = spanset_sp_n(ps, ps->count - 1);
-  return overleft_span_span(p1, p);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if the first a period set is not after the second one.
- * @sqlop @p &<#
- */
-bool
-overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  const Period *p1 = spanset_sp_n(ps1, ps1->count - 1);
-  const Period *p2 = spanset_sp_n(ps2, ps2->count - 1);
-  return overleft_span_span(p1, p2);
-}
-
-/*****************************************************************************/
-/* does not extend to left of? */
+/*****************************************************************************
+ * Does not extend to left of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -1494,18 +1161,6 @@ overafter_period_timestampset(const Period *p, const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a period is not before a period set.
- * @sqlop @p #&>
- */
-bool
-overafter_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  const Period *p1 = spanset_sp_n(ps, 0);
-  return overright_span_span(p, p1);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
  * @brief Return true if a period set is not before a timestamp.
  * @sqlop @p #&>
  */
@@ -1527,31 +1182,6 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   TimestampTz t1 = periodset_start_timestamp(ps);
   TimestampTz t2 = timestampset_time_n(ts, 0);
   return (t1 >= t2);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if a period set is not before a period.
- * @sqlop @p #&>
- */
-bool
-overafter_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  const Period *p1 = spanset_sp_n(ps, 0);
-  return overright_span_span(p1, p);
-}
-
-/**
- * @ingroup libmeos_spantime_pos
- * @brief Return true if the first period set is not before the second one.
- * @sqlop @p #&>
- */
-bool
-overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  const Period *p1 = spanset_sp_n(ps1, 0);
-  const Period *p2 = spanset_sp_n(ps2, 0);
-  return overright_span_span(p1, p2);
 }
 
 /*****************************************************************************
@@ -1631,7 +1261,7 @@ union_timestamp_period(TimestampTz t, const Period *p)
   Period p1;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &p1);
-  PeriodSet *result = union_period_period(p, &p1);
+  PeriodSet *result = union_span_span(p, &p1);
   return result;
 }
 
@@ -1646,7 +1276,7 @@ union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
   Period p;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &p);
-  PeriodSet *result = union_period_periodset(&p, ps);
+  PeriodSet *result = union_span_spanset(&p, ps);
   return result;
 }
 
@@ -1684,7 +1314,7 @@ PeriodSet *
 union_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   PeriodSet *ps = timestampset_to_periodset(ts);
-  PeriodSet *result = union_period_periodset(p, ps);
+  PeriodSet *result = union_span_spanset(p, ps);
   pfree(ps);
   return result;
 }
@@ -1698,7 +1328,7 @@ PeriodSet *
 union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   PeriodSet *ps1 = timestampset_to_periodset(ts);
-  PeriodSet *result = union_periodset_periodset(ps, ps1);
+  PeriodSet *result = union_spanset_spanset(ps, ps1);
   pfree(ps1);
   return result;
 }
@@ -1716,7 +1346,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
   Period p1;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &p1);
-  PeriodSet *result = union_period_period(p, &p1);
+  PeriodSet *result = union_span_span(p, &p1);
   return result;
 }
 
@@ -1729,60 +1359,8 @@ PeriodSet *
 union_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   PeriodSet *ps = timestampset_to_periodset(ts);
-  PeriodSet *result = union_period_periodset(p, ps);
+  PeriodSet *result = union_span_spanset(p, ps);
   pfree(ps);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the union of the periods.
- * @sqlop @p +
- */
-PeriodSet *
-union_period_period(const Period *p1, const Period *p2)
-{
-  /* If the periods do not overlap */
-  if (! overlaps_span_span(p1, p2) &&
-    !adjacent_span_span(p1, p2))
-  {
-    const Period *periods[2];
-    if (p1->lower < p2->lower)
-    {
-      periods[0] = p1;
-      periods[1] = p2;
-    }
-    else
-    {
-      periods[0] = p2;
-      periods[1] = p1;
-    }
-    PeriodSet *result = spanset_make((const Period **) periods, 2,
-      NORMALIZE_NO);
-    return result;
-  }
-
-  /* Compute the union of the overlapping periods */
-  Period p;
-  memcpy(&p, p1, sizeof(Span));
-  span_expand(p2, &p);
-  PeriodSet *result = span_to_spanset(&p);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @sqlop @p +
- * @brief Return the union of a period and a period set.
- */
-PeriodSet *
-union_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  /* Transform the period into a period set */
-  PeriodSet *ps1 = span_to_spanset(p);
-  /* Call the function for the period set */
-  PeriodSet *result = union_periodset_periodset(ps1, ps);
-  pfree(ps1);
   return result;
 }
 
@@ -1799,7 +1377,7 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
   Period p;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &p);
-  PeriodSet *result = union_period_periodset(&p, ps);
+  PeriodSet *result = union_span_spanset(&p, ps);
   return result;
 }
 
@@ -1812,122 +1390,8 @@ PeriodSet *
 union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
 {
   PeriodSet *ps1 = timestampset_to_periodset(ts);
-  PeriodSet *result = union_periodset_periodset(ps, ps1);
+  PeriodSet *result = union_spanset_spanset(ps, ps1);
   pfree(ps1);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the union of a period set and a period
- * @sqlop @p +
- */
-PeriodSet *
-union_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  return  union_period_periodset(p, ps);
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the union of the period sets.
- * @sqlop @p +
- */
-PeriodSet *
-union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count));
-  Period **mustfree = NULL;
-  /* If the period sets overlap we will be intersecting composing periods */
-  if (overlaps_periodset_periodset(ps1, ps2))
-    mustfree = palloc(sizeof(Period *) * Max(ps1->count, ps2->count));
-
-  int i = 0, j = 0, k = 0, l = 0;
-  while (i < ps1->count && j < ps2->count)
-  {
-    const Period *p1 = spanset_sp_n(ps1, i);
-    const Period *p2 = spanset_sp_n(ps2, j);
-    /* The periods do not overlap, copy the earliest period */
-    if (! overlaps_span_span(p1, p2))
-    {
-      if (left_span_span(p1, p2))
-      {
-        periods[k++] = (Period *) p1;
-        i++;
-      }
-      else
-      {
-        periods[k++] = (Period *) p2;
-        j++;
-      }
-    }
-    else
-    {
-      /* Find all periods in ps1 that overlap with periods in ps2
-       *      i                    i
-       *   |-----| |-| |-----|  |-----|
-       *       |---------|  |-----|
-       *            j          j
-       */
-      Period *q = union_span_span(p1, p2, false);
-      while (i < ps1->count && j < ps2->count)
-      {
-        p1 = spanset_sp_n(ps1, i);
-        p2 = spanset_sp_n(ps2, j);
-        bool over_p1_q = overlaps_span_span(p1, q);
-        bool over_p2_q = overlaps_span_span(p2, q);
-        if (! over_p1_q && ! over_p2_q)
-          break;
-        if (over_p1_q)
-        {
-          span_expand(p1, q);
-          i++;
-        }
-        if (over_p2_q)
-        {
-          span_expand(p2, q);
-          j++;
-        }
-      }
-      /* When one of the sets is finished we need to absorb overlapping
-       * periods in the other set */
-      while (i < ps1->count)
-      {
-        p1 = spanset_sp_n(ps1, i);
-        if (overlaps_span_span(p1, q))
-        {
-          span_expand(p1, q);
-          i++;
-        }
-        else
-          break;
-      }
-      while (j < ps2->count)
-      {
-        p2 = spanset_sp_n(ps2, j);
-        if (overlaps_span_span(p2, q))
-        {
-          span_expand(p2, q);
-          j++;
-        }
-        else
-          break;
-      }
-      periods[k++] = mustfree[l++] = q;
-    }
-  }
-  /* Only one of the following two while will be executed */
-  while (i < ps1->count)
-    periods[k++] = (Period *) spanset_sp_n(ps1, i++);
-  while (j < ps2->count)
-    periods[k++] = (Period *) spanset_sp_n(ps2, j++);
-  /* k is never equal to 0 since the periodsets are not empty */
-  PeriodSet *result = spanset_make((const Period **) periods, k, NORMALIZE);
-  pfree(periods);
-
-  if (mustfree)
-    pfree_array((void **) mustfree, l);
-
   return result;
 }
 
@@ -2074,40 +1538,6 @@ intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
   return intersection_timestampset_period(ts, ps);
 }
 
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the intersection of a period and a period set.
- * @sqlop @p *
- */
-PeriodSet *
-intersection_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(p, &ps->span))
-    return NULL;
-
-  /* Is the period set fully contained in the period? */
-  if (contains_period_periodset(p, ps))
-    return spanset_copy(ps);
-
-  /* General case */
-  int loc;
-  periodset_find_timestamp(ps, p->lower, &loc);
-  Period **periods = palloc(sizeof(Period *) * (ps->count - loc));
-  int k = 0;
-  for (int i = loc; i < ps->count; i++)
-  {
-    const Period *p1 = spanset_sp_n(ps, i);
-    Period *p2 = intersection_span_span(p1, p);
-    if (p2 != NULL)
-      periods[k++] = p2;
-    if (p->upper < p1->upper)
-      break;
-  }
-  PeriodSet *result = spanset_make_free(periods, k, NORMALIZE_NO);
-  return result;
-}
-
 /*****************************************************************************/
 
 /**
@@ -2134,58 +1564,6 @@ TimestampSet *
 intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   return intersection_timestampset_periodset(ts, ps);
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the intersection of a period set and a period
- * @sqlop @p *
- */
-PeriodSet *
-intersection_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  return intersection_period_periodset(p, ps);
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the intersection of the period sets.
- * @sqlop @p *
- */
-PeriodSet *
-intersection_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  /* Bounding box test */
-  Period p;
-  if (! inter_span_span(&ps1->span, &ps2->span, &p))
-    return NULL;
-
-  int loc1, loc2;
-  periodset_find_timestamp(ps1, p.lower, &loc1);
-  periodset_find_timestamp(ps2, p.lower, &loc2);
-  Period **periods = palloc(sizeof(Period *) *
-    (ps1->count + ps2->count - loc1 - loc2));
-  int i = loc1, j = loc2, k = 0;
-  while (i < ps1->count && j < ps2->count)
-  {
-    const Period *p1 = spanset_sp_n(ps1, i);
-    const Period *p2 = spanset_sp_n(ps2, j);
-    Period *inter = intersection_span_span(p1, p2);
-    if (inter != NULL)
-      periods[k++] = inter;
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p1->upper),
-      DatumGetTimestampTz(p2->upper));
-    if (cmp == 0 && p1->upper_inc == p2->upper_inc)
-    {
-      i++; j++;
-    }
-    else if (cmp < 0 || (cmp == 0 && ! p1->upper_inc && p2->upper_inc))
-      i++;
-    else
-      j++;
-  }
-  PeriodSet *result = spanset_make_free(periods, k, NORMALIZE);
-  return result;
 }
 
 /*****************************************************************************
@@ -2385,154 +1763,6 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
   return result;
 }
 
-/**
- * @brief Return the difference of the two periods.
- * @note This function generalizes the function minus_span_span by enabling
- * the result to be two periods
- */
-static int
-minus_period_period1(const Period *p1, const Period *p2, Period **result)
-{
-  SpanBound lower1, lower2, upper1, upper2;
-  span_deserialize((const Span *) p1, &lower1, &upper1);
-  span_deserialize((const Span *) p2, &lower2, &upper2);
-
-  int cmp_l1l2 = span_bound_cmp(&lower1, &lower2);
-  int cmp_l1u2 = span_bound_cmp(&lower1, &upper2);
-  int cmp_u1l2 = span_bound_cmp(&upper1, &lower2);
-  int cmp_u1u2 = span_bound_cmp(&upper1, &upper2);
-
-  /* Result is empty
-   * p1         |----|
-   * p2      |----------|
-   */
-  if (cmp_l1l2 >= 0 && cmp_u1u2 <= 0)
-    return 0;
-
-  /* Result is a periodset
-   * p1      |----------|
-   * p2         |----|
-   * result  |--|    |--|
-   */
-  if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
-  {
-    result[0] = span_make(p1->lower, p2->lower, p1->lower_inc,
-      !(p2->lower_inc), T_TIMESTAMPTZ);
-    result[1] = span_make(p2->upper, p1->upper, !(p2->upper_inc),
-      p1->upper_inc, T_TIMESTAMPTZ);
-    return 2;
-  }
-
-  /* Result is a period */
-  /*
-   * p1         |----|
-   * p2  |----|
-   * p2                 |----|
-   * result      |----|
-   */
-  if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
-    result[0] = span_copy(p1);
-
-  /*
-   * p1           |-----|
-   * p2               |----|
-   * result       |---|
-   */
-  else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
-    result[0] = span_make(p1->lower, p2->lower, p1->lower_inc,
-      !(p2->lower_inc), T_TIMESTAMPTZ);
-  /*
-   * p1         |-----|
-   * p2      |----|
-   * result       |---|
-   */
-  else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
-    result[0] = span_make(p2->upper, p1->upper, !(p2->upper_inc),
-      p1->upper_inc, T_TIMESTAMPTZ);
-  return 1;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the difference of the periods.
- * @sqlop @p -
- */
-PeriodSet *
-minus_period_period(const Period *p1, const Period *p2)
-{
-  Period *periods[2];
-  int count = minus_period_period1(p1, p2, periods);
-  if (count == 0)
-    return NULL;
-  PeriodSet *result = spanset_make((const Period **) periods, count,
-    NORMALIZE_NO);
-  for (int i = 0; i < count; i++)
-    pfree(periods[i]);
-  return result;
-}
-
-/**
- * Return the difference of a period and a period set.
- */
-int
-minus_period_periodset1(Period **result, const Period *p, const PeriodSet *ps,
-  int from, int to)
-{
-  /* The period can be split at most into (to - from + 1) periods
-   *   |----------------------|
-   *       |---| |---| |---|
-   */
-  Period *curr = span_copy(p);
-  int k = 0;
-  for (int i = from; i < to; i++)
-  {
-    const Period *p1 = spanset_sp_n(ps, i);
-    /* If the remaining periods are to the left of the current period */
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(curr->upper),
-      DatumGetTimestampTz(p1->lower));
-    if (cmp < 0 || (cmp == 0 && curr->upper_inc && ! p1->lower_inc))
-    {
-      result[k++] = curr;
-      break;
-    }
-    Period *minus[2];
-    int countminus = minus_period_period1(curr, p1, minus);
-    pfree(curr);
-    /* minus can have from 0 to 2 periods */
-    if (countminus == 0)
-      break;
-    else if (countminus == 1)
-      curr = minus[0];
-    else /* countminus == 2 */
-    {
-      result[k++] = span_copy(minus[0]);
-      curr = minus[1];
-    }
-    /* There are no more periods left */
-    if (i == to - 1)
-      result[k++] = curr;
-  }
-  return k;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the difference of a period and a period set.
- * @sqlop @p -
- */
-PeriodSet *
-minus_period_periodset(const Period *p, const PeriodSet *ps)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(p, &ps->span))
-    return spanset_make((const Period **) &p, 1, false);
-
-  Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
-  int count = minus_period_periodset1(periods, p, ps, 0, ps->count);
-  PeriodSet *result = spanset_make_free(periods, count, false);
-  return result;
-}
-
 /*****************************************************************************/
 
 /**
@@ -2668,84 +1898,6 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   }
   PeriodSet *result = spanset_make((const Period **)periods, k, NORMALIZE_NO);
   pfree_array((void **) periods, i);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the difference of a period set and a period.
- * @sqlop @p -
- */
-PeriodSet *
-minus_periodset_period(const PeriodSet *ps, const Period *p)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(&ps->span, p))
-    return spanset_copy(ps);
-
-  /* At most one composing period can be split into two */
-  Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
-  int k = 0;
-  for (int i = 0; i < ps->count; i++)
-  {
-    const Period *p1 = spanset_sp_n(ps, i);
-    k += minus_period_period1(p1, p, &periods[k]);
-  }
-  PeriodSet *result = spanset_make_free(periods, k, NORMALIZE_NO);
-  return result;
-}
-
-/**
- * @ingroup libmeos_spantime_set
- * @brief Return the difference of the period sets.
- * @sqlop @p -
- */
-PeriodSet *
-minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(&ps1->span, &ps2->span))
-    return spanset_copy(ps1);
-
-  Period **periods = palloc(sizeof(const Period *) * (ps1->count + ps2->count));
-  int i = 0, j = 0, k = 0;
-  while (i < ps1->count && j < ps2->count)
-  {
-    const Period *p1 = spanset_sp_n(ps1, i);
-    const Period *p2 = spanset_sp_n(ps2, j);
-    /* The periods do not overlap, copy the first period */
-    if (! overlaps_span_span(p1, p2))
-    {
-      periods[k++] = span_copy(p1);
-      i++;
-    }
-    else
-    {
-      /* Find all periods in ps2 that overlap with p1
-       *                  i
-       *    |------------------------|
-       *      |-----|  |-----|          |---|
-       *         j                        l
-       */
-      int l;
-      for (l = j; l < ps2->count; l++)
-      {
-        const Period *p3 = spanset_sp_n(ps2, l);
-        if (! overlaps_span_span(p1, p3))
-          break;
-      }
-      int to = Min(l, ps2->count);
-      /* Compute the difference of the overlapping periods */
-      k += minus_period_periodset1(&periods[k], p1,
-        ps2, j, to);
-      i++;
-      j = l;
-    }
-  }
-  /* Copy the sequences after the period set */
-  while (i < ps1->count)
-    periods[k++] = span_copy(spanset_sp_n(ps1, i++));
-  PeriodSet *result = spanset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
 

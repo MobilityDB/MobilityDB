@@ -48,60 +48,6 @@
 #include "general/temporal_parser.h"
 
 /*****************************************************************************
- * General functions
- *****************************************************************************/
-
-/**
- * Return the location of the timestamp in the temporal sequence set
- * value using binary search
- *
- * If the timestamp is found, the index of the period is returned
- * in the output parameter. Otherwise, return a number encoding whether the
- * timestamp is before, between two periods, or after the period set.
- * For example, given a value composed of 3 periods and a timestamp, the
- * result of the function is as follows:
- * @code
- *               0          1          2
- *            |-----|    |-----|    |-----|
- * 1)    t^                                        => loc = 0
- * 2)            t^                                => loc = 0
- * 3)                 t^                           => loc = 1
- * 4)                            t^                => loc = 2
- * 5)                                        t^    => loc = 3
- * @endcode
- * @param[in] ps Period set value
- * @param[in] t Timestamp
- * @param[out] loc Location
- * @result Return true if the timestamp is contained in the period set
- */
-bool
-periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
-{
-  int first = 0;
-  int last = ps->count - 1;
-  int middle = 0; /* make compiler quiet */
-  const Period *p = NULL; /* make compiler quiet */
-  while (first <= last)
-  {
-    middle = (first + last)/2;
-    p = spanset_sp_n(ps, middle);
-    if (contains_period_timestamp(p, t))
-    {
-      *loc = middle;
-      return true;
-    }
-    if (t <= (TimestampTz) p->lower)
-      last = middle - 1;
-    else
-      first = middle + 1;
-  }
-  if (t >= (TimestampTz) p->upper)
-    middle++;
-  *loc = middle;
-  return false;
-}
-
-/*****************************************************************************
  * Cast functions
  *****************************************************************************/
 

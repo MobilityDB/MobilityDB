@@ -175,7 +175,7 @@ span_bound_bsearch(const SpanBound *value, const SpanBound *hist,
 static float8
 span_bound_distance(const SpanBound *bound1, const SpanBound *bound2)
 {
-  return distance_elem_elem(bound2->val, bound1->val, bound2->basetype,
+  return distance_value_value(bound2->val, bound1->val, bound2->basetype,
     bound1->basetype);
 }
 
