@@ -136,7 +136,7 @@ setop_timestampset_period(const TimestampSet *ts, const Period *p,
   {
     TimestampTz t = timestampset_time_n(ts, i);
     if (((setop == INTER) && contains_period_timestamp(p, t)) ||
-      ((setop == MINUS) && !contains_period_timestamp(p, t)))
+      ((setop == MINUS) && ! contains_period_timestamp(p, t)))
       times[k++] = t;
   }
   return timestampset_make_free(times, k);
@@ -181,7 +181,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
     else
     {
       if ((setop == INTER && contains_period_timestamp(p, t)) ||
-        (setop == MINUS && !contains_period_timestamp(p, t)))
+        (setop == MINUS && ! contains_period_timestamp(p, t)))
         times[k++] = t;
       i++;
       if (i == ts->count)
@@ -258,15 +258,7 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 bool
 contains_period_timestamp(const Period *p, TimestampTz t)
 {
-  int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
-  if (cmp > 0 || (cmp == 0 && ! p->lower_inc))
-    return false;
-
-  cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
-  if (cmp < 0 || (cmp == 0 && ! p->upper_inc))
-    return false;
-
-  return true;
+  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -291,14 +283,7 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
 bool
 contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  /* Bounding box test */
-  if (! contains_period_timestamp(&ps->span, t))
-    return false;
-
-  int loc;
-  if (! periodset_find_timestamp(ps, t, &loc))
-    return false;
-  return true;
+  return contains_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -354,7 +339,7 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 contained_timestamp_period(TimestampTz t, const Period *p)
 {
-  return contains_period_timestamp(p, t);
+  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -365,7 +350,7 @@ contained_timestamp_period(TimestampTz t, const Period *p)
 bool
 contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  return contains_periodset_timestamp(ps, t);
+  return contains_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -517,12 +502,7 @@ overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 bool
 adjacent_timestamp_period(TimestampTz t, const Period *p)
 {
-  /*
-   * A timestamp A and a period C..D are adjacent if and only if
-   * A is adjacent to C, or D is adjacent to A.
-   */
-  return (t == (TimestampTz) p->lower && ! p->lower_inc) ||
-    ((TimestampTz) p->upper == t && ! p->upper_inc);
+  return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -533,14 +513,7 @@ adjacent_timestamp_period(TimestampTz t, const Period *p)
 bool
 adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  /*
-   * Two periods A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
-   */
-  const Period *p1 = spanset_sp_n(ps, 0);
-  const Period *p2 = spanset_sp_n(ps, ps->count - 1);
-  return (t == (TimestampTz) p1->lower && ! p1->lower_inc) ||
-       ((TimestampTz) p2->upper == t && ! p2->upper_inc);
+  return adjacent_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -589,7 +562,7 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 adjacent_period_timestamp(const Period *p, TimestampTz t)
 {
-  return adjacent_timestamp_period(t, p);
+  return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -611,7 +584,7 @@ adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 bool
 adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  return adjacent_timestamp_periodset(t, ps);
+  return adjacent_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -649,8 +622,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 before_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->lower));
-  return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
+  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -661,8 +633,7 @@ before_timestamp_period(TimestampTz t, const Period *p)
 bool
 before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, 0);
-  return before_timestamp_period(t, p);
+  return left_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
 
 /**
@@ -700,7 +671,7 @@ bool
 before_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  return before_timestamp_period(t, p);
+  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -713,7 +684,7 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   const Period *p = spanset_sp_n(ps, 0);
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  return before_timestamp_period(t, p);
+  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -724,9 +695,7 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 before_period_timestamp(const Period *p, TimestampTz t)
 {
-
-  int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->upper), t);
-  return (cmp < 0 || (cmp == 0 && ! p->upper_inc));
+  return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -738,7 +707,7 @@ bool
 before_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
-  return before_period_timestamp(p, t);
+  return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -749,8 +718,7 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
 bool
 before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  const Period *p = spanset_sp_n(ps, ps->count - 1);
-  return before_period_timestamp(p, t);
+  return left_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -763,7 +731,7 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   const Period *p = spanset_sp_n(ps, ps->count - 1);
   TimestampTz t = timestampset_time_n(ts, 0);
-  return before_period_timestamp(p, t);
+  return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /*****************************************************************************
@@ -790,8 +758,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 after_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->upper));
-  return (cmp > 0 || (cmp == 0 && ! p->upper_inc));
+  return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -802,8 +769,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 bool
 after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, ps->count - 1);
-  return after_timestamp_period(t, p);
+  return right_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
 
 /**
@@ -841,7 +807,7 @@ bool
 after_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
-  return after_timestamp_period(t, p);
+  return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -854,7 +820,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   const Period *p = spanset_sp_n(ps, ps->count - 1);
   TimestampTz t = timestampset_time_n(ts, 0);
-  return after_timestamp_period(t, p);
+  return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -865,8 +831,7 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 after_period_timestamp(const Period *p, TimestampTz t)
 {
-  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->lower));
-  return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
+  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -878,7 +843,7 @@ bool
 after_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  return after_period_timestamp(p, t);
+  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -890,7 +855,7 @@ bool
 after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = spanset_sp_n(ps, 0);
-  return after_period_timestamp(p, t);
+  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -903,7 +868,7 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   const Period *p = spanset_sp_n(ps, 0);
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  return after_period_timestamp(p, t);
+  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /*****************************************************************************
@@ -930,8 +895,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overbefore_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(t, DatumGetTimestampTz(p->upper));
-  return (cmp < 0 || (cmp == 0 && p->upper_inc));
+  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -942,8 +906,7 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 bool
 overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, ps->count - 1);
-  return overbefore_timestamp_period(t, p);
+  return overleft_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
 
 /**
@@ -981,7 +944,7 @@ bool
 overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  return (overbefore_timestamp_period(t, p));
+  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -993,8 +956,8 @@ bool
 overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  const Period *p = spanset_sp_n(ps, ps->count - 1);
-  return (!after_timestamp_period(t, p));
+  const Span *s = spanset_sp_n(ps, ps->count - 1);
+  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 
 /**
@@ -1005,7 +968,7 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 overbefore_period_timestamp(const Period *p, TimestampTz t)
 {
-  return (TimestampTz) p->upper <= t;
+  return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1017,7 +980,7 @@ bool
 overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-  return (overbefore_period_timestamp(p, t));
+  return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1029,7 +992,7 @@ bool
 overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = spanset_sp_n(ps, ps->count - 1);
-  return overbefore_period_timestamp(p, t);
+  return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1069,8 +1032,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overafter_timestamp_period(TimestampTz t, const Period *p)
 {
-  int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(p->lower), t);
-  return (cmp < 0 || (cmp == 0 && p->lower_inc));
+  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -1081,8 +1043,7 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 bool
 overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, 0);
-  return overafter_timestamp_period(t, p);
+  return overright_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
 
 /**
@@ -1120,7 +1081,7 @@ bool
 overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
-  return (overafter_timestamp_period(t, p));
+  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -1133,7 +1094,7 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
   const Period *p = spanset_sp_n(ps, 0);
-  return (overafter_timestamp_period(t, p));
+  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -1144,7 +1105,7 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 bool
 overafter_period_timestamp(const Period *p, TimestampTz t)
 {
-  return (t <= (TimestampTz) p->lower);
+  return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1156,7 +1117,7 @@ bool
 overafter_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
-  return (overafter_period_timestamp(p, t));
+  return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1168,7 +1129,7 @@ bool
 overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = spanset_sp_n(ps, 0);
-  return overafter_period_timestamp(p, t);
+  return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1258,11 +1219,7 @@ union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 PeriodSet *
 union_timestamp_period(TimestampTz t, const Period *p)
 {
-  Period p1;
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &p1);
-  PeriodSet *result = union_span_span(p, &p1);
-  return result;
+  return union_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
 /**
@@ -1273,11 +1230,7 @@ union_timestamp_period(TimestampTz t, const Period *p)
 PeriodSet *
 union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  Period p;
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &p);
-  PeriodSet *result = union_span_spanset(&p, ps);
-  return result;
+  return union_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
 
 /*****************************************************************************/
@@ -1343,11 +1296,7 @@ union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 PeriodSet *
 union_period_timestamp(const Period *p, TimestampTz t)
 {
-  Period p1;
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &p1);
-  PeriodSet *result = union_span_span(p, &p1);
-  return result;
+  return union_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1438,10 +1387,11 @@ bool
 intersection_timestamp_period(TimestampTz t, const Period *p,
   TimestampTz *result)
 {
-  if (! contains_period_timestamp(p, t))
-    return false;
-  *result  = t;
-  return true;
+  Datum dresult;
+  bool res = intersection_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p,
+    &dresult);
+  *result = DatumGetTimestampTz(dresult);
+  return res;
 }
 
 /**
@@ -1450,13 +1400,14 @@ intersection_timestamp_period(TimestampTz t, const Period *p,
  * @sqlop @p *
  */
 bool
-intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
+intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ss,
   TimestampTz *result)
 {
-  if (! contains_periodset_timestamp(ps, t))
-    return false;
-  *result  = t;
-  return true;
+  Datum dresult;
+  bool res = intersection_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ,
+    ss, &dresult);
+  *result = DatumGetTimestampTz(dresult);
+  return res;
 }
 
 /*****************************************************************************/
@@ -1521,10 +1472,11 @@ bool
 intersection_period_timestamp(const Period *p, TimestampTz t,
   TimestampTz *result)
 {
-  if (! contains_period_timestamp(p, t))
-    return false;
-  *result  = t;
-  return true;
+  Datum dresult;
+  bool res = intersection_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p,
+    &dresult);
+  *result = DatumGetTimestampTz(dresult);
+  return res;
 }
 
 /**
@@ -1608,10 +1560,11 @@ minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
 bool
 minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
 {
-  if (contains_period_timestamp(p, t))
-    return false;
-  *result = t;
-  return true;
+  Datum dresult;
+  bool res = minus_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p,
+    &dresult);
+  *result = DatumGetTimestampTz(dresult);
+  return res;
 }
 
 /**
@@ -1623,10 +1576,11 @@ bool
 minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
   TimestampTz *result)
 {
-  if (contains_periodset_timestamp(ps, t))
-    return false;
-  *result = t;
-  return true;
+  Datum dresult;
+  bool res = minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps,
+    &dresult);
+  *result = DatumGetTimestampTz(dresult);
+  return res;
 }
 
 /*****************************************************************************/
@@ -1691,56 +1645,14 @@ minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * @brief Return the difference of a period and a timestamp.
- */
-static int
-minus_period_timestamp1(const Period *p, TimestampTz t, Period **result)
-{
-  if (! contains_period_timestamp(p, t))
-  {
-    result[0] = span_copy(p);
-    return 1;
-  }
-
-  if ((TimestampTz) p->lower == t && (TimestampTz) p->upper == t)
-    return 0;
-
-  if ((TimestampTz) p->lower == t)
-  {
-    result[0] = span_make(p->lower, p->upper, false, p->upper_inc,
-      T_TIMESTAMPTZ);
-    return 1;
-  }
-
-  if ((TimestampTz) p->upper == t)
-  {
-    result[0] = span_make(p->lower, p->upper, p->lower_inc, false,
-      T_TIMESTAMPTZ);
-    return 1;
-  }
-
-  result[0] = span_make(p->lower, t, p->lower_inc, false, T_TIMESTAMPTZ);
-  result[1] = span_make(t, p->upper, false, p->upper_inc, T_TIMESTAMPTZ);
-  return 2;
-}
-
-/**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a period and a timestamp.
  * @sqlop @p -
  */
-PeriodSet *
+SpanSet *
 minus_period_timestamp(const Period *p, TimestampTz t)
 {
-  Period *periods[2];
-  int count = minus_period_timestamp1(p, t, periods);
-  if (count == 0)
-    return NULL;
-  PeriodSet *result = spanset_make((const Period **) periods, count,
-    NORMALIZE_NO);
-  for (int i = 0; i < count; i++)
-    pfree(periods[i]);
-  return result;
+  return minus_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1770,23 +1682,10 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
  * @brief Return the difference of a period set and a timestamp.
  * @sqlop @p -
  */
-PeriodSet *
+SpanSet *
 minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  /* Bounding box test */
-  if (! contains_period_timestamp(&ps->span, t))
-    return spanset_copy(ps);
-
-  /* At most one composing period can be split into two */
-  Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
-  int k = 0;
-  for (int i = 0; i < ps->count; i++)
-  {
-    const Period *p = spanset_sp_n(ps, i);
-    k += minus_period_timestamp1(p, t, &periods[k]);
-  }
-  PeriodSet *result = spanset_make_free(periods, k, NORMALIZE_NO);
-  return result;
+  return minus_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**

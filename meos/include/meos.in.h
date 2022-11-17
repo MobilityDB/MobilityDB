@@ -427,8 +427,10 @@ extern bool adjacent_intspan_int(const Span *s, int i);
 extern bool adjacent_span_spanset(const Period *p, const PeriodSet *ps);
 extern bool adjacent_period_timestamp(const Period *p, TimestampTz t);
 extern bool adjacent_period_timestampset(const Period *p, const TimestampSet *ts);
-extern bool adjacent_spanset_span(const PeriodSet *ps, const Period *p);
-extern bool adjacent_spanset_spanset(const PeriodSet *ps1, const PeriodSet *ps2);
+
+extern bool adjacent_spanset_span(const SpanSet *ss, const Span *s);
+extern bool adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+
 extern bool adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern bool adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts);
 extern bool adjacent_span_span(const Span *s1, const Span *s2);
@@ -453,8 +455,10 @@ extern bool contains_intspan_int(const Span *s, int i);
 extern bool contains_span_spanset(const Period *p, const PeriodSet *ps);
 extern bool contains_period_timestamp(const Period *p, TimestampTz t);
 extern bool contains_period_timestampset(const Period *p, const TimestampSet *ts);
-extern bool contains_spanset_span(const PeriodSet *ps, const Period *p);
-extern bool contains_spanset_spanset(const PeriodSet *ps1, const PeriodSet *ps2);
+
+extern bool contains_spanset_span(const SpanSet *ss, const Span *s);
+extern bool contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+
 extern bool contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern bool contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts);
 extern bool contains_span_span(const Span *s1, const Span *s2);
@@ -589,8 +593,8 @@ extern TimestampSet *minus_timestampset_period(const TimestampSet *ts, const Per
 extern TimestampSet *minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern TimestampSet *minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
 extern TimestampSet *minus_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
-extern PeriodSet *union_span_span(const Span *s1, const Span *s2);
-extern PeriodSet *union_span_spanset(const Span *s, const SpanSet *ss);
+extern SpanSet *union_span_span(const Span *s1, const Span *s2);
+extern SpanSet *union_span_spanset(const Span *s, const SpanSet *ss);
 extern PeriodSet *union_period_timestamp(const Period *p, TimestampTz t);
 extern PeriodSet *union_period_timestampset(const Period *p, const TimestampSet *ts);
 extern PeriodSet *union_spanset_span(const PeriodSet *ps, const Period *p);

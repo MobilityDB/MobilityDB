@@ -44,8 +44,7 @@
 /* General functions */
 
 extern void spanset_span_slice(Datum psdatum, Period *p);
-// extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
-  // int *loc);
+extern bool spanset_find_value(const SpanSet *ss, Datum v, int *loc);
 
 /*****************************************************************************/
 

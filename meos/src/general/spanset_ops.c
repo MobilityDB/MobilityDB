@@ -52,6 +52,24 @@
 
 /**
  * @ingroup libmeos_spantime_topo
+ * @brief Return true if a span set contains a value.
+ * @sqlop @p \@>
+ */
+bool
+contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  /* Bounding box test */
+  if (! contains_span_value(&ss->span, d, basetype))
+    return false;
+
+  int loc;
+  if (! spanset_find_value(ss, d, &loc))
+    return false;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if a span set contains a span.
  * @sqlop @s \@>
  */
@@ -238,6 +256,35 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_topo
+ * @brief Return true if a value and a span set are adjacent.
+ * @sqlop @p -|-
+ */
+bool
+adjacent_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  /*
+   * A span set and a value are adjacent if and only if the first or the last
+   * span is adjacent to the value
+   */
+  const Span *s1 = spanset_sp_n(ss, 0);
+  const Span *s2 = spanset_sp_n(ss, ss->count - 1);
+  return adjacent_span_value(s1, d, basetype) ||
+         adjacent_span_value(s2, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if a value and a span set are adjacent.
+ * @sqlop @p -|-
+ */
+bool
+adjacent_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+{
+  return adjacent_spanset_value(ss, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if a span and a span set are adjacent.
  * @sqlop @s -|-
  */
@@ -291,8 +338,32 @@ adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_pos
+ * @brief Return true if a value is strictly left of a span set.
+ * @sqlop @p <<
+ */
+bool
+left_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  const Span *s = spanset_sp_n(ss, ss->count - 1);
+  return left_span_value(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a value is strictly left of a span set.
+ * @sqlop @p <<
+ */
+bool
+left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+{
+  const Span *s = spanset_sp_n(ss, 0);
+  return left_value_span(d, basetype, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is strictly before a span set.
- * @sqlop @s <<#
+ * @sqlop @s <<
  */
 bool
 left_span_spanset(const Span *s, const SpanSet *ss)
@@ -304,7 +375,7 @@ left_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span set is strictly before a span.
- * @sqlop @s <<#
+ * @sqlop @s <<
  */
 bool
 left_spanset_span(const SpanSet *ss, const Span *s)
@@ -316,7 +387,7 @@ left_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span set is strictly before the second one.
- * @sqlop @s <<#
+ * @sqlop @s <<
  */
 bool
 left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -332,8 +403,20 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_pos
+ * @brief Return true if a value is not to the right of a span set.
+ * @sqlop @p #&>
+ */
+bool
+right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+{
+  const Span *s = spanset_sp_n(ss, ss->count - 1);
+  return right_value_span(d, basetype, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is strictly after a span set.
- * @sqlop @s #>>
+ * @sqlop @s >>
  */
 bool
 right_span_spanset(const Span *s, const SpanSet *ss)
@@ -345,7 +428,7 @@ right_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span set is strictly after a span.
- * @sqlop @s #>>
+ * @sqlop @s >>
  */
 bool
 right_spanset_span(const SpanSet *ss, const Span *s)
@@ -357,7 +440,7 @@ right_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span set is strictly after the second one.
- * @sqlop @s #>>
+ * @sqlop @s >>
  */
 bool
 right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -373,8 +456,20 @@ right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_pos
+ * @brief Return true if a value is not after a span set.
+ * @sqlop @p &<#
+ */
+bool
+overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+{
+  const Span *s = spanset_sp_n(ss, ss->count - 1);
+  return overleft_value_span(d, basetype, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is not after a span set.
- * @sqlop @s &<#
+ * @sqlop @s &<
  */
 bool
 overleft_span_spanset(const Span *s, const SpanSet *ss)
@@ -386,7 +481,7 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span set is not after a span.
- * @sqlop @s &<#
+ * @sqlop @s &<
  */
 bool
 overleft_spanset_span(const SpanSet *ss, const Span *s)
@@ -398,7 +493,7 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first a span set is not after the second one.
- * @sqlop @s &<#
+ * @sqlop @s &<
  */
 bool
 overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -414,8 +509,20 @@ overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_pos
+ * @brief Return true if a value is not to the left of a span set.
+ * @sqlop @p #&>
+ */
+bool
+overright_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+{
+  const Span *s = spanset_sp_n(ss, 0);
+  return overright_value_span(d, basetype, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if a span is not before a span set.
- * @sqlop @s #&>
+ * @sqlop @s &>
  */
 bool
 overright_span_spanset(const Span *s, const SpanSet *ss)
@@ -427,7 +534,7 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a span set is not before a span.
- * @sqlop @s #&>
+ * @sqlop @s &>
  */
 bool
 overright_spanset_span(const SpanSet *ss, const Span *s)
@@ -439,7 +546,7 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span set is not before the second one.
- * @sqlop @s #&>
+ * @sqlop @s &>
  */
 bool
 overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -455,36 +562,15 @@ overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of the spans.
- * @sqlop @s +
+ * @brief Return the union of a value and a span set
+ * @sqlop @p +
  */
 SpanSet *
-union_span_span(const Span *s1, const Span *s2)
+union_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
 {
-  /* If the spans do not overlap */
-  if (! overlaps_span_span(s1, s2) &&
-    !adjacent_span_span(s1, s2))
-  {
-    const Span *spans[2];
-    if (s1->lower < s2->lower)
-    {
-      spans[0] = s1;
-      spans[1] = s2;
-    }
-    else
-    {
-      spans[0] = s2;
-      spans[1] = s1;
-    }
-    SpanSet *result = spanset_make((const Span **) spans, 2, NORMALIZE_NO);
-    return result;
-  }
-
-  /* Compute the union of the overlapping spans */
   Span s;
-  memcpy(&s, s1, sizeof(Span));
-  span_expand(s2, &s);
-  SpanSet *result = span_to_spanset(&s);
+  span_set(d, d, true, true, basetype, &s);
+  SpanSet *result = union_span_spanset(&s, ss);
   return result;
 }
 
@@ -626,6 +712,33 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_set
+ * @brief Return the intersection of a span set and a value
+ * @sqlop @p *
+ */
+bool
+intersection_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype,
+  Datum *result)
+{
+  if (! contains_spanset_value(ss, d, basetype))
+    return false;
+  *result  = d;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the intersection of a value and a span set
+ * @sqlop @p *
+ */
+bool
+intersection_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss,
+  Datum *result)
+{
+  return intersection_spanset_value(ss, d, basetype, result);
+}
+
+/**
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a span and a span set.
  * @sqlop @s *
  */
@@ -714,6 +827,45 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * Set difference
  * The functions produce new results that must be freed after
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of a span set and a value.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  /* Bounding box test */
+  if (! contains_span_value(&ss->span, d, basetype))
+    return spanset_copy(ss);
+
+  /* At most one composing span can be split into two */
+  Span **spans = palloc(sizeof(Span *) * (ss->count + 1));
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *p = spanset_sp_n(ss, i);
+    k += minus_span_value1(p, d, basetype, &spans[k]);
+  }
+  SpanSet *result = spanset_make_free(spans, k, NORMALIZE_NO);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of a timestamp and a period set
+ * @sqlop @p -
+ */
+bool
+minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss,
+  Datum *result)
+{
+  if (contains_spanset_value(ss, d, basetype))
+    return false;
+  *result = d;
+  return true;
+}
 
 /**
  * @brief Return the difference of the two spans.

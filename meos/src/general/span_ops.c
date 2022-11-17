@@ -229,6 +229,17 @@ adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
     (datum_eq2(s->upper, d, s->basetype, basetype) && ! s->upper_inc);
 }
 
+/**
+ * @ingroup libmeos_int_spantime_topo
+ * @brief Return true if a span and an element are adjacent
+ */
+bool
+adjacent_value_span(Datum d, mobdbType basetype, const Span *s)
+{
+  return adjacent_span_value(s, d, basetype);
+}
+
+
 #if MEOS
 /**
  * @ingroup libmeos_spantime_topo
@@ -641,9 +652,96 @@ bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
   return result;
 }
 
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the union of a period and a timestamp
+ * @sqlop @p +
+ */
+SpanSet *
+union_span_value(const Span *s, Datum d, mobdbType basetype)
+{
+  Span s1;
+  span_set(d, d, true, true, basetype, &s1);
+  SpanSet *result = union_span_span(s, &s1);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the union of a timestamp and a period
+ * @sqlop @p +
+ */
+SpanSet *
+union_value_span(Datum d, mobdbType basetype, const Span *s)
+{
+  return union_span_value(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the union of the spans.
+ * @sqlop @s +
+ */
+SpanSet *
+union_span_span(const Span *s1, const Span *s2)
+{
+  /* If the spans do not overlap */
+  if (! overlaps_span_span(s1, s2) &&
+    !adjacent_span_span(s1, s2))
+  {
+    const Span *spans[2];
+    if (datum_lt(s1->lower, s2->lower, s1->basetype))
+    {
+      spans[0] = s1;
+      spans[1] = s2;
+    }
+    else
+    {
+      spans[0] = s2;
+      spans[1] = s1;
+    }
+    SpanSet *result = spanset_make((const Span **) spans, 2, NORMALIZE_NO);
+    return result;
+  }
+
+  /* Compute the union of the overlapping spans */
+  Span s;
+  memcpy(&s, s1, sizeof(Span));
+  span_expand(s2, &s);
+  SpanSet *result = span_to_spanset(&s);
+  return result;
+}
+
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the intersection of a period and a timestamp
+ * @sqlop @p *
+ */
+bool
+intersection_span_value(const Span *s, Datum d, mobdbType basetype,
+  Datum *result)
+{
+  if (! contains_span_value(s, d, basetype))
+    return false;
+  *result  = d;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the intersection of a value and a span
+ * @sqlop @p *
+ */
+bool
+intersection_value_span(Datum d, mobdbType basetype, const Span *s,
+  Datum *result)
+{
+  return intersection_span_value(s, d, basetype, result);
+}
 
 /**
  * @ingroup libmeos_int_spantime_set
@@ -690,6 +788,74 @@ intersection_span_span(const Span *s1, const Span *s2)
 /*****************************************************************************
  * Set difference
  *****************************************************************************/
+
+/**
+ * @brief Return the difference of a span and a value.
+ */
+int
+minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
+{
+  if (! contains_span_value(s, d, basetype))
+  {
+    result[0] = span_copy(s);
+    return 1;
+  }
+
+  bool eqlower = datum_eq(s->lower, d, basetype);
+  bool equpper = datum_eq(s->upper, d, basetype);
+  if (eqlower && equpper)
+    return 0;
+
+  if (eqlower)
+  {
+    result[0] = span_make(s->lower, s->upper, false, s->upper_inc, basetype);
+    return 1;
+  }
+
+  if (equpper)
+  {
+    result[0] = span_make(s->lower, s->upper, s->lower_inc, false, basetype);
+    return 1;
+  }
+
+  result[0] = span_make(s->lower, d, s->lower_inc, false, basetype);
+  result[1] = span_make(d, s->upper, false, s->upper_inc, basetype);
+  return 2;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of a span and a value.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_span_value(const Span *s, Datum d, mobdbType basetype)
+{
+  Span *spans[2];
+  int count = minus_span_value1(s, d, basetype, spans);
+  if (count == 0)
+    return NULL;
+  SpanSet *result = spanset_make((const Span **) spans, count,
+    NORMALIZE_NO);
+  for (int i = 0; i < count; i++)
+    pfree(spans[i]);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of a value and a span
+ * @sqlop @p -
+ */
+bool
+minus_value_span(Datum d, mobdbType basetype, const Span *s,
+  Datum *result)
+{
+  if (contains_span_value(s, d, basetype))
+    return false;
+  *result = d;
+  return true;
+}
 
 /**
  * @ingroup libmeos_spantime_set

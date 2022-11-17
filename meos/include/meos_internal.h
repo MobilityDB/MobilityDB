@@ -94,28 +94,53 @@ extern void lower_upper_shift_tscale(const Interval *shift, const Interval *dura
 
 /* Topological functions for span and time types */
 
-extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
-extern bool contained_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool adjacent_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool adjacent_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool adjacent_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool adjacent_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
+extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool contained_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool contained_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 
 /*****************************************************************************/
 
 /* Position functions for span and time types */
 
 extern bool left_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool left_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool left_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 extern bool right_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool right_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool right_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 extern bool overleft_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overleft_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool overleft_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 extern bool overright_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overright_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overright_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool overright_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
 /* Set functions for span and time types */
 
+extern SpanSet *union_span_value(const Span *s, Datum v, mobdbType basetype);
+extern SpanSet *union_value_span(Datum d, mobdbType basetype, const Span *s);
+extern SpanSet *union_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
+extern bool intersection_span_value(const Span *s, Datum d, mobdbType basetype, Datum *result);
+extern bool intersection_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype, Datum *result);
+extern bool intersection_value_span(Datum d, mobdbType basetype, const Span *s, Datum *result);
+extern bool intersection_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss, Datum *result);
+extern int minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result);
+extern SpanSet *minus_span_value(const Span *s, Datum d, mobdbType basetype);
+extern SpanSet *minus_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool minus_value_span(Datum d, mobdbType basetype, const Span *s, Datum *result);
+extern bool minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss, Datum *result);
 
 /*****************************************************************************/
 
