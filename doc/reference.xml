@@ -12,29 +12,42 @@
 	<title>MobilityDB Reference</title>
 
 	<sect1>
-		<title>Functions and Operators for Time Types and Span Types</title>
+		<title>Functions and Operators for Span and Time Types</title>
+
+		<sect2>
+			<title>Input/Output Functions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a span or time type</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a span or time type</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspanSetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspanSetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodSetFromBinary</varname>, <varname>timestampSetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspanSetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspanSetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodSetFromHexWKB</varname>, <varname>timestampSetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="period"><varname>intspan</varname></link>: Constructor for <varname>intspan</varname></para>
+					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>period</varname></link>: Constructor for span values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period"><varname>floatspan</varname></link>: Constructor for <varname>floatspan</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="period"><varname>period</varname></link>: Constructor for <varname>period</varname></para>
+					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>periodset</varname></link>: Constructor for span set values</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="timestampset"><varname>timestampset</varname></link>: Constructor for <varname>timestampset</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="periodset"><varname>periodset</varname></link>: Constructor for <varname>periodset</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -43,27 +56,23 @@
 			<title>Casting</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Cast a <varname>timestamptz</varname> to another time type</para>
+					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Cast a <varname>timestamptz</varname> value to another time type</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
+					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> value to a <varname>periodset</varname> value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another time type</para>
+					<para><link linkend="span_cast"><varname>span::spanset</varname></link>: Cast a span value to span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intspan_cast"><varname>instspan::int4range</varname></link>: Cast an <varname>instspan</varname> to an <varname>int4range</varname></para>
+					<para><link linkend="span_cast_range"><varname>span::range</varname></link>: Cast a span value to a PostgreSQL range value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
-
-				<listitem>
-					<para><link linkend="int4range_cast"><varname>int4range::instspan</varname></link>: Cast an <varname>int4range</varname> to an <varname>instspan</varname></para>
-				</listitem>
+					<para><link linkend="range_cast_span"><varname>range::span</varname></link>: Cast a PostgreSQL range value to a span value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -90,6 +99,10 @@
 
 				<listitem>
 					<para><link linkend="upper_inc"><varname>upper_inc</varname></link>: Is the upper bound inclusive?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="width"><varname>width</varname></link>: Get the width of the span as a float</para>
 				</listitem>
 
 				<listitem>
@@ -125,23 +138,23 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numPeriods"><varname>numPeriods</varname></link>: Get the number of periods</para>
+					<para><link linkend="numSpans"><varname>numSpans</varname>, <varname>numPeriods</varname></link>: Get the number of composing spans or periods</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startPeriod"><varname>startPeriod</varname></link>: Get the start period</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>startPeriod</varname></link>: Get the start span or period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="endPeriod"><varname>endPeriod</varname></link>: Get the end period</para>
+					<para><link linkend="endSpan"><varname>endSpan</varname>, <varname>endPeriod</varname></link>: Get the end span or period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="periodN"><varname>periodN</varname></link>: Get the n-th period</para>
+					<para><link linkend="spanN"><varname>spanN</varname>, <varname>periodN</varname></link>: Get the n-th span or period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="periods"><varname>periods</varname></link>: Get the periods</para>
+					<para><link linkend="spans"><varname>spans</varname>, <varname>periods</varname></link>: Get the spans or periods</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1692,15 +1705,15 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_inst"><varname>tnpoint_inst</varname></link>: Constructor for temporal network points of instant subtype</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructor for temporal network points of sequence subtype</para>
+						<para><link linkend="tnpoint"><varname>tnpoint</varname></link>: Constructor for temporal network points from a base value and a time value</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="tnpoint_discseq"><varname>tnpoint_discseq</varname></link>: Constructors for temporal network points of sequence subtype and discrete interpolation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_contseq"><varname>tnpoint_contseq</varname></link>: Constructor for temporal network points of sequence subtype and continuous interpolation, that is, linear or stepwise interpolation</para>
 					</listitem>
 
 					<listitem>
@@ -1726,7 +1739,7 @@
 				<title>Functions and Operators</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_seq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
 					</listitem>
 
 					<listitem>

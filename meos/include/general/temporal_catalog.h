@@ -48,45 +48,47 @@
 typedef enum
 {
   // T_UNKNOWN = 0,
-  T_BOOL,          /**< boolean type */
-  T_DOUBLE2,       /**< double2 type */
-  T_DOUBLE3,       /**< double3 type */
-  T_DOUBLE4,       /**< double4 type */
-  T_FLOAT8,        /**< float8 type */
-  T_FLOATSPAN,     /**< float8 span type */
-  T_FLOATSPANSET,  /**< float8 span set type */
-  T_INT4,          /**< int4 type */
+  T_BOOL,           /**< boolean type */
+  T_DOUBLE2,        /**< double2 type */
+  T_DOUBLE3,        /**< double3 type */
+  T_DOUBLE4,        /**< double4 type */
+  T_FLOAT8,         /**< float8 type */
+  T_FLOATSPAN,      /**< float8 span type */
+  T_FLOATSPANSET,   /**< float8 span set type */
+  T_INT4,           /**< int4 type */
 #if ! MEOS
-  T_INT4RANGE,     /**< PostgreSQL int4 range type */
+  T_INT4RANGE,      /**< PostgreSQL int4 range type */
+  T_INT4MULTIRANGE, /**< PostgreSQL int4 multirange type */
 #endif
-  T_INTSPAN,       /**< int4 span type */
-  T_INTSPANSET,    /**< int4 span set type */
-  T_INT8,          /**< int8 type */
-  T_PERIOD,        /**< period type */
-  T_PERIODSET,     /**< period set type */
-  T_STBOX,         /**< spatiotemporal box type */
-  T_TBOOL,         /**< temporal boolean type */
-  T_TBOX,          /**< temporal box type */
-  T_TDOUBLE2,      /**< temporal double2 type */
-  T_TDOUBLE3,      /**< temporal double3 type */
-  T_TDOUBLE4,      /**< temporal double4 type */
-  T_TEXT,          /**< text type */
-  T_TFLOAT,        /**< temporal float type */
-  T_TIMESTAMPSET,  /**< timestamp set type */
-  T_TIMESTAMPTZ,   /**< timestamp with time zone type */
-  T_TINT,          /**< temporal integer type */
+  T_INTSPAN,        /**< int4 span type */
+  T_INTSPANSET,     /**< int4 span set type */
+  T_INT8,           /**< int8 type */
+  T_PERIOD,         /**< period type */
+  T_PERIODSET,      /**< period set type */
+  T_STBOX,          /**< spatiotemporal box type */
+  T_TBOOL,          /**< temporal boolean type */
+  T_TBOX,           /**< temporal box type */
+  T_TDOUBLE2,       /**< temporal double2 type */
+  T_TDOUBLE3,       /**< temporal double3 type */
+  T_TDOUBLE4,       /**< temporal double4 type */
+  T_TEXT,           /**< text type */
+  T_TFLOAT,         /**< temporal float type */
+  T_TIMESTAMPSET,   /**< timestamp set type */
+  T_TIMESTAMPTZ,    /**< timestamp with time zone type */
+  T_TINT,           /**< temporal integer type */
 #if ! MEOS
-  T_TSTZRANGE,     /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZRANGE,      /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZMULTIRANGE, /**< PostgreSQL timestamp with time zone multirange type */
 #endif
-  T_TTEXT,         /**< temporal text type */
-  T_GEOMETRY,      /**< geometry type */
-  T_GEOGRAPHY,     /**< geography type */
-  T_TGEOMPOINT,    /**< temporal geometry point type */
-  T_TGEOGPOINT,    /**< temporal geography point type */
+  T_TTEXT,          /**< temporal text type */
+  T_GEOMETRY,       /**< geometry type */
+  T_GEOGRAPHY,      /**< geography type */
+  T_TGEOMPOINT,     /**< temporal geometry point type */
+  T_TGEOGPOINT,     /**< temporal geography point type */
 #if NPOINT
-  T_NPOINT,        /**< network point type */
-  T_NSEGMENT,      /**< network segment type */
-  T_TNPOINT,       /**< temporal network point type */
+  T_NPOINT,         /**< network point type */
+  T_NSEGMENT,       /**< network segment type */
+  T_TNPOINT,        /**< temporal network point type */
 #endif
 } mobdbType;
 

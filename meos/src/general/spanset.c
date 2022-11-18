@@ -385,6 +385,23 @@ spanset_mem_size(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_spantime_accessor
+ * @brief Return the width of a span set as a double.
+ * @sqlfunc width()
+ */
+double
+spanset_width(const SpanSet *ss)
+{
+  double result = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *s = spanset_sp_n(ss, i);
+    result += span_width(s);
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the number of spans of a span set
  * @sqlfunc numSpans()
  * @pymeosfunc numSpans()

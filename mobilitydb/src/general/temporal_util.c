@@ -40,10 +40,14 @@
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_type_d.h>
 #include <utils/array.h>
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  #include <utils/multirangetypes.h>
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 #include <utils/rangetypes.h>
 #include <utils/varlena.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 /* MobilityDB */
 #include "pg_general/doublen.h"
 #include "pg_general/temporal_catalog.h"
@@ -368,5 +372,49 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   upper.lower = false;
   return make_range(typcache, &lower, &upper, false);
 }
+
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+/**
+ * Construct a range value from given arguments
+ */
+MultirangeType *
+multirange_make(const SpanSet *ss)
+{
+  RangeType **ranges = palloc(sizeof(RangeType *) * ss->count);
+  const Span *s = spanset_sp_n(ss, 0);
+  Oid rangetypid = 0, mrangetypid = 0;
+  assert (s->basetype == T_INT4 || s->basetype == T_TIMESTAMPTZ);
+  if (s->basetype == T_INT4)
+  {
+    rangetypid = type_oid(T_INT4RANGE);
+    mrangetypid = type_oid(T_INT4MULTIRANGE);
+  }
+  else /* basetype == T_TIMESTAMPTZ */
+  {
+    rangetypid = type_oid(T_TSTZRANGE);
+    mrangetypid = type_oid(T_TSTZMULTIRANGE);
+  }
+  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  for (int i = 0; i < ss->count; i++)
+  {
+    s = spanset_sp_n(ss, i);
+    RangeBound lower;
+    RangeBound upper;
+    lower.val = s->lower;
+    lower.infinite = false;
+    lower.inclusive = s->lower_inc;
+    lower.lower = true;
+    upper.val = s->upper;
+    upper.infinite = false;
+    upper.inclusive = s->upper_inc;
+    upper.lower = false;
+    ranges[i] = make_range(typcache, &lower, &upper, false);
+  }
+  MultirangeType *result = make_multirange(mrangetypid, typcache, ss->count,
+    ranges);
+  pfree_array((void **) ranges, ss->count);
+  return result;
+}
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /*****************************************************************************/

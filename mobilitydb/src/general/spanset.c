@@ -45,6 +45,7 @@
 #include "general/temporal_util.h"
 #include "general/time_ops.h"
 /* MobilityDB */
+#include "pg_general/span.h"
 #include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
@@ -140,7 +141,6 @@ Spanset_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
@@ -192,6 +192,52 @@ Spanset_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Spanset_to_multirange);
+/**
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Convert the integer span as a integer range value
+ * @sqlfunc int4range(), tstzrange()
+ * @sqlop @p ::
+ */
+PGDLLEXPORT Datum
+Spanset_to_multirange(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  const Span *span = spanset_sp_n(ss, 0);
+  assert(span->spantype == T_INTSPAN || span->spantype == T_PERIOD);
+  MultirangeType *mrange;
+  mrange = multirange_make(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(mrange);
+}
+
+PG_FUNCTION_INFO_V1(Multirange_to_spanset);
+/**
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Convert the multi range value as a span set
+ * @sqlfunc intspanset(), periodset()
+ * @sqlop @p ::
+ */
+PGDLLEXPORT Datum
+Multirange_to_spanset(PG_FUNCTION_ARGS)
+{
+  MultirangeType *mrange = PG_GETARG_MULTIRANGE_P(0);
+  TypeCacheEntry *typcache = multirange_get_typcache(fcinfo,
+    MultirangeTypeGetOid(mrange));
+
+  Span **spans = palloc(sizeof(Span *) * mrange->rangeCount);
+  for (uint32 i = 0; i < mrange->rangeCount; i++)
+  {
+    RangeType *range = multirange_get_range(typcache->rngtype, mrange, i);
+    spans[i] = range_to_span(range, typcache->rngtype);
+  }
+  SpanSet *ss = spanset_make((const Span **) spans, mrange->rangeCount,
+    NORMALIZE);
+  pfree_array((void **) spans, mrange->rangeCount);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(ss);
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -209,6 +255,20 @@ Spanset_mem_size(PG_FUNCTION_ARGS)
   Datum result = spanset_mem_size(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Spanset_width);
+/**
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the width of a numeric span set
+ * @sqlfunc width()
+ */
+PGDLLEXPORT Datum
+Spanset_width(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  double result = spanset_width(ss);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(Spanset_num_spans);
@@ -290,6 +350,42 @@ Spanset_spans(PG_FUNCTION_ARGS)
   pfree(spans);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_ARRAYTYPE_P(result);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @brief Set the precision of the float span set to the number of decimal places.
+ */
+static SpanSet *
+floatspanset_round(SpanSet *ss, Datum size)
+{
+  Span **spans = palloc(sizeof(Span *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *span = spanset_sp_n(ss, i);
+    spans[i] = floatspan_round(span, size);
+  }
+  SpanSet *result = spanset_make((const Span**) spans, ss->count, NORMALIZE);
+  pfree_array((void **) spans, ss->count);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Floatspanset_round);
+/**
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Set the precision of the float span set to the number of decimal places
+ * @sqlfunc round()
+ */
+PGDLLEXPORT Datum
+Floatspanset_round(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum size = PG_GETARG_DATUM(1);
+  SpanSet *result = floatspanset_round(ss, size);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

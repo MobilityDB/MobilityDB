@@ -170,57 +170,29 @@ CREATE FUNCTION asText(period)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
-CREATE FUNCTION asBinary(intspan)
+
+CREATE FUNCTION asBinary(intspan, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(intspan, endianenconding text)
+CREATE FUNCTION asBinary(floatspan, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(period, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(floatspan)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(floatspan, endianenconding text)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asBinary(period)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(period, endianenconding text)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Span_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(intspan)
+CREATE FUNCTION asHexWKB(intspan, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(intspan, endianenconding text)
+CREATE FUNCTION asHexWKB(floatspan, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(floatspan)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(floatspan, endianenconding text)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(period)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(period, endianenconding text)
+CREATE FUNCTION asHexWKB(period, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -261,15 +233,15 @@ CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
 
 CREATE FUNCTION intspan(integer)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Elem_to_span'
+  AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan(float)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Elem_to_span'
+  AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestamptz)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'Elem_to_span'
+  AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION int4range(intspan)
@@ -290,9 +262,9 @@ CREATE FUNCTION period(tstzrange)
   AS 'MODULE_PATHNAME', 'Range_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
 CREATE CAST (int4range AS intspan) WITH FUNCTION intspan(int4range);
 CREATE CAST (intspan AS int4range) WITH FUNCTION int4range(intspan);
-CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
 CREATE CAST (tstzrange AS period) WITH FUNCTION period(tstzrange);
 CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);
 

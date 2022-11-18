@@ -48,6 +48,7 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/span.h"
 #include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
@@ -223,7 +224,7 @@ Span_constructor4(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Elem_to_span);
+PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_spantime_cast
  * @brief Cast the timestamp value as a span
@@ -231,11 +232,11 @@ PG_FUNCTION_INFO_V1(Elem_to_span);
  * @sqlop @p ::
  */
 PGDLLEXPORT Datum
-Elem_to_span(PG_FUNCTION_ARGS)
+Value_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span *result = elem_to_span(d, basetype);
+  Span *result = value_to_span(d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -257,26 +258,13 @@ Span_to_range(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(range);
 }
 
-PG_FUNCTION_INFO_V1(Range_to_span);
 /**
- * @ingroup mobilitydb_spantime_cast
- * @brief Convert the integer range value as a integer span
- * @sqlfunc intspan(), period()
- * @sqlop @p ::
+ * @brief Convert the PostgreSQL range value as a span value
  */
-PGDLLEXPORT Datum
-Range_to_span(PG_FUNCTION_ARGS)
+Span *
+range_to_span(RangeType *range, TypeCacheEntry *typcache)
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
-  TypeCacheEntry *typcache;
   char flags = range_get_flags(range);
-  RangeBound lower, upper;
-  bool empty;
-  Span *span;
-
-  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  assert(typcache->rngelemtype->type_id == INT4OID ||
-    typcache->rngelemtype->type_id == TIMESTAMPTZOID);
   if (flags & RANGE_EMPTY)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Range cannot be empty")));
@@ -284,11 +272,31 @@ Range_to_span(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Range bounds cannot be infinite")));
 
+  RangeBound lower, upper;
+  bool empty;
+  range_deserialize(typcache, range, &lower, &upper, &empty);
   mobdbType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
     T_INT4 : T_TIMESTAMPTZ;
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-  span = span_make(lower.val, upper.val, lower.inclusive, upper.inclusive,
-    basetype);
+  Span *result = span_make(lower.val, upper.val, lower.inclusive,
+    upper.inclusive, basetype);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Range_to_span);
+/**
+ * @ingroup mobilitydb_spantime_cast
+ * @brief Convert the PostgreSQL range value as a span value
+ * @sqlfunc intspan(), period()
+ * @sqlop @p ::
+ */
+PGDLLEXPORT Datum
+Range_to_span(PG_FUNCTION_ARGS)
+{
+  RangeType *range = PG_GETARG_RANGE_P(0);
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  assert(typcache->rngelemtype->type_id == INT4OID ||
+    typcache->rngelemtype->type_id == TIMESTAMPTZOID);
+  Span *span = range_to_span(range, typcache);
   PG_RETURN_POINTER(span);
 }
 
@@ -355,7 +363,7 @@ Span_upper_inc(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Span_width);
 /**
  * @ingroup mobilitydb_spantime_accessor
- * @brief Return the duration of the period
+ * @brief Return the width of a numeric span
  * @sqlfunc width()
  */
 PGDLLEXPORT Datum
@@ -387,8 +395,8 @@ Period_duration(PG_FUNCTION_ARGS)
 /**
  * @brief Set the precision of the float span to the number of decimal places.
  */
-static Span *
-floatspan_round(Span *span, Datum size)
+Span *
+floatspan_round(const Span *span, Datum size)
 {
   /* Set precision of bounds */
   Datum lower = datum_round_float(span->lower, size);
@@ -402,7 +410,7 @@ floatspan_round(Span *span, Datum size)
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
  * @ingroup mobilitydb_spantime_transf
- * @brief Set the precision of the float range to the number of decimal places
+ * @brief Set the precision of the float span to the number of decimal places
  * @sqlfunc round()
  */
 PGDLLEXPORT Datum

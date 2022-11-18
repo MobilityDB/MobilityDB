@@ -144,6 +144,16 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_int_spantime_topo
+ * @brief Return true if an element is contained by a span
+ */
+bool
+contained_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+{
+  return contains_spanset_value(ss, d, basetype);
+}
+
+/**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a span is contained by a span
  * @sqlop @s <@

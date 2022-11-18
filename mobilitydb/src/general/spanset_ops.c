@@ -35,16 +35,37 @@
 
 /* PostgreSQL */
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/periodset.h"
 #include "general/spanset.h"
 #include "general/timestampset.h"
 #include "general/temporal_util.h"
+/* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Contains
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Contains_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a span contains an element
+ * @sqlfunc span_contains()
+ * @sqlop @p @>
+ */
+PGDLLEXPORT Datum
+Contains_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  bool result = contains_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
 
 PG_FUNCTION_INFO_V1(Contains_spanset_span);
 /**
@@ -101,6 +122,24 @@ Contains_spanset_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Contained
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Contained_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if an element is contained by a span
+ * @sqlfunc span_contained()
+ * @sqlop @p <@
+ */
+PGDLLEXPORT Datum
+Contained_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = contained_value_spanset(d, basetype, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
 
 PG_FUNCTION_INFO_V1(Contained_span_spanset);
 /**

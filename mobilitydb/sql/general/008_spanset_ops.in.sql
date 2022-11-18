@@ -36,6 +36,28 @@
  * Operators
  ******************************************************************************/
 
+CREATE FUNCTION span_contains(intspanset, int)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_spanset_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_contains(floatspanset, float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_spanset_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = span_contains,
+  LEFTARG = intspanset, RIGHTARG = int,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = span_contains,
+  LEFTARG = floatspanset, RIGHTARG = float,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_contains(intspan, intspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_spanset'
@@ -133,6 +155,28 @@ CREATE OPERATOR @> (
 );
 
 /*****************************************************************************/
+
+CREATE FUNCTION span_contained(int, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_contained(float, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = span_contained,
+  LEFTARG = int, RIGHTARG = intspanset,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = span_contained,
+  LEFTARG = float, RIGHTARG = floatspanset,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
 
 CREATE FUNCTION span_contained(intspan, intspanset)
   RETURNS boolean
@@ -976,7 +1020,7 @@ CREATE FUNCTION span_intersection(intspan, intspanset)
   AS 'MODULE_PATHNAME', 'Intersection_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatspan, floatspanset)
-  RETURNS floatspan
+  RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Intersection_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(period, periodset)
@@ -1001,11 +1045,11 @@ CREATE OPERATOR * (
 );
 
 CREATE FUNCTION span_intersection(intspanset, intspan)
-  RETURNS intspan
+  RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatspanset, floatspan)
-  RETURNS floatspan
+  RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(periodset, period)

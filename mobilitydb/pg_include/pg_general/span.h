@@ -38,6 +38,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
+#include <utils/rangetypes.h>
 
 /*****************************************************************************/
 
@@ -46,9 +47,13 @@
 extern Span *span_recv(StringInfo buf);
 extern void span_write(const Span *s, StringInfo buf);
 
+/* Cast functions */
+
+extern Span *range_to_span(RangeType *range, TypeCacheEntry *typcache);
+
 /* Transformation functions */
 
-extern Span *floatspan_round(Span *span, Datum size);
+extern Span *floatspan_round(const Span *span, Datum size);
 
 /*****************************************************************************/
 

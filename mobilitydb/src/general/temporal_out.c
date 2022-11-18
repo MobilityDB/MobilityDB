@@ -191,9 +191,11 @@ get_endian_variant(const text *txt)
 {
   uint8_t variant = 0;
   char *endian = text2cstring(txt);
-  if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
+  if (strlen(endian) == 0)
+    ;
+  else if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
     elog(ERROR, "Invalid value for endian flag");
-  if (strncasecmp(endian, "ndr", 3) == 0)
+  else if (strncasecmp(endian, "ndr", 3) == 0)
     variant = variant | (uint8_t) WKB_NDR;
   else /* txt = XDR */
     variant = variant | (uint8_t) WKB_XDR;

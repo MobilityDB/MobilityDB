@@ -41,6 +41,7 @@
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
+#include <utils/multirangetypes.h>
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/span.h"
@@ -71,6 +72,7 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
   bool upper_inc, mobdbType basetype);
+extern MultirangeType *multirange_make(const SpanSet *ss);
 
 /* Array functions */
 

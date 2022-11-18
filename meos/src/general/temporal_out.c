@@ -2223,6 +2223,8 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
       buf = timestampset_to_wkb_buf((TimestampSet *) DatumGetPointer(value),
         buf, variant);
       break;
+    case T_INTSPANSET:
+    case T_FLOATSPANSET:
     case T_PERIODSET:
       buf = spanset_to_wkb_buf((PeriodSet *) DatumGetPointer(value), buf,
         variant);

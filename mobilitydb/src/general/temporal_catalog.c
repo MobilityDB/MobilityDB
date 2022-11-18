@@ -82,7 +82,10 @@ const char *_type_names[] =
   [T_FLOATSPAN] = "floatspan",
   [T_FLOATSPANSET] = "floatspanset",
   [T_INT4] = "int4",
+#if ! MEOS
   [T_INT4RANGE] = "int4range",
+  [T_INT4MULTIRANGE] = "int4multirange",
+#endif
   [T_INTSPAN] = "intspan",
   [T_INTSPANSET] = "intspanset",
   [T_INT8] = "int8",
@@ -99,7 +102,10 @@ const char *_type_names[] =
   [T_TIMESTAMPSET] = "timestampset",
   [T_TIMESTAMPTZ] = "timestamptz",
   [T_TINT] = "tint",
+#if ! MEOS
   [T_TSTZRANGE] = "tstzrange",
+  [T_TSTZMULTIRANGE] = "tstzmultirange",
+#endif
   [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
   [T_GEOGRAPHY] = "geography",

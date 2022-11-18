@@ -389,13 +389,14 @@ extern bool span_upper_inc(const Span *s);
 extern double span_width(const Span *s);
 
 extern Span *spanset_end_span(const SpanSet *ss);
+extern uint32 spanset_hash(const SpanSet *ps);
+extern uint64 spanset_hash_extended(const SpanSet *ps, uint64 seed);
 extern int spanset_mem_size(const SpanSet *ss);
 extern int spanset_num_spans(const SpanSet *ss);
 extern Span *spanset_span_n(const SpanSet *ss, int i);
 extern const Span **spanset_spans(const SpanSet *ss, int *count);
 extern Span *spanset_start_span(const SpanSet *ss);
-extern uint32 spanset_hash(const SpanSet *ps);
-extern uint64 spanset_hash_extended(const SpanSet *ps, uint64 seed);
+extern double spanset_width(const SpanSet *ss);
 
 extern TimestampTz timestampset_end_timestamp(const TimestampSet *ss);
 extern uint32 timestampset_hash(const TimestampSet *ss);

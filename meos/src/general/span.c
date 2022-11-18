@@ -536,7 +536,7 @@ span_copy(const Span *s)
  * @brief Cast an element as a span
  */
 Span *
-elem_to_span(Datum d, mobdbType basetype)
+value_to_span(Datum d, mobdbType basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);
