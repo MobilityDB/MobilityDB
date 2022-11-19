@@ -626,6 +626,9 @@ extern double distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet
 extern double distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern double distance_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts);
 extern double distance_span_span(const Span *s1, const Span *s2);
+extern double distance_span_spanset(const Span *s, const SpanSet *ss);
+extern double distance_spanset_span(const SpanSet *ss, const Span *s);
+extern double distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern double distance_timestamp_period(TimestampTz t, const Period *p);
 extern double distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps);
 extern double distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
@@ -642,7 +645,7 @@ extern double distance_timestampset_timestampset(const TimestampSet *ts1, const 
 extern Period *timestamp_extent_transfn(Period *p, TimestampTz t);
 extern Period *timestampset_extent_transfn(Period *p, const TimestampSet *ts);
 extern Period *span_extent_transfn(Span *p1, const Span *p2);
-extern Period *periodset_extent_transfn(Period *p, const PeriodSet *ps);
+extern Period *spanset_extent_transfn(Span *s, const SpanSet *ss);
 
 extern SkipList *timestamp_tunion_transfn(SkipList *state, TimestampTz t);
 extern SkipList *timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts);

@@ -74,7 +74,7 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
 
-SELECT MAX(periodset_hash(ps)) FROM tbl_periodset;
-SELECT MAX(periodset_hash_extended(ps, 1)) FROM tbl_periodset;
+SELECT MAX(periodset_hash(ps)) != 0 FROM tbl_periodset;
+SELECT MAX(periodset_hash_extended(ps, 1)) != 0 FROM tbl_periodset;
 
 -------------------------------------------------------------------------------

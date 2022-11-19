@@ -102,6 +102,10 @@ extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 extern bool contained_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool contained_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
+extern bool overlaps_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool overlaps_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
+extern bool overlaps_span_value(const Span *s, Datum d, mobdbType basetype);
+extern bool overlaps_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -148,6 +152,7 @@ extern bool minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss, 
 
 extern double distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer);
 extern double distance_span_value(const Span *s, Datum d, mobdbType basetype);
+extern double distance_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 

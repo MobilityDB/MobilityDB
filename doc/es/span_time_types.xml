@@ -783,6 +783,8 @@ SELECT period '[2001-01-03, 2001-01-04)' &gt; period '[2001-01-02, 2001-01-05)';
 					<para>¿Es el primer valor menor o igual que el segundo?</para>
 					<para><varname>{numspan,time} &lt;= {numspan,time}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT floatspanset '{[1, 4)}' &lt;= floatspanset '{[1, 5), [6, 7)}';
+-- true
 SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
   periodset '{[2001-01-01, 2001-01-05), [2001-01-06, 2001-01-07)}';
 -- true
@@ -794,6 +796,8 @@ SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
 					<para>¿Es el primer valor mayor o igual que el segundo?</para>
 					<para><varname>{numspan,time} &gt;= {numspan,time}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
+-- false
 SELECT period '[2001-01-03, 2001-01-05)' &gt;= period '[2001-01-03, 2001-01-04)';
 -- true
 </programlisting>
@@ -931,10 +935,10 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 -- true
-SELECT intspanset '{[1, 2],[5, 6)}' -|- 6;
---
 SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
 -- false
+SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
+-- true
 SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';
 -- true
 SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-03)';
@@ -957,6 +961,8 @@ SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-0
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &lt;&lt; 20;
 -- true
+SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
+-- true
 SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 -- false
 </programlisting>
@@ -971,6 +977,8 @@ SELECT intspan '[15, 20)' &gt;&gt; 10;
 -- true
 SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
 -- true
+SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
+-- true
 </programlisting>
 				</listitem>
 
@@ -981,6 +989,8 @@ SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &amp;&lt; 18;
 -- false
+SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
+-- true
 SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 -- true
 </programlisting>
@@ -994,6 +1004,8 @@ SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 SELECT intspan '[15, 20)' &amp;&gt; 30;
 -- true
 SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
+-- false
+SELECT floatspanset '{[1, 2],[3, 4]}' &amp;&gt; floatspan '(1, 3)';
 -- false
 </programlisting>
 				</listitem>
@@ -1056,6 +1068,8 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 SELECT 3 &lt;-&gt; intspan '(5, 7]';
 -- 3
 SELECT floatspan '[1, 3]' &lt;-&gt; floatspan '(5.5, 7]';
+-- 2.5
+SELECT floatspan '[1, 3]' &lt;-&gt; floatspanset '{(5.5, 7],[8, 9]}';
 -- 2.5
 SELECT period '[2001-01-02, 2001-01-06)' &lt;-&gt; timestamptz '2001-01-07';
 -- 86400

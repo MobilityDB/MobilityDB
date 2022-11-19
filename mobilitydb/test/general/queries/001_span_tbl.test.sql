@@ -101,8 +101,8 @@ SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
 
-SELECT MAX(period_hash(p)) FROM tbl_period;
-SELECT MAX(period_hash_extended(p, 1)) FROM tbl_period;
+SELECT MAX(period_hash(p)) != 0 FROM tbl_period;
+SELECT MAX(period_hash_extended(p, 1)) != 0 FROM tbl_period;
 
 -------------------------------------------------------------------------------
 

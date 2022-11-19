@@ -52,7 +52,7 @@
 PG_FUNCTION_INFO_V1(Contains_spanset_value);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span contains an element
+ * @brief Return true if a span contains a value
  * @sqlfunc span_contains()
  * @sqlop @p @>
  */
@@ -126,7 +126,7 @@ Contains_spanset_spanset(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contained_value_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if an element is contained by a span
+ * @brief Return true if a value is contained by a span
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -253,6 +253,42 @@ Overlaps_spanset_spanset(PG_FUNCTION_ARGS)
  * Adjacent to (but not overlapping)
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Adjacent_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value is contained by a span
+ * @sqlfunc span_adjacent()
+ * @sqlop @p span_adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = adjacent_value_spanset(d, basetype, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value is contained by a span
+ * @sqlfunc span_adjacent()
+ * @sqlop @p -|-
+ */
+PGDLLEXPORT Datum
+Adjacent_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = adjacent_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(Adjacent_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -308,6 +344,42 @@ Adjacent_spanset_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Strictly before of
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Left_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value is to the left of a span
+ * @sqlfunc span_left()
+ * @sqlop @p <<
+ */
+PGDLLEXPORT Datum
+Left_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = left_value_spanset(d, basetype, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Left_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value is to the left of a span
+ * @sqlfunc span_left()
+ * @sqlop @p <<
+ */
+PGDLLEXPORT Datum
+Left_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  bool result = left_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
 
 PG_FUNCTION_INFO_V1(Left_span_spanset);
 /**
@@ -365,6 +437,42 @@ Left_spanset_spanset(PG_FUNCTION_ARGS)
  * Strictly right of
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Right_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value is to the right of a span
+ * @sqlfunc span_right()
+ * @sqlop @p >>
+ */
+PGDLLEXPORT Datum
+Right_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = right_value_spanset(d, basetype, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Right_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value is to the right of a span
+ * @sqlfunc span_right()
+ * @sqlop @p >>
+ */
+PGDLLEXPORT Datum
+Right_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = right_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(Right_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -421,6 +529,42 @@ Right_spanset_spanset(PG_FUNCTION_ARGS)
  * Does not extend to right of
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Overleft_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value does not extend to the right of a span
+ * @sqlfunc span_overleft()
+ * @sqlop @p &<
+ */
+PGDLLEXPORT Datum
+Overleft_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = overleft_value_spanset(d, basetype, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Overleft_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value does not extend to the right of a span
+ * @sqlfunc span_overleft()
+ * @sqlop @p &<
+ */
+PGDLLEXPORT Datum
+Overleft_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  bool result = overleft_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(Overleft_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -476,6 +620,42 @@ Overleft_spanset_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Does not extend to left of
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Overright_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value does not extend to the left of a span
+ * @sqlfunc span_overright()
+ * @sqlop @p &>
+ */
+PGDLLEXPORT Datum
+Overright_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = overright_value_spanset(d, basetype, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Overright_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if a value does not extend to the left of a span
+ * @sqlfunc span_overright()
+ * @sqlop @p &>
+ */
+PGDLLEXPORT Datum
+Overright_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bool result = overright_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
 
 PG_FUNCTION_INFO_V1(Overright_span_spanset);
 /**
@@ -747,6 +927,98 @@ Minus_spanset_spanset(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
+}
+
+/******************************************************************************
+ * Distance functions returning a double
+ ******************************************************************************/
+
+PG_FUNCTION_INFO_V1(Distance_value_spanset);
+/**
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance between a value and a span set
+ * @sqlfunc span_distance()
+ * @sqlop @p <->
+ */
+PGDLLEXPORT Datum
+Distance_value_spanset(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  double result = distance_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_spanset_value);
+/**
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance between a span set and a value
+ * @sqlfunc span_distance()
+ * @sqlop @p <->
+ */
+PGDLLEXPORT Datum
+Distance_spanset_value(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  double result = distance_spanset_value(ss, d, basetype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_spanset_span);
+/**
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance between a span set and a span
+ * @sqlfunc span_distance()
+ * @sqlop @p <->
+ */
+PGDLLEXPORT Datum
+Distance_spanset_span(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  double result = distance_spanset_span(ss, s);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_span_spanset);
+/**
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance between a span and a span set
+ * @sqlfunc span_distance()
+ * @sqlop @p <->
+ */
+PGDLLEXPORT Datum
+Distance_span_spanset(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  double result = distance_span_spanset(s, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_spanset_spanset);
+/**
+ * @ingroup mobilitydb_spantime_dist
+ * @brief Return the distance between the span sets
+ * @sqlfunc span_distance()
+ * @sqlop @p <->
+ */
+PGDLLEXPORT Datum
+Distance_spanset_spanset(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
+  double result = distance_spanset_spanset(ss1, ss2);
+  PG_FREE_IF_COPY(ss1, 0);
+  PG_FREE_IF_COPY(ss2, 0);
+  PG_RETURN_FLOAT8(result);
 }
 
 /******************************************************************************/

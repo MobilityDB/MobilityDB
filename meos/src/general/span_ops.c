@@ -76,12 +76,13 @@ span_value_max(Datum l, Datum r, mobdbType type)
     return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
 }
 
-/*****************************************************************************/
-/* contains? */
+/*****************************************************************************
+ * Contains
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_topo
- * @brief Return true if a span contains an element.
+ * @brief Return true if a span contains a value.
  */
 bool
 contains_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -140,12 +141,13 @@ contains_span_span(const Span *s1, const Span *s2)
   return false;
 }
 
-/*****************************************************************************/
-/* contained? */
+/*****************************************************************************
+ * Contained
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_topo
- * @brief Return true if an element is contained by a span
+ * @brief Return true if a value is contained by a span
  */
 bool
 contained_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -188,8 +190,9 @@ contained_span_span(const Span *s1, const Span *s2)
   return contains_span_span(s2, s1);
 }
 
-/*****************************************************************************/
-/* overlaps? */
+/*****************************************************************************
+ * Overlaps
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -211,12 +214,13 @@ overlaps_span_span(const Span *s1, const Span *s2)
   return false;
 }
 
-/*****************************************************************************/
-/* adjacent to (but not overlapping)? */
+/*****************************************************************************
+ * Adjacent to (but not overlapping)
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_topo
- * @brief Return true if a span and an element are adjacent
+ * @brief Return true if a span and a value are adjacent
  */
 bool
 adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -231,7 +235,7 @@ adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
 
 /**
  * @ingroup libmeos_int_spantime_topo
- * @brief Return true if a span and an element are adjacent
+ * @brief Return true if a span and a value are adjacent
  */
 bool
 adjacent_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -284,12 +288,13 @@ adjacent_span_span(const Span *s1, const Span *s2)
       s2->upper_inc != s1->lower_inc) );
 }
 
-/*****************************************************************************/
-/* strictly left of? */
+/*****************************************************************************
+ * Strictly left of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if an element is strictly to the left of a span.
+ * @brief Return true if a value is strictly to the left of a span.
  */
 bool
 left_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -324,7 +329,7 @@ left_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if a span is strictly to the left of an element.
+ * @brief Return true if a span is strictly to the left of a value.
  */
 bool
 left_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -371,12 +376,13 @@ left_span_span(const Span *s1, const Span *s2)
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
 }
 
-/*****************************************************************************/
-/* strictly right of? */
+/*****************************************************************************
+ * Strictly right of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if an element is strictly to the right of a span.
+ * @brief Return true if a value is strictly to the right of a span.
  */
 bool
 right_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -411,7 +417,7 @@ right_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if a span is strictly to the right of an element
+ * @brief Return true if a span is strictly to the right of a value
  */
 bool
 right_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -455,12 +461,13 @@ right_span_span(const Span *s1, const Span *s2)
   return left_span_span(s2, s1);
 }
 
-/*****************************************************************************/
-/* does not extend to right of? */
+/*****************************************************************************
+ * Does not extend to right of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if an element is not to the right of a span.
+ * @brief Return true if a value is not to the right of a span.
  */
 bool
 overleft_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -495,7 +502,7 @@ overleft_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if a span is not to the right of an element.
+ * @brief Return true if a span is not to the right of a value.
  */
 bool
 overleft_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -544,12 +551,13 @@ overleft_span_span(const Span *s1, const Span *s2)
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
 }
 
-/*****************************************************************************/
-/* does not extend to left of? */
+/*****************************************************************************
+ * Does not extend to left of
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if an element is not the left of a span.
+ * @brief Return true if a value is not the left of a span.
  */
 bool
 overright_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -584,7 +592,7 @@ overright_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_int_spantime_pos
- * @brief Return true if a span is not to the left of an element.
+ * @brief Return true if a span is not to the left of a value.
  */
 bool
 overright_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -921,7 +929,7 @@ bbox_minus_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_int_spantime_dist
- * @brief Return the distance between the elements
+ * @brief Return the distance between the values
  */
 double
 distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
@@ -945,23 +953,23 @@ distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
 
 /**
  * @ingroup libmeos_int_spantime_dist
- * @brief Return the distance between a span and a element.
+ * @brief Return the distance between a span and a value.
  */
 double
 distance_span_value(const Span *s, Datum d, mobdbType basetype)
 {
-  /* If the span contains the element return 0 */
+  /* If the span contains the value return 0 */
   if (contains_span_value(s, d, basetype))
     return 0.0;
 
-  /* If the span is to the right of the element return the distance
-   * between the element and the lower bound of the span
+  /* If the span is to the right of the value return the distance
+   * between the value and the lower bound of the span
    *     d   [---- s ----] */
   if (right_span_value(s, d, basetype))
     return distance_value_value(d, s->lower, basetype, s->basetype);
 
-  /* If the span is to the left of the element return the distance
-   * between the upper bound of the span and element
+  /* If the span is to the left of the value return the distance
+   * between the upper bound of the span and value
    *     [---- s ----]   d */
   return distance_value_value(s->upper, d, s->basetype, basetype);
 }

@@ -51,7 +51,7 @@
 PG_FUNCTION_INFO_V1(Contains_span_value);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span contains an element
+ * @brief Return true if a span contains a value
  * @sqlfunc span_contains()
  * @sqlop @p @>
  */
@@ -86,7 +86,7 @@ Contains_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contained_value_span);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if an element is contained by a span
+ * @brief Return true if a value is contained by a span
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -140,7 +140,7 @@ Overlaps_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Adjacent_value_span);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if an element and a span are adjacent
+ * @brief Return true if a value and a span are adjacent
  * @sqlfunc span_adjacent()
  * @sqlop @p -|-
  */
@@ -156,7 +156,7 @@ Adjacent_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Adjacent_span_value);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span and an element are adjacent
+ * @brief Return true if a span and a value are adjacent
  * @sqlfunc span_adjacent()
  * @sqlop @p -|-
  */
@@ -191,7 +191,7 @@ Adjacent_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Left_value_span);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if an element is strictly to the left of a span
+ * @brief Return true if a value is strictly to the left of a span
  * @sqlfunc span_left()
  * @sqlop @p <<
  */
@@ -242,7 +242,7 @@ Left_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Right_value_span);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if an element is strictly to the right of a span
+ * @brief Return true if a value is strictly to the right of a span
  * @sqlfunc span_right()
  * @sqlop @p >>
  */
@@ -258,7 +258,7 @@ Right_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Right_span_value);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span is strictly to the right of an element
+ * @brief Return true if a span is strictly to the right of a value
  * @sqlfunc span_right()
  * @sqlop @p >>
  */
@@ -293,7 +293,7 @@ Right_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overleft_value_span);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if an element is not to right of a span
+ * @brief Return true if a value is not to right of a span
  * @sqlfunc span_overleft()
  * @sqlop @p &<
  */
@@ -309,7 +309,7 @@ Overleft_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overleft_span_value);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span is not to right of an element
+ * @brief Return true if a span is not to right of a value
  * @sqlfunc span_overleft()
  * @sqlop @p &<
  */
@@ -344,7 +344,7 @@ Overleft_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overright_value_span);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if an element is not to the left of a span
+ * @brief Return true if a value is not to the left of a span
  * @sqlfunc span_overright()
  * @sqlop @p &>
  */
@@ -360,7 +360,7 @@ Overright_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overright_span_value);
 /**
  * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span is not to the left of an element
+ * @brief Return true if a span is not to the left of a value
  * @sqlfunc span_overright()
  * @sqlop @p &>
  */
@@ -452,7 +452,7 @@ Bbox_minus_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_value_value);
 /**
  * @ingroup mobilitydb_spantime_dist
- * @brief Return the distance in seconds between the elements
+ * @brief Return the distance in seconds between the values
  * @sqlfunc span_distance()
  * @sqlop @p <->
  */
@@ -470,7 +470,7 @@ Distance_value_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_value_span);
 /**
  * @ingroup mobilitydb_spantime_dist
- * @brief Return the distance in seconds between an element and a span
+ * @brief Return the distance in seconds between a value and a span
  * @sqlfunc span_distance()
  * @sqlop @p <->
  */
@@ -487,7 +487,7 @@ Distance_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_span_value);
 /**
  * @ingroup mobilitydb_spantime_dist
- * @brief Return the distance in seconds between a span and an element
+ * @brief Return the distance in seconds between a span and a value
  * @sqlfunc span_distance()
  * @sqlop @p <->
  */

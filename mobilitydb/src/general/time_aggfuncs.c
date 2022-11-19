@@ -86,22 +86,6 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(p);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_extent_transfn);
-/**
- * Transition function for extent aggregation of period set values
- */
-PGDLLEXPORT Datum
-Periodset_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIODSET_P(1);
-  p = periodset_extent_transfn(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  if (! p)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(p);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);

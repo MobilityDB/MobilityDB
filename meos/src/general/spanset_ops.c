@@ -348,7 +348,7 @@ adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a value is strictly left of a span set.
+ * @brief Return true if a span set is strictly to the left of a value.
  * @sqlop @p <<
  */
 bool
@@ -360,7 +360,7 @@ left_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a value is strictly left of a span set.
+ * @brief Return true if a value is strictly to the left of a span set.
  * @sqlop @p <<
  */
 bool
@@ -413,7 +413,19 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a value is not to the right of a span set.
+ * @brief Return true if a span set is strictly to the right of a value.
+ * @sqlop @p >>
+ */
+bool
+right_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  const Span *s = spanset_sp_n(ss, ss->count - 1);
+  return right_span_value(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a value is strictly to the right of a span set.
  * @sqlop @p #&>
  */
 bool
@@ -425,7 +437,7 @@ right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a span is strictly after a span set.
+ * @brief Return true if a span is strictly to the right of a span set.
  * @sqlop @s >>
  */
 bool
@@ -443,7 +455,7 @@ right_span_spanset(const Span *s, const SpanSet *ss)
 bool
 right_spanset_span(const SpanSet *ss, const Span *s)
 {
-  const Span *s1 = spanset_sp_n(ss, 0);
+  const Span *s1 = spanset_sp_n(ss, ss->count - 1);
   return right_span_span(s1, s);
 }
 
@@ -465,9 +477,21 @@ right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_int_spantime_pos
+ * @brief Return true if a value does not extend to the right of a span set.
+ * @sqlop @p &<
+ */
+bool
+overleft_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  const Span *s = spanset_sp_n(ss, ss->count - 1);
+  return overleft_span_value(s, d, basetype);
+}
+
+/**
  * @ingroup libmeos_spantime_pos
- * @brief Return true if a value is not after a span set.
- * @sqlop @p &<#
+ * @brief Return true if a value does not extend to the right of a span set.
+ * @sqlop @p &<
  */
 bool
 overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
@@ -518,9 +542,21 @@ overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_int_spantime_pos
+ * @brief Return true if a span set is not to the left of an element.
+ * @sqlop @p &>
+ */
+bool
+overright_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  const Span *s = spanset_sp_n(ss, 0);
+  return overright_span_value(s, d, basetype);
+}
+
+/**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a value is not to the left of a span set.
- * @sqlop @p #&>
+ * @sqlop @p &>
  */
 bool
 overright_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
@@ -1100,6 +1136,54 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     spans[k++] = span_copy(spanset_sp_n(ss1, i++));
   SpanSet *result = spanset_make_free(spans, k, NORMALIZE_NO);
   return result;
+}
+
+/******************************************************************************
+ * Distance functions returning a double
+ ******************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_dist
+ * @brief Return the distance between a timestamp and a span set
+ * @sqlop @s <->
+ */
+double
+distance_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+{
+  return distance_span_value(&ss->span, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_dist
+ * @brief Return the distance between a span and a span set
+ * @sqlop @s <->
+ */
+double
+distance_span_spanset(const Span *s, const SpanSet *ss)
+{
+  return distance_span_span(&ss->span, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_dist
+ * @brief Return the distance between a span set and a span
+ * @sqlop @s <->
+ */
+double
+distance_spanset_span(const SpanSet *ss, const Span *s)
+{
+  return distance_span_span(&ss->span, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_dist
+ * @brief Return the distance between two span sets
+ * @sqlop @s <->
+ */
+double
+distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
+{
+  return distance_span_span(&ss1->span, &ss2->span);
 }
 
 /******************************************************************************/

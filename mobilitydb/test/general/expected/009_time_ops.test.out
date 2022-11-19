@@ -703,7 +703,7 @@ SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' #>> time
 SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' #>> period '[2000-01-01, 2000-01-02]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' #>> periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}';
@@ -2135,6 +2135,7 @@ SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts && period '[2001-06-01, 2001-
 (1 row)
 
 SELECT COUNT(*) FROM tbl_period_big WHERE p && period '[2001-06-01, 2001-07-01]';
+WARNING:  cache reference leak: cache pg_statistic (63), tuple 42/5 has count 1
  count 
 -------
   1000
@@ -2201,6 +2202,7 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE ps @> timestampset '{2001-06-01, 20
 (1 row)
 
 SELECT COUNT(*) FROM tbl_period_big WHERE p @> period '[2001-06-01, 2001-07-01]';
+WARNING:  cache reference leak: cache pg_statistic (63), tuple 42/5 has count 1
  count 
 -------
      0
@@ -2261,6 +2263,7 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE timestampset '{2001-06-01, 2001-07-
 (1 row)
 
 SELECT COUNT(*) FROM tbl_period_big WHERE period '[2001-06-01, 2001-07-01]' <@ p;
+WARNING:  cache reference leak: cache pg_statistic (63), tuple 42/5 has count 1
  count 
 -------
      0
@@ -2465,6 +2468,7 @@ SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts && period '[2001-06-01, 2001-
 (1 row)
 
 SELECT COUNT(*) FROM tbl_period_big WHERE p && period '[2001-06-01, 2001-07-01]';
+WARNING:  cache reference leak: cache pg_statistic (63), tuple 42/5 has count 1
  count 
 -------
   1000
@@ -2531,6 +2535,7 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE ps @> timestampset '{2001-06-01, 20
 (1 row)
 
 SELECT COUNT(*) FROM tbl_period_big WHERE p @> period '[2001-06-01, 2001-07-01]';
+WARNING:  cache reference leak: cache pg_statistic (63), tuple 42/5 has count 1
  count 
 -------
      0
@@ -2591,6 +2596,7 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE timestampset '{2001-06-01, 2001-07-
 (1 row)
 
 SELECT COUNT(*) FROM tbl_period_big WHERE period '[2001-06-01, 2001-07-01]' <@ p;
+WARNING:  cache reference leak: cache pg_statistic (63), tuple 42/5 has count 1
  count 
 -------
      0
