@@ -711,15 +711,15 @@ Timestampset_spgist_compress(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_spgist_compress);
+PG_FUNCTION_INFO_V1(Spanset_spgist_compress);
 /**
  * SP-GiST compress function for period sets
  */
 PGDLLEXPORT Datum
-Periodset_spgist_compress(PG_FUNCTION_ARGS)
+Spanset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
+  Span *result = palloc(sizeof(Span));
   spanset_span_slice(psdatum, result);
   PG_RETURN_SPAN_P(result);
 }

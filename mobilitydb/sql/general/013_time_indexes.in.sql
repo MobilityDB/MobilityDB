@@ -34,7 +34,7 @@
 /*****************************************************************************
  * R-tree GiST indexes
  *****************************************************************************/
- 
+
 CREATE FUNCTION span_gist_consistent(internal, timestampset, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
@@ -165,10 +165,6 @@ CREATE FUNCTION span_gist_consistent(internal, periodset, smallint, oid, interna
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Periodset_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS periodset_rtree_ops
   DEFAULT FOR TYPE periodset USING gist AS
@@ -218,13 +214,11 @@ CREATE OPERATOR CLASS periodset_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, periodset, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  periodset_gist_compress(internal),
+  FUNCTION  3  spanset_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(period, period, internal);
 
-
- 
 CREATE FUNCTION period_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Period_spgist_config'
@@ -232,10 +226,6 @@ CREATE FUNCTION period_spgist_config(internal, internal)
 CREATE FUNCTION timestampset_spgist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Timestampset_spgist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_spgist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Periodset_spgist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
@@ -366,10 +356,10 @@ CREATE OPERATOR CLASS periodset_quadtree_ops
 -- equals
   OPERATOR  18    = (periodset, periodset),
   -- nearest approach distance
-  OPERATOR  25    <->(periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(periodset, period) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
   OPERATOR  28    &<# (periodset, timestampset),

@@ -57,7 +57,7 @@
  *****************************************************************************/
 
 /**
- * Leaf-level consistency for time types.
+ * Leaf-level consistency for span types.
  *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
@@ -234,7 +234,7 @@ Span_gist_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_gist_union);
 /**
- * GiST union method for time types
+ * GiST union method for span types
  */
 PGDLLEXPORT Datum
 Span_gist_union(PG_FUNCTION_ARGS)
@@ -271,20 +271,20 @@ Timestampset_gist_compress(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(entry);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_gist_compress);
+PG_FUNCTION_INFO_V1(Spanset_gist_compress);
 /**
- * GiST compress method for period sets
+ * GiST compress method for span sets
  */
 PGDLLEXPORT Datum
-Periodset_gist_compress(PG_FUNCTION_ARGS)
+Spanset_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Period *period = palloc(sizeof(Period));
-    spanset_span_slice(entry->key, period);
-    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
+    Span *span = palloc(sizeof(Span));
+    spanset_span_slice(entry->key, span);
+    gistentryinit(*retval, PointerGetDatum(span), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
@@ -846,15 +846,15 @@ Span_gist_picksplit(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_gist_same);
 /**
- * GiST same method for time types
+ * GiST same method for span types
  */
 PGDLLEXPORT Datum
 Span_gist_same(PG_FUNCTION_ARGS)
 {
-  Span *p1 = PG_GETARG_SPAN_P(0);
-  Span *p2 = PG_GETARG_SPAN_P(1);
+  Span *s1 = PG_GETARG_SPAN_P(0);
+  Span *s2 = PG_GETARG_SPAN_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
-  *result = span_eq(p1, p2);
+  *result = span_eq(s1, s2);
   PG_RETURN_POINTER(result);
 }
 

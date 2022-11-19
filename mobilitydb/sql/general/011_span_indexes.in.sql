@@ -70,29 +70,38 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   -- strictly left
   OPERATOR  1     << (intspan, int),
   OPERATOR  1     << (intspan, intspan),
+  OPERATOR  1     << (intspan, intspanset),
   -- overlaps or left
   OPERATOR  2     &< (intspan, int),
   OPERATOR  2     &< (intspan, intspan),
+  OPERATOR  2     &< (intspan, intspanset),
   -- overlaps
   OPERATOR  3     && (intspan, intspan),
+  OPERATOR  3     && (intspan, intspanset),
   -- overlaps or right
   OPERATOR  4     &> (intspan, int),
   OPERATOR  4     &> (intspan, intspan),
+  OPERATOR  4     &> (intspan, intspanset),
   -- strictly right
   OPERATOR  5     >> (intspan, int),
   OPERATOR  5     >> (intspan, intspan),
+  OPERATOR  5     >> (intspan, intspanset),
   -- contains
   OPERATOR  7     @> (intspan, int),
   OPERATOR  7     @> (intspan, intspan),
+  OPERATOR  7     @> (intspan, intspanset),
   -- contained by
   OPERATOR  8     <@ (intspan, intspan),
+  OPERATOR  8     <@ (intspan, intspanset),
   -- adjacent
   OPERATOR  17    -|- (intspan, intspan),
+  OPERATOR  17    -|- (intspan, intspanset),
   -- equals
   OPERATOR  18    = (intspan, intspan),
   -- nearest approach distance
   OPERATOR  25    <-> (intspan, int) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspan, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspan, intspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  span_gist_consistent(internal, intspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
@@ -122,29 +131,38 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
   -- strictly left
   OPERATOR  1     << (floatspan, float),
   OPERATOR  1     << (floatspan, floatspan),
+  OPERATOR  1     << (floatspan, floatspanset),
   -- overlaps or left
   OPERATOR  2     &< (floatspan, float),
   OPERATOR  2     &< (floatspan, floatspan),
+  OPERATOR  2     &< (floatspan, floatspanset),
   -- overlaps
   OPERATOR  3     && (floatspan, floatspan),
+  OPERATOR  3     && (floatspan, floatspanset),
   -- overlaps or right
   OPERATOR  4     &> (floatspan, float),
   OPERATOR  4     &> (floatspan, floatspan),
+  OPERATOR  4     &> (floatspan, floatspanset),
   -- strictly right
   OPERATOR  5     >> (floatspan, float),
   OPERATOR  5     >> (floatspan, floatspan),
+  OPERATOR  5     >> (floatspan, floatspanset),
   -- contains
   OPERATOR  7     @> (floatspan, float),
   OPERATOR  7     @> (floatspan, floatspan),
+  OPERATOR  7     @> (floatspan, floatspanset),
   -- contained by
   OPERATOR  8     <@ (floatspan, floatspan),
+  OPERATOR  8     <@ (floatspan, floatspanset),
   -- adjacent
   OPERATOR  17    -|- (floatspan, floatspan),
+  OPERATOR  17    -|- (floatspan, floatspanset),
   -- equals
   OPERATOR  18    = (floatspan, floatspan),
   -- nearest approach distance
   OPERATOR  25    <-> (floatspan, float) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspan, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspan, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  span_gist_consistent(internal, floatspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
@@ -190,29 +208,38 @@ CREATE OPERATOR CLASS intspan_quadtree_ops
   -- strictly left
   OPERATOR  1     << (intspan, int),
   OPERATOR  1     << (intspan, intspan),
+  OPERATOR  1     << (intspan, intspanset),
   -- overlaps or left
   OPERATOR  2     &< (intspan, int),
   OPERATOR  2     &< (intspan, intspan),
+  OPERATOR  2     &< (intspan, intspanset),
   -- overlaps
   OPERATOR  3     && (intspan, intspan),
+  OPERATOR  3     && (intspan, intspanset),
   -- overlaps or right
   OPERATOR  4     &> (intspan, int),
   OPERATOR  4     &> (intspan, intspan),
+  OPERATOR  4     &> (intspan, intspanset),
   -- strictly right
   OPERATOR  5     >> (intspan, int),
   OPERATOR  5     >> (intspan, intspan),
+  OPERATOR  5     >> (intspan, intspanset),
   -- contains
   OPERATOR  7     @> (intspan, int),
   OPERATOR  7     @> (intspan, intspan),
+  OPERATOR  7     @> (intspan, intspanset),
   -- contained by
   OPERATOR  8     <@ (intspan, intspan),
+  OPERATOR  8     <@ (intspan, intspanset),
   -- adjacent
   OPERATOR  17    -|- (intspan, intspan),
+  OPERATOR  17    -|- (intspan, intspanset),
   -- equals
   OPERATOR  18    = (intspan, intspan),
   -- nearest approach distance
   OPERATOR  25    <-> (intspan, int) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspan, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspan, intspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  intspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
@@ -227,29 +254,38 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
   -- strictly left
   OPERATOR  1     << (floatspan, float),
   OPERATOR  1     << (floatspan, floatspan),
+  OPERATOR  1     << (floatspan, floatspanset),
   -- overlaps or left
   OPERATOR  2     &< (floatspan, float),
   OPERATOR  2     &< (floatspan, floatspan),
+  OPERATOR  2     &< (floatspan, floatspanset),
   -- overlaps
   OPERATOR  3     && (floatspan, floatspan),
+  OPERATOR  3     && (floatspan, floatspanset),
   -- overlaps or right
   OPERATOR  4     &> (floatspan, float),
   OPERATOR  4     &> (floatspan, floatspan),
+  OPERATOR  4     &> (floatspan, floatspanset),
   -- strictly right
   OPERATOR  5     >> (floatspan, float),
   OPERATOR  5     >> (floatspan, floatspan),
+  OPERATOR  5     >> (floatspan, floatspanset),
   -- contains
   OPERATOR  7     @> (floatspan, float),
   OPERATOR  7     @> (floatspan, floatspan),
+  OPERATOR  7     @> (floatspan, floatspanset),
   -- contained by
   OPERATOR  8     <@ (floatspan, floatspan),
+  OPERATOR  8     <@ (floatspan, floatspanset),
   -- adjacent
   OPERATOR  17    -|- (floatspan, floatspan),
+  OPERATOR  17    -|- (floatspan, floatspanset),
   -- equals
   OPERATOR  18    = (floatspan, floatspan),
   -- nearest approach distance
   OPERATOR  25    <-> (floatspan, float) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspan, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspan, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  floatspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
