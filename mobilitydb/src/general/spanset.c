@@ -192,6 +192,7 @@ Spanset_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
  * @ingroup mobilitydb_spantime_cast
@@ -237,6 +238,7 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(ss);
 }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /*****************************************************************************
  * Accessor functions

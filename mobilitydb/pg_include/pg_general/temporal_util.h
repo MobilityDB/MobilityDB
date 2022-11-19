@@ -41,7 +41,9 @@
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-#include <utils/multirangetypes.h>
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  #include <utils/multirangetypes.h>
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/span.h"
@@ -72,7 +74,9 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
   bool upper_inc, mobdbType basetype);
-extern MultirangeType *multirange_make(const SpanSet *ss);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  extern MultirangeType *multirange_make(const SpanSet *ss);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /* Array functions */
 
