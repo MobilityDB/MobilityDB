@@ -209,6 +209,21 @@ Span_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Spanset_to_tbox);
+/**
+ * @ingroup mobilitydb_box_cast
+ * @brief Transform the span set to a temporal box
+ * @sqlfunc tbox()
+ */
+PGDLLEXPORT Datum
+Spanset_to_tbox(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  spanset_set_tbox(ss, result);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Timestamp_to_tbox);
 /**
  * @ingroup mobilitydb_box_cast

@@ -67,6 +67,8 @@ typedef struct
   int32 vl_len_;        /**< Varlena header (do not touch directly!) */
   int32 count;          /**< Number of Span elements */
   uint8 spansettype;    /**< span set type */
+  uint8 spantype;       /**< span type */
+  uint8 basetype;       /**< span basetype */
   Span span;            /**< Bounding span */
   Span elems[1];        /**< Beginning of variable-length data */
 } SpanSet;

@@ -577,6 +577,25 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
 }
 
 /**
+ * Generic bounding box operator for a temporal number and a span
+ *
+ * @param[in] temp Temporal number
+ * @param[in] ss Span set
+ * @param[in] func Bounding box function
+ * @param[in] invert True if the span is the first argument of the function.
+ */
+bool
+boxop_tnumber_spanset(const Temporal *temp, const SpanSet *ss,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  TBOX box1, box2;
+  temporal_set_bbox(temp, &box1);
+  spanset_set_tbox(ss, &box2);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return (result);
+}
+
+/**
  * Generic bounding box operator for a temporal number and a temporal box
  *
  * @param[in] temp Temporal number

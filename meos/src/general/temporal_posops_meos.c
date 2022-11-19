@@ -622,6 +622,57 @@ overright_span_tnumber(const Span *span, const Temporal *tnumber)
 }
 
 /*****************************************************************************/
+/* SpanSet op Tnumber */
+
+/**
+ * @ingroup libmeos_temporal_pos
+ * @brief Return true if a number span set is strictly to the left of a
+ * temporal number
+ * @sqlop @p <<
+ */
+bool
+left_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &left_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_pos
+ * @brief Return true if a number span set is not to the right of a
+ * temporal number
+ * @sqlop @p &<
+ */
+bool
+overleft_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &overleft_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_pos
+ * @brief Return true if a number span set is strictly to the right of a
+ * temporal number
+ * @sqlop @p >>
+ */
+bool
+right_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &right_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_pos
+ * @brief Return true if a number span set is not to the left of a
+ * temporal number
+ * @sqlop @p &>
+ */
+bool
+overright_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &overright_tbox_tbox, INVERT);
+}
+
+/*****************************************************************************/
 /* Tnumber op Number */
 
 /**

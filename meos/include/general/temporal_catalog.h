@@ -157,6 +157,8 @@ extern bool tnumber_basetype(mobdbType basetype);
 extern void ensure_tnumber_basetype(mobdbType basetype);
 extern bool tnumber_spantype(mobdbType spantype);
 extern void ensure_tnumber_spantype(mobdbType spantype);
+extern bool tnumber_spansettype(mobdbType spansettype);
+extern void ensure_tnumber_spansettype(mobdbType spansettype);
 extern bool tspatial_type(mobdbType temptype);
 extern bool tspatial_basetype(mobdbType basetype);
 extern bool tgeo_basetype(mobdbType basetype);

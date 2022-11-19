@@ -298,6 +298,25 @@ span_set_tbox(const Span *span, TBOX *box)
   return;
 }
 
+/**
+ * @ingroup libmeos_int_box_cast
+ * @brief Set a temporal box from a span set.
+ */
+void
+spanset_set_tbox(const SpanSet *ss, TBOX *box)
+{
+  ensure_tnumber_spansettype(ss->spantype);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
+  if (ss->basetype == T_INT4)
+    intspan_set_floatspan(&ss->span, &box->span);
+  else
+    memcpy(&box->span, &ss->span, sizeof(Span));
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
+  return;
+}
+
 #if MEOS
 /**
  * @ingroup libmeos_box_cast

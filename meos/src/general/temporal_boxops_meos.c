@@ -684,6 +684,30 @@ contains_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span contains the bounding box of a temporal
+ * number
+ * @sqlop @p \@>
+ */
+bool
+contains_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contains_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number contains a
+ * span
+ * @sqlop @p \@>
+ */
+bool
+contains_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contains_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box contains the bounding box of a
  * temporal number
  * @sqlop @p \@>
@@ -794,6 +818,30 @@ bool
 contained_tnumber_span(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_span(tnumber, span, &contained_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span set is contained in the bounding box of a
+ * temporal number
+ * @sqlop @p <@
+ */
+bool
+contained_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contained_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number is contained
+ * in a span
+ * @sqlop @p <@
+ */
+bool
+contained_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contained_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -911,6 +959,30 @@ overlaps_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span set and the bounding box of a temporal number
+ * overlap
+ * @sqlop @p &&
+ */
+bool
+overlaps_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &overlaps_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number and a span set
+ * overlap
+ * @sqlop @p &&
+ */
+bool
+overlaps_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &overlaps_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box
  * of a temporal number overlap
  * @sqlop @p &&
@@ -1020,6 +1092,30 @@ bool
 same_tnumber_span(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_span(tnumber, span, &same_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span and the bounding box of a temporal number
+ * are equal on the common dimensions
+ * @sqlop @p ~=
+ */
+bool
+same_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &same_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number and a span
+ * are equal on the common dimensions
+ * @sqlop @p ~=
+ */
+bool
+same_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &same_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -1134,6 +1230,30 @@ bool
 adjacent_tnumber_span(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_span(tnumber, span, &adjacent_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span set and the bounding box of a temporal number
+ * are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &adjacent_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number and the
+ * a span set are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &adjacent_tbox_tbox, INVERT_NO);
 }
 
 /**

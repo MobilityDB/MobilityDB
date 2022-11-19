@@ -179,7 +179,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     Datum tsdatum = PG_GETARG_DATUM(1);
     timestampset_period_slice(tsdatum, result);
   }
-  else if (type == T_PERIODSET)
+  else if (type == T_INTSPANSET || type == T_FLOATSPANSET || type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);

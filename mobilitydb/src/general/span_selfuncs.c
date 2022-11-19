@@ -88,19 +88,37 @@ value_cachedop(Oid operid, CachedOp *cachedOp)
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
     if (operid == oper_oid((CachedOp) i, T_INT4, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INT4, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_TBOX) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPAN))
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOATSPANSET))
       {
         *cachedOp = (CachedOp) i;
         return true;

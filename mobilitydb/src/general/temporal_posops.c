@@ -588,7 +588,7 @@ Overright_number_tnumber(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Range op Tnumber */
+/* Span op Tnumber */
 
 PG_FUNCTION_INFO_V1(Left_span_tnumber);
 /**
@@ -640,6 +640,61 @@ PGDLLEXPORT Datum
 Overright_span_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_span_tnumber_ext(fcinfo, &overright_tbox_tbox);
+}
+
+/*****************************************************************************/
+/* SpanSet op Tnumber */
+
+PG_FUNCTION_INFO_V1(Left_spanset_tnumber);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a number span set is strictly to the left of a temporal number
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
+ */
+PGDLLEXPORT Datum
+Left_spanset_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_spanset_tnumber_ext(fcinfo, &left_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Overleft_spanset_tnumber);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a number span is not to the right of a temporal number
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
+ */
+PGDLLEXPORT Datum
+Overleft_spanset_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_spanset_tnumber_ext(fcinfo, &overleft_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Right_spanset_tnumber);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a number span set is strictly to the right of a temporal number
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
+ */
+PGDLLEXPORT Datum
+Right_spanset_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_spanset_tnumber_ext(fcinfo, &right_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Overright_spanset_tnumber);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a number span set is not to the left of a temporal number
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
+ */
+PGDLLEXPORT Datum
+Overright_spanset_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_spanset_tnumber_ext(fcinfo, &overright_tbox_tbox);
 }
 
 /*****************************************************************************/
@@ -698,7 +753,7 @@ Overright_tnumber_number(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Tnumber op Range */
+/* Tnumber op Span */
 
 PG_FUNCTION_INFO_V1(Left_tnumber_span);
 /**
@@ -750,6 +805,61 @@ PGDLLEXPORT Datum
 Overright_tnumber_span(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_span_ext(fcinfo, &overright_tbox_tbox);
+}
+
+/*****************************************************************************/
+/* Tnumber op SpanSet */
+
+PG_FUNCTION_INFO_V1(Left_tnumber_spanset);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a temporal number is strictly to the left of a number span
+ * @sqlfunc temporal_left()
+ * @sqlop @p <<
+ */
+PGDLLEXPORT Datum
+Left_tnumber_spanset(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_spanset_ext(fcinfo, &left_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Overleft_tnumber_spanset);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a temporal number is not to the right of a number span
+ * @sqlfunc temporal_overleft()
+ * @sqlop @p &<
+ */
+PGDLLEXPORT Datum
+Overleft_tnumber_spanset(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_spanset_ext(fcinfo, &overleft_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Right_tnumber_spanset);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a temporal number is strictly to the right of a number span
+ * @sqlfunc temporal_right()
+ * @sqlop @p >>
+ */
+PGDLLEXPORT Datum
+Right_tnumber_spanset(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_spanset_ext(fcinfo, &right_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Overright_tnumber_spanset);
+/**
+ * @ingroup mobilitydb_temporal_pos
+ * @brief Return true if a temporal number is not to the left of a number span
+ * @sqlfunc temporal_overright()
+ * @sqlop @p &>
+ */
+PGDLLEXPORT Datum
+Overright_tnumber_spanset(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_spanset_ext(fcinfo, &overright_tbox_tbox);
 }
 
 /*****************************************************************************/

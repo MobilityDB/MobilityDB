@@ -267,26 +267,27 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Get the (bounding) period or span and deserialize it for further
      * analysis. */
-    assert(type == T_TIMESTAMPSET || type == T_PERIODSET ||
-      type ==  T_PERIOD || type == T_INTSPAN || type == T_FLOATSPAN);
+    assert(type == T_TIMESTAMPSET || type == T_PERIOD || type == T_PERIODSET ||
+      type ==  T_INTSPAN || type == T_INTSPANSET || type == T_FLOATSPAN ||
+      type == T_FLOATSPANSET);
     const Span *span;
-    const Period *period;
     SpanBound lower, upper;
     if (type == T_TIMESTAMPSET)
     {
       const TimestampSet *ts= DatumGetTimestampSetP(value);
-      period = &ts->period;
-      span_deserialize((Span *) period, &lower, &upper);
+      span = &ts->period;
+      span_deserialize(span, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
-    else if (type == T_PERIODSET)
+    else if (type == T_INTSPANSET || type == T_FLOATSPANSET ||
+      type == T_PERIODSET)
     {
-      const PeriodSet *ps= DatumGetPeriodSetP(value);
-      period = &ps->span;
-      span_deserialize((Period *) period, &lower, &upper);
+      const SpanSet *ss = DatumGetSpanSetP(value);
+      span = &ss->span;
+      span_deserialize(span, &lower, &upper);
       /* Adjust the size */
-      total_width += VARSIZE(ps);
+      total_width += VARSIZE(ss);
     }
     else /* type ==  T_PERIOD ||type == T_INTSPAN || type == T_FLOATSPAN */
     {
@@ -488,10 +489,10 @@ Timestampset_analyze(PG_FUNCTION_ARGS)
  * @param[in] totalrows Total number of rows
  */
 static void
-periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+intspanset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_PERIODSET);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_INTSPANSET);
   return;
 }
 
@@ -502,9 +503,33 @@ PG_FUNCTION_INFO_V1(Intspanset_analyze);
 PGDLLEXPORT Datum
 Intspanset_analyze(PG_FUNCTION_ARGS)
 {
-  elog(NOTICE, "Function not yet implemented");
+  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+  Form_pg_attribute attr = stats->attr;
+
+  if (attr->attstattarget < 0)
+    attr->attstattarget = default_statistics_target;
+
+  stats->compute_stats = intspanset_compute_stats;
+  /* same as in std_typanalyze */
+  stats->minrows = 300 * attr->attstattarget;
 
   PG_RETURN_BOOL(true);
+}
+
+/**
+ * Compute statistics for period set columns (callback function)
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
+ */
+static void
+floatspanset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, double totalrows __attribute__((unused)))
+{
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_FLOATSPANSET);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(Floatspanset_analyze);
@@ -514,9 +539,33 @@ PG_FUNCTION_INFO_V1(Floatspanset_analyze);
 PGDLLEXPORT Datum
 Floatspanset_analyze(PG_FUNCTION_ARGS)
 {
-  elog(NOTICE, "Function not yet implemented");
+  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+  Form_pg_attribute attr = stats->attr;
+
+  if (attr->attstattarget < 0)
+    attr->attstattarget = default_statistics_target;
+
+  stats->compute_stats = floatspanset_compute_stats;
+  /* same as in std_typanalyze */
+  stats->minrows = 300 * attr->attstattarget;
 
   PG_RETURN_BOOL(true);
+}
+
+/**
+ * Compute statistics for period set columns (callback function)
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
+ */
+static void
+periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, double totalrows __attribute__((unused)))
+{
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_PERIODSET);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(Periodset_analyze);

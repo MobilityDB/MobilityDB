@@ -476,6 +476,38 @@ ensure_tnumber_spantype(mobdbType spantype)
   return;
 }
 
+
+
+/**
+ * Return true if the type is a span number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_spansettype(mobdbType spansettype)
+{
+  if (spansettype == T_INTSPANSET || spansettype == T_FLOATSPANSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span type
+ */
+void
+ensure_tnumber_spansettype(mobdbType spansettype)
+{
+  if (! tnumber_spansettype(spansettype))
+    elog(ERROR, "unknown number span set type: %d", spansettype);
+  return;
+}
+
+
+
+
+
+
+
 /**
  * Return true if the type is a spatiotemporal type
  *

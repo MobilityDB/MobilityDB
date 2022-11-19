@@ -307,7 +307,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   {
     timestampset_period_slice(scankey->sk_argument, result);
   }
-  else if (type == T_PERIODSET)
+  else if (type == T_INTSPANSET || type == T_FLOATSPANSET || type == T_PERIODSET)
   {
     spanset_span_slice(scankey->sk_argument, result);
   }

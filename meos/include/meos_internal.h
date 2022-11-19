@@ -178,6 +178,7 @@ extern double distance_spanset_value(const SpanSet *ss, Datum d, mobdbType baset
 extern void int_set_tbox(int i, TBOX *box);
 extern void float_set_tbox(double d, TBOX *box);
 extern void span_set_tbox(const Span *span, TBOX *box);
+extern void spanset_set_tbox(const SpanSet *ss, TBOX *box);
 extern void timestamp_set_tbox(TimestampTz t, TBOX *box);
 extern void timestampset_set_tbox(const TimestampSet *ss, TBOX *box);
 extern void period_set_tbox(const Period *p, TBOX *box);
