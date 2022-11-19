@@ -122,6 +122,13 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_intspan(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_intspanset;
+CREATE TABLE tbl_intspanset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ss
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_intspanset(0, 100, 5, 5, 10)
+FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatspan;
 CREATE TABLE tbl_floatspan AS
@@ -130,6 +137,14 @@ SELECT k, NULL AS f
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspan(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_floatspanset;
+CREATE TABLE tbl_floatspanset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ss
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_floatspanset(0, 100, 5, 5, 10)
+FROM generate_series(perc+1, 100) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzrange;
 CREATE TABLE tbl_tstzrange AS

@@ -192,6 +192,74 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate an array of random intspans within a span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the maximal span
+ * @param[in] maxdelta Maximum value difference between consecutive values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_intspan_array;
+CREATE FUNCTION random_intspan_array(lowvalue int, highvalue int,
+  maxdelta int, mincard int, maxcard int)
+  RETURNS intspan[] AS $$
+DECLARE
+  result intspan[];
+  card int;
+  v1 int;
+  v2 int;
+BEGIN
+  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - mincard) THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - '
+      'maxdelta * 2 * (maxcard - mincard): %, %, %, %, %',
+      lowvalue, highvalue, maxdelta, mincard, maxcard;
+  END IF;
+  card = random_int(mincard, maxcard);
+  v1 = lowvalue;
+  v2 = highvalue - maxdelta * (card - 1) * 2;
+  FOR i IN 1..card
+  LOOP
+    result[i] = random_intspan(v1, v2, maxdelta);
+    v1 = upper(result[i]) + random_int(1, maxdelta);
+    v2 = v2 + maxdelta * 2;
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_intspan_array(1, 1000, 10, 5, 10) AS iarr
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate a random integer span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between the lower and upper bounds
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_intspanset;
+CREATE FUNCTION random_intspanset(lowvalue int, highvalue int, maxdelta int,
+  mincard int, maxcard int)
+  RETURNS intspanset AS $$
+DECLARE
+  v int;
+BEGIN
+  RETURN intspanset(random_intspan_array(lowvalue, highvalue, maxdelta,
+    mincard, maxcard));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_intspanset(-100, 100, 10, 5, 10) AS ir
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random float in a range
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
@@ -284,6 +352,74 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_floatspan(-100, 100, 10) AS fr
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate an array of random floatspans within a span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the maximal span
+ * @param[in] maxdelta Maximum value difference between consecutive values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_floatspan_array;
+CREATE FUNCTION random_floatspan_array(lowvalue float, highvalue float,
+  maxdelta int, mincard float, maxcard float)
+  RETURNS floatspan[] AS $$
+DECLARE
+  result floatspan[];
+  card float;
+  v1 float;
+  v2 float;
+BEGIN
+  IF lowvalue > highvalue - maxdelta * 2 * (maxcard - mincard) THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - '
+      'maxdelta * 2 * (maxcard - mincard): %, %, %, %, %',
+      lowvalue, highvalue, maxdelta, mincard, maxcard;
+  END IF;
+  card = random_float(mincard, maxcard);
+  v1 = lowvalue;
+  v2 = highvalue - maxdelta * (card - 1) * 2;
+  FOR i IN 1..card
+  LOOP
+    result[i] = random_floatspan(v1, v2, maxdelta);
+    v1 = upper(result[i]) + random_float(1, maxdelta);
+    v2 = v2 + maxdelta * 2;
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_floatspan_array(1, 1000, 10, 5, 10) AS iarr
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate a random float span
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between the lower and upper bounds
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_floatspanset;
+CREATE FUNCTION random_floatspanset(lowvalue float, highvalue float,
+  maxdelta int, mincard float, maxcard float)
+  RETURNS floatspanset AS $$
+DECLARE
+  v float;
+BEGIN
+  RETURN floatspanset(random_floatspan_array(lowvalue, highvalue, maxdelta,
+    mincard, maxcard));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_floatspanset(-100, 100, 10, 5, 10) AS ir
 FROM generate_series(1,10) k;
 */
 
