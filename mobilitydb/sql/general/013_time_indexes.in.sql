@@ -386,6 +386,6 @@ CREATE OPERATOR CLASS periodset_quadtree_ops
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  periodset_spgist_compress(internal);
+  FUNCTION  6  spanset_spgist_compress(internal);
 
 /******************************************************************************/
