@@ -58,8 +58,10 @@ typedef enum
   T_INT4,           /**< int4 type */
 #if ! MEOS
   T_INT4RANGE,      /**< PostgreSQL int4 range type */
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   T_INT4MULTIRANGE, /**< PostgreSQL int4 multirange type */
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* ! MEOS */
   T_INTSPAN,        /**< int4 span type */
   T_INTSPANSET,     /**< int4 span set type */
   T_INT8,           /**< int8 type */
@@ -78,8 +80,10 @@ typedef enum
   T_TINT,           /**< temporal integer type */
 #if ! MEOS
   T_TSTZRANGE,      /**< PostgreSQL timestamp with time zone range type */
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   T_TSTZMULTIRANGE, /**< PostgreSQL timestamp with time zone multirange type */
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* ! MEOS */
   T_TTEXT,          /**< temporal text type */
   T_GEOMETRY,       /**< geometry type */
   T_GEOGRAPHY,      /**< geography type */

@@ -84,8 +84,10 @@ const char *_type_names[] =
   [T_INT4] = "int4",
 #if ! MEOS
   [T_INT4RANGE] = "int4range",
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   [T_INT4MULTIRANGE] = "int4multirange",
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* ! MEOS */
   [T_INTSPAN] = "intspan",
   [T_INTSPANSET] = "intspanset",
   [T_INT8] = "int8",
@@ -104,8 +106,10 @@ const char *_type_names[] =
   [T_TINT] = "tint",
 #if ! MEOS
   [T_TSTZRANGE] = "tstzrange",
+#if POSTGRESQL_VERSION_NUMBER >= 140000
   [T_TSTZMULTIRANGE] = "tstzmultirange",
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* ! MEOS */
   [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
   [T_GEOGRAPHY] = "geography",

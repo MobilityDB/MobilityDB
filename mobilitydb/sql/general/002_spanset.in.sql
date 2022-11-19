@@ -248,6 +248,7 @@ CREATE CAST (intspanset AS intspan) WITH FUNCTION intspan(intspanset);
 CREATE CAST (floatspanset AS floatspan) WITH FUNCTION floatspan(floatspanset);
 CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
 
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION int4multirange(intspanset)
   RETURNS int4multirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
@@ -270,6 +271,7 @@ CREATE CAST (intspanset AS int4multirange) WITH FUNCTION int4multirange(intspans
 CREATE CAST (periodset AS tstzmultirange) WITH FUNCTION tstzmultirange(periodset);
 CREATE CAST (int4multirange AS intspanset) WITH FUNCTION intspanset(int4multirange);
 CREATE CAST (tstzmultirange AS periodset) WITH FUNCTION periodset(tstzmultirange);
+#endif //POSTGRESQL_VERSION_NUMBER >= 140000
 
 /******************************************************************************
  * Functions
