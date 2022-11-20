@@ -485,8 +485,6 @@ extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
-extern Span **tnumber_bbox_restrict_spans(const Temporal *temp,
-  Span **spans, int count, int *newcount);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
   bool atfunc);
 

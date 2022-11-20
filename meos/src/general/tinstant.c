@@ -789,37 +789,34 @@ tnumberinst_restrict_span(const TInstant *inst, const Span *span,
 /**
  * Return true if a temporal number satisfies the restriction to
  * (the complement of) an array of spans of base values
- * @pre The spans are normalized
  * @note This function is called for each composing instant in a temporal
  * discrete sequence.
  */
 bool
-tnumberinst_restrict_spans_test(const TInstant *inst, Span **normspans,
-  int count, bool atfunc)
+tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
+  bool atfunc)
 {
   Datum d = tinstant_value(inst);
   mobdbType basetype = temptype_basetype(inst->temptype);
-  for (int i = 0; i < count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
-    if (contains_span_value(normspans[i], d, basetype))
+    const Span *s = spanset_sp_n(ss, i);
+    if (contains_span_value(s, d, basetype))
       return atfunc ? true : false;
   }
-  /* Since the array of spans has been filtered with the bounding box of
-   * the temporal instant, normally we never reach here */
   return atfunc ? false : true;
 }
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal number instant to (the complement of) an array
- * of spans of base values.
- * @sqlfunc atSpans(), minusSpans()
+ * @brief Restrict a temporal number instant to (the complement of) a span set.
+ * @sqlfunc atSpanset(), minusSpanset()
  */
 TInstant *
-tnumberinst_restrict_spans(const TInstant *inst, Span **normspans,
-  int count, bool atfunc)
+tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
+  bool atfunc)
 {
-  if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
+  if (tnumberinst_restrict_spanset_test(inst, ss, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }

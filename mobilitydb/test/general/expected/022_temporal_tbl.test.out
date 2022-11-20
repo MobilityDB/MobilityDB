@@ -1819,15 +1819,15 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, 
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intspan WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, tbl_intspanset
+WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatspan WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspanset
+WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
  count 
 -------
      0

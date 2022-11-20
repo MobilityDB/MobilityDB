@@ -1116,6 +1116,32 @@ temporal_to_period(const Temporal *temp)
 #endif /* MEOS */
 
 /**
+ * @ingroup libmeos_int_temporal_cast
+ * @brief Set a span with value span of a temporal number .
+ */
+void
+tnumber_set_span(const Temporal *temp, Span *s)
+{
+  ensure_tnumber_type(temp->temptype);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+  {
+    Datum value = tinstant_value((TInstant *) temp);
+    mobdbType basetype = temptype_basetype(temp->temptype);
+    span_set(value, value, true, true, basetype, s);
+  }
+  else
+  {
+    TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
+    if (temp->temptype == T_TINT)
+      floatspan_set_intspan(&box->span, s);
+    else
+      memcpy(s, &box->span, sizeof(Span));
+  }
+  return;
+}
+
+/**
  * @ingroup libmeos_temporal_cast
  * @brief Return the value span of a temporal number.
  * @sqlfunc valueSpan()
@@ -1123,27 +1149,8 @@ temporal_to_period(const Temporal *temp)
 Span *
 tnumber_to_span(const Temporal *temp)
 {
-  ensure_tnumber_type(temp->temptype);
-  Span *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-  {
-    Datum value = tinstant_value((TInstant *) temp);
-    mobdbType basetype = temptype_basetype(temp->temptype);
-    result = span_make(value, value, true, true, basetype);
-  }
-  else
-  {
-    TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
-    if (temp->temptype == T_TINT)
-    {
-      Span s;
-      floatspan_set_intspan(&box->span, &s);
-      result = span_copy(&s);
-    }
-    else
-      result = span_copy(&box->span);
-  }
+  Span *result = palloc(sizeof(Span));
+  tnumber_set_span(temp, result);
   return result;
 }
 
@@ -2789,42 +2796,6 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
   return overlaps_tbox_tbox(&box1, &box2);
 }
 
-/**
- * Return the array of spans of base values that overlap with the bounding box
- * of a temporal value.
- *
- * @param[in] temp Temporal value
- * @param[in] spans Array of spans of base values
- * @param[in] count Number of elements in the input array
- * @param[out] newcount Number of elements in the output array
- */
-Span **
-tnumber_bbox_restrict_spans(const Temporal *temp, Span **spans,
-  int count, int *newcount)
-{
-  assert(tnumber_type(temp->temptype));
-  Span **newspans = palloc(sizeof(Datum) * count);
-  int k = 0;
-  TBOX box1;
-  temporal_set_bbox(temp, &box1);
-  for (int i = 0; i < count; i++)
-  {
-    TBOX box2;
-    span_set_tbox(spans[i], &box2);
-    if (overlaps_tbox_tbox(&box1, &box2))
-      newspans[k++] = spans[i];
-  }
-  if (k == 0)
-  {
-    *newcount = 0;
-    pfree(newspans);
-    return NULL;
-  }
-  Span **normspans = spanarr_normalize(newspans, k, SORT, newcount);
-  pfree(newspans);
-  return normspans;
-}
-
 /*****************************************************************************
  * Restriction Functions
  *****************************************************************************/
@@ -2956,19 +2927,16 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
 
 /**
  * @ingroup libmeos_int_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) an array of spans
- * of base values.
- * @sqlfunc atSpans(), minusSpans()
+ * @brief Restrict a temporal value to (the complement of) a span set.
+ * @sqlfunc atSpanset(), minusSpanset()
  */
 Temporal *
-tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
-  bool atfunc)
+tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
 {
   /* Bounding box test */
-  int newcount;
-  Span **newspans = tnumber_bbox_restrict_spans(temp, spans, count,
-    &newcount);
-  if (newcount == 0)
+  Span s;
+  tnumber_set_span(temp, &s);
+  if (! overlaps_span_span(&s, &ss->span))
   {
     if (atfunc)
       return NULL;
@@ -2980,26 +2948,21 @@ tnumber_restrict_spans(const Temporal *temp, Span **spans, int count,
         return temporal_copy(temp);
     }
   }
-  if (newcount == 1)
-    return tnumber_restrict_span(temp, newspans[0], atfunc);
 
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tnumberinst_restrict_spans((TInstant *) temp,
-      newspans, newcount, atfunc);
+    result = (Temporal *) tnumberinst_restrict_spanset((TInstant *) temp, ss,
+      atfunc);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tnumberdiscseq_restrict_spans((TSequence *) temp, newspans,
-        newcount, atfunc) :
-      (Temporal *) tnumbercontseq_restrict_spans((TSequence *) temp, newspans,
-        newcount, atfunc, BBOX_TEST_NO);
+      (Temporal *) tnumberdiscseq_restrict_spanset((TSequence *) temp, ss,
+        atfunc) :
+      (Temporal *) tnumbercontseq_restrict_spanset((TSequence *) temp, ss,
+        atfunc);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumberseqset_restrict_spans((TSequenceSet *) temp,
-      newspans, newcount, atfunc);
-
-  pfree_array((void **) newspans, newcount);
-
+    result = (Temporal *) tnumberseqset_restrict_spanset((TSequenceSet *) temp,
+      ss, atfunc);
   return result;
 }
 

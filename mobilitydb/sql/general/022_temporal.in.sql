@@ -1687,22 +1687,22 @@ CREATE FUNCTION minusSpan(tfloat, floatspan)
   AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atSpans(tint, intspan[])
+CREATE FUNCTION atSpanset(tint, intspanset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tnumber_at_spans'
+  AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atSpans(tfloat, floatspan[])
+CREATE FUNCTION atSpanset(tfloat, floatspanset)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_at_spans'
+  AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusSpans(tint, intspan[])
+CREATE FUNCTION minusSpanset(tint, intspanset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tnumber_minus_spans'
+  AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusSpans(tfloat, floatspan[])
+CREATE FUNCTION minusSpanset(tfloat, floatspanset)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tnumber_minus_spans'
+  AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atMin(tint)

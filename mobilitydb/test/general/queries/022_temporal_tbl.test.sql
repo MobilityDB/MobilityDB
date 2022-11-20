@@ -473,10 +473,10 @@ WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
 SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp != merge(atSpan(temp, i), minusSpan(temp, i));
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, f), minusSpan(temp, f));
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intspan WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatspan WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atSpans(temp, arr), minusSpans(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, tbl_intspanset
+WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspanset
+WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMin(temp), minusMin(temp));
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMin(temp), minusMin(temp));

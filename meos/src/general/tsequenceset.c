@@ -1717,25 +1717,22 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
  * spans of base values
  *
  * @param[in] ss Temporal number
- * @param[in] normspans Array of spans of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] spanset Span set
  * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number value
- * @pre The array of spans is normalized
- * @note A bounding box test has been done in the dispatch function.
- * @sqlfunc atSpans(), minusSpans()
+ * @sqlfunc atSpanset(), minusSpanset()
  */
 TSequenceSet *
-tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
-  int count, bool atfunc)
+tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset,
+  bool atfunc)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumbercontseq_restrict_spans(tsequenceset_seq_n(ss, 0),
-      normspans, count, atfunc, BBOX_TEST_NO);
+    return tnumbercontseq_restrict_spanset(tsequenceset_seq_n(ss, 0),
+      spanset, atfunc);
 
   /* General case */
-  int maxcount = ss->totalcount * count;
+  int maxcount = ss->totalcount * spanset->count;
   /* For minus and linear interpolation we need the double of the count */
   if (! atfunc && MOBDB_FLAGS_GET_LINEAR(ss->flags))
     maxcount *= 2;
@@ -1744,8 +1741,8 @@ tnumberseqset_restrict_spans(const TSequenceSet *ss, Span **normspans,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tnumbercontseq_restrict_spans1(seq, normspans, count, atfunc,
-      BBOX_TEST, &sequences[k]);
+    k += tnumbercontseq_restrict_spanset1(seq, spanset, atfunc,
+      &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

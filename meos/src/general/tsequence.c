@@ -3713,16 +3713,14 @@ tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
  * array of spans of base values.
  *
  * @param[in] seq Temporal number
- * @param[in] normspans Array of spans of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The array of spans is normalized
  * @note A bounding box test has been done in the dispatch function.
- * @sqlfunc atSpans(), minusSpans()
+ * @sqlfunc atSpanset(), minusSpanset()
  */
 TSequence *
-tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
-  int count, bool atfunc)
+tnumberdiscseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
+  bool atfunc)
 {
   const TInstant *inst;
 
@@ -3730,7 +3728,7 @@ tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
+    if (tnumberinst_restrict_spanset_test(inst, ss, atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -3741,7 +3739,7 @@ tnumberdiscseq_restrict_spans(const TSequence *seq, Span **normspans,
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    if (tnumberinst_restrict_spans_test(inst, normspans, count, atfunc))
+    if (tnumberinst_restrict_spanset_test(inst, ss, atfunc))
       instants[newcount++] = inst;
   }
   TSequence *result = (newcount == 0) ? NULL :
@@ -4098,7 +4096,6 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
  * @param[in] normspans Array of spans of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True if the restriction is at, false for minus
- * @param[in] bboxtest True if the bounding box test should be performed
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of resulting sequences returned
@@ -4106,44 +4103,16 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
-  int count, bool atfunc, bool bboxtest, TSequence **result)
+tnumbercontseq_restrict_spanset1(const TSequence *seq, const SpanSet *ss,
+  bool atfunc, TSequence **result)
 {
-  Span **newspans;
-  int newcount;
-
-  /* Bounding box test */
-  if (bboxtest)
-  {
-    newspans = tnumber_bbox_restrict_spans((Temporal *) seq, normspans,
-      count, &newcount);
-    if (newcount == 0)
-    {
-      if (atfunc)
-        return 0;
-      else
-      {
-        result[0] = tsequence_copy(seq);
-        return 1;
-      }
-    }
-  }
-  else
-  {
-    newspans = normspans;
-    newcount = count;
-  }
-
   const TInstant *inst1, *inst2;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    TInstant *inst = tnumberinst_restrict_spans(inst1, newspans, newcount,
-      atfunc);
-    if (bboxtest)
-      pfree(newspans);
+    TInstant *inst = tnumberinst_restrict_spanset(inst1, ss, atfunc);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -4163,16 +4132,15 @@ tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
     {
       inst2 = tsequence_inst_n(seq, i);
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-      for (int j = 0; j < newcount; j++)
+      for (int j = 0; j < ss->count; j++)
       {
+        const Span *s = spanset_sp_n(ss, j);
         k += tnumbersegm_restrict_span(inst1, inst2, linear, lower_inc,
-          upper_inc, newspans[j], REST_AT, &result[k]);
+          upper_inc, s, REST_AT, &result[k]);
       }
       inst1 = inst2;
       lower_inc = true;
     }
-    if (bboxtest)
-      pfree(newspans);
     if (k > 1)
       tseqarr_sort(result, k);
     return k;
@@ -4187,15 +4155,14 @@ tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
      * since we kept the span values instead of the projected values when
      * computing atSpans
      */
-    TSequenceSet *ss = tnumbercontseq_restrict_spans(seq, newspans, newcount,
-      REST_AT, bboxtest);
-    if (ss == NULL)
+    TSequenceSet *seqset = tnumbercontseq_restrict_spanset(seq, ss, REST_AT);
+    if (seqset == NULL)
     {
       result[0] = tsequence_copy(seq);
       return 1;
     }
 
-    PeriodSet *ps1 = tsequenceset_time(ss);
+    PeriodSet *ps1 = tsequenceset_time(seqset);
     PeriodSet *ps2 = minus_span_spanset(&seq->period, ps1);
     int newcount = 0;
     if (ps2 != NULL)
@@ -4203,9 +4170,7 @@ tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
       newcount = tcontseq_at_periodset1(seq, ps2, result);
       pfree(ps2);
     }
-    pfree(ss); pfree(ps1);
-    if (bboxtest)
-      pfree(newspans);
+    pfree(seqset); pfree(ps1);
     return newcount;
   }
 }
@@ -4215,29 +4180,22 @@ tnumbercontseq_restrict_spans1(const TSequence *seq, Span **normspans,
  * @brief Restrict a temporal number to (the complement of) an array of spans.
  *
  * @param[in] seq Temporal number
- * @param[in] normspans Array of spans of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is at, false for minus
- * @param[in] bboxtest True if the bounding box test should be performed
  * @return Resulting temporal number
- * @pre The array of spans is normalized
- * @note A bounding box test and an instantaneous sequence test are done in
- * the function @ref tnumbercontseq_restrict_spans1 since the latter is called
- * for each composing sequence of a temporal sequence set number.
- * @sqlfunc atSpans(), minusSpans()
+ * @sqlfunc atSpanset(), minusSpanset()
  */
 TSequenceSet *
-tnumbercontseq_restrict_spans(const TSequence *seq, Span **normspans,
-  int count, bool atfunc, bool bboxtest)
+tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
+  bool atfunc)
 {
   /* General case */
-  int maxcount = seq->count * count;
+  int maxcount = seq->count * ss->count;
   /* For minus and linear interpolation we need the double of the count */
   if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-  int newcount = tnumbercontseq_restrict_spans1(seq, normspans, count, atfunc,
-    bboxtest, sequences);
+  int newcount = tnumbercontseq_restrict_spanset1(seq, ss, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 

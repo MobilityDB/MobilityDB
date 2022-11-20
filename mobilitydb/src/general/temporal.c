@@ -1994,49 +1994,44 @@ Tnumber_minus_span(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) an array of spans
+ * @brief Restrict a temporal value to (the complement of) a span set
  * of base values
  */
 static Datum
-tnumber_restrict_spans_ext(FunctionCallInfo fcinfo, bool atfunc)
+tnumber_restrict_spanset_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp;
-  ArrayType *array;
-  int count;
-  INPUT_REST_ARRAY(temp, array, count);
-  Span **spans = spanarr_extract(array, &count);
-  Temporal *result = tnumber_restrict_spans(temp, spans, count, atfunc);
-  pfree(spans);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);  \
+  SpanSet *ss = PG_GETARG_SPANSET_P(1); \
+  Temporal *result = tnumber_restrict_spanset(temp, ss, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(array, 1);
+  PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_at_spans);
+PG_FUNCTION_INFO_V1(Tnumber_at_spanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to an array of spans of base values
- * @sqlfunc atSpans()
+ * @sqlfunc atSpanset()
  */
 PGDLLEXPORT Datum
-Tnumber_at_spans(PG_FUNCTION_ARGS)
+Tnumber_at_spanset(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_spans_ext(fcinfo, REST_AT);
+  return tnumber_restrict_spanset_ext(fcinfo, REST_AT);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_minus_spans);
+PG_FUNCTION_INFO_V1(Tnumber_minus_spanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of an array of spans
- * of base values
- * @sqlfunc minusSpans()
+ * @brief Restrict a temporal value to the complement of a span set
+ * @sqlfunc minusSpanset()
  */
 PGDLLEXPORT Datum
-Tnumber_minus_spans(PG_FUNCTION_ARGS)
+Tnumber_minus_spanset(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_spans_ext(fcinfo, REST_MINUS);
+  return tnumber_restrict_spanset_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
