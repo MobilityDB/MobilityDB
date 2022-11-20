@@ -1510,17 +1510,17 @@ tpoint_values(const Temporal *temp, int *count)
  * @sqlfunc getValues()
  * @pymeosfunc TFloat.getValues()
  */
-Span **
-tfloat_spans(const Temporal *temp, int *count)
+SpanSet *
+tfloat_spanset(const Temporal *temp)
 {
-  Span **result;
+  SpanSet *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tfloatinst_spans((TInstant *) temp, count);
+    result = tfloatinst_spanset((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tfloatseq_spans((TSequence *) temp, count);
+    result = tfloatseq_spanset((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tfloatseqset_spans((TSequenceSet *) temp, count);
+    result = tfloatseqset_spanset((TSequenceSet *) temp);
   return result;
 }
 

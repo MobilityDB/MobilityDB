@@ -420,7 +420,7 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 		<title>Funciones de constructor</title>
 
 		<para>
-			Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_discseq</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo; y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, secuencia con interpolación discreta, secuencia con interpolación linear o escalonada y conjunto de secuencias. Ejemplos son <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
+			Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y opcionalmente un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_discseq</varname>&rsquo;, &lsquo;<varname>_contseq</varname>&rsquo; y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, secuencia con interpolación discreta, secuencia con interpolación linear o escalonada y conjunto de secuencias. Ejemplos son <varname>tint</varname>, <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
 		</para>
 
 		<itemizedlist>
@@ -448,24 +448,27 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 		<para>A continuación, damos las funciones de constructor para los distintos subtipos.</para>
 
 		<itemizedlist>
-			<listitem id="ttype_inst">
+			<listitem id="ttype_const">
 				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de subtipo instante</para>
-				<para><varname>ttype_inst(base,timestamptz): ttype_inst</varname></para>
+				<para>Constructor para tipos temporales a partir de un valor base y un valor de tiempo</para>
+				<para><varname>ttype(base,timestamptz): ttype_inst</varname></para>
+				<para><varname>ttype(base,timestampset): ttype_discseq</varname></para>
+				<para><varname>ttype(base,period,linear=true): ttype_contseq</varname></para>
+				<para><varname>ttype(base,periodset,linear=true): ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tbool_inst(true, '2001-01-01');
-SELECT tint_inst(1, '2001-01-01');
-SELECT tfloat_inst(1.5, '2001-01-01');
-SELECT ttext_inst('AAA', '2001-01-01');
-SELECT tgeompoint_inst('Point(1 1)', '2001-01-01');
-SELECT tgeogpoint_inst('SRID=7844;Point(1 1)', '2001-01-01');
+SELECT tbool(true, timestamptz '2001-01-01');
+SELECT tint(1, timestamptz '2001-01-01');
+SELECT tfloat(1.5, timestampset '{2001-01-01, 2001-01-02}');
+SELECT ttext('AAA', timestampset '{2001-01-01, 2001-01-02}');
+SELECT tgeompoint('Point(0 0)', period '[2001-01-01, 2001-01-02]');
+SELECT tgeogpoint('SRID=7844;Point(0 0)', periodset '{[2001-01-01, 2001-01-02],
+  [2001-01-03, 2001-01-04]}', false);
 </programlisting>
 			</listitem>
 
 			<listitem id="ttype_discseq">
 				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
 				<para>Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
-				<para><varname>ttype_discseq(base,timestampset): ttype_discseq</varname></para>
 				<para><varname>ttype_discseq(ttype_inst[]): ttype_discseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_discseq(true, '{2001-01-01, 2001-01-02}');
@@ -487,13 +490,10 @@ SELECT tgeogpoint_discseq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_seq">
+			<listitem id="ttype_contseq">
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
 				<para>Constructor para tipos temporales de subtipo secuencia con interpolación linear o escalonada</para>
-				<para><varname>tdisc_seq(base,period): tdisc_seq</varname></para>
-				<para><varname>tcont_seq(base,period,linear=true): tcont_seq</varname></para>
-				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
-				<para><varname>tcont_seq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): tcont_seq</varname></para>
+				<para><varname>ttype_contseq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): ttype_contseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seq(true, '[2001-01-01, 2001-01-02]');
 SELECT tint_seq(1, '[2001-01-01, 2001-01-02]');
@@ -526,7 +526,8 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
 				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
-				<para><varname>tint_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes'): tint_seqset</varname></para>
+				<para><varname>tscalar_seqset_gaps(tint_inst[],maxt='0 minutes'): tscalar_seqset</varname></para>
+				<para><varname>tdisc_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes'): tdisc_seqset</varname></para>
 				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -566,6 +567,9 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
   '5@2000-01-05'], 1, '1 day');
 -- {[1@2000-01-01], [3@2000-01-02, 4@2000-01-03], [5@2000-01-05]}
+SELECT ttext_seqset_gaps(ARRAY[ttext 'AA@2000-01-01', 'BB@2000-01-02', 'AA@2000-01-03',
+'CC@2000-01-05'], '1 day');
+-- {["AA"@2000-01-01, "BB"@2000-01-02, "AA"@2000-01-03], ["CC"@2000-01-05]}
 SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
   'Point(2 2)@2000-01-02', 'Point(3 2)@2000-01-03', 'Point(3 2)@2000-01-05'],
   true, 1, '1 day'));
@@ -583,20 +587,19 @@ SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
 		<itemizedlist>
 			<listitem id="temporal_period">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un valor temporal a un período</para>
+				<para>Convertir un valor temporal a un cuadro delimitador</para>
 				<para><varname>ttype::period</varname></para>
+				<para><varname>tnumber::{span,tbox}</varname></para>
+				<para><varname>tpoint::stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::period;
 -- [2001-01-01, 2001-01-03]
 SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::period;
--- (2000-01-01,2000-01-05]
+-- (2000-01-01, 2000-01-05]
+SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::period;
+-- [2001-01-01, 2001-01-03]
 </programlisting>
-			</listitem>
 
-			<listitem id="tnumber_span">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un número temporal a un rango</para>
-				<para><varname>tnumber::span</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- [1, 3)
@@ -605,52 +608,32 @@ SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- [1, 3]
 </programlisting>
-			</listitem>
 
-			<listitem id="tnumber_tbox">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un número temporal number a un <varname>tbox</varname></para>
-				<para><varname>tnumber::tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
--- TBOX XT([1,2],[2001-01-01,2001-01-03])
+-- TBOX XT((1,2),[2001-01-01,2001-01-03])
 SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::tbox;
--- TBOX XT((1,3],(2001-01-01,2001-01-05])
-</programlisting>
-			</listitem>
-
-			<listitem id="tpoint_stbox">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto temporal a un <varname>stbox</varname></para>
-				<para><varname>tpoint::stbox</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+-- TBOX XT((1,3),[2001-01-01,2001-01-05])
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
--- STBOX XT((3,3),[2001-01-01, 2001-01-03],((1,1)))
+-- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
 SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
 /* SRID=4326;GEODSTBOX XT(
-  ((0.9972609281539917,0.017449747771024704,0.01745240643728351),
-  (0.9996954202651978,0.05226423218846321,0.05233595624294383)),
-  [2001-01-01, 2001-01-03]) */
+   ((0.9972609281539917,0.017449747771024704,0.01745240643728351),
+   (0.9996954202651978,0.05226423218846321,0.05233595624294383)),
+   [2001-01-01, 2001-01-03]) */
 </programlisting>
 			</listitem>
 
 			<listitem id="tint_tfloat">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un entero temporal en un flotante temporal</para>
+				<para>Convertir entre un entero temporal y un flotante temporal</para>
 				<para><varname>tint::tfloat</varname></para>
+				<para><varname>tfloat::tint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
 SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
 -- Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]
-</programlisting>
-			</listitem>
-
-			<listitem id="tfloat_tint">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un flotante temporal en un entero temporal</para>
-				<para><varname>tfloat::tint</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tfloat 'Interp=Stepwise;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
 SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
@@ -660,21 +643,14 @@ SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 
 			<listitem id="tgeompoint_tgeogpoint">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto geométrico temporal en un punto geográfico temporal</para>
+				<para>Convertir entre un punto geométrico temporal y un punto geográfico temporal</para>
 				<para><varname>tgeompoint::tgeogpoint</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
--- {POINT(0 0)@2001-01-01}
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpoint_tgeompoint">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto geográfico temporal en un punto geométrico temporal</para>
 				<para><varname>tgeogpoint::tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
 -- {[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)}
+SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
+-- {POINT(0 0)@2001-01-01}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -686,9 +662,9 @@ SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tge
 		<itemizedlist>
 			<listitem id="tgeompoint_geometry">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto temporal en una trayectoria PostGIS</para>
-				<para><varname>tgeompoint::geometry</varname></para>
-				<para><varname>tgeogpoint::geography</varname></para>
+				<para>Convertir entre un punto temporal y una trayectoria PostGIS</para>
+				<para><varname>tpoint::geo</varname></para>
+				<para><varname>geo::tpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
 -- POINT M (0 0 978307200)
@@ -708,13 +684,7 @@ SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
 /* GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
    POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200)) */
 </programlisting>
-			</listitem>
 
-			<listitem id="geometry_tgeompoint">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir una trayectoria PostGIS a un punto temporal</para>
-				<para><varname>geometry::tgeompoint</varname></para>
-				<para><varname>geography::tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
   1 1 978480000)'::tgeompoint);
@@ -786,7 +756,7 @@ SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2001-01-01'));
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Obtener los valores</para>
-				<para><varname>getValues(ttype): {base[],floatspan[],geo}</varname></para>
+				<para><varname>getValues(ttype): {base[],floatspanset,geo}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tint '[1@2001-01-01, 2@2001-01-03]');
 -- {1,2}
@@ -796,7 +766,7 @@ SELECT getValues(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01
 -- {[1,2),[3,4)}
 SELECT getValues(tfloat 'Interp=Stepwise;{[1@2001-01-01, 2@2001-01-02],
   [3@2001-01-03, 4@2001-01-05]}');
--- {"[1,1]","[2,2]","[3,3]","[4,4]"}
+-- {[1, 1], [2, 2], [3, 3], [4, 4]}
 SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
 -- LINESTRING(0 0,0 1,1 1)

@@ -702,7 +702,7 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
   35
 (1 row)
 
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
+SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
  max 
 -----
    9

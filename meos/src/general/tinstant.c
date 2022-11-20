@@ -432,18 +432,16 @@ tinstant_values(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_int_temporal_accessor
- * @brief Return the singleton array of spans of a temporal instant float.
- * @post The output parameter @p count is equal to 1
+ * @brief Return the span set of a temporal instant float.
  * @sqlfunc getValues()
  */
-Span **
-tfloatinst_spans(const TInstant *inst, int *count)
+SpanSet *
+tfloatinst_spanset(const TInstant *inst)
 {
-  Span **result = palloc(sizeof(Span *));
   Datum value = tinstant_value(inst);
-  result[0] = span_make(value, value, true, true, T_FLOAT8);
-  *count = 1;
-  return result;
+  Span s;
+  span_set(value, value, true, true, T_FLOAT8, &s);
+  return span_to_spanset(&s);
 }
 
 /**

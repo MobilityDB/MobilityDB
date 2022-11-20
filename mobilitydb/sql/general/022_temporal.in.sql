@@ -343,6 +343,10 @@ CREATE FUNCTION ttext_seqset(ttext[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tbool_seqset_gaps(tint[], maxt interval DEFAULT '0 minutes')
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_seqset_gaps(tint[], maxdist float DEFAULT 0.0,
     maxt interval DEFAULT '0 minutes')
   RETURNS tint
@@ -352,6 +356,10 @@ CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear bool DEFAULT true,
     maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT '0 minutes')
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -500,8 +508,8 @@ CREATE FUNCTION getValues(tint)
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
-  RETURNS floatspan[]
-  AS 'MODULE_PATHNAME', 'Tfloat_spans'
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Tfloat_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
   RETURNS text[]

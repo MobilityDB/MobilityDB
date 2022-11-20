@@ -259,6 +259,60 @@ Spanset_mem_size(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
+PG_FUNCTION_INFO_V1(Spanset_lower);
+/**
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the lower bound value
+ * @sqlfunc lower()
+ */
+PGDLLEXPORT Datum
+Spanset_lower(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  PG_RETURN_DATUM(ss->elems[0].lower);
+}
+
+PG_FUNCTION_INFO_V1(Spanset_upper);
+/**
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the upper bound value
+ * @sqlfunc upper()
+ */
+PGDLLEXPORT Datum
+Spanset_upper(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  PG_RETURN_DATUM(ss->elems[ss->count - 1].upper);
+}
+
+/* span -> bool functions */
+
+PG_FUNCTION_INFO_V1(Spanset_lower_inc);
+/**
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return true if the lower bound value is inclusive
+ * @sqlfunc lower_inc()
+ */
+PGDLLEXPORT Datum
+Spanset_lower_inc(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  PG_RETURN_BOOL(spanset_lower_inc(ss));
+}
+
+PG_FUNCTION_INFO_V1(Spanset_upper_inc);
+/**
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return true if the upper bound value is inclusive
+ * @sqlfunc lower_inc()
+ */
+PGDLLEXPORT Datum
+Spanset_upper_inc(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  PG_RETURN_BOOL(spanset_upper_inc(ss));
+}
+
 PG_FUNCTION_INFO_V1(Spanset_width);
 /**
  * @ingroup mobilitydb_spantime_accessor

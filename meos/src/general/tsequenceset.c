@@ -644,12 +644,11 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_int_temporal_accessor
- * @brief Return the array of spans of base values of a temporal float
- * sequence set.
+ * @brief Return the span set of a temporal float sequence set.
  * @sqlfunc getValues()
  */
-Span **
-tfloatseqset_spans(const TSequenceSet *ss, int *count)
+SpanSet *
+tfloatseqset_spanset(const TSequenceSet *ss)
 {
   int count1 = MOBDB_FLAGS_GET_LINEAR(ss->flags) ? ss->count : ss->totalcount;
   Span **spans = palloc(sizeof(Span *) * count1);
@@ -657,11 +656,12 @@ tfloatseqset_spans(const TSequenceSet *ss, int *count)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tfloatseq_spans1(seq, &spans[k]);
+    k += tfloatseq_spans(seq, &spans[k]);
   }
-  Span **result = spanarr_normalize(spans, k, SORT, count);
+  int count;
+  Span **normspans = spanarr_normalize(spans, k, SORT, &count);
   pfree_array((void **) spans, k);
-  return result;
+  return spanset_make_free(normspans, count, NORMALIZE_NO);
 }
 
 /**

@@ -54,11 +54,9 @@ SELECT tint '[10@2018-01-01 08:00:00]';
 
 	<para>
 		El valor de una secuencia temporal se interpreta asumiendo que el período de tiempo definido por cada par de valores consecutivos <varname>v1@t1</varname> y <varname>v2@t2</varname> es inferior inclusivo y superior exclusivo, a menos que sean el primer o el último instantes de la secuencia y, en ese caso, se aplican los límites de toda la secuencia. Además, el valor que toma la secuencia temporal entre dos instantes consecutivos depende de si la interpolación es escalonada o lineal. Por ejemplo, la secuencia temporal anterior representa que el valor es <varname>10</varname> durante<varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> durante <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname> y <varname>15</varname> en el instante final <varname>2018-01-01 08:10:00</varname>. Por otro lado, la siguiente secuencia temporal
-	</para>
 	<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
-	<para>
 		representa que el valor evoluciona linealmente de <varname>10</varname> a <varname>20</varname> durante <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> y evoluciona de <varname>20</varname> a <varname>15</varname> durante <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.
 	</para>
 

@@ -16,11 +16,11 @@
 	</para>
 
 	<para>
-		The span and spanset types in MobilityDB correspond to the range and multirange types in PostgreSQL, where the types <varname>intspan</varname>, <varname>intspanset</varname>, <varname>period</varname>, and <varname>periodset</varname> correspond, respectively, to the types <varname>int4range</varname>, <varname>int4multirange</varname>, <varname>tstzrange</varname>, and <varname>tstzmultirange</varname> types. However, span and span set types in MobilityDB have a more efficient implementation than the range and multirange types in PostgreSQL. In particular, span types in MobilityDB are of fixed length while the range types in PostgreSQL are of variable length. Furthermore, empty ranges and infinite bounds are allowed in range values in PostgreSQL, while this is not allowed for span values in MobilityDB.
+		The span and spanset types in MobilityDB correspond to the range and multirange types in PostgreSQL,<footnote><para>Notice that multirange types require PostgreSQL version 14 or higher.</para></footnote> where the types <varname>intspan</varname>, <varname>intspanset</varname>, <varname>period</varname>, and <varname>periodset</varname> correspond, respectively, to the types <varname>int4range</varname>, <varname>int4multirange</varname>, <varname>tstzrange</varname>, and <varname>tstzmultirange</varname> types. However, span and span set types in MobilityDB have a more efficient implementation than the range and multirange types in PostgreSQL. In particular, span types in MobilityDB are of fixed length while the range types in PostgreSQL are of variable length. Furthermore, empty ranges and infinite bounds are allowed in range values in PostgreSQL, while this is not allowed for span values in MobilityDB.
 	</para>
 
 	<para>
-		In what follows, since span and span set types have similar functions and operators, when we speak about span types we mean both span and span set types, unless we explicitly mention otherwise. Also, when we refer to time types we mean one of the following types: <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname>, or <varname>periodset</varname>.
+		In what follows, since span and span set types have similar functions and operators, when we speak about span types we mean both span and span set types, unless we explicitly refer to <emphasis>unit</emphasis> span types and span <emphasis>set</emphasis> types to distinguish them. Also, when we refer to time types we mean one of the following types: <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname>, or <varname>periodset</varname>.
 	</para>
 
 	<sect1 id ="functions_operations_span_time_types">
@@ -57,10 +57,11 @@
 		</itemizedlist>
 
 		<para>
-			As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows:
+			As an example, the signatures of the contains operator (<varname>@&gt;</varname>) are as follows:
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-{span, timestampset} @&gt; base: boolean
+numspan @&gt; {numspan,number}: boolean
+{timestampset,period,periodset} @&gt; time: boolean
 </programlisting>
 		<para>
 			In the following, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
@@ -70,11 +71,11 @@
 			<title>Input/Output Functions</title>
 
 			<para>
-				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all its types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
+				MobilityDB generalizes Open Geospatial Consortium's (<ulink url="https://www.ogc.org/">OGC</ulink>) Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) and Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary">WKB</ulink>) input/output format for all its types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
 			</para>
 
 			<para>
-				A value of a span type has two bounds, the <emphasis>lower bound</emphasis> and the <emphasis>upper bound</emphasis>, which are values of the underlying <emphasis>base type</emphasis>. For example, a value of the <varname>period</varname> type has two bounds, which are <varname>timestamptz</varname> values. The bounds can be inclusive or exclusive. An inclusive bound means that the boundary instant is included in the span, while an exclusive bound means that the boundary instant is not included in the span. In the text form of a span value, inclusive and exclusive lower bounds are represented, respectively, by &ldquo;<varname>[</varname>&rdquo; and &ldquo;<varname>(</varname>&rdquo;. Likewise, inclusive and exclusive upper bounds are represented, respectively, by &ldquo;<varname>]</varname>&rdquo; and &ldquo;<varname>)</varname>&rdquo;. In a span value, the lower bound must be less than or equal to the upper bound. A span value with equal and inclusive bounds is called an <emphasis>instantaneous span</emphasis> and corresponds to a base type value. Examples of span values are as follows:
+				A value of a unit span type has two bounds, the <emphasis>lower bound</emphasis> and the <emphasis>upper bound</emphasis>, which are values of the underlying <emphasis>base type</emphasis>. For example, a value of the <varname>period</varname> type has two bounds, which are <varname>timestamptz</varname> values. The bounds can be inclusive or exclusive. An inclusive bound means that the boundary instant is included in the span, while an exclusive bound means that the boundary instant is not included in the span. In the text form of a span value, inclusive and exclusive lower bounds are represented, respectively, by &ldquo;<varname>[</varname>&rdquo; and &ldquo;<varname>(</varname>&rdquo;. Likewise, inclusive and exclusive upper bounds are represented, respectively, by &ldquo;<varname>]</varname>&rdquo; and &ldquo;<varname>)</varname>&rdquo;. In a span value, the lower bound must be less than or equal to the upper bound. A span value with equal and inclusive bounds is called an <emphasis>instantaneous span</emphasis> and corresponds to a base type value. Examples of span values are as follows:
 			</para>
 			<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)';
@@ -240,7 +241,7 @@ SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 		<sect2>
 			<title>Constructor Functions</title>
 
-			<para>The span types have a constructor function that accepts four arguments. The first two arguments specify, respectively, the lower and upper bound, and the last two arguments are Boolean values stating, respectively, whether the lower and upper bounds are inclusive or not. The last two arguments are assumed to be, respectively, true and false if not specified. Notice that integer spans are always transformed into <emphasis>normal form</emphasis>, that is, with inclusive lower bound and exclusive upper bound.
+			<para>The unit span types have a constructor function that accepts four arguments. The first two arguments specify, respectively, the lower and upper bound, and the last two arguments are Boolean values stating, respectively, whether the lower and upper bounds are inclusive or not. The last two arguments are assumed to be, respectively, true and false if not specified. Notice that integer spans are always transformed into <emphasis>normal form</emphasis>, that is, with inclusive lower bound and exclusive upper bound.
 			</para>
 			<itemizedlist>
 				<listitem id="span">
@@ -263,7 +264,7 @@ SELECT period('2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
 				</listitem>
 			</itemizedlist>
 
-			<para>The span set types have a constructor function that accepts a single argument which is an array of span values of the same subtype.
+			<para>The constructor function for span set types have a single argument that is an array of span values of the same subtype.
 			</para>
 			<itemizedlist>
 				<listitem id="spanset">
@@ -286,7 +287,7 @@ SELECT periodset(ARRAY[period '[2001-01-01 08:00, 2001-01-01 08:10]',
 				</listitem>
 			</itemizedlist>
 
-			<para>The <varname>timestampset</varname> type has a constructor function that accepts a single argument which is an array of <varname>timestamptz</varname> values.
+			<para>The constructor function for the <varname>timestampset</varname> type has a single argument that is an array of <varname>timestamptz</varname> values.
 			</para>
 			<itemizedlist>
 				<listitem id="timestampset">
@@ -311,9 +312,7 @@ SELECT timestampset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:0
 				<listitem id="timestamptz_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Cast a <varname>timestamptz</varname> value to another time type</para>
-					<para><varname>timestamptz::timestampset</varname></para>
-					<para><varname>timestamptz::period</varname></para>
-					<para><varname>timestamptz::periodset</varname></para>
+					<para><varname>timestamptz::{timestampset,period,periodset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS timestampset);
 -- {2001-01-01 08:00:00+01}
@@ -419,6 +418,8 @@ SELECT memSize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
 					<programlisting language="sql" xml:space="preserve">
 SELECT lower(intspan '[20, 25)');
 -- 20
+SELECT lower(intspanset '{[1,2],[4,5]}');
+--  1
 SELECT lower(period '[2011-01-01, 2011-01-05)');
 -- 2011-01-01
 </programlisting>
@@ -429,6 +430,8 @@ SELECT lower(period '[2011-01-01, 2011-01-05)');
 					<para>Get the upper bound</para>
 					<para><varname>upper(span): base</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT upper(intspanset '{[1,2],[4,5]}');
+--  6
 SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(period '[2011-01-01, 2011-01-05)');
@@ -441,7 +444,9 @@ SELECT upper(period '[2011-01-01, 2011-01-05)');
 					<para>Is the lower bound inclusive?</para>
 					<para><varname>lower_inc(span): boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT lower(intspan '[20, 25)');
+SELECT lower_inc(intspan '[20, 25)');
+-- true
+SELECT lower_inc(intspanset '{[1,2],[4,5]}');
 -- true
 SELECT lower_inc(period '[2011-01-01, 2011-01-05)');
 -- true
@@ -453,6 +458,8 @@ SELECT lower_inc(period '[2011-01-01, 2011-01-05)');
 					<para>Is the upper bound inclusive?</para>
 					<para><varname>upper_inc(span): boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT upper_inc(intspanset '{[1,2],[4,5]}');
+-- false
 SELECT upper(floatspan '[20.5, 25.3]');
 -- true
 SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
@@ -650,7 +657,7 @@ SELECT periods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 				<listitem id="time_shift">
 					<indexterm><primary><varname>shift</varname></primary></indexterm>
 					<para>Shift the time value by an interval</para>
-					<para><varname>shift({timestampset,period,periodset}): {timestampset,period,periodset}</varname></para>
+					<para><varname>shift({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT shift(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
 -- {2001-01-02, 2001-01-04, 2001-01-06}
@@ -727,7 +734,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 				<listitem id="time_eq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Are the values equal?</para>
-					<para><varname>{numspan,time} = {numspan,time}: boolean</varname></para>
+					<para><varname>{span,timestampset} = {span,timestampset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1,3]' = intspan '[1,4)';
 -- true
@@ -735,13 +742,15 @@ SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
 -- true
 SELECT period '[2001-01-01, 2001-01-04)' = period '[2001-01-01, 2001-01-04)';
 -- true
+SELECT timestampset '{2001-01-01, 2001-01-02}' = timestampset '{2001-01-01, 2001-01-04}';
+-- false
 </programlisting>
 				</listitem>
 
 				<listitem id="time_ne">
 					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 					<para>Are the values different?</para>
-					<para><varname>{numspan,time} &lt;&gt; {numspan,time}: boolean</varname></para>
+					<para><varname>{span,timestampset} &lt;&gt; {span,timestampset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2001-01-01, 2001-01-04)' &lt;&gt; period '[2001-01-03, 2001-01-05)';
 -- true
@@ -753,7 +762,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt;&gt; timestampset '{2001-01-0
 				<listitem id="time_lt">
 					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 					<para>Is the first value less than the second one?</para>
-					<para><varname>{numspan,time} &lt; {numspan,time}: boolean</varname></para>
+					<para><varname>{span,timestampset} &lt; {span,timestampset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
 -- true
@@ -769,7 +778,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt; timestampset '{2001-01-01, 2
 				<listitem id="time_gt">
 					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 					<para>Is the first value greater than the second one?</para>
-					<para><varname>{numspan,time} &gt; {numspan,time}: boolean</varname></para>
+					<para><varname>{span,timestampset} &gt; {span,timestampset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[3, 4]' &gt; floatspan '[3, 4)';
 -- true
@@ -781,7 +790,7 @@ SELECT period '[2001-01-03, 2001-01-04)' &gt; period '[2001-01-02, 2001-01-05)';
 				<listitem id="time_le">
 					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 					<para>Is the first value less than or equal to the second one?</para>
-					<para><varname>{numspan,time} &lt;= {numspan,time}: boolean</varname></para>
+					<para><varname>{span,timestampset} &lt;= {span,timestampset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspanset '{[1, 4)}' &lt;= floatspanset '{[1, 5), [6, 7)}';
 -- true
@@ -794,7 +803,7 @@ SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
 				<listitem id="time_ge">
 					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>Is the first value greater than or equal to the second one?</para>
-					<para><varname>{numspan,time} &gt;= {numspan,time}: boolean</varname></para>
+					<para><varname>{span,timestampset} &gt;= {span,timestampset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 -- false
@@ -814,8 +823,7 @@ SELECT period '[2001-01-03, 2001-01-05)' &gt;= period '[2001-01-03, 2001-01-04)'
 				<listitem id="time_union">
 					<indexterm><primary><varname>+</varname></primary></indexterm>
 					<para>Union of span or time values</para>
-					<para><varname>numspan + numspan: numspan</varname></para>
-					<para><varname>time + time: time</varname></para>
+					<para><varname>{span,timestampset} + {span,timestampset}: {span,timestampset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' + intspan '[3, 5)';
 -- [1, 5)
@@ -835,8 +843,7 @@ SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
 				<listitem id="time_difference">
 					<indexterm><primary><varname>-</varname></primary></indexterm>
 					<para>Difference of span or time values</para>
-					<para><varname>numspan - numspan: numspan</varname></para>
-					<para><varname>time - time: time</varname></para>
+					<para><varname>{span,timestampset} - {span,timestampset}: {span,timestampset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 5]' - intspan '[3, 6]';
 -- [1, 3)
@@ -857,8 +864,7 @@ SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
 				<listitem id="time_intersection">
 					<indexterm><primary><varname>*</varname></primary></indexterm>
 					<para>Intersection of span or time values</para>
-					<para><varname>numspan * numspan: numspan</varname></para>
-					<para><varname>time * time: time</varname></para>
+					<para><varname>{span,timestampset} * {span,timestampset}: {span,timestampset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 5)' * intspan '[3, 6)';
 -- [3, 5)
@@ -881,7 +887,7 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 				<listitem id="time_overlaps">
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>Do the values overlap (have values in common)?</para>
-					<para><varname>{numspan,number} &amp;&amp; {numspan,number}: boolean</varname></para>
+					<para><varname>numspan &amp;&amp; numspan: boolean</varname></para>
 					<para><varname>{timestampset,period,periodset} &amp;&amp; {timestampset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' &amp;&amp; intspan '[2, 4)';
@@ -913,7 +919,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 				<listitem id="time_containedby">
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>Is the first value contained by the second one?</para>
-					<para><varname> {numspan,number}&lt;@ numspan: boolean</varname></para>
+					<para><varname>{numspan,number} &lt;@ numspan: boolean</varname></para>
 					<para><varname>time &lt;@ {timestampset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
@@ -950,13 +956,14 @@ SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-0
 
 		<sect2 id="time_relpos_operators">
 			<title>Relative Position Operators</title>
-			<para>The relative position operators available for span and time types are given next.</para>
+			<para>The relative position operators available for span and time types are given next. Notice that the operators for time types have an additional `<varname>#</varname>' to distinguish them from the operators for number types.</para>
 
 			<itemizedlist>
 				<listitem id="span_left">
 					<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
 					<para>Is the first value strictly left of the second one?</para>
 					<para><varname>{number,span} &lt;&lt; {number,span}: boolean</varname></para>
+					<para><varname>time &lt;&lt;# time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &lt;&lt; 20;
 -- true
@@ -964,6 +971,8 @@ SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
 -- true
 SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 -- false
+SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';
+-- true
 </programlisting>
 				</listitem>
 
@@ -971,12 +980,16 @@ SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
 					<para>Is the first value strictly to the right of the second one?</para>
 					<para><varname>{number,span} &gt;&gt; {number,span}: boolean</varname></para>
+					<para><varname>time #&gt;&gt; time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &gt;&gt; 10;
 -- true
 SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
 -- true
 SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
+-- true
+SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
+  periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
 -- true
 </programlisting>
 				</listitem>
@@ -985,6 +998,7 @@ SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
 					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
 					<para>Is the first value not to the right of the second one?</para>
 					<para><varname>{number,span} &amp;&lt; {number,span}: boolean</varname></para>
+					<para><varname>time &amp;&lt;# time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &amp;&lt; 18;
 -- false
@@ -992,6 +1006,8 @@ SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
 -- true
 SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 -- true
+SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
+-- false
 </programlisting>
 				</listitem>
 
@@ -999,6 +1015,7 @@ SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
 					<para>Is the first value not to the left of the second one?</para>
 					<para><varname>{number,span} &amp;&gt; {number,span}: boolean</varname></para>
+					<para><varname>time #&amp;&gt; time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[15, 20)' &amp;&gt; 30;
 -- true
@@ -1006,45 +1023,6 @@ SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
 -- false
 SELECT floatspanset '{[1, 2],[3, 4]}' &amp;&gt; floatspan '(1, 3)';
 -- false
-</programlisting>
-				</listitem>
-
-				<listitem id="time_before">
-					<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
-					<para>Is the first value scritly before the second one?</para>
-					<para><varname>time &lt;&lt;# time: boolean</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';
--- true
-</programlisting>
-				</listitem>
-
-				<listitem id="time_after">
-					<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
-					<para>Is the first value strictly after the second one?</para>
-					<para><varname>time #&gt;&gt; time: boolean</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
-  periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
--- true
-</programlisting>
-				</listitem>
-
-				<listitem id="time_overbefore">
-					<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
-					<para>Is the first value not after the second one?</para>
-					<para><varname>time &amp;&lt;# time: boolean</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
--- false
-</programlisting>
-				</listitem>
-
-				<listitem id="time_overafter">
-					<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
-					<para>Is the first value not before the second one?</para>
-					<para><varname>time #&amp;&gt; time: boolean</varname></para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 -- true
 </programlisting>
@@ -1108,7 +1086,6 @@ WITH times(ts) AS (
 )
 SELECT tcount(ts) FROM times;
 -- {2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}
-
 WITH periods(ps) AS (
   SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
   SELECT periodset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
@@ -1129,8 +1106,7 @@ SELECT tcount(ps, '2 days', '2000-01-01') FROM periods;
 				<listitem id="time_extent">
 					<indexterm><primary><varname>extent</varname></primary></indexterm>
 					<para>Bounding span or period</para>
-					<para><varname>extent(span): span</varname></para>
-					<para><varname>extent({timestampset,period,periodset}): period</varname></para>
+					<para><varname>extent({span,timestampset}): span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 WITH spans(r) AS (
   SELECT floatspan '[1, 4)' UNION
@@ -1139,7 +1115,6 @@ WITH spans(r) AS (
 )
 SELECT extent(r) FROM spans;
 -- [1,9)
-
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
@@ -1147,7 +1122,6 @@ WITH times(ts) AS (
 )
 SELECT extent(ts) FROM times;
 -- [2000-01-01, 2000-01-06]
-
 WITH periods(ps) AS (
   SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
   SELECT periodset '{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06]}' UNION
@@ -1186,14 +1160,15 @@ SELECT tunion(ps) FROM periods;
 	<sect1 id ="indexing_time_types">
 		<title>Indexing of Time and Span Types</title>
 
-		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>intspan</varname>, <varname>floatspan</varname>, <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname> types. The GiST index implements an R-tree while the SP-GiST index implements a quad-tree. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
+		<para>GiST and SP-GiST indexes can be created for table columns of the span and time types. The GiST index implements an R-tree while the SP-GiST index implements a quad-tree. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
 			<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During period);
 CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
 </programlisting>
 		</para>
-		<para>A GiST or an SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, and <varname>&lt;-&gt;</varname>.</para>
-		<para>In addition, B-tree indexes can be created for table columns of a span or time type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of span time types with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+		<para>A GiST or an SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, and <varname>&lt;-&gt;</varname>.</para>
+		<para>In addition, B-tree indexes can be created for table columns of a span or time type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of span time types with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, and <varname>&gt;=</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+		<para>Finally, hash indexes can be created for table columns of a span or time type. For these types of indexes, the only operation defined is equality.</para>
 	</sect1>
 </chapter>

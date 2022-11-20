@@ -54,11 +54,9 @@ SELECT tint '[10@2018-01-01 08:00:00]';
 
 	<para>
 		The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
-	</para>
 	<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
-	<para>
 		represents that the value evolves linearly from <varname>10</varname> to <varname>20</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> and evolves from <varname>20</varname> to <varname>15</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.
 	</para>
 

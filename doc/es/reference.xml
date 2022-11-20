@@ -623,11 +623,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
+					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
+					<para><link linkend="ttype_contseq"><varname>ttype_contseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación contínua</para>
 				</listitem>
 
 				<listitem>
@@ -641,43 +641,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Convertir un valor temporal a un período</para>
+					<para><link linkend="ttype_bbox"><varname>ttype::period</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Convertir un valor temporal a un cuadro delimitador</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_span"><varname>tnumber::span</varname></link>: Convertir un número temporal a un rango</para>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convertir entre un entero temporal y un flotante temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Convertir un número temporal number a un <varname>tbox</varname></para>
+					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convertir entre un punto geométrico temporal y un punto geográfico temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_stbox"><varname>tpoint::stbox</varname></link>: Convertir un punto temporal a un <varname>stbox</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Convertir un entero temporal en un flotante temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tfloat_tint"><varname>tfloat::tint</varname></link>: Convertir un flotante temporal en un entero temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname></link>: Convertir un punto geométrico temporal en un punto geográfico temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Convertir un punto geográfico temporal en un punto geométrico temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname></link>: Convertir un punto temporal en una trayectoria PostGIS</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="geometry_tgeompoint"><varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convertir una trayectoria PostGIS en un punto temporal</para>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convertir entre un punto temporal y una trayectoria PostGIS</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

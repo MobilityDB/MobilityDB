@@ -277,8 +277,7 @@ spanset_make(const Span **spans, int count, bool normalize)
   Span **newspans = (Span **) spans;
   int newcount = count;
   if (normalize && count > 1)
-    newspans = spanarr_normalize((Span **) spans, count, SORT_NO,
-      &newcount);
+    newspans = spanarr_normalize((Span **) spans, count, SORT_NO, &newcount);
   /* Notice that the first span is already declared in the struct */
   size_t memsize = double_pad(sizeof(SpanSet)) +
     double_pad(sizeof(Span)) * (newcount - 1);
@@ -381,6 +380,100 @@ int
 spanset_mem_size(const SpanSet *ss)
 {
   return (int) VARSIZE(DatumGetPointer(ss));
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of an integer span set
+ * @sqlfunc lower()
+ */
+int
+intspanset_lower(const SpanSet *ss)
+{
+  return DatumGetInt32(ss->elems[0].lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of a float span set
+ * @sqlfunc lower()
+ */
+double
+floatspanset_lower(const SpanSet *ss)
+{
+  return Float8GetDatum(ss->elems[0].lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of a period
+ * @sqlfunc lower()
+ * @pymeosfunc lower()
+ */
+TimestampTz
+period_lower(const Period *p)
+{
+  return TimestampTzGetDatum(ps->elems[0].lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of an integer span set
+ * @sqlfunc upper()
+ */
+int
+intspanset_upper(const SpanSet *ss)
+{
+  return Int32GetDatum(ss->elems[ss->count - 1].upper);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of a float span set
+ * @sqlfunc upper()
+ */
+double
+floatspanset_upper(const SpanSet *ss)
+{
+  return Float8GetDatum(ss->elems[ss->count - 1].upper);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of a period
+ * @sqlfunc upper()
+ * @pymeosfunc upper()
+ */
+TimestampTz
+periodset_upper(const PeriodSet *ps)
+{
+  return TimestampTzGetDatum(ps->elems[ss->count - 1].upper);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return true if the lower bound of a span set is inclusive
+ * @sqlfunc lower_inc()
+ * @pymeosfunc lower_inc()
+ */
+bool
+spanset_lower_inc(const SpanSet *ss)
+{
+  return ss->elems[0].lower_inc;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return true if the upper bound of a span set is inclusive
+ * @sqlfunc upper_inc()
+ * @pymeosfunc upper_inc()
+ */
+bool
+spanset_upper_inc(const SpanSet *ss)
+{
+  return ss->elems[ss->count - 1].upper_inc;
 }
 
 /**

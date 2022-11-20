@@ -2462,7 +2462,7 @@ tfloatseq_span(const TSequence *seq)
  * @result Number of spans in the result
  */
 int
-tfloatseq_spans1(const TSequence *seq, Span **result)
+tfloatseq_spans(const TSequence *seq, Span **result)
 {
   /* Temporal float with linear interpolation */
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
@@ -2484,18 +2484,18 @@ tfloatseq_spans1(const TSequence *seq, Span **result)
  * @ingroup libmeos_int_temporal_accessor
  * @brief Return the array of spans of base values of a temporal float sequence.
  *
- * For temporal floats with linear interpolation the result will be a
- * singleton, which is the result of @ref tfloatseq_span. Otherwise, the
- * result will be an array of spans, one for each distinct value.
+ * For temporal floats with linear interpolation the result is a singleton,
+ * which is the result of @ref tfloatseq_span. Otherwise, the result is a span
+ * set composed of instantenous spans, one for each distinct value.
  * @sqlfunc getValues()
  */
-Span **
-tfloatseq_spans(const TSequence *seq, int *count)
+SpanSet *
+tfloatseq_spanset(const TSequence *seq)
 {
-  int count1 = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
-  Span **result = palloc(sizeof(Span *) * count1);
-  *count = tfloatseq_spans1(seq, result);
-  return result;
+  int count = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
+  Span **spans = palloc(sizeof(Span *) * count);
+  int count1 = tfloatseq_spans(seq, spans);
+  return spanset_make_free(spans, count1, NORMALIZE);
 }
 
 /**

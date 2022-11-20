@@ -223,7 +223,7 @@ SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
+SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;

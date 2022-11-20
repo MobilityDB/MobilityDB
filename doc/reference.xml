@@ -619,11 +619,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype</para>
+					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor for temporal types of sequence subtype and discrete interpolation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor for temporal types of sequence subtype and discrete interpolation</para>
+					<para><link linkend="ttype_contseq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype and continuous interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -637,43 +637,20 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Cast a temporal value to a period</para>
+					<para><link linkend="ttype_bbox"><varname>ttype::period</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Cast a temporal value to a bounding box</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_span"><varname>tnumber::span</varname></link>: Cast a temporal number to a span</para>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Cast between a temporal integer and a temporal float</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Cast a temporal number to a <varname>tbox</varname></para>
+					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Cast between a temporal geometry point and a temporal geography point</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="tpoint_stbox"><varname>ttype::period</varname></link>: Cast a temporal point to an <varname>stbox</varname></para>
-				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Cast a temporal integer to a temporal float</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tfloat_tint"><varname>tfloat::tint</varname></link>: Cast a temporal float to a temporal integer</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname></link>: Cast a temporal geometry point to a temporal geography point</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Cast a temporal geography point to a temporal geometry point</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname></link>: Cast a temporal point to a PostGIS trajectory</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="geometry_tgeompoint"><varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Cast a PostGIS trajectory to a temporal point</para>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Cast between a temporal point and a PostGIS trajectory</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
