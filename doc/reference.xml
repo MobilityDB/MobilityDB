@@ -886,7 +886,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atSpans"><varname>atSpans</varname></link>: Restrict to an array of spans</para>
+						<para><link linkend="atSpanset"><varname>atSpanset</varname></link>: Restrict to a span set</para>
 					</listitem>
 
 					<listitem>
@@ -932,7 +932,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusSpans"><varname>minusSpans</varname></link>: Difference with an array of spans</para>
+						<para><link linkend="minusSpanset"><varname>minusSpanset</varname></link>: Difference with a span set</para>
 					</listitem>
 
 					<listitem>

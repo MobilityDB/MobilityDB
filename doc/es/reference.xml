@@ -898,7 +898,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atSpans"><varname>atSpans</varname></link>: Restringir a una matriz de rangos de valores</para>
+						<para><link linkend="atSpanset"><varname>atSpanset</varname></link>: Restringir a un conjunto de rangos de valores</para>
 					</listitem>
 
 					<listitem>
@@ -944,7 +944,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusSpans"><varname>minusSpans</varname></link>: Diferencia con una matriz de rangos de valores</para>
+						<para><link linkend="minusSpanset"><varname>minusSpanset</varname></link>: Diferencia con un conjunto de rangos de valores</para>
 					</listitem>
 
 					<listitem>
