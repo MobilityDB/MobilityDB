@@ -225,29 +225,6 @@ span_upper_cmp(const Span *a, const Span *b)
 }
 
 /**
- * @brief Canonicalize discrete spans.
- */
-void
-span_canonicalize(Span *s)
-{
-  if (s->basetype == T_INT4)
-  {
-    if (! s->lower_inc)
-    {
-      s->lower = Int32GetDatum(DatumGetInt32(s->lower) + 1);
-      s->lower_inc = true;
-    }
-
-    if (s->upper_inc)
-    {
-      s->upper = Int32GetDatum(DatumGetInt32(s->upper) + 1);
-      s->upper_inc = false;
-    }
-  }
-  return;
-}
-
-/**
  * @brief Normalize an array of spans
  *
  * The input spans may overlap and may be non contiguous.
@@ -492,6 +469,22 @@ void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   mobdbType basetype, Span *s)
 {
+  /* Canonicalize */
+  if (basetype == T_INT4)
+  {
+    if (! lower_inc)
+    {
+      lower = Int32GetDatum(DatumGetInt32(lower) + 1);
+      lower_inc = true;
+    }
+
+    if (upper_inc)
+    {
+      upper = Int32GetDatum(DatumGetInt32(upper) + 1);
+      upper_inc = false;
+    }
+  }
+
   mobdbType spantype = basetype_spantype(basetype);
   int cmp = datum_cmp2(lower, upper, basetype, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
@@ -511,7 +504,6 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   s->upper_inc = upper_inc;
   s->spantype = spantype;
   s->basetype = basetype;
-  span_canonicalize(s);
   return;
 }
 

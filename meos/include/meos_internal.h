@@ -77,8 +77,6 @@ extern Span *value_to_span(Datum d, mobdbType basetype);
 /* Accessor functions for span and time types */
 
 extern const Span *spanset_sp_n(const SpanSet *ss, int index);
-extern mobdbType spanset_spantype(const SpanSet *ss);
-extern mobdbType spanset_basetype(const SpanSet *ss);
 extern void timestampset_set_period(const TimestampSet *ts, Period *p);
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 
