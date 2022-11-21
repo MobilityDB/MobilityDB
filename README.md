@@ -86,16 +86,15 @@ Requirements
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   PostgreSQL >= 12
 *   CMake >= 3.7
-*   PostGIS >= 3
+*   PostGIS >= 3.0
 *   JSON-C
 *   GNU Scientific Library (GSL)
-*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
+*   Development files for PostgreSQL, PostGIS, PROJ, JSON-C
 
-For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 13 and PostGIS 3:
+For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 14 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-13 libproj-dev libjson-c-dev
+apt install build-essential cmake postgresql-server-dev-14 libproj-dev libjson-c-dev
 ```
-Notice that if you want to use PostGIS 2.5, this requires in addition to add the dependency `liblwgeom-dev` to the above command.
 
 Building & Installation
 -----------------------

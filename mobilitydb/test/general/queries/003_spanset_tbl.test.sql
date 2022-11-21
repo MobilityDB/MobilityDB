@@ -1,411 +1,136 @@
+-------------------------------------------------------------------------------
+--
+-- This MobilityDB code is provided under The PostgreSQL License.
+-- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- contributors
+--
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2022, PostGIS contributors
+--
+-- Permission to use, copy, modify, and distribute this software and its
+-- documentation for any purpose, without fee, and without a written
+-- agreement is hereby granted, provided that the above copyright notice and
+-- this paragraph and the following two paragraphs appear in all copies.
+--
+-- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+-- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+-- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+-- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+-- OF SUCH DAMAGE.
+--
+-- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+-- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+-- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+-- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+-- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+--
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Tests for the span set data type.
+-- File spanset.c
+--------------------------------------------------------------------------------
+-- Send/receive functions
+
 COPY tbl_intspanset TO '/tmp/tbl_intspanset' (FORMAT BINARY);
-COPY 100
 DROP TABLE IF EXISTS tbl_intspanset_tmp;
-NOTICE:  table "tbl_intspanset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_intspanset_tmp AS TABLE tbl_intspanset WITH NO DATA;
-CREATE TABLE AS
 COPY tbl_intspanset_tmp FROM '/tmp/tbl_intspanset' (FORMAT BINARY);
-COPY 100
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset_tmp t2 WHERE t1.k = t2.k AND t1.ss <> t2.ss;
- count 
--------
-     0
-(1 row)
-
 DROP TABLE tbl_intspanset_tmp;
-DROP TABLE
+
 COPY tbl_floatspanset TO '/tmp/tbl_floatspanset' (FORMAT BINARY);
-COPY 100
 DROP TABLE IF EXISTS tbl_floatspanset_tmp;
-NOTICE:  table "tbl_floatspanset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_floatspanset_tmp AS TABLE tbl_floatspanset WITH NO DATA;
-CREATE TABLE AS
 COPY tbl_floatspanset_tmp FROM '/tmp/tbl_floatspanset' (FORMAT BINARY);
-COPY 100
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.ss <> t2.ss;
- count 
--------
-     0
-(1 row)
-
 DROP TABLE tbl_floatspanset_tmp;
-DROP TABLE
+
 COPY tbl_periodset TO '/tmp/tbl_periodset' (FORMAT BINARY);
-COPY 100
 DROP TABLE IF EXISTS tbl_periodset_tmp;
-NOTICE:  table "tbl_periodset_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_periodset_tmp AS TABLE tbl_periodset WITH NO DATA;
-CREATE TABLE AS
 COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
-COPY 100
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset_tmp t2 WHERE t1.k = t2.k AND t1.ps <> t2.ps;
- count 
--------
-     0
-(1 row)
-
 DROP TABLE tbl_periodset_tmp;
-DROP TABLE
-SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(ss)) <> ss;
- count 
--------
-     0
-(1 row)
 
+-- Input/output from/to WKB and HexWKB
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(ss)) <> ss;
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(ss)) <> ss;
- count 
--------
-     0
-(1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromBinary(asBinary(ss)) <> ss;
- count 
--------
-     0
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(ss)) <> ss;
- count 
--------
-     0
-(1 row)
 
 SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromBinary(asBinary(ps)) <> ps;
- count 
--------
-     0
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromHexWKB(asHexWKB(ps)) <> ps;
- count 
--------
-     0
-(1 row)
+
+-------------------------------------------------------------------------------
 
 SELECT MAX(memSize(ss)) FROM tbl_intspanset;
- max 
------
- 280
-(1 row)
-
 SELECT MAX(lower(intspan(ss))) FROM tbl_intspanset;
- max 
------
-  55
-(1 row)
-
 SELECT MAX(width(ss)) FROM tbl_intspanset;
- max 
------
-  36
-(1 row)
 
 SELECT MAX(memSize(ss)) FROM tbl_floatspanset;
- max 
------
- 280
-(1 row)
-
 SELECT MAX(lower(floatspan(ss))) FROM tbl_floatspanset;
-        max         
---------------------
- 47.333306414151025
-(1 row)
-
 SELECT MAX(width(ss)) FROM tbl_floatspanset;
-        max         
---------------------
- 35.939052925331154
-(1 row)
 
 SELECT MAX(memSize(ps)) FROM tbl_periodset;
- max 
------
- 256
-(1 row)
-
 SELECT MAX(lower(period(ps))) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
-(1 row)
-
 SELECT MAX(timespan(ps)) FROM tbl_periodset;
-   max    
-----------
- 01:45:00
-(1 row)
-
 SELECT MAX(duration(ps)) FROM tbl_periodset;
-   max    
-----------
- 00:56:00
-(1 row)
 
 SELECT MAX(numSpans(ss)) FROM tbl_intspanset;
- max 
------
-  10
-(1 row)
-
 SELECT MAX(lower(startSpan(ss))) FROM tbl_intspanset;
- max 
------
-  55
-(1 row)
-
 SELECT MAX(lower(endSpan(ss))) FROM tbl_intspanset;
- max 
------
-  95
-(1 row)
-
 SELECT MAX(lower(spanN(ss, 1))) FROM tbl_intspanset;
- max 
------
-  55
-(1 row)
-
 SELECT MAX(array_length(spans(ss),1)) FROM tbl_intspanset;
- max 
------
-  10
-(1 row)
 
 SELECT MAX(numSpans(ss)) FROM tbl_floatspanset;
- max 
------
-  10
-(1 row)
-
 SELECT MAX(lower(startSpan(ss))) FROM tbl_floatspanset;
-        max         
---------------------
- 47.333306414151025
-(1 row)
-
 SELECT MAX(lower(endSpan(ss))) FROM tbl_floatspanset;
-        max        
--------------------
- 99.28665091494118
-(1 row)
-
 SELECT MAX(lower(spanN(ss, 1))) FROM tbl_floatspanset;
-        max         
---------------------
- 47.333306414151025
-(1 row)
-
 SELECT MAX(array_length(spans(ss),1)) FROM tbl_floatspanset;
- max 
------
-  10
-(1 row)
 
 SELECT MAX(numPeriods(ps)) FROM tbl_periodset;
- max 
------
-   9
-(1 row)
-
 SELECT MAX(lower(startPeriod(ps))) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
-(1 row)
-
 SELECT MAX(lower(endPeriod(ps))) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:18:00+00
-(1 row)
-
 SELECT MAX(lower(periodN(ps, 1))) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
-(1 row)
-
 SELECT MAX(array_length(periods(ps),1)) FROM tbl_periodset;
- max 
------
-   9
-(1 row)
 
 SELECT MAX(numTimestamps(ps)) FROM tbl_periodset;
- max 
------
-  18
-(1 row)
-
 SELECT MAX(startTimestamp(ps)) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
-(1 row)
-
 SELECT MAX(endTimestamp(ps)) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:25:00+00
-(1 row)
-
 SELECT MAX(timestampN(ps, 0)) FROM tbl_periodset;
- max 
------
- 
-(1 row)
-
 SELECT MAX((timestamps(ps))[1]) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
-(1 row)
 
 SELECT MAX(startTimestamp(shift(ps, '5 min'))) FROM tbl_periodset;
-          max           
-------------------------
- 2001-12-30 12:06:00+00
-(1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE intspanset_cmp(t1.ss, t2.ss) = -1;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss = t2.ss;
- count 
--------
-    99
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <> t2.ss;
- count 
--------
-  9702
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss < t2.ss;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <= t2.ss;
- count 
--------
-  4950
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss > t2.ss;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss >= t2.ss;
- count 
--------
-  4950
-(1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE floatspanset_cmp(t1.ss, t2.ss) = -1;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss = t2.ss;
- count 
--------
-    99
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <> t2.ss;
- count 
--------
-  9702
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss < t2.ss;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <= t2.ss;
- count 
--------
-  4950
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss > t2.ss;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss >= t2.ss;
- count 
--------
-  4950
-(1 row)
 
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE periodset_cmp(t1.ps, t2.ps) = -1;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
- count 
--------
-    99
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <> t2.ps;
- count 
--------
-  9702
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps < t2.ps;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
- count 
--------
-  4950
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
- count 
--------
-  4851
-(1 row)
-
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
- count 
--------
-  4950
-(1 row)
 
 SELECT MAX(periodset_hash(ps)) != 0 FROM tbl_periodset;
- ?column? 
-----------
- t
-(1 row)
-
 SELECT MAX(periodset_hash_extended(ps, 1)) != 0 FROM tbl_periodset;
- ?column? 
-----------
- t
-(1 row)
 
+-------------------------------------------------------------------------------

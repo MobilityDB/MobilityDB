@@ -51,7 +51,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             clang \
-            liblwgeom-dev \
             libgeos++-dev \
             libproj-dev \
             libjson-c-dev \
