@@ -1,3 +1,15 @@
+SELECT intspanset '{[1,2),[3,4),[5,6)}';
+        intspanset        
+--------------------------
+ {[1, 2), [3, 4), [5, 6)}
+(1 row)
+
+SELECT floatspanset '{[1,2),[3,4),[5,6)}';
+       floatspanset       
+--------------------------
+ {[1, 2), [3, 4), [5, 6)}
+(1 row)
+
 SELECT periodset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}';
                                               periodset                                               
 ------------------------------------------------------------------------------------------------------
@@ -19,6 +31,18 @@ SELECT periodset '{[2000-01-01, 2000-01-02]';
 ERROR:  Could not parse span set
 LINE 1: SELECT periodset '{[2000-01-01, 2000-01-02]';
                          ^
+SELECT intspanset(ARRAY [intspan '[1,2)','[3,4)','[5,6)']);
+        intspanset        
+--------------------------
+ {[1, 2), [3, 4), [5, 6)}
+(1 row)
+
+SELECT floatspanset(ARRAY [floatspan '[1,2)','[3,4)','[5,6)']);
+       floatspanset       
+--------------------------
+ {[1, 2), [3, 4), [5, 6)}
+(1 row)
+
 SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-04]']);
                                               periodset                                               
 ------------------------------------------------------------------------------------------------------
@@ -30,6 +54,18 @@ SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-
 ERROR:  Invalid value for span set
 SELECT periodset('{}'::period[]);
 ERROR:  The input array cannot be empty
+SELECT intspanset '{[1,2),[3,4),[5,6)}'::intspan;
+ intspan 
+---------
+ [1, 6)
+(1 row)
+
+SELECT floatspanset '{[1,2),[3,4),[5,6)}'::floatspan;
+ floatspan 
+-----------
+ [1, 6)
+(1 row)
+
 SELECT periodset(timestamptz '2000-01-01');
                      periodset                      
 ----------------------------------------------------
@@ -66,6 +102,18 @@ SELECT period '[2000-01-01,2000-01-02]'::periodset;
  {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]}
 (1 row)
 
+SELECT memsize(intspanset '{[1,2),[3,4),[5,6)}');
+ memsize 
+---------
+     112
+(1 row)
+
+SELECT memsize(floatspanset '{[1,2),[3,4),[5,6)}');
+ memsize 
+---------
+     112
+(1 row)
+
 SELECT memSize(periodset '{[2000-01-01,2000-01-01]}');
  memsize 
 ---------
@@ -100,6 +148,54 @@ SELECT memSize(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000
  memsize 
 ---------
      112
+(1 row)
+
+SELECT lower(intspanset '{[1,2),[3,4),[5,6)}');
+ lower 
+-------
+     1
+(1 row)
+
+SELECT lower(floatspanset '{[1,2),[3,4),[5,6)}');
+ lower 
+-------
+     1
+(1 row)
+
+SELECT lower_inc(intspanset '{[1,2),[3,4),[5,6)}');
+ lower_inc 
+-----------
+ t
+(1 row)
+
+SELECT lower_inc(floatspanset '{[1,2),[3,4),[5,6)}');
+ lower_inc 
+-----------
+ t
+(1 row)
+
+SELECT upper(intspanset '{[1,2),[3,4),[5,6)}');
+ upper 
+-------
+     6
+(1 row)
+
+SELECT upper(floatspanset '{[1,2),[3,4),[5,6)}');
+ upper 
+-------
+     6
+(1 row)
+
+SELECT upper_inc(intspanset '{[1,2),[3,4),[5,6)}');
+ upper_inc 
+-----------
+ f
+(1 row)
+
+SELECT upper_inc(floatspanset '{[1,2),[3,4),[5,6)}');
+ upper_inc 
+-----------
+ f
 (1 row)
 
 SELECT period(periodset '{[2000-01-01,2000-01-01]}');
@@ -174,6 +270,18 @@ SELECT timespan(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(200
  5 days
 (1 row)
 
+SELECT width(intspanset '{[1,2),[3,4),[5,6)}');
+ width 
+-------
+     3
+(1 row)
+
+SELECT width(floatspanset '{[1,2),[3,4),[5,6)}');
+ width 
+-------
+     3
+(1 row)
+
 SELECT duration(periodset '{[2000-01-01,2000-01-01]}');
  duration 
 ----------
@@ -208,6 +316,18 @@ SELECT duration(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(200
  duration 
 ----------
  3 days
+(1 row)
+
+SELECT numSpans(intspanset '{[1,2),[3,4),[5,6)}');
+ numspans 
+----------
+        3
+(1 row)
+
+SELECT numSpans(floatspanset '{[1,2),[3,4),[5,6)}');
+ numspans 
+----------
+        3
 (1 row)
 
 SELECT numPeriods(periodset '{[2000-01-01,2000-01-01]}');
@@ -246,6 +366,18 @@ SELECT numPeriods(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2
           3
 (1 row)
 
+SELECT startSpan(intspanset '{[1,2),[3,4),[5,6)}');
+ startspan 
+-----------
+ [1, 2)
+(1 row)
+
+SELECT startSpan(floatspanset '{[1,2),[3,4),[5,6)}');
+ startspan 
+-----------
+ [1, 2)
+(1 row)
+
 SELECT startPeriod(periodset '{[2000-01-01,2000-01-01]}');
                    startperiod                    
 --------------------------------------------------
@@ -280,6 +412,18 @@ SELECT startPeriod(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(
                    startperiod                    
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00)
+(1 row)
+
+SELECT endSpan(intspanset '{[1,2),[3,4),[5,6)}');
+ endspan 
+---------
+ [5, 6)
+(1 row)
+
+SELECT endSpan(floatspanset '{[1,2),[3,4),[5,6)}');
+ endspan 
+---------
+ [5, 6)
 (1 row)
 
 SELECT endPeriod(periodset '{[2000-01-01,2000-01-01]}');
@@ -318,6 +462,18 @@ SELECT endPeriod(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(20
  (2000-01-05 00:00:00+00, 2000-01-06 00:00:00+00]
 (1 row)
 
+SELECT spanN(intspanset '{[1,2),[3,4),[5,6)}', 2);
+ spann  
+--------
+ [3, 4)
+(1 row)
+
+SELECT spanN(floatspanset '{[1,2),[3,4),[5,6)}', 2);
+ spann  
+--------
+ [3, 4)
+(1 row)
+
 SELECT periodN(periodset '{[2000-01-01,2000-01-01]}', 1);
                      periodn                      
 --------------------------------------------------
@@ -352,6 +508,18 @@ SELECT periodN(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000
  periodn 
 ---------
  
+(1 row)
+
+SELECT spans(intspanset '{[1,2),[3,4),[5,6)}');
+            spans             
+------------------------------
+ {"[1, 2)","[3, 4)","[5, 6)"}
+(1 row)
+
+SELECT spans(floatspanset '{[1,2),[3,4),[5,6)}');
+            spans             
+------------------------------
+ {"[1, 2)","[3, 4)","[5, 6)"}
 (1 row)
 
 SELECT periods(periodset '{[2000-01-01,2000-01-01]}');
@@ -684,6 +852,90 @@ SELECT shiftTscale(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(
  {[2000-01-01 00:05:00+00, 2000-01-01 00:17:00+00), (2000-01-01 00:29:00+00, 2000-01-01 00:41:00+00), (2000-01-01 00:53:00+00, 2000-01-01 01:05:00+00]}
 (1 row)
 
+SELECT intspanset_cmp(intspanset '{[1,1]}', intspanset '{[1,2),[2,3),[3,4)}');
+ intspanset_cmp 
+----------------
+             -1
+(1 row)
+
+SELECT intspanset '{[1,1]}' = intspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intspanset '{[1,1]}' <> intspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspanset '{[1,1]}' < intspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspanset '{[1,1]}' <= intspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspanset '{[1,1]}' > intspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT intspanset '{[1,1]}' >= intspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatspanset_cmp(floatspanset '{[1,1]}', floatspanset '{[1,2),[2,3),[3,4)}');
+ floatspanset_cmp 
+------------------
+               -1
+(1 row)
+
+SELECT floatspanset '{[1,1]}' = floatspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatspanset '{[1,1]}' <> floatspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset '{[1,1]}' < floatspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset '{[1,1]}' <= floatspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset '{[1,1]}' > floatspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT floatspanset '{[1,1]}' >= floatspanset '{[1,2),[2,3),[3,4)}';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT periodset_cmp(periodset '{[2000-01-01,2000-01-01]}', periodset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
  periodset_cmp 
 ---------------
@@ -738,6 +990,30 @@ SELECT periodset '{[2000-01-01,2000-01-01]}' >= periodset '{(2000-01-01,2000-01-
  f
 (1 row)
 
+SELECT intspanset_hash('{[1,2]}') = intspanset_hash('{[1,2]}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspanset_hash('{[1,2]}') <> intspanset_hash('{[2,2]}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset_hash('{[1,2]}') = floatspanset_hash('{[1,2]}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset_hash('{[1,2]}') <> floatspanset_hash('{[2,2]}');
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT periodset_hash('{[2000-01-01,2000-01-02]}') = periodset_hash('{[2000-01-01,2000-01-02]}');
  ?column? 
 ----------
@@ -745,6 +1021,30 @@ SELECT periodset_hash('{[2000-01-01,2000-01-02]}') = periodset_hash('{[2000-01-0
 (1 row)
 
 SELECT periodset_hash('{[2000-01-01,2000-01-02]}') <> periodset_hash('{[2000-01-02,2000-01-02]}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspanset_hash_extended('{[1,2]}', 1) = intspanset_hash_extended('{[1,2]}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT intspanset_hash_extended('{[1,2]}', 1) <> intspanset_hash_extended('{[2,2]}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset_hash_extended('{[1,2]}', 1) = floatspanset_hash_extended('{[1,2]}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT floatspanset_hash_extended('{[1,2]}', 1) <> floatspanset_hash_extended('{[2,2]}', 1);
  ?column? 
 ----------
  t
