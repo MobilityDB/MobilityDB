@@ -283,7 +283,7 @@ Adjacent_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = adjacent_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -467,7 +467,7 @@ Right_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = right_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -651,7 +651,7 @@ Overright_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = overright_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -712,21 +712,6 @@ Overright_spanset_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Set union
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Union_span_span);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of the periods
- * @sqlfunc time_union()
- * @sqlop @s +
- */
-PGDLLEXPORT Datum
-Union_span_span(PG_FUNCTION_ARGS)
-{
-  Span *s1 = PG_GETARG_SPAN_P(0);
-  Span *s2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_POINTER(union_span_span(s1, s2));
-}
 
 PG_FUNCTION_INFO_V1(Union_span_spanset);
 /**
@@ -850,24 +835,6 @@ Intersection_spanset_spanset(PG_FUNCTION_ARGS)
  * Set difference
  * The functions produce new results that must be freed after
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Minus_span_span);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of the periods.
- * @sqlfunc time_minus()
- * @sqlop @s -
- */
-PGDLLEXPORT Datum
-Minus_span_span(PG_FUNCTION_ARGS)
-{
-  Span *s1 = PG_GETARG_SPAN_P(0);
-  Span *s2 = PG_GETARG_SPAN_P(1);
-  SpanSet *result = minus_span_span(s1, s2);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
 
 PG_FUNCTION_INFO_V1(Minus_span_spanset);
 /**

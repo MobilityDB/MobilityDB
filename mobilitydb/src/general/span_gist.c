@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief R-tree GiST index for time types.
+ * @brief R-tree GiST index for span and span set types.
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
  */
@@ -147,9 +147,9 @@ span_index_recheck(StrategyNumber strategy)
 {
   /* These operators are based on bounding boxes */
   if (strategy == RTLeftStrategyNumber ||
-    strategy == RTOverLeftStrategyNumber ||
-    strategy == RTRightStrategyNumber ||
-    strategy == RTOverRightStrategyNumber)
+      strategy == RTOverLeftStrategyNumber ||
+      strategy == RTRightStrategyNumber ||
+      strategy == RTOverRightStrategyNumber)
     return false;
   return true;
 }
@@ -406,9 +406,8 @@ typedef struct
  * during span_gist_double_sorting_split.
  */
 static void
-span_gist_consider_split(ConsiderSplitContext *context,
-  SpanBound *right_lower, int min_left_count,
-  SpanBound *left_upper, int max_left_count)
+span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
+  int min_left_count, SpanBound *left_upper, int max_left_count)
 {
   int left_count, right_count;
   float4 ratio, overlap;

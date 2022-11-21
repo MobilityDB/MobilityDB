@@ -219,6 +219,8 @@ CREATE OPERATOR CLASS periodset_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(period, period, internal);
 
+/******************************************************************************/
+
 CREATE FUNCTION period_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Period_spgist_config'
@@ -227,8 +229,6 @@ CREATE FUNCTION timestampset_spgist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Timestampset_spgist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************/
 
 CREATE OPERATOR CLASS timestampset_quadtree_ops
   DEFAULT FOR TYPE timestampset USING spgist AS

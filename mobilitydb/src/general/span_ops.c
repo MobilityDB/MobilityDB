@@ -392,21 +392,21 @@ Overright_span_span(PG_FUNCTION_ARGS)
  * Set operators
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Bbox_union_span_span);
+PG_FUNCTION_INFO_V1(Union_span_span);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of the spans
- * @sqlfunc span_union()
- * @sqlop @p +
+ * @sqlfunc time_union()
+ * @sqlop @s +
  */
 PGDLLEXPORT Datum
-Bbox_union_span_span(PG_FUNCTION_ARGS)
+Union_span_span(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  /* Strict union */
-  PG_RETURN_POINTER(bbox_union_span_span(s1, s2, true));
+  PG_RETURN_POINTER(union_span_span(s1, s2));
 }
+
 
 PG_FUNCTION_INFO_V1(Intersection_span_span);
 /**
@@ -426,24 +426,24 @@ Intersection_span_span(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Bbox_minus_span_span);
+PG_FUNCTION_INFO_V1(Minus_span_span);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of the spans.
- * @note The functions produce new results that must be freed
- * @sqlfunc span_minus()
- * @sqlop @p -
+ * @sqlfunc time_minus()
+ * @sqlop @s -
  */
 PGDLLEXPORT Datum
-Bbox_minus_span_span(PG_FUNCTION_ARGS)
+Minus_span_span(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  Span *result = bbox_minus_span_span(s1, s2);
+  SpanSet *result = minus_span_span(s1, s2);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
+
 
 /******************************************************************************
  * Distance functions returning a double representing the number of seconds

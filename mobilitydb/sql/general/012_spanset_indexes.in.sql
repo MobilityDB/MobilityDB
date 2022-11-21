@@ -47,6 +47,7 @@ CREATE FUNCTION spanset_gist_compress(internal)
 
 CREATE OPERATOR CLASS intspanset_rtree_ops
   DEFAULT FOR TYPE intspanset USING gist AS
+  STORAGE intspan,
   -- strictly left
   OPERATOR  1     << (intspanset, int),
   OPERATOR  1     << (intspanset, intspan),
@@ -101,6 +102,7 @@ CREATE FUNCTION span_gist_consistent(internal, floatspanset, smallint, oid, inte
 
 CREATE OPERATOR CLASS floatspanset_rtree_ops
   DEFAULT FOR TYPE floatspanset USING gist AS
+  STORAGE floatspan,
   -- strictly left
   OPERATOR  1     << (floatspanset, float),
   OPERATOR  1     << (floatspanset, floatspan),
