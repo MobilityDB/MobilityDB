@@ -779,6 +779,21 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
 
 /**
  * @ingroup libmeos_spantime_transf
+ * @brief Shift a span by a value.
+ * @sqlfunc shift()
+ * @pymeosfunc shift()
+ */
+void
+span_shift(Datum value, mobdbType basetype, Span *result)
+{
+  assert(basetype == result->basetype);
+  result->lower = datum_add(result->lower, value, basetype, basetype);
+  result->upper = datum_add(result->lower, value, basetype, basetype);
+  return;
+}
+
+/**
+ * @ingroup libmeos_spantime_transf
  * @brief Shift and/or scale a period by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()

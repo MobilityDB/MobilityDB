@@ -84,6 +84,8 @@ extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 
 /* Transformation functions for span and time types */
 
+extern void span_shift(Datum value, mobdbType basetype, Span *result);
+extern void spanset_shift(Datum value, mobdbType basetype, SpanSet *result);
 extern void lower_upper_shift_tscale(const Interval *shift, const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 
 /*****************************************************************************

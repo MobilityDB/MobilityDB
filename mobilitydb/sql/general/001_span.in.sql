@@ -347,6 +347,14 @@ CREATE FUNCTION round(floatspan, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspan_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION shift(intspan, int)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(floatspan, int)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(period, interval)
   RETURNS period
   AS 'MODULE_PATHNAME', 'Period_shift'

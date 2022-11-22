@@ -424,6 +424,23 @@ Floatspan_round(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
+PG_FUNCTION_INFO_V1(Span_shift);
+/**
+ * @ingroup mobilitydb_spantime_transf
+ * @brief Shift the span by a value
+ * @sqlfunc shift()
+ */
+PGDLLEXPORT Datum
+Span_shift(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  Span *result = span_copy(s);
+  span_shift(shift, basetype, result);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Period_shift);
 /**
  * @ingroup mobilitydb_spantime_transf

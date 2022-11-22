@@ -4093,8 +4093,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
  * of base values
  *
  * @param[in] seq Temporal number
- * @param[in] normspans Array of spans of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is at, false for minus
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored

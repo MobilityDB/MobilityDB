@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_span);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span set contains a span set
  * @sqlfunc time_contains()
- * @sqlop @s @>
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_spanset_span(PG_FUNCTION_ARGS)
@@ -89,7 +89,7 @@ PG_FUNCTION_INFO_V1(Contains_span_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span contains a span set
  * @sqlfunc time_contains()
- * @sqlop @s @>
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_span_spanset(PG_FUNCTION_ARGS)
@@ -106,7 +106,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if the first span set contains the second one
  * @sqlfunc time_contains()
- * @sqlop @s @>
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_spanset_spanset(PG_FUNCTION_ARGS)
@@ -146,7 +146,7 @@ PG_FUNCTION_INFO_V1(Contained_span_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span is contained by a span set
  * @sqlfunc time_contained()
- * @sqlop @s <@
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_span_spanset(PG_FUNCTION_ARGS)
@@ -163,7 +163,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_span);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span set is contained by a span
  * @sqlfunc time_contained()
- * @sqlop @s <@
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_spanset_span(PG_FUNCTION_ARGS)
@@ -180,7 +180,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if the first span set is contained by the second one
  * @sqlfunc time_contained()
- * @sqlop @s <@
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_spanset_spanset(PG_FUNCTION_ARGS)
@@ -202,7 +202,7 @@ PG_FUNCTION_INFO_V1(Overlaps_span_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span and a span set overlap
  * @sqlfunc time_overlaps()
- * @sqlop @s &&
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_span_spanset(PG_FUNCTION_ARGS)
@@ -219,7 +219,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_span);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span set and a span overlap
  * @sqlfunc time_overlaps()
- * @sqlop @s &&
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_spanset_span(PG_FUNCTION_ARGS)
@@ -236,7 +236,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if the span sets overlap
  * @sqlfunc time_overlaps()
- * @sqlop @s &&
+ * @sqlop @p &&
  */
 PGDLLEXPORT Datum
 Overlaps_spanset_spanset(PG_FUNCTION_ARGS)
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Adjacent_span_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span and a span set are adjacent
  * @sqlfunc time_adjacent()
- * @sqlop @s -|-
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_span_spanset(PG_FUNCTION_ARGS)
@@ -311,7 +311,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_span);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span set and a span are adjacent
  * @sqlfunc time_adjacent()
- * @sqlop @s -|-
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_spanset_span(PG_FUNCTION_ARGS)
@@ -328,7 +328,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if the span sets are adjacent
  * @sqlfunc time_adjacent()
- * @sqlop @s -|-
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_spanset_spanset(PG_FUNCTION_ARGS)
@@ -386,7 +386,7 @@ PG_FUNCTION_INFO_V1(Left_span_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is strictly before a span set
  * @sqlfunc time_before()
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Left_span_spanset(PG_FUNCTION_ARGS)
@@ -403,7 +403,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_span);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span set is strictly before a span
  * @sqlfunc time_before()
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Left_spanset_span(PG_FUNCTION_ARGS)
@@ -420,7 +420,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if the first span set is strictly before the second one
  * @sqlfunc time_before()
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Left_spanset_spanset(PG_FUNCTION_ARGS)
@@ -478,7 +478,7 @@ PG_FUNCTION_INFO_V1(Right_span_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is strictly after a span set
  * @sqlfunc time_after()
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 Right_span_spanset(PG_FUNCTION_ARGS)
@@ -495,7 +495,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_span);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span set is strictly after a span
  * @sqlfunc time_after()
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 Right_spanset_span(PG_FUNCTION_ARGS)
@@ -512,7 +512,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if the first span set is strictly after the second one
  * @sqlfunc time_after()
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 Right_spanset_spanset(PG_FUNCTION_ARGS)
@@ -570,7 +570,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is not after a span set
  * @sqlfunc time_overbefore()
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overleft_span_spanset(PG_FUNCTION_ARGS)
@@ -587,7 +587,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_span);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span set is not after a span set
  * @sqlfunc time_overbefore()
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overleft_spanset_span(PG_FUNCTION_ARGS)
@@ -604,7 +604,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if the first span set is not after the second one
  * @sqlfunc time_overbefore()
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overleft_spanset_spanset(PG_FUNCTION_ARGS)
@@ -662,7 +662,7 @@ PG_FUNCTION_INFO_V1(Overright_span_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is not before a span set
  * @sqlfunc time_overafter()
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overright_span_spanset(PG_FUNCTION_ARGS)
@@ -679,7 +679,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_span);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span set is not before a span
  * @sqlfunc time_overafter()
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overright_spanset_span(PG_FUNCTION_ARGS)
@@ -696,7 +696,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_spanset);
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if the first span set is not before the second one
  * @sqlfunc time_overafter()
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overright_spanset_spanset(PG_FUNCTION_ARGS)
@@ -718,7 +718,7 @@ PG_FUNCTION_INFO_V1(Union_span_spanset);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of a span and a span set
  * @sqlfunc time_union()
- * @sqlop @s +
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_span_spanset(PG_FUNCTION_ARGS)
@@ -737,7 +737,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_span);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of a span set and a span
  * @sqlfunc time_union()
- * @sqlop @s +
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_spanset_span(PG_FUNCTION_ARGS)
@@ -754,7 +754,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_spanset);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of the span sets
  * @sqlfunc time_union()
- * @sqlop @s +
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_spanset_spanset(PG_FUNCTION_ARGS)
@@ -776,7 +776,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_spanset);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the intersection of a span and a span set
  * @sqlfunc time_intersection()
- * @sqlop @s *
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_span_spanset(PG_FUNCTION_ARGS)
@@ -797,7 +797,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_span);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the intersection of a span set and a span
  * @sqlfunc time_intersection()
- * @sqlop @s *
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_spanset_span(PG_FUNCTION_ARGS)
@@ -816,7 +816,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_spanset);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the intersection of the span sets
  * @sqlfunc time_intersection()
- * @sqlop @s *
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_spanset_spanset(PG_FUNCTION_ARGS)
@@ -841,7 +841,7 @@ PG_FUNCTION_INFO_V1(Minus_span_spanset);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of a span and a span set
  * @sqlfunc time_minus()
- * @sqlop @s -
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_span_spanset(PG_FUNCTION_ARGS)
@@ -862,7 +862,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_span);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of a span set and a span
  * @sqlfunc time_minus()
- * @sqlop @s -
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_spanset_span(PG_FUNCTION_ARGS)
@@ -881,7 +881,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_spanset);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of the span sets
  * @sqlfunc time_minus()
- * @sqlop @s -
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_spanset_spanset(PG_FUNCTION_ARGS)

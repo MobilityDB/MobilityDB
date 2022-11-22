@@ -688,7 +688,7 @@ union_value_span(Datum d, mobdbType basetype, const Span *s)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the spans.
- * @sqlop @s +
+ * @sqlop @p +
  */
 SpanSet *
 union_span_span(const Span *s1, const Span *s2)

@@ -125,7 +125,7 @@ spanset_in(const char *str, mobdbType spansettype)
  * @ingroup libmeos_spantime_in_out
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  */
-Span *
+SpanSet *
 intspanset_in(const char *str)
 {
   return spanset_parse(&str, T_INTSPANSET);
@@ -135,7 +135,7 @@ intspanset_in(const char *str)
  * @ingroup libmeos_spantime_in_out
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  */
-Span *
+SpanSet *
 floatspanset_in(const char *str)
 {
   return spanset_parse(&str, T_FLOATSPANSET);
@@ -145,7 +145,7 @@ floatspanset_in(const char *str)
  * @ingroup libmeos_spantime_in_out
  * @brief Return a period set from its Well-Known Text (WKT) representation.
  */
-Period *
+PeriodSet *
 periodset_in(const char *str)
 {
   return spanset_parse(&str, T_PERIODSET);
@@ -179,7 +179,7 @@ spanset_out(const SpanSet *ss, Datum maxdd)
 char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
-  return spanset_out(s, Int32GetDatum(maxdd));
+  return spanset_out(ss, Int32GetDatum(maxdd));
 }
 
 /**
@@ -189,7 +189,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 char *
 intspanset_out(const SpanSet *ss)
 {
-  return spanset_out(s, Int32GetDatum(0));
+  return spanset_out(ss, Int32GetDatum(0));
 }
 
 /**
@@ -199,7 +199,7 @@ intspanset_out(const SpanSet *ss)
 char *
 periodset_out(const SpanSet *ss)
 {
-  return spanset_out(s, Int32GetDatum(0));
+  return spanset_out(ss, Int32GetDatum(0));
 }
 #endif /* MEOS */
 
@@ -210,7 +210,7 @@ periodset_out(const SpanSet *ss)
 /**
  * @ingroup libmeos_int_spantime_accessor
  * @brief Return the n-th span of a span set.
- * @pre The argument @s index is less than the number of spans in the span set
+ * @pre The argument @p index is less than the number of spans in the span set
  * @note This is the internal function equivalent to `spanset_span_n`.
  * This function does not verify that the index is is in the correct bounds
  */
@@ -350,6 +350,28 @@ spanset_to_span(const SpanSet *ss)
 }
 
 /*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_transf
+ * @brief Shift a span set by a value.
+ * @sqlfunc shift()
+ * @pymeosfunc shift()
+ */
+void
+spanset_shift(Datum value, mobdbType basetype, SpanSet *result)
+{
+  assert(basetype == result->basetype);
+  for (int i = 0; i < result->count; i++)
+  {
+    Span *s = (Span *) spanset_sp_n(result, i);
+    span_shift(value, basetype, s);
+  }
+  return;
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
@@ -394,7 +416,7 @@ floatspanset_lower(const SpanSet *ss)
  * @pymeosfunc lower()
  */
 TimestampTz
-period_lower(const Period *p)
+periodset_lower(const PeriodSet *ps)
 {
   return TimestampTzGetDatum(ps->elems[0].lower);
 }
@@ -430,7 +452,7 @@ floatspanset_upper(const SpanSet *ss)
 TimestampTz
 periodset_upper(const PeriodSet *ps)
 {
-  return TimestampTzGetDatum(ps->elems[ss->count - 1].upper);
+  return TimestampTzGetDatum(ps->elems[ps->count - 1].upper);
 }
 #endif /* MEOS */
 

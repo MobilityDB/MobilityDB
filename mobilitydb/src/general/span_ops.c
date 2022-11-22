@@ -397,7 +397,7 @@ PG_FUNCTION_INFO_V1(Union_span_span);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of the spans
  * @sqlfunc time_union()
- * @sqlop @s +
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_span_span(PG_FUNCTION_ARGS)
@@ -431,7 +431,7 @@ PG_FUNCTION_INFO_V1(Minus_span_span);
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of the spans.
  * @sqlfunc time_minus()
- * @sqlop @s -
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_span_span(PG_FUNCTION_ARGS)

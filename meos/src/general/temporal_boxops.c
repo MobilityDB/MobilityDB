@@ -347,7 +347,7 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
  * Expand the bounding box of a temporal sequence with an additional instant
  *
  * @param[in] seq Temporal sequence
- * @param[out] box Bounding box
+ * @param[out] inst Temporal instant
  */
 void
 tsequence_expand_bbox(TSequence *seq, const TInstant *inst)

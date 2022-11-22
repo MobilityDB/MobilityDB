@@ -1355,7 +1355,7 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
  *
  * @param[in] temp Temporal value
  * @param[in] values Array of values appearing in the temporal value
- * @param[in] size Number of elements in the input array
+ * @param[in] count Number of elements in the input array
  */
 UnnestState *
 temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
