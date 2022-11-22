@@ -419,7 +419,7 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 bool
 right_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
 {
-  const Span *s = spanset_sp_n(ss, ss->count - 1);
+  const Span *s = spanset_sp_n(ss, 0);
   return right_span_value(s, d, basetype);
 }
 

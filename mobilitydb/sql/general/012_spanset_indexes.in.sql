@@ -90,8 +90,7 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(intspan, intspan, internal),
-  FUNCTION  8  span_gist_distance(internal, intspan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  8  span_gist_distance(internal, intspan, smallint, oid, internal);
 
 /******************************************************************************/
 
@@ -145,8 +144,7 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(floatspan, floatspan, internal),
-  FUNCTION  8  span_gist_distance(internal, floatspan, smallint, oid, internal),
-  FUNCTION  9  span_gist_fetch(internal);
+  FUNCTION  8  span_gist_distance(internal, floatspan, smallint, oid, internal);
 
 /******************************************************************************
  * Quad-tree SP-GiST GiST indexes
