@@ -268,6 +268,9 @@ SELECT MAX(duration(p)) FROM tbl_period;
 (1 row)
 
 SELECT MAX(lower(shift(p, '5 min')) FROM tbl_period;
+
+
+
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
