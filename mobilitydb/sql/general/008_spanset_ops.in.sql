@@ -925,16 +925,16 @@ CREATE FUNCTION span_adjacent(float, floatspanset)
   AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR && (
+CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = int, RIGHTARG = intspanset,
-  COMMUTATOR = &&,
+  COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR && (
+CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = float, RIGHTARG = floatspanset,
-  COMMUTATOR = &&,
+  COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
@@ -947,16 +947,16 @@ CREATE FUNCTION span_adjacent(floatspanset, float)
   AS 'MODULE_PATHNAME', 'Adjacent_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR && (
+CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = intspanset, RIGHTARG = int,
-  COMMUTATOR = &&,
+  COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR && (
+CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = floatspanset, RIGHTARG = float,
-  COMMUTATOR = &&,
+  COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
