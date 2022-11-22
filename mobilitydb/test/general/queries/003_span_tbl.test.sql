@@ -69,9 +69,27 @@ SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
 SELECT COUNT(*) FROM tbl_period WHERE periodFromHexWKB(asHexWKB(p)) <> p;
 
 -------------------------------------------------------------------------------
+-- Casting
+-------------------------------------------------------------------------------
+
+SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
+SELECT MAX(lower(p::tstzrange)) FROM tbl_period ORDER BY 1;
+SELECT MAX(lower(r::period)) FROM tbl_tstzrange ORDER BY 1;
+SELECT MAX(lower(t::period)) FROM tbl_timestamptz ORDER BY 1;
+
+-------------------------------------------------------------------------------
+-- Transformation Functions
+-------------------------------------------------------------------------------
 
 SELECT SUM(width(i)) FROM tbl_intspan;
 SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
+
+SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
+SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
+SELECT MAX(lower(shift(p, i))) FROM tbl_period, tbl_interval;
+
+SELECT MAX(lower(tscale(p, i))) FROM tbl_period, tbl_interval;
+SELECT MAX(lower(shiftTscale(p, t1.i, t2.i))) FROM tbl_period, tbl_interval t1, tbl_interval t2;
 
 SELECT MAX(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;
 SELECT MAX(duration(period(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
@@ -80,20 +98,28 @@ SELECT MAX(duration(period(t, t + i, false, true))) FROM tbl_timestamptz, tbl_in
 SELECT MAX(duration(period(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
 
 -------------------------------------------------------------------------------
-
-SELECT k, i::int4range FROM tbl_intspan ORDER BY 1;
-SELECT k, p::tstzrange FROM tbl_period ORDER BY 1;
-SELECT k, r::period FROM tbl_tstzrange ORDER BY 1;
-SELECT k, t::period FROM tbl_timestamptz ORDER BY 1;
-
+-- Accessor Functions
 -------------------------------------------------------------------------------
 
-SELECT lower(p) FROM tbl_period;
-SELECT upper(p) FROM tbl_period;
-SELECT lower_inc(p) FROM tbl_period;
-SELECT upper_inc(p) FROM tbl_period;
-SELECT duration(p) FROM tbl_period;
-SELECT shift(p, '5 min') FROM tbl_period;
+SELECT MAX(lower(i)) FROM tbl_intspan;
+SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
+SELECT MAX(lower(p)) FROM tbl_period;
+
+SELECT MAX(upper(i)) FROM tbl_intspan;
+SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
+SELECT MAX(upper(p)) FROM tbl_period;
+
+SELECT DISTINCT lower_inc(i) FROM tbl_intspan;
+SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
+SELECT DISTINCT lower_inc(p) FROM tbl_period;
+
+SELECT DISTINCT upper_inc(i) FROM tbl_intspan;
+SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
+SELECT DISTINCT upper_inc(p) FROM tbl_period;
+
+SELECT MAX(duration(p)) FROM tbl_period;
+
+SELECT MAX(lower(shift(p, '5 min')) FROM tbl_period;
 
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;

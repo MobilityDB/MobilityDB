@@ -243,6 +243,10 @@ CREATE FUNCTION period(timestamptz)
   RETURNS period
   AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION period(timestampset)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Timestampset_to_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION int4range(intspan)
   RETURNS int4range
@@ -263,10 +267,43 @@ CREATE FUNCTION period(tstzrange)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
+CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset);
 CREATE CAST (int4range AS intspan) WITH FUNCTION intspan(int4range);
 CREATE CAST (intspan AS int4range) WITH FUNCTION int4range(intspan);
 CREATE CAST (tstzrange AS period) WITH FUNCTION period(tstzrange);
 CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(floatspan, integer DEFAULT 0)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shift(intspan, int)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(floatspan, float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(period, interval)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Period_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(period, interval)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Period_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(period, interval, interval)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Period_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Accessor functions
@@ -339,38 +376,6 @@ CREATE FUNCTION duration(period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-CREATE FUNCTION round(floatspan, integer DEFAULT 0)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Floatspan_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION shift(intspan, int)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Span_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(floatspan, int)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Span_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(period, interval)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tscale(period, interval)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_tscale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION shiftTscale(period, interval, interval)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Period_shift_tscale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
  * Selectivity functions
  *****************************************************************************/
 
@@ -378,15 +383,9 @@ CREATE FUNCTION span_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_sel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Span_joinsel'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION period_sel(internal, oid, internal, integer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Period_sel'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- Functions period_sel and span_joinsel are defined in the file defining the
+-- timestampset type
 
 -- Functions for debugging the selectivity code
 

@@ -248,6 +248,18 @@ CREATE CAST (intspanset AS intspan) WITH FUNCTION intspan(intspanset);
 CREATE CAST (floatspanset AS floatspan) WITH FUNCTION floatspan(floatspanset);
 CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
 
+CREATE FUNCTION periodset(timestamptz)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Timestamp_to_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION periodset(timestampset)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Timestampset_to_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
+CREATE CAST (timestampset AS periodset) WITH FUNCTION periodset(timestampset);
+
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION int4multirange(intspanset)
   RETURNS int4multirange
@@ -273,8 +285,32 @@ CREATE CAST (int4multirange AS intspanset) WITH FUNCTION intspanset(int4multiran
 CREATE CAST (tstzmultirange AS periodset) WITH FUNCTION periodset(tstzmultirange);
 #endif //POSTGRESQL_VERSION_NUMBER >= 140000
 
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shift(periodset, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(periodset, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(periodset, interval, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
- * Functions
+ * Accessor Functions
  ******************************************************************************/
 
 CREATE FUNCTION memSize(intspanset)
@@ -351,6 +387,16 @@ CREATE FUNCTION width(floatspanset)
   AS 'MODULE_PATHNAME', 'Spanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION timespan(periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'Periodset_timespan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION duration(periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'Periodset_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numSpans(intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_num_spans'
@@ -416,13 +462,29 @@ CREATE FUNCTION periods(periodset)
   AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
+CREATE FUNCTION numTimestamps(periodset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Periodset_num_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Floatspanset_round'
+CREATE FUNCTION startTimestamp(periodset)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Periodset_start_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endTimestamp(periodset)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Periodset_end_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestampN(periodset, integer)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Periodset_timestamp_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestamps(periodset)
+  RETURNS timestamptz[]
+  AS 'MODULE_PATHNAME', 'Periodset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

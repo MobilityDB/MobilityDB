@@ -118,13 +118,8 @@ CREATE FUNCTION timestampset(timestamptz)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Timestamp_to_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(timestampset)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Timestampset_to_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
-CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset);
 
 /******************************************************************************
  * Functions
@@ -179,6 +174,20 @@ CREATE FUNCTION shiftTscale(timestampset, interval, interval)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Selectivity functions
+ *****************************************************************************/
+
+CREATE FUNCTION period_sel(internal, oid, internal, integer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Period_sel'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Span_joinsel'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 
 /******************************************************************************
  * Comparison functions and B-tree indexing
