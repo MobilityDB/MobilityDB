@@ -624,13 +624,13 @@ CREATE OPERATOR < (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = periodset, RIGHTARG = periodset,
@@ -643,13 +643,13 @@ CREATE OPERATOR <= (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = periodset, RIGHTARG = periodset,
@@ -662,13 +662,13 @@ CREATE OPERATOR >= (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = periodset, RIGHTARG = periodset,
@@ -681,13 +681,13 @@ CREATE OPERATOR > (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = periodset, RIGHTARG = periodset,

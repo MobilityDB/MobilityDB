@@ -1,0 +1,420 @@
+ANALYZE tbl_intspanset;
+ANALYZE
+ANALYZE tbl_floatspanset;
+ANALYZE
+DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;
+NOTICE:  index "tbl_intspanset_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
+NOTICE:  index "tbl_floatspanset_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_intspanset_quadtree_idx;
+NOTICE:  index "tbl_intspanset_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_floatspanset_quadtree_idx;
+NOTICE:  index "tbl_floatspanset_quadtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_intspanset_rtree_idx ON tbl_intspanset USING GIST(ss);
+CREATE INDEX
+CREATE INDEX tbl_floatspanset_rtree_idx ON tbl_floatspanset USING GIST(ss);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss @> 50;
+ count 
+-------
+    26
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss -|- 50;
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss << 15;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &< 15;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss >> 85;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &> 85;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss && intspan '[45, 55]';
+ count 
+-------
+    84
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss @> intspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss <@ intspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss -|- intspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss << intspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &< intspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss >> intspan '[85, 95]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &> intspan '[85, 95]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT ss <-> 101 FROM tbl_intspanset ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        1
+        1
+        1
+(3 rows)
+
+SELECT ss <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        1
+        1
+        1
+(3 rows)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss @> 50.0;
+ count 
+-------
+    20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss -|- 50.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss << 15.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &< 15.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss >> 85.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &> 85.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss && floatspan '[45, 55]';
+ count 
+-------
+    74
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss @> floatspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss <@ floatspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss << floatspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &< floatspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss >> floatspan '[85, 95]';
+ count 
+-------
+    13
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &> floatspan '[85, 95]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT round((ss <-> 101.0)::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 0.000000
+ 0.148397
+ 0.963903
+(3 rows)
+
+SELECT round((ss <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 0.000000
+ 0.148397
+ 0.963903
+(3 rows)
+
+DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_intspanset_quadtree_idx ON tbl_intspanset USING SPGIST(ss);
+CREATE INDEX
+CREATE INDEX tbl_floatspanset_quadtree_idx ON tbl_floatspanset USING SPGIST(ss);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss @> 50;
+ count 
+-------
+    26
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss -|- 50;
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss << 15;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &< 15;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss >> 85;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &> 85;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss && intspan '[45, 55]';
+ count 
+-------
+    84
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss @> intspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss <@ intspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss -|- intspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss << intspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &< intspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss >> intspan '[85, 95]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspanset WHERE ss &> intspan '[85, 95]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT ss <-> 101 FROM tbl_intspanset ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        1
+        1
+        1
+(3 rows)
+
+SELECT ss <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        1
+        1
+        1
+(3 rows)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss @> 50.0;
+ count 
+-------
+    20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss -|- 50.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss << 15.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &< 15.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss >> 85.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &> 85.0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss && floatspan '[45, 55]';
+ count 
+-------
+    74
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss @> floatspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss <@ floatspan '[45, 55]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss << floatspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &< floatspan '[15, 25]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss >> floatspan '[85, 95]';
+ count 
+-------
+    13
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &> floatspan '[85, 95]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT round((ss <-> 101.0)::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 0.000000
+ 0.148397
+ 0.963903
+(3 rows)
+
+SELECT round((ss <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 0.000000
+ 0.148397
+ 0.963903
+(3 rows)
+
+DROP INDEX IF EXISTS tbl_intspanset_quadtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_floatspanset_quadtree_idx;
+DROP INDEX

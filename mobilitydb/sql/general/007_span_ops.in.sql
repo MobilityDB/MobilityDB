@@ -89,7 +89,7 @@ CREATE OPERATOR @> (
   PROCEDURE = span_contains,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <@,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -147,7 +147,7 @@ CREATE OPERATOR <@ (
   PROCEDURE = span_contained,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = @>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -183,7 +183,7 @@ CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = &&,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -261,7 +261,7 @@ CREATE OPERATOR <<# (
   PROCEDURE = span_left,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = #>>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -339,7 +339,7 @@ CREATE OPERATOR #>> (
   PROCEDURE = span_right,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <<#,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -410,7 +410,7 @@ CREATE FUNCTION span_overleft(period, period)
 CREATE OPERATOR &<# (
   PROCEDURE = span_overleft,
   LEFTARG = period, RIGHTARG = period,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -481,7 +481,7 @@ CREATE FUNCTION span_overright(period, period)
 CREATE OPERATOR #&> (
   PROCEDURE = span_overright,
   LEFTARG = period, RIGHTARG = period,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -559,7 +559,7 @@ CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = -|-,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  RESTRICT = period_sel, JOIN = span_joinsel
 );
 
 /*****************************************************************************
