@@ -119,7 +119,7 @@ SELECT DISTINCT upper_inc(p) FROM tbl_period;
 
 SELECT MAX(duration(p)) FROM tbl_period;
 
-SELECT MAX(lower(shift(p, '5 min')) FROM tbl_period;
+SELECT MAX(lower(shift(p, '5 min'))) FROM tbl_period;
 
 -------------------------------------------------------------------------------
 -- Comparison Functions

@@ -267,32 +267,73 @@ SELECT MAX(duration(p)) FROM tbl_period;
  00:09:00
 (1 row)
 
-SELECT MAX(lower(shift(p, '5 min')) FROM tbl_period;
-
-
+SELECT MAX(lower(shift(p, '5 min'))) FROM tbl_period;
+          max           
+------------------------
+ 2001-12-29 20:58:00+00
+(1 row)
 
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
+ count 
+-------
+  4851
+(1 row)
+
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
+ count 
+-------
+  4851
+(1 row)
+
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
+ count 
+-------
+  4950
+(1 row)
+
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
+ count 
+-------
+  4851
+(1 row)
+
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
+ count 
+-------
+  4950
+(1 row)
+
 SELECT MAX(period_hash(p)) != 0 FROM tbl_period;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT MAX(period_hash_extended(p, 1)) != 0 FROM tbl_period;
-
-
-
+ ?column? 
+----------
+ t
+(1 row)
 
 set parallel_setup_cost=0;
+SET
 set parallel_tuple_cost=0;
+SET
 set min_parallel_table_scan_size=0;
+SET
 set max_parallel_workers_per_gather=2;
+SET
 SELECT round(extent(temp::floatspan),6) FROM tbl_tfloat_big;
+         round          
+------------------------
+ [1.004155, 100.999349]
+(1 row)
 
 reset parallel_setup_cost;
+RESET
 reset parallel_tuple_cost;
+RESET
 reset min_parallel_table_scan_size;
+RESET
 reset max_parallel_workers_per_gather;
-
-ERROR:  syntax error at or near "FROM"
-LINE 1: SELECT MAX(lower(shift(p, '5 min')) FROM tbl_period;
-                                            ^
+RESET
