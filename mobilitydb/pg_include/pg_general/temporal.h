@@ -146,6 +146,17 @@ typedef struct
 #define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
+ * Struct definitions for SP-GiST indexes
+ *****************************************************************************/
+
+/** Enumeration for the types of SP-GiST indexes */
+typedef enum
+{
+  SPGIST_QUADTREE,
+  SPGIST_KDTREE,
+} SPGistIndexType;
+
+/*****************************************************************************
  * Typmod definitions
  *****************************************************************************/
 

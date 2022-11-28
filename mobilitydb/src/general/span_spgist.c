@@ -700,12 +700,11 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
 /**
- * SP-GiST inner consistent function function for span types
+ * Generic SP-GiST inner consistent function for time types
  */
-PGDLLEXPORT Datum
-Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+Datum
+Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -746,6 +745,8 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
   if (in->allTheSame)
   {
+    if (idxtype == SPGIST_QUADTREE)
+    {
       /* Report that all nodes should be visited */
       out->nNodes = in->nNodes;
       out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
@@ -779,6 +780,9 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
       // pfree(orderbys);
 
       PG_RETURN_VOID();
+    }
+    else
+      elog(ERROR, "allTheSame should not occur for k-d trees");
   }
 
   /* Transform the queries into spans */
@@ -806,8 +810,12 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   /* Loop for each child */
   for (node = 0; node < in->nNodes; node++)
   {
-    /* Compute the bounding box of the child node */
-    spannode_quadtree_next(nodebox, centroid, node, &next_nodespan);
+    /* Compute the bounding box of the child */
+    if (idxtype == SPGIST_QUADTREE)
+      spannode_quadtree_next(nodebox, centroid, node, &next_nodespan);
+    else
+      spannode_kdtree_next(nodebox, centroid, node, (in->level) + 1,
+        &next_nodespan);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -881,6 +889,26 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     pfree(orderbys);
 
   PG_RETURN_VOID();
+}
+
+PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
+/**
+ * Quad-tree inner consistent function for time types
+ */
+PGDLLEXPORT Datum
+Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  return Span_spgist_inner_consistent(fcinfo, SPGIST_QUADTREE);
+}
+
+PG_FUNCTION_INFO_V1(Span_kdtree_inner_consistent);
+/**
+ * K-d tree inner consistent function for time types
+ */
+PGDLLEXPORT Datum
+Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  return Span_spgist_inner_consistent(fcinfo, SPGIST_KDTREE);
 }
 
 /*****************************************************************************
