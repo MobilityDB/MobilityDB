@@ -249,10 +249,10 @@ CREATE OPERATOR CLASS timestampset_quadtree_ops
   -- equals
   OPERATOR  18    = (timestampset, timestampset),
   -- nearest approach distance
-  OPERATOR  25    <->(timestampset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(timestampset, timestampset) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(timestampset, period) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(timestampset, periodset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (timestampset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (timestampset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (timestampset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (timestampset, periodset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (timestampset, timestamptz),
   OPERATOR  28    &<# (timestampset, timestampset),
