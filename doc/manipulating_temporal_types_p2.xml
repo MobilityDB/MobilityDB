@@ -732,7 +732,7 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 
 		<para>In order to speed up several of the functions in <xref linkend="manipulating_temporal_types_p1" /> and <xref linkend="manipulating_temporal_types_p2" />, we can add in the <varname>WHERE</varname> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
 			<programlisting language="sql" xml:space="preserve">
-SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
+SELECT atTime(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
 -- Bouding box index filtering
 WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)

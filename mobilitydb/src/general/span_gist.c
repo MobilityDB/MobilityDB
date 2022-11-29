@@ -569,8 +569,8 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   context.first = true;
 
   /* Allocate arrays for sorted span bounds */
-  by_lower = palloc(nentries * sizeof(SpanBounds));
-  by_upper = palloc(nentries * sizeof(SpanBounds));
+  by_lower = palloc(sizeof(SpanBounds) * nentries);
+  by_upper = palloc(sizeof(SpanBounds) * nentries);
   /* Fill arrays of bounds */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {

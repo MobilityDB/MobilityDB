@@ -390,11 +390,6 @@ CREATE OPERATOR CLASS periodset_quadtree_ops
 
 /*****************************************************************************/
 
-/*
- * time_spgist.sql
- * K-d tree SP-GiST index for time types
- */
-
 CREATE FUNCTION span_kdtree_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Span_kdtree_choose'

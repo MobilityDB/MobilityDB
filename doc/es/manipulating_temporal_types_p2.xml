@@ -731,9 +731,9 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 
 		<para>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname> y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 
-		<para>Para acelerar varias de las funciones en el <xref linkend="manipulating_temporal_types" />, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
+		<para>Para acelerar varias de las funciones en el <xref linkend="manipulating_temporal_types_p1" /> y <xref linkend="manipulating_temporal_types_p2" />, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
-SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
+SELECT atTime(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
 -- Filtro de índice con cuadro delimitador
 WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)

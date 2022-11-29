@@ -177,7 +177,7 @@ FROM Department;
 -- 20 | NULL
 
 -- Restriction to a period
-SELECT DeptNo, atPeriod(NoEmps, '[2001-01-01, 2001-04-01]')
+SELECT DeptNo, atTime(NoEmps, period '[2001-01-01, 2001-04-01]')
 FROM Department;
 -- 10 | [10@2001-01-01, 12@2001-04-01]
 -- 20 | [4@2001-02-01, 4@2001-04-01]
@@ -216,7 +216,7 @@ FROM Trips;
 -- 20 | NULL
 
 -- Restriction to a period
-SELECT CarId, asText(atPeriod(Trip, '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
+SELECT CarId, asText(atTime(Trip, period '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
 FROM Trips;
 -- 10 | {[POINT(1 0)@2001-01-01 08:05:00+00, POINT(2 0)@2001-01-01 08:10:00+00]}
 -- 20 | {[POINT(0 0)@2001-01-01 08:05:00+00, POINT(1 1)@2001-01-01 08:10:00+00]}

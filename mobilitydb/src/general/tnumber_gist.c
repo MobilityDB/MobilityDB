@@ -459,7 +459,7 @@ int
 interval_cmp_lower(const void *i1, const void *i2)
 {
   double lower1 = ((const SplitInterval *) i1)->lower,
-        lower2 = ((const SplitInterval *) i2)->lower;
+         lower2 = ((const SplitInterval *) i2)->lower;
 
   return float8_cmp_internal(lower1, lower2);
 }
@@ -716,8 +716,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
   nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
 
   /* Allocate arrays for intervals along axes */
-  intervalsLower = palloc(nentries * sizeof(SplitInterval));
-  intervalsUpper = palloc(nentries * sizeof(SplitInterval));
+  intervalsLower = palloc(sizeof(SplitInterval) * nentries);
+  intervalsUpper = palloc(sizeof(SplitInterval) * nentries);
 
   /*
    * Calculate the overall minimum bounding box over all the entries.

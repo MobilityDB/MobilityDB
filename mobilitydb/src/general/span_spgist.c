@@ -71,7 +71,7 @@ typedef struct
  */
 typedef struct SortedSpan
 {
-  Span *s;
+  Span s;
   int i;
 } SortedSpan;
 
@@ -659,15 +659,15 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
   int median = in->nTuples >> 1, i;
 
   /* Sort the spans and determine the centroid */
-  SortedSpan *sorted = palloc(sizeof(*sorted) * in->nTuples);
+  SortedSpan *sorted = palloc(sizeof(SortedSpan) * in->nTuples);
   for (i = 0; i < in->nTuples; i++)
   {
-    sorted[i].s = DatumGetSpanP(in->datums[i]);
+    memcpy(&sorted[i].s, DatumGetSpanP(in->datums[i]), sizeof(Span));
     sorted[i].i = i;
   }
-  qsort(sorted, in->nTuples, sizeof(*sorted), (in->level % 2) ?
-    span_lower_qsort_cmp : span_upper_qsort_cmp);
-  Span *centroid = span_copy(sorted[median].s);
+  qsort(sorted, (size_t) in->nTuples, sizeof(SortedSpan),
+    (in->level % 2) ? span_lower_qsort_cmp : span_upper_qsort_cmp);
+  Span *centroid = span_copy(&sorted[median].s);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -687,7 +687,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    Span *s = sorted[i].s;
+    Span *s = &sorted[i].s;
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = SpanPGetDatum(s);

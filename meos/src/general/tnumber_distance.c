@@ -268,12 +268,10 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
 
   if (datum_lt(box1->span.upper, box2->span.lower, T_FLOAT8))
     /* box1 is to the left of box2 */
-    return DatumGetFloat8(box2->span.lower) -
-      DatumGetFloat8(box1->span.upper);
+    return DatumGetFloat8(box2->span.lower) - DatumGetFloat8(box1->span.upper);
   else
     /* box1 is to the right of box2 */
-    return DatumGetFloat8(box1->span.lower) -
-      DatumGetFloat8(box2->span.upper);
+    return DatumGetFloat8(box1->span.lower) - DatumGetFloat8(box2->span.upper);
 }
 
 /**
